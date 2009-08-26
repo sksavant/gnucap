@@ -1,0 +1,8 @@
+
+The source code of BSIM4.4.0 was written for SPICE3f5.
+The other two readme files give the information on how to
+convert this code into that for SPICE3e2 and how to add a
+new device model into SPICE3 from ground zero.
+
+Jane Xi
+March 2004

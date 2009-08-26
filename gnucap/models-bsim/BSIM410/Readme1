@@ -1,0 +1,57 @@
+/*** Weidong Liu (2000) ***/
+
+The following describes how to add BSIM4 model into spice3.
+
+#######################################################
+src/bin/config.c:
+~~~~~~~~~~~~~~~~
+#ifdef DEV_bsim4
+#include "bsim4itf.h"
+#endif
+--
+#ifdef DEV_bsim4
+#include "bsim4/bsim4itf.h"
+#endif
+--
+#ifdef DEV_bsim4
+        &B4info,
+#endif
+src/bin/bconf.c:
+~~~~~~~~~~~~~~~
+#include "bsim4itf.h"
+--
+#include "bsim4/bsim4itf.h"
+--
+#ifdef DEV_bsim4
+        &B4info,
+#endif
+src/bin/cconf.c:
+~~~~~~~~~~~~~~~
+#include "bsim4itf.h"
+--
+#include "bsim4/bsim4itf.h"
+#endif
+--
+#ifdef DEV_bsim4
+        &B4info,
+#endif
+########################################################
+src/lib/inp/inp2m.c:
+~~~~~~~~~~~~~~~~~~~
+&& thismodel->INPmodType != INPtypelook("BSIM4")
+src/lib/inp/inp2domod.c:
+~~~~~~~~~~~~~~~~~~~~~~~
+case 14:
+type = INPtypelook("BSIM4");
+if(type < 0) {
+   err = INPmkTemp(
+   "Device type BSIM4 not available in this binary\n");
+}
+break;
+########################################################
+conf/defaults:
+~~~~~~~~~~~~~
+#               Add a new field of bsim4 into DEVICES
+--
+DEVICES         = asrc bjt bsim1 bsim2 bsim3 bsim4 cap
+########################################################

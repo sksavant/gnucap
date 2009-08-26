@@ -1,0 +1,10 @@
+'
+.attach ./bsim310.so
+.model nn nmos level=8
+m1 (d g 0 0) nn
+m2 (d g 0 0) nn m=9
+vd (d 0) 5
+vg (g 0) 3
+.probe op v(nodes) i(v*) vds(m*) id(m*)
+.op
+.end

@@ -1,0 +1,92 @@
+/*** Weidong Liu (2000) ***/
+
+This document decribes the names of those C-files in SPICE3f5 BSIM4
+and necessary modifications of those files in order to work with SPICE3e2.
+
+FILE NAMES
+==========
+Five C-files need to be modified. They are:
+b4set.c, bsim4def.h, bsim4ext.h, bsim4itf.h and makedefs.
+
+
+MODIFICATIONS apply to SPICE3f5 BSIM4 to get SPICE3e2 BSIM4:
+=============
+b4set.c
+~~~~~~
+SPICE3e2 BSIM4         ---------->         SPICE3f5 BSIM4
+(1) add BSIM4unsetup(), which is coded as
+int
+BSIM4unsetup(inModel,ckt)
+    GENmodel *inModel;
+    CKTcircuit *ckt;
+{
+#ifndef HAS_BATCHSIM
+    BSIM4model *model;
+    BSIM4instance *here;
+
+    for (model = (BSIM4model *)inModel; model != NULL;
+            model = model->BSIM4nextModel)
+    {
+        for (here = model->BSIM4instances; here != NULL;
+                here=here->BSIM4nextInstance)
+        {
+            if (here->BSIM4dNodePrime
+                    && here->BSIM4dNodePrime != here->BSIM4dNode)
+            {
+                CKTdltNNum(ckt, here->BSIM4dNodePrime);
+                here->BSIM4dNodePrime = 0;
+            }
+            if (here->BSIM4sNodePrime
+                    && here->BSIM4sNodePrime != here->BSIM4sNode)
+            {
+                CKTdltNNum(ckt, here->BSIM4sNodePrime);
+                here->BSIM4sNodePrime = 0;
+            }
+        }
+    }
+#endif
+    return OK;
+}
+
+bsim4def.h
+~~~~~~~~~
+SPICE3e2 BSIM4         <----------         SPICE3f5 BSIM4
+(1) move    int BSIM4states;
+    to the line just above "#define BSIM4vbd BSIM4states+ 0"
+
+bsim4ext.h
+~~~~~~~~~
+SPICE3e2 BSIM4         <----------         SPICE3f5 BSIM4
+(1) add     extern int BSIM4unsetup(GENmodel*,CKTcircuit*);
+(2) add     extern int BSIM4unsetup();
+
+bsim4itf.h
+~~~~~~~~~
+SPICE3e2 BSIM4         <----------         SPICE3f5 BSIM4
+(1) change  SPICEdev B4info = {
+    to      SPICEdev BSIM4info = {
+(2) delete     'DEV_DEFAULT' just below the line of 'BSIM4mPTable,'
+(3) delete     'BSIM4unsetup,' between 'BSIM4setup'
+
+makedefs
+~~~~~~~
+SPICE3e2 BSIM4         <----------         SPICE3f5 BSIM4
+(1) delet the following:
+b4.o :          b4.c
+b4acld.o :      b4acld.c
+b4ask.o :       b4ask.c
+b4check.o :     b4check.c
+b4cvtest.o :    b4cvtest.c
+b4del.o :       b4del.c
+b4dest.o :      b4dest.c
+b4getic.o :     b4getic.c
+b4ld.o :        b4ld.c
+b4mask.o :      b4mask.c
+b4mdel.o :      b4mdel.c
+b4mpar.o :      b4mpar.c
+b4noi.o :       b4noi.c
+b4par.o :       b4par.c
+b4pzld.o :      b4pzld.c
+b4set.o :       b4set.c
+b4temp.o :      b4temp.c
+b4trunc.o :     b4trunc.c

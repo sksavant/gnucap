@@ -1,0 +1,85 @@
+This package contains the complete Berkeley "BSIM" archive, from
+http://www-device.eecs.berkeley.edu/~bsim3, as of December 2, 2008,
+including the latest BSIM4 (BSIM463) dated September 19, 2008.
+
+The models are licensed under Berkeley's license.  See the file
+COPYING for details.  Note that this is not GPL.
+
+The "Include" directory contains files from Spice 3f5.  A few of them
+have been modified with an #ifdef to make them optionally compatible
+with Spice 3e2 models.  Some of them are stubs.
+
+There are no modifications to any of the BSIM code, other than to add
+a "Makefile" and "wrapper.h" for each one.  Most of them were written
+for Spice 3f5, but some older ones were written for Spice 3e2.
+Ordinarily they are incompatible, but here just specifying which
+format it is in the Makefile takes care of it.
+
+They have been minimally tested, and appear to work.  Minimal testing
+means that one or two tests were run on the latest of each kind, and
+they appear to give believable reslts.  A few tests were run comparing
+to references supplied by Berkeley, and the results match within set
+tolerances.
+
+There may be a problem with the BSIMSOI models when not all nodes are
+specified and the temperature node is used.  If you use the
+temperature node, specify all nodes.  Use of the temperature node
+without other optional nodes has not been tested, and probably doesn't
+work.
+
+All of these override the "M" device.  The "M" device will be the last
+one loaded.  If you want to have more than one type, use the dot form
+to select which one.  If you want variants of the same model, such as
+BSIM420 and BSIM460, you may need to make changes to the wrapper.h
+file and recompile.
+
+
+BUILD INSTRUCTIONS
+
+This applies to this snapshot.  It will change.
+
+If you unpacked in the same directory as the gnucap source, a new
+directory will appear there.  If so, the links should be set to build.
+Just cd to models-bsim and type "make".
+
+If you unpacked anywhere else, you need to configure it manually.
+The only configuration needed is to make a symbolic link to the 
+gnucap sources as "Gnucap".
+
+The command will be something like:
+   ln -s ../gnucap-xxxx/src Gnucap
+but substitute the real name for xxxx.
+
+If you are building with a compiler other than gcc and g++, you will
+need to change the "Make2" file.  If you are cross-compiling with
+mingw, update the "Make2" symlink to point to "Make2.mingw".  For
+anything else, delete the symlink and make a new "Make2" as a copy of
+"Make2.gcc", and edit the copy to your needs.
+
+The Makefile supports only "make all" and "make clean".  It doesn't
+yet install.  It has not yet been determined how the final install
+should be arranged.  Your feedback will be appreciated.
+
+When you run "make", it builds a ".so" file in each directory.  These
+can be placed anywhere that is convenient.  You can use them in gnucap
+with the "attach" command.  If there are no slashes in the name, it
+uses the environment variable LD_LIBRARY_PATH to locate them.  If the
+name has a slash, the usual rules for finding files apply.
+
+To install, you can copy the ".so" files to where you want them.
+
+
+STATUS
+
+Testing is not as complete as I would like.
+
+All BSIM3 and BSIM4 pass all tests so far.
+
+BSIMSOI4p0 requires 6 or 7 nodes.
+It doesn't work with 5 nodes.
+Other than that, it seems to work,
+but not much has been tested.
+
+Other BSIMSOI ..  untested, but expected to work,
+with an expected problem if you don't use all connections.
+

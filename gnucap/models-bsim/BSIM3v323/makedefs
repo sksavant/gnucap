@@ -1,0 +1,39 @@
+###########
+# Copyright 1999 Regents of the University of California.  All rights reserved.
+# File: makedefs
+###########
+
+CFILES		= b3acld.c b3cvtest.c b3del.c b3dest.c \
+		  b3getic.c b3ld.c b3mask.c b3mdel.c \
+		  b3mpar.c b3par.c b3pzld.c b3set.c b3temp.c b3trunc.c \
+		  b3.c b3ask.c b3noi.c b3check.c
+
+COBJS		= b3acld.o b3cvtest.o b3del.o b3dest.o \
+		  b3getic.o b3ld.o b3mask.o b3mdel.o \
+		  b3mpar.o b3par.o b3pzld.o b3set.o b3temp.o b3trunc.o \
+		  b3.o b3ask.o b3noi.o b3check.o
+
+MODULE		= bsim3
+LIBRARY		= dev
+MODULE_TARGET	= $(OBJLIB_DIR)/$(MODULE)
+
+NUMBER		= 3
+
+b3.o :          b3.c
+b3acld.o :      b3acld.c
+b3ask.o :       b3ask.c
+b3check.o :     b3check.c
+b3cvtest.o :    b3cvtest.c
+b3del.o :       b3del.c
+b3dest.o :      b3dest.c
+b3getic.o :     b3getic.c
+b3ld.o :        b3ld.c
+b3mask.o :      b3mask.c
+b3mdel.o :      b3mdel.c
+b3mpar.o :      b3mpar.c
+b3noi.o :       b3noi.c
+b3par.o :       b3par.c
+b3pzld.o :      b3pzld.c
+b3set.o :       b3set.c
+b3temp.o :      b3temp.c
+b3trunc.o :     b3trunc.c

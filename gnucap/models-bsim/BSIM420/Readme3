@@ -1,0 +1,22 @@
+/***** Xuemei Xi( April 2001) *****/
+
+The revised BSIM4.2.0 code is ready on April.6, 2001. XL, XW are added. The effective channel 
+length and width are described as :
+         Lnew = L+ XL
+         Wnew = W/NF + XW
+         Leff = Lnew - 2dL
+         Weff = Wnew  - 2dW
+	
+Users are recommended to mind the positive signs in between and give correct offset.
+
+Bugfixes include:
+RS/RD incompletion and extraneous node allocations
+correction of NQS and QS mismatch
+correction of CAPMOD=0 error
+
+Now the BSIM4 code makes a better compatibility of BSIM3 netlist to that of BSIM4
+and also the computation efficiency is improved.
+
+Xuemei Xi
+April 6,2001
+***************************

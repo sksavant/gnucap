@@ -1,0 +1,38 @@
+The following text documents the changes in BSIM4.6.1 as compared to the previous release BSIM4.6.0:
+ 
+1) New material model is introduced for the predictve modeling of Non-SiO2 insulator, Non-Poly Silicon gate 
+   and Non-silicon channel.
+ - The following new parameters are added
+   MTRLMOD : New material model selector
+   PHIG, EPSRGATE : non-poly silicon gate parameters
+   EOT, VDDEOT : non-SiO2 gate dielectric
+   EASUB, EPSRSUB, NI0SUB, BG0SUB, TBGASUB, TBGBSUB, ADOS, BDOS : Non-silicon channel parameters
+
+2) Mobility model (MOBMOD = 0 and MOBMOD = 1) has been improved through predictive modeling of vertical electric field. 
+   The improved mobility model is selected through MTRLMOD = 1 for backward compatibility.
+
+3) GIDL/GISL models are improved through an improved definition of flatband voltages at S/D ends.
+   The improved GISL/GIDL model is selected through MTRLMOD = 1 for backward compatibility.  
+
+4) Poly-depletion model is modified to account for new gate and gate-insulator materials.
+
+5) C-V model has been improved by adding a new VgsteffCV definition through CVCHARGEMOD = 1
+ - 6 new parameters have been added
+	CVCHARGEMOD, MINVCV, LMINVCV, WMINCV, PMINVCV and VOFFCVL
+
+6) Bug fix : Following the report by Geoffery Coram (ADI),an error in the derivative calculation of dVdseffCV_dVb has been 
+   fixed for CAPMOD = 1 and CAPMOD = 2 in b4ld.c
+
+7) The warning limits for NOFF and VOFFCV have been removed from b4check.c.
+
+
+The following files have been changed:
+b4.c
+b4check.c
+b4ld.c
+b4mask.c
+b4mpar.c
+b4set.c
+b4temp.c
+bsim4def.h
+

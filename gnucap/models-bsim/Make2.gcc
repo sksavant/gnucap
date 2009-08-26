@@ -1,0 +1,48 @@
+# $Id$ -*- Makefile -*-
+
+PREFIX = /usr/local/gnucap
+INSTALL_DIR = $(PREFIX)/lib/models/bsim
+SPICE_INCLUDE = ../Include
+GNUCAP_INCLUDE = ../Gnucap
+VPATH = .:$(SPICE_INCLUDE):$(GNUCAP_INCLUDE)
+
+C_SRCS = $(CFILES) devsup.c
+CC_SRCS = spice-wrapper.cc
+
+OBJS = ${CC_SRCS:.cc=.o} ${C_SRCS:.c=.o}
+
+CC = gcc
+CCC = g++
+
+CFLAGS = -O2 -g -I. -I$(SPICE_INCLUDE) -DTRACE_UNTESTED -D$(SPICE_VERSION) \
+ -DPREDICTOR -DHAS_STDLIB -fPIC
+
+CCFLAGS = $(CFLAGS) -I$(GNUCAP_INCLUDE) -Wall -Wextra 
+
+LDFLAGS = -shared
+
+LIBS = 
+
+SO_EXTENSION = .so
+
+.SUFFIXES:
+.SUFFIXES: .o .cc .c
+.cc.o:; $(CCC) $(CCFLAGS) -c $<
+.c.o:; $(CC) $(CFLAGS) -c $<
+
+$(TARGET) : $(TARGET)$(SO_EXTENSION)
+	echo $(TARGET) done
+
+$(TARGET)$(SO_EXTENSION) : $(OBJS) Makefile
+	$(CCC) $(LDFLAGS) $(OBJS) $(LIBS) -o $(TARGET)$(SO_EXTENSION)
+
+clean: $(HDRS)
+	-rm *.o $(TARGET)$(SO_EXTENSION) $(TARGET)
+
+spice-wrapper.o: spice-wrapper.cc wrapper.h
+
+$(OBJS) : $(HDRS)
+
+install:
+	mkdir --parents $(INSTALL_DIR)
+	cp $(TARGET)$(SO_EXTENSION) $(INSTALL_DIR)

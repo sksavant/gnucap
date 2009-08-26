@@ -1,0 +1,174 @@
+/* $Id: d_mos1.model,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+ * Copyright (C) 2001 Albert Davis
+ * Author: Albert Davis <aldavis@gnu.org>
+ *
+ * This file is part of "Gnucap", the Gnu Circuit Analysis Package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
+ *------------------------------------------------------------------
+ * mos model equations: spice level 1 equivalent
+ */
+h_headers {
+#include "d_mos123.h"
+}
+cc_headers {
+}
+/*--------------------------------------------------------------------------*/
+model BUILT_IN_MOS1 {
+  level 1;
+  public_keys {
+    nmos1 polarity=pN;
+    pmos1 polarity=pP;
+    nmos polarity=pN;
+    pmos polarity=pP;
+  }
+  dev_type BUILT_IN_MOS;
+  inherit BUILT_IN_MOS123;
+  independent {
+    override {
+      double mjsw "" default=.5;
+      double cox "" final_default=0.;
+      double vto "" final_default=0.;
+      double gamma "" final_default=0.;
+      double phi "" final_default=.6;
+      int mos_level "back-annotate for diode" name=DIODElevel 
+	print_test="mos_level != LEVEL" default=LEVEL;
+    }
+    raw_parameters {
+      double kp "transconductance parameter"
+	name=KP final_default=2e-5 
+	print_test="!calc_kp" calc_print_test="calc_kp";
+    }
+    calculated_parameters {
+      bool calc_kp "" default=false;
+    }
+    code_pre {
+      if (tox != NA) {
+	cox = P_EPS_OX / tox;
+	if (kp == NA) {
+	  kp = uo * cox;
+	  calc_kp = true;
+	}
+	if (nsub != NA) {
+	  if (phi == NA) {
+	    phi = (2. * P_K_Q) * tnom_k * log(nsub/NI);
+	    if (phi < .1) {
+	      untested();
+	      error(((!is_first_expand()) ? (bDEBUG) : (bWARNING)),
+		    long_label() + ": calculated phi too small, using .1\n");
+	      phi = .1;
+	    }
+	    calc_phi = true;
+	  }
+	  if (gamma == NA) {
+	    gamma = sqrt(2. * P_EPS_SI * P_Q * nsub) / cox;
+	    calc_gamma = true;
+	  }
+	  if (vto == NA) {
+	    double phi_ms = (tpg == gtMETAL)
+	      ? polarity * (-.05 - (egap + polarity * phi) / 2.)
+	      : -(tpg * egap + phi) / 2.;
+	    double vfb = phi_ms - polarity * P_Q * nss / cox;
+	    vto = vfb + phi + gamma * sqrt(phi);
+	    calc_vto = true;
+	  }
+	}else{
+	  // tox is input, nsub isn't
+	}
+      }
+    }
+  }
+  temperature_dependent {
+    calculated_parameters {
+      double phi "" calculate="m->phi*tempratio + (-2*vt*(1.5*log(tempratio)+P_Q*(arg)))";
+      double beta "" calculate="(m->kp / tempratio4) * s->w_eff / s->l_eff";
+      double sqrt_phi "" calculate="sqrt(phi)";
+      double egap "" calculate="egap_";
+    }
+    code_pre {
+      double temp = SIM::temp_c + P_CELSIUS0;
+      double tempratio  = temp / m->tnom_k;
+      double tempratio4 = tempratio * sqrt(tempratio);
+      double kt = temp * P_K;
+      double vt = temp * P_K_Q;
+      double egap_ = 1.16 - (7.02e-4*temp*temp) / (temp+1108.);
+      double arg = (m->egap*tempratio - egap_) / (2*kt);
+    }
+  }
+  /*-----------------------------------------------------------------------*/
+  tr_eval {
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
+    trace0(d->long_label().c_str());
+    trace3("", d->vds, d->vgs, d->vbs);
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
+    d->reverse_if_needed();
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
+    double sarg, dsarg_dvbs;
+    {
+      if (d->vbs <= 0.) {
+	sarg = sqrt(t->phi - d->vbs);
+	dsarg_dvbs = -.5 / sarg;
+	d->sbfwd = false;
+	trace2("sb-ok", sarg, dsarg_dvbs);
+      }else{
+	untested();
+	sarg = t->sqrt_phi / (1. + .5 * d->vbs / t->phi);
+	dsarg_dvbs = -.5 * sarg * sarg / t->phi*t->sqrt_phi; /* is wrong!! */
+	d->sbfwd = true;
+	trace2("***sb-reversed***", sarg, dsarg_dvbs);
+      }
+    }
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
+    d->von = m->vto + m->gamma * (sarg - sqrt(m->phi))
+      + .5 * (m->egap - t->egap) + .5 * (t->phi - m->phi);
+    d->vgst = d->vdsat = d->vgs - d->von;
+    if (d->vdsat < 0.) {
+      d->vdsat = 0.;
+    }
+    d->cutoff = (d->vgst < 0.);
+    d->saturated = (d->vds > d->vdsat);
+    trace3("", d->von, d->vgst, d->vdsat);
+    double Lambda = (m->lambda != NA) ? m->lambda : 0.;
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
+    if (d->cutoff) {
+      d->gds = d->gmf = d->ids = d->gmbf = 0.;
+      trace4("cut", d->ids, d->gmf, d->gds, d->gmbf);
+    }else if (d->saturated) {
+      d->gmf  = t->beta * d->vgst * (1. + Lambda * d->vds);
+      d->ids = d->gmf * (.5 * d->vgst);
+      d->gds = .5 * t->beta * Lambda * d->vgst * d->vgst;
+      d->gmbf = - d->gmf * m->gamma * dsarg_dvbs;
+      trace4("sat", d->ids, d->gmf, d->gds, d->gmbf);
+    }else{ /* triode */
+      d->gmf  = t->beta * d->vds * (1. + Lambda * d->vds);
+      d->ids = d->gmf * (d->vgst - .5*d->vds);
+      d->gds = t->beta * ((d->vgst - d->vds) 
+			 + Lambda * d->vds * (2.*d->vgst - 1.5*d->vds));
+      d->gmbf = -d->gmf * m->gamma * dsarg_dvbs;
+      trace4("lin", d->ids, d->gmf, d->gds, d->gmbf);
+    }
+    if (d->reversed) {
+      d->ids *= -1;
+      d->gmr = d->gmf;
+      d->gmbr = d->gmbf;
+      d->gmf = d->gmbf = 0;
+    }else{
+      d->gmr = d->gmbr = 0.;
+    }
+  }
+}
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/

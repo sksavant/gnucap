@@ -1,0 +1,72 @@
+The following text documents the changes in BSIM4.6 as compared to the previous release BSIM4.5:
+ 
+1) Implementation of independent source-side Gate Induced Source Leakage:
+
+- Duplicate the current GIDL equation with new parameters to be
+   applied to source
+- Restrict the current equation to drain-side only
+- Naming convention for source-side parameters:
+   AGISL, BGISL, CGISL, EGISL
+- Backward compatible implementation : If AGISL not given, it assumes value of AGIDL.
+- Add binning parameters for source side parameters :
+   (L,W,P)AGISL,(L,W,P)BGISL,(L,W,P)CGISL,(L,W,P)EGISL.
+
+
+2) Correction to the Gate Edge Source Leakage model for full 
+source/drain separation:
+
+The GEDL model is only partially asymmetric, some parameters are common
+to source and drain side equations.
+
+- Current common parameters that need to be separated drain/source:
+    NJTS, NJTSSW, NJTSSWG
+    TNJT, TNJTSSW, TNJTSSWG
+- New parameters: Add additional parameters for Drain side only
+    NJTSD, NJTSSWD, NJTSSWGD
+    TNJTSD, TNJTSSWD, TNJTSSWGD
+- Backward compatibility implementation: If NJTSD not given, it assumes value of NJTS
+
+
+3) Implementation of independent Gate Overlap source-side current:
+
+- Separate the common gate overlap current equation into source/drain side
+- Current parameters that would need to be changed
+    DLCIG, AIGSD, BIGSD, CIGSD
+- Add DLCIGD for drain side and retain DLCIG for source side. 
+- Drain and Source side parameters
+    AIGS, BIGS, CIGS, AIGD, BIGD, CIGD
+- Strict backward compatibility with AGISD overwriting the parameters AIGS / AIGD
+- Add the binning parameters for the new drain and source side parameters
+    (L,W,P)AIGS, (L,W,P)BIGS, (L,W,P)CIGS, (L,W,P)AIGD, (L,W,P)BIGD, (L,W,P)CIGD
+
+
+4) Noise Model Correction :
+
+Following the bug report from Mentor Graphics,the accuracy of RgateMod = 2 has been improved 
+by accounting correctly the contribution from Rgate to overall noise. The change has been 
+made in b4noi.c
+
+
+5) Mobility Model Correction : 
+
+Following the bug report from ADI, the implementation of columb scattering
+in mobility model has been changed to avoid the non-monoticity in drain current
+as a function of gate voltage.  Also the default value of parameter has been 
+changed to 0. 
+
+6) Bug fix : b4set.c
+
+The default value for the model parameter VFB was missing. The default value of the
+parameter VFB has ben now set to -1.0V in b4set.c
+
+
+The following files have been changed:
+b4.c
+b4check.c
+b4ld.c
+b4mask.c
+b4mpar.c
+b4set.c
+b4temp.c
+bsim4def.h
+b4noi.c

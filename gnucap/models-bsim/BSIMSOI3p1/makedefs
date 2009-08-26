@@ -1,0 +1,39 @@
+###########
+# Copyright 1991 Regents of the University of California.  All rights reserved.
+# File: makedefs
+###########
+
+CFILES		= b3soiacld.c b3soicvtest.c b3soidel.c b3soidest.c \
+		  b3soigetic.c b3soild.c b3soimask.c b3soimdel.c \
+		  b3soimpar.c b3soipar.c b3soipzld.c b3soiset.c b3soitemp.c b3soitrunc.c \
+		  b3soi.c b3soiask.c b3soinoi.c b3soicheck.c
+
+COBJS		= b3soiacld.o b3soicvtest.o b3soidel.o b3soidest.o \
+		  b3soigetic.o b3soild.o b3soimask.o b3soimdel.o \
+		  b3soimpar.o b3soipar.o b3soipzld.o b3soiset.o b3soitemp.o b3soitrunc.o \
+		  b3soi.o b3soiask.o b3soinoi.o b3soicheck.o
+
+MODULE		= b3soi
+LIBRARY		= dev
+MODULE_TARGET	= $(OBJLIB_DIR)/$(MODULE)
+
+NUMBER		= 3
+
+b3soi.o :	b3soi.c
+b3soiacld.o :	b3soiacld.c
+b3soiask.o :	b3soiask.c
+b3soicvtest.o :	b3soicvtest.c
+b3soidel.o :	b3soidel.c
+b3soidest.o :	b3soidest.c
+b3soigetic.o :	b3soigetic.c
+b3soild.o :	b3soild.c
+b3soimask.o :	b3soimask.c
+b3soimdel.o :	b3soimdel.c
+b3soimpar.o :	b3soimpar.c
+b3soinoi.o :	b3soinoi.c
+b3soipar.o :	b3soipar.c
+b3soipzld.o :	b3soipzld.c
+b3soiset.o :	b3soiset.c
+b3soitemp.o :	b3soitemp.c
+b3soitrunc.o :	b3soitrunc.c
+b3soicheck.o :	b3soicheck.c

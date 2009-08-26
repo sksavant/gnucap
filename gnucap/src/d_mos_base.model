@@ -1,0 +1,188 @@
+/* $Id: d_mos_base.model,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+ * Copyright (C) 2001 Albert Davis
+ * Author: Albert Davis <aldavis@gnu.org>
+ *
+ * This file is part of "Gnucap", the Gnu Circuit Analysis Package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
+ *------------------------------------------------------------------
+ * MOS model - base for levels 1,2,3,6
+ */ 
+h_headers {
+#include "d_mos.h"
+}
+cc_headers {
+  const double mDEFAULT_is = 1e-14;
+}
+/*--------------------------------------------------------------------------*/
+model BUILT_IN_MOS_BASE {
+  dev_type BUILT_IN_MOS;
+  hide_base;
+  inherit BUILT_IN_DIODE;
+  private_keys {
+    nmos polarity=pN;
+    pmos polarity=pP;
+  }
+  validate {
+    return c->l_in >= m->lmin && c->l_in <= m->lmax
+      && c->w_in >= m->wmin && c->w_in <= m->wmax;
+  }
+  independent {
+    override {
+      double _tnom_c "" name=TNOM default=OPT::tnom_c;
+      double fc "coef for fwd bias depl cap formula" name=FC;
+      double pb "junction potential" name=PB positive;
+      double cjo "zero-bias jct capacitance (per area)"	name=CJ;
+      double mj "grading coefficient" name=MJ;
+      double cjsw "zero bias sidewall cap (per perim.)" name=CJSW;
+      double pbsw "sidewall junction potential"
+	name=PBSW print_test="pbsw != pb";
+      double mjsw "sidewall grading coefficient" name=MJSW;
+      double kf "flicker noise coefficient"
+	name=KF print_test="has_good_value(kf)";
+      double af "flicker noise exponent"
+	name=AF print_test="has_good_value(af)";
+    }
+    raw_parameters {
+      int level "dummy" name=LEVEL default=1 print_test=false;
+      double wmax "max width"
+	name=WMAX positive default=INF print_test="wmax<INF";
+      double wmin "min width"
+	name=WMIN positive default=0. print_test="wmin>0";
+      double lmax "max length"
+	name=LMAX positive default=INF print_test="lmax<INF";
+      double lmin "min length"
+	name=LMIN positive default=0. print_test="lmin>0";
+      double is "bulk jct sat current" name=IS default=mDEFAULT_is;
+      double js "bulk jct sat current per sq meter" name=JS default=NA;
+      double rsh "D & S diffusion sheet resistance"
+	name=RSH default=0.0 print_test="has_hard_value(rsh)";
+      double rd "drain ohmic resistance"
+	name=RD default=0.0 print_test="has_hard_value(rd)";
+      double rs "source ohmic resistance"
+	name=RS default=0.0 print_test="has_hard_value(rs)";
+      double cbd "0-bias BD jct capacitance" name=CBD default=NA;
+      double cbs "0-bias BS jct capacitance" name=CBS default=NA;
+      double cgso "GS overlap capacitance" name=CGSo alt_name=CGS default=0.0;
+      double cgdo "GD overlap capacitance" name=CGDo alt_name=CGD default=0.0;
+      double cgbo "GB overlap capacitance" name=CGBo alt_name=CGB default=0.0;
+      int cmodel "which capacitor model to use (2 or 3)"
+	name=CMODEL default=0 print_test="false";
+      double xl "length bias accounts for masking and etching effects"
+	name=XL alt_name=DL\0LDEL default=0.0 print_test="xl!=0.0";
+      double xw "width bias accounts for masking and etching effects"
+	name=XW alt_name=DW\0WDEL default=0.0 print_test="xw!=0.0";
+      double lmlt "length shrink factor"
+	name=LMLT default=1.0 print_test="lmlt!=1.0";
+      double wmlt "width shrink factor"
+	name=WMLT default=1.0 print_test="wmlt!=1.0";
+      double del "channel length reduction each side"
+	name=DEL default=0.0 print_test="del!=0.0";
+      double ld "lateral length diffusion"
+	name=LD alt_name=DLAT\0LADT default=0.0;
+      double wd "width diffusion"
+	name=WD default=0.0 print_test="wd!=0.0";
+    }
+    calculated_parameters {
+      polarity_t polarity "" default=pN;
+      double tnom_k "nominal temperature, kelvin" 
+	calculate="_tnom_c + P_CELSIUS0";
+      double egap "energy gap at tnom"
+	calculate="1.16 - (7.02e-4*tnom_k*tnom_k) / (tnom_k+1108.)";
+      bool needs_isub "" default=false;
+    }
+    code_post {
+      if ((!has_hard_value(rs)) && has_hard_value(rd)) {untested();//106
+	error(((!is_first_expand()) ? (bDEBUG) : (bWARNING)),
+	      long_label() + ": rd input, but not rs. setting rs = 0.\n");
+	rs.set_default(0.);
+      }else if ((!has_hard_value(rd)) && has_hard_value(rs)) {untested();//109
+	error(((!is_first_expand()) ? (bDEBUG) : (bWARNING)), 
+	      long_label() + ": rs input, but not rd. setting rd = 0.\n");
+	rd.set_default(0.);
+      }else{
+	/* rd, rs are ok, either have both or neither */
+      }
+      
+      if (has_hard_value(rsh)
+	  &&  (has_hard_value(rd) || has_hard_value(rs))) {
+	error(((!is_first_expand()) ? (bDEBUG) : (bWARNING)),
+	      long_label() + ": rsh - rs - rd conflict: using "
+	      + (((rd <= 0.)  &&  (rs <= 0.)) ? "rsh" : "rs,rd") + '\n');
+      }else if (!has_hard_value(rsh)
+		&& (!has_hard_value(rd))
+		&& (!has_hard_value(rs))) {
+	// don't have anything
+      }else{
+	/* rsh, rd are ok, have one or other */
+      }
+      
+      if (!has_hard_value(is) && !has_hard_value(js)) {
+	/* don't have either, use default is */
+      }else if (has_hard_value(is) && has_hard_value(js)) {
+	error(((!is_first_expand()) ? (bDEBUG) : (bWARNING)),
+	      long_label() + ": is - js conflict\n");
+      }else{
+	/* is, js are ok, have one or other */
+      }
+    }
+  }
+  size_dependent {
+    calculated_parameters {
+      double l_eff "-23-c- actual (electrical) channel length"
+	calculate="(has_hard_value(c->l_in))
+		? c->l_in * m->lmlt + m->xl - 2. * (m->ld + m->del)
+		: OPT::defl";
+      double w_eff "--3-c- actual (electrical) channel width"
+	calculate="(has_hard_value(c->w_in))
+		? c->w_in * m->wmlt + m->xw - 2. * m->wd
+		: OPT::defw";
+      double ad "----c- drain area, actual"
+	calculate="(has_hard_value(c->ad_in)) ? c->ad_in : OPT::defad";
+      double as "----c- source area, actual"
+	calculate="(has_hard_value(c->as_in)) ? c->as_in : OPT::defas";
+      double cgate "-----b gate to channel capacitance"
+	calculate=NA;
+      double idsat "-----b drain junction saturation current";
+      double issat "-----b source junction saturation current";
+      double rd "-----b ohmic drain resistance";
+      double rs "-----b ohmic source resistance";
+      double phi "surface potential at strong inversion" calculate=NA;
+
+      double cgso "" calculate="m->cgso * w_eff";
+      double cgdo "" calculate="m->cgdo * w_eff";
+      double cgbo "" calculate="m->cgbo * l_eff";
+
+    }
+    code_post {
+      if (has_hard_value(m->rd) || has_hard_value(m->rs)) {
+	rd = m->rd;
+	rs = m->rs;
+      }else{
+	rd = m->rsh * c->nrd;
+	rs = m->rsh * c->nrs;
+      }	
+      if (!has_hard_value(m->js) || ad == 0. || as == 0.) {
+	idsat = issat = m->is;	/* this convoluted logic */
+      }else{			/* is for Spice compatibility */
+	idsat = m->js * ad;
+	issat = m->js * as;
+      }
+    }
+  }
+}
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
