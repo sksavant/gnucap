@@ -1,6 +1,6 @@
 
 all:
-	(cd BSIM3v301; make)
+	-(cd BSIM3v301; make)
 	-(cd BSIM3v31; make)
 	-(cd BSIM3v32; make)
 	-(cd BSIM3v321; make)
@@ -19,6 +19,7 @@ all:
 	-(cd BSIM461; make)
 	-(cd BSIM462; make)
 	-(cd BSIM463; make)
+	-(cd BSIM464; make)
 	-(cd BSIMDD2p1; make)
 	-(cd BSIMFD2p1; make)
 	-(cd BSIMPD2p0; make)
@@ -31,6 +32,7 @@ all:
 	-(cd BSIMSOI3p11; make)
 	-(cd BSIMSOI3p2; make)
 	-(cd BSIMSOI4p0; make)
+	-(cd BSIMSOI4p1; make)
 
 clean:
 	(cd BSIM3v301; make clean)
@@ -52,6 +54,7 @@ clean:
 	(cd BSIM461; make clean)
 	(cd BSIM462; make clean)
 	(cd BSIM463; make clean)
+	(cd BSIM464; make clean)
 	(cd BSIMDD2p1; make clean)
 	(cd BSIMFD2p1; make clean)
 	(cd BSIMPD2p0; make clean)
@@ -64,6 +67,7 @@ clean:
 	(cd BSIMSOI3p11; make clean)
 	(cd BSIMSOI3p2; make clean)
 	(cd BSIMSOI4p0; make clean)
+	(cd BSIMSOI4p1; make clean)
 
 install:
 	(cd BSIM3v301; make install)
@@ -85,6 +89,7 @@ install:
 	(cd BSIM461; make install)
 	(cd BSIM462; make install)
 	(cd BSIM463; make install)
+	(cd BSIM464; make install)
 	(cd BSIMDD2p1; make install)
 	(cd BSIMFD2p1; make install)
 	(cd BSIMPD2p0; make install)
@@ -97,3 +102,4 @@ install:
 	(cd BSIMSOI3p11; make install)
 	(cd BSIMSOI3p2; make install)
 	(cd BSIMSOI4p0; make install)
+	(cd BSIMSOI4p1; make install)

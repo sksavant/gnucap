@@ -2126,7 +2126,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=gnucap
- VERSION=2009-06-11
+ VERSION=2009-07-21
 
 
 cat >>confdefs.h <<_ACEOF

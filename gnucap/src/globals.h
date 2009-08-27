@@ -39,4 +39,4 @@ extern INTERFACE DISPATCHER<FUNCTION> function_dispatcher;
 
 class LOGIC_NODE;
 extern INTERFACE std::string head;
-extern INTERFACE LOGIC_NODE* nstat;
+extern LOGIC_NODE* nstat;

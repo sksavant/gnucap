@@ -235,7 +235,7 @@ void CARD::new_subckt(const CARD* Model, CARD* Owner,
 void CARD::renew_subckt(const CARD* Model, CARD* Owner,
 		      const CARD_LIST* Scope, PARAM_LIST* Params)
 {
-  if (nstat) {
+  if (!is_first_expand()) {
     assert(subckt());
     subckt()->attach_params(Params, scope());
   }else{

@@ -64,17 +64,6 @@ inline OMSTREAM& operator<<(OMSTREAM& o, UNITS t) {
   return (o << s[t]);
 }
 /*--------------------------------------------------------------------------*/
-/* secant strategy is not implemented but it is a well known
- * method which may sometime be added
- */
-#ifdef KNEECHORD
-enum strategy_t {stNEWTON, stKNEECHORD, stSECANT};
-inline OMSTREAM& operator<<(OMSTREAM& o, strategy_t t) {untested();
-  const std::string s[] = {"newton", "kneechord", "secant"};
-  return (o << s[t]);
-}
-#endif
-/*--------------------------------------------------------------------------*/
 enum {dsINIT=001, dsRANGE=002, dsDEVLIMIT=004, dsDEVREGION=010, dsREVERSE=020};
 /*--------------------------------------------------------------------------*/
 class INTERFACE OPT {
@@ -182,9 +171,6 @@ public:
 			    // 6=source stepping iteration limit
 			    // 7=worst case iteration limit
 			    // 8=trace nonconvergence start iteration
-#ifdef KNEECHORD
-  static strategy_t strategy; // What method we use to encourage non-linear devices to converge
-#endif
 };
 /*--------------------------------------------------------------------------*/
 class SET_RUN_MODE {

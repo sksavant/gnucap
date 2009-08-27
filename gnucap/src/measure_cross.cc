@@ -75,7 +75,7 @@ public:
 
       double cross1 = cross * slope;
       enum STAT {WAITING, READY, DONE} stat = WAITING;
-      double x_time = BIGBIG;
+      double x_time = (last) ? -BIGBIG : BIGBIG;
       WAVE::const_iterator begin = lower_bound(w->begin(), w->end(), DPAIR(after, -BIGBIG));
       WAVE::const_iterator end   = upper_bound(w->begin(), w->end(), DPAIR(before, BIGBIG));
       WAVE::const_iterator lower = begin;

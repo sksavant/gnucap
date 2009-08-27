@@ -68,7 +68,7 @@ extern "C" {
 // customization -- must be last
 #include "wrapper.h"
 #if !defined(UNCONNECTED_NODES)
-  #define UNCONNECTED_NODES DISALLOW
+  #define UNCONNECTED_NODES uDISALLOW
   #if (MIN_NET_NODES != MAX_NET_NODES)
     #error "What should I do with the unconnected nodes?"
   #endif
@@ -84,7 +84,7 @@ extern SPICEdev info;
 const int SPICE_INVALID_NODE = 0;
 const int SPICE_UNCONNECTED_NODE = -1;
 const int OFFSET = 1;
-enum {GROUND=1, FLOAT=2, DISALLOW=3};
+enum {uGROUND=1, uFLOAT=2, uDISALLOW=3};
 const int MATRIX_NODES = (MAX_NET_NODES + INTERNAL_NODES);
 class DEV_SPICE;
 class MODEL_SPICE;
@@ -838,16 +838,16 @@ void DEV_SPICE::expand()
     for (int ii = 0; ii < net_nodes(); ++ii) {
       node[ii] = ii+OFFSET;
     }
-    if (UNCONNECTED_NODES == GROUND) {
+    if (UNCONNECTED_NODES == uGROUND) {
       for (int ii = net_nodes(); ii < max_nodes(); ++ii) {itested();
 	node[ii] = ii+OFFSET;
       }
-    }else if (UNCONNECTED_NODES == FLOAT) {
+    }else if (UNCONNECTED_NODES == uFLOAT) {
       for (int ii = net_nodes(); ii < max_nodes(); ++ii) {untested();
 	node[ii] = SPICE_UNCONNECTED_NODE;
       }
     }else{
-      assert(UNCONNECTED_NODES == DISALLOW);
+      assert(UNCONNECTED_NODES == uDISALLOW);
       assert(min_nodes() == max_nodes());
       assert(net_nodes() == max_nodes());
     }
@@ -906,15 +906,15 @@ void DEV_SPICE::expand()
   //std::fill_n(_v1, matrix_nodes()+OFFSET, 0);
   
   //-------- fix up internal nodes
-  if (!nstat) {
+  if (is_first_expand()) {
     int start_internal = 0;
-    if (UNCONNECTED_NODES == GROUND) {
+    if (UNCONNECTED_NODES == uGROUND) {
       for (int ii = net_nodes(); ii < max_nodes(); ++ii) {itested();
 	_n[ii].set_to_ground(this);
       }
       start_internal = max_nodes();
     }else{
-      assert(UNCONNECTED_NODES == DISALLOW || UNCONNECTED_NODES == FLOAT);
+      assert(UNCONNECTED_NODES == uDISALLOW || UNCONNECTED_NODES == uFLOAT);
       start_internal = net_nodes();
     }
     assert(start_internal != 0);
@@ -1005,16 +1005,16 @@ void DEV_SPICE::precalc()
     for (int ii = 0; ii < net_nodes(); ++ii) {
       node[ii] = ii+OFFSET;
     }
-    if (UNCONNECTED_NODES == GROUND) {
+    if (UNCONNECTED_NODES == uGROUND) {
       for (int ii = net_nodes(); ii < max_nodes(); ++ii) {itested();
 	node[ii] = ii+OFFSET;
       }
-    }else if (UNCONNECTED_NODES == FLOAT) {
+    }else if (UNCONNECTED_NODES == uFLOAT) {
       for (int ii = net_nodes(); ii < max_nodes(); ++ii) {untested();
 	node[ii] = SPICE_UNCONNECTED_NODE;
       }
     }else{
-      assert(UNCONNECTED_NODES == DISALLOW);
+      assert(UNCONNECTED_NODES == uDISALLOW);
       assert(min_nodes() == max_nodes());
       assert(net_nodes() == max_nodes());
     }
@@ -1426,7 +1426,7 @@ void DEV_SPICE::ac_begin()
 /*--------------------------------------------------------------------------*/
 void DEV_SPICE::do_ac()
 {
-  if (info.DEVacLoad) {
+  if (info.DEVacLoad || info.DEVpzLoad) {
     assert_instance();
     assert(_num_states >= 0);
 
@@ -1448,17 +1448,20 @@ void DEV_SPICE::do_ac()
       }
     }
     
-    //-----
-    //info.DEVpzLoad(_model_spice, ckt(), reinterpret_cast<SPcomplex*>(&SIM::jomega));
-    info.DEVacLoad(_model_spice, ckt());
-    //-----
+    if (info.DEVpzLoad) {
+      info.DEVpzLoad(_model_spice, ckt(), reinterpret_cast<SPcomplex*>(&SIM::jomega));
+    }else if (info.DEVacLoad) {
+      info.DEVacLoad(_model_spice, ckt());
+    }else{unreachable();
+      // nothing
+    }
+
+    assert_model_localized();
+    _model_spice->GENinstances = NULL;
+    assert_model_unlocalized();
   }else{untested();
     // there is no acLoad function
   }
-
-  assert_model_localized();
-  _model_spice->GENinstances = NULL;
-  assert_model_unlocalized();
 }
 /*--------------------------------------------------------------------------*/
 void DEV_SPICE::ac_load()

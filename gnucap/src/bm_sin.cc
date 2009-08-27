@@ -117,8 +117,8 @@ bool EVAL_BM_SIN::operator==(const COMMON_COMPONENT& x)const
     && _zero == p->_zero
     && _peak == p->_peak
     && EVAL_BM_ACTION_BASE::operator==(x);
-  if (rv) {
-    untested();
+  if (rv) {untested();
+  }else{
   }
   return rv;
 }
@@ -166,8 +166,10 @@ void EVAL_BM_SIN::tr_eval(ELEMENT* d)const
     double x=_amplitude*fixzero(sin(M_TWO_PI*_actual_frequency*(reltime-_delay)),1.);
     if (_damping != 0.) {
       x *= exp(-(reltime-_delay)*_damping);
+    }else{
     }
     ev += x;
+  }else{
   }
   tr_finish_tdv(d, ev);
 }

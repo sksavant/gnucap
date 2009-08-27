@@ -293,11 +293,8 @@ public:
 	      ~node_t() {}
 
 private: // raw data access (lvalues)
-  LOGIC_NODE&	data()const {
-    extern LOGIC_NODE*nstat;
-    assert(nstat);
-    return nstat[m_()];
-  }
+  LOGIC_NODE&	data()const;
+
 public:
   //LOGIC_NODE&	    operator*()const	{untested();return data();}
   const LOGIC_NODE* operator->()const	{return &data();}

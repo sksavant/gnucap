@@ -69,7 +69,7 @@ public:
       before.e_val(BIGBIG, Scope);
       after.e_val(-BIGBIG, Scope);
 
-      double time = BIGBIG;
+      double time = (last) ? -BIGBIG : BIGBIG;
       double m = -BIGBIG;
       WAVE::const_iterator begin = lower_bound(w->begin(), w->end(), DPAIR(after, -BIGBIG));
       WAVE::const_iterator end   = upper_bound(w->begin(), w->end(), DPAIR(before, BIGBIG));

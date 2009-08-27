@@ -100,7 +100,7 @@ private:
   static int	_count;
 };
 /*--------------------------------------------------------------------------*/
-class COMMON_SUBCKT : public COMMON_COMPONENT {
+class INTERFACE COMMON_SUBCKT : public COMMON_COMPONENT {
 private:
   explicit COMMON_SUBCKT(const COMMON_SUBCKT& p)
     :COMMON_COMPONENT(p), _params(p._params) {++_count;}

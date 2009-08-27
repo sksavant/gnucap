@@ -73,7 +73,7 @@ extern "C" {
   {itested();
     signal(SIGINT,sig_abrt);
     static int count = 10;
-    if (--count > 0) {untested();
+    if (--count > 0) {itested();
       error(bDANGER, "\n");
     }else{untested();
       exit(1);

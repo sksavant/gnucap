@@ -15,7 +15,7 @@ extern "C" {
 #define MAX_NET_NODES 7
 #define INTERNAL_NODES 25
 #define MODEL_TYPE "nmos10|pmos10"
-#define UNCONNECTED_NODES FLOAT
+#define UNCONNECTED_NODES uFLOAT
 
 static std::string port_names[] = {"d", "g", "s", "bg", "p", "body", "temp"};
 static std::string state_names[] = {};

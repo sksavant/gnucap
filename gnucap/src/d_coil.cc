@@ -254,9 +254,6 @@ void DEV_INDUCTANCE::expand()
   }
 }
 /*--------------------------------------------------------------------------*/
-// replace both primary and secondary (both simple L's)
-// with the CCCS - L equivalent
-// only works for 2.
 void DEV_MUTUAL_L::expand_first()
 {
   _output = dynamic_cast<DEV_INDUCTANCE*>(find_in_my_scope(_output_label));

@@ -111,7 +111,7 @@ public:
   void stack_op(Expression*)const;
 };
 /*--------------------------------------------------------------------------*/
-class Expression
+class INTERFACE Expression
   :public List_Base<Token>
 {
 public:

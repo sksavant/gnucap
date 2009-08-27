@@ -32,12 +32,12 @@ typedef struct wordlist wordlist;
 
 /* Complex numbers. */
 
-struct _complex {   /* IBM portability... */
+struct _complex1 {   /* IBM portability... */
     double cx_real;
     double cx_imag;
 } ;
 
-typedef struct _complex complex;
+typedef struct _complex1 complex;
 
 #define realpart(cval)  ((struct _complex *) (cval))->cx_real
 #define imagpart(cval)  ((struct _complex *) (cval))->cx_imag

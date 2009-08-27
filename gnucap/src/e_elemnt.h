@@ -116,10 +116,6 @@ protected: // inline, below
   bool	   using_ac_eval()const;
   void	   tr_eval();
   void	   ac_eval();
-#ifdef KNEECHORD
-  int      inverse();      // see inverse.cc
-  void     knee_chord();   // see inverse.cc
-#endif
 
 protected: // in .cc
   void	   tr_iwant_matrix_passive();

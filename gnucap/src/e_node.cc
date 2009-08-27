@@ -165,6 +165,13 @@ node_t& node_t::operator=(const node_t& p)
   return *this;
 }
 /*--------------------------------------------------------------------------*/
+LOGIC_NODE& node_t::data()const
+{
+  extern LOGIC_NODE*nstat;
+  assert(nstat);
+  return nstat[m_()];
+}
+/*--------------------------------------------------------------------------*/
 double NODE::tr_probe_num(const std::string& x)const
 {
   if (Umatch(x, "v ")) {

@@ -383,7 +383,7 @@ void LANG_SPICE_BASE::parse_args(CS& cmd, CARD* x)
 	}else{
 	  try{
 	    x->set_param_by_name(Name, value);
-	  }catch (Exception_No_Match&) {untested();
+	  }catch (Exception_No_Match&) {itested();
 	    cmd.warn(bDANGER, there, "bad parameter, ignored");
 	  }
 	}
@@ -595,13 +595,13 @@ std::string LANG_SPICE_BASE::find_type_in_string(CS& cmd)
 void LANG_SPICE::parse_top_item(CS& cmd, CARD_LIST* Scope)
 {
   cmd.get_line("gnucap-spice>");
-  if (cmd.is_file()) {untested();
+  if (cmd.is_file()) {itested();
     if ((Scope == &CARD_LIST::card_list)
 	&& (Scope->is_empty())
-	&& (head == "'")) {untested();	//BUG// ugly hack
+	&& (head == "'")) {itested();	//BUG// ugly hack
       head = cmd.fullstring();
       IO::mstdout << head << '\n';
-    }else{untested();
+    }else{itested();
     }
   }else{itested();
     new__instance(cmd, NULL, Scope);

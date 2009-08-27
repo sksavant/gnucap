@@ -78,6 +78,7 @@ void EVAL_BM_ACTION_BASE::tr_final_adjust(FPOLY1* y, bool f_is_value)const
   if (f_is_value) {
     y->f1 = y->f0;
     y->f0 = 0.;
+  }else{
   }
   *y *= temp_adjust();
   y->f0 += _ooffset;
@@ -91,30 +92,28 @@ void EVAL_BM_ACTION_BASE::tr_finish_tdv(ELEMENT* d, double val)const
 /*--------------------------------------------------------------------------*/
 void EVAL_BM_ACTION_BASE::ac_final_adjust(COMPLEX* y)const
 {
-  if (_bandwidth != NOT_INPUT && _bandwidth != 0.) {
-    untested();
+  if (_bandwidth != NOT_INPUT && _bandwidth != 0.) {untested();
     assert(y->imag() == 0);
     double ratio = SIM::freq / _bandwidth;
     double coeff = y->real() / (1.+(ratio*ratio));
     *y = COMPLEX(coeff, -coeff * ratio);
+  }else{
   }
   
-  if (_phase != 0.) {
-    untested();
+  if (_phase != 0.) {untested();
     *y *= std::polar(1., _phase*DTOR);
+  }else{
   }
 
-  if (_delay != 0.) {
-    untested();
+  if (_delay != 0.) {untested();
     double ratio = SIM::freq * _delay;
-    if (ratio > 100000.) {
-      untested();
+    if (ratio > 100000.) {untested();
       error(bPICKY, "delay too long\n");
       ratio = 0.;
-    }else{
-      untested();
+    }else{untested();
     }
     *y *= std::polar(1., -360.0 * DTOR * ratio);
+  }else{
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -138,8 +137,8 @@ bool EVAL_BM_ACTION_BASE::operator==(const COMMON_COMPONENT& x)const
     && _tc2 == p->_tc2
     && _ic == p->_ic
     && EVAL_BM_BASE::operator==(x);
-  if (rv) {
-    untested();
+  if (rv) {untested();
+  }else{
   }
   return rv;
 }

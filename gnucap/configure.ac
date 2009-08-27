@@ -26,7 +26,7 @@ AC_INIT([src/main.cc])
 # this is any file in the source directory
 # used as a check to be sure we found it
 
-AM_INIT_AUTOMAKE(gnucap, 2009-06-11)
+AM_INIT_AUTOMAKE(gnucap, 2009-07-21)
 AM_CONFIG_HEADER([config.h])
 
 AM_MAINTAINER_MODE

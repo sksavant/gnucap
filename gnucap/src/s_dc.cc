@@ -334,8 +334,6 @@ void DCOP::options(CS& Cmd, int Nest)
 /*--------------------------------------------------------------------------*/
 void DCOP::sweep()
 {
-  assert(nstat);
-
   head(_start[0], _stop[0], " ");
   bypass_ok = false;
   set_inc_mode_bad();

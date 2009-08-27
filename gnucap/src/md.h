@@ -127,7 +127,7 @@ typedef std::pair<double,double> DPAIR;
 #include <windows.h>
 #undef min
 #undef max
-
+#undef INTERFACE
   #ifdef MAKE_DLL
     #define INTERFACE __declspec(dllimport)
   #else

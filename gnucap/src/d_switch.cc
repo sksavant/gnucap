@@ -93,7 +93,7 @@ protected: // override virtual
 				{unreachable(); return tr_outvolts_limited();}
   //double tr_input_limited()const //ELEMENT
   //double tr_amps()const	//ELEMENT
-  double   tr_probe_num(const std::string&)const;
+  //double tr_probe_num(const std::string&)const; //ELEMENT
 
   void	   ac_iwant_matrix()	{ac_iwant_matrix_passive();}
   void	   ac_begin()		{_ev = _y[0].f1; _acg = _m0.c1;}
@@ -424,7 +424,7 @@ void SWITCH_BASE::precalc()
 {
   ELEMENT::precalc();
     
-  if (!nstat) {
+  if (is_first_expand()) {
     const COMMON_SWITCH* c = prechecked_cast<const COMMON_SWITCH*>(common());
     assert(c);
     const MODEL_SWITCH* m = prechecked_cast<const MODEL_SWITCH*>(c->model());
@@ -602,11 +602,6 @@ TIME_PAIR SWITCH_BASE::tr_review()
   // _time_by_event is the predicted switch time
 
   return _time_by;
-}
-/*--------------------------------------------------------------------------*/
-double SWITCH_BASE::tr_probe_num(const std::string& x)const
-{
-  return ELEMENT::tr_probe_num(x);
 }
 /*--------------------------------------------------------------------------*/
 void SWITCH_BASE::do_ac()
