@@ -1,4 +1,4 @@
-/* $Id: spice-wrapper.cc,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/* $Id: spice-wrapper.cc,v 26.118 2009/08/22 21:08:57 al Exp $ -*- C++ -*-
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -852,6 +852,10 @@ void DEV_SPICE::expand()
       assert(net_nodes() == max_nodes());
     }
     ckt()->CKTmaxEqNum = max_nodes();
+
+    for (int ii = max_nodes(); ii < matrix_nodes(); ++ii) {
+      node[ii] = 0;
+    }
   }
 
   { //------- attach model, set up matrix pointers
@@ -881,6 +885,7 @@ void DEV_SPICE::expand()
       // undesired side effects: sets values, messes up model
       //-------------
       assert(ok == OK);
+      trace1("expand", ckt()->CKTmaxEqNum);
       _model_spice->GENinstances = NULL;
       assert_model_unlocalized();      
     }
@@ -925,21 +930,23 @@ void DEV_SPICE::expand()
       if (node[ii] >= start_internal+OFFSET) {
 	// real internal node
 	_n[ii].new_model_node('.' + long_label() + '.' + fake_name, this);
+	trace1("new int", node[ii]);
 	assert(_n[ii].n_());
       }else if (node[ii] >= 0+OFFSET) {
 	// collapsed to an external node
 	_n[ii] = _n[node[ii]-OFFSET];
+	trace1("collapse", node[ii]);
 	assert(_n[ii].n_());
       }else{
 	// not assigned
+	trace1("not used", node[ii]);
 	assert(!_n[ii].n_());
       }
       ++(*fake_name);
     }
     
     for (int ii = 0; ii < matrix_nodes(); ++ii) {
-      trace2((_n[ii].n_()) ? (_n[ii].n_()->short_label().c_str()) : ("NULL"),
-	     ii, node[ii]);
+      trace2((_n[ii].n_()) ? (_n[ii].n_()->short_label().c_str()) : ("NULL"), ii, node[ii]);
     }
     
     // This could be one loop, but doing it this way gives more info.
@@ -1033,6 +1040,7 @@ void DEV_SPICE::precalc()
     int ok = info.DEVsetup(matrix, gen_model_copy, ckt(), &num_states_garbage);
     assert(ok == OK);
     assert(num_states_garbage == _num_states);
+    trace3("precalc", maxEqNum_stash, ckt()->CKTmaxEqNum, (maxEqNum_stash == ckt()->CKTmaxEqNum));
     assert(maxEqNum_stash == ckt()->CKTmaxEqNum);
     notstd::copy_n(node_stash, matrix_nodes(), node); // put back real nodes
     // hopefully, the matrix pointers are the same as last time!

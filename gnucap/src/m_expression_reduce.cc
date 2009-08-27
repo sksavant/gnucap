@@ -1,4 +1,4 @@
-/*$Id: m_expression_reduce.cc,v 26.116 2009/08/18 05:05:06 al Exp $ -*- C++ -*-
+/*$Id: m_expression_reduce.cc,v 26.118 2009/08/22 21:08:57 al Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -126,7 +126,7 @@ void Token_SYMBOL::stack_op(Expression* E)const
       E->push_back(new Token_CONSTANT(value, v, ""));
       delete T1;
     }else{
-      throw Exception_No_Match("name()"); //BUG// memory leak
+      throw Exception_No_Match(name()); //BUG// memory leak
       unreachable();
       E->push_back(clone());
     }

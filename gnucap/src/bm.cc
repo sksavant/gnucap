@@ -1,4 +1,4 @@
-/*$Id: bm.cc,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: bm.cc,v 26.118 2009/08/22 21:08:57 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -100,7 +100,7 @@ void EVAL_BM_ACTION_BASE::ac_final_adjust(COMPLEX* y)const
   }else{
   }
   
-  if (_phase != 0.) {untested();
+  if (_phase != 0.) {itested();
     *y *= std::polar(1., _phase*DTOR);
   }else{
   }

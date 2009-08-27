@@ -1,4 +1,4 @@
-/*$Id: m_phase.h,v 26.84 2008/06/08 21:27:02 al Exp $ -*- C++ -*-
+/*$Id: m_phase.h,v 26.118 2009/08/22 21:08:57 al Exp $ -*- C++ -*-
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -42,11 +42,11 @@ inline double phase(COMPLEX x)
     }else{untested();
     }
     break;
-  case pN_DEGREES:untested();
+  case pN_DEGREES:itested();
     rv = arg(x)*RTOD;
-    if (rv > 0) {untested();
+    if (rv > 0) {itested();
       rv -= 360;
-    }else{untested();
+    }else{itested();
     }
     break;
   case pRADIANS:

@@ -1,4 +1,4 @@
-/*$Id: e_card.cc,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: e_card.cc,v 26.118 2009/08/22 21:08:57 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -235,11 +235,11 @@ void CARD::new_subckt(const CARD* Model, CARD* Owner,
 void CARD::renew_subckt(const CARD* Model, CARD* Owner,
 		      const CARD_LIST* Scope, PARAM_LIST* Params)
 {
-  if (!is_first_expand()) {
+  if (is_first_expand()) {
+    new_subckt(Model, Owner, Scope, Params);
+  }else{untested();
     assert(subckt());
     subckt()->attach_params(Params, scope());
-  }else{
-    new_subckt(Model, Owner, Scope, Params);
   }
 }
 /*--------------------------------------------------------------------------*/
