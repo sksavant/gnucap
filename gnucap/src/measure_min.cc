@@ -1,4 +1,4 @@
-/*$Id: measure_min.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: measure_min.cc,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

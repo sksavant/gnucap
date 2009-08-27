@@ -1,4 +1,4 @@
-/*$Id: globals.h,v 26.82 2008/06/01 14:20:25 al Exp $ -*- C++ -*-
+/*$Id: globals.h,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

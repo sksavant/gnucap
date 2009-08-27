@@ -1,4 +1,4 @@
-/*$Id: lang_spice_in.cc,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+/*$Id: lang_spice_in.cc,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
  * Copyright (C) 2006 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

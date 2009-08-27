@@ -1,4 +1,4 @@
-/*$Id: d_subckt.h,v 26.109 2009/02/02 06:39:10 al Exp $ -*- C++ -*-
+/*$Id: d_subckt.h,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

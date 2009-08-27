@@ -1,4 +1,4 @@
-/*$Id: e_node.h,v 26.95 2008/09/24 04:26:55 al Exp $ -*- C++ -*-
+/*$Id: e_node.h,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

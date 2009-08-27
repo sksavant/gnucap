@@ -1,4 +1,4 @@
-/*$Id: main.cc,v 26.96 2008/10/09 05:36:27 al Exp $ -*- C++ -*-
+/*$Id: main.cc,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
