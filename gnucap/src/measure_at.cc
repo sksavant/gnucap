@@ -1,4 +1,4 @@
-/*$Id: measure_at.cc,v 26.113 2009/08/12 03:37:19 al Exp $ -*- C++ -*-
+/*$Id: measure_at.cc,v 26.116 2009/08/18 05:05:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -29,7 +29,7 @@ namespace {
 /*--------------------------------------------------------------------------*/
 class MEASURE : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, CARD_LIST* Scope)const
+  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     std::string probe_name;
     PARAMETER<double> x;

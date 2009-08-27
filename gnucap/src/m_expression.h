@@ -1,4 +1,4 @@
-/*$Id: m_expression.h,v 26.114 2009/08/13 16:32:53 al Exp $ -*- C++ -*-
+/*$Id: m_expression.h,v 26.116 2009/08/18 05:05:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -24,7 +24,7 @@
 #include "m_base.h"
 /*--------------------------------------------------------------------------*/
 class Symbol_Table;
-class PARAM_LIST;
+class CARD_LIST;
 class Expression;
 /*--------------------------------------------------------------------------*/
 class Token
@@ -116,7 +116,7 @@ class INTERFACE Expression
   :public List_Base<Token>
 {
 public:
-  PARAM_LIST* _params;
+  const CARD_LIST* _scope;
 public:
   void parse(CS&);
   void dump(std::ostream&)const;
@@ -136,12 +136,12 @@ private: // expression-in.cc
   void exptail(CS& File);
   void expression(CS& File);
 public:
-  explicit Expression() : _params(NULL) {untested();}
-  explicit Expression(CS& File) : _params(NULL) {parse(File);}
+  explicit Expression() : _scope(NULL) {untested();}
+  explicit Expression(CS& File) : _scope(NULL) {parse(File);}
 private: // expression-reduce.cc
   void reduce_copy(const Expression&);
 public:
-  explicit Expression(const Expression&, PARAM_LIST*);
+  explicit Expression(const Expression&, const CARD_LIST*);
 public: // other
   bool as_bool()const {untested();return (!is_empty() && back()->data());}
   double eval()const {

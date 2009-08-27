@@ -1,4 +1,4 @@
-/*$Id: m_expression_reduce.cc,v 26.114 2009/08/13 16:32:53 al Exp $ -*- C++ -*-
+/*$Id: m_expression_reduce.cc,v 26.116 2009/08/18 05:05:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -64,13 +64,20 @@ Token* Token_BINOP::op(const Token* T1, const Token* T2)const
   }else if (name() == "&&") {
     b = (T1->data())->logic_and(T2->data());
   }else{
+    // op (name()) not one of those listed
     unreachable();
-    //std::cout << name() << '\n';
     return NULL;
   }
   if (b) {
+    if (T1->aRgs() == "") {
+    }else{untested();
+    }
+    if (T2->aRgs() == "") {
+    }else{untested();
+    }
     return new Token_CONSTANT(b->val_string(), b, (T1->aRgs()+T2->aRgs()));
   }else{untested();
+    // can get here if either T1 or T2 has no data
     return new Token_CONSTANT("false", NULL, "");
   }
 }
@@ -89,13 +96,17 @@ Token* Token_UNARY::op(const Token* T1)const
   }else if (name() == "!") {
     b = (T1->data())->logic_not();
   }else{
+    // op (name()) not one of those listed
     unreachable();
-    //std::cout << name() << '\n';
     return NULL;
   }
   if (b) {
+    if (T1->aRgs() == "") {
+    }else{untested();
+    }
     return new Token_CONSTANT(b->val_string(), b, (T1->aRgs()));
   }else{untested();
+    // can get here if T1 has no data
     return new Token_CONSTANT("false", NULL, "");
   }
 }
@@ -110,26 +121,27 @@ void Token_SYMBOL::stack_op(Expression* E)const
       const Token* T1 = E->back(); // arglist
       E->pop_back();
       CS cmd(CS::_STRING, T1->name());      
-      std::string value = f->eval(cmd, &CARD_LIST::card_list);
+      std::string value = f->eval(cmd, E->_scope);
       const Float* v = new Float(value);
-      E->push_back(new Token_CONSTANT(value, v, T1->full_name()));
+      E->push_back(new Token_CONSTANT(value, v, ""));
       delete T1;
-    }else{untested();
+    }else{
+      throw Exception_No_Match("name()"); //BUG// memory leak
+      unreachable();
       E->push_back(clone());
     }
   }else{
     // has no parameters (scalar)
-    //if (isdigit(name()[0])) {untested();
     if (strchr("0123456789.", name()[0])) {
       // a number
       Float* n = new Float(name());
       E->push_back(new Token_CONSTANT(name(), n, ""));
     }else{
       // a name
-      PARAMETER<double> p = (*(E->_params))[name()];
+      PARAMETER<double> p = (*(E->_scope->params()))[name()];
       if (p.has_hard_value()) {
 	// can find value - push value
-	double v = p.e_val(NOT_INPUT, &CARD_LIST::card_list);
+	double v = p.e_val(NOT_INPUT, E->_scope);
 	Float* n = new Float(v);
 	E->push_back(new Token_CONSTANT(n->val_string(), n, ""));
       }else{
@@ -153,6 +165,7 @@ void Token_BINOP::stack_op(Expression* E)const
     if (dynamic_cast<Token_CONSTANT*>(t2)) {
       // have # # + .. becomes result (the usual)
       Token* t = op(t2, t1);
+      assert(t);
       if (t->data()) {
 	// success
 	E->push_back(t);
@@ -168,7 +181,7 @@ void Token_BINOP::stack_op(Expression* E)const
 	  E->push_back(t2);
 	  E->push_back(t1);
 	}
-	E->push_back(clone());
+	E->push_back(clone()); //op
 	delete t;
       }
     }else if (((*t2) == (*this)) && strchr("+*", name()[0])
@@ -177,6 +190,7 @@ void Token_BINOP::stack_op(Expression* E)const
       Token* t3 = E->back();
       E->pop_back();
       Token* t = op(t3, t1);
+      assert(t);
       if (t->data()) {untested();
 	// success
 	E->push_back(t);
@@ -214,9 +228,6 @@ void Token_STOP::stack_op(Expression* E)const
 void Token_PARLIST::stack_op(Expression* E)const
 {
   assert(E);
-#if 0
-  E->push_back(clone());
-#else
   // replace multiple tokens of a PARLIST with a single token
   bool been_here = false;
   std::string tmp;//(")");
@@ -237,7 +248,6 @@ void Token_PARLIST::stack_op(Expression* E)const
     delete t;
   }
   E->push_back(new Token_PARLIST(tmp));
-#endif
 }
 /*--------------------------------------------------------------------------*/
 void Token_UNARY::stack_op(Expression* E)const
@@ -248,6 +258,7 @@ void Token_UNARY::stack_op(Expression* E)const
   E->pop_back();
   if (dynamic_cast<Token_CONSTANT*>(t1)) {
     Token* t = op(t1);
+    assert(t);
     if (t->data()) {
       E->push_back(t);
       delete t1;
@@ -282,8 +293,8 @@ void Expression::reduce_copy(const Expression& Proto)
   }
 }
 /*--------------------------------------------------------------------------*/
-Expression::Expression(const Expression& Proto, PARAM_LIST* Params)
-  :_params(Params)
+Expression::Expression(const Expression& Proto, const CARD_LIST* Scope)
+  :_scope(Scope)
 {
   reduce_copy(Proto);
 }

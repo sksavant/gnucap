@@ -1,4 +1,4 @@
-/*$Id: m_base_in.cc,v 26.114 2009/08/13 16:32:53 al Exp $ -*- C++ -*-
+/*$Id: m_base_in.cc,v 26.115 2009/08/17 22:49:30 al Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -25,7 +25,7 @@
 /*--------------------------------------------------------------------------*/
 void Float::parse(CS& File)
 {
-  if (File >> "NA") {untested();
+  if (File >> "NA") {
     _data = NOT_INPUT;
   }else{
     unsigned here = File.cursor();

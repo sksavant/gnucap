@@ -1,4 +1,4 @@
-/*$Id: m_expression_in.cc,v 26.114 2009/08/13 16:32:53 al Exp $ -*- C++ -*-
+/*$Id: m_expression_in.cc,v 26.115 2009/08/17 22:49:30 al Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -74,11 +74,11 @@ void Expression::arglist(CS& File)
     if (!File.skip1b(")")) {
       expression(File);
       arglisttail(File);
-      if (!File.skip1b(")")) {untested();
+      if (!File.skip1b(")")) {itested();
 	throw Exception_CS("unbalanced parentheses (arglist)", File);
       }else{
       }
-    }else{untested();
+    }else{
     }
     push_back(new Token_PARLIST(")"));
   }else{
@@ -99,7 +99,7 @@ void Expression::leaf(CS& File)
   if (!File.stuck(&here)) {
     arglist(File);
     push_back(new Token_SYMBOL(name, ""));
-  }else{untested();
+  }else{itested();
     throw Exception_CS("what's this?", File);
   }
 }

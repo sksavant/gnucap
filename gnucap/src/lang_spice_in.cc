@@ -1,4 +1,4 @@
-/*$Id: lang_spice_in.cc,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: lang_spice_in.cc,v 26.117 2009/08/19 15:28:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2006 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -594,16 +594,16 @@ std::string LANG_SPICE_BASE::find_type_in_string(CS& cmd)
 /*--------------------------------------------------------------------------*/
 void LANG_SPICE::parse_top_item(CS& cmd, CARD_LIST* Scope)
 {
-  cmd.get_line("gnucap-spice>");
-  if (cmd.is_file()) {itested();
-    if ((Scope == &CARD_LIST::card_list)
-	&& (Scope->is_empty())
-	&& (head == "'")) {itested();	//BUG// ugly hack
-      head = cmd.fullstring();
-      IO::mstdout << head << '\n';
-    }else{itested();
-    }
+  if (0 && cmd.is_file()
+      && cmd.is_first_read()
+      && (Scope == &CARD_LIST::card_list)
+      && (Scope->is_empty())
+      && (head == "'")) {untested();	//BUG// ugly hack
+    cmd.get_line("gnucap-spice-title>");
+    head = cmd.fullstring();
+    IO::mstdout << head << '\n';
   }else{itested();
+    cmd.get_line("gnucap-spice>");
     new__instance(cmd, NULL, Scope);
   }
 }

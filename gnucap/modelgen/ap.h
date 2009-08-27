@@ -1,4 +1,4 @@
-/*$Id: ap.h,v 26.110 2009/05/28 15:32:04 al Exp $  -*- C++ -*-
+/*$Id: ap.h,v 26.117 2009/08/19 15:28:06 al Exp $  -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -56,6 +56,7 @@ private:
   unsigned  _end_match;
   enum MATCH_STYLE {msEXACT, msIGNORE_CASE} _ms;
   bool _ok;
+  int _line_number;
 public:
   // control
   void set_ignore_case() {untested(); _ms = msIGNORE_CASE;}
@@ -90,6 +91,7 @@ public:
   bool	      more()		{skipbl(); return ns_more();}
   bool	      is_end()		{return !more();}
   bool	      is_file()		{return (_file && !isatty(fileno(_file)));}
+  bool	      is_first_read()const {untested(); return (_line_number == 0);}
 
   // control
   CS&	      reset(unsigned c=0) {_cnt=c; _ok=true; return *this;}

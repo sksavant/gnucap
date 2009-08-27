@@ -1,4 +1,4 @@
-/*$Id: e_compon.cc,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: e_compon.cc,v 26.117 2009/08/19 15:28:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -412,14 +412,13 @@ COMPONENT::~COMPONENT()
 }
 /*--------------------------------------------------------------------------*/
 void COMPONENT::set_port_by_name(std::string& int_name, std::string& ext_name)
-{untested();
-  for (int i=0; i<max_nodes(); ++i) {untested();
-    if (int_name == port_name(i)) {untested();
+{itested();
+  for (int i=0; i<max_nodes(); ++i) {itested();
+    if (int_name == port_name(i)) {itested();
       set_port_by_index(i, ext_name);
       return;
-    }else{untested();
+    }else{itested();
     }
-    untested();
   }
   untested();
   throw Exception_No_Match(int_name);
@@ -432,7 +431,7 @@ void COMPONENT::set_port_by_index(int num, std::string& ext_name)
     if (num+1 > _net_nodes) {
       // make the list bigger
       _net_nodes = num+1;
-    }else{untested();
+    }else{itested();
       // it's already big enough, probably assigning out of order
     }
   }else{untested();

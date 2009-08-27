@@ -1,4 +1,4 @@
-/*$Id: lang_spectre_in.cc,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+/*$Id: lang_spectre_in.cc,v 26.117 2009/08/19 15:28:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -43,7 +43,7 @@ static void parse_args(CS& cmd, CARD* x)
     try{
       std::string name, value;
       cmd >> name >> '=' >> value;
-      std::cout << name << '=' << value << ";\n";
+      //std::cout << name << '=' << value << ";\n";
       x->set_param_by_name(name, value);
     }catch (Exception_No_Match&) {untested();
       cmd.warn(bDANGER, here, "bad parameter, ignored");
@@ -188,7 +188,7 @@ std::string LANG_SPECTRE::find_type_in_string(CS& cmd)
   cmd.reset().skipbl();
   unsigned here = 0;
   std::string type;
-  if ((cmd >> "*|//")) {untested();
+  if ((cmd >> "*|//")) {itested();
     assert(here == 0);
     type = "dev_comment";
   }else if ((cmd >> "model |simulator |parameters |subckt ")) {
@@ -200,7 +200,7 @@ std::string LANG_SPECTRE::find_type_in_string(CS& cmd)
     here = cmd.cursor();
     cmd.reset(here);
     cmd >> type;
-  }else if (cmd.reset().scan("=")) {untested();
+  }else if (cmd.reset().scan("=")) {itested();
     // back up two, by starting over
     cmd.reset().skiparg();
     unsigned here1 = cmd.cursor();

@@ -1,4 +1,4 @@
-/*$Id: m_base.h,v 26.114 2009/08/13 16:32:53 al Exp $ -*- C++ -*-
+/*$Id: m_base.h,v 26.115 2009/08/17 22:49:30 al Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -146,7 +146,13 @@ class Float
 {
 private:
   double _data;
-  void dump(std::ostream& o)const {untested();if (_data==NOT_INPUT) {untested();o<<"NA";}else{untested();o<<_data;}}
+  void dump(std::ostream& o)const {itested();
+    if (_data==NOT_INPUT) {untested();
+      o<<"NA";
+    }else{itested();
+      o<<_data;
+    }
+  }
 public:
   /*implicit*/ Float(const Float& p) :Base(), _data(p._data) {untested();}
   explicit Float(CS& file)		{untested();parse(file);}

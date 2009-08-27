@@ -1,4 +1,4 @@
-/*$Id: u_function.h,v 26.82 2008/06/01 14:20:25 al Exp $ -*- C++ -*-
+/*$Id: u_function.h,v 26.116 2009/08/18 05:05:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -28,7 +28,7 @@ class CARD_LIST;
 /*--------------------------------------------------------------------------*/
 class FUNCTION {
 public:
-  virtual std::string eval(CS&, CARD_LIST*)const = 0;
+  virtual std::string eval(CS&, const CARD_LIST*)const = 0;
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

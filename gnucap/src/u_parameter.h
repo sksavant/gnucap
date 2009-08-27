@@ -1,4 +1,4 @@
-/*$Id: u_parameter.h,v 26.96 2008/10/09 05:36:27 al Exp $ -*- C++ -*-
+/*$Id: u_parameter.h,v 26.116 2009/08/18 05:05:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2005 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -227,7 +227,7 @@ inline double PARAMETER<double>::lookup_solve(const double& def, const CARD_LIST
 {
   CS cmd(CS::_STRING, _s);
   Expression e(cmd);
-  Expression reduced(e, scope->params());
+  Expression reduced(e, scope);
   double v = reduced.eval();
   if (v != NOT_INPUT) {
     return v;

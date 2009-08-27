@@ -1,4 +1,4 @@
-/*$Id: ap_match.cc,v 26.81 2008/05/27 05:34:00 al Exp $ -*- C++ -*-
+/*$Id: ap_match.cc,v 26.115 2009/08/17 22:49:30 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -64,7 +64,7 @@ CS& CS::umatch(const std::string& s)
       }
     }else{
       // mismatch
-      char* bar = strchr(str2, '|');
+      const char* bar = strchr(str2, '|');
       if (bar && (bar[-1] != '\\')) {
 	str2 = bar+1;
 	reset(start);
