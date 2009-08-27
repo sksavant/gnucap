@@ -96,8 +96,8 @@ d_ccvs.o: d_ccvs.cc e_ccsrc.h e_elemnt.h e_node.h s__.h c_comand.h \
  constant.h e_base.h l_compar.h u_opt.h mode.h io_.h l_lib.h u_status.h \
  l_timer.h m_matrix.h l_stlextra.h m_cpoly.h l_denoise.h e_compon.h \
  u_parameter.h globals.h l_dispatcher.h ap.h m_expression.h m_base.h
-d_coil.o: d_coil.cc io_trace.h e_subckt.h e_compon.h u_parameter.h \
- globals.h l_dispatcher.h l_stlextra.h md.h io_error.h u_opt.h mode.h \
+d_coil.o: d_coil.cc e_subckt.h e_compon.h u_parameter.h globals.h \
+ l_dispatcher.h l_stlextra.h md.h io_trace.h io_error.h u_opt.h mode.h \
  io_.h l_lib.h ap.h m_expression.h m_base.h constant.h e_cardlist.h s__.h \
  c_comand.h e_card.h u_time_pair.h e_base.h l_compar.h u_status.h \
  l_timer.h m_matrix.h e_ccsrc.h e_elemnt.h e_node.h m_cpoly.h l_denoise.h \
@@ -219,10 +219,6 @@ bmm_semi.o: bmm_semi.cc u_lang.h u_opt.h mode.h io_.h l_lib.h md.h \
  l_stlextra.h ap.h m_expression.h m_base.h constant.h e_cardlist.h \
  e_card.h u_time_pair.h e_base.h l_compar.h u_status.h l_timer.h \
  m_matrix.h bm.h e_compon.h s__.h c_comand.h
-c_exp.o: c_exp.cc globals.h l_dispatcher.h l_stlextra.h md.h io_trace.h \
- io_error.h u_opt.h mode.h io_.h l_lib.h ap.h m_expression.h m_base.h \
- constant.h c_comand.h e_card.h e_cardlist.h u_time_pair.h e_base.h \
- l_compar.h u_status.h l_timer.h m_matrix.h
 c_clear.o: c_clear.cc c_comand.h e_card.h e_cardlist.h md.h io_trace.h \
  io_error.h u_time_pair.h constant.h e_base.h l_compar.h u_opt.h mode.h \
  io_.h l_lib.h u_status.h l_timer.h m_matrix.h l_stlextra.h globals.h \
@@ -236,10 +232,19 @@ c_delete.o: c_delete.cc d_subckt.h e_node.h s__.h c_comand.h e_card.h \
  e_base.h l_compar.h u_opt.h mode.h io_.h l_lib.h u_status.h l_timer.h \
  m_matrix.h l_stlextra.h e_subckt.h e_compon.h u_parameter.h globals.h \
  l_dispatcher.h ap.h m_expression.h m_base.h
+c_exp.o: c_exp.cc globals.h l_dispatcher.h l_stlextra.h md.h io_trace.h \
+ io_error.h u_opt.h mode.h io_.h l_lib.h ap.h m_expression.h m_base.h \
+ constant.h c_comand.h e_card.h e_cardlist.h u_time_pair.h e_base.h \
+ l_compar.h u_status.h l_timer.h m_matrix.h
 c_list.o: c_list.cc u_lang.h u_opt.h mode.h io_.h l_lib.h md.h io_trace.h \
  io_error.h c_comand.h e_card.h e_cardlist.h u_time_pair.h constant.h \
  e_base.h l_compar.h u_status.h l_timer.h m_matrix.h l_stlextra.h \
  globals.h l_dispatcher.h ap.h
+c_measure.o: c_measure.cc u_parameter.h globals.h l_dispatcher.h \
+ l_stlextra.h md.h io_trace.h io_error.h u_opt.h mode.h io_.h l_lib.h \
+ ap.h m_expression.h m_base.h constant.h e_cardlist.h u_function.h \
+ c_comand.h e_card.h u_time_pair.h e_base.h l_compar.h u_status.h \
+ l_timer.h m_matrix.h
 c_modify.o: c_modify.cc e_elemnt.h e_node.h s__.h c_comand.h e_card.h \
  e_cardlist.h md.h io_trace.h io_error.h u_time_pair.h constant.h \
  e_base.h l_compar.h u_opt.h mode.h io_.h l_lib.h u_status.h l_timer.h \
@@ -271,11 +276,6 @@ c_system.o: c_system.cc c_comand.h e_card.h e_cardlist.h md.h io_trace.h \
  io_error.h u_time_pair.h constant.h e_base.h l_compar.h u_opt.h mode.h \
  io_.h l_lib.h u_status.h l_timer.h m_matrix.h l_stlextra.h globals.h \
  l_dispatcher.h ap.h
-c_measure.o: c_measure.cc u_parameter.h globals.h l_dispatcher.h \
- l_stlextra.h md.h io_trace.h io_error.h u_opt.h mode.h io_.h l_lib.h \
- ap.h m_expression.h m_base.h constant.h e_cardlist.h u_function.h \
- c_comand.h e_card.h u_time_pair.h e_base.h l_compar.h u_status.h \
- l_timer.h m_matrix.h
 s_ac.o: s_ac.cc u_parameter.h globals.h l_dispatcher.h l_stlextra.h md.h \
  io_trace.h io_error.h u_opt.h mode.h io_.h l_lib.h ap.h m_expression.h \
  m_base.h constant.h e_cardlist.h u_prblst.h u_probe.h l_compar.h s__.h \
@@ -365,6 +365,11 @@ lang_verilog_out.o: lang_verilog_out.cc d_dot.h e_card.h e_cardlist.h \
 func_core.o: func_core.cc u_parameter.h globals.h l_dispatcher.h \
  l_stlextra.h md.h io_trace.h io_error.h u_opt.h mode.h io_.h l_lib.h \
  ap.h m_expression.h m_base.h constant.h e_cardlist.h u_function.h
+measure_eval.o: measure_eval.cc u_parameter.h globals.h l_dispatcher.h \
+ l_stlextra.h md.h io_trace.h io_error.h u_opt.h mode.h io_.h l_lib.h \
+ ap.h m_expression.h m_base.h constant.h e_cardlist.h s__.h c_comand.h \
+ e_card.h u_time_pair.h e_base.h l_compar.h u_status.h l_timer.h \
+ m_matrix.h m_wave.h l_denoise.h m_interp.h m_cpoly.h u_function.h
 measure_max.o: measure_max.cc u_parameter.h globals.h l_dispatcher.h \
  l_stlextra.h md.h io_trace.h io_error.h u_opt.h mode.h io_.h l_lib.h \
  ap.h m_expression.h m_base.h constant.h e_cardlist.h s__.h c_comand.h \

@@ -1,4 +1,4 @@
-/*$Id: measure_max.cc,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: measure_max.cc,v 26.113 2009/08/12 03:37:19 al Exp $ -*- C++ -*-
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -87,7 +87,7 @@ public:
     }
   }
 } p1;
-DISPATCHER<FUNCTION>::INSTALL d1(&function_dispatcher, "max", &p1);
+DISPATCHER<FUNCTION>::INSTALL d1(&measure_dispatcher, "max", &p1);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/

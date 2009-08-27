@@ -60,11 +60,11 @@ am__objects_5 = bm_complex.$(OBJEXT) bm_exp.$(OBJEXT) bm_fit.$(OBJEXT) \
 	bm_pulse.$(OBJEXT) bm_pwl.$(OBJEXT) bm_sffm.$(OBJEXT) \
 	bm_sin.$(OBJEXT) bm_tanh.$(OBJEXT) bmm_table.$(OBJEXT) \
 	bmm_semi.$(OBJEXT)
-am__objects_6 = c_exp.$(OBJEXT) c_clear.$(OBJEXT) c_comand.$(OBJEXT) \
-	c_delete.$(OBJEXT) c_list.$(OBJEXT) c_modify.$(OBJEXT) \
-	c_param.$(OBJEXT) c_prbcmd.$(OBJEXT) c_status.$(OBJEXT) \
-	c_sweep.$(OBJEXT) c_sim.$(OBJEXT) c_system.$(OBJEXT) \
-	c_measure.$(OBJEXT)
+am__objects_6 = c_clear.$(OBJEXT) c_comand.$(OBJEXT) \
+	c_delete.$(OBJEXT) c_exp.$(OBJEXT) c_list.$(OBJEXT) \
+	c_measure.$(OBJEXT) c_modify.$(OBJEXT) c_param.$(OBJEXT) \
+	c_prbcmd.$(OBJEXT) c_status.$(OBJEXT) c_sweep.$(OBJEXT) \
+	c_sim.$(OBJEXT) c_system.$(OBJEXT)
 am__objects_7 = s_ac.$(OBJEXT) s_dc.$(OBJEXT) s_fo.$(OBJEXT) \
 	s_tr.$(OBJEXT) s_tr_set.$(OBJEXT) s_tr_swp.$(OBJEXT)
 am__objects_8 = lang_spice_commands.$(OBJEXT) lang_spice_in.$(OBJEXT) \
@@ -72,11 +72,11 @@ am__objects_8 = lang_spice_commands.$(OBJEXT) lang_spice_in.$(OBJEXT) \
 	lang_spectre_in.$(OBJEXT) lang_spectre_out.$(OBJEXT) \
 	lang_verilog_commands.$(OBJEXT) lang_verilog_in.$(OBJEXT) \
 	lang_verilog_out.$(OBJEXT)
-am__objects_9 = func_core.$(OBJEXT) measure_max.$(OBJEXT) \
-	measure_min.$(OBJEXT) measure_slewrate.$(OBJEXT) \
-	measure_cross.$(OBJEXT) measure_integral.$(OBJEXT) \
-	measure_average.$(OBJEXT) measure_rms.$(OBJEXT) \
-	measure_at.$(OBJEXT)
+am__objects_9 = func_core.$(OBJEXT) measure_eval.$(OBJEXT) \
+	measure_max.$(OBJEXT) measure_min.$(OBJEXT) \
+	measure_slewrate.$(OBJEXT) measure_cross.$(OBJEXT) \
+	measure_integral.$(OBJEXT) measure_average.$(OBJEXT) \
+	measure_rms.$(OBJEXT) measure_at.$(OBJEXT)
 am__objects_10 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_7) $(am__objects_8) $(am__objects_9) \
 	m_expression_dump.$(OBJEXT) m_expression_in.$(OBJEXT) \
@@ -159,6 +159,7 @@ PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
+PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 SET_MAKE = @SET_MAKE@
@@ -234,10 +235,10 @@ bm_sin.cc bm_tanh.cc bmm_table.cc bmm_semi.cc
 
 # utility commands, usually one file per command
 # some have multiple commands in a file
-C_SRCS = c_exp.cc \
-c_clear.cc c_comand.cc c_delete.cc c_list.cc c_modify.cc \
-c_param.cc c_prbcmd.cc c_status.cc c_sweep.cc c_sim.cc c_system.cc \
-c_measure.cc
+C_SRCS = \
+c_clear.cc c_comand.cc c_delete.cc c_exp.cc c_list.cc \
+c_measure.cc c_modify.cc c_param.cc c_prbcmd.cc c_status.cc \
+c_sweep.cc c_sim.cc c_system.cc
 
 
 # simulation commands, usually multiple files for one command
@@ -255,7 +256,7 @@ lang_verilog_commands.cc lang_verilog_in.cc lang_verilog_out.cc
 
 # parameter functions
 FUNC_SRCS = \
-func_core.cc \
+func_core.cc measure_eval.cc \
 measure_max.cc measure_min.cc measure_slewrate.cc measure_cross.cc \
 measure_integral.cc measure_average.cc measure_rms.cc measure_at.cc
 
@@ -497,6 +498,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/measure_at.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/measure_average.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/measure_cross.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/measure_eval.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/measure_integral.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/measure_max.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/measure_min.Po@am__quote@

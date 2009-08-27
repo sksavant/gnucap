@@ -1,4 +1,4 @@
-/*$Id: s_tr_set.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: s_tr_set.cc,v 26.113 2009/08/12 03:37:19 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -192,7 +192,6 @@ void TRANSIENT::options(CS& Cmd)
 	   || Set(Cmd, "v{erbose}",   &_trace, tVERBOSE)
 	   || Cmd.warn(bWARNING, "need none, off, warnings, alltime, "
 		       "rejected, iterations, verbose")
-	   
 	   )
 	  )
       || outset(Cmd,&_out)

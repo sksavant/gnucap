@@ -1,4 +1,4 @@
-/*$Id: globals.cc,v 26.83 2008/06/05 04:46:59 al Exp $ -*- C++ -*-
+/*$Id: globals.cc,v 26.113 2009/08/12 03:37:19 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -38,6 +38,7 @@ DISPATCHER<MODEL_CARD> model_dispatcher;
 DISPATCHER<CARD> device_dispatcher;
 DISPATCHER<LANGUAGE> language_dispatcher;
 DISPATCHER<FUNCTION> function_dispatcher;
+DISPATCHER<FUNCTION> measure_dispatcher;
 
 // for the rest, order should not matter, but it is convenient here
 CARD_LIST CARD_LIST::card_list;	// root circuit 

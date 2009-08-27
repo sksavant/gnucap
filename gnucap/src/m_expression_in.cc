@@ -1,4 +1,4 @@
-/*$Id: m_expression_in.cc,v 26.90 2008/08/04 05:12:36 al Exp $ -*- C++ -*-
+/*$Id: m_expression_in.cc,v 26.114 2009/08/13 16:32:53 al Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -55,6 +55,7 @@
  *		| nothing
  * expression	: andarg exptail
  */
+//testing=script 2009.08.12
 #include "m_expression.h"
 /*--------------------------------------------------------------------------*/
 void Expression::arglisttail(CS& File)
@@ -68,34 +69,26 @@ void Expression::arglisttail(CS& File)
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 void Expression::arglist(CS& File)
 {
-#if 0
-  if (File.peek() == '(') {
-    Quoted_String args(File);
-    push_back(new Token_PARLIST(args));
-  }else{
-  }
-#else
   if (File.skip1b("(")) {
     push_back(new Token_STOP("("));
     if (!File.skip1b(")")) {
       expression(File);
       arglisttail(File);
-    }else{
+      if (!File.skip1b(")")) {untested();
+	throw Exception_CS("unbalanced parentheses (arglist)", File);
+      }else{
+      }
+    }else{untested();
     }
     push_back(new Token_PARLIST(")"));
-    if (!File.skip1b(")")) {
-      throw Exception_CS("unbalanced parentheses (arglist)", File);
-    }else{
-    }
   }else{
   }
-#endif
 }
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 void Expression::leaf(CS& File)
 {
 #if 0
-  if (File.peek() == '"') {
+  if (File.peek() == '"') {untested();
     Quoted_String name(File);
     push_back(new Token_SYMBOL(name, ""));
     // do not put constants in symbol table
@@ -106,7 +99,7 @@ void Expression::leaf(CS& File)
   if (!File.stuck(&here)) {
     arglist(File);
     push_back(new Token_SYMBOL(name, ""));
-  }else{
+  }else{untested();
     throw Exception_CS("what's this?", File);
   }
 }
@@ -121,7 +114,7 @@ void Expression::factor(CS& File)
   }
   if (File.skip1b("(")) {
     expression(File);
-    if (!File.skip1b(")")) {
+    if (!File.skip1b(")")) {untested();
       throw Exception_CS("unbalanced parentheses (factor)", File);
     }else{
     }

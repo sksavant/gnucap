@@ -1,4 +1,4 @@
-#$Id: Make1,v 26.106 2008/12/13 00:48:28 al Exp $ -*- Makefile -*-
+#$Id: Make1,v 26.114 2009/08/13 16:32:53 al Exp $ -*- Makefile -*-
 # Copyright (C) 2001 Albert Davis
 # Author: Albert Davis <aldavis@gnu.org>
 #
@@ -21,7 +21,7 @@
 #------------------------------------------------------------------------
 TARGET = gnucap
 #------------------------------------------------------------------------
-DELETED = measure_range.cc
+DELETED =
 #------------------------------------------------------------------------
 # These source files can be omitted, and supplied as plugins.
 # device models defined in high level .model files
@@ -45,10 +45,10 @@ bm_sin.cc bm_tanh.cc bmm_table.cc bmm_semi.cc
 
 # utility commands, usually one file per command
 # some have multiple commands in a file
-C_SRCS = c_exp.cc \
-c_clear.cc c_comand.cc c_delete.cc c_list.cc c_modify.cc \
-c_param.cc c_prbcmd.cc c_status.cc c_sweep.cc c_sim.cc c_system.cc \
-c_measure.cc
+C_SRCS = \
+c_clear.cc c_comand.cc c_delete.cc c_exp.cc c_list.cc \
+c_measure.cc c_modify.cc c_param.cc c_prbcmd.cc c_status.cc \
+c_sweep.cc c_sim.cc c_system.cc
 
 # simulation commands, usually multiple files for one command
 S_SRCS = \
@@ -63,7 +63,7 @@ lang_verilog_commands.cc lang_verilog_in.cc lang_verilog_out.cc
 
 # parameter functions
 FUNC_SRCS = \
-func_core.cc \
+func_core.cc measure_eval.cc \
 measure_max.cc measure_min.cc measure_slewrate.cc measure_cross.cc \
 measure_integral.cc measure_average.cc measure_rms.cc measure_at.cc
 #------------------------------------------------------------------------

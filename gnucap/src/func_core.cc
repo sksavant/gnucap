@@ -1,4 +1,4 @@
-/*$Id: func_core.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: func_core.cc,v 26.114 2009/08/13 16:32:53 al Exp $ -*- C++ -*-
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -24,18 +24,6 @@
 #include "u_function.h"
 /*--------------------------------------------------------------------------*/
 namespace {
-/*--------------------------------------------------------------------------*/
-class EVAL : public FUNCTION {
-public:
-  std::string eval(CS& Cmd, CARD_LIST* Scope)const
-  {
-    PARAMETER<double> x;
-    Cmd >> x;
-    x.e_val(NOT_INPUT, Scope);
-    return to_string(double(x));
-  }
-} p_eval;
-DISPATCHER<FUNCTION>::INSTALL d_eval(&function_dispatcher, "eval", &p_eval);
 /*--------------------------------------------------------------------------*/
 class abs : public FUNCTION {
 public:
@@ -109,6 +97,32 @@ public:
   }
 } p_pow;
 DISPATCHER<FUNCTION>::INSTALL d_pow(&function_dispatcher, "pow", &p_pow);
+/*--------------------------------------------------------------------------*/
+class MAX : public FUNCTION {
+public:
+  std::string eval(CS& Cmd, CARD_LIST* Scope)const
+  {
+    PARAMETER<double> x, y;
+    Cmd >> x >> y;
+    x.e_val(NOT_INPUT, Scope);
+    y.e_val(NOT_INPUT, Scope);
+    return to_string(std::max(x,y));
+  }
+} p_max;
+DISPATCHER<FUNCTION>::INSTALL d_max(&function_dispatcher, "max", &p_max);
+/*--------------------------------------------------------------------------*/
+class MIN : public FUNCTION {
+public:
+  std::string eval(CS& Cmd, CARD_LIST* Scope)const
+  {
+    PARAMETER<double> x, y;
+    Cmd >> x >> y;
+    x.e_val(NOT_INPUT, Scope);
+    y.e_val(NOT_INPUT, Scope);
+    return to_string(std::min(x,y));
+  }
+} p_min;
+DISPATCHER<FUNCTION>::INSTALL d_min(&function_dispatcher, "min", &p_min);
 /*--------------------------------------------------------------------------*/
 class sin : public FUNCTION {
 public:

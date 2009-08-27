@@ -1,6 +1,6 @@
 ## -*- Makefile -*-
 ##
-## $Id: Makefile.am,v 26.97 2008/10/11 03:13:53 al Exp $
+## $Id: Makefile.am,v 26.114 2009/08/13 16:43:58 al Exp $
 ##
 ##                            COPYRIGHT
 ##
@@ -48,10 +48,10 @@ bm_sin.cc bm_tanh.cc bmm_table.cc bmm_semi.cc
 
 # utility commands, usually one file per command
 # some have multiple commands in a file
-C_SRCS = c_exp.cc \
-c_clear.cc c_comand.cc c_delete.cc c_list.cc c_modify.cc \
-c_param.cc c_prbcmd.cc c_status.cc c_sweep.cc c_sim.cc c_system.cc \
-c_measure.cc
+C_SRCS = \
+c_clear.cc c_comand.cc c_delete.cc c_exp.cc c_list.cc \
+c_measure.cc c_modify.cc c_param.cc c_prbcmd.cc c_status.cc \
+c_sweep.cc c_sim.cc c_system.cc
 
 # simulation commands, usually multiple files for one command
 S_SRCS = \
@@ -66,7 +66,7 @@ lang_verilog_commands.cc lang_verilog_in.cc lang_verilog_out.cc
 
 # parameter functions
 FUNC_SRCS = \
-func_core.cc \
+func_core.cc measure_eval.cc \
 measure_max.cc measure_min.cc measure_slewrate.cc measure_cross.cc \
 measure_integral.cc measure_average.cc measure_rms.cc measure_at.cc
 #------------------------------------------------------------------------

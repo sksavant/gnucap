@@ -1,4 +1,4 @@
-/*$Id: m_base_in.cc,v 26.90 2008/08/04 05:12:36 al Exp $ -*- C++ -*-
+/*$Id: m_base_in.cc,v 26.114 2009/08/13 16:32:53 al Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -20,16 +20,17 @@
  * 02110-1301, USA.
  *------------------------------------------------------------------
  */
+//testing=script,sparse 2009.08.13
 #include "m_base.h"
 /*--------------------------------------------------------------------------*/
 void Float::parse(CS& File)
 {
-  if (File >> "NA") {
+  if (File >> "NA") {untested();
     _data = NOT_INPUT;
   }else{
     unsigned here = File.cursor();
     File >> _data;
-    if (File.stuck(&here)) {
+    if (File.stuck(&here)) {untested();
       _data = NOT_INPUT;
     }else{
     }
@@ -47,19 +48,19 @@ void Name_String::parse(CS& File)
 }
 /*--------------------------------------------------------------------------*/
 void Quoted_String::parse(CS& File)
-{
+{untested();
   File.skipbl();
   unsigned here = File.cursor();
   char quote = File.ctoc();
   _data = "";
-  for (;;) {
-    if (File.skip1(quote)) {
+  for (;;) {untested();
+    if (File.skip1(quote)) {untested();
       break;
-    }else if (!File.more()) {
+    }else if (!File.more()) {untested();
       File.warn(0, "end of file in quoted string");
       File.warn(0, here, "string begins here");
       break;
-    }else{
+    }else{untested();
       _data += File.ctoc();
     }
   }
@@ -75,7 +76,7 @@ void Tail_String::parse(CS& File)
   const char* end = File.tail().c_str();
   assert(end >= begin);
 
-  while ((--end >= begin) && (isspace(*end))) {
+  while ((--end >= begin) && (isspace(*end))) {untested();
   }
   ++end;
   assert(end >= begin);
@@ -87,10 +88,11 @@ void Tail_String::parse(CS& File)
 void Text_Block::parse(CS& File)
 {untested(); // c_str
   const char* begin = File.tail().c_str();
-  for (;;) {
+  for (;;) {untested();
     File.skipto1("\n").skip();
-    if (File.peek() == '[') {
+    if (File.peek() == '[') {untested();
       break;
+    }else{untested();
     }
   }
   const char* end = File.tail().c_str();

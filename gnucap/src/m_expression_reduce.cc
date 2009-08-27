@@ -1,4 +1,4 @@
-/*$Id: m_expression_reduce.cc,v 26.99 2008/11/13 17:55:40 al Exp $ -*- C++ -*-
+/*$Id: m_expression_reduce.cc,v 26.114 2009/08/13 16:32:53 al Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -24,6 +24,7 @@
  *	Expressions in arg-lists print as ####false####
  *	Not sure what should happen when expression is empty
  */
+//testing=script,sparse 2009.08.12
 #include "u_function.h"
 #include "u_parameter.h"
 /*--------------------------------------------------------------------------*/
@@ -54,7 +55,7 @@ Token* Token_BINOP::op(const Token* T1, const Token* T2)const
     b = (T1->data())->less(T2->data());
   }else if (name() == ">") {
     b = (T1->data())->greater(T2->data());
-  }else if (name() == "<=") {untested();
+  }else if (name() == "<=") {
     b = (T1->data())->leq(T2->data());
   }else if (name() == ">=") {
     b = (T1->data())->geq(T2->data());
@@ -62,14 +63,14 @@ Token* Token_BINOP::op(const Token* T1, const Token* T2)const
     b = (T1->data())->logic_or(T2->data());
   }else if (name() == "&&") {
     b = (T1->data())->logic_and(T2->data());
-  }else{untested();
+  }else{
     unreachable();
     //std::cout << name() << '\n';
     return NULL;
   }
   if (b) {
     return new Token_CONSTANT(b->val_string(), b, (T1->aRgs()+T2->aRgs()));
-  }else{
+  }else{untested();
     return new Token_CONSTANT("false", NULL, "");
   }
 }
@@ -87,14 +88,14 @@ Token* Token_UNARY::op(const Token* T1)const
     b = (T1->data())->plus();
   }else if (name() == "!") {
     b = (T1->data())->logic_not();
-  }else{untested();
+  }else{
     unreachable();
     //std::cout << name() << '\n';
     return NULL;
   }
   if (b) {
     return new Token_CONSTANT(b->val_string(), b, (T1->aRgs()));
-  }else{
+  }else{untested();
     return new Token_CONSTANT("false", NULL, "");
   }
 }
@@ -113,12 +114,12 @@ void Token_SYMBOL::stack_op(Expression* E)const
       const Float* v = new Float(value);
       E->push_back(new Token_CONSTANT(value, v, T1->full_name()));
       delete T1;
-    }else{
+    }else{untested();
       E->push_back(clone());
     }
   }else{
     // has no parameters (scalar)
-    //if (isdigit(name()[0])) {
+    //if (isdigit(name()[0])) {untested();
     if (strchr("0123456789.", name()[0])) {
       // a number
       Float* n = new Float(name());
@@ -157,13 +158,13 @@ void Token_BINOP::stack_op(Expression* E)const
 	E->push_back(t);
 	delete t2;
 	delete t1;
-      }else{
+      }else{untested();
 	// fail - one arg is unknown, push back args
-	if (strchr("+*", name()[0]) && !dynamic_cast<const Float*>(t1->data())) {
+	if (strchr("+*", name()[0]) && !dynamic_cast<const Float*>(t1->data())) {untested();
 	  // change order to enable later optimization
 	  E->push_back(t1);
 	  E->push_back(t2);
-	}else{
+	}else{untested();
 	  E->push_back(t2);
 	  E->push_back(t1);
 	}
@@ -171,18 +172,18 @@ void Token_BINOP::stack_op(Expression* E)const
 	delete t;
       }
     }else if (((*t2) == (*this)) && strchr("+*", name()[0])
-	      && dynamic_cast<Token_CONSTANT*>(E->back())) {
+	      && dynamic_cast<Token_CONSTANT*>(E->back())) {untested();
       // have # + # + .. becomes result + (previous unknown, try to optimize)
       Token* t3 = E->back();
       E->pop_back();
       Token* t = op(t3, t1);
-      if (t->data()) {
+      if (t->data()) {untested();
 	// success
 	E->push_back(t);
 	E->push_back(t2);
 	delete t3;
 	delete t1;
-      }else{
+      }else{untested();
 	// fail - push all
 	E->push_back(t3);
 	E->push_back(t2);
@@ -190,13 +191,13 @@ void Token_BINOP::stack_op(Expression* E)const
 	E->push_back(clone());
 	delete t;
       }
-    }else{
+    }else{untested();
       // # - # - or something like that
       E->push_back(t2);
       E->push_back(t1);
       E->push_back(clone());
     }
-  }else{
+  }else{untested();
     // # - # - or something like that
     E->push_back(t2);
     E->push_back(t1);
@@ -231,7 +232,7 @@ void Token_PARLIST::stack_op(Expression* E)const
       }else{
 	been_here = true;
       }
-      tmp = t->full_name() + tmp;
+      tmp = t->name() + tmp;
     }
     delete t;
   }
@@ -250,19 +251,19 @@ void Token_UNARY::stack_op(Expression* E)const
     if (t->data()) {
       E->push_back(t);
       delete t1;
-    }else{
+    }else{untested();
       E->push_back(t1);
       E->push_back(clone());
       delete t;
     }
-  }else{
+  }else{untested();
     E->push_back(t1);
     E->push_back(clone());
   }
 }
 /*--------------------------------------------------------------------------*/
 void Token_CONSTANT::stack_op(Expression* E)const
-{untested();
+{
   unreachable();
   assert(E);
 }

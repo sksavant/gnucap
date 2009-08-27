@@ -1,4 +1,4 @@
-/*$Id: m_base_math.cc,v 26.81 2008/05/27 05:34:00 al Exp $ -*- C++ -*-
+/*$Id: m_base_math.cc,v 26.114 2009/08/13 16:32:53 al Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -20,10 +20,11 @@
  * 02110-1301, USA.
  *------------------------------------------------------------------
  */
+//testing=script 2009.08.13
 #include "m_base.h"
 /*--------------------------------------------------------------------------*/
 std::string new_name()
-{
+{untested();
   static int c = 0;
   char s[30];
   sprintf(s, "EX%04u", ++c);
@@ -34,7 +35,7 @@ Base* Base::logic_not()const
 {
   if (to_bool()) {
     return new Float(0.);
-  }else{
+  }else{untested();
     return new Float(1.);
   }
 }

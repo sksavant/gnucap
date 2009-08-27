@@ -1,4 +1,4 @@
-/*$Id: m_base.h,v 26.99 2008/11/13 17:55:40 al Exp $ -*- C++ -*-
+/*$Id: m_base.h,v 26.114 2009/08/13 16:32:53 al Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -20,6 +20,7 @@
  * 02110-1301, USA.
  *------------------------------------------------------------------
  */
+//testing=script,sparse 2009.08.13
 #ifndef BASE_H_INCLUDED
 #define BASE_H_INCLUDED
 #include "l_lib.h"
@@ -148,12 +149,12 @@ private:
   void dump(std::ostream& o)const {untested();if (_data==NOT_INPUT) {untested();o<<"NA";}else{untested();o<<_data;}}
 public:
   /*implicit*/ Float(const Float& p) :Base(), _data(p._data) {untested();}
-  explicit Float(CS& file)		{parse(file);}
+  explicit Float(CS& file)		{untested();parse(file);}
   explicit Float(const std::string& s)	{CS cs(CS::_STRING, s); parse(cs);}
   Float(double x=NOT_INPUT) :_data(x) {}
   void parse(CS&);
   double value()const			{return _data;}
-  operator double()const		{return _data;}
+  operator double()const		{untested();return _data;}
   std::string val_string()const		{return ftos(_data, 0, 15, ftos_EXP);}
   bool to_bool()const			{return (_data != 0);}
 
@@ -168,9 +169,9 @@ public:
   Base* equal(const Float* X)const	{assert(X); return new Float((_data == X->_data)?1.:0.);}
   Base* add(const Float* X)const	{assert(X); return new Float(_data + X->_data);}
   Base* multiply(const Float* X)const	{assert(X); return new Float(_data * X->_data);}
-  Base* subtract(const Float* X)const	{assert(X); return new Float(_data - X->_data);}
+  Base* subtract(const Float* X)const	{untested();assert(X); return new Float(_data - X->_data);}
   Base* r_subtract(const Float* X)const	{assert(X); return new Float(X->_data - _data);}
-  Base* divide(const Float* X)const	{assert(X); return new Float(_data / X->_data);}
+  Base* divide(const Float* X)const	{untested();assert(X); return new Float(_data / X->_data);}
   Base* r_divide(const Float* X)const	{assert(X); return new Float(X->_data / _data);}
 
   Base* less(const Base* X)const	{return ((X) ? (X->greater(this))   : (NULL));}
@@ -182,22 +183,22 @@ public:
   Base* add(const Base* X)const 	{return ((X) ? (X->add(this))       : (NULL));}
   Base* multiply(const Base* X)const	{return ((X) ? (X->multiply(this))  : (NULL));}
   Base* subtract(const Base* X)const	{return ((X) ? (X->r_subtract(this)): (NULL));}
-  Base* r_subtract(const Base* X)const	{return ((X) ? (X->subtract(this))  : (NULL));}
+  Base* r_subtract(const Base* X)const	{untested();return ((X) ? (X->subtract(this))  : (NULL));}
   Base* divide(const Base* X)const	{return ((X) ? (X->r_divide(this))  : (NULL));}
-  Base* r_divide(const Base* X)const	{return ((X) ? (X->divide(this))    : (NULL));}
+  Base* r_divide(const Base* X)const	{untested();return ((X) ? (X->divide(this))    : (NULL));}
 
-  Base* less(const String*)const	{return NULL;}
-  Base* greater(const String*)const	{return NULL;}
-  Base* leq(const String*)const 	{return NULL;}
-  Base* geq(const String*)const 	{return NULL;}
-  Base* not_equal(const String*)const	{return NULL;}
-  Base* equal(const String*)const	{return NULL;}
-  Base* add(const String*)const 	{return NULL;}
-  Base* multiply(const String*)const	{return NULL;}
-  Base* subtract(const String*)const	{return NULL;}
-  Base* r_subtract(const String*)const	{return NULL;}
-  Base* divide(const String*)const	{return NULL;}
-  Base* r_divide(const String*)const	{return NULL;}
+  Base* less(const String*)const	{untested();return NULL;}
+  Base* greater(const String*)const	{untested();return NULL;}
+  Base* leq(const String*)const 	{untested();return NULL;}
+  Base* geq(const String*)const 	{untested();return NULL;}
+  Base* not_equal(const String*)const	{untested();return NULL;}
+  Base* equal(const String*)const	{untested();return NULL;}
+  Base* add(const String*)const 	{untested();return NULL;}
+  Base* multiply(const String*)const	{untested();return NULL;}
+  Base* subtract(const String*)const	{untested();return NULL;}
+  Base* r_subtract(const String*)const	{untested();return NULL;}
+  Base* divide(const String*)const	{untested();return NULL;}
+  Base* r_divide(const String*)const	{untested();return NULL;}
 
   bool  is_NA()const			{untested();return _data == NOT_INPUT;}
 };
@@ -210,56 +211,56 @@ protected:
 public:
   void parse(CS&) {unreachable(); incomplete();}
 private:
-  void dump(std::ostream& o)const {itested();o << _data;}
+  void dump(std::ostream& o)const {untested();o << _data;}
 public:
   explicit String(CS& file) {untested();parse(file);}
   explicit String()	    {}
   explicit String(const std::string& s) :_data(s) {}
   operator const std::string&()const	{return _data;}
-  std::string val_string()const		{return _data;}
-  bool to_bool()const			{return (_data != "");}
+  std::string val_string()const		{untested();return _data;}
+  bool to_bool()const			{untested();return (_data != "");}
 
   Base* minus()const			{untested(); return NULL;}
   Base* plus()const			{untested(); return NULL;}
 
-  Base* less(const String* X)const	{assert(X); return new Float((_data < X->_data)?1.:0.);}
-  Base* greater(const String* X)const	{assert(X); return new Float((_data > X->_data)?1.:0.);}
-  Base* leq(const String* X)const	{assert(X); return new Float((_data <= X->_data)?1.:0.);}
-  Base* geq(const String* X)const	{assert(X); return new Float((_data >= X->_data)?1.:0.);}
-  Base* not_equal(const String* X)const	{assert(X); return new Float((_data != X->_data)?1.:0.);}
-  Base* equal(const String* X)const	{assert(X); return new Float((_data == X->_data)?1.:0.);}
-  Base* add(const String* X)const	{assert(X); return new String(_data + X->_data);}
+  Base* less(const String* X)const	{untested();assert(X); return new Float((_data < X->_data)?1.:0.);}
+  Base* greater(const String* X)const	{untested();assert(X); return new Float((_data > X->_data)?1.:0.);}
+  Base* leq(const String* X)const	{untested();assert(X); return new Float((_data <= X->_data)?1.:0.);}
+  Base* geq(const String* X)const	{untested();assert(X); return new Float((_data >= X->_data)?1.:0.);}
+  Base* not_equal(const String* X)const	{untested();assert(X); return new Float((_data != X->_data)?1.:0.);}
+  Base* equal(const String* X)const	{untested();assert(X); return new Float((_data == X->_data)?1.:0.);}
+  Base* add(const String* X)const	{untested();assert(X); return new String(_data + X->_data);}
   Base* multiply(const String*)const	{untested(); return NULL;}
   Base* subtract(const String*)const	{untested(); return NULL;}
   Base* r_subtract(const String*)const	{untested(); return NULL;}
   Base* divide(const String*)const	{untested(); return NULL;}
-  Base* r_divide(const String*)const	{itested(); return NULL;}
+  Base* r_divide(const String*)const	{untested(); return NULL;}
 
-  Base* less(const Base* X)const	{return ((X) ? (X->greater(this))   : (NULL));}
-  Base* greater(const Base* X)const	{return ((X) ? (X->less(this))      : (NULL));}
-  Base* leq(const Base* X)const		{return ((X) ? (X->geq(this))       : (NULL));}
-  Base* geq(const Base* X)const		{return ((X) ? (X->leq(this))       : (NULL));}
-  Base* not_equal(const Base* X)const	{return ((X) ? (X->not_equal(this)) : (NULL));}
-  Base* equal(const Base* X)const	{return ((X) ? (X->equal(this))	    : (NULL));}
-  Base* add(const Base* X)const 	{return ((X) ? (X->add(this))       : (NULL));}
-  Base* multiply(const Base* X)const	{return ((X) ? (X->multiply(this))  : (NULL));}
-  Base* subtract(const Base* X)const	{return ((X) ? (X->r_subtract(this)): (NULL));}
-  Base* r_subtract(const Base* X)const	{return ((X) ? (X->subtract(this))  : (NULL));}
-  Base* divide(const Base* X)const	{return ((X) ? (X->r_divide(this))  : (NULL));}
-  Base* r_divide(const Base* X)const	{return ((X) ? (X->divide(this))    : (NULL));}
+  Base* less(const Base* X)const	{untested();return ((X) ? (X->greater(this))   : (NULL));}
+  Base* greater(const Base* X)const	{untested();return ((X) ? (X->less(this))      : (NULL));}
+  Base* leq(const Base* X)const		{untested();return ((X) ? (X->geq(this))       : (NULL));}
+  Base* geq(const Base* X)const		{untested();return ((X) ? (X->leq(this))       : (NULL));}
+  Base* not_equal(const Base* X)const	{untested();return ((X) ? (X->not_equal(this)) : (NULL));}
+  Base* equal(const Base* X)const	{untested();return ((X) ? (X->equal(this))	    : (NULL));}
+  Base* add(const Base* X)const 	{untested();return ((X) ? (X->add(this))       : (NULL));}
+  Base* multiply(const Base* X)const	{untested();return ((X) ? (X->multiply(this))  : (NULL));}
+  Base* subtract(const Base* X)const	{untested();return ((X) ? (X->r_subtract(this)): (NULL));}
+  Base* r_subtract(const Base* X)const	{untested();return ((X) ? (X->subtract(this))  : (NULL));}
+  Base* divide(const Base* X)const	{untested();return ((X) ? (X->r_divide(this))  : (NULL));}
+  Base* r_divide(const Base* X)const	{untested();return ((X) ? (X->divide(this))    : (NULL));}
 
-  Base* less(const Float*)const 	{return NULL;}
-  Base* greater(const Float*)const	{return NULL;}
-  Base* leq(const Float*)const  	{return NULL;}
-  Base* geq(const Float*)const  	{return NULL;}
-  Base* not_equal(const Float*)const	{return NULL;}
-  Base* equal(const Float*)const	{return NULL;}
-  Base* add(const Float*)const  	{return NULL;}
-  Base* multiply(const Float*)const	{return NULL;}
-  Base* subtract(const Float*)const	{return NULL;}
-  Base* r_subtract(const Float*)const	{return NULL;}
-  Base* divide(const Float*)const	{return NULL;}
-  Base* r_divide(const Float*)const	{return NULL;}
+  Base* less(const Float*)const 	{untested();return NULL;}
+  Base* greater(const Float*)const	{untested();return NULL;}
+  Base* leq(const Float*)const  	{untested();return NULL;}
+  Base* geq(const Float*)const  	{untested();return NULL;}
+  Base* not_equal(const Float*)const	{untested();return NULL;}
+  Base* equal(const Float*)const	{untested();return NULL;}
+  Base* add(const Float*)const  	{untested();return NULL;}
+  Base* multiply(const Float*)const	{untested();return NULL;}
+  Base* subtract(const Float*)const	{untested();return NULL;}
+  Base* r_subtract(const Float*)const	{untested();return NULL;}
+  Base* divide(const Float*)const	{untested();return NULL;}
+  Base* r_divide(const Float*)const	{untested();return NULL;}
 };
 /*--------------------------------------------------------------------------*/
 class Name_String	// a string that contains only alnum and _[]
@@ -268,8 +269,8 @@ class Name_String	// a string that contains only alnum and _[]
 public:
   void parse(CS&);
 public:
-  explicit Name_String(CS& file) {parse(file);}
-  explicit Name_String()	    {untested();}
+  explicit Name_String(CS& file)	{parse(file);}
+  explicit Name_String()		{untested();}
 };
 /*--------------------------------------------------------------------------*/
 class Quoted_String	// the first non-blank character is a quote
@@ -278,8 +279,8 @@ class Quoted_String	// the first non-blank character is a quote
 public:
   void parse(CS&);
 public:
-  explicit Quoted_String(CS& file) {parse(file);}
-  explicit Quoted_String()	    {untested();}
+  explicit Quoted_String(CS& file)	{untested();parse(file);}
+  explicit Quoted_String()		{untested();}
 };
 /*--------------------------------------------------------------------------*/
 class Tail_String	// a string that is parsed to the end of a line
@@ -287,8 +288,8 @@ class Tail_String	// a string that is parsed to the end of a line
 {
 public:
   void parse(CS&);
-  explicit Tail_String(CS& file) {untested();parse(file);}
-  explicit Tail_String()	    {untested();}
+  explicit Tail_String(CS& file)	{untested();parse(file);}
+  explicit Tail_String()		{untested();}
 };
 
 /*--------------------------------------------------------------------------*/

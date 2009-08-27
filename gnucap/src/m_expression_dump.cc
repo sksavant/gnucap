@@ -1,4 +1,4 @@
-/*$Id: m_expression_dump.cc,v 26.81 2008/05/27 05:34:00 al Exp $ -*- C++ -*-
+/*$Id: m_expression_dump.cc,v 26.114 2009/08/13 16:32:53 al Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -21,10 +21,11 @@
  *------------------------------------------------------------------
  * Reconstructs an infix expression from the RPN.
  */
+//testing=script,sparse 2009.08.12
 #include "m_expression.h"
 /*--------------------------------------------------------------------------*/
 void Token::dump(std::ostream& out)const
-{
+{itested();
   out << _name << ' ';
 }
 /*--------------------------------------------------------------------------*/
@@ -35,22 +36,23 @@ void Expression::dump(std::ostream& out)const
   // The _list is the expression in RPN.
   // Un-parse it -- back to infix.
   for (const_iterator i = begin(); i != end(); ++i) {
-    if (dynamic_cast<const Token_STOP*>(*i)) {
+    if (dynamic_cast<const Token_STOP*>(*i)) {untested();
       stack.push_back(*i);
-    }else if (dynamic_cast<const Token_PARLIST*>(*i)) {
+    }else if (dynamic_cast<const Token_PARLIST*>(*i)) {untested();
+      // pop*n  push
       bool been_here = false;
       std::string tmp(")");
-      for (;;) {
+      for (;;) {untested();
 	assert(!stack.empty());
 	const Token* t = stack.back();
 	stack.pop_back();
-	if (dynamic_cast<const Token_STOP*>(t)) {
+	if (dynamic_cast<const Token_STOP*>(t)) {untested();
 	  tmp = "(" + tmp;
 	  break;
-	}else if (dynamic_cast<const Token_SYMBOL*>(t)) {
-	  if (been_here) {
+	}else if (dynamic_cast<const Token_SYMBOL*>(t)) {untested();
+	  if (been_here) {untested();
 	    tmp = ", " + tmp;
-	  }else{
+	  }else{untested();
 	    been_here = true;
 	  }
 	  tmp = t->name() + tmp;
@@ -62,8 +64,9 @@ void Expression::dump(std::ostream& out)const
       locals.push_back(t);
       stack.push_back(t);
     }else if (dynamic_cast<const Token_CONSTANT*>(*i)|| dynamic_cast<const Token_SYMBOL*>(*i)) {
-      if (!stack.empty() && (dynamic_cast<const Token_PARLIST*>(stack.back()))) {
+      if (!stack.empty() && (dynamic_cast<const Token_PARLIST*>(stack.back()))) {untested();
 	// has parameters (table or function)
+	// pop op push
 	const Token* t1 = stack.back();
 	stack.pop_back();
 	Token* t = new Token_SYMBOL((**i).name(), t1->full_name());
@@ -74,6 +77,7 @@ void Expression::dump(std::ostream& out)const
 	stack.push_back(*i);
       }
     }else if (dynamic_cast<const Token_BINOP*>(*i)) {
+      // pop pop op push
       assert(!stack.empty());
       const Token* t2 = stack.back();
       stack.pop_back();
@@ -84,7 +88,8 @@ void Expression::dump(std::ostream& out)const
       Token* t = new Token_SYMBOL(tmp, "");
       locals.push_back(t);
       stack.push_back(t);
-    }else if (dynamic_cast<const Token_UNARY*>(*i)) {
+    }else if (dynamic_cast<const Token_UNARY*>(*i)) {untested();
+      // pop op push
       assert(!stack.empty());
       const Token* t1 = stack.back();
       stack.pop_back();
@@ -95,7 +100,7 @@ void Expression::dump(std::ostream& out)const
       unreachable();
     }
   }
-  if (stack.empty()) {
+  if (stack.empty()) {untested();
     out << "empty";
   }else{
     out << stack.back()->full_name();

@@ -1,4 +1,4 @@
-/*$Id: d_coil.cc,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: d_coil.cc,v 26.113 2009/08/12 03:37:19 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -26,8 +26,6 @@
  * m.x = volts, m.c0 = amps, acg = m.c1 = mhos
  */
 //testing=script 2008.10.09
-#undef TRACE_UNTESTED
-#include "io_trace.h"
 #include "e_subckt.h"
 #include "e_ccsrc.h"
 #include "e_storag.h"
