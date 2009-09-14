@@ -1,4 +1,4 @@
-/* $Id: spice-wrapper.cc,v 26.118 2009/08/22 21:08:57 al Exp $ -*- C++ -*-
+/* $Id: spice-wrapper.cc,v 26.119 2009/09/09 13:27:53 al Exp $ -*- C++ -*-
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -79,6 +79,9 @@ extern "C" {
 #if !defined(TAIL_SIZE)
   #define TAIL_SIZE 1
 #endif
+#if !defined(IS_VALID)
+#define IS_VALID {return MODEL_CARD::is_valid(d);}
+#endif
 /*--------------------------------------------------------------------------*/
 extern SPICEdev info;
 const int SPICE_INVALID_NODE = 0;
@@ -141,6 +144,7 @@ public:
   ~MODEL_SPICE();
 public: // override virtual
   MODEL_CARD* clone()const {return new MODEL_SPICE(*this);}
+  bool is_valid(const COMPONENT* d)const IS_VALID
   //void expand();
   void precalc();
 
@@ -1065,7 +1069,8 @@ void DEV_SPICE::internal_precalc()
     
     // ELEMENT::precalc(); .. don't call .. more analysis needed
     //-----
-    info.DEVtemperature(_model_spice, ckt());
+    int ok = info.DEVtemperature(_model_spice, ckt());
+    assert(ok == OK);
     //-----
     set_converged();
     _model_spice->GENinstances = NULL;
@@ -1605,16 +1610,53 @@ extern "C" {
   IFsimulator *ft_sim;
   //------------------------------------------------
   //------------------------------------------------
-  int IFerror(int spice_code, char* message, IFuid* id) /* output an error or warning message */
-  {untested();
-    switch (spice_code) {
-    case ERR_WARNING:error(bWARNING,message, reinterpret_cast<char*>(id)); break;
-    case ERR_FATAL:  error(bDANGER, message, reinterpret_cast<char*>(id)); throw Exception("");
-    case ERR_PANIC:  error(bDANGER, message, reinterpret_cast<char*>(id)); throw Exception("");
-    case ERR_INFO:   error(bTRACE,  message, reinterpret_cast<char*>(id)); break;
-    default:	     error(bDANGER, message, reinterpret_cast<char*>(id)); break;
+  int IFerror(int flags, char* format, IFuid* names) /* output an error or warning message */
+  {itested();
+    static struct mesg {
+      const char *string;
+      long flag;
+    } msgs[] = {
+      { "Warning", ERR_WARNING } ,
+      { "Fatal error", ERR_FATAL } ,
+      { "Panic", ERR_PANIC } ,
+      { "Note", ERR_INFO } ,
+      { NULL, 0 }
+    } ;
+
+    struct mesg *m;
+    char buf[10000], *s, *bptr;
+    int nindex = 0;
+
+    for (m = msgs; m->flag; m++) {
+      if (flags & m->flag) {
+	error(bDANGER, "%s: ", m->string);
+      }else{
+      }
     }
-    return OK;
+
+    for (s = format, bptr = buf; *s; s++) {
+      if (*s == '%' && (s == format || *(s-1) != '%') && *(s+1) == 's') {
+	if (names[nindex]) {
+	  strcpy(bptr, reinterpret_cast<char*>(names[nindex]));
+	}else{
+	  strcpy(bptr, "(null)");
+	}
+        bptr += strlen(bptr);
+        s++;
+        nindex++;
+      } else {
+        *bptr++ = *s;
+      }
+    }
+    *bptr = '\0';
+    switch (flags) {
+    case ERR_WARNING:error(bWARNING,buf); break;
+    case ERR_FATAL:  error(bDANGER, buf); throw Exception("");
+    case ERR_PANIC:  error(bDANGER, buf); throw Exception("");
+    case ERR_INFO:   error(bTRACE,  buf); break;
+    default:         error(bDANGER, buf); break;
+    }
+    return 0;
   }
   void internalerror(char *message)
   {untested();

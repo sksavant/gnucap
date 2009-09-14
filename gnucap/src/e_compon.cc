@@ -1,4 +1,4 @@
-/*$Id: e_compon.cc,v 26.117 2009/08/19 15:28:06 al Exp $ -*- C++ -*-
+/*$Id: e_compon.cc,v 26.119 2009/09/09 13:27:53 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -104,7 +104,7 @@ const MODEL_CARD* COMPONENT::find_model(const std::string& modelname)const
     const MODEL_CARD* model = dynamic_cast<const MODEL_CARD*>(c);
     if (!model) {untested();
       throw Exception_Type_Mismatch(long_label(), modelname, ".model");
-    }else if (!model->is_valid(this)) {untested();
+    }else if (!model->is_valid(this)) {itested();
       error(bWARNING, long_label() + ", " + modelname
 	   + "\nmodel and device parameters are incompatible, using anyway\n");
     }else{

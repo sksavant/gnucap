@@ -1,4 +1,4 @@
-/*$Id: u_parameter.h,v 26.116 2009/08/18 05:05:06 al Exp $ -*- C++ -*-
+/*$Id: u_parameter.h,v 26.119 2009/09/09 13:27:53 al Exp $ -*- C++ -*-
  * Copyright (C) 2005 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -186,7 +186,7 @@ void e_val(T* p, const T& def, const CARD_LIST*)
 /*--------------------------------------------------------------------------*/
 class INTERFACE PARAM_LIST {
 private:
-  std::map<const std::string, PARAMETER<double> > _pl;
+  mutable std::map<const std::string, PARAMETER<double> > _pl;
 public:
   PARAM_LIST* _try_again; // if you don't find it, also look here
 public:
@@ -210,8 +210,8 @@ public:
 
   void	eval_copy(PARAM_LIST&, const CARD_LIST*);
   bool  operator==(const PARAM_LIST& p)const {return _pl == p._pl;}
-  const PARAMETER<double>& deep_lookup(std::string);
-  const PARAMETER<double>& operator[](std::string i) {return deep_lookup(i);}
+  const PARAMETER<double>& deep_lookup(std::string)const;
+  const PARAMETER<double>& operator[](std::string i)const {return deep_lookup(i);}
   void set(std::string, const std::string&);
   void set_try_again(PARAM_LIST* t) {_try_again = t;}
 
@@ -232,7 +232,7 @@ inline double PARAMETER<double>::lookup_solve(const double& def, const CARD_LIST
   if (v != NOT_INPUT) {
     return v;
   }else{
-    PARAM_LIST* pl = const_cast<PARAM_LIST*>(scope->params());
+    const PARAM_LIST* pl = scope->params();
     return double(pl->deep_lookup(_s).e_val(def, scope));
   }
 }
@@ -240,7 +240,7 @@ inline double PARAMETER<double>::lookup_solve(const double& def, const CARD_LIST
 template <class T>
 inline T PARAMETER<T>::lookup_solve(const T& def, const CARD_LIST* scope)const
 {untested();
-  PARAM_LIST* pl = const_cast<PARAM_LIST*>(scope->params());
+  const PARAM_LIST* pl = scope->params();
   return T(pl->deep_lookup(_s).e_val(def, scope));
 }
 /*--------------------------------------------------------------------------*/

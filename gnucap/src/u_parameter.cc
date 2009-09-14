@@ -1,4 +1,4 @@
-/*$Id: u_parameter.cc,v 26.96 2008/10/09 05:36:27 al Exp $ -*- C++ -*-
+/*$Id: u_parameter.cc,v 26.119 2009/09/09 13:27:53 al Exp $ -*- C++ -*-
  * Copyright (C) 2005 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -119,7 +119,7 @@ void PARAM_LIST::eval_copy(PARAM_LIST& p, const CARD_LIST* scope)
   }
 }
 /*--------------------------------------------------------------------------*/
-const PARAMETER<double>& PARAM_LIST::deep_lookup(std::string Name)
+const PARAMETER<double>& PARAM_LIST::deep_lookup(std::string Name)const
 {
   if (OPT::case_insensitive) {
     notstd::to_lower(&Name);
