@@ -1,4 +1,4 @@
-/*$Id: d_switch.cc,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: d_switch.cc,v 26.121 2009/09/22 20:30:18 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -501,10 +501,10 @@ void SWITCH_BASE::tr_advance()
   assert(_y[0].f1 == ((_state[0] == _ON) ? m->ron : m->roff));
   assert(_y[0].f0 == LINEAR);
   trace4("", _m0.c1, 1./_y[0].f1, ((_m0.c1) - (1./_y[0].f1)), ((_m0.c1) / (1./_y[0].f1)));
-  assert(_m0.c1 == 1./_y[0].f1);
+  assert(conchk(_m0.c1, 1./_y[0].f1));
   assert(_m0.c0 == 0.);
   set_converged();
- }
+}
 /*--------------------------------------------------------------------------*/
 void SWITCH_BASE::tr_regress()
 {
@@ -547,10 +547,12 @@ bool SWITCH_BASE::do_tr()
       _y[0].f1 = (new_state == _ON) ? m->ron : m->roff;	/* unknown is off */
       _state[0] = new_state;
       _m0.c1 = 1./_y[0].f1;
+      trace4("change", new_state, old_state, _y[0].f1, _m0.c1);
       q_load();
       store_values();
       set_not_converged();
     }else{
+      trace3("no change", new_state, _y[0].f1, _m0.c1);
       set_converged();
     }
   }else{

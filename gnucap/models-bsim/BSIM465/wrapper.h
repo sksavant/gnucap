@@ -9,11 +9,11 @@ extern "C" {
 #define MODEL	 BSIM4model
 
 #define SPICE_LETTER "M"
-#define DEVICE_TYPE "bsim464|bsim4"
+#define DEVICE_TYPE "bsim465|bsim4"
 #define MIN_NET_NODES 4
 #define MAX_NET_NODES 4
 #define INTERNAL_NODES 8
-#define MODEL_TYPE "nmos14|pmos14|nmos54|pmos54|nmos60|pmos60|nmos464|pmos464"
+#define MODEL_TYPE "nmos14|pmos14|nmos54|pmos54|nmos60|pmos60|nmos465|pmos465"
 
 static std::string port_names[] = {"d", "g", "s", "b"};
 static std::string state_names[] = {"vbd",   "vbs",   "vgs",    "vds",  "vdbs", "vdbd",

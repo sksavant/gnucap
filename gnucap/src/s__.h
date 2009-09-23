@@ -1,4 +1,4 @@
-/*$Id: s__.h,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: s__.h,v 26.120 2009/09/21 05:33:46 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -145,6 +145,7 @@ public:
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
 protected:				/* s__solve.cc */
   bool	solve(OPT::ITL,TRACE);
+  bool	solve_with_homotopy(OPT::ITL,TRACE);
 protected:
 	void	finish_building_evalq();
 	void	advance_time();

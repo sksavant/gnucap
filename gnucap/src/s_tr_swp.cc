@@ -1,4 +1,4 @@
-/*$Id: s_tr_swp.cc,v 26.109 2009/02/02 06:39:10 al Exp $ -*- C++ -*-
+/*$Id: s_tr_swp.cc,v 26.121 2009/09/22 20:30:18 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -77,8 +77,8 @@ void TRANSIENT::sweep()
     }
     _converged = true;
   }else{
-    _converged = solve(OPT::DCBIAS,_trace);
-    if (!_converged) {untested();
+    _converged = solve_with_homotopy(OPT::DCBIAS,_trace);
+    if (!_converged) {
       error(bWARNING, "did not converge\n");
     }else{
     }

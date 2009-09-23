@@ -1,4 +1,4 @@
-/*$Id: e_elemnt.cc,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: e_elemnt.cc,v 26.120 2009/09/21 05:33:46 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -318,7 +318,7 @@ double ELEMENT::tr_probe_num(const std::string& x)const
     return _m0.f0();
   }else if (Umatch(x, "iof{fset} ")) {itested();
     return _m0.c0;
-  }else if (Umatch(x, "ip{assive} ")) {untested();
+  }else if (Umatch(x, "ip{assive} ")) {itested();
     return _m0.c1 * tr_involts();
   }else if (Umatch(x, "il{oss} ")) {untested();
     return _loss0 * tr_outvolts();

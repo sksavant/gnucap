@@ -1,4 +1,4 @@
-/*$Id: s__solve.cc,v 26.97 2008/10/11 03:13:53 al Exp $ -*- C++ -*-
+/*$Id: s__solve.cc,v 26.121 2009/09/22 20:30:18 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -43,13 +43,6 @@ bool SIM::solve(OPT::ITL itl, TRACE trace)
   
   reset_iteration_counter(iSTEP);
   advance_time();
-  
-  if (inc_mode_is_no()) {
-    // cover for set_flags, which would convert no to yes.
-    set_inc_mode_bad();
-  }else{
-    // set_flags will convert bad to no, leave yes as yes.
-  }
 
   damp = OPT::dampmax;
   
@@ -89,6 +82,39 @@ bool SIM::solve(OPT::ITL itl, TRACE trace)
       solve_equations();
     }
   }while (!converged && !exceeds_iteration_limit(itl));
+  return converged;
+}
+/*--------------------------------------------------------------------------*/
+bool SIM::solve_with_homotopy(OPT::ITL itl, TRACE trace)
+{
+  solve(itl, trace);
+  trace2("plain", ::status.iter[iSTEP], OPT::gmin);
+  if (!converged && OPT::itl[OPT::SSTEP] > 0) {
+    int save_itermin = OPT::itermin;
+    OPT::itermin = 0;
+    double save_gmin = OPT::gmin;
+    OPT::gmin = 1;
+    while (::status.iter[iPRINTSTEP] < OPT::itl[OPT::SSTEP] && OPT::gmin > save_gmin) {
+      set_inc_mode_no();
+      solve(itl, trace);
+      if (!converged) {
+	trace2("fail", ::status.iter[iSTEP], OPT::gmin);
+	OPT::gmin *= 3.5;
+      }else{
+	trace2("success", ::status.iter[iSTEP], OPT::gmin);
+	OPT::gmin /= 4;
+      }
+    }
+    OPT::itermin = save_itermin;
+    OPT::gmin = save_gmin;
+    solve(itl, trace);
+    if (!converged) {
+      trace2("final fail", ::status.iter[iSTEP], OPT::gmin);
+    }else{
+      trace2("final success", ::status.iter[iSTEP], OPT::gmin);
+    }
+  }else{
+  }
   return converged;
 }
 /*--------------------------------------------------------------------------*/
@@ -139,12 +165,19 @@ void SIM::set_flags()
 {
   limiting = false;
   fulldamp = false;
-  if (inc_mode_is_bad() || OPT::incmode == false
-      || is_iteration_number(OPT::itl[OPT::TRLOW])) {
+  
+  if (OPT::incmode == false) {
     set_inc_mode_no();
+  }else if (inc_mode_is_bad()) {
+    set_inc_mode_no();
+  }else if (is_iteration_number(OPT::itl[OPT::TRLOW])) {
+    set_inc_mode_no();
+  }else if (is_iteration_number(0)) {
+    // leave it as is
   }else{
     set_inc_mode_yes();
   }
+
   bypass_ok = 
     (is_step_rejected()  ||  damp < OPT::dampmax*OPT::dampmax)
     ? false : bool(OPT::bypass);

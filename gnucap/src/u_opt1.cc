@@ -1,4 +1,4 @@
-/*$Id: u_opt1.cc,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: u_opt1.cc,v 26.121 2009/09/22 20:30:18 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -113,8 +113,8 @@ int	OPT::itl[OPT::ITL_COUNT] = {
 		50, 	/* 2=dc transfer iteration limit */
 		6,	/* 3=lower transient iteration limit (spice is 4) */
 		20,	/* 4=upper transient iteration limit (spice is 10) */
-		5000,	/* 5=transient total iterations allowed */
-		0,	/* 6=source stepping iteration limit */
+		0,	/* 5=transient total iterations allowed */
+		5000,	/* 6=source stepping iteration limit */
 		1,	/* 7=worst case iteration limit */
 		99	/* 8=trace nonconvergence start iteration */
 };

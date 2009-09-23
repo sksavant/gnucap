@@ -1,4 +1,4 @@
-/*$Id: s_dc.cc,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: s_dc.cc,v 26.120 2009/09/21 05:33:46 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -359,7 +359,7 @@ void DCOP::sweep_recursive(int Nest)
   do {
     temp_c = temp_c_in;
     if (Nest == 0) {
-      int converged = solve(itl,_trace);
+      int converged = solve_with_homotopy(itl,_trace);
       if (!converged) {itested();
 	error(bWARNING, "did not converge\n");
       }else{

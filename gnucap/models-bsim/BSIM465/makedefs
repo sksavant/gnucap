@@ -1,0 +1,41 @@
+###########
+# Copyright 2000 Regents of the University of California.  All rights reserved.
+# Author: 2000 Weidong Liu
+# File: makedefs
+###########
+
+CFILES		= b4acld.c b4cvtest.c b4del.c b4dest.c \
+		  b4geo.c b4getic.c b4ld.c b4mask.c b4mdel.c \
+		  b4mpar.c b4par.c b4pzld.c b4set.c b4temp.c b4trunc.c \
+		  b4.c b4ask.c b4noi.c b4check.c
+
+COBJS		= b4acld.o b4cvtest.o b4del.o b4dest.o \
+		  b4geo.o b4getic.o b4ld.o b4mask.o b4mdel.o \
+		  b4mpar.o b4par.o b4pzld.o b4set.o b4temp.o b4trunc.o \
+		  b4.o b4ask.o b4noi.o b4check.o
+
+MODULE		= bsim4
+LIBRARY		= dev
+MODULE_TARGET	= $(OBJLIB_DIR)/$(MODULE)
+
+NUMBER		= 3
+
+b4.o :          b4.c
+b4acld.o :      b4acld.c
+b4ask.o :       b4ask.c
+b4check.o :     b4check.c
+b4cvtest.o :    b4cvtest.c
+b4del.o :       b4del.c
+b4dest.o :      b4dest.c
+b4geo.o:        b4geo.c
+b4getic.o :     b4getic.c
+b4ld.o :        b4ld.c
+b4mask.o :      b4mask.c
+b4mdel.o :      b4mdel.c
+b4mpar.o :      b4mpar.c
+b4noi.o :       b4noi.c
+b4par.o :       b4par.c
+b4pzld.o :      b4pzld.c
+b4set.o :       b4set.c
+b4temp.o :      b4temp.c
+b4trunc.o :     b4trunc.c

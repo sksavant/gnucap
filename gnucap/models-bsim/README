@@ -1,6 +1,6 @@
 This package contains the complete Berkeley "BSIM" archive, from
-http://www-device.eecs.berkeley.edu/~bsim3, as of December 2, 2008,
-including the latest BSIM4 (BSIM463) dated September 19, 2008.
+http://www-device.eecs.berkeley.edu/~bsim3, as of September 2009,
+including the latest BSIM4 (BSIM465) dated September 9, 2009.
 
 The models are licensed under Berkeley's license.  See the file
 COPYING for details.  Note that this is not GPL.

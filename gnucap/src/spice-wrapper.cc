@@ -1,4 +1,4 @@
-/* $Id: spice-wrapper.cc,v 26.119 2009/09/09 13:27:53 al Exp $ -*- C++ -*-
+/* $Id: spice-wrapper.cc,v 26.121 2009/09/22 20:30:18 al Exp $ -*- C++ -*-
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -92,7 +92,6 @@ const int MATRIX_NODES = (MAX_NET_NODES + INTERNAL_NODES);
 class DEV_SPICE;
 class MODEL_SPICE;
 static COMMON_SUBCKT Default_Params(CC_STATIC);
-static int _warn_level_parameter_passing_kluge; //BUG//parameter passing kluge
 /*--------------------------------------------------------------------------*/
 /* function mapping: see devdefs.h
  * DEVparam	DEV_SPICE::parse_spice
@@ -330,7 +329,6 @@ CKTcircuit MODEL_SPICE::_ckt;
     assert((ckt)->CKTabstol == OPT::abstol);			\
     assert((ckt)->CKTreltol == OPT::reltol);			\
     assert((ckt)->CKTvoltTol == OPT::vntol);			\
-    assert((ckt)->CKTgmin == OPT::gmin);			\
     assert((ckt)->CKTsrcFact == 1.);				\
     assert((ckt)->CKTdefaultMosL == OPT::defl);			\
     assert((ckt)->CKTdefaultMosW == OPT::defw);			\
@@ -388,6 +386,7 @@ void MODEL_SPICE::init_ckt()
 void DEV_SPICE::update_ckt()const
 {
   assert_ckt_initialized(ckt());
+  ckt()->CKTgmin = OPT::gmin;
   ckt()->CKTstat = NULL; // mark as not localized
   ckt()->CKTtime = SIM::time0;
   ckt()->CKTdelta = NOT_VALID; // localized
@@ -587,12 +586,12 @@ void MODEL_SPICE::precalc()
 	Set_param_by_name(i->first, to_string(i->second.e_val(1,scope())));
       }catch (Exception_No_Match&) {
 	if (i->first != "level") {
-	  error(_warn_level_parameter_passing_kluge,
+	  error(bWARNING,
 		long_label() + ": bad parameter: " + i->first + ", ignoring\n");
 	}else{
 	}
       }
-    }else{untested();
+    }else{
     }
   }
 
@@ -869,7 +868,6 @@ void DEV_SPICE::expand()
     }else{
       MODEL_CARD* mm = const_cast<MODEL_SPICE*>(_model);
       assert(mm);
-      _warn_level_parameter_passing_kluge = bWARNING;
       mm->precalc();
       // needed here because pointers may depend on values
       // other precalc is undesired side effect
@@ -985,7 +983,7 @@ void DEV_SPICE::precalc()
       try {
 	Set_param_by_name(i->first, to_string(i->second.e_val(1,scope())));
       }catch (Exception_No_Match&) {
-	error(_warn_level_parameter_passing_kluge,
+	error(bWARNING,
 	      long_label() + ": bad parameter: " + i->first + ", ignoring\n");
       }
     }else{
@@ -998,7 +996,6 @@ void DEV_SPICE::precalc()
   {
     MODEL_CARD* mm = const_cast<MODEL_SPICE*>(_model);
     assert(mm);
-    _warn_level_parameter_passing_kluge = bTRACE;
     mm->precalc();
   }
   _model_spice = &(_model->_gen_model_raw);
