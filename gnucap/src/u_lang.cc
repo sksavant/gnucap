@@ -1,4 +1,4 @@
-/*$Id: u_lang.cc,v 26.109 2009/02/02 06:39:10 al Exp $ -*- C++ -*-
+/*$Id: u_lang.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
  * Copyright (C) 2006 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -36,7 +36,11 @@ const CARD* LANGUAGE::find_proto(const std::string& Name, const CARD* Scope)
 {
   const CARD* p = NULL;
   if (Scope) {
-    p = Scope->find_looking_out(Name, bNOERROR);
+    try {
+      p = Scope->find_looking_out(Name);
+    }catch (Exception_Cant_Find& e) {
+      assert(!p);
+    }
   }else{
     CARD_LIST::const_iterator i = CARD_LIST::card_list.find_(Name);
     if (i != CARD_LIST::card_list.end()) {

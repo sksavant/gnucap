@@ -1,4 +1,4 @@
-/*$Id: d_logic.h,v 26.100 2008/11/17 09:11:43 al Exp $ -*- C++ -*-
+/*$Id: d_logic.h,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -107,15 +107,15 @@ public:
   explicit MODEL_LOGIC(const DEV_LOGIC*);
 	   ~MODEL_LOGIC()		{--_count;}
 private: // override virtuals
-  std::string dev_type()const		{return "logic";}
-  CARD* clone()const		{return new MODEL_LOGIC(*this);}
-  void precalc();
+  std::string	dev_type()const		{return "logic";}
+  CARD*		clone()const		{return new MODEL_LOGIC(*this);}
+  void		precalc_first();
   void		set_param_by_index(int, std::string&, int);
   bool		param_is_printable(int)const;
   std::string	param_name(int)const;
   std::string	param_name(int,int)const;
   std::string	param_value(int)const;
-  int param_count()const {return (13 + MODEL_CARD::param_count());}
+  int		param_count()const	{return (13 + MODEL_CARD::param_count());}
 public:
   static int	count()			{return _count;}
 public:

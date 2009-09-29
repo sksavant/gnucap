@@ -1,4 +1,4 @@
-/*$Id: lang_spice_in.cc,v 26.117 2009/08/19 15:28:06 al Exp $ -*- C++ -*-
+/*$Id: lang_spice_in.cc,v 26.122 2009/09/23 11:23:50 al Exp $ -*- C++ -*-
  * Copyright (C) 2006 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -384,7 +384,7 @@ void LANG_SPICE_BASE::parse_args(CS& cmd, CARD* x)
 	  try{
 	    x->set_param_by_name(Name, value);
 	  }catch (Exception_No_Match&) {itested();
-	    cmd.warn(bDANGER, there, "bad parameter, ignored");
+	    cmd.warn(bDANGER, there, x->long_label() + ": bad parameter " + Name + " ignored");
 	  }
 	}
       }

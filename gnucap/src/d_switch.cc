@@ -1,4 +1,4 @@
-/*$Id: d_switch.cc,v 26.121 2009/09/22 20:30:18 al Exp $ -*- C++ -*-
+/*$Id: d_switch.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -175,7 +175,7 @@ private: // override virtual
   void		set_dev_type(const std::string& nt);
   std::string	dev_type()const;
   CARD*		clone()const	{return new MODEL_SWITCH(*this);}
-  void		precalc();
+  void		precalc_first();
   void		set_param_by_index(int, std::string&, int);
   bool		param_is_printable(int)const;
   std::string	param_name(int)const;
@@ -281,11 +281,13 @@ void MODEL_SWITCH::set_dev_type(const std::string& new_type)
   }
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_SWITCH::precalc()
+void MODEL_SWITCH::precalc_first()
 {
+  MODEL_CARD::precalc_first();
+
   const CARD_LIST* par_scope = scope();
   assert(par_scope);
-  MODEL_CARD::precalc();
+
   vt.e_val(_default_vt, par_scope);
   vh.e_val(_default_vh, par_scope);
   ron.e_val(_default_ron, par_scope);

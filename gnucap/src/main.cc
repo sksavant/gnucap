@@ -1,4 +1,4 @@
-/*$Id: main.cc,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: main.cc,v 26.122 2009/09/23 11:23:50 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -39,7 +39,7 @@ static void sign_on(void)
     "Gnucap "  PATCHLEVEL  "\n"
     "The Gnu Circuit Analysis Package\n"
     "Never trust any version less than 1.0\n"
-    "Copyright 1982-2007, Albert Davis\n"
+    "Copyright 1982-2009, Albert Davis\n"
     "Gnucap comes with ABSOLUTELY NO WARRANTY\n"
     "This is free software, and you are welcome\n"
     "to redistribute it under the terms of \n"

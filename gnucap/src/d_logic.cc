@@ -1,4 +1,4 @@
-/*$Id: d_logic.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: d_logic.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -86,17 +86,20 @@ void DEV_LOGIC::expand()
   }
 
   std::string subckt_name(c->modelname()+c->name()+to_string(c->incount));
-  const CARD* model = find_looking_out(subckt_name, bDEBUG);
-  if (!model) {
+  try {
+    const CARD* model = find_looking_out(subckt_name);
+    
+    if(!dynamic_cast<const MODEL_SUBCKT*>(model)) {untested();
+      error(((nstat) ? (bDEBUG) : (bWARNING)),
+	    long_label() + ": " + subckt_name + " is not a subckt, forcing digital\n");
+    }else{
+      _gatemode = OPT::mode;    
+      renew_subckt(model, this, scope(), NULL/*&(c->_params)*/);    
+      subckt()->expand();
+    }
+  }catch (Exception_Cant_Find&) {
     error(((nstat) ? (bDEBUG) : (bWARNING)), 
 	  long_label() + ": can't find subckt: " + subckt_name + ", forcing digital\n");
-  }else if(!dynamic_cast<const MODEL_SUBCKT*>(model)) {untested();
-    error(((nstat) ? (bDEBUG) : (bWARNING)),
-	  long_label() + ": " + subckt_name + " is not a subckt, forcing digital\n");
-  }else{
-    _gatemode = OPT::mode;    
-    renew_subckt(model, this, scope(), NULL/*&(c->_params)*/);    
-    subckt()->expand();
   }
   
   assert(!is_constant()); /* is a BUG */

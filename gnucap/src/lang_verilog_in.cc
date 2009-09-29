@@ -1,4 +1,4 @@
-/*$Id: lang_verilog_in.cc,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+/*$Id: lang_verilog_in.cc,v 26.122 2009/09/23 11:23:50 al Exp $ -*- C++ -*-
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -40,12 +40,12 @@ static void parse_args_paramset(CS& cmd, MODEL_CARD* x)
 
   while (cmd >> '.') {
     unsigned here = cmd.cursor();
+    std::string name, value;
     try{
-      std::string name, value;
       cmd >> name >> '=' >> value >> ';';
       x->set_param_by_name(name, value);
     }catch (Exception_No_Match&) {untested();
-      cmd.warn(bDANGER, here, "bad parameter, ignored");
+      cmd.warn(bDANGER, here, x->long_label() + ": bad parameter " + name + " ignored");
     }
   }
 }

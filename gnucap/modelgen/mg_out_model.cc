@@ -1,4 +1,4 @@
-/*$Id: mg_out_model.cc,v 26.98 2008/10/24 06:09:08 al Exp $ -*- C++ -*-
+/*$Id: mg_out_model.cc,v 26.124 2009/09/28 22:58:50 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -291,14 +291,14 @@ static void make_model_set_dev_type(std::ofstream& out, const Model& m)
 static void make_model_precalc(std::ofstream& out, const Model& m)
 {
   out <<
-    "void MODEL_" << m.name() << "::precalc()\n"
+    "void MODEL_" << m.name() << "::precalc_first()\n"
     "{\n"
     "    const CARD_LIST* par_scope = scope();\n"
     "    assert(par_scope);\n";
   if (!m.hide_base()) {
-    out << "    MODEL_" << m.inherit() << "::precalc();\n";
+    out << "    MODEL_" << m.inherit() << "::precalc_first();\n";
   }else{
-    out << "    MODEL_CARD::precalc();\n";
+    out << "    MODEL_CARD::precalc_first();\n";
   }
   make_final_adjust(out, m.independent());
   out <<

@@ -1,4 +1,4 @@
-/*$Id: mg_out_h.cc,v 26.98 2008/10/24 06:09:08 al Exp $ -*- C++ -*-
+/*$Id: mg_out_h.cc,v 26.124 2009/09/28 22:58:50 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -107,7 +107,7 @@ static void make_model(std::ofstream& out, const Model& m)
     "  std::string dev_type()const;\n"
     "  void      set_dev_type(const std::string& nt);\n"
     "  CARD*     clone()const {return new " << class_name << "(*this);}\n"
-    "  void      precalc();\n"
+    "  void      precalc_first();\n"
     "  SDP_CARD* new_sdp(COMMON_COMPONENT* c)const;\n"
     "  void      set_param_by_index(int, std::string&, int);\n"
     "  bool      param_is_printable(int)const;\n"

@@ -1,4 +1,4 @@
-/*$Id: e_ccsrc.cc,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+/*$Id: e_ccsrc.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -30,7 +30,7 @@ void CCSRC_BASE::expand_last()
 
   if (_input_label != "") {
     _input = dynamic_cast<const ELEMENT*>(find_in_my_scope(_input_label));
-  }else{
+  }else{untested();
     // _input already set, an internal element.  example: mutual L.
   }
 

@@ -1,4 +1,4 @@
-/* $Id: spice-wrapper.cc,v 26.121 2009/09/22 20:30:18 al Exp $ -*- C++ -*-
+/* $Id: spice-wrapper.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -156,8 +156,9 @@ public: // parameters
   std::string param_name(int)const;
   std::string param_name(int i, int j)const;
   std::string param_value(int)const; 
-  void set_param_by_name(std::string Name, std::string Value)  {_params.set(Name, Value);}
+  void set_param_by_name(std::string Name, std::string Value);
   void set_param_by_index(int, std::string&, int);
+  int param_count_dont_print()const {return MODEL_CARD::param_count();}
   int param_count()const { return (static_cast<int>(_params.size()) + MODEL_CARD::param_count());}
 
   void Set_param_by_name(std::string Name, std::string Value);
@@ -244,7 +245,7 @@ public:	// type
   std::string dev_type()const	{return _modelname;}
 public:	// ports
   // bool port_exists(int i)const //COMPONENT
-  std::string port_name(int i)const {untested();
+  std::string port_name(int i)const {itested();
     assert(i >= 0);
     assert(i < MAX_NET_NODES);
     return port_names[i];
@@ -258,8 +259,10 @@ private: // parameters
   //std::string Param_name(int)const;
   //std::string Param_name(int i, int j)const {return STORAGE::Param_name(i, j);}
   //std::string Param_value(int)const; 
+  void set_param_by_name(std::string Name, std::string Value);
   void Set_param_by_name(std::string Name, std::string Value);
   void Set_param_by_index(int, std::string&, int);
+  int param_count_dont_print()const {return common()->COMMON_COMPONENT::param_count();}
 private:
   CKTcircuit* ckt()const	{return MODEL_SPICE::ckt();}
   void init_ckt()		{MODEL_SPICE::init_ckt();}
@@ -572,12 +575,27 @@ void MODEL_SPICE::Set_param_by_name(std::string Name, std::string new_value)
     }else{
     }
   }
-  throw Exception_No_Match(Name);
+  if (Name != "level") {
+    throw Exception_No_Match(Name);
+  }else{
+  }
+}
+/*--------------------------------------------------------------------------*/
+void MODEL_SPICE::set_param_by_name(std::string Name, std::string Value)
+{
+  if (OPT::case_insensitive) {
+    notstd::to_lower(&Name);
+  }else{
+  }
+  _params.set(Name, Value);
+  Set_param_by_name(Name, to_string(_params[Name].e_val(1,scope())));
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_SPICE::precalc()
 {
   MODEL_CARD::precalc();
+
+  Set_param_by_name(_key, "1");
 
   // push down parameters into raw spice data
   for (PARAM_LIST::iterator i = _params.begin(); i != _params.end(); ++i) {
@@ -585,11 +603,7 @@ void MODEL_SPICE::precalc()
       try {
 	Set_param_by_name(i->first, to_string(i->second.e_val(1,scope())));
       }catch (Exception_No_Match&) {
-	if (i->first != "level") {
-	  error(bWARNING,
-		long_label() + ": bad parameter: " + i->first + ", ignoring\n");
-	}else{
-	}
+	error(bTRACE, long_label() + ": bad parameter: " + i->first + ", ignoring\n");
       }
     }else{
     }
@@ -616,7 +630,10 @@ void MODEL_SPICE::set_dev_type(const std::string& new_type)
   _gen_model_raw.GENmodName = p;
 
   _key = new_type;
-  set_param_by_name(_key, "1");
+  if (OPT::case_insensitive) {
+    notstd::to_lower(&_key);
+  }else{
+  }
 }
 /*--------------------------------------------------------------------------*/
 bool MODEL_SPICE::param_is_printable(int i)const
@@ -802,6 +819,19 @@ void DEV_SPICE::Set_param_by_name(std::string Name, std::string new_value)
   mutable_common()->COMMON_COMPONENT::Set_param_by_name(Name, new_value);
 }
 /*--------------------------------------------------------------------------*/
+void DEV_SPICE::set_param_by_name(std::string Name, std::string Value)
+{
+  COMPONENT::set_param_by_name(Name, Value);
+
+  if (OPT::case_insensitive) {
+    notstd::to_lower(&Name);
+  }else{
+  }
+  COMMON_SUBCKT* c = dynamic_cast<COMMON_SUBCKT*>(mutable_common());
+  assert(c);
+  Set_param_by_name(Name, to_string(c->_params[Name].e_val(1,scope())));
+}
+/*--------------------------------------------------------------------------*/
 void DEV_SPICE::Set_param_by_index(int i, std::string& new_value, int offset)
 {
   assert_instance();
@@ -983,8 +1013,7 @@ void DEV_SPICE::precalc()
       try {
 	Set_param_by_name(i->first, to_string(i->second.e_val(1,scope())));
       }catch (Exception_No_Match&) {
-	error(bWARNING,
-	      long_label() + ": bad parameter: " + i->first + ", ignoring\n");
+	error(bTRACE, long_label() + ": bad parameter: " + i->first + ", ignoring\n");
       }
     }else{
     }

@@ -1,4 +1,4 @@
-/*$Id: e_model.cc,v 26.109 2009/02/02 06:39:10 al Exp $ -*- C++ -*-
+/*$Id: e_model.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -90,9 +90,10 @@ std::string MODEL_CARD::param_value(int i)const
   }
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_CARD::precalc()
+void MODEL_CARD::precalc_first()
 {
-  CARD::precalc();
+  CARD::precalc_first();
+
   _tnom_c.e_val(OPT::tnom_c, scope());
 }
 /*--------------------------------------------------------------------------*/

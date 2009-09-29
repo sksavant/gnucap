@@ -1,4 +1,4 @@
-/*$Id: e_card.cc,v 26.118 2009/08/22 21:08:57 al Exp $ -*- C++ -*-
+/*$Id: e_card.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -112,13 +112,33 @@ const CARD_LIST* CARD::scope()const
 /* find_in_my_scope: find in same scope as myself
  * whatever is found will have the same owner as me.
  * capable of finding me.
- * throws exception, prints error, if can't find.
+ * throws exception if can't find.
  */
 CARD* CARD::find_in_my_scope(const std::string& name)
 {
+  assert(name != "");
   assert(scope());
 
   CARD_LIST::iterator i = scope()->find_(name);
+  if (i == scope()->end()) {
+    throw Exception_Cant_Find(long_label(), name,
+			      ((owner()) ? owner()->long_label() : "(root)"));
+  }else{
+  }
+  return *i;
+}
+/*--------------------------------------------------------------------------*/
+/* find_in_my_scope: find in same scope as myself
+ * whatever is found will have the same owner as me.
+ * capable of finding me.
+ * throws exception if can't find.
+ */
+const CARD* CARD::find_in_my_scope(const std::string& name)const
+{
+  assert(name != "");
+  assert(scope());
+
+  CARD_LIST::const_iterator i = scope()->find_(name);
   if (i == scope()->end()) {
     throw Exception_Cant_Find(long_label(), name,
 			      ((owner()) ? owner()->long_label() : "(root)"));
@@ -131,71 +151,44 @@ CARD* CARD::find_in_my_scope(const std::string& name)
  * parent is what my scope is a copy of.
  * capable of finding my parent, who should be just like me.
  * If there is no parent (I'm an original), use my scope.
- * throws exception, prints error, if can't find.
+ * throws exception if can't find.
  */
-const CARD* CARD::find_in_parent_scope(const std::string& name,
-				       int warnlevel)const
+const CARD* CARD::find_in_parent_scope(const std::string& name)const
 {
   assert(name != "");
   const CARD_LIST* p_scope = (scope()->parent()) ? scope()->parent() : scope();
-  if (scope()->parent()) {
-  }else{
-  }
 
   CARD_LIST::const_iterator i = p_scope->find_(name);
   if (i == p_scope->end()) {
-    error(warnlevel, long_label() + ": can't find: " + name + " in " 
-	  + long_label() + "\n"); // wrong??
-	  //	  + ((owner()) ? owner()->long_label() : "(root)") + "\n");
-    return NULL;
+    throw Exception_Cant_Find(long_label(), name);
   }else{
-    return *i;
   }
+  return *i;
 }
 /*--------------------------------------------------------------------------*/
 /* find_looking_out: find in my or enclosing scope
  * capable of finding me, or anything back to root.
- * throws exception, prints error, if can't find.
+ * throws exception if can't find.
  */
-const CARD* CARD::find_looking_out(const std::string& name, int warnlevel)const
+const CARD* CARD::find_looking_out(const std::string& name)const
 {
-  const CARD* c = find_in_parent_scope(name, warnlevel);
-  if (!c) {
+  try {
+    return find_in_parent_scope(name);
+  }catch (Exception_Cant_Find&) {
     if (owner()) {
-      c = owner()->find_looking_out(name, warnlevel);
+      return owner()->find_looking_out(name);
     }else if (makes_own_scope()) {
       // probably a subckt or "module"
       CARD_LIST::const_iterator i = CARD_LIST::card_list.find_(name);
       if (i != CARD_LIST::card_list.end()) {itested();
-	c = *i;
+	return *i;
       }else{
-	assert(!c);
+	throw;
       }
     }else{
-      assert(!c);
+      throw;
     }
-  }else{
-    assert(c);
   }
-  if (!c) {
-    error(warnlevel, "can't find: " + name + " in " + long_label() + "\n");
-  }else{
-    assert(c);
-  }
-  return c;
-}
-/*--------------------------------------------------------------------------*/
-const CARD* CARD::find_looking_out(CS& cmd, int warnlevel)const
-{
-  unsigned here = cmd.cursor();
-  std::string name;
-  cmd >> name;
-  const CARD* c = find_looking_out(name, warnlevel);
-  if (!c) {itested();
-    cmd.reset(here);
-  }else{itested();
-  }
-  return c;
 }
 /*--------------------------------------------------------------------------*/
 bool CARD::node_is_grounded(int i)const 

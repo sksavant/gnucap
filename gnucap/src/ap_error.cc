@@ -1,4 +1,4 @@
-/*$Id: ap_error.cc,v 26.109 2009/02/02 06:39:10 al Exp $ -*- C++ -*-
+/*$Id: ap_error.cc,v 26.122 2009/09/23 11:23:50 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -54,15 +54,13 @@ CS & CS::warn(int badness, unsigned spot, const std::string& message)
 {
   if (badness >= OPT::picky) {
     if (spot < 40) {
-      //IO::error.form("%.60s\n", _cmd.c_str());
-      IO::error << _cmd.substr(0,60) << '\n';
+      IO::error << _cmd.substr(0,70) << '\n';
       IO::error.tab(spot);
     }else{
-      //IO::error.form("... %.56s\n", &_cmd.c_str()[spot-36]);
-      IO::error << "... " << _cmd.substr(spot-36, 56) << '\n';
+      IO::error << _cmd.substr(0,15) << " ... " << _cmd.substr(spot-20, 56) << '\n';
       IO::error.tab(40);
     }
-    error(badness, "^ ? " + message + '\n');
+    IO::error << "^ ? " + message + '\n';
   }else{
   }
   return *this;

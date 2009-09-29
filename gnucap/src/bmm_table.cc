@@ -1,4 +1,4 @@
-/*$Id: bmm_table.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: bmm_table.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -73,7 +73,7 @@ public:
   ~MODEL_TABLE();
 private: // override virtual
   std::string dev_type()const		{return "table";}
-  void  precalc();
+  void  precalc_first();
   COMMON_COMPONENT* new_common()const	{return new EVAL_BM_TABLE;}
   CARD* clone()const			{return new MODEL_TABLE(*this);}
 
@@ -217,14 +217,17 @@ void MODEL_TABLE::print_args_obsolete_callback(OMSTREAM& o, LANGUAGE* lang)const
   o << ')';
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_TABLE::precalc()
+void MODEL_TABLE::precalc_first()
 {
+  MODEL_CARD::precalc_first();
+
   const CARD_LIST* par_scope = scope();
   assert(par_scope);
-  MODEL_CARD::precalc();
+
   _order.e_val(_default_order, par_scope);
   _below.e_val(_default_below, par_scope);
   _above.e_val(_default_above, par_scope);
+
   {
     double last = -BIGBIG;
     for (std::vector<std::pair<PARAMETER<double>,PARAMETER<double> > >::
@@ -242,6 +245,7 @@ void MODEL_TABLE::precalc()
       last = p->first;
     }
   }
+
   delete _spline;
   double below = _below.has_hard_value() ? _below : NOT_INPUT;
   double above = _above.has_hard_value() ? _above : NOT_INPUT;

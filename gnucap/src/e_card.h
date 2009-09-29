@@ -1,4 +1,4 @@
-/*$Id: e_card.h,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+/*$Id: e_card.h,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -52,9 +52,9 @@ public:
   //--------------------------------------------------------------------
 public:   				// traversal functions
   CARD* find_in_my_scope(const std::string& name);
-  const CARD* find_in_parent_scope(const std::string& name, int warn)const;
-  const CARD* find_looking_out(const std::string& name, int warn)const;
-  const CARD* find_looking_out(CS& cmd, int warn)const;
+  const CARD* find_in_my_scope(const std::string& name)const;
+  const CARD* find_in_parent_scope(const std::string& name)const;
+  const CARD* find_looking_out(const std::string& name)const;
   //--------------------------------------------------------------------
 public:					// virtuals. -- the important stuff
   virtual bool use_obsolete_callback_parse()const {return false;}
@@ -63,6 +63,7 @@ public:					// virtuals. -- the important stuff
   virtual char	 id_letter()const	{unreachable(); return '\0';}
   virtual CARD*	 clone()const		{unreachable(); return NULL;}
   virtual CARD*	 clone_instance()const  {itested(); return clone();}
+  virtual void	 precalc_first()	{itested();}
   virtual void	 expand_first()		{}
   virtual void	 expand()		{}
   virtual void	 expand_last()		{}
@@ -150,6 +151,7 @@ public: // parameters
   virtual void set_param_by_index(int i, std::string&, int offset)
 				{untested(); throw Exception_Too_Many(i, 0, offset);}
   virtual std::string value_name()const = 0;
+  virtual int param_count_dont_print()const	{return 0;}
   virtual int param_count()const		{return 0;}
   virtual bool param_is_printable(int)const	{untested(); return false;}
   virtual std::string param_name(int)const	{return "";}

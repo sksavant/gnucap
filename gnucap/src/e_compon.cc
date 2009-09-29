@@ -1,4 +1,4 @@
-/*$Id: e_compon.cc,v 26.119 2009/09/09 13:27:53 al Exp $ -*- C++ -*-
+/*$Id: e_compon.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -65,18 +65,21 @@ const MODEL_CARD* COMPONENT::find_model(const std::string& modelname)const
     {
       int bin_count = 0;
       for (const CARD* Scope = this; Scope && !c; Scope = Scope->owner()) {
-	c = Scope->find_in_parent_scope(modelname, bDEBUG);
-	if (!c) {
+	// start here, looking out
+	try {
+	  c = Scope->find_in_my_scope(modelname);
+	}catch (Exception_Cant_Find& e1) {
 	  // didn't find plain model.  try binned models
 	  bin_count = 0;
 	  for (;;) {
+	    // loop over binned models
 	    std::string extended_name = modelname + '.' + to_string(++bin_count);
-	    c = Scope->find_in_parent_scope(extended_name, bDEBUG);
-	    if (!c) {
-	      // didn't find a binned model
+	    try {
+	      c = Scope->find_in_my_scope(extended_name);
+	    }catch (Exception_Cant_Find& e2) {
+	      // that's all .. looked at all of them
+	      c = NULL;
 	      break;
-	    }else{
-	      // keep looking
 	    }
 	    const MODEL_CARD* m = dynamic_cast<const MODEL_CARD*>(c);
 	    if (m && m->is_valid(this)) {
@@ -86,7 +89,6 @@ const MODEL_CARD* COMPONENT::find_model(const std::string& modelname)const
 	      // keep looking
 	    }
 	  }
-	}else{
 	}
       }
       if (!c) {
@@ -279,12 +281,6 @@ std::string COMMON_COMPONENT::param_value(int i)const
 /*--------------------------------------------------------------------------*/
 void COMMON_COMPONENT::precalc(const CARD_LIST* Scope)
 {
-  if (_model) {
-    MODEL_CARD* m = const_cast<MODEL_CARD*>(_model);
-    assert(m);
-    m->precalc();
-  }else{
-  }
   assert(Scope);
   _tnom_c.e_val(OPT::tnom_c, Scope);
   _dtemp.e_val(0., Scope);

@@ -1,4 +1,4 @@
-/*$Id: s__solve.cc,v 26.121 2009/09/22 20:30:18 al Exp $ -*- C++ -*-
+/*$Id: s__solve.cc,v 26.122 2009/09/23 11:23:50 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -95,6 +95,7 @@ bool SIM::solve_with_homotopy(OPT::ITL itl, TRACE trace)
     double save_gmin = OPT::gmin;
     OPT::gmin = 1;
     while (::status.iter[iPRINTSTEP] < OPT::itl[OPT::SSTEP] && OPT::gmin > save_gmin) {
+      //CARD_LIST::card_list.precalc();
       set_inc_mode_no();
       solve(itl, trace);
       if (!converged) {
@@ -107,6 +108,7 @@ bool SIM::solve_with_homotopy(OPT::ITL itl, TRACE trace)
     }
     OPT::itermin = save_itermin;
     OPT::gmin = save_gmin;
+    //CARD_LIST::card_list.precalc();
     solve(itl, trace);
     if (!converged) {
       trace2("final fail", ::status.iter[iSTEP], OPT::gmin);

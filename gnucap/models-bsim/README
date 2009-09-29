@@ -1,6 +1,7 @@
 This package contains the complete Berkeley "BSIM" archive, from
 http://www-device.eecs.berkeley.edu/~bsim3, as of September 2009,
-including the latest BSIM4 (BSIM465) dated September 9, 2009.
+including the latest BSIM4 (BSIM465) dated September 9, 2009
+and the latest BSIMSOI (BSIMSOI4p2) dated September 22, 2009.
 
 The models are licensed under Berkeley's license.  See the file
 COPYING for details.  Note that this is not GPL.
@@ -14,18 +15,6 @@ a "Makefile" and "wrapper.h" for each one.  Most of them were written
 for Spice 3f5, but some older ones were written for Spice 3e2.
 Ordinarily they are incompatible, but here just specifying which
 format it is in the Makefile takes care of it.
-
-They have been minimally tested, and appear to work.  Minimal testing
-means that one or two tests were run on the latest of each kind, and
-they appear to give believable reslts.  A few tests were run comparing
-to references supplied by Berkeley, and the results match within set
-tolerances.
-
-There may be a problem with the BSIMSOI models when not all nodes are
-specified and the temperature node is used.  If you use the
-temperature node, specify all nodes.  Use of the temperature node
-without other optional nodes has not been tested, and probably doesn't
-work.
 
 All of these override the "M" device.  The "M" device will be the last
 one loaded.  If you want to have more than one type, use the dot form
@@ -80,6 +69,6 @@ It doesn't work with 5 nodes.
 Other than that, it seems to work,
 but not much has been tested.
 
-Other BSIMSOI ..  untested, but expected to work,
+Other BSIMSOI ..  untested, but expected to be the same,
 with an expected problem if you don't use all connections.
 

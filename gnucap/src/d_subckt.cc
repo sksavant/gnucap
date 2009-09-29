@@ -1,4 +1,4 @@
-/*$Id: d_subckt.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: d_subckt.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -155,12 +155,10 @@ void DEV_SUBCKT::expand()
   COMMON_SUBCKT* c = prechecked_cast<COMMON_SUBCKT*>(mutable_common());
   assert(c);
   
-  const CARD* model = find_looking_out(c->modelname(), bDEBUG);
+  const CARD* model = find_looking_out(c->modelname());
 
   if (!_parent) {
-    if (!model) {
-      throw Exception_Cant_Find(long_label(), c->modelname());
-    }else if(!dynamic_cast<const MODEL_SUBCKT*>(model)) {
+    if(!dynamic_cast<const MODEL_SUBCKT*>(model)) {
       throw Exception_Type_Mismatch(long_label(), c->modelname(), "subckt");
     }else{
       _parent = prechecked_cast<const MODEL_SUBCKT*>(model);

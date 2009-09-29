@@ -1,4 +1,4 @@
-/*$Id: d_logicmod.cc,v 26.98 2008/10/24 06:10:07 al Exp $ -*- C++ -*-
+/*$Id: d_logicmod.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -67,11 +67,13 @@ MODEL_LOGIC::MODEL_LOGIC(const MODEL_LOGIC& p)
   ++_count;
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_LOGIC::precalc()
+void MODEL_LOGIC::precalc_first()
 {
+  MODEL_CARD::precalc_first();
+
   const CARD_LIST* par_scope = scope();
   assert(par_scope);
-  MODEL_CARD::precalc();
+
   delay.e_val(1e-9, par_scope);
   vmax.e_val(5., par_scope);
   vmin.e_val(0., par_scope);
@@ -85,6 +87,7 @@ void MODEL_LOGIC::precalc()
   mr.e_val(5., par_scope);
   mf.e_val(5., par_scope);
   over.e_val(.1, par_scope);
+
   range = vmax - vmin;
 }
 /*--------------------------------------------------------------------------*/

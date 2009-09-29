@@ -1,4 +1,4 @@
-/*$Id: e_cardlist.cc,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+/*$Id: e_cardlist.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -153,24 +153,19 @@ CARD_LIST& CARD_LIST::expand()
 {
   for (iterator ci=begin(); ci!=end(); ++ci) {
     trace_func_comp();
-    if (!dynamic_cast<MODEL_CARD*>(*ci)) {
-      (**ci).expand_first();
-    }else{
-    }
+    (**ci).precalc_first();
   }
   for (iterator ci=begin(); ci!=end(); ++ci) {
     trace_func_comp();
-    if (!dynamic_cast<MODEL_CARD*>(*ci)) {
-      (**ci).expand();
-    }else{
-    }
+    (**ci).expand_first();
   }
   for (iterator ci=begin(); ci!=end(); ++ci) {
     trace_func_comp();
-    if (!dynamic_cast<MODEL_CARD*>(*ci)) {
-      (**ci).expand_last();
-    }else{
-    }
+    (**ci).expand();
+  }
+  for (iterator ci=begin(); ci!=end(); ++ci) {
+    trace_func_comp();
+    (**ci).expand_last();
   }
   return *this;
 }
@@ -443,7 +438,7 @@ void CARD_LIST::shallow_copy(const CARD_LIST* p)
   _parent = p;
   for (const_iterator ci = p->begin(); ci != p->end(); ++ci) {
     trace_func_comp();
-    if ((**ci).is_device()) {
+    if ((**ci).is_device() || dynamic_cast<MODEL_CARD*>(*ci)) {
       CARD* copy = (**ci).clone();
       push_back(copy);
     }else{
@@ -500,10 +495,13 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
   // scan the list, map the nodes
   for (CARD_LIST::iterator ci = begin(); ci != end(); ++ci) {
     // for each card in card_list
-    assert((**ci).is_device());
-    for (int ii = 0;  ii < (**ci).net_nodes();  ++ii) {
-      // for each connection node in card
-      (**ci).n_(ii).map_subckt_node(map, owner);
+    if ((**ci).is_device()) {
+      for (int ii = 0;  ii < (**ci).net_nodes();  ++ii) {
+	// for each connection node in card
+	(**ci).n_(ii).map_subckt_node(map, owner);
+      }
+    }else{
+      assert(dynamic_cast<MODEL_CARD*>(*ci));
     }
   }
 }

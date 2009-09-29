@@ -34,6 +34,7 @@ all:
 	-(cd BSIMSOI3p2; make)
 	-(cd BSIMSOI4p0; make)
 	-(cd BSIMSOI4p1; make)
+	-(cd BSIMSOI4p2; make)
 
 clean:
 	(cd BSIM3v301; make clean)
@@ -70,6 +71,7 @@ clean:
 	(cd BSIMSOI3p2; make clean)
 	(cd BSIMSOI4p0; make clean)
 	(cd BSIMSOI4p1; make clean)
+	(cd BSIMSOI4p2; make clean)
 
 install:
 	(cd BSIM3v301; make install)
@@ -106,3 +108,4 @@ install:
 	(cd BSIMSOI3p2; make install)
 	(cd BSIMSOI4p0; make install)
 	(cd BSIMSOI4p1; make install)
+	(cd BSIMSOI4p2; make install)
