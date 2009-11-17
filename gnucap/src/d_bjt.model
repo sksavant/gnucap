@@ -1,4 +1,4 @@
-/* $Id: d_bjt.model,v 26.93 2008/08/29 14:01:28 al Exp $ -*- C++ -*-
+/* $Id: d_bjt.model,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2002 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -225,11 +225,11 @@ model BUILT_IN_BJT {
 
       double ibc "bc Saturation Current"
 	name=IBC default=NA print_test="ibe != ibc"
-	final_default="((has_hard_value(is)) ? is : 1e-16)";
+	final_default="((has_hard_value(i_s)) ? i_s : 1e-16)";
       double ibe "be Saturation Current"
 	name=IBE default=NA print_test="ibe != ibc"
-	final_default="((has_hard_value(is)) ? is : 1e-16)";
-      double is "Saturation Current"
+	final_default="((has_hard_value(i_s)) ? i_s : 1e-16)";
+      double i_s "Saturation Current"
 	name=IS default=NA print_test="ibe == ibc"
 	final_default="((ibe == ibc) ? ibe : NA)";
 
@@ -253,12 +253,12 @@ model BUILT_IN_BJT {
 
       // low current beta degeneration
       double isc "B-C leakage saturation current"
-	name=ISC default=NA final_default="(c4*is)";
+	name=ISC default=NA final_default="(c4*ibc)";
       double c4 "obsolete, don't use" name=C4 alt_name=JLC default=0.;
       double nc "B-C leakage emission coefficient" name=NC default=2.;
 
       double ise "B-E leakage saturation current"
-	name=ISE default=NA final_default="(c2*is)";
+	name=ISE default=NA final_default="(c2*ibe)";
       double c2 "obsolete, don't use" name=C2 alt_name=JLE default=0.;
       double ne "B-E leakage emission coefficient" name=NE default=1.5;
 

@@ -1,4 +1,4 @@
-/*$Id: bm_pulse.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: bm_pulse.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -55,9 +55,10 @@ private: // override vitrual
   COMMON_COMPONENT* clone()const	{return new EVAL_BM_PULSE(*this);}
   void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
 
-  //void  	expand(const COMPONENT*);//COMPONENT_COMMON/nothing
-  //COMMON_COMPONENT* deflate();	 //COMPONENT_COMMON/nothing
-  void		precalc(const CARD_LIST*);
+  void		precalc_first(const CARD_LIST*);
+  //void  	expand(const COMPONENT*);	//COMPONENT_COMMON/nothing
+  //COMMON_COMPONENT* deflate();		//COMPONENT_COMMON/nothing
+  //void	precalc_last(const CARD_LIST*);	//COMPONENT_COMMON
 
   void		tr_eval(ELEMENT*)const;
   //void	ac_eval(ELEMENT*)const; //EVAL_BM_ACTION_BASE
@@ -129,10 +130,10 @@ void EVAL_BM_PULSE::print_common_obsolete_callback(OMSTREAM& o, LANGUAGE* lang)c
   EVAL_BM_ACTION_BASE::print_common_obsolete_callback(o, lang);
 }
 /*--------------------------------------------------------------------------*/
-void EVAL_BM_PULSE::precalc(const CARD_LIST* Scope)
+void EVAL_BM_PULSE::precalc_first(const CARD_LIST* Scope)
 {
   assert(Scope);
-  EVAL_BM_ACTION_BASE::precalc(Scope);
+  EVAL_BM_ACTION_BASE::precalc_first(Scope);
   _iv.e_val(_default_iv, Scope);
   _pv.e_val(_default_pv, Scope);
   _delay.e_val(_default_delay, Scope);
@@ -141,13 +142,13 @@ void EVAL_BM_PULSE::precalc(const CARD_LIST* Scope)
   _width.e_val(_default_width, Scope);
   _period.e_val(_default_period, Scope);
 
-  if (_width == 0.) {
+  if (_width == 0.) {untested();
     _width = _default_width;
-    untested();
+  }else{
   }
-  if (_period == 0.) {
+  if (_period == 0.) {untested();
     _period = _default_period;
-    untested();
+  }else{
   }
 }
 /*--------------------------------------------------------------------------*/

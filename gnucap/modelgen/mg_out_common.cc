@@ -1,4 +1,4 @@
-/*$Id: mg_out_common.cc,v 26.98 2008/10/24 06:09:08 al Exp $ -*- C++ -*-
+/*$Id: mg_out_common.cc,v 26.128 2009/11/10 04:21:03 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -340,13 +340,7 @@ static void make_common_expand(std::ofstream& out, const Device& d)
     "    throw Exception_Model_Type_Mismatch(d->long_label(), modelname(), \"" 
       << d.parse_name() << "\");\n"
     "  }else{\n"
-    "  }\n";
-#if 0
-  out << "  const CARD_LIST* par_scope = d->scope();\n";
-  make_final_adjust(out, d.common());
-#endif
-
-  out <<
+    "  }\n"
     "  // size dependent\n"
     "  //delete _sdp;\n"
     "  _sdp = m->new_sdp(this);\n"
@@ -374,10 +368,20 @@ static void make_common_expand(std::ofstream& out, const Device& d)
     "  assert(c == this);\n"
     "}\n"
     "/*--------------------------------------------------------------------------*/\n"
-    "void COMMON_" << d.name() << "::precalc(const CARD_LIST* par_scope)\n"
+    "void COMMON_" << d.name() << "::precalc_first(const CARD_LIST* par_scope)\n"
     "{\n"
     "  assert(par_scope);\n"
-    "  COMMON_COMPONENT::precalc(par_scope);\n"
+    "  COMMON_COMPONENT::precalc_first(par_scope);\n";
+
+  make_final_adjust_eval_parameter_list(out, d.common().raw());
+
+  out <<
+    "}\n"
+    "/*--------------------------------------------------------------------------*/\n"
+    "void COMMON_" << d.name() << "::precalc_last(const CARD_LIST* par_scope)\n"
+    "{\n"
+    "  assert(par_scope);\n"
+    "  COMMON_COMPONENT::precalc_last(par_scope);\n"
     "  COMMON_" << d.name() << "* c = this;\n"
     "  const MODEL_" << d.model_type() << "* m = prechecked_cast<const MODEL_" 
       << d.model_type() << "*>(model());\n";

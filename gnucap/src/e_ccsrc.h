@@ -1,4 +1,4 @@
-/*$Id: e_ccsrc.h,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+/*$Id: e_ccsrc.h,v 26.126 2009/10/16 05:29:28 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -42,8 +42,9 @@ protected: // override virtual
   int	   net_nodes()const	{return 2;}
   int	   num_current_ports()const {return 1;}
   const std::string current_port_value(int)const {return _input_label;};
+  //void   precalc_first();	//ELEMENT
   void	   expand_last();
-  //void   precalc();		//ELEMENT
+  //void   precalc_last();	//ELEMENT
   bool	   tr_needs_eval()const	{assert(!is_q_for_eval()); return true;}
   //void   tr_queue_eval()	//ELEMENT
   void	   tr_unload()		{untested(); tr_unload_active();}

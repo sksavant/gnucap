@@ -1,4 +1,4 @@
-/*$Id: d_subckt.h,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: d_subckt.h,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -47,8 +47,9 @@ public: // override virtual
   int		net_nodes()const	{return _net_nodes;}
   CARD*		clone()const		{return new MODEL_SUBCKT(*this);}
   bool		is_device()const	{return false;}
+  void		precalc_first()		{}
   void		expand()		{}
-  void		precalc()		{}
+  void		precalc_last()		{}
   bool		makes_own_scope()const  {return true;}
   void		map_nodes()		{}
   CARD_LIST*	   scope()		{return subckt();}
@@ -81,8 +82,9 @@ private: // override virtual
   int		matrix_nodes()const	{return 0;}
   int		net_nodes()const	{return _net_nodes;}
   CARD*		clone()const		{return new DEV_SUBCKT(*this);}
+  void		precalc_first();
   void		expand();
-  void		precalc();
+  void		precalc_last();
   double	tr_probe_num(const std::string&)const;
 
   std::string port_name(int i)const {itested();
@@ -117,8 +119,13 @@ public:
   std::string	param_name(int)const;
   std::string	param_name(int,int)const;
   std::string	param_value(int)const;
+  std::string	param_type(int)const	{incomplete(); return "";}
+  std::string	param_default(int)const {incomplete(); return "";}
   int param_count()const
 	{return (static_cast<int>(_params.size()) + COMMON_COMPONENT::param_count());}
+
+  void		precalc_first(const CARD_LIST*);
+  void		precalc_last(const CARD_LIST*);
 private:
   static int	_count;
 public:

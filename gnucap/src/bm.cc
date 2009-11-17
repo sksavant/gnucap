@@ -1,4 +1,4 @@
-/*$Id: bm.cc,v 26.118 2009/08/22 21:08:57 al Exp $ -*- C++ -*-
+/*$Id: bm.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -157,10 +157,10 @@ void EVAL_BM_ACTION_BASE::print_common_obsolete_callback(OMSTREAM& o, LANGUAGE* 
   COMMON_COMPONENT::print_common_obsolete_callback(o, lang);
 }
 /*--------------------------------------------------------------------------*/
-void EVAL_BM_ACTION_BASE::precalc(const CARD_LIST* Scope)
+void EVAL_BM_ACTION_BASE::precalc_first(const CARD_LIST* Scope)
 {
   assert(Scope);
-  COMMON_COMPONENT::precalc(Scope);
+  COMMON_COMPONENT::precalc_first(Scope);
   _bandwidth.e_val(_default_bandwidth, Scope);
   _delay.e_val(_default_delay, Scope);
   _phase.e_val(_default_phase, Scope);

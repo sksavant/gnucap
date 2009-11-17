@@ -1,4 +1,4 @@
-/*$Id: ap.h,v 26.117 2009/08/19 15:28:06 al Exp $  -*- C++ -*-
+/*$Id: ap.h,v 26.125 2009/10/15 20:58:21 al Exp $  -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -129,7 +129,8 @@ public:
   void        ctostr(char*,int,const std::string&);
   std::string ctos(const std::string& term=",=(){};",
 		   const std::string& b="\"'{",
-		   const std::string& e="\"'}");
+		   const std::string& e="\"'}",
+		   const std::string& trap="");
   std::string get_to(const std::string& term);
 
   // conversions (ap_convert.cc) consumes if successful, sets _ok

@@ -1,4 +1,4 @@
-/*$Id: mg_out_dev.cc,v 26.111 2009/06/11 04:19:46 al Exp $ -*- C++ -*-
+/*$Id: mg_out_dev.cc,v 26.126 2009/10/16 05:27:42 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -311,7 +311,8 @@ static void make_dev_expand(std::ofstream& out, const Device& d)
     "  }\n"
     "\n"
     "  if (is_first_expand()) {\n"
-    "    precalc();\n"
+    "    precalc_first();\n"
+    "    precalc_last();\n"
     "    // local nodes\n";
   for (Port_List::const_iterator
        p = d.circuit().local_nodes().begin();

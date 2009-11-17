@@ -1,4 +1,4 @@
-/*$Id: e_elemnt.h,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: e_elemnt.h,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -43,7 +43,7 @@ public:
   bool	   skip_dev_type(CS&);
 public: // override virtual
   bool	   print_type_in_spice()const {return false;}
-  void	   precalc();
+  void	   precalc_last();
   void	   tr_begin();
   void	   tr_restore();
   void	   dc_advance();

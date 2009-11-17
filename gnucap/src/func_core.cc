@@ -1,4 +1,4 @@
-/*$Id: func_core.cc,v 26.116 2009/08/18 05:05:06 al Exp $ -*- C++ -*-
+/*$Id: func_core.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -123,6 +123,20 @@ public:
   }
 } p_min;
 DISPATCHER<FUNCTION>::INSTALL d_min(&function_dispatcher, "min", &p_min);
+/*--------------------------------------------------------------------------*/
+class IF : public FUNCTION {
+public:
+  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  {
+    PARAMETER<double> x, y, z;
+    Cmd >> x >> y;
+    x.e_val(NOT_INPUT, Scope);
+    y.e_val(NOT_INPUT, Scope);
+    z.e_val(NOT_INPUT, Scope);
+    return to_string(x ? y : z);
+  }
+} p_if;
+DISPATCHER<FUNCTION>::INSTALL d_if(&function_dispatcher, "if", &p_if);
 /*--------------------------------------------------------------------------*/
 class sin : public FUNCTION {
 public:

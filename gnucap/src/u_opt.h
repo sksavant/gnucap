@@ -1,4 +1,4 @@
-/*$Id: u_opt.h,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: u_opt.h,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -181,12 +181,10 @@ public:
   explicit SET_RUN_MODE(RUN_MODE rm)
     :_old_run_mode(ENV::run_mode) 
   {
-    //std::cout << ENV::run_mode << '^' << rm << '\n';
     ENV::run_mode = rm;
   }
   ~SET_RUN_MODE()
   {
-    //std::cout << ENV::run_mode << 'v' << _old_run_mode << '\n';
     ENV::run_mode = _old_run_mode;
   }
 };

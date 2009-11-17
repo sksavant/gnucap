@@ -1,4 +1,4 @@
-/*$Id: e_storag.h,v 26.96 2008/10/09 05:36:27 al Exp $ -*- C++ -*-
+/*$Id: e_storag.h,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -40,8 +40,9 @@ protected:
     :ELEMENT(p), _method_u(p._method_u), _method_a(p._method_a) {}
   ~STORAGE() {}
 public: // override virtual
+  //void   precalc_first();	//ELEMENT
   //void   expand();		//COMPONENT
-  void	   precalc();
+  void	   precalc_last();
   void     tr_begin();
   void     tr_restore();
   void     dc_advance();

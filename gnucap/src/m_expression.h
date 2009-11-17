@@ -1,4 +1,4 @@
-/*$Id: m_expression.h,v 26.116 2009/08/18 05:05:06 al Exp $ -*- C++ -*-
+/*$Id: m_expression.h,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -69,8 +69,8 @@ class Token_BINOP : public Token
 public:
   explicit Token_BINOP(const std::string Name)
     : Token(Name, NULL, "") {}
-  explicit Token_BINOP(const Token_BINOP& P) : Token(P) {untested();}
-  Token* clone()const {untested();return new Token_BINOP(*this);}
+  explicit Token_BINOP(const Token_BINOP& P) : Token(P) {}
+  Token* clone()const {return new Token_BINOP(*this);}
   Token* op(const Token* t1, const Token* t2)const;
   void stack_op(Expression*)const;
 };

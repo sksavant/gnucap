@@ -1,4 +1,4 @@
-/*$Id: s_dc.cc,v 26.120 2009/09/21 05:33:46 al Exp $ -*- C++ -*-
+/*$Id: s_dc.cc,v 26.126 2009/10/16 05:29:28 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -139,7 +139,8 @@ void DCOP::finish(void)
     if (exists(_zap[ii])) { // component
       _stash[ii].restore();
       _zap[ii]->dec_probes();
-      _zap[ii]->precalc();
+      _zap[ii]->precalc_first();
+      _zap[ii]->precalc_last();
     }else{
     }
   }

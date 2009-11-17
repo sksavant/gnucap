@@ -1,4 +1,4 @@
-/*$Id: e_cardlist.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
+/*$Id: e_cardlist.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -170,14 +170,20 @@ CARD_LIST& CARD_LIST::expand()
   return *this;
 }
 /*--------------------------------------------------------------------------*/
-CARD_LIST& CARD_LIST::precalc()
+CARD_LIST& CARD_LIST::precalc_first()
 {
   for (iterator ci=begin(); ci!=end(); ++ci) {
     trace_func_comp();
-    if (!dynamic_cast<MODEL_CARD*>(*ci)) {
-      (**ci).precalc();
-    }else{
-    }
+    (**ci).precalc_first();
+  }
+  return *this;
+}
+/*--------------------------------------------------------------------------*/
+CARD_LIST& CARD_LIST::precalc_last()
+{
+  for (iterator ci=begin(); ci!=end(); ++ci) {
+    trace_func_comp();
+    (**ci).precalc_last();
   }
   return *this;
 }
@@ -421,7 +427,7 @@ void CARD_LIST::attach_params(PARAM_LIST* p, const CARD_LIST* scope)
 {
   if (p) {
     assert(scope);
-    if (_params) {untested();
+    if (_params) {
       delete _params;
       _params = NULL;
     }else{

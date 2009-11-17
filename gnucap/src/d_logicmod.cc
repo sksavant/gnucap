@@ -1,4 +1,4 @@
-/*$Id: d_logicmod.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
+/*$Id: d_logicmod.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

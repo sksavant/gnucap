@@ -1,4 +1,4 @@
-/*$Id: mg_out_model.cc,v 26.124 2009/09/28 22:58:50 al Exp $ -*- C++ -*-
+/*$Id: mg_out_model.cc,v 26.128 2009/11/10 04:21:03 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -142,6 +142,7 @@ static void make_tdp_constructor(std::ofstream& out, const Model& m)
       "  assert(m);\n"
       "  const CARD_LIST* par_scope = d->scope();\n"
       "  assert(par_scope);\n";
+    make_final_adjust_eval_parameter_list(out, m.temperature().raw());
     make_final_adjust(out, m.temperature());
   }else{
   }
@@ -300,7 +301,19 @@ static void make_model_precalc(std::ofstream& out, const Model& m)
   }else{
     out << "    MODEL_CARD::precalc_first();\n";
   }
+  make_final_adjust_eval_parameter_list(out, m.independent().raw());
   make_final_adjust(out, m.independent());
+  out <<
+    "}\n"
+    "/*--------------------------------------------------------------------------*/\n";
+  out <<
+    "void MODEL_" << m.name() << "::precalc_last()\n"
+    "{\n";
+  if (!m.hide_base()) {
+    out << "    MODEL_" << m.inherit() << "::precalc_last();\n";
+  }else{
+    out << "    MODEL_CARD::precalc_last();\n";
+  }
   out <<
     "}\n"
     "/*--------------------------------------------------------------------------*/\n";
@@ -404,8 +417,10 @@ void make_model_param_is_printable(std::ofstream& out, const Model& m)
       out << "  case " << i++ << ":  return (";
       if (!((**p).print_test().empty())) {
 	out << (**p).print_test() << ");\n";
+	//}else if ((**p).default_val() == "NA" && (**p).final_default().empty()) {untested();
+	//out << (**p).code_name() << ".has_hard_value());\n"; //" != NA);\n";
       }else if ((**p).default_val() == "NA") {
-	out << (**p).code_name() << " != NA);\n";
+	out << (**p).code_name() << ".has_hard_value());\n";
       }else{
 	out << "true);\n";
       }
@@ -440,8 +455,10 @@ void make_model_param_is_printable(std::ofstream& out, const Model& m)
     out << "  case " << i++ << ":  return (";
     if (!((**p).print_test().empty())) {
       out << (**p).print_test() << ");\n";
+      //}else if ((**p).default_val() == "NA" && (**p).final_default().empty()) {
+      //out << (**p).code_name() << ".has_hard_value());\n"; //" != NA);\n";
     }else if ((**p).default_val() == "NA") {
-      out << (**p).code_name() << " != NA);\n";
+      out << (**p).code_name() << ".has_hard_value());\n";
     }else{
       out << "true);\n";
     }

@@ -1,4 +1,4 @@
-/*$Id: lang_verilog_in.cc,v 26.122 2009/09/23 11:23:50 al Exp $ -*- C++ -*-
+/*$Id: lang_verilog_in.cc,v 26.125 2009/10/15 20:58:21 al Exp $ -*- C++ -*-
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -55,29 +55,29 @@ static void parse_args_instance(CS& cmd, CARD* x)
   assert(x);
 
   if (cmd >> "#(") {
-    if (cmd.is_alnum()) {
-      // by order
-      int index = 0;
-      while (cmd.is_alnum()) {
-	unsigned here = cmd.cursor();
-	try{
-	  std::string value;
-	  cmd >> value;
-	  x->set_param_by_index(x->param_count() - ++index, value, 0/*offset*/);
-	}catch (Exception_Too_Many& e) {untested();
-	  cmd.warn(bDANGER, here, e.message());
-	}
-      }
-    }else{
+    if (cmd.match1('.')) {
       // by name
       while (cmd >> '.') {
 	unsigned here = cmd.cursor();
+	std::string name  = cmd.ctos("(", "", "");
+	std::string value = cmd.ctos(",)", "(", ")");
+	cmd >> ',';
 	try{
-	  std::string name, value;
-	  cmd >> name >> '(' >> value >> ')' >> ',';
 	  x->set_param_by_name(name, value);
 	}catch (Exception_No_Match&) {untested();
-	  cmd.warn(bDANGER, here, "bad parameter, ignored");
+	  cmd.warn(bDANGER, here, x->long_label() + ": bad parameter " + name + " ignored");
+	}
+      }
+    }else{
+      // by order
+      int index = 1;
+      while (cmd.is_alnum()) {
+	unsigned here = cmd.cursor();
+	try{
+	  std::string value = cmd.ctos(",)", "", "");
+	  x->set_param_by_index(x->param_count() - index++, value, 0/*offset*/);
+	}catch (Exception_Too_Many& e) {untested();
+	  cmd.warn(bDANGER, here, e.message());
 	}
       }
     }

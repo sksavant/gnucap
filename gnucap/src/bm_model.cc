@@ -1,4 +1,4 @@
-/*$Id: bm_model.cc,v 26.93 2008/08/29 14:01:28 al Exp $ -*- C++ -*-
+/*$Id: bm_model.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -69,7 +69,11 @@ void EVAL_BM_MODEL::print_common_obsolete_callback(OMSTREAM& o, LANGUAGE* lang)c
   if (_func) {
     _func->print_common_obsolete_callback(o, lang);
   }else{
-    o << modelname() << '(' << _arglist << ')';
+    o << modelname();
+    if (_arglist != "") {untested();
+      o << "(" << _arglist << ")";
+    }else{
+    }
   }
 }
 /*--------------------------------------------------------------------------*/

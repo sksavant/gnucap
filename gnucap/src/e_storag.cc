@@ -1,4 +1,4 @@
-/*$Id: e_storag.cc,v 26.97 2008/10/11 03:13:53 al Exp $ -*- C++ -*-
+/*$Id: e_storag.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -52,9 +52,9 @@ METHOD STORAGE::method_select[meNUM_METHODS][meNUM_METHODS] = {
   {mTRAPEULER,mEULER,mEULER,mTRAP,mTRAP,mGEAR, mGEAR,mTRAPGEAR,mTRAPEULER}
 };
 /*--------------------------------------------------------------------------*/
-void STORAGE::precalc()
+void STORAGE::precalc_last()
 {
-  ELEMENT::precalc();
+  ELEMENT::precalc_last();
 
   set_converged();
   assert(!is_constant()); /* because of integration */

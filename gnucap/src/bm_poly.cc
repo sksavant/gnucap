@@ -1,4 +1,4 @@
-/*$Id: bm_poly.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: bm_poly.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -47,9 +47,10 @@ private: // override vitrual
   COMMON_COMPONENT* clone()const	{return new EVAL_BM_POLY(*this);}
   void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
 
-  //void  	expand(const COMPONENT*);//COMPONENT_COMMON/nothing
-  //COMMON_COMPONENT* deflate();	 //COMPONENT_COMMON/nothing
-  void		precalc(const CARD_LIST*);
+  void		precalc_first(const CARD_LIST*);
+  //void  	expand(const COMPONENT*);	//COMPONENT_COMMON/nothing
+  //COMMON_COMPONENT* deflate();		//COMPONENT_COMMON/nothing
+  //void	precalc_last(const CARD_LIST*);	//COMPONENT_COMMON
 
   void		tr_eval(ELEMENT*)const;
   //void	ac_eval(ELEMENT*)const; //EVAL_BM_ACTION_BASE
@@ -111,10 +112,10 @@ void EVAL_BM_POLY::print_common_obsolete_callback(OMSTREAM& o, LANGUAGE* lang)co
   EVAL_BM_ACTION_BASE::print_common_obsolete_callback(o, lang);
 }
 /*--------------------------------------------------------------------------*/
-void EVAL_BM_POLY::precalc(const CARD_LIST* Scope)
+void EVAL_BM_POLY::precalc_first(const CARD_LIST* Scope)
 {
   assert(Scope);
-  EVAL_BM_ACTION_BASE::precalc(Scope);
+  EVAL_BM_ACTION_BASE::precalc_first(Scope);
   for (std::vector<PARAMETER<double> >::const_iterator
 	 p = _c.begin();  p != _c.end();  ++p) {
     (*p).e_val(0, Scope);

@@ -1,4 +1,4 @@
-/*$Id: s__.h,v 26.120 2009/09/21 05:33:46 al Exp $ -*- C++ -*-
+/*$Id: s__.h,v 26.125 2009/10/15 20:58:21 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -135,10 +135,10 @@ protected:
 	 const PROBELIST& plotlist()const;
 	 const PROBELIST& printlist()const;
 	 const PROBELIST& storelist()const;
-	 void	outdata(double);
-	 void	head(double,double,const std::string&);
-	 void	print_results(double);
-	 void	alarm();
+  virtual void	outdata(double);
+  virtual void	head(double,double,const std::string&);
+  virtual void	print_results(double);
+  virtual void	alarm();
   virtual void	store_results(double);
 public:
   static WAVE* find_wave(const std::string& probe_name);

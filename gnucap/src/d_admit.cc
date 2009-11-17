@@ -1,4 +1,4 @@
-/*$Id: d_admit.cc,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+/*$Id: d_admit.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -50,8 +50,9 @@ protected: // override virtual
   bool	   has_iv_probe()const  {return true;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_ADMITTANCE(*this);}
+  //void   precalc_first();	//ELEMENT
   //void   expand();		//COMPONENT
-  void     precalc();
+  void     precalc_last();
   //void   map_nodes();		//ELEMENT
 
   void	   tr_iwant_matrix()	{tr_iwant_matrix_passive();}
@@ -105,8 +106,9 @@ protected: // override virtual
   int	   net_nodes()const	{return 4;}
   bool	   has_iv_probe()const  {return false;}
   CARD*	   clone()const		{return new DEV_VCCS(*this);}
+  //void   precalc_first();	//ELEMENT
   //void   expand();		//COMPONENT
-  //void   precalc();		//DEV_ADMITTANCE
+  //void   precalc_last();	//DEV_ADMITTANCE
   //void   map_nodes();		//ELEMENT
 
   void	   tr_iwant_matrix()	{tr_iwant_matrix_active();}
@@ -146,9 +148,9 @@ protected: // override virtual
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-void DEV_ADMITTANCE::precalc()
+void DEV_ADMITTANCE::precalc_last()
 {
-  ELEMENT::precalc();
+  ELEMENT::precalc_last();
   set_constant(!has_tr_eval());
   set_converged(!has_tr_eval());
 }

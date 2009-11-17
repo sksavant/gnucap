@@ -1,4 +1,4 @@
-/*$Id: d_switch.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
+/*$Id: d_switch.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -70,8 +70,9 @@ protected: // override virtual
   int	   matrix_nodes()const	{return 2;}
   int	   net_nodes()const	= 0;
   CARD*	   clone()const		= 0;
+  //void   precalc_first();	//ELEMENT
   void     expand();
-  void     precalc();
+  void     precalc_last();
   //void   map_nodes();		//ELEMENT
 
   void	   tr_iwant_matrix()	{tr_iwant_matrix_passive();}
@@ -422,9 +423,9 @@ void SWITCH_BASE::expand()
   }
 }
 /*--------------------------------------------------------------------------*/
-void SWITCH_BASE::precalc()
+void SWITCH_BASE::precalc_last()
 {
-  ELEMENT::precalc();
+  ELEMENT::precalc_last();
     
   if (is_first_expand()) {
     const COMMON_SWITCH* c = prechecked_cast<const COMMON_SWITCH*>(common());

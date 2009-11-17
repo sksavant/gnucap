@@ -1,4 +1,4 @@
-/*$Id: d_subckt.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
+/*$Id: d_subckt.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -96,6 +96,22 @@ std::string COMMON_SUBCKT::param_value(int i)const
   }
 }
 /*--------------------------------------------------------------------------*/
+void COMMON_SUBCKT::precalc_first(const CARD_LIST* Scope)
+{itested();
+  assert(Scope);
+  COMMON_COMPONENT::precalc_first(Scope);
+
+  for (PARAM_LIST::iterator i = _params.begin(); i != _params.end(); ++i) {
+    i->second.e_val(NOT_INPUT,Scope);
+  }
+}
+/*--------------------------------------------------------------------------*/
+void COMMON_SUBCKT::precalc_last(const CARD_LIST* Scope)
+{itested();
+  assert(Scope);
+  COMMON_COMPONENT::precalc_last(Scope);
+}
+/*--------------------------------------------------------------------------*/
 MODEL_SUBCKT::MODEL_SUBCKT()
   :COMPONENT()
 {
@@ -154,9 +170,7 @@ void DEV_SUBCKT::expand()
   BASE_SUBCKT::expand();
   COMMON_SUBCKT* c = prechecked_cast<COMMON_SUBCKT*>(mutable_common());
   assert(c);
-  
   const CARD* model = find_looking_out(c->modelname());
-
   if (!_parent) {
     if(!dynamic_cast<const MODEL_SUBCKT*>(model)) {
       throw Exception_Type_Mismatch(long_label(), c->modelname(), "subckt");
@@ -178,12 +192,33 @@ void DEV_SUBCKT::expand()
   subckt()->expand();
 }
 /*--------------------------------------------------------------------------*/
-void DEV_SUBCKT::precalc()
+void DEV_SUBCKT::precalc_first()
 {
-  BASE_SUBCKT::precalc();
-  subckt()->precalc();
+  BASE_SUBCKT::precalc_first();
+
   COMMON_SUBCKT* c = prechecked_cast<COMMON_SUBCKT*>(mutable_common());
   assert(c);
+
+  if (subckt()) {
+    subckt()->attach_params(&(c->_params), scope());
+    subckt()->precalc_first();
+  }else{
+  }
+  _mfactor = c->_params.deep_lookup("m");
+  _mfactor.e_val(1, scope());
+  assert(!is_constant()); /* because I have more work to do */
+}
+/*--------------------------------------------------------------------------*/
+void DEV_SUBCKT::precalc_last()
+{
+  BASE_SUBCKT::precalc_last();
+
+  COMMON_SUBCKT* c = prechecked_cast<COMMON_SUBCKT*>(mutable_common());
+  assert(c);
+
+  subckt()->attach_params(&(c->_params), scope());
+  subckt()->precalc_last();
+
   _mfactor = c->_params.deep_lookup("m");
   _mfactor.e_val(1, scope());
   assert(!is_constant()); /* because I have more work to do */

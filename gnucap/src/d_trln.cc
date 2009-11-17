@@ -1,4 +1,4 @@
-/*$Id: d_trln.cc,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+/*$Id: d_trln.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -59,9 +59,10 @@ public:
   std::string	param_value(int)const;
   int param_count()const {return (9 + COMMON_COMPONENT::param_count());}
 public:
+  void		precalc_first(const CARD_LIST*);
   //void	expand(const COMPONENT*);//COMPONENT_COMMON/nothing
   //COMMON_COMPONENT* deflate();	 //COMPONENT_COMMON/nothing
-  void		precalc(const CARD_LIST*);
+  void		precalc_last(const CARD_LIST*);
 
   //void	tr_eval(ELEMENT*)const; //COMPONENT_COMMON
   //void	ac_eval(ELEMENT*)const; //COMPONENT_COMMON
@@ -94,8 +95,9 @@ private: // override virtual
   int		matrix_nodes()const	{return 4;}
   int		net_nodes()const	{return 4;}
   CARD*		clone()const		{return new DEV_TRANSLINE(*this);}
+  //void	precalc_first();	//ELEMENT
   //void	expand();		//COMPONENT
-  void		precalc();
+  void		precalc_last();
   //void	map_nodes();		//ELEMENT
 
   void		tr_iwant_matrix();
@@ -327,10 +329,10 @@ std::string COMMON_TRANSLINE::param_value(int i)const
   //BUG// does not print IC
 }
 /*--------------------------------------------------------------------------*/
-void COMMON_TRANSLINE::precalc(const CARD_LIST* Scope)
+void COMMON_TRANSLINE::precalc_first(const CARD_LIST* Scope)
 {
   assert(Scope);
-  COMMON_COMPONENT::precalc(Scope);
+  COMMON_COMPONENT::precalc_first(Scope);
   len.e_val(_default_len, Scope);
   R.e_val(_default_R, Scope);
   L.e_val(_default_L, Scope);
@@ -340,7 +342,12 @@ void COMMON_TRANSLINE::precalc(const CARD_LIST* Scope)
   td.e_val(_default_td, Scope);
   f.e_val(_default_f, Scope);
   nl.e_val(_default_nl, Scope);
-
+}
+/*--------------------------------------------------------------------------*/
+void COMMON_TRANSLINE::precalc_last(const CARD_LIST* Scope)
+{
+  assert(Scope);
+  COMMON_COMPONENT::precalc_last(Scope);
   { // real_td
     if (td.has_hard_value()) {untested();
       real_td = len * td;
@@ -390,9 +397,9 @@ DEV_TRANSLINE::DEV_TRANSLINE()
   attach_common(&Default_TRANSLINE);
 }
 /*--------------------------------------------------------------------------*/
-void DEV_TRANSLINE::precalc()
+void DEV_TRANSLINE::precalc_last()
 {
-  ELEMENT::precalc();
+  ELEMENT::precalc_last();
   const COMMON_TRANSLINE* c=prechecked_cast<const COMMON_TRANSLINE*>(common());
   assert(c);
   _forward.set_delay(c->real_td);

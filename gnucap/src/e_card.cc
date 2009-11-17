@@ -1,4 +1,4 @@
-/*$Id: e_card.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
+/*$Id: e_card.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -180,7 +180,7 @@ const CARD* CARD::find_looking_out(const std::string& name)const
     }else if (makes_own_scope()) {
       // probably a subckt or "module"
       CARD_LIST::const_iterator i = CARD_LIST::card_list.find_(name);
-      if (i != CARD_LIST::card_list.end()) {itested();
+      if (i != CARD_LIST::card_list.end()) {untested();
 	return *i;
       }else{
 	throw;
@@ -238,10 +238,6 @@ void CARD::renew_subckt(const CARD* Model, CARD* Owner,
 /*--------------------------------------------------------------------------*/
 node_t& CARD::n_(int i)const
 {
-  //if (i < matrix_nodes()) {
-  //}else{
-  //  std::cout << long_label();
-  //}
   return _n[i];
 }
 /*--------------------------------------------------------------------------*/

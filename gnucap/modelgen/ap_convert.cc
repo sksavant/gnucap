@@ -1,4 +1,4 @@
-/*$Id: ap_convert.cc,v 26.96 2008/10/09 05:36:27 al Exp $ -*- C++ -*-
+/*$Id: ap_convert.cc,v 26.125 2009/10/15 20:58:21 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -70,10 +70,9 @@ void CS::ctostr(char* des, int len, const std::string& term)
 /*--------------------------------------------------------------------------*/
 std::string CS::ctos(const std::string& term, 
 		     const std::string& begin_quote,
-		     const std::string& end_quote)
+		     const std::string& end_quote,
+		     const std::string& trap)
 {
-  assert(begin_quote.length() > 0);
-  assert(end_quote.length() > 0);
   assert(begin_quote.length() == end_quote.length());
 
   skipbl();
@@ -115,6 +114,10 @@ std::string CS::ctos(const std::string& term,
   }else{
     while(ns_more() && !is_term(term)) {
       skip();
+    }
+    if (match1(trap)) {untested();
+      warn(bDANGER, "ap_convert trap-exit");
+    }else{
     }
     end_string = cursor();
     s = _cmd.substr(begin_string, end_string-begin_string);

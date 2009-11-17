@@ -1,4 +1,4 @@
-/*$Id: bm_cond.cc,v 26.93 2008/08/29 14:01:28 al Exp $ -*- C++ -*-
+/*$Id: bm_cond.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -159,7 +159,7 @@ void EVAL_BM_COND::expand(const COMPONENT* d)
 {
   EVAL_BM_BASE::expand(d);
   for (int i = 1; i < sCOUNT; ++i) {
-    // makes unnecessary duplicates
+    //BUG// makes unnecessary duplicates
     assert(_func[i]);
     COMMON_COMPONENT* new_common = _func[i]->clone();
     new_common->expand(d);
@@ -185,11 +185,37 @@ COMMON_COMPONENT* EVAL_BM_COND::deflate()
   return _func[s_NONE]->deflate();
 }
 /*--------------------------------------------------------------------------*/
-void EVAL_BM_COND::precalc(const CARD_LIST* Scope)
+void EVAL_BM_COND::precalc_first(const CARD_LIST* Scope)
 {
+  //BUG// calls the individual precalc more than once
+  // wastes time and makes multiple "has no value" warnings
+  // when there should be only one
+  COMMON_COMPONENT* did_this = NULL;
   for (int i = 1; i < sCOUNT; ++i) {
     assert(_func[i]);
-    _func[i]->precalc(Scope);
+    if (_func[i] != did_this) {itested();
+      _func[i]->precalc_first(Scope);
+      did_this = _func[i];
+    }else{itested();
+      // already did
+    }
+  }
+}
+/*--------------------------------------------------------------------------*/
+void EVAL_BM_COND::precalc_last(const CARD_LIST* Scope)
+{
+  //BUG// calls the individual precalc more than once
+  // wastes time and makes multiple "has no value" warnings
+  // when there should be only one
+  COMMON_COMPONENT* did_this = NULL;
+  for (int i = 1; i < sCOUNT; ++i) {
+    assert(_func[i]);
+    if (_func[i] != did_this) {itested();
+      _func[i]->precalc_last(Scope);
+      did_this = _func[i];
+    }else{itested();
+      // already did
+    }
   }
 }
 /*--------------------------------------------------------------------------*/

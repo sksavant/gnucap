@@ -1,4 +1,4 @@
-/*$Id: m_base_in.cc,v 26.115 2009/08/17 22:49:30 al Exp $ -*- C++ -*-
+/*$Id: m_base_in.cc,v 26.125 2009/10/15 20:58:21 al Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -41,8 +41,28 @@ void Name_String::parse(CS& File)
 {
   File.skipbl();
   _data = "";
-  while (File.is_alpha() || File.is_pfloat() || File.match1("_[]")) {
-    _data += File.ctoc();
+  if (File.is_pfloat()) {
+    while (File.is_pfloat()) {
+      _data += File.ctoc();
+    }
+    if (File.match1("eE")) {
+      _data += File.ctoc();
+      if (File.match1("+-")) {
+	_data += File.ctoc();
+      }else{
+      }
+      while (File.is_digit()) {
+	_data += File.ctoc();
+      }
+    }else{
+    }
+    while (File.is_alpha()) {
+      _data += File.ctoc();
+    }
+  }else{
+    while (File.is_alpha() || File.is_pfloat() || File.match1("_[]")) {
+      _data += File.ctoc();
+    }
   }
   File.skipbl();
 }

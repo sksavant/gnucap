@@ -1,4 +1,4 @@
-/*$Id: d_vcvs.cc,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+/*$Id: d_vcvs.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -42,8 +42,9 @@ private: // override virtual
   int	   net_nodes()const	{return 4;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_VCVS(*this);}
+  //void   precalc_first();	//ELEMENT
   //void   expand();		//COMPONENT
-  void     precalc();
+  void     precalc_last();
   //void   map_nodes();		//ELEMENT
 
   void	   tr_iwant_matrix()	{tr_iwant_matrix_extended();}
@@ -83,9 +84,9 @@ private: // override virtual
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-void DEV_VCVS::precalc()
+void DEV_VCVS::precalc_last()
 {
-  ELEMENT::precalc();
+  ELEMENT::precalc_last();
   set_constant(!has_tr_eval());
   set_converged(!has_tr_eval());
 }

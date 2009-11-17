@@ -1,4 +1,4 @@
-/*$Id: e_cardlist.h,v 26.94 2008/09/03 04:06:53 al Exp $ -*- C++ -*-
+/*$Id: e_cardlist.h,v 26.126 2009/10/16 05:29:28 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -107,8 +107,9 @@ public:
   // operations on the whole list
   CARD_LIST& set_owner(CARD* owner);
   CARD_LIST& set_slave();
+  CARD_LIST& precalc_first();
   CARD_LIST& expand();
-  CARD_LIST& precalc();
+  CARD_LIST& precalc_last();
   CARD_LIST& map_nodes();
   CARD_LIST& tr_iwant_matrix();
   CARD_LIST& tr_begin();

@@ -1,4 +1,4 @@
-/*$Id: bm.h,v 26.93 2008/08/29 14:01:28 al Exp $ -*- C++ -*-
+/*$Id: bm.h,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -73,9 +73,10 @@ public: // override virtual
   //COMPONENT_COMMON* clone()const;	//COMPONENT_COMMON=0
   void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
 
-  //void	expand(const COMPONENT*);//COMPONENT_COMMON/nothing
-  //COMMON_COMPONENT* deflate();	 //COMPONENT_COMMON/nothing
-  void		precalc(const CARD_LIST*);
+  void		precalc_first(const CARD_LIST*);
+  //void	expand(const COMPONENT*);	//COMPONENT_COMMON/nothing
+  //COMMON_COMPONENT* deflate();		//COMPONENT_COMMON/nothing
+  //void	precalc_last(const CARD_LIST*);	//COMPONENT_COMMON
 
   //void	tr_eval(ELEMENT*)const; //COMPONENT_COMMON
   void		ac_eval(ELEMENT*)const;
@@ -104,9 +105,10 @@ private: // override virtual
   void  parse_common_obsolete_callback(CS&);
   void  print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
   
+  void  	precalc_first(const CARD_LIST*);
   void		expand(const COMPONENT*);
   COMMON_COMPONENT* deflate();
-  void  	precalc(const CARD_LIST*);
+  void  	precalc_last(const CARD_LIST*);
 
   void  tr_eval(ELEMENT*d)const{assert(_func[SIM::_mode]); _func[SIM::_mode]->tr_eval(d);}
   void  ac_eval(ELEMENT*d)const{assert(_func[s_AC]);	   _func[s_AC]->ac_eval(d);}
@@ -134,9 +136,10 @@ private: // override virtual
   void		parse_common_obsolete_callback(CS&);
   void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
   
+  //void  	precalc_first(const CARD_LIST*); //EVAL_BM_ACTION_BASE
   void		expand(const COMPONENT*);
   COMMON_COMPONENT* deflate() {return (_func) ? _func->deflate() : this;}
-  //void  	precalc(const CARD_LIST*); //EVAL_BM_ACTION_BASE
+  //void  	precalc_last(const CARD_LIST*); //EVAL_BM_ACTION_BASE
 
   void		tr_eval(ELEMENT*d)const {assert(_func); _func->tr_eval(d);}
   void		ac_eval(ELEMENT*d)const {assert(_func); _func->ac_eval(d);}
@@ -160,9 +163,10 @@ private: // override virtual
   COMMON_COMPONENT* clone()const	{return new EVAL_BM_VALUE(*this);}
   void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
 
-  //void  	expand(const COMPONENT*);//COMPONENT_COMMON/nothing
-  //COMMON_COMPONENT* deflate();	 //COMPONENT_COMMON/nothing
-  void		precalc(const CARD_LIST*);
+  void		precalc_first(const CARD_LIST*);
+  //void  	expand(const COMPONENT*);	//COMPONENT_COMMON/nothing
+  //COMMON_COMPONENT* deflate();		//COMPONENT_COMMON/nothing
+  //void	precalc_last(const CARD_LIST*);	//COMPONENT_COMMON
 
   void		tr_eval(ELEMENT*)const;
   //void	ac_eval(ELEMENT*)const; //EVAL_BM_ACTION_BASE

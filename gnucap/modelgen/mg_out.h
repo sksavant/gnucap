@@ -1,4 +1,4 @@
-/*$Id: mg_out.h,v 26.81 2008/05/27 05:33:43 al Exp $ -*- C++ -*-
+/*$Id: mg_out.h,v 26.128 2009/11/10 04:21:03 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -28,6 +28,7 @@ void make_cc_file(const File&);
 void make_dump_file(const File&);
 /*--------------------------------------------------------------------------*/
 /* mg_out_lib.cc */
+void make_final_adjust_eval_parameter_list(std::ofstream&, const Parameter_List&);
 void make_final_adjust_value(std::ofstream&, const Parameter&);
 void make_final_adjust_value_list(std::ofstream&, const Parameter_List&);
 void make_final_adjust_parameter(std::ofstream&, const Parameter&);

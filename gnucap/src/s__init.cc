@@ -1,4 +1,4 @@
-/* $Id: s__init.cc,v 26.94 2008/09/03 04:06:53 al Exp $
+/* $Id: s__init.cc,v 26.126 2009/10/16 05:29:28 al Exp $
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -86,7 +86,7 @@ void SIM::command_base(CS& cmd)
     uninit();
     count_nodes();
     CARD_LIST::card_list.expand();
-    CARD_LIST::card_list.precalc();
+    CARD_LIST::card_list.precalc_last();
     map__nodes();
     alloc_hold_vectors();
     aa.reinit(::status.total_nodes);
@@ -96,7 +96,8 @@ void SIM::command_base(CS& cmd)
     CARD_LIST::card_list.ac_iwant_matrix();
     last_time = 0;
   }else{
-    CARD_LIST::card_list.precalc();
+    CARD_LIST::card_list.precalc_first();
+    CARD_LIST::card_list.precalc_last();
   }
 }
 /*--------------------------------------------------------------------------*/

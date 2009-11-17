@@ -1,4 +1,4 @@
-/*$Id: mg_out_lib.cc,v 26.81 2008/05/27 05:33:43 al Exp $ -*- C++ -*-
+/*$Id: mg_out_lib.cc,v 26.128 2009/11/10 04:21:03 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -66,6 +66,28 @@ void make_final_adjust_value_list(std::ofstream& out, const Parameter_List& pl)
   }
 }
 /*--------------------------------------------------------------------------*/
+void make_final_adjust_eval_parameter(std::ofstream& out, const Parameter& p)
+{
+  if (!(p.calculate().empty())) {untested();
+    out << "    this->" << p.code_name() << " = " << p.calculate() << ";\n";
+  }else{
+    out << "    e_val(&(this->" << p.code_name() << "), ";
+    if (!(p.default_val().empty())) {
+      out << p.default_val();
+    }else{
+      out << "NA";
+    }
+    out << ", par_scope);\n";
+  }
+}
+/*--------------------------------------------------------------------------*/
+void make_final_adjust_eval_parameter_list(std::ofstream& out, const Parameter_List& pl)
+{
+  for (Parameter_List::const_iterator p = pl.begin(); p != pl.end(); ++p) {
+    make_final_adjust_eval_parameter(out, **p);
+  }
+}
+/*--------------------------------------------------------------------------*/
 void make_final_adjust_parameter(std::ofstream& out, const Parameter& p)
 {
   if (!(p.calculate().empty())) {
@@ -102,6 +124,8 @@ void make_final_adjust_parameter_list(std::ofstream& out, const Parameter_List& 
 /*--------------------------------------------------------------------------*/
 void make_final_adjust(std::ofstream& out, const Parameter_Block& b)
 {
+  //out << "    // final adjust: eval\n";
+  //make_final_adjust_eval_parameter_list(out, b.raw());
   out << "    // final adjust: code_pre\n";
   out << b.code_pre();
   out << "    // final adjust: override\n";

@@ -1,4 +1,4 @@
-/* $Id: spice-wrapper.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
+/* $Id: spice-wrapper.cc,v 26.129 2009/11/10 16:39:44 al Exp $ -*- C++ -*-
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -145,7 +145,7 @@ public: // override virtual
   MODEL_CARD* clone()const {return new MODEL_SPICE(*this);}
   bool is_valid(const COMPONENT* d)const IS_VALID
   //void expand();
-  void precalc();
+  void precalc_first();
 
 public:	// type
   void set_dev_type(const std::string& nt);
@@ -207,8 +207,9 @@ protected: // override virtual
   int	  net_nodes()const	{return _net_nodes;}
   int	  int_nodes()const	{return INTERNAL_NODES;}
   CARD*	  clone()const		{return new DEV_SPICE(*this);}
+  void	  precalc_first();
   void	  expand();
-  void	  precalc();
+  void	  precalc_last();
   //void  map_nodes();		//ELEMENT
   void	  internal_precalc();
 
@@ -591,9 +592,9 @@ void MODEL_SPICE::set_param_by_name(std::string Name, std::string Value)
   Set_param_by_name(Name, to_string(_params[Name].e_val(1,scope())));
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_SPICE::precalc()
+void MODEL_SPICE::precalc_first()
 {
-  MODEL_CARD::precalc();
+  MODEL_CARD::precalc_first();
 
   Set_param_by_name(_key, "1");
 
@@ -821,12 +822,11 @@ void DEV_SPICE::Set_param_by_name(std::string Name, std::string new_value)
 /*--------------------------------------------------------------------------*/
 void DEV_SPICE::set_param_by_name(std::string Name, std::string Value)
 {
-  COMPONENT::set_param_by_name(Name, Value);
-
   if (OPT::case_insensitive) {
     notstd::to_lower(&Name);
   }else{
   }
+  COMPONENT::set_param_by_name(Name, Value);
   COMMON_SUBCKT* c = dynamic_cast<COMMON_SUBCKT*>(mutable_common());
   assert(c);
   Set_param_by_name(Name, to_string(c->_params[Name].e_val(1,scope())));
@@ -896,12 +896,6 @@ void DEV_SPICE::expand()
     if (!_model) {
       throw Exception_Model_Type_Mismatch(long_label(), _modelname, DEVICE_TYPE);
     }else{
-      MODEL_CARD* mm = const_cast<MODEL_SPICE*>(_model);
-      assert(mm);
-      mm->precalc();
-      // needed here because pointers may depend on values
-      // other precalc is undesired side effect
-
       _geninst.GENmodPtr = &(_model->_gen_model_raw);
       _model_spice = &(_model->_gen_model_raw);
       _model_spice->GENinstances = &_geninst;
@@ -1000,11 +994,10 @@ void DEV_SPICE::expand()
   assert_instance();
 }
 /*--------------------------------------------------------------------------*/
-void DEV_SPICE::precalc()
+void DEV_SPICE::precalc_first()
 {
-  assert(_model);
-  assert_instance();
-  assert(info.DEVsetup);
+  STORAGE::precalc_first();
+
   // push down parameters into spice data
   COMMON_SUBCKT* c = dynamic_cast<COMMON_SUBCKT*>(mutable_common());
   assert(c);
@@ -1018,15 +1011,17 @@ void DEV_SPICE::precalc()
     }else{
     }
   }
+}
+/*--------------------------------------------------------------------------*/
+void DEV_SPICE::precalc_last()
+{
+  assert(_model);
+  assert_instance();
+  assert(info.DEVsetup);
 
-  STORAGE::precalc();
+  STORAGE::precalc_last();
   init_ckt();
 
-  {
-    MODEL_CARD* mm = const_cast<MODEL_SPICE*>(_model);
-    assert(mm);
-    mm->precalc();
-  }
   _model_spice = &(_model->_gen_model_raw);
   _model_spice->GENinstances = &_geninst;
   assert_model_localized();

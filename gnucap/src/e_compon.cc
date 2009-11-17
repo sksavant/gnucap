@@ -1,4 +1,4 @@
-/*$Id: e_compon.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
+/*$Id: e_compon.cc,v 26.128 2009/11/10 04:22:27 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -279,7 +279,7 @@ std::string COMMON_COMPONENT::param_value(int i)const
   }
 }
 /*--------------------------------------------------------------------------*/
-void COMMON_COMPONENT::precalc(const CARD_LIST* Scope)
+void COMMON_COMPONENT::precalc_first(const CARD_LIST* Scope)
 {
   assert(Scope);
   _tnom_c.e_val(OPT::tnom_c, Scope);
@@ -499,21 +499,34 @@ void COMPONENT::expand()
   }
 }
 /*--------------------------------------------------------------------------*/
-void COMPONENT::precalc()
+void COMPONENT::precalc_first()
 {
-  CARD::precalc();
+  CARD::precalc_first();
   if (has_common()) {
     try {
-      mutable_common()->precalc(scope());
+      mutable_common()->precalc_first(scope());
     }catch (Exception_Precalc& e) {
       error(bWARNING, long_label() + ": " + e.message());
     }
     _mfactor = common()->mfactor();
-  }else{
+  }else{itested();
   }
   
   _mfactor.e_val(1, scope());
   _value.e_val(0.,scope());
+}
+/*--------------------------------------------------------------------------*/
+void COMPONENT::precalc_last()
+{
+  CARD::precalc_last();
+  if (has_common()) {
+    try {
+      mutable_common()->precalc_last(scope());
+    }catch (Exception_Precalc& e) {
+      error(bWARNING, long_label() + ": " + e.message());
+    }
+  }else{
+  }
 }
 /*--------------------------------------------------------------------------*/
 void COMPONENT::map_nodes()

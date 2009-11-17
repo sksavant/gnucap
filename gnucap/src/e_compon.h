@@ -1,4 +1,4 @@
-/*$Id: e_compon.h,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+/*$Id: e_compon.h,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -83,14 +83,17 @@ public:
   virtual std::string param_name(int)const;
   virtual std::string param_name(int,int)const;
   virtual std::string param_value(int)const;
+  virtual std::string param_type(int)const	{incomplete(); return "";}
+  virtual std::string param_default(int)const	{incomplete(); return "";}
   virtual void set_param_by_name(std::string, std::string);
   void Set_param_by_name(std::string, std::string); //BUG// see implementation
   virtual void set_param_by_index(int, std::string&, int);
   virtual int param_count()const {return 4;}
 public:
-  virtual void expand(const COMPONENT*) {}
-  virtual COMMON_COMPONENT* deflate()	{return this;}
-  virtual void precalc(const CARD_LIST*);
+  virtual void precalc_first(const CARD_LIST*);
+  virtual void expand(const COMPONENT*)		{}
+  virtual COMMON_COMPONENT* deflate()		{return this;}
+  virtual void precalc_last(const CARD_LIST*)	{}
 
   virtual void	tr_eval(ELEMENT*)const;
   virtual void	ac_eval(ELEMENT*)const;
@@ -164,8 +167,9 @@ public:
   virtual bool	f_is_value()const	{return false;}
 public: // override virtual
   void  set_dev_type(const std::string& new_type);
+  void	precalc_first();
   void	expand();
-  void	precalc();
+  void	precalc_last();
   bool	is_device()const		{return true;}
   void  map_nodes();
   void  tr_iwant_matrix();
@@ -276,6 +280,8 @@ public: // parameters
   std::string param_name(int)const;
   std::string param_name(int,int)const;
   std::string param_value(int)const; 
+  std::string param_type(int)const {incomplete(); return "";}
+  std::string param_default(int)const {incomplete(); return "";}
   void set_param_by_name(std::string, std::string);
   void set_param_by_index(int, std::string&, int);
   int param_count()const

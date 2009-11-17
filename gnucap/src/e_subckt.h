@@ -1,4 +1,4 @@
-/*$Id: e_subckt.h,v 26.100 2008/11/17 09:11:43 al Exp $ -*- C++ -*-
+/*$Id: e_subckt.h,v 26.126 2009/10/16 05:29:28 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -43,8 +43,9 @@ protected: // override virtual
   int     matrix_nodes()const		{return 0;}
   int     net_nodes()const		{return _net_nodes;}
   //CARD* clone()const			//CARD/null
+  //void  precalc_first()	{assert(subckt()); subckt()->precalc();}
   //void  expand()			//COMPONENT
-  //void	  precalc()	{assert(subckt()); subckt()->precalc();}
+  //void  precalc_last()	{assert(subckt()); subckt()->precalc();}
   //void  map_nodes();
   void	  tr_begin()	{assert(subckt()); subckt()->tr_begin();}
   void	  tr_restore()	{assert(subckt()); subckt()->tr_restore();}

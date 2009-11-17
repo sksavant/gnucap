@@ -1,4 +1,4 @@
-/*$Id: m_base.h,v 26.115 2009/08/17 22:49:30 al Exp $ -*- C++ -*-
+/*$Id: m_base.h,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -204,7 +204,7 @@ public:
   Base* subtract(const String*)const	{untested();return NULL;}
   Base* r_subtract(const String*)const	{untested();return NULL;}
   Base* divide(const String*)const	{untested();return NULL;}
-  Base* r_divide(const String*)const	{untested();return NULL;}
+  Base* r_divide(const String*)const	{	    return NULL;}
 
   bool  is_NA()const			{untested();return _data == NOT_INPUT;}
 };
@@ -252,7 +252,7 @@ public:
   Base* multiply(const Base* X)const	{untested();return ((X) ? (X->multiply(this))  : (NULL));}
   Base* subtract(const Base* X)const	{untested();return ((X) ? (X->r_subtract(this)): (NULL));}
   Base* r_subtract(const Base* X)const	{untested();return ((X) ? (X->subtract(this))  : (NULL));}
-  Base* divide(const Base* X)const	{untested();return ((X) ? (X->r_divide(this))  : (NULL));}
+  Base* divide(const Base* X)const	{	    return ((X) ? (X->r_divide(this))  : (NULL));}
   Base* r_divide(const Base* X)const	{untested();return ((X) ? (X->divide(this))    : (NULL));}
 
   Base* less(const Float*)const 	{untested();return NULL;}

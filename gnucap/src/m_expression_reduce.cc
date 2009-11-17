@@ -1,4 +1,4 @@
-/*$Id: m_expression_reduce.cc,v 26.118 2009/08/22 21:08:57 al Exp $ -*- C++ -*-
+/*$Id: m_expression_reduce.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -76,7 +76,7 @@ Token* Token_BINOP::op(const Token* T1, const Token* T2)const
     }else{untested();
     }
     return new Token_CONSTANT(b->val_string(), b, (T1->aRgs()+T2->aRgs()));
-  }else{untested();
+  }else{
     // can get here if either T1 or T2 has no data
     return new Token_CONSTANT("false", NULL, "");
   }
@@ -171,13 +171,13 @@ void Token_BINOP::stack_op(Expression* E)const
 	E->push_back(t);
 	delete t2;
 	delete t1;
-      }else{untested();
+      }else{
 	// fail - one arg is unknown, push back args
 	if (strchr("+*", name()[0]) && !dynamic_cast<const Float*>(t1->data())) {untested();
 	  // change order to enable later optimization
 	  E->push_back(t1);
 	  E->push_back(t2);
-	}else{untested();
+	}else{
 	  E->push_back(t2);
 	  E->push_back(t1);
 	}

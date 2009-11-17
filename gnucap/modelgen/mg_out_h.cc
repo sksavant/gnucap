@@ -1,4 +1,4 @@
-/*$Id: mg_out_h.cc,v 26.124 2009/09/28 22:58:50 al Exp $ -*- C++ -*-
+/*$Id: mg_out_h.cc,v 26.126 2009/10/16 05:27:42 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -108,6 +108,7 @@ static void make_model(std::ofstream& out, const Model& m)
     "  void      set_dev_type(const std::string& nt);\n"
     "  CARD*     clone()const {return new " << class_name << "(*this);}\n"
     "  void      precalc_first();\n"
+    "  void      precalc_last();\n"
     "  SDP_CARD* new_sdp(COMMON_COMPONENT* c)const;\n"
     "  void      set_param_by_index(int, std::string&, int);\n"
     "  bool      param_is_printable(int)const;\n"
@@ -177,8 +178,9 @@ static void make_common(std::ofstream& out, const Device& d)
     "  int param_count()const {return (" 
 	     << d.common().override().size() + d.common().raw().size()
 	     << " + COMMON_COMPONENT::param_count());}\n"
+    "  void     precalc_first(const CARD_LIST*);\n"
     "  void     expand(const COMPONENT*);\n"
-    "  void     precalc(const CARD_LIST*);\n"
+    "  void     precalc_last(const CARD_LIST*);\n"
     "  std::string name()const {untested();return \"" << d.parse_name() << "\";}\n"
     "  const SDP_CARD* sdp()const {return _sdp;}\n"
     "  bool     has_sdp()const {untested();return _sdp;}\n"
@@ -246,8 +248,9 @@ static void make_device(std::ofstream& out, const Device& d)
       << d.circuit().local_nodes().size() << ";}\n"
     "  CARD*     clone()const         {return new "
       << class_name << "(*this);}\n"
+    "  void      precalc_first() {COMPONENT::precalc_first(); if(subckt()) subckt()->precalc_first();}\n"
     "  void      expand();\n"
-    "  void      precalc() {COMPONENT::precalc(); assert(subckt()); subckt()->precalc();}\n"
+    "  void      precalc_last()  {COMPONENT::precalc_last(); assert(subckt()); subckt()->precalc_last();}\n"
     "  //void    map_nodes();         //BASE_SUBCKT\n"
     "  //void    tr_begin();          //BASE_SUBCKT\n"
     "  //void    tr_restore();        //BASE_SUBCKT\n";

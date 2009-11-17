@@ -1,4 +1,4 @@
-/*$Id: lang_spectre_in.cc,v 26.122 2009/09/23 11:23:50 al Exp $ -*- C++ -*-
+/*$Id: lang_spectre_in.cc,v 26.125 2009/10/15 20:58:21 al Exp $ -*- C++ -*-
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -40,10 +40,10 @@ static void parse_args(CS& cmd, CARD* x)
   
   unsigned here = 0;
   while (cmd.more() && !cmd.stuck(&here)) {
-    std::string name, value;
+    std::string name  = cmd.ctos("=", "", "");
+    cmd >> '=';
+    std::string value = cmd.ctos("", "(", ")");
     try{
-      cmd >> name >> '=' >> value;
-      //std::cout << name << '=' << value << ";\n";
       x->set_param_by_name(name, value);
     }catch (Exception_No_Match&) {untested();
       cmd.warn(bDANGER, here, x->long_label() + ": bad parameter " + name + " ignored");

@@ -1,4 +1,4 @@
-/*$Id: d_ccvs.cc,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+/*$Id: d_ccvs.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -44,8 +44,9 @@ private: // override virtual
   //int	   net_nodes()const	//CCSRC_BASE=2
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_CCVS(*this);}
+  //void   precalc_first();	//ELEMENT
   //void   expand();		//CCSRC_BASE
-  void     precalc();
+  void     precalc_last();
   //void   map_nodes();		//ELEMENT
 
   void	   tr_iwant_matrix()	{tr_iwant_matrix_extended();}
@@ -92,9 +93,9 @@ private: // override virtual
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-void DEV_CCVS::precalc()
+void DEV_CCVS::precalc_last()
 {
-  CCSRC_BASE::precalc();
+  CCSRC_BASE::precalc_last();
   set_converged();
   assert(!is_constant()); /* because of incomplete analysis */
 }

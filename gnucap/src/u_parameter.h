@@ -1,4 +1,4 @@
-/*$Id: u_parameter.h,v 26.119 2009/09/09 13:27:53 al Exp $ -*- C++ -*-
+/*$Id: u_parameter.h,v 26.125 2009/10/15 20:58:21 al Exp $ -*- C++ -*-
  * Copyright (C) 2005 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -69,9 +69,14 @@ public:
   //void	operator=(const std::string& s)	{untested();_s = s;}
 
   void	operator=(const std::string& s)	{
-    CS cmd(CS::_STRING, s); // conversion
-    parse(cmd);
-    //assert(!cmd.more()); // can fail when assigning float to int
+    if (strchr("'\"{", s[0])) {
+      CS cmd(CS::_STRING, s);
+      _s = cmd.ctos("", "'\"{", "'\"}");
+    }else if (s == "NA") {
+      _s = "";
+    }else{
+      _s = s;
+    }
   }
   bool  operator==(const PARAMETER& p)const {
     return (_v == p._v  &&  _s == p._s);
@@ -223,26 +228,35 @@ private:
 };
 /*--------------------------------------------------------------------------*/
 template <>
-inline double PARAMETER<double>::lookup_solve(const double& def, const CARD_LIST* scope)const
+inline bool PARAMETER<bool>::lookup_solve(const bool&, const CARD_LIST*)const
 {
   CS cmd(CS::_STRING, _s);
-  Expression e(cmd);
-  Expression reduced(e, scope);
-  double v = reduced.eval();
-  if (v != NOT_INPUT) {
-    return v;
-  }else{
-    const PARAM_LIST* pl = scope->params();
-    return double(pl->deep_lookup(_s).e_val(def, scope));
-  }
+  return cmd.ctob();
 }
 /*--------------------------------------------------------------------------*/
 template <class T>
 inline T PARAMETER<T>::lookup_solve(const T& def, const CARD_LIST* scope)const
-{untested();
+{
+  CS cmd(CS::_STRING, _s);
+  Expression e(cmd);
+  Expression reduced(e, scope);
+  T v = T(reduced.eval());
+  if (v != NOT_INPUT) {
+    return v;
+  }else{
+    const PARAM_LIST* pl = scope->params();
+    return T(pl->deep_lookup(_s).e_val(def, scope));
+  }
+}
+/*--------------------------------------------------------------------------*/
+#if 0
+template <class T>
+inline T PARAMETER<T>::lookup_solve(const T& def, const CARD_LIST* scope)const
+{
   const PARAM_LIST* pl = scope->params();
   return T(pl->deep_lookup(_s).e_val(def, scope));
 }
+#endif
 /*--------------------------------------------------------------------------*/
 template <class T>
 T PARAMETER<T>::e_val(const T& def, const CARD_LIST* scope)const
@@ -261,7 +275,7 @@ T PARAMETER<T>::e_val(const T& def, const CARD_LIST* scope)const
   if (_s == "") {
     // blank string means to use default value
     _v = def;
-    if (recursion > 1) {      
+    if (recursion > 1) {
       error(bWARNING, "parameter " + *first_name + " has no value\n");
     }else{
     }
@@ -269,7 +283,7 @@ T PARAMETER<T>::e_val(const T& def, const CARD_LIST* scope)const
     // anything else means look up the value
     if (recursion <= OPT::recursion) {
       _v = lookup_solve(def, scope);
-      if (_v == NOT_INPUT) {itested();
+      if (_v == NOT_INPUT) {untested();itested();
 	error(bDANGER, "parameter " + *first_name + " has no value\n");
       }else{
       }
@@ -292,7 +306,7 @@ inline void PARAMETER<bool>::parse(CS& cmd)
   if (cmd) {
     _v = new_val;
     _s = "#";
-  }else{
+  }else{untested();
     std::string name;
     //cmd >> name;
     name = cmd.ctos(",=();", "'{\"", "'}\"");
@@ -302,10 +316,10 @@ inline void PARAMETER<bool>::parse(CS& cmd)
       }else{untested();
 	_s = name;
       }
-    }else{
+    }else{untested();
     }
   }
-  if (!cmd) {
+  if (!cmd) {untested();
     _v = true;
     _s = "#";
   }else{
@@ -325,10 +339,14 @@ inline void PARAMETER<T>::parse(CS& cmd)
     //cmd >> name;
     name = cmd.ctos(",=();", "'{\"", "'}\"");
     if (cmd) {
-      if (name == "NA") {
-	_s = "";
+      if (cmd.match1('(')) {
+	_s = name + '(' + cmd.ctos("", "(", ")") + ')';
       }else{
 	_s = name;
+      }
+      if (name == "NA") {
+        _s = "";
+      }else{
       }
     }else{
     }

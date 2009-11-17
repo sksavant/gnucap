@@ -1,4 +1,4 @@
-/*$Id: e_base.h,v 26.107 2008/12/19 06:13:23 al Exp $ -*- C++ -*-
+/*$Id: e_base.h,v 26.125 2009/10/15 20:58:21 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -62,6 +62,7 @@ public:
     {return strcasecmp(_label.c_str(),n.c_str())!=0;}
   virtual const std::string long_label()const;
   const std::string&  short_label()const {return _label;}
+  virtual void	      help(CS&, OMSTREAM&)const {untested();incomplete();}
 	  double      probe_num(const std::string&)const;
 	  double      ac_probe_num(const std::string&)const;
   virtual double      tr_probe_num(const std::string&)const;

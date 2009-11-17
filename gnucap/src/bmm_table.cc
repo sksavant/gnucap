@@ -1,4 +1,4 @@
-/*$Id: bmm_table.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
+/*$Id: bmm_table.cc,v 26.125 2009/10/15 20:58:21 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -116,11 +116,9 @@ bool EVAL_BM_TABLE::operator==(const COMMON_COMPONENT& x)const
 /*--------------------------------------------------------------------------*/
 void EVAL_BM_TABLE::print_common_obsolete_callback(OMSTREAM& o, LANGUAGE* lang)const
 {
-  untested();
   assert(lang);
   o << modelname();
   EVAL_BM_ACTION_BASE::print_common_obsolete_callback(o, lang);
-  untested();
 }
 /*--------------------------------------------------------------------------*/
 void EVAL_BM_TABLE::expand(const COMPONENT* d)

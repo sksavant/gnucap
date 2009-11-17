@@ -1,4 +1,4 @@
-/*$Id: d_coil.cc,v 26.113 2009/08/12 03:37:19 al Exp $ -*- C++ -*-
+/*$Id: d_coil.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -53,8 +53,9 @@ public: // override virtual
   bool	   has_iv_probe()const  {return true;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_INDUCTANCE(*this);}
+  //void   precalc_first();	//STORAGE
   void     expand();
-  //void   precalc();		//STORAGE
+  //void   precalc_last();	//STORAGE
   //void   map_nodes();		//ELEMENT
 
   void	   tr_iwant_matrix();
@@ -129,9 +130,10 @@ private: // override virtual
   bool	   has_iv_probe()const  {untested(); return false;}
   bool	   use_obsolete_callback_parse()const {return false;}
   CARD*	   clone()const		{return new DEV_MUTUAL_L(*this);}
+  //void   precalc_first();	//STORAGE
   void     expand_first();
   void	   expand_last();
-  void	   precalc();
+  void	   precalc_last();
   //void   map_nodes()		//ELEMENT
 
   void     tr_iwant_matrix()	{tr_iwant_matrix_passive();}
@@ -279,12 +281,12 @@ void DEV_MUTUAL_L::expand_last()
   }
 }
 /*--------------------------------------------------------------------------*/
-void DEV_MUTUAL_L::precalc()
+void DEV_MUTUAL_L::precalc_last()
 {
-  _output->precalc();
-  _input->precalc();
+  _output->precalc_last();
+  _input->precalc_last();
 
-  DEV_INDUCTANCE::precalc();
+  DEV_INDUCTANCE::precalc_last();
 
   double l1 = _output->value();
   double l2 = _input->value();

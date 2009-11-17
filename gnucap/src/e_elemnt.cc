@@ -1,4 +1,4 @@
-/*$Id: e_elemnt.cc,v 26.120 2009/09/21 05:33:46 al Exp $ -*- C++ -*-
+/*$Id: e_elemnt.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -78,9 +78,9 @@ bool ELEMENT::skip_dev_type(CS& cmd)
   return cmd.umatch(dev_type() + ' ');
 }
 /*--------------------------------------------------------------------------*/
-void ELEMENT::precalc()
+void ELEMENT::precalc_last()
 {
-  COMPONENT::precalc();
+  COMPONENT::precalc_last();
 
   //BUG// This is needed for AC analysis without doing op (or dc or tran ...) first.
   // Something like it should be moved to ac_begin.

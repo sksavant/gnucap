@@ -1,4 +1,4 @@
-/*$Id: bm_fit.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: bm_fit.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -53,9 +53,10 @@ private: // override virtual
   COMMON_COMPONENT* clone()const	{return new EVAL_BM_FIT(*this);}
   void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
 
+  void		precalc_first(const CARD_LIST*);
   //void  	expand(const COMPONENT*);//COMPONENT_COMMON/nothing
   //COMMON_COMPONENT* deflate();	 //COMPONENT_COMMON/nothing
-  void		precalc(const CARD_LIST*);
+  void		precalc_last(const CARD_LIST*);
 
   void		tr_eval(ELEMENT*)const;
   //void	ac_eval(ELEMENT*)const; //EVAL_BM_ACTION_BASE
@@ -131,30 +132,37 @@ void EVAL_BM_FIT::print_common_obsolete_callback(OMSTREAM& o, LANGUAGE* lang)con
   EVAL_BM_ACTION_BASE::print_common_obsolete_callback(o, lang);
 }
 /*--------------------------------------------------------------------------*/
-void EVAL_BM_FIT::precalc(const CARD_LIST* Scope)
+void EVAL_BM_FIT::precalc_first(const CARD_LIST* Scope)
 {
   assert(Scope);
-  EVAL_BM_ACTION_BASE::precalc(Scope);
+  EVAL_BM_ACTION_BASE::precalc_first(Scope);
   _order.e_val(_default_order, Scope);
   _below.e_val(_default_below, Scope);
   _above.e_val(_default_above, Scope);
   _delta.e_val(_default_delta, Scope);
   _smooth.e_val(_default_smooth, Scope);
-  {
-    double last = -BIGBIG;
-    for (std::vector<std::pair<PARAMETER<double>,PARAMETER<double> > >::
-	   iterator p = _table.begin();  p != _table.end();  ++p) {
-      p->first.e_val(0, Scope);
-      p->second.e_val(0, Scope);
-      if (last > p->first) {untested();
-	throw Exception_Precalc("FIT table is out of order: (" + to_string(last)
-				+ ", " + to_string(p->first) + ")\n");
-      }else{
-	//std::pair<double,double> x(p->first, p->second);
-	//_num_table.push_back(x);
-      }
-      last = p->first;
+  
+  for (std::vector<std::pair<PARAMETER<double>,PARAMETER<double> > >::
+	 iterator p = _table.begin();  p != _table.end();  ++p) {
+    p->first.e_val(0, Scope);
+    p->second.e_val(0, Scope);
+  }
+}
+/*--------------------------------------------------------------------------*/
+void EVAL_BM_FIT::precalc_last(const CARD_LIST* Scope)
+{
+  assert(Scope);
+  EVAL_BM_ACTION_BASE::precalc_last(Scope);
+  
+  double last = -BIGBIG;
+  for (std::vector<std::pair<PARAMETER<double>,PARAMETER<double> > >::
+	 iterator p = _table.begin();  p != _table.end();  ++p) {
+    if (last > p->first) {untested();
+      throw Exception_Precalc("FIT table is out of order: (" + to_string(last)
+      			      + ", " + to_string(p->first) + ")\n");
+    }else{
     }
+    last = p->first;
   }
   delete _spline;
   double below = _below.has_hard_value() ? _below : NOT_INPUT;

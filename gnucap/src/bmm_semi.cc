@@ -1,4 +1,4 @@
-/*$Id: bmm_semi.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
+/*$Id: bmm_semi.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -45,9 +45,10 @@ protected: // override virtual
   COMMON_COMPONENT* clone()const = 0;
   void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
 
+  void		precalc_first(const CARD_LIST*);
   void  	expand(const COMPONENT*);
   //COMMON_COMPONENT* deflate();	 //COMPONENT_COMMON/nothing
-  void		precalc(const CARD_LIST*);
+  //void		precalc_last(const CARD_LIST*);
 
   void		tr_eval(ELEMENT*)const;
   //void	ac_eval(ELEMENT*)const; //EVAL_BM_ACTION_BASE
@@ -71,9 +72,10 @@ private: // override virtual
   bool		operator==(const COMMON_COMPONENT&)const;
   COMMON_COMPONENT* clone()const {return new EVAL_BM_SEMI_CAPACITOR(*this);}
 
+  //void	precalc_first(const CARD_LIST*);//COMPONENT_COMMON
   void  	expand(const COMPONENT*);
-  //COMMON_COMPONENT* deflate();	 //COMPONENT_COMMON/nothing
-  void		precalc(const CARD_LIST*);
+  //COMMON_COMPONENT* deflate();		//COMPONENT_COMMON/nothing
+  void		precalc_last(const CARD_LIST*);
 
   //void	tr_eval(ELEMENT*)const; //EVAL_BM_SEMI_BASE
   //void	ac_eval(ELEMENT*)const; //EVAL_BM_ACTION_BASE
@@ -96,9 +98,10 @@ private: // override virtual
   bool		operator==(const COMMON_COMPONENT&)const;
   COMMON_COMPONENT* clone()const {return new EVAL_BM_SEMI_RESISTOR(*this);}
 
+  //void	precalc_first(const CARD_LIST*);//COMPONENT_COMMON
   void  	expand(const COMPONENT*);
-  //COMMON_COMPONENT* deflate();	 //COMPONENT_COMMON/nothing
-  void		precalc(const CARD_LIST*);
+  //COMMON_COMPONENT* deflate();		//COMPONENT_COMMON/nothing
+  void		precalc_last(const CARD_LIST*);
 
   //void	tr_eval(ELEMENT*)const; //EVAL_BM_SEMI_BASE
   //void	ac_eval(ELEMENT*)const; //EVAL_BM_ACTION_BASE
@@ -126,6 +129,7 @@ protected:
   explicit MODEL_SEMI_BASE(const MODEL_SEMI_BASE& p);
 protected: // override virtual
   void  precalc_first();
+  //void  precalc_last();
   //CARD* clone()const //MODEL_CARD/pure
   void		set_param_by_index(int, std::string&, int);
   bool		param_is_printable(int)const;
@@ -149,6 +153,7 @@ public:
 private: // override virtual
   std::string dev_type()const		{return "c";}
   void  precalc_first();
+  //void  precalc_last();
   COMMON_COMPONENT* new_common()const {return new EVAL_BM_SEMI_CAPACITOR;}
   CARD* clone()const		{return new MODEL_SEMI_CAPACITOR(*this);}
   void		set_param_by_index(int, std::string&, int);
@@ -171,6 +176,7 @@ public:
 private: // override virtual
   std::string dev_type()const		{return "r";}
   void  precalc_first();
+  //void  precalc_last();
   COMMON_COMPONENT* new_common()const {return new EVAL_BM_SEMI_RESISTOR;}
   CARD* clone()const		{return new MODEL_SEMI_RESISTOR(*this);}
   void		set_param_by_index(int, std::string&, int);
@@ -236,10 +242,10 @@ void EVAL_BM_SEMI_BASE::expand(const COMPONENT* d)
   attach_model(d);
 }
 /*--------------------------------------------------------------------------*/
-void EVAL_BM_SEMI_BASE::precalc(const CARD_LIST* Scope)
+void EVAL_BM_SEMI_BASE::precalc_first(const CARD_LIST* Scope)
 {
   assert(Scope);
-  EVAL_BM_ACTION_BASE::precalc(Scope);
+  EVAL_BM_ACTION_BASE::precalc_first(Scope);
   _length.e_val(_default_length, Scope);
   _width.e_val(_default_width, Scope);
 }
@@ -284,10 +290,11 @@ void EVAL_BM_SEMI_CAPACITOR::expand(const COMPONENT* d)
   }
 }
 /*--------------------------------------------------------------------------*/
-void EVAL_BM_SEMI_CAPACITOR::precalc(const CARD_LIST* Scope)
+void EVAL_BM_SEMI_CAPACITOR::precalc_last(const CARD_LIST* Scope)
 {
   assert(Scope);
-  EVAL_BM_SEMI_BASE::precalc(Scope);
+  EVAL_BM_SEMI_BASE::precalc_last(Scope);
+
   const MODEL_SEMI_CAPACITOR* m = prechecked_cast<const MODEL_SEMI_CAPACITOR*>(model());
 
   double width = (_width == NOT_INPUT) ? m->_defw : _width;
@@ -332,10 +339,11 @@ void EVAL_BM_SEMI_RESISTOR::expand(const COMPONENT* d)
   }
 }
 /*--------------------------------------------------------------------------*/
-void EVAL_BM_SEMI_RESISTOR::precalc(const CARD_LIST* Scope)
+void EVAL_BM_SEMI_RESISTOR::precalc_last(const CARD_LIST* Scope)
 {
   assert(Scope);
-  EVAL_BM_SEMI_BASE::precalc(Scope);
+  EVAL_BM_SEMI_BASE::precalc_last(Scope);
+
   const MODEL_SEMI_RESISTOR* m = prechecked_cast<const MODEL_SEMI_RESISTOR*>(model());
 
   double width = (_width == NOT_INPUT) ? m->_defw : _width;

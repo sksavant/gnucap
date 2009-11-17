@@ -1,4 +1,4 @@
-/*$Id: e_model.h,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
+/*$Id: e_model.h,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -58,6 +58,8 @@ public: // override virtuals
   std::string param_name(int)const;
   std::string param_name(int,int)const;
   std::string param_value(int)const;
+  std::string param_type(int)const	{incomplete(); return "";}
+  std::string param_default(int)const	{incomplete(); return "";}
   int param_count()const {return (1 + CARD::param_count());}
 public:
   virtual void	tr_eval(COMPONENT*)const{unreachable();}

@@ -1,4 +1,4 @@
-/*$Id: e_card.h,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
+/*$Id: e_card.h,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -63,11 +63,11 @@ public:					// virtuals. -- the important stuff
   virtual char	 id_letter()const	{unreachable(); return '\0';}
   virtual CARD*	 clone()const		{unreachable(); return NULL;}
   virtual CARD*	 clone_instance()const  {itested(); return clone();}
-  virtual void	 precalc_first()	{itested();}
+  virtual void	 precalc_first()	{}
   virtual void	 expand_first()		{}
   virtual void	 expand()		{}
   virtual void	 expand_last()		{}
-  virtual void	 precalc()		{}
+  virtual void	 precalc_last()		{}
   virtual void	 map_nodes()		{}
   virtual void	 tr_iwant_matrix()	{}
   virtual void	 tr_begin()		{}
@@ -144,7 +144,7 @@ public:	// label -- in BASE
   /*virtual*/ const std::string long_label()const; // no further override
   //--------------------------------------------------------------------
 public:	// ports
-  node_t& n_(int i)const;// {untested(); assert(i < matrix_nodes()); return _n[i];}
+  node_t& n_(int i)const;
   //--------------------------------------------------------------------
 public: // parameters
   virtual void set_param_by_name(std::string, std::string);
@@ -157,6 +157,8 @@ public: // parameters
   virtual std::string param_name(int)const	{return "";}
   virtual std::string param_name(int i,int j)const {return (j==0) ? param_name(i) : "";}
   virtual std::string param_value(int)const	{untested(); return "";}
+  virtual std::string param_type(int)const	{incomplete(); return "";}
+  virtual std::string param_default(int)const	{incomplete(); return "";}
   //--------------------------------------------------------------------
 };
 INTERFACE CARD_LIST::fat_iterator findbranch(CS&,CARD_LIST::fat_iterator);
