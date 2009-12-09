@@ -1,4 +1,4 @@
-/*$Id: bm_sin.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: bm_sin.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -22,6 +22,7 @@
  * SPICE compatible SIN
  */
 //testing=script,complete 2005.10.07
+#include "e_elemnt.h"
 #include "u_lang.h"
 #include "l_denoise.h"
 #include "bm.h"
@@ -59,14 +60,7 @@ private: // override vitrual
   void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
 
   void		precalc_first(const CARD_LIST*);
-  //void  	expand(const COMPONENT*);	//COMPONENT_COMMON/nothing
-  //COMMON_COMPONENT* deflate();		//COMPONENT_COMMON/nothing
-  //void	precalc_last(const CARD_LIST*);	//COMPONENT_COMMON
-
   void		tr_eval(ELEMENT*)const;
-  //void	ac_eval(ELEMENT*)const; //EVAL_BM_ACTION_BASE
-  //bool	has_tr_eval()const;	//EVAL_BM_BASE/true
-  //bool	has_ac_eval()const;	//EVAL_BM_BASE/true
   TIME_PAIR	tr_review(COMPONENT*);
   std::string	name()const		{return "sin";}
   bool		ac_too()const		{return false;}
@@ -156,12 +150,12 @@ void EVAL_BM_SIN::precalc_first(const CARD_LIST* Scope)
 void EVAL_BM_SIN::tr_eval(ELEMENT* d)const
 {
   if (!_frequency.has_hard_value()) {
-    _actual_frequency = SIM::freq;
+    _actual_frequency = d->_sim->_freq;
   }else{
     _actual_frequency = _frequency;
   }
 
-  double reltime = ioffset(SIM::time0);
+  double reltime = ioffset(d->_sim->_time0);
   double ev = _offset;
   if (reltime > _delay) {
     double x=_amplitude*fixzero(sin(M_TWO_PI*_actual_frequency*(reltime-_delay)),1.);
@@ -177,7 +171,7 @@ void EVAL_BM_SIN::tr_eval(ELEMENT* d)const
 /*--------------------------------------------------------------------------*/
 TIME_PAIR EVAL_BM_SIN::tr_review(COMPONENT* d)
 {
-  double reltime = ioffset(SIM::time0) + SIM::_dtmin * .01;
+  double reltime = ioffset(d->_sim->_time0) + d->_sim->_dtmin * .01;
 
   if (reltime > _delay) {
     if (_peak && _zero) {
@@ -188,7 +182,7 @@ TIME_PAIR EVAL_BM_SIN::tr_review(COMPONENT* d)
       d->_time_by.min_event(floor(reltime * 2 * _actual_frequency + 1) / (2 * _actual_frequency));
     }else{
     }
-    d->_time_by.min_error_estimate(SIM::time0 + 1. / (_samples * _actual_frequency));
+    d->_time_by.min_error_estimate(d->_sim->_time0 + 1. / (_samples * _actual_frequency));
   }else{
     d->_time_by.min_event(_delay);
   }
@@ -201,12 +195,12 @@ bool EVAL_BM_SIN::parse_numlist(CS& cmd)
   unsigned start = cmd.cursor();
   unsigned here = cmd.cursor();
   for (PARAMETER<double>* i = &_offset;  i < &_end;  ++i) {
-    PARAMETER<double> value(NOT_VALID);
-    cmd >> value;
+    PARAMETER<double> val(NOT_VALID);
+    cmd >> val;
     if (cmd.stuck(&here)) {
       break;
     }else{
-      *i = value;
+      *i = val;
     }
   }
   return cmd.gotit(start);

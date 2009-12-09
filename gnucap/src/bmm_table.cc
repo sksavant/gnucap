@@ -1,4 +1,4 @@
-/*$Id: bmm_table.cc,v 26.125 2009/10/15 20:58:21 al Exp $ -*- C++ -*-
+/*$Id: bmm_table.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -41,18 +41,10 @@ private: // override virtual
   bool		operator==(const COMMON_COMPONENT&)const;
   COMMON_COMPONENT* clone()const {return new EVAL_BM_TABLE(*this);}
   void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
-
   void  	expand(const COMPONENT*);
-  //COMMON_COMPONENT* deflate();	   //COMPONENT_COMMON/nothing
-  //void	precalc(const CARD_LIST*); //EVAL_BM_ACTION_BASE
-
   void		tr_eval(ELEMENT*)const;
-  //void	ac_eval(ELEMENT*)const; //EVAL_BM_ACTION_BASE
-  //bool	has_tr_eval()const;	//EVAL_BM_BASE/true
-  //bool	has_ac_eval()const;	//EVAL_BM_BASE/true
   std::string	name()const	{untested();return modelname().c_str();}
   bool		ac_too()const		{untested();return false;}
-  //bool	parse_numlist(CS&);	//COMPONENT_COMMON/nothing
 };
 /*--------------------------------------------------------------------------*/
 class MODEL_TABLE : public MODEL_CARD {

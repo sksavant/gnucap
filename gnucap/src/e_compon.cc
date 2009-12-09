@@ -1,4 +1,4 @@
-/*$Id: e_compon.cc,v 26.128 2009/11/10 04:22:27 al Exp $ -*- C++ -*-
+/*$Id: e_compon.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -31,6 +31,7 @@ COMMON_COMPONENT::COMMON_COMPONENT(const COMMON_COMPONENT& p)
    _dtemp(p._dtemp),
    _temp_c(p._temp_c),
    _mfactor(p._mfactor),
+   _value(p._value),
    _modelname(p._modelname),
    _model(p._model),
    _attach_count(0)
@@ -42,6 +43,7 @@ COMMON_COMPONENT::COMMON_COMPONENT(int c)
    _dtemp(0),
    _temp_c(NOT_INPUT),
    _mfactor(1),
+   _value(0),
    _modelname(),
    _model(0),
    _attach_count(c)
@@ -54,65 +56,53 @@ COMMON_COMPONENT::~COMMON_COMPONENT()
   assert(_attach_count == 0 || _attach_count == CC_STATIC);
 }
 /*--------------------------------------------------------------------------*/
-const MODEL_CARD* COMPONENT::find_model(const std::string& modelname)const
+void COMMON_COMPONENT::attach_common(COMMON_COMPONENT*c, COMMON_COMPONENT**to)
 {
-  if (modelname == "") {
-    throw Exception(long_label() + ": missing args -- need model name");
-    unreachable();
-    return NULL;
-  }else{
-    const CARD* c = NULL;
-    {
-      int bin_count = 0;
-      for (const CARD* Scope = this; Scope && !c; Scope = Scope->owner()) {
-	// start here, looking out
-	try {
-	  c = Scope->find_in_my_scope(modelname);
-	}catch (Exception_Cant_Find& e1) {
-	  // didn't find plain model.  try binned models
-	  bin_count = 0;
-	  for (;;) {
-	    // loop over binned models
-	    std::string extended_name = modelname + '.' + to_string(++bin_count);
-	    try {
-	      c = Scope->find_in_my_scope(extended_name);
-	    }catch (Exception_Cant_Find& e2) {
-	      // that's all .. looked at all of them
-	      c = NULL;
-	      break;
-	    }
-	    const MODEL_CARD* m = dynamic_cast<const MODEL_CARD*>(c);
-	    if (m && m->is_valid(this)) {
-	      //matching name and correct bin
-	      break;
-	    }else{
-	      // keep looking
-	    }
-	  }
-	}
-      }
-      if (!c) {
-	if (bin_count <= 1) {
-	  throw Exception_Cant_Find(long_label(), modelname);
-	}else{
-	  throw Exception(long_label() + ": no bins match: " + modelname);
-	}
-	unreachable();
-      }else{
-      }
-    }
-    // found something, what is it?
-    assert(c);
-    const MODEL_CARD* model = dynamic_cast<const MODEL_CARD*>(c);
-    if (!model) {untested();
-      throw Exception_Type_Mismatch(long_label(), modelname, ".model");
-    }else if (!model->is_valid(this)) {itested();
-      error(bWARNING, long_label() + ", " + modelname
-	   + "\nmodel and device parameters are incompatible, using anyway\n");
+  assert(to);
+  if (c == *to) {
+    // The new and old are the same object.  Do nothing.
+  }else if (!c) {untested();
+    // There is no new common.  probably a simple element
+    detach_common(to);
+  }else if (!*to) {
+    // No old one, but have a new one.
+    ++(c->_attach_count);
+    trace1("++1", c->_attach_count);
+    *to = c;
+  }else if (*c != **to) {
+    // They are different, usually by edit.
+    detach_common(to);
+    ++(c->_attach_count);
+    trace1("++2", c->_attach_count);
+    *to = c;
+  }else if (c->_attach_count == 0) {
+    // The new and old are identical.
+    // Use the old one.
+    // The new one is not used anywhere, so throw it away.
+    trace1("delete", c->_attach_count);    
+    delete c;
+  }else{untested();
+    // The new and old are identical.
+    // Use the old one.
+    // The new one is also used somewhere else, so keep it.
+  }
+}
+/*--------------------------------------------------------------------------*/
+void COMMON_COMPONENT::detach_common(COMMON_COMPONENT** from)
+{
+  assert(from);
+  if (*from) {
+    assert((**from)._attach_count > 0);
+    --((**from)._attach_count);
+    trace1("--", (**from)._attach_count);
+    if ((**from)._attach_count == 0) {
+      trace1("delete", (**from)._attach_count);
+      delete *from;
     }else{
+      trace1("nodelete", (**from)._attach_count);
     }
-    assert(model);
-    return model;
+    *from = NULL;
+  }else{
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -230,14 +220,14 @@ void COMMON_COMPONENT::print_common_obsolete_callback(OMSTREAM& o, LANGUAGE* lan
   print_pair(o, lang, "m",    _mfactor, _mfactor.has_hard_value());
 }
 /*--------------------------------------------------------------------------*/
-void COMMON_COMPONENT::set_param_by_index(int i, std::string& value, int offset)
+void COMMON_COMPONENT::set_param_by_index(int i, std::string& Value, int Offset)
 {
   switch (i) {
-  case 0:  _tnom_c = value; break;
-  case 1:  _dtemp = value; break;
-  case 2:  _temp_c = value; break;
-  case 3:  _mfactor = value; break;
-  default: throw Exception_Too_Many(i, 3, offset); break;
+  case 0:  _tnom_c = Value; break;
+  case 1:  _dtemp = Value; break;
+  case 2:  _temp_c = Value; break;
+  case 3:  _mfactor = Value; break;
+  default: throw Exception_Too_Many(i, 3, Offset); break;
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -284,8 +274,9 @@ void COMMON_COMPONENT::precalc_first(const CARD_LIST* Scope)
   assert(Scope);
   _tnom_c.e_val(OPT::tnom_c, Scope);
   _dtemp.e_val(0., Scope);
-  _temp_c.e_val(SIM::temp_c + _dtemp, Scope);
+  _temp_c.e_val(CKT_BASE::_sim->_temp_c + _dtemp, Scope);
   _mfactor.e_val(1, Scope);
+  _value.e_val(0, Scope);
 }
 /*--------------------------------------------------------------------------*/
 void COMMON_COMPONENT::tr_eval(ELEMENT*x)const
@@ -307,7 +298,8 @@ bool COMMON_COMPONENT::operator==(const COMMON_COMPONENT& x)const
 	  && _tnom_c == x._tnom_c
 	  && _dtemp == x._dtemp
 	  && _temp_c == x._temp_c
-	  && _mfactor == x._mfactor);
+	  && _mfactor == x._mfactor
+	  && _value == x._value);
 }
 /*--------------------------------------------------------------------------*/
 void COMMON_COMPONENT::set_param_by_name(std::string Name, std::string Value)
@@ -380,11 +372,12 @@ COMPONENT::COMPONENT()
    _common(0),
    _value(0),
    _mfactor(1),
+   _mfactor_fixed(NOT_VALID),
    _converged(false),
    _q_for_eval(-1),
    _time_by()
 {
-  SIM::uninit();
+  _sim->uninit();
 }
 /*--------------------------------------------------------------------------*/
 COMPONENT::COMPONENT(const COMPONENT& p)
@@ -392,11 +385,12 @@ COMPONENT::COMPONENT(const COMPONENT& p)
    _common(0),
    _value(p._value),
    _mfactor(p._mfactor),
+   _mfactor_fixed(p._mfactor_fixed),
    _converged(p._converged),
    _q_for_eval(-1),
    _time_by(p._time_by)
 {
-  SIM::uninit();
+  _sim->uninit();
   attach_common(p._common);
   assert(_common == p._common);
 }
@@ -404,7 +398,23 @@ COMPONENT::COMPONENT(const COMPONENT& p)
 COMPONENT::~COMPONENT()
 {
   detach_common();
-  SIM::uninit();
+  _sim->uninit();
+}
+/*--------------------------------------------------------------------------*/
+bool COMPONENT::node_is_grounded(int i)const 
+{
+  assert(_n);
+  assert(i >= 0);
+  assert(i < net_nodes());
+  return _n[i].is_grounded();
+}
+/*--------------------------------------------------------------------------*/
+bool COMPONENT::node_is_connected(int i)const 
+{
+  assert(_n);
+  assert(i >= 0);
+  assert(i < net_nodes());
+  return _n[i].is_connected();
 }
 /*--------------------------------------------------------------------------*/
 void COMPONENT::set_port_by_name(std::string& int_name, std::string& ext_name)
@@ -509,11 +519,18 @@ void COMPONENT::precalc_first()
       error(bWARNING, long_label() + ": " + e.message());
     }
     _mfactor = common()->mfactor();
-  }else{itested();
+  }else{
   }
   
   _mfactor.e_val(1, scope());
   _value.e_val(0.,scope());
+  trace1(long_label().c_str(), double(_mfactor));
+  if (const COMPONENT* o = prechecked_cast<const COMPONENT*>(owner())) {
+    _mfactor_fixed = o->mfactor() * _mfactor;
+  }else{
+    _mfactor_fixed =  _mfactor;
+  } 
+  trace1(long_label().c_str(), _mfactor_fixed);
 }
 /*--------------------------------------------------------------------------*/
 void COMPONENT::precalc_last()
@@ -724,55 +741,171 @@ double COMPONENT::tr_probe_num(const std::string& x)const
   }
 }
 /*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-void COMMON_COMPONENT::attach_common(COMMON_COMPONENT*c, COMMON_COMPONENT**to)
+const MODEL_CARD* COMPONENT::find_model(const std::string& modelname)const
 {
-  assert(to);
-  if (c == *to) {
-    // The new and old are the same object.  Do nothing.
-  }else if (!c) {untested();
-    // There is no new common.  probably a simple element
-    detach_common(to);
-  }else if (!*to) {
-    // No old one, but have a new one.
-    ++(c->_attach_count);
-    trace1("++1", c->_attach_count);
-    *to = c;
-  }else if (*c != **to) {
-    // They are different, usually by edit.
-    detach_common(to);
-    ++(c->_attach_count);
-    trace1("++2", c->_attach_count);
-    *to = c;
-  }else if (c->_attach_count == 0) {
-    // The new and old are identical.
-    // Use the old one.
-    // The new one is not used anywhere, so throw it away.
-    trace1("delete", c->_attach_count);    
-    delete c;
-  }else{untested();
-    // The new and old are identical.
-    // Use the old one.
-    // The new one is also used somewhere else, so keep it.
+  if (modelname == "") {
+    throw Exception(long_label() + ": missing args -- need model name");
+    unreachable();
+    return NULL;
+  }else{
+    const CARD* c = NULL;
+    {
+      int bin_count = 0;
+      for (const CARD* Scope = this; Scope && !c; Scope = Scope->owner()) {
+	// start here, looking out
+	try {
+	  c = Scope->find_in_my_scope(modelname);
+	}catch (Exception_Cant_Find& e1) {
+	  // didn't find plain model.  try binned models
+	  bin_count = 0;
+	  for (;;) {
+	    // loop over binned models
+	    std::string extended_name = modelname + '.' + to_string(++bin_count);
+	    try {
+	      c = Scope->find_in_my_scope(extended_name);
+	    }catch (Exception_Cant_Find& e2) {
+	      // that's all .. looked at all of them
+	      c = NULL;
+	      break;
+	    }
+	    const MODEL_CARD* m = dynamic_cast<const MODEL_CARD*>(c);
+	    if (m && m->is_valid(this)) {
+	      //matching name and correct bin
+	      break;
+	    }else{
+	      // keep looking
+	    }
+	  }
+	}
+      }
+      if (!c) {
+	if (bin_count <= 1) {
+	  throw Exception_Cant_Find(long_label(), modelname);
+	}else{
+	  throw Exception(long_label() + ": no bins match: " + modelname);
+	}
+	unreachable();
+      }else{
+      }
+    }
+    // found something, what is it?
+    assert(c);
+    const MODEL_CARD* model = dynamic_cast<const MODEL_CARD*>(c);
+    if (!model) {untested();
+      throw Exception_Type_Mismatch(long_label(), modelname, ".model");
+    }else if (!model->is_valid(this)) {itested();
+      error(bWARNING, long_label() + ", " + modelname
+	   + "\nmodel and device parameters are incompatible, using anyway\n");
+    }else{
+    }
+    assert(model);
+    return model;
   }
 }
 /*--------------------------------------------------------------------------*/
-void COMMON_COMPONENT::detach_common(COMMON_COMPONENT** from)
+/* q_eval: queue this device for evaluation on the next pass,
+ * with a check against doing it twice.
+ */
+void COMPONENT::q_eval()
 {
-  assert(from);
-  if (*from) {
-    assert((**from)._attach_count > 0);
-    --((**from)._attach_count);
-    trace1("--", (**from)._attach_count);
-    if ((**from)._attach_count == 0) {
-      trace1("delete", (**from)._attach_count);
-      delete *from;
-    }else{
-      trace1("nodelete", (**from)._attach_count);
-    }
-    *from = NULL;
+  if(!is_q_for_eval()) {
+    mark_q_for_eval();
+    _sim->_evalq_uc->push_back(this);
+  }else{itested();
+  }
+}
+/*--------------------------------------------------------------------------*/
+void COMPONENT::tr_queue_eval()
+{
+  if(tr_needs_eval()) {
+    q_eval();
   }else{
   }
+}
+/*--------------------------------------------------------------------------*/
+TIME_PAIR COMPONENT::tr_review()
+{
+  _time_by.reset();
+  if(has_common()) {
+    return _common->tr_review(this);
+  }else{
+    return _time_by;
+  }
+}
+/*--------------------------------------------------------------------------*/
+void COMPONENT::tr_accept()
+{
+  if(has_common()) {
+    _common->tr_accept(this);
+  }else{
+  }
+}
+/*--------------------------------------------------------------------------*/
+bool COMPONENT::use_obsolete_callback_parse()const
+{
+  if (has_common()) {
+    return common()->use_obsolete_callback_parse();
+  }else{
+    return false;
+  }
+}
+/*--------------------------------------------------------------------------*/
+bool COMPONENT::use_obsolete_callback_print()const
+{
+  if (has_common()) {
+    return common()->use_obsolete_callback_print();
+  }else{
+    return false;
+  }
+}
+/*--------------------------------------------------------------------------*/
+void COMPONENT::obsolete_move_parameters_from_common(const COMMON_COMPONENT* dc)
+{
+  assert(dc);
+  _value   = dc->value();
+  _mfactor = dc->mfactor();
+}
+/*--------------------------------------------------------------------------*/
+/* volts_limited: transient voltage, best approximation, with limiting
+ */
+double COMPONENT::volts_limited(const node_t & n1, const node_t & n2)
+{
+  bool limiting = false;
+
+  double v1 = n1.v0();
+  assert(v1 == v1);
+  if (v1 < _sim->_vmin) {
+    limiting = true;
+    v1 = _sim->_vmin;
+  }else if (v1 > _sim->_vmax) {
+    limiting = true;
+    v1 = _sim->_vmax;
+  }
+
+  double v2 = n2.v0();
+  assert(v2 == v2);
+  if (v2 < _sim->_vmin) {
+    limiting = true;
+    v2 = _sim->_vmin;
+  }else if (v2 > _sim->_vmax) {
+    limiting = true;
+    v2 = _sim->_vmax;
+  }
+
+  if (limiting) {
+    _sim->_limiting = true;
+    if (OPT::dampstrategy & dsRANGE) {
+      _sim->_fulldamp = true;
+      error(bTRACE, "range limit damp\n");
+    }
+    if (OPT::picky <= bTRACE) {untested();
+      error(bNOERROR,"node limiting (n1,n2,dif) "
+	    "was (%g %g %g) now (%g %g %g)\n",
+	    n1.v0(), n2.v0(), n1.v0() - n2.v0(), v1, v2, v1-v2);
+    }
+  }
+
+  return dn_diff(v1,v2);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

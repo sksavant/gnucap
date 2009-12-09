@@ -1,4 +1,4 @@
-/*$Id: mg_out_h.cc,v 26.126 2009/10/16 05:27:42 al Exp $ -*- C++ -*-
+/*$Id: mg_out_h.cc,v 26.134 2009/11/29 03:44:57 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -181,7 +181,7 @@ static void make_common(std::ofstream& out, const Device& d)
     "  void     precalc_first(const CARD_LIST*);\n"
     "  void     expand(const COMPONENT*);\n"
     "  void     precalc_last(const CARD_LIST*);\n"
-    "  std::string name()const {untested();return \"" << d.parse_name() << "\";}\n"
+    "  std::string name()const {itested();return \"" << d.parse_name() << "\";}\n"
     "  const SDP_CARD* sdp()const {return _sdp;}\n"
     "  bool     has_sdp()const {untested();return _sdp;}\n"
     "  static int  count() {return _count;}\n"

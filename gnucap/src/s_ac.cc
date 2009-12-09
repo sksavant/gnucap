@@ -1,4 +1,4 @@
-/*$Id: s_ac.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: s_ac.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -22,6 +22,8 @@
  * ac analysis top
  */
 //testing=script 2008.08.06
+#include "u_sim_data.h"
+#include "u_status.h"
 #include "u_parameter.h"
 #include "u_prblst.h"
 #include "s__.h"
@@ -66,15 +68,14 @@ private:
 void AC::do_it(CS& Cmd, CARD_LIST* Scope)
 {
   _scope = Scope;
-  set_command_ac();
+  _sim->set_command_ac();
   reset_timers();
   ::status.ac.reset().start();
 
-  init();
-  alloc_vectors();
-  
-  acx.reallocate();
-  acx.set_min_pivot(OPT::pivtol);
+  _sim->init();
+  _sim->alloc_vectors();
+  _sim->_acx.reallocate();
+  _sim->_acx.set_min_pivot(OPT::pivtol);
   
   setup(Cmd);
   ::status.set_up.stop();
@@ -85,8 +86,8 @@ void AC::do_it(CS& Cmd, CARD_LIST* Scope)
   case rSCRIPT:		sweep();	break;
   case rPRESET:		/*nothing*/	break;
   }
-  acx.unallocate();
-  unalloc_vectors();
+  _sim->_acx.unallocate();
+  _sim->unalloc_vectors();
   
   ::status.ac.stop();
   ::status.total.stop();
@@ -141,12 +142,12 @@ void AC::setup(CS& Cmd)
       || (Get(Cmd, "ti{mes}",	  &_step_in) && (_stepmode = TIMES))
       || (Get(Cmd, "lin",	  &_step_in) && (_stepmode = LIN_PTS))
       || (Get(Cmd, "o{ctave}",	  &_step_in) && (_stepmode = OCTAVE))
-      || Get(Cmd, "dt{emp}",	  &temp_c,  mOFFSET, OPT::temp_c)
+      || Get(Cmd, "dt{emp}",	  &_sim->_temp_c,  mOFFSET, OPT::temp_c)
       || Get(Cmd, "pl{ot}",	  &ploton)
       || Get(Cmd, "pr{evoppoint}",&_prevopppoint)
       || Get(Cmd, "sta{rt}",	  &_start)
       || Get(Cmd, "sto{p}",	  &_stop)
-      || Get(Cmd, "te{mperature}",&temp_c)
+      || Get(Cmd, "te{mperature}",&_sim->_temp_c)
       || outset(Cmd,&_out)
       ;
   }while (Cmd.more() && !Cmd.stuck(&here));
@@ -217,21 +218,21 @@ void AC::setup(CS& Cmd)
 /*--------------------------------------------------------------------------*/
 void AC::solve()
 {
-  acx.zero();
-  std::fill_n(ac, ::status.total_nodes+1, 0.);
+  _sim->_acx.zero();
+  std::fill_n(_sim->_ac, _sim->_total_nodes+1, 0.);
 
   ::status.load.start();
-  count_iterations(iTOTAL);
+  _sim->count_iterations(iTOTAL);
   CARD_LIST::card_list.do_ac();
   CARD_LIST::card_list.ac_load();
   ::status.load.stop();
 
   ::status.lud.start();
-  acx.lu_decomp();
+  _sim->_acx.lu_decomp();
   ::status.lud.stop();
 
   ::status.back.start();
-  acx.fbsub(ac);
+  _sim->_acx.fbsub(_sim->_ac);
   ::status.back.stop();
 }
 /*--------------------------------------------------------------------------*/
@@ -241,15 +242,15 @@ void AC::sweep()
   first();
   CARD_LIST::card_list.ac_begin();
   do {
-    jomega = COMPLEX(0., freq * M_TWO_PI);
+    _sim->_jomega = COMPLEX(0., _sim->_freq * M_TWO_PI);
     solve();
-    outdata(freq);
+    outdata(_sim->_freq);
   } while (next());
 }
 /*--------------------------------------------------------------------------*/
 void AC::first()
 {
-  freq = _start;
+  _sim->_freq = _start;
 }
 /*--------------------------------------------------------------------------*/
 bool AC::next()
@@ -257,15 +258,15 @@ bool AC::next()
   double realstop = (_linswp)
     ? _stop - _step/100.
     : _stop / pow(_step,.01);
-  if (!in_order(double(_start), freq, realstop)) {
+  if (!in_order(double(_start), _sim->_freq, realstop)) {
     return false;
   }else{
   }
 
-  freq = (_linswp)
-    ? freq + _step
-    : freq * _step;
-  if (in_order(freq, double(_start), double(_stop))) {
+  _sim->_freq = (_linswp)
+    ? _sim->_freq + _step
+    : _sim->_freq * _step;
+  if (in_order(_sim->_freq, double(_start), double(_stop))) {
     return false;
   }else{
     return true;

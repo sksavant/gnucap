@@ -1,4 +1,4 @@
-/*$Id: c_attach.cc,v 26.83 2008/06/05 04:46:59 al Exp $ -*- C++ -*-
+/*$Id: c_attach.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -21,6 +21,7 @@
  *------------------------------------------------------------------
  */
 //testing=informal
+#include "e_cardlist.h"
 #include "c_comand.h"
 #include "globals.h"
 /*--------------------------------------------------------------------------*/

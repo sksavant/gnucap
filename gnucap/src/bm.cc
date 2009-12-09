@@ -1,4 +1,4 @@
-/*$Id: bm.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: bm.cc,v 26.132 2009/11/24 04:26:37 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -47,8 +47,7 @@ EVAL_BM_ACTION_BASE::EVAL_BM_ACTION_BASE(int c)
    _scale(_default_scale),
    _tc1(_default_tc1),
    _tc2(_default_tc2),
-   _ic(_default_ic),
-   _has_ext_args(false)
+   _ic(_default_ic)
 {
 }
 /*--------------------------------------------------------------------------*/
@@ -62,8 +61,7 @@ EVAL_BM_ACTION_BASE::EVAL_BM_ACTION_BASE(const EVAL_BM_ACTION_BASE& p)
    _scale(p._scale),
    _tc1(p._tc1),
    _tc2(p._tc2),
-   _ic(p._ic),
-   _has_ext_args(p._has_ext_args)
+   _ic(p._ic)
 {
 }
 /*--------------------------------------------------------------------------*/
@@ -94,7 +92,7 @@ void EVAL_BM_ACTION_BASE::ac_final_adjust(COMPLEX* y)const
 {
   if (_bandwidth != NOT_INPUT && _bandwidth != 0.) {untested();
     assert(y->imag() == 0);
-    double ratio = SIM::freq / _bandwidth;
+    double ratio = CKT_BASE::_sim->_freq / _bandwidth;
     double coeff = y->real() / (1.+(ratio*ratio));
     *y = COMPLEX(coeff, -coeff * ratio);
   }else{
@@ -106,7 +104,7 @@ void EVAL_BM_ACTION_BASE::ac_final_adjust(COMPLEX* y)const
   }
 
   if (_delay != 0.) {untested();
-    double ratio = SIM::freq * _delay;
+    double ratio = CKT_BASE::_sim->_freq * _delay;
     if (ratio > 100000.) {untested();
       error(bPICKY, "delay too long\n");
       ratio = 0.;
@@ -212,7 +210,7 @@ COMMON_COMPONENT* EVAL_BM_ACTION_BASE::parse_func_type(CS& cmd)
 {
   const COMMON_COMPONENT* p = 
     (cmd.is_float() || cmd.match1('_') || cmd.skip1b('='))
-    ? bm_dispatcher["value"]
+    ? bm_dispatcher["eval_bm_value"]
     : bm_dispatcher[cmd];
 
   if (p) {

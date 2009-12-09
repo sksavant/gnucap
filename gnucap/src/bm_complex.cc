@@ -1,4 +1,4 @@
-/*$Id: bm_complex.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: bm_complex.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -39,15 +39,8 @@ private: // override virtual
   bool		operator==(const COMMON_COMPONENT&)const;
   COMMON_COMPONENT* clone()const	{return new EVAL_BM_COMPLEX(*this);}
   void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
-
-  //void	expand(const COMPONENT*);  //COMPONENT_COMMON/nothing
-  //COMMON_COMPONENT* deflate();	   //COMPONENT_COMMON/nothing
-  //void	precalc(const CARD_LIST*); //EVAL_BM_ACTION_BASE
-
   void		tr_eval(ELEMENT*)const;
   void		ac_eval(ELEMENT*)const;
-  //bool	has_tr_eval()const;	//EVAL_BM_BASE/true
-  //bool	has_ac_eval()const;	//EVAL_BM_BASE/true
   std::string	name()const		{return "complex";}
   bool		ac_too()const		{untested();return true;}
   bool		parse_numlist(CS&);

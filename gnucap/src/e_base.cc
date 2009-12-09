@@ -1,4 +1,4 @@
-/*$Id: e_base.cc,v 26.106 2008/12/13 00:48:28 al Exp $ -*- C++ -*-
+/*$Id: e_base.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -22,6 +22,8 @@
  * Base class for "cards" in the circuit description file
  */
 //testing=script 2006.07.12
+#include "u_sim_data.h"
+#include "m_wave.h"
 #include "u_prblst.h"
 #include "u_xprobe.h"
 #include "e_base.h"
@@ -34,14 +36,8 @@ static char fix_case(char c)
 double CKT_BASE::tr_probe_num(const std::string&)const {return NOT_VALID;}
 XPROBE CKT_BASE::ac_probe_ext(const std::string&)const {return XPROBE(NOT_VALID, mtNONE);}
 /*--------------------------------------------------------------------------*/
-BSMATRIX<double>  CKT_BASE::aa;
-BSMATRIX<double>  CKT_BASE::lu;
-BSMATRIX<COMPLEX> CKT_BASE::acx;
-double	CKT_BASE::_vmax =  .5;
-double	CKT_BASE::_vmin = -.5;
-SIM_MODE CKT_BASE::_mode = s_NONE;
-SIM_PHASE CKT_BASE::_phase = p_NONE;
-CKT_BASE::TRI_STATE CKT_BASE::inc_mode = tsNO;
+SIM_DATA sim_data;
+SIM_DATA* CKT_BASE::_sim = &sim_data;
 /*--------------------------------------------------------------------------*/
 CKT_BASE::~CKT_BASE()
 {
@@ -64,7 +60,7 @@ const std::string CKT_BASE::long_label()const
 double CKT_BASE::probe_num(const std::string& what)const
 {
   double x;
-  if (analysis_is_ac()) {
+  if (_sim->analysis_is_ac()) {
     x = ac_probe_num(what);
   }else{
     x = tr_probe_num(what);
@@ -112,22 +108,29 @@ double CKT_BASE::ac_probe_num(const std::string& what)const
   return xp(modifier, want_db);
 }
 /*--------------------------------------------------------------------------*/
-void CKT_BASE::set_limit(double v)
+/*static*/ double CKT_BASE::probe(const CKT_BASE *This, const std::string& what)
 {
-  if (v+.4 > _vmax) {
-    _vmax = v+.5;
-    error(bTRACE, "new max = %g, new limit = %g\n", v, _vmax);
-  }
-  if (v-.4 < _vmin) {
-    _vmin = v-.5;
-    error(bTRACE, "new min = %g, new limit = %g\n", v, _vmin);
-  }
+  if (exists(This)) {
+    return This->probe_num(what);
+  }else{				/* return 0 if doesn't exist */
+    return 0.0;				/* happens when optimized models */
+  }					/* don't have all parts */
 }
 /*--------------------------------------------------------------------------*/
-void CKT_BASE::clear_limit()
+/*static*/ WAVE* CKT_BASE::find_wave(const std::string& probe_name)
 {
-  _vmax = OPT::vmax;
-  _vmin = OPT::vmin;
+  int ii = 0;
+  for (PROBELIST::const_iterator
+       p  = PROBE_LISTS::store[_sim->_mode].begin();
+       p != PROBE_LISTS::store[_sim->_mode].end();
+       ++p) {
+    if (wmatch(p->label(), probe_name)) {
+      return &(_sim->_waves[ii]);
+    }else{
+    }
+    ++ii;
+  }
+  return NULL;
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

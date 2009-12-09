@@ -1,4 +1,4 @@
-/* $Id: d_mos7.model,v 26.92 2008/08/23 05:40:00 al Exp $ -*- C++ -*-
+/* $Id: d_mos7.model,v 26.132 2009/11/24 04:26:37 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -469,7 +469,7 @@ model BUILT_IN_MOS7 {
       double thetaRout;
     }
     code_pre {
-      temp = SIM::temp_c + P_CELSIUS0;
+      temp = d->_sim->_temp_c + P_CELSIUS0;
       double egap = 1.16 - 7.02e-4 * temp * temp / (temp + 1108.0);
     }
     code_post {

@@ -1,4 +1,4 @@
-/*$Id: d_trln.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: d_trln.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -60,14 +60,7 @@ public:
   int param_count()const {return (9 + COMMON_COMPONENT::param_count());}
 public:
   void		precalc_first(const CARD_LIST*);
-  //void	expand(const COMPONENT*);//COMPONENT_COMMON/nothing
-  //COMMON_COMPONENT* deflate();	 //COMPONENT_COMMON/nothing
   void		precalc_last(const CARD_LIST*);
-
-  //void	tr_eval(ELEMENT*)const; //COMPONENT_COMMON
-  //void	ac_eval(ELEMENT*)const; //COMPONENT_COMMON
-  //bool	has_tr_eval()const;	//EVAL_BM_BASE/true
-  //bool	has_ac_eval()const;	//EVAL_BM_BASE/true
   std::string	name()const		{untested(); return "transline";}
 };
 /*--------------------------------------------------------------------------*/
@@ -95,36 +88,24 @@ private: // override virtual
   int		matrix_nodes()const	{return 4;}
   int		net_nodes()const	{return 4;}
   CARD*		clone()const		{return new DEV_TRANSLINE(*this);}
-  //void	precalc_first();	//ELEMENT
-  //void	expand();		//COMPONENT
   void		precalc_last();
-  //void	map_nodes();		//ELEMENT
-
   void		tr_iwant_matrix();
   void		tr_begin();
-  //void	tr_restore();		//ELEMENT
   void		dc_advance();
   void		tr_advance();
   void		tr_regress();
   bool		tr_needs_eval()const;
-  //void	tr_queue_eval()		//ELEMENT
   bool		do_tr();
   void		tr_load();
   TIME_PAIR 	tr_review();
   void		tr_accept();
   void		tr_unload();
   double	tr_involts()const;
-  //double	tr_input()const		//ELEMENT
   double	tr_involts_limited()const;
-  //double	tr_input_limited()const //ELEMENT
-  //double	tr_probe_num(const std::string&)const;	//ELEMENT wrong???
-
   void		ac_iwant_matrix()	{ac_iwant_matrix_extended();}
-  //void	ac_begin();		//CARD/nothing
   void		do_ac();
   void		ac_load();
   COMPLEX	ac_involts()const;
-  //XPROBE	ac_probe_ext(const std::string&)const;	//ELEMENT wrong??
 
   std::string port_name(int i)const {itested();
     assert(i >= 0);
@@ -235,26 +216,26 @@ bool COMMON_TRANSLINE::operator==(const COMMON_COMPONENT& x)const
   return rv;
 }
 /*--------------------------------------------------------------------------*/
-void COMMON_TRANSLINE::set_param_by_index(int i, std::string& value, int offset)
+void COMMON_TRANSLINE::set_param_by_index(int I, std::string& Value, int Offset)
 {
-  switch (COMMON_TRANSLINE::param_count() - 1 - i) {
-  case 0:  len = value; break;
-  case 1:  R = value; break;
-  case 2:  L = value; break;
-  case 3:  G = value; break;
-  case 4:  C = value; break;
-  case 5:  z0 = value; break;
-  case 6:  td = value; break;
-  case 7:  f = value; break;
-  case 8:  nl = value; break;
-  default: COMMON_COMPONENT::set_param_by_index(i, value, offset); break;
+  switch (COMMON_TRANSLINE::param_count() - 1 - I) {
+  case 0:  len = Value; break;
+  case 1:  R = Value; break;
+  case 2:  L = Value; break;
+  case 3:  G = Value; break;
+  case 4:  C = Value; break;
+  case 5:  z0 = Value; break;
+  case 6:  td = Value; break;
+  case 7:  f = Value; break;
+  case 8:  nl = Value; break;
+  default: COMMON_COMPONENT::set_param_by_index(I, Value, Offset); break;
   }
   //BUG// does not print IC
 }
 /*--------------------------------------------------------------------------*/
-bool COMMON_TRANSLINE::param_is_printable(int i)const
+bool COMMON_TRANSLINE::param_is_printable(int I)const
 {
-  switch (COMMON_TRANSLINE::param_count() - 1 - i) {
+  switch (COMMON_TRANSLINE::param_count() - 1 - I) {
   case 0:  return len.has_hard_value();
   case 1:  return R.has_hard_value();
   case 2:  return L.has_hard_value();
@@ -264,7 +245,7 @@ bool COMMON_TRANSLINE::param_is_printable(int i)const
   case 6:  return td.has_hard_value();
   case 7:  return f.has_hard_value();
   case 8:  return nl.has_hard_value();
-  default: return COMMON_COMPONENT::param_is_printable(i);
+  default: return COMMON_COMPONENT::param_is_printable(I);
   }
   //BUG// does not print IC
 #if 0
@@ -278,9 +259,9 @@ bool COMMON_TRANSLINE::param_is_printable(int i)const
 #endif
 }
 /*--------------------------------------------------------------------------*/
-std::string COMMON_TRANSLINE::param_name(int i)const
+std::string COMMON_TRANSLINE::param_name(int I)const
 {
-  switch (COMMON_TRANSLINE::param_count() - 1 - i) {
+  switch (COMMON_TRANSLINE::param_count() - 1 - I) {
   case 0:  return "len";
   case 1:  return "r";
   case 2:  return "l";
@@ -290,31 +271,31 @@ std::string COMMON_TRANSLINE::param_name(int i)const
   case 6:  return "td";
   case 7:  return "f";
   case 8:  return "nl";
-  default: return COMMON_COMPONENT::param_name(i);
+  default: return COMMON_COMPONENT::param_name(I);
   }
   //BUG// does not print IC
 }
 /*--------------------------------------------------------------------------*/
-std::string COMMON_TRANSLINE::param_name(int i, int j)const
+std::string COMMON_TRANSLINE::param_name(int I, int j)const
 {
   if (j == 0) {
-    return param_name(i);
-  }else if (i >= COMMON_COMPONENT::param_count()) {
-    switch (COMMON_TRANSLINE::param_count() - 1 - i) {
+    return param_name(I);
+  }else if (I >= COMMON_COMPONENT::param_count()) {
+    switch (COMMON_TRANSLINE::param_count() - 1 - I) {
     case 5:  return (j==1) ? "z" : (j==2) ? "zo" : "";
     case 6:  return (j==1) ? "d" : (j==2) ? "delay" : "";
     case 7:  return (j==1) ? "freq" : "";
     default: return "";
     }
   }else{
-    return COMMON_COMPONENT::param_name(i, j);
+    return COMMON_COMPONENT::param_name(I, j);
   }
   //BUG// does not print IC
 }
 /*--------------------------------------------------------------------------*/
-std::string COMMON_TRANSLINE::param_value(int i)const
+std::string COMMON_TRANSLINE::param_value(int I)const
 {
-  switch (COMMON_TRANSLINE::param_count() - 1 - i) {
+  switch (COMMON_TRANSLINE::param_count() - 1 - I) {
   case 0:  return len.string();
   case 1:  return R.string();
   case 2:  return L.string();
@@ -324,7 +305,7 @@ std::string COMMON_TRANSLINE::param_value(int i)const
   case 6:  return td.string();
   case 7:  return f.string();
   case 8:  return nl.string();
-  default: return COMMON_COMPONENT::param_value(i);
+  default: return COMMON_COMPONENT::param_value(I);
   }
   //BUG// does not print IC
 }
@@ -410,10 +391,10 @@ void DEV_TRANSLINE::precalc_last()
 /*--------------------------------------------------------------------------*/
 void DEV_TRANSLINE::tr_iwant_matrix()
 {
-  aa.iwant(_n[OUT1].m_(),_n[OUT2].m_());
-  aa.iwant(_n[IN1].m_(), _n[IN2].m_());
-  lu.iwant(_n[OUT1].m_(),_n[OUT2].m_());
-  lu.iwant(_n[IN1].m_(), _n[IN2].m_());
+  _sim->_aa.iwant(_n[OUT1].m_(),_n[OUT2].m_());
+  _sim->_aa.iwant(_n[IN1].m_(), _n[IN2].m_());
+  _sim->_lu.iwant(_n[OUT1].m_(),_n[OUT2].m_());
+  _sim->_lu.iwant(_n[IN1].m_(), _n[IN2].m_());
 }
 /*--------------------------------------------------------------------------*/
 /* first setup, initial dc, empty the lines
@@ -438,24 +419,24 @@ void DEV_TRANSLINE::dc_advance()
   ELEMENT::dc_advance();
   const COMMON_TRANSLINE* c=prechecked_cast<const COMMON_TRANSLINE*>(common());
   assert(c);
-  _if0 = _forward.v_out(SIM::time0).f0/c->real_z0;
-  _ir0 = _reflect.v_out(SIM::time0).f0/c->real_z0;
+  _if0 = _forward.v_out(_sim->_time0).f0/c->real_z0;
+  _ir0 = _reflect.v_out(_sim->_time0).f0/c->real_z0;
 }
 void DEV_TRANSLINE::tr_advance()
 {
   ELEMENT::tr_advance();
   const COMMON_TRANSLINE* c=prechecked_cast<const COMMON_TRANSLINE*>(common());
   assert(c);
-  _if0 = _forward.v_out(SIM::time0).f0/c->real_z0;
-  _ir0 = _reflect.v_out(SIM::time0).f0/c->real_z0;
+  _if0 = _forward.v_out(_sim->_time0).f0/c->real_z0;
+  _ir0 = _reflect.v_out(_sim->_time0).f0/c->real_z0;
 }
 void DEV_TRANSLINE::tr_regress()
 {
   ELEMENT::tr_regress();
   const COMMON_TRANSLINE* c=prechecked_cast<const COMMON_TRANSLINE*>(common());
   assert(c);
-  _if0 = _forward.v_out(SIM::time0).f0/c->real_z0;
-  _ir0 = _reflect.v_out(SIM::time0).f0/c->real_z0;
+  _if0 = _forward.v_out(_sim->_time0).f0/c->real_z0;
+  _ir0 = _reflect.v_out(_sim->_time0).f0/c->real_z0;
 }
 /*--------------------------------------------------------------------------*/
 /* usually nothing, always converged.  It is all done in advance and accept.
@@ -480,12 +461,11 @@ void DEV_TRANSLINE::tr_load()
   //BUG// explicit mfactor
   double lvf = NOT_VALID; // load value, forward
   double lvr = NOT_VALID; // load value, reflected
-  if (!is_inc_mode()) {
-    const COMMON_TRANSLINE* 
-      c = prechecked_cast<const COMMON_TRANSLINE*>(common());
+  if (!_sim->is_inc_mode()) {
+    const COMMON_TRANSLINE* c = prechecked_cast<const COMMON_TRANSLINE*>(common());
     assert(c);
-    aa.load_symmetric(_n[OUT1].m_(), _n[OUT2].m_(), mfactor()/c->real_z0);
-    aa.load_symmetric(_n[IN1].m_(),  _n[IN2].m_(),  mfactor()/c->real_z0);
+    _sim->_aa.load_symmetric(_n[OUT1].m_(), _n[OUT2].m_(), mfactor()/c->real_z0);
+    _sim->_aa.load_symmetric(_n[IN1].m_(),  _n[IN2].m_(),  mfactor()/c->real_z0);
     lvf = _if0;
     lvr = _ir0;
   }else{
@@ -525,16 +505,16 @@ TIME_PAIR DEV_TRANSLINE::tr_review()
   q_accept();
   const COMMON_TRANSLINE* c=prechecked_cast<const COMMON_TRANSLINE*>(common());
   assert(c);
-  return TIME_PAIR(SIM::time0 + c->real_td, NEVER); // ok to miss the spikes, for now
+  return TIME_PAIR(_sim->_time0 + c->real_td, NEVER); // ok to miss the spikes, for now
 }
 /*--------------------------------------------------------------------------*/
 /* after this step is all done, determine the reflections and send them on.
  */
 void DEV_TRANSLINE::tr_accept()
 {
-  trace1(short_label().c_str(), SIM::time0);
-  _reflect.push(SIM::time0, _forward.v_reflect(SIM::time0, tr_outvolts()));
-  _forward.push(SIM::time0, _reflect.v_reflect(SIM::time0, tr_involts()));
+  trace1(short_label().c_str(), _sim->_time0);
+  _reflect.push(_sim->_time0, _forward.v_reflect(_sim->_time0, tr_outvolts()));
+  _forward.push(_sim->_time0, _reflect.v_reflect(_sim->_time0, tr_involts()));
 }
 /*--------------------------------------------------------------------------*/
 void DEV_TRANSLINE::tr_unload()
@@ -545,7 +525,7 @@ void DEV_TRANSLINE::do_ac()
 {
   const COMMON_TRANSLINE*c=prechecked_cast<const COMMON_TRANSLINE*>(common());
   assert(c);
-  double lenth = SIM::freq * c->real_td * 4;  /* length in quarter waves */
+  double lenth = _sim->_freq * c->real_td * 4;  /* length in quarter waves */
   double dif = lenth - floor(lenth+.5);	/* avoid divide by zero if close to */
   if (std::abs(dif) < LINLENTOL) {	/* resonance by tweeking a little */
     error(bDEBUG,
@@ -562,10 +542,12 @@ void DEV_TRANSLINE::do_ac()
 void DEV_TRANSLINE::ac_load()
 {
   //BUG// explicit mfactor
-  acx.load_symmetric(_n[OUT1].m_(), _n[OUT2].m_(), mfactor()*_y11);
-  acx.load_symmetric(_n[IN1].m_(),  _n[IN2].m_(),  mfactor()*_y11);
-  acx.load_asymmetric(_n[OUT1].m_(),_n[OUT2].m_(), _n[IN2].m_(),  _n[IN1].m_(),  mfactor()*_y12);
-  acx.load_asymmetric(_n[IN1].m_(), _n[IN2].m_(),  _n[OUT2].m_(), _n[OUT1].m_(), mfactor()*_y12);
+  _sim->_acx.load_symmetric(_n[OUT1].m_(), _n[OUT2].m_(), mfactor()*_y11);
+  _sim->_acx.load_symmetric(_n[IN1].m_(),  _n[IN2].m_(),  mfactor()*_y11);
+  _sim->_acx.load_asymmetric(_n[OUT1].m_(),_n[OUT2].m_(), _n[IN2].m_(),  _n[IN1].m_(),
+			     mfactor()*_y12);
+  _sim->_acx.load_asymmetric(_n[IN1].m_(), _n[IN2].m_(), _n[OUT2].m_(), _n[OUT1].m_(),
+			     mfactor()*_y12);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

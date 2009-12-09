@@ -1,4 +1,4 @@
-/*$Id: s_tr.h,v 26.91 2008/08/10 05:56:16 al Exp $ -*- C++ -*-
+/*$Id: s_tr.h,v 26.131 2009/11/20 08:22:10 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -65,6 +65,7 @@ public:
   ~TRANSIENT() {}
 public:
   void	do_it(CS&, CARD_LIST* scope);
+  std::string status()const;
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
 private:		// s_tr_rev.cc
   bool	review();
@@ -97,6 +98,7 @@ protected:
   PARAMETER<double> _dtmin_in;	// min internal step size
   PARAMETER<double> _dtmax_in;	// max internal step size (user)
   PARAMETER<int>    _skip_in;	// fixed step size: internal steps per external
+  double time1;		/* time at previous time step */
   double _dtmax;	// max internal step size (step / _skip)
   bool _cold;		// flag: start time=0, all voltages=0
   bool _cont;		// flag: continue from previous run

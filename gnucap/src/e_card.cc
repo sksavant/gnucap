@@ -1,4 +1,4 @@
-/*$Id: e_card.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: e_card.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -22,9 +22,10 @@
  * Base class for "cards" in the circuit description file
  */
 //testing=script 2006.07.12
-#include "globals.h"
-#include "ap.h"
+#include "u_time_pair.h"
+#include "e_cardlist.h"
 #include "e_node.h"
+#include "e_card.h"
 /*--------------------------------------------------------------------------*/
 const int POOLSIZE = 4;
 /*--------------------------------------------------------------------------*/
@@ -33,8 +34,8 @@ CARD::CARD()
    _evaliter(-100),
    _subckt(0),
    _owner(0),
-   _n(0),
    _constant(false),
+   _n(0),
    _net_nodes(0)
 {
 }
@@ -44,29 +45,24 @@ CARD::CARD(const CARD& p)
    _evaliter(-100),
    _subckt(0), //BUG// isn't this supposed to copy????
    _owner(0),
-   _n(0),
    _constant(p._constant),
+   _n(0),
    _net_nodes(p._net_nodes)
 {
+}
+/*--------------------------------------------------------------------------*/
+CARD::~CARD()
+{
+  delete _subckt;
 }
 /*--------------------------------------------------------------------------*/
 const std::string CARD::long_label()const
 {
   std::string buffer(short_label());
   for (const CARD* brh = owner(); exists(brh); brh = brh->owner()) {
-    //buffer += '.' + brh->short_label();
     buffer = brh->short_label() + '.' + buffer;
   }
   return buffer;
-}
-/*--------------------------------------------------------------------------*/
-/*static*/ double CARD::probe(const CARD *This, const std::string& what)
-{
-  if (exists(This)) {
-    return This->probe_num(what);
-  }else{				/* return 0 if doesn't exist */
-    return 0.0;				/* happens when optimized models */
-  }					/* don't have all parts */
 }
 /*--------------------------------------------------------------------------*/
 /* connects_to: does this part connect to this node?
@@ -180,7 +176,7 @@ const CARD* CARD::find_looking_out(const std::string& name)const
     }else if (makes_own_scope()) {
       // probably a subckt or "module"
       CARD_LIST::const_iterator i = CARD_LIST::card_list.find_(name);
-      if (i != CARD_LIST::card_list.end()) {untested();
+      if (i != CARD_LIST::card_list.end()) {itested();
 	return *i;
       }else{
 	throw;
@@ -191,25 +187,9 @@ const CARD* CARD::find_looking_out(const std::string& name)const
   }
 }
 /*--------------------------------------------------------------------------*/
-bool CARD::node_is_grounded(int i)const 
+TIME_PAIR CARD::tr_review()
 {
-  assert(_n);
-  assert(i >= 0);
-  assert(i < net_nodes());
-  return _n[i].is_grounded();
-}
-/*--------------------------------------------------------------------------*/
-bool CARD::node_is_connected(int i)const 
-{
-  assert(_n);
-  assert(i >= 0);
-  assert(i < net_nodes());
-  return _n[i].is_connected();
-}
-/*--------------------------------------------------------------------------*/
-bool CARD::is_first_expand()const
-{
-  return !nstat;
+  return TIME_PAIR(NEVER,NEVER);
 }
 /*--------------------------------------------------------------------------*/
 void CARD::new_subckt()
@@ -228,7 +208,7 @@ void CARD::new_subckt(const CARD* Model, CARD* Owner,
 void CARD::renew_subckt(const CARD* Model, CARD* Owner,
 		      const CARD_LIST* Scope, PARAM_LIST* Params)
 {
-  if (is_first_expand()) {
+  if (_sim->is_first_expand()) {
     new_subckt(Model, Owner, Scope, Params);
   }else{untested();
     assert(subckt());
@@ -267,6 +247,16 @@ void CARD::set_dev_type(const std::string& New_Type)
     //throw Exception_Cant_Set_Type(dev_type(), New_Type);
   }else{
     // it matches -- ok.
+  }
+}
+/*--------------------------------------------------------------------------*/
+bool CARD::evaluated()const
+{
+  if (_evaliter == _sim->iteration_tag()) {
+    return true;
+  }else{
+    _evaliter = _sim->iteration_tag();
+    return false;
   }
 }
 /*--------------------------------------------------------------------------*/

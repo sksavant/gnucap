@@ -1,4 +1,4 @@
-/* $Id: d_bjt.model,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/* $Id: d_bjt.model,v 26.136 2009/12/08 02:03:49 al Exp $ -*- C++ -*-
  * Copyright (C) 2002 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -376,7 +376,7 @@ model BUILT_IN_BJT {
     code_pre {
       const double reftemp = 300.15;
       double temp_k = 
-	((has_hard_value(c->temp_c)) ? c->temp_c : SIM::temp_c) + P_CELSIUS0;
+	((has_hard_value(c->temp_c)) ? c->temp_c : d->_sim->_temp_c) + P_CELSIUS0;
       double fact1 = m->tnom_k / reftemp;
       double fact2 = temp_k / reftemp;
       double tempratio  = temp_k / m->tnom_k; // fact2/fact1
@@ -525,8 +525,9 @@ model BUILT_IN_BJT {
 	arg1 *= arg2;
 	double denom = 1 + arg1 + arg2;
 	double arg3 = arg1 / denom;
-	if (initial_step()) {
+	if (_sim->is_initial_step()) {
 	  d->cexbc_2 = d->cexbc_1 = cbe / qb;
+	}else{
 	}
 	cc = (d->cexbc_1 * (1 + d->_dt_0/d->_dt_1 + arg2)
 	      - d->cexbc_2 * d->_dt_0/d->_dt_1) / denom;
@@ -703,11 +704,11 @@ bool DEV_BUILT_IN_BJT::do_tr()
   const TDP_BUILT_IN_BJT T(this);
   const TDP_BUILT_IN_BJT* t = &T;
 
-  if(initial_step()) {	// initial guess
+  if(_sim->is_initial_step()) {	// initial guess
     if (c->off) {
       vbe = 0.;
     }else{
-      double vt = (SIM::temp_c + P_CELSIUS0) * P_K_Q;
+      double vt = (_sim->_temp_c + P_CELSIUS0) * P_K_Q;
       vbe = vt * log(vt / (M_SQRT2 * m->ibe));
     }
     vbc = 0.;
@@ -722,15 +723,15 @@ bool DEV_BUILT_IN_BJT::do_tr()
     vcs = m->polarity * volts_limited(_n[n_s], _n[n_ic]);
   }
  
-  if (SIM::uic_now()) {untested();//736
+  if (_sim->uic_now()) {itested();//736
     if (has_good_value(c->icvbe)) {untested();//737
       vbe = m->polarity * c->icvbe;
-    }else{untested();//739
+    }else{itested();//739
     }
     if (has_good_value(c->icvce)) {untested();//741
       vbc = vbe - m->polarity * c->icvce;
       vbx = vbc;
-    }else{untested();//744
+    }else{itested();//744
     }
   }else{
   }

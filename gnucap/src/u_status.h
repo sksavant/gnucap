@@ -1,4 +1,4 @@
-/*$Id: u_status.h,v 26.83 2008/06/05 04:46:59 al Exp $ -*- C++ -*-
+/*$Id: u_status.h,v 26.131 2009/11/20 08:22:10 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -55,17 +55,9 @@ public:
   TIMER aux2;
   TIMER aux3;
   TIMER total;
-  int user_nodes;
-  int subckt_nodes;
-  int model_nodes;
-  int total_nodes;
   int control;
   int hidden_steps;
-  int iter[iCOUNT];
   
-  int newnode_subckt() {++subckt_nodes; return ++total_nodes;}
-  int newnode_model()  {++model_nodes;  return ++total_nodes;}
-
   void compute_overhead()const {
     overhead = total - advance - queue - evaluate - load - lud - back 
       - output - review - accept;
@@ -94,14 +86,9 @@ public:
     aux2("aux2"),
     aux3("aux3"),
     total("total"),
-    user_nodes(0),
-    subckt_nodes(0),
-    model_nodes(0),
-    total_nodes(0),
     control(0),
     hidden_steps(0)
   {
-    std::fill_n(iter, iCOUNT, 0);
   }
   ~STATUS() {}
 private:

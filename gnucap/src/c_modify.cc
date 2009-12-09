@@ -1,4 +1,4 @@
-/*$Id: c_modify.cc,v 26.83 2008/06/05 04:46:59 al Exp $ -*- C++ -*-
+/*$Id: c_modify.cc,v 26.132 2009/11/24 04:26:37 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -22,7 +22,8 @@
 //testing=script,sparse 2006.07.17
 #include "e_elemnt.h"
 #include "u_cardst.h"
-#include "globals.h"
+#include "c_comand.h"
+
 extern const int swp_type[];
 extern const int swp_count[], swp_steps[];
 extern const int swp_nest;
@@ -88,7 +89,7 @@ double sweep_fix(CS& cmd, const CARD *brh)
 /*--------------------------------------------------------------------------*/
 void modify_fault(CS& cmd, WHATTODO command, CARD_LIST* scope)
 {
-  SIM::uninit();
+  CKT_BASE::_sim->uninit();
   while (cmd.is_alpha()) {
     unsigned mark = cmd.cursor();
     unsigned cmax = cmd.cursor();
@@ -161,7 +162,7 @@ public:
       faultstack.back().restore();
       faultstack.pop_back();
     }
-    SIM::uninit();
+    _sim->uninit();
   }
 } p4;
 DISPATCHER<CMD>::INSTALL d4(&command_dispatcher, "unfault", &p4);

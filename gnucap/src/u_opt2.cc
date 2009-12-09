@@ -1,4 +1,4 @@
-/*$Id: u_opt2.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: u_opt2.cc,v 26.132 2009/11/24 04:26:37 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -22,7 +22,6 @@
  * command and functions to access OPT class
  */
 //testing=script,complete 2006.07.14
-#include "s__.h"
 #include "u_lang.h"
 #include "l_compar.h"
 #include "ap.h"
@@ -183,7 +182,10 @@ bool OPT::set_values(CS& cmd)
   }while (cmd.more() && changed);
 
   if (big_change) {
-    SIM::uninit();
+    //_sim->uninit();
+    //BUG// not sure if this is really working
+    //regressions do go both ways, but not sure if it actually
+    //makes the topology changes expected
   }else{
   }
 

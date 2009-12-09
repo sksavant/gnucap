@@ -1,4 +1,4 @@
-/*$Id: d_cs.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: d_cs.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -45,38 +45,20 @@ private: // override virtual
   bool	   has_iv_probe()const  {return true;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_CS(*this);}
-  //void   precalc_first();	//COMPONENT
-  //void   expand();		//COMPONENT
   void     precalc_last();
-  //void   map_nodes();		//ELEMENT
-
   void	   tr_iwant_matrix()	{/* nothing */}
   void	   tr_begin();
-  //void   tr_restore();	//ELEMENT
-  //void   dc_advance();	//ELEMENT
-  //void   tr_advance();	//ELEMENT
-  //void   tr_regress();	//ELEMENT
-  //bool   tr_needs_eval();	//ELEMENT
-  //void   tr_queue_eval();	//ELEMENT
   bool	   do_tr();
   void	   tr_load()		{tr_load_source();}
-  //TIME_PAIR tr_review();	//ELEMENT
-  //void   tr_accept();		//CARD/nothing
   void	   tr_unload()		{untested();tr_unload_source();}
   double   tr_involts()const	{return 0.;}
-  //double tr_input()const	//ELEMENT
   double   tr_involts_limited()const {unreachable(); return 0.;}
-  //double tr_input_limited()const //ELEMENT
-  //double tr_amps()const	//ELEMENT
-  //double tr_probe_num(const std::string&)const;//ELEMENT
-
   void	   ac_iwant_matrix()	{/* nothing */}
   void	   ac_begin()		{_acg = _ev = 0.;}
   void	   do_ac();
   void	   ac_load()		{ac_load_source();}
   COMPLEX  ac_involts()const	{untested();return 0.;}
   COMPLEX  ac_amps()const	{return _acg;}
-  //XPROBE ac_probe_ext(const std::string&)const;//ELEMENT
 
   std::string port_name(int i)const {
     assert(i >= 0);
@@ -110,7 +92,7 @@ bool DEV_CS::do_tr()
 {
   assert(_m0.x == 0.);
   if (using_tr_eval()) {
-    _y[0].x = SIM::time0;
+    _y[0].x = _sim->_time0;
     tr_eval();
     store_values();
     q_load();

@@ -1,4 +1,4 @@
-/*$Id: u_prblst.cc,v 26.113 2009/08/12 03:37:19 al Exp $ -*- C++ -*-
+/*$Id: u_prblst.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -22,9 +22,11 @@
  * probe list functions
  */
 //testing=script,sparse 2006.07.14
-#include "ap.h"
-#include "u_nodemap.h"
+#include "e_cardlist.h"
 #include "e_node.h"
+#include "e_card.h"
+#include "u_nodemap.h"
+#include "ap.h"
 #include "u_prblst.h"
 /*--------------------------------------------------------------------------*/
 void PROBE_LISTS::purge(CKT_BASE* brh)

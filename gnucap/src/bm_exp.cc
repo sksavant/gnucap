@@ -1,4 +1,4 @@
-/*$Id: bm_exp.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: bm_exp.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -22,6 +22,7 @@
  * SPICE compatible EXP
  */
 //testing=script 2005.10.06
+#include "e_elemnt.h"
 #include "u_lang.h"
 #include "bm.h"
 /*--------------------------------------------------------------------------*/
@@ -55,14 +56,7 @@ private: // override vitrual
   void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
 
   void		precalc_first(const CARD_LIST*);
-  //void  	expand(const COMPONENT*);	//COMPONENT_COMMON/nothing
-  //COMMON_COMPONENT* deflate();		//COMPONENT_COMMON/nothing
-  //void	precalc_last(const CARD_LIST*);	//COMPONENT_COMMON
-
   void		tr_eval(ELEMENT*)const;
-  //void	ac_eval(ELEMENT*)const; //EVAL_BM_ACTION_BASE
-  //bool	has_tr_eval()const;	//EVAL_BM_BASE/true
-  //bool	has_ac_eval()const;	//EVAL_BM_BASE/true
   TIME_PAIR	tr_review(COMPONENT*);
   std::string	name()const		{return "exp";}
   bool		ac_too()const		{return false;}
@@ -145,7 +139,7 @@ void EVAL_BM_EXP::precalc_first(const CARD_LIST* Scope)
 void EVAL_BM_EXP::tr_eval(ELEMENT* d)const
 {
   double ev = _iv;
-  for (double time = SIM::time0;  time >= 0;  time -= _period) {
+  for (double time = d->_sim->_time0;  time >= 0;  time -= _period) {
     if (time > _td1) {
       ev += (_pv - _iv) * (1. - exp(-(time-_td1)/_tau1));
     }else{
@@ -160,8 +154,8 @@ void EVAL_BM_EXP::tr_eval(ELEMENT* d)const
 /*--------------------------------------------------------------------------*/
 TIME_PAIR EVAL_BM_EXP::tr_review(COMPONENT* d)
 {
-  double time = SIM::time0;
-  time += SIM::_dtmin * .01;  // hack to avoid duplicate events from numerical noise
+  double time = d->_sim->_time0;
+  time += d->_sim->_dtmin * .01;  // hack to avoid duplicate events from numerical noise
   double raw_time = time;
 
   if (0 < _period && _period < BIGBIG) {
@@ -177,14 +171,14 @@ TIME_PAIR EVAL_BM_EXP::tr_review(COMPONENT* d)
   }else if (time > _td1) {
     d->_time_by.min_event(_td2 + time_offset);
     dt = (_tau1 > 0) ? _tau1 : NEVER;
-  }else if (SIM::time0 < _period) {
+  }else if (d->_sim->_time0 < _period) {
     d->_time_by.min_event(_td1 + time_offset);
     dt = NEVER;
   }else{
     d->_time_by.min_event(_td1 + time_offset);
     dt = (_tau2 > 0) ? _tau2 : NEVER;
   }
-  d->_time_by.min_error_estimate(SIM::time0 + dt);
+  d->_time_by.min_error_estimate(d->_sim->_time0 + dt);
 
   return d->_time_by;
 }
@@ -194,12 +188,12 @@ bool EVAL_BM_EXP::parse_numlist(CS& cmd)
   unsigned start = cmd.cursor();
   unsigned here = cmd.cursor();
   for (PARAMETER<double>* i = &_iv;  i < &_end;  ++i) {
-    PARAMETER<double> value(NOT_VALID);
-    cmd >> value;
+    PARAMETER<double> val(NOT_VALID);
+    cmd >> val;
     if (cmd.stuck(&here)) {
       break;
     }else{
-      *i = value;
+      *i = val;
       untested();
     }
   }

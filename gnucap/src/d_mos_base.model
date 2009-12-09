@@ -1,4 +1,4 @@
-/* $Id: d_mos_base.model,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
+/* $Id: d_mos_base.model,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -112,11 +112,11 @@ model BUILT_IN_MOS_BASE {
     }
     code_post {
       if ((!has_hard_value(rs)) && has_hard_value(rd)) {untested();//106
-	error(((!is_first_expand()) ? (bDEBUG) : (bWARNING)),
+	error(((!_sim->is_first_expand()) ? (bDEBUG) : (bWARNING)),
 	      long_label() + ": rd input, but not rs. setting rs = 0.\n");
 	rs.set_default(0.);
       }else if ((!has_hard_value(rd)) && has_hard_value(rs)) {untested();//109
-	error(((!is_first_expand()) ? (bDEBUG) : (bWARNING)), 
+	error(((!_sim->is_first_expand()) ? (bDEBUG) : (bWARNING)), 
 	      long_label() + ": rs input, but not rd. setting rd = 0.\n");
 	rd.set_default(0.);
       }else{
@@ -125,7 +125,7 @@ model BUILT_IN_MOS_BASE {
       
       if (has_hard_value(rsh)
 	  &&  (has_hard_value(rd) || has_hard_value(rs))) {
-	error(((!is_first_expand()) ? (bDEBUG) : (bWARNING)),
+	error(((!_sim->is_first_expand()) ? (bDEBUG) : (bWARNING)),
 	      long_label() + ": rsh - rs - rd conflict: using "
 	      + (((rd <= 0.)  &&  (rs <= 0.)) ? "rsh" : "rs,rd") + '\n');
       }else if (!has_hard_value(rsh)
@@ -139,7 +139,7 @@ model BUILT_IN_MOS_BASE {
       if (!has_hard_value(is) && !has_hard_value(js)) {
 	/* don't have either, use default is */
       }else if (has_hard_value(is) && has_hard_value(js)) {
-	error(((!is_first_expand()) ? (bDEBUG) : (bWARNING)),
+	error(((!_sim->is_first_expand()) ? (bDEBUG) : (bWARNING)),
 	      long_label() + ": is - js conflict\n");
       }else{
 	/* is, js are ok, have one or other */

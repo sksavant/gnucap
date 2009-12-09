@@ -1,4 +1,4 @@
-/*$Id: e_node.h,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: e_node.h,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -24,10 +24,10 @@
 //testing=script,sparse 2006.07.11
 #ifndef E_NODE_H
 #define E_NODE_H
-#include "s__.h"
+#include "u_sim_data.h"
+#include "e_base.h"
 /*--------------------------------------------------------------------------*/
 class MODEL_LOGIC;
-class XPROBE;
 /*--------------------------------------------------------------------------*/
 enum {
   OUT1 = 0,
@@ -97,7 +97,7 @@ public: // raw data access (rvalues)
   int	user_number()const	{return _user_number;}
   //int	flat_number()const	{itested();return _flat_number;}
 public: // simple calculated data access (rvalues)
-  int	matrix_number()const	{return SIM::nm[_user_number];}
+  int	matrix_number()const	{return _sim->_nm[_user_number];}
   int	m_()const		{return matrix_number();}
 public: // maniputation
   NODE&	set_user_number(int n)	{_user_number = n; return *this;}
@@ -109,26 +109,26 @@ public: // virtuals
 
   double      v0()const	{
     assert(m_() >= 0);
-    assert(m_() <= ::status.total_nodes);
-    return SIM::v0 [m_()];
+    assert(m_() <= _sim->_total_nodes);
+    return _sim->_v0[m_()];
   }
   double      vt1()const {
     assert(m_() >= 0);
-    assert(m_() <= ::status.total_nodes);
-    return SIM::vt1[m_()];
+    assert(m_() <= _sim->_total_nodes);
+    return _sim->_vt1[m_()];
   }
   COMPLEX     vac()const {
     assert(m_() >= 0);
-    assert(m_() <= ::status.total_nodes);
-    return SIM::ac [m_()];
+    assert(m_() <= _sim->_total_nodes);
+    return _sim->_ac[m_()];
   }
-  //double      vdc()const		{untested();return SIM::vdc[m_()];}
+  //double      vdc()const		{untested();return _vdc[m_()];}
 
-  //double&     i()	{untested();return SIM::i[m_()];}  /* lvalues */
+  //double&     i()	{untested();return _i[m_()];}  /* lvalues */
   COMPLEX&    iac() {
     assert(m_() >= 0);
-    assert(m_() <= ::status.total_nodes);
-    return SIM::ac[m_()];
+    assert(m_() <= _sim->_total_nodes);
+    return _sim->_ac[m_()];
   }
 };
 extern NODE ground_node;
@@ -181,8 +181,8 @@ public: // raw data access (lvalues)
   void	set_failure_mode(const std::string& f) {_failure_mode = f;}
   void	set_final_time(double t)	{_final_time = t;}
   
-  void	set_d_iter()			{_d_iter = iteration_tag();}
-  void	set_last_change_time()		{_lastchange = SIM::time0;}
+  void	set_d_iter()			{_d_iter = _sim->iteration_tag();}
+  void	set_last_change_time()		{_lastchange = _sim->_time0;}
   void	set_last_change_time(double t)	{_lastchange = t;}
   void	set_lv(LOGICVAL v)		{_lv = v;}
   void	set_process(const MODEL_LOGIC* f) {_family = f;}
@@ -224,7 +224,7 @@ public: // general use
 	   ~LOGIC_NODE() {}
 
 public: // matrix
-  LOGIC_NODE&	set_a_iter()	{_a_iter = iteration_tag(); return *this;}
+  LOGIC_NODE&	set_a_iter()	{_a_iter = _sim->iteration_tag(); return *this;}
 };
 /*--------------------------------------------------------------------------*/
 class INTERFACE node_t {
@@ -234,16 +234,16 @@ private:
       itested();
     }else if (i < 0) {
       unreachable();
-    }else if (i > ::status.total_nodes) {
+    }else if (i > NODE::_sim->_total_nodes) {
       unreachable();
     }else{
     }
-    return i>=0 && i<=::status.total_nodes;
+    return i>=0 && i<=NODE::_sim->_total_nodes;
   }
   static int  to_internal(int n) {
     assert(node_is_valid(n));
-    assert(SIM::nm);
-    return SIM::nm[n];
+    assert(NODE::_sim->_nm);
+    return NODE::_sim->_nm[n];
   }
 
 private:
@@ -308,33 +308,43 @@ public:
   double      v0()const {
     //assert(m_() >= 0);
     if (m_() >= 0) {
-      assert(m_() <= ::status.total_nodes);
-      return SIM::v0[m_()];
+      assert(m_() <= NODE::_sim->_total_nodes);
+      assert(n_());
+      //assert(n_()->m_() == m_());
+      //assert(n_()->v0() == NODE::_sim->_v0[m_()]);
+      return NODE::_sim->_v0[m_()];
     }else{
       //BUG// in BJT model: should not get here but does.
       return 0.;
     }
-  }    
+  }
 
   COMPLEX     vac()const {
-    assert(n_());
-    assert(n_()->m_() == m_());
-    assert(n_()->vac() == SIM::ac[m_()]);
-    return SIM::ac[m_()];
+    //assert(m_() >= 0);
+    if (m_() >= 0) {
+      assert(m_() <= NODE::_sim->_total_nodes);
+      assert(n_());
+      //assert(n_()->m_() == m_());
+      //assert(n_()->vac() == NODE::_ac[m_()]);
+      return NODE::_sim->_ac[m_()];
+    }else{untested();
+      //BUG// assume v0 BUG applies here too.
+      return 0.;
+    }
   }
 
   double&     i() {
     assert(m_() >= 0);
-    assert(m_() <= ::status.total_nodes);
-    return SIM::i[m_()];
+    assert(m_() <= NODE::_sim->_total_nodes);
+    return NODE::_sim->_i[m_()];
   }
 #if 0
   COMPLEX&    iac() {untested();
     assert(n_());
     assert(n_()->m_() == m_());
-    assert(n_()->iac() == SIM::ac[m_()]);
+    assert(n_()->iac() == NODE::_ac[m_()]);
     //return n_()->iac();
-    return SIM::ac[m_()];
+    return NODE::_sim->_ac[m_()];
   }
 #endif
 };

@@ -1,4 +1,4 @@
-/* $Id: d_mos123.model,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+/* $Id: d_mos123.model,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -92,13 +92,13 @@ model BUILT_IN_MOS123 {
       if (has_hard_value(tox) && tox <= 0) {
         untested();
         set_default(&tox, NA);
-	error(((!is_first_expand()) ? (bDEBUG) : (bWARNING)),
+	error(((!_sim->is_first_expand()) ? (bDEBUG) : (bWARNING)),
 	      long_label()+": tox <= 0, treating as if not input\n");
       }
       if (has_hard_value(nsub_cm) && nsub < NI) {
         untested();
         nsub = NA;
-	error(((!is_first_expand()) ? (bDEBUG) : (bWARNING)),
+	error(((!_sim->is_first_expand()) ? (bDEBUG) : (bWARNING)),
 	      long_label()+": nsub < ni, treating as if not input\n");
       }
     }

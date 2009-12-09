@@ -1,4 +1,4 @@
-/*$Id: ap.h,v 26.125 2009/10/15 20:58:21 al Exp $  -*- C++ -*-
+/*$Id: ap.h,v 26.130 2009/11/15 21:51:59 al Exp $  -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -54,14 +54,9 @@ private:
   unsigned  _length;
   unsigned  _begin_match;
   unsigned  _end_match;
-  enum MATCH_STYLE {msEXACT, msIGNORE_CASE} _ms;
   bool _ok;
   int _line_number;
 public:
-  // control
-  void set_ignore_case() {untested(); _ms = msIGNORE_CASE;}
-  void set_exact()	 {untested(); _ms = msEXACT;}
-
   // construction, destruction, and re-construction
   explicit    CS(STDIN);
   explicit    CS(INC_FILE, const std::string& name);
@@ -140,12 +135,12 @@ public:
   unsigned    ctou();
   int	      ctoo();
   int	      ctox();
-  double      ctopf()			{return std::abs(ctof());}
-  CS&	      operator>>(bool& x)	{x=ctob();return *this;}
-  CS&	      operator>>(char& x)	{untested(); x=ctoc();return *this;}
-  CS&         operator>>(int& x)	{x=ctoi();return *this;}
-  CS&         operator>>(unsigned& x)	{x=ctou();return *this;}
-  CS&         operator>>(double& x)	{x=ctof();return *this;}
+  double      ctopf()			 {return std::abs(ctof());}
+  CS&	      operator>>(bool& x)	 {x=ctob();return *this;}
+  CS&	      operator>>(char& x)	 {untested(); x=ctoc();return *this;}
+  CS&         operator>>(int& x)	 {x=ctoi();return *this;}
+  CS&         operator>>(unsigned& x)	 {x=ctou();return *this;}
+  CS&         operator>>(double& x)	 {x=ctof();return *this;}
   CS&	      operator>>(std::string& x) {x=ctos();return *this;}
 
   // skip (ap_skip.cc) possibly consuming, sets _ok
@@ -159,7 +154,7 @@ public:
   CS&	      skiparg();
   CS&	      skipto1(const std::string&);
   CS&	      skipto1(char);
-  CS&	      skipcom()		{return skip1b(",");}
+  CS&	      skipcom()			{return skip1b(",");}
   CS&	      operator>>(const char& x)	{return skip1b(x);}
   CS&	      operator>>(const char* x)	{return umatch(x);}
 };	

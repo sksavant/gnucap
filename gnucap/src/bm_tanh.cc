@@ -1,4 +1,4 @@
-/*$Id: bm_tanh.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: bm_tanh.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -45,14 +45,7 @@ private: // override virtual
   void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
 
   void		precalc_first(const CARD_LIST*);
-  //void  	expand(const COMPONENT*);	//COMPONENT_COMMON/nothing
-  //COMMON_COMPONENT* deflate();		//COMPONENT_COMMON/nothing
-  //void	precalc_last(const CARD_LIST*);	//COMPONENT_COMMON/nothing
-
   void		tr_eval(ELEMENT*)const;
-  //void	ac_eval(ELEMENT*)const; //EVAL_BM_ACTION_BASE
-  //bool	has_tr_eval()const;	//EVAL_BM_BASE/true
-  //bool	has_ac_eval()const;	//EVAL_BM_BASE/true
   std::string	name()const		{return "tanh";}
   bool		ac_too()const		{untested();return false;}
   bool		parse_numlist(CS&);

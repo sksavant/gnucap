@@ -1,4 +1,4 @@
-/*$Id: e_cardlist.h,v 26.126 2009/10/16 05:29:28 al Exp $ -*- C++ -*-
+/*$Id: e_cardlist.h,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -147,6 +147,14 @@ private:
 public:
   static CARD_LIST card_list; // in globals.cc
 };
+/*--------------------------------------------------------------------------*/
+INTERFACE CARD_LIST::fat_iterator findbranch(CS&,CARD_LIST::fat_iterator);
+/*--------------------------------------------------------------------------*/
+inline CARD_LIST::fat_iterator findbranch(CS& cmd, CARD_LIST* cl)
+{
+  assert(cl);
+  return findbranch(cmd, CARD_LIST::fat_iterator(cl, cl->begin()));
+}
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 #endif

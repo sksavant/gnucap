@@ -1,6 +1,6 @@
 ## -*- Makefile -*-
 ##
-## $Id: Makefile.am,v 26.114 2009/08/13 16:43:58 al Exp $
+## $Id: Makefile.am,v 26.136 2009/12/08 02:03:49 al Exp $
 ##
 ##                            COPYRIGHT
 ##
@@ -26,6 +26,7 @@
 bin_PROGRAMS= gnucap
 
 #------------------------------------------------------------------------
+#------------------------------------------------------------------------
 # These source files can be omitted, and supplied as plugins.
 # device models defined in high level .model files
 MODELS = \
@@ -42,8 +43,8 @@ d_trln.cc d_vcg.cc d_vcr.cc d_vcvs.cc d_vs.cc
 
 # behavioral modeling functions
 BM_SRCS = \
-bm_complex.cc bm_exp.cc bm_fit.cc bm_generator.cc \
-bm_poly.cc bm_posy.cc bm_pulse.cc bm_pwl.cc bm_sffm.cc \
+bm_complex.cc bm_cond.cc bm_exp.cc bm_fit.cc bm_generator.cc \
+bm_model.cc bm_poly.cc bm_posy.cc bm_pulse.cc bm_pwl.cc bm_sffm.cc \
 bm_sin.cc bm_tanh.cc bmm_table.cc bmm_semi.cc
 
 # utility commands, usually one file per command
@@ -60,9 +61,7 @@ s_tr.cc s_tr_set.cc s_tr_swp.cc
 
 # netlist languages
 LANG_SRCS = \
-lang_spice_commands.cc lang_spice_in.cc lang_spice_out.cc \
-lang_spectre_commands.cc lang_spectre_in.cc lang_spectre_out.cc \
-lang_verilog_commands.cc lang_verilog_in.cc lang_verilog_out.cc
+lang_spice.cc lang_spectre.cc lang_verilog.cc
 
 # parameter functions
 FUNC_SRCS = \
@@ -78,18 +77,17 @@ $(S_SRCS) \
 $(LANG_SRCS) \
 $(FUNC_SRCS) \
 m_expression_dump.cc m_expression_in.cc m_expression_reduce.cc \
-m_base_in.cc m_base_math.cc \
-m_fft.cc  m_spline.cc \
+m_base_in.cc m_base_math.cc m_fft.cc  m_spline.cc \
 ap_construct.cc ap_convert.cc ap_error.cc ap_get.cc ap_match.cc ap_skip.cc \
 l_ftos.cc l_pmatch.cc l_timer.cc l_trim.cc l_wmatch.cc \
 io.cc io_contr.cc io_error.cc io_findf.cc io_out.cc io_xopen.cc \
-u_lang.cc u_nodemap.cc u_opt1.cc u_opt2.cc u_parameter.cc \
-u_prblst.cc u_probe.cc u_xprobe.cc \
-s__.cc s__aux.cc s__init.cc s__map.cc s__out.cc s__solve.cc \
+u_function.cc u_lang.cc u_nodemap.cc u_opt1.cc u_opt2.cc u_parameter.cc \
+u_prblst.cc u_probe.cc u_sim_data.cc u_xprobe.cc \
+s__init.cc s__out.cc s__solve.cc \
 d_subckt.cc d_logic.cc d_logicmod.cc \
 e_base.cc e_card.cc e_node.cc e_model.cc e_compon.cc \
 e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc \
-bm_model.cc bm_value.cc bm_cond.cc bm.cc \
+bm_value.cc bm.cc \
 c__cmd.cc c_attach.cc c_file.cc c_genrat.cc \
 findbr.cc plot.cc main.cc globals.cc
 #------------------------------------------------------------------------
@@ -101,12 +99,11 @@ m_cpoly.h m_divdiff.h m_interp.h m_matrix.h m_spline.h m_wave.h \
 m_base.h m_expression.h m_phase.h \
 io_.h io_error.h io_trace.h \
 u_cardst.h u_function.h u_lang.h u_limit.h u_nodemap.h u_opt.h u_parameter.h \
-u_prblst.h u_probe.h u_sdp.h u_status.h u_time_pair.h u_xprobe.h \
+u_prblst.h u_probe.h u_sim_data.h u_sdp.h u_status.h u_time_pair.h u_xprobe.h \
 s__.h s_tr.h \
 e_base.h e_card.h e_node.h e_aux.h e_model.h e_compon.h e_subckt.h \
 e_elemnt.h e_ccsrc.h e_storag.h e_cardlist.h \
 d_coment.h d_dot.h d_logic.h d_subckt.h \
-lang_spectre.h lang_spice.h lang_verilog.h \
 bm.h \
 c_comand.h globals.h
 #------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-/* $Id: d_diode.model,v 26.92 2008/08/23 05:40:00 al Exp $ -*- C++ -*-
+/* $Id: d_diode.model,v 26.132 2009/11/24 04:26:37 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -76,8 +76,8 @@ device BUILT_IN_DIODE {
     y = "(@Rs[R] != 0. && (@Yj[Y] + @Cj[Y]) != 0)
 		? 1./((1./(@Yj[Y] + @Cj[Y])) + @Rs[R])
 		: @Yj[Y] + @Cj[Y]";
-    z = "port_impedance(@n_a[],@n_c[],lu,mfactor()*tr_probe_num(\"Y\"))";
-    zraw = "port_impedance(@n_a[], @n_c[], lu, 0.)";
+    z = "port_impedance(@n_a[],@n_c[],_sim->_lu,mfactor()*tr_probe_num(\"Y\"))";
+    zraw = "port_impedance(@n_a[], @n_c[], _sim->_lu, 0.)";
     region = "static_cast<double>(_region)";
   }
   device {
@@ -175,13 +175,13 @@ device BUILT_IN_DIODE {
     
     trace4("", cb, csw, ctt, cb+csw+ctt);
     d->_y[0].f1 = cb + csw + ctt;
-    if (d->analysis_is_tran_dynamic()) {
+    if (d->_sim->analysis_is_tran_dynamic()) {
       const STORAGE* dd = prechecked_cast<const STORAGE*>(d);
       assert(dd);
       double cap = (d->_y[0].f1 + dd->_y[1].f1) / 2;
       d->_y[0].f0 = (d->_y[0].x - dd->_y[1].x) * cap + dd->_y[1].f0;
     }else{
-      assert(d->analysis_is_static() || d->analysis_is_restore());
+      assert(d->_sim->analysis_is_static() || d->_sim->analysis_is_restore());
       d->_y[0].f0 = d->_y[0].x * d->_y[0].f1;
     }
     trace3(d->long_label().c_str(), d->_y[0].x, d->_y[0].f0, d->_y[0].f1);
@@ -193,8 +193,8 @@ device BUILT_IN_DIODE {
     trace2(d->long_label().c_str(), volts, amps);
     
     int flags = (m->flags & USE_OPT) ? OPT::diodeflags : m->flags;
-    double tempratio = (SIM::temp_c+P_CELSIUS0) / (m->_tnom_c+P_CELSIUS0);
-    double vt = P_K_Q * (SIM::temp_c+P_CELSIUS0) * m->n_factor;
+    double tempratio = (d->_sim->_temp_c+P_CELSIUS0) / (m->_tnom_c+P_CELSIUS0);
+    double vt = P_K_Q * (d->_sim->_temp_c+P_CELSIUS0) * m->n_factor;
     region_t oldregion = p->_region;
     p->_isat = c->is_adjusted * pow(tempratio, m->xti)
       * exp((m->eg/vt) *(tempratio-1));
@@ -277,7 +277,7 @@ device BUILT_IN_DIODE {
       y.f0 += OPT::gmin * volts;
       y.f1 += OPT::gmin;
     }else{
-       if (c->off  &&  d->initial_step()) { /*initially guess off*/
+       if (c->off  &&  d->_sim->is_initial_step()) { /*initially guess off*/
 	p->_region = INITOFF;
 	y.f1 = 0.;
 	y.f0 = 0.;
@@ -337,7 +337,7 @@ device BUILT_IN_DIODE {
       y.f0 += c->gparallel_adjusted * volts;
       
       if (oldregion != p->_region  &&  OPT::dampstrategy & dsDEVLIMIT) {
-	SIM::fulldamp = true;
+	d->_sim->_fulldamp = true;
 	error(bTRACE, p->long_label() + ":device limit damp\n");
       }
       if (flags & 0100) {		// twist g to guarantee g >= gmin

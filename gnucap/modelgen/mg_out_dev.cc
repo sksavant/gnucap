@@ -1,4 +1,4 @@
-/*$Id: mg_out_dev.cc,v 26.126 2009/10/16 05:27:42 al Exp $ -*- C++ -*-
+/*$Id: mg_out_dev.cc,v 26.134 2009/11/29 03:44:57 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -310,7 +310,7 @@ static void make_dev_expand(std::ofstream& out, const Device& d)
     "  }else{\n"
     "  }\n"
     "\n"
-    "  if (is_first_expand()) {\n"
+    "  if (_sim->is_first_expand()) {\n"
     "    precalc_first();\n"
     "    precalc_last();\n"
     "    // local nodes\n";

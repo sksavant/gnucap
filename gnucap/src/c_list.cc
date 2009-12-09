@@ -1,4 +1,4 @@
-/*$Id: c_list.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: c_list.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -23,7 +23,7 @@
  * save is list with direction to file
  */
 //testing=script 2006.07.17
-#include "s__.h"
+#include "e_cardlist.h"
 #include "u_lang.h"
 #include "c_comand.h"
 #include "globals.h"

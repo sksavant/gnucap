@@ -1,4 +1,4 @@
-/*$Id: d_res.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: d_res.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -44,38 +44,21 @@ private: // override virtual
   bool	   has_iv_probe()const  {return true;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_RESISTANCE(*this);}
-  //void   precalc_first();	//ELEMENT
-  //void   expand();		//COMPONENT
   void     precalc_last();
-  //void   map_nodes();		//ELEMENT
-  
   void	   tr_iwant_matrix()	{tr_iwant_matrix_passive();}
   void     tr_begin();
-  //void   tr_restore();	//ELEMENT
-  //void   dc_advance();	//ELEMENT
-  //void   tr_advance();	//ELEMENT
-  //void   tr_regress();	//ELEMENT
-  //bool   tr_needs_eval();	//ELEMENT
-  //void   tr_queue_eval();	//ELEMENT
   bool	   do_tr();
   void	   tr_load()		{tr_load_passive();}
-  //TIME_PAIR tr_review();	//ELEMENT
-  //void   tr_accept();		//CARD/nothing
   void	   tr_unload()		{untested();tr_unload_passive();}
   double   tr_involts()const	{return tr_outvolts();}
-  double   tr_input()const {untested(); return _m0.c0 + _m0.c1 * tr_involts();}
+  double   tr_input()const	{untested(); return _m0.c0 + _m0.c1 * tr_involts();}
   double   tr_involts_limited()const {return tr_outvolts_limited();}
   double   tr_input_limited()const {return _m0.c0+_m0.c1*tr_involts_limited();}
-  //double tr_amps()const	//ELEMENT
-  //double tr_probe_num(const std::string&)const;//ELEMENT
-
   void	   ac_iwant_matrix()	{ac_iwant_matrix_passive();}
   void     ac_begin()           {_ev = _y[0].f1; _acg = 1. / _ev;} 
   void	   do_ac();
   void	   ac_load()		{ac_load_passive();}
   COMPLEX  ac_involts()const	{return ac_outvolts();}
-  //COMPLEX ac_amps()const;	//ELEMENT
-  //XPROBE ac_probe_ext(const std::string&)const;//ELEMENT
 
   std::string port_name(int i)const {itested();
     assert(i >= 0);

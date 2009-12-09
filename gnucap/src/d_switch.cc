@@ -1,4 +1,4 @@
-/*$Id: d_switch.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: d_switch.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -70,39 +70,25 @@ protected: // override virtual
   int	   matrix_nodes()const	{return 2;}
   int	   net_nodes()const	= 0;
   CARD*	   clone()const		= 0;
-  //void   precalc_first();	//ELEMENT
   void     expand();
   void     precalc_last();
-  //void   map_nodes();		//ELEMENT
-
   void	   tr_iwant_matrix()	{tr_iwant_matrix_passive();}
   void	   tr_begin();
-  //void   tr_restore();	//ELEMENT
   void     dc_advance();
   void     tr_advance();
   void     tr_regress();
-  bool	   tr_needs_eval()const {return analysis_is_static();} // also q by tr_advance
-  //void   tr_queue_eval();	//ELEMENT
+  bool	   tr_needs_eval()const {return _sim->analysis_is_static();} // also q by tr_advance
   bool	   do_tr();
   void	   tr_load()		{tr_load_passive();}
   TIME_PAIR tr_review();
-  //void   tr_accept();		//CARD/nothing
   void	   tr_unload()		{untested(); tr_unload_passive();}
   double   tr_involts()const	{untested(); return tr_outvolts();}
-  //double tr_input()const	//ELEMENT
-  double   tr_involts_limited()const
-				{unreachable(); return tr_outvolts_limited();}
-  //double tr_input_limited()const //ELEMENT
-  //double tr_amps()const	//ELEMENT
-  //double tr_probe_num(const std::string&)const; //ELEMENT
-
+  double   tr_involts_limited()const {unreachable(); return tr_outvolts_limited();}
   void	   ac_iwant_matrix()	{ac_iwant_matrix_passive();}
   void	   ac_begin()		{_ev = _y[0].f1; _acg = _m0.c1;}
   void	   do_ac();
   void	   ac_load()		{ac_load_passive();}
   COMPLEX  ac_involts()const	{untested(); return ac_outvolts();}
-  //COMPLEX ac_amps()const;	//ELEMENT
-  //XPROBE ac_probe_ext(const std::string&)const;//ELEMENT
 protected:
   const ELEMENT* _input;
 private:
@@ -427,7 +413,7 @@ void SWITCH_BASE::precalc_last()
 {
   ELEMENT::precalc_last();
     
-  if (is_first_expand()) {
+  if (_sim->is_first_expand()) {
     const COMMON_SWITCH* c = prechecked_cast<const COMMON_SWITCH*>(common());
     assert(c);
     const MODEL_SWITCH* m = prechecked_cast<const MODEL_SWITCH*>(c->model());
@@ -532,7 +518,7 @@ bool SWITCH_BASE::do_tr()
   const MODEL_SWITCH* m = prechecked_cast<const MODEL_SWITCH*>(c->model());
   assert(m);
 
-  if (analysis_is_static()) {
+  if (_sim->analysis_is_static()) {
     _y[0].x = (_input)			/* _y[0].x is controlling value */
       ? CARD::probe(_input,"I")		/* current controlled */
       : _n[IN1].v0() - _n[IN2].v0();	/* voltage controlled */

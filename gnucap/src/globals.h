@@ -1,4 +1,4 @@
-/*$Id: globals.h,v 26.113 2009/08/12 03:37:19 al Exp $ -*- C++ -*-
+/*$Id: globals.h,v 26.136 2009/12/07 23:20:42 al Exp $ -*- C++ -*-
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -29,6 +29,8 @@ class MODEL_CARD;
 class CARD;
 class LANGUAGE;
 class FUNCTION;
+class CKT_BASE;
+class PROBELIST;
 
 extern INTERFACE DISPATCHER<CMD> command_dispatcher;
 extern INTERFACE DISPATCHER<COMMON_COMPONENT> bm_dispatcher;
@@ -37,7 +39,7 @@ extern INTERFACE DISPATCHER<CARD> device_dispatcher;
 extern INTERFACE DISPATCHER<LANGUAGE> language_dispatcher;
 extern INTERFACE DISPATCHER<FUNCTION> function_dispatcher;
 extern INTERFACE DISPATCHER<FUNCTION> measure_dispatcher;
-
-class LOGIC_NODE;
+extern INTERFACE DISPATCHER<CKT_BASE> status_dispatcher;
+extern INTERFACE DISPATCHER<CKT_BASE> help_dispatcher;
+extern INTERFACE DISPATCHER<PROBELIST> probe_dispatcher;
 extern INTERFACE std::string head;
-extern LOGIC_NODE* nstat;

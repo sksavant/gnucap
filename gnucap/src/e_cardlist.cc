@@ -1,4 +1,4 @@
-/*$Id: e_cardlist.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: e_cardlist.cc,v 26.136 2009/12/08 02:03:49 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -23,6 +23,7 @@
  * This file contains functions that process a list of cards
  */
 //testing=script 2006.07.10
+#include "u_time_pair.h"
 #include "e_node.h"
 #include "u_nodemap.h"
 #include "e_model.h"
@@ -274,7 +275,7 @@ bool CARD_LIST::tr_needs_eval()const
     trace_func_comp();
     if ((**ci).tr_needs_eval()) {
       return true;
-    }else{untested();
+    }else{itested();
     }
   }
   untested();
@@ -324,7 +325,7 @@ bool CARD_LIST::do_tr()
  */
 CARD_LIST& CARD_LIST::tr_load()
 {
-  if (CKT_BASE::is_inc_mode()) {itested();
+  if (CKT_BASE::_sim->is_inc_mode()) {itested();
     assert(!OPT::traceload);
     for (iterator ci=begin(); ci!=end(); ++ci) {itested();
       trace_func_comp();
@@ -486,7 +487,7 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
       // get new node numbers, and assign them to the remaining
       for (assert(i==model->net_nodes() + 1); i <= num_nodes_in_subckt; ++i) {
 	// for each remaining node in card_list
-	map[i] = ::status.newnode_subckt();
+	map[i] = CKT_BASE::_sim->newnode_subckt();
 	trace2("internal", i, map[i]);
       }
     }

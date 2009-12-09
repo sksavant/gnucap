@@ -1,4 +1,4 @@
-/*$Id: c_param.cc,v 26.86 2008/07/07 22:31:11 al Exp $ -*- C++ -*-
+/*$Id: c_param.cc,v 26.130 2009/11/15 21:51:59 al Exp $ -*- C++ -*-
  * Copyright (C) 2005 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -21,8 +21,8 @@
  *------------------------------------------------------------------
  */
 //testing=script,complete 2006.07.17
+#include "c_comand.h"
 #include "u_parameter.h"
-#include "s__.h"
 #include "globals.h"
 /*--------------------------------------------------------------------------*/
 namespace {
@@ -36,11 +36,6 @@ public:
       pl->print(IO::mstdout, OPT::language);
       IO::mstdout << '\n';
     }else{
-      //BUG// this "uninit" is to force propagation of the new value
-      // after changing it, but it limits usefulness and causes other problems
-      // the proper fix is to do "re-elaboration"
-      // which fixes values and does not change topology
-      //SIM::uninit();
       pl->parse(cmd);
     }
   }

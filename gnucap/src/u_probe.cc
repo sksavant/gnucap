@@ -1,4 +1,4 @@
-/*$Id: u_probe.cc,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: u_probe.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -22,7 +22,9 @@
  * general probe object
  */
 //testing=script 2009.06.21
-#include "s__.h"
+#include "u_sim_data.h"
+#include "u_status.h"
+#include "e_base.h"
 #include "u_probe.h"
 /*--------------------------------------------------------------------------*/
 PROBE::PROBE(const std::string& what,const CKT_BASE *brh)
@@ -111,21 +113,21 @@ double PROBE::probe_node(void)const
     assert(iSTEP      - sCOUNT == 1);
     assert(iTOTAL     - sCOUNT == 2);
     assert(iCOUNT     - sCOUNT == 3);
-    return ::status.iter[sCOUNT];
+    return CKT_BASE::_sim->_iter[sCOUNT];
   }else if (Umatch(_what, "bypass ")) {untested();
-    return OPT::bypass + 10*SIM::bypass_ok;
+    return OPT::bypass + 10*CKT_BASE::_sim->_bypass_ok;
   }else if (Umatch(_what, "control ")) {
     return ::status.control;
   }else if (Umatch(_what, "damp ")) {untested();
-    return SIM::damp;
+    return CKT_BASE::_sim->_damp;
   }else if (Umatch(_what, "gen{erator} ")) {untested();
-    return SIM::genout;
+    return CKT_BASE::_sim->_genout;
   }else if (Umatch(_what, "hidden ")) {untested();
     return ::status.hidden_steps;
   }else if (Umatch(_what, "temp{erature} ")) {untested();
-    return SIM::temp_c;
+    return CKT_BASE::_sim->_temp_c;
   }else if (Umatch(_what, "time ")) {untested();
-    return SIM::time0;
+    return CKT_BASE::_sim->_time0;
   }else{
     return NOT_VALID;
   }

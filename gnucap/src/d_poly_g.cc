@@ -1,4 +1,4 @@
-/*$Id: d_poly_g.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: d_poly_g.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -54,37 +54,17 @@ protected: // override virtual
   int	   matrix_nodes()const	{return _n_ports*2;}
   int	   net_nodes()const	{return _n_ports*2;}
   CARD*	   clone()const		{return new DEV_CPOLY_G(*this);}
-  //void   expand();		//COMPONENT
-  //void   precalc();		//ELEMENT
-  //void   map_nodes();		//ELEMENT
-
   void	   tr_iwant_matrix()	{tr_iwant_matrix_extended();}
-  //void   tr_begin();		//ELEMENT
-  //void   tr_restore();	//ELEMENT
-  //void   dc_advance();	//ELEMENT
-  //void   tr_advance();	//ELEMENT
-  //void   tr_regress();	//ELEMENT
-  //bool   tr_needs_eval();	//ELEMENT
-  //void   tr_queue_eval();	//ELEMENT
   bool	   do_tr();
   void	   tr_load();
-  //TIME_PAIR tr_review();	//ELEMENT
-  //void   tr_accept();		//CARD/nothing
   void	   tr_unload();
   double   tr_involts()const	{unreachable(); return NOT_VALID;}
-  //double tr_input()const	//ELEMENT
   double   tr_involts_limited()const {unreachable(); return NOT_VALID;}
-  //double tr_input_limited()const //ELEMENT
   double   tr_amps()const;
-  //double tr_probe_num(const std::string&)const;//ELEMENT
-
   void	   ac_iwant_matrix()	{ac_iwant_matrix_extended();}
-  //void   ac_begin();		//CARD/nothing
-  //void   do_ac();		//CARD/nothing
   void	   ac_load();
   COMPLEX  ac_involts()const	{itested(); return NOT_VALID;}
   COMPLEX  ac_amps()const	{itested(); return NOT_VALID;}
-  //XPROBE ac_probe_ext(const std::string&)const;//ELEMENT
 
   std::string port_name(int)const {untested();
     incomplete();
@@ -160,8 +140,8 @@ bool DEV_CPOLY_G::do_tr_con_chk_and_q()
   q_load();
 
   assert(_old_values);
-  set_converged(conchk(_time, SIM::time0));
-  _time = SIM::time0;
+  set_converged(conchk(_time, _sim->_time0));
+  _time = _sim->_time0;
   for (int i=0; converged() && i<=_n_ports; ++i) {
     set_converged(conchk(_old_values[i], _values[i]));
   }
@@ -214,7 +194,7 @@ void DEV_CPOLY_G::tr_unload()
 {
   std::fill_n(_values, _n_ports+1, 0.);
   _m0.c0 = _m0.c1 = 0.;
-  mark_inc_mode_bad();
+  _sim->mark_inc_mode_bad();
   tr_load();
 }
 /*--------------------------------------------------------------------------*/

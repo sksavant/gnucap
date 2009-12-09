@@ -1,4 +1,4 @@
-/*$Id: e_elemnt.h,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: e_elemnt.h,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -50,12 +50,14 @@ public: // override virtual
   void	   tr_advance();
   void	   tr_regress();
   bool	   tr_needs_eval()const {/*assert(!is_q_for_eval());*/ return !is_constant();}
+#if 0
   void	   tr_queue_eval()	{
     if(tr_needs_eval()) {
       q_eval();
     }else{
     }
   }
+#endif
   TIME_PAIR tr_review();
 
   //void   map_nodes();
@@ -172,20 +174,20 @@ inline double ELEMENT::dampdiff(double* v0, const double& v1)
   assert(v1 == v1);
   double diff = dn_diff(*v0, v1);
   assert(diff == diff);
-  if (!is_advance_or_first_iteration()) {
-    diff *= SIM::damp;
+  if (!_sim->is_advance_or_first_iteration()) {
+    diff *= _sim->_damp;
     *v0 = v1 + diff;
   }else{
   }
-  return mfactor() * ((is_inc_mode()) ? diff : *v0);
+  return mfactor() * ((_sim->is_inc_mode()) ? diff : *v0);
 }
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::tr_load_inode()
 {
   double d = dampdiff(&_loss0, _loss1);
   if (d != 0.) {
-    aa.load_couple(_n[OUT1].m_(), _n[IN1].m_(), -d);
-    aa.load_couple(_n[OUT2].m_(), _n[IN1].m_(),  d);
+    _sim->_aa.load_couple(_n[OUT1].m_(), _n[IN1].m_(), -d);
+    _sim->_aa.load_couple(_n[OUT2].m_(), _n[IN1].m_(),  d);
   }else{
   }
   _loss1 = _loss0;
@@ -194,21 +196,21 @@ inline void ELEMENT::tr_load_inode()
 inline void ELEMENT::tr_unload_inode()
 {untested();
   _loss0 = 0.;
-  mark_inc_mode_bad();
+  _sim->mark_inc_mode_bad();
   tr_load_inode();
 }
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::ac_load_inode()
 {
-  acx.load_couple(_n[OUT1].m_(), _n[IN1].m_(), -mfactor() * _loss0);
-  acx.load_couple(_n[OUT2].m_(), _n[IN1].m_(),  mfactor() * _loss0);
+  _sim->_acx.load_couple(_n[OUT1].m_(), _n[IN1].m_(), -mfactor() * _loss0);
+  _sim->_acx.load_couple(_n[OUT2].m_(), _n[IN1].m_(),  mfactor() * _loss0);
 }
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::tr_load_shunt()
 {
   double d = dampdiff(&_loss0, _loss1);
   if (d != 0.) {
-    aa.load_symmetric(_n[OUT1].m_(), _n[OUT2].m_(), d);
+    _sim->_aa.load_symmetric(_n[OUT1].m_(), _n[OUT2].m_(), d);
   }else{
   }
   _loss1 = _loss0;
@@ -217,20 +219,20 @@ inline void ELEMENT::tr_load_shunt()
 inline void ELEMENT::tr_unload_shunt()
 {untested();
   _loss0 = 0.;
-  mark_inc_mode_bad();
+  _sim->mark_inc_mode_bad();
   tr_load_shunt();
 }
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::ac_load_shunt()
 {
-  acx.load_symmetric(_n[OUT1].m_(), _n[OUT2].m_(), mfactor() * _loss0);
+  _sim->_acx.load_symmetric(_n[OUT1].m_(), _n[OUT2].m_(), mfactor() * _loss0);
 }
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::tr_load_source()
 {
 #if !defined(NDEBUG)
-  assert(_loaditer != iteration_tag()); // double load
-  _loaditer = iteration_tag();
+  assert(_loaditer != _sim->iteration_tag()); // double load
+  _loaditer = _sim->iteration_tag();
 #endif
 
   double d = dampdiff(&_m0.c0, _m1.c0);
@@ -251,7 +253,7 @@ inline void ELEMENT::tr_load_source()
 inline void ELEMENT::tr_unload_source()
 {untested();
   _m0.c0 = _m0.c1 = 0.;
-  mark_inc_mode_bad();
+  _sim->mark_inc_mode_bad();
   tr_load_source();
 }
 /*--------------------------------------------------------------------------*/
@@ -271,7 +273,7 @@ inline void ELEMENT::tr_load_couple()
 {
   double d = dampdiff(&_m0.c1, _m1.c1);
   if (d != 0.) {
-    aa.load_couple(_n[OUT1].m_(), _n[OUT2].m_(), d);
+    _sim->_aa.load_couple(_n[OUT1].m_(), _n[OUT2].m_(), d);
   }else{
   }
   _m1.c1 = _m0.c1;
@@ -280,20 +282,20 @@ inline void ELEMENT::tr_load_couple()
 inline void ELEMENT::tr_unload_couple()
 {untested();
   _m0.c0 = _m0.c1 = 0.;
-  mark_inc_mode_bad();
+  _sim->mark_inc_mode_bad();
   tr_load_couple(); // includes _m1 = _m0
 }
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::ac_load_couple()
 {
-  acx.load_couple(_n[OUT1].m_(), _n[OUT2].m_(), mfactor() * _acg);
+  _sim->_acx.load_couple(_n[OUT1].m_(), _n[OUT2].m_(), mfactor() * _acg);
 }
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::tr_load_passive()
 {
   double d = dampdiff(&_m0.c1, _m1.c1);
   if (d != 0.) {
-    aa.load_symmetric(_n[OUT1].m_(), _n[OUT2].m_(), d);
+    _sim->_aa.load_symmetric(_n[OUT1].m_(), _n[OUT2].m_(), d);
   }else{
   }
   tr_load_source(); // includes _m1 = _m0
@@ -302,20 +304,20 @@ inline void ELEMENT::tr_load_passive()
 inline void ELEMENT::tr_unload_passive()
 {
   _m0.c0 = _m0.c1 = 0.;
-  mark_inc_mode_bad();
+  _sim->mark_inc_mode_bad();
   tr_load_passive(); // includes _m1 = _m0
 }
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::ac_load_passive()
 {
-  acx.load_symmetric(_n[OUT1].m_(), _n[OUT2].m_(), mfactor() * _acg);
+  _sim->_acx.load_symmetric(_n[OUT1].m_(), _n[OUT2].m_(), mfactor() * _acg);
 }
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::tr_load_active()
 {
   double d = dampdiff(&_m0.c1, _m1.c1);
   if (d != 0.) {
-    aa.load_asymmetric(_n[OUT1].m_(), _n[OUT2].m_(),
+    _sim->_aa.load_asymmetric(_n[OUT1].m_(), _n[OUT2].m_(),
 		       _n[IN1].m_(), _n[IN2].m_(), d);
   }else{
   }
@@ -325,13 +327,13 @@ inline void ELEMENT::tr_load_active()
 inline void ELEMENT::tr_unload_active()
 {untested();
   _m0.c0 = _m0.c1 = 0.;
-  mark_inc_mode_bad();
+  _sim->mark_inc_mode_bad();
   tr_load_active(); // includes _m1 = _m0
 }
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::ac_load_active()
 {
-  acx.load_asymmetric(_n[OUT1].m_(), _n[OUT2].m_(),
+  _sim->_acx.load_asymmetric(_n[OUT1].m_(), _n[OUT2].m_(),
 		      _n[IN1].m_(), _n[IN2].m_(), mfactor() * _acg);
 }
 /*--------------------------------------------------------------------------*/
@@ -341,7 +343,7 @@ inline void ELEMENT::tr_load_extended(const node_t& no1, const node_t& no2,
 {
   double d = dampdiff(new_value, *old_value);
   if (d != 0.) {
-    aa.load_asymmetric(no1.m_(), no2.m_(), ni1.m_(), ni2.m_(), d);
+    _sim->_aa.load_asymmetric(no1.m_(), no2.m_(), ni1.m_(), ni2.m_(), d);
   }else{
   }
   *old_value = *new_value;
@@ -351,7 +353,7 @@ inline void ELEMENT::ac_load_extended(const node_t& no1, const node_t& no2,
 				      const node_t& ni1, const node_t& ni2,
 				      COMPLEX new_value)
 {
-  acx.load_asymmetric(no1.m_(), no2.m_(), ni1.m_(), ni2.m_(), mfactor() * new_value);
+  _sim->_acx.load_asymmetric(no1.m_(), no2.m_(), ni1.m_(), ni2.m_(), mfactor() * new_value);
 }
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::tr_load_source_point(node_t& no1,
@@ -381,7 +383,7 @@ inline void ELEMENT::tr_load_diagonal_point(const node_t& no1,
 {
   double d = dampdiff(new_value, *old_value);
   if (d != 0.) {
-    aa.load_diagonal_point(no1.m_(), d);
+    _sim->_aa.load_diagonal_point(no1.m_(), d);
   }else{
   }
   *old_value = *new_value;
@@ -389,7 +391,7 @@ inline void ELEMENT::tr_load_diagonal_point(const node_t& no1,
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::ac_load_diagonal_point(const node_t& no1, COMPLEX new_value)
 {
-  acx.load_diagonal_point(no1.m_(), mfactor() * new_value);
+  _sim->_acx.load_diagonal_point(no1.m_(), mfactor() * new_value);
 }
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::tr_load_point(const node_t& no1, const node_t& no2,
@@ -397,7 +399,7 @@ inline void ELEMENT::tr_load_point(const node_t& no1, const node_t& no2,
 {
   double d = dampdiff(new_value, *old_value);
   if (d != 0.) {
-    aa.load_point(no1.m_(), no2.m_(), d);
+    _sim->_aa.load_point(no1.m_(), no2.m_(), d);
   }else{
   }
   *old_value = *new_value;
@@ -406,7 +408,7 @@ inline void ELEMENT::tr_load_point(const node_t& no1, const node_t& no2,
 inline void ELEMENT::ac_load_point(const node_t& no1, const node_t& no2,
 				   COMPLEX new_value)
 {itested();
-  acx.load_point(no1.m_(), no2.m_(), mfactor() * new_value);
+  _sim->_acx.load_point(no1.m_(), no2.m_(), mfactor() * new_value);
 }
 /*--------------------------------------------------------------------------*/
 inline bool ELEMENT::conv_check()const

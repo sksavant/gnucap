@@ -1,4 +1,4 @@
-/*$Id: io_error.h,v 26.101 2008/11/24 05:40:05 al Exp $ -*- C++ -*-
+/*$Id: io_error.h,v 26.130 2009/11/15 21:51:59 al Exp $ -*- C++ -*-
  * data for error and exception handling
  *
  * Copyright (C) 2001 Albert Davis
@@ -80,20 +80,6 @@ struct Exception_Too_Many :public Exception{
      _requested(requested), _max(max), _offset(offset) {untested();
   }
 };
-struct Exception_Cant_Set_Type :public Exception{
-  std::string _from, _to;
-  Exception_Cant_Set_Type(const std::string& from, const std::string& to)
-    :Exception("can't set type from \"" + from + "\" to \"" + to + "\""),
-     _from(from), _to(to) {untested();
-  }
-};
-struct Exception_Bad_Internal_Command :public Exception{
-  std::string _c;
-  Exception_Bad_Internal_Command(const std::string& command)
-    :Exception("bad internal command: " + command),
-     _c(command) {untested();
-  }    
-};
 struct Exception_Type_Mismatch :public Exception{
   std::string _device, _name, _need_type;
   Exception_Type_Mismatch(const std::string& dev, const std::string& name,
@@ -118,22 +104,6 @@ struct Exception_End_Of_Input :public Exception{
 struct Exception_File_Open :public Exception{
   Exception_File_Open(const std::string& Message) 
     :Exception(Message) {
-  }
-};
-struct Exception_Too_Few :public Exception{
-  Exception_Too_Few(const std::string& s)
-    :Exception(s) {
-  }
-};
-struct Exception_Nothing_Wrong :public Exception{
-  Exception_Nothing_Wrong(const std::string& s)
-    :Exception(s) {
-  }
-};
-struct Exception_Time_Step :public Exception{
-  double _ts;
-  Exception_Time_Step(const std::string& s, double Ts)
-    :Exception(s), _ts(Ts) {
   }
 };
 /*--------------------------------------------------------------------------*/

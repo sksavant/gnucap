@@ -1,4 +1,4 @@
-/*$Id: bm_pwl.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: bm_pwl.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -48,14 +48,9 @@ private: // override virtual
   void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
 
   void		precalc_first(const CARD_LIST*);
-  //void  	expand(const COMPONENT*);//COMPONENT_COMMON/nothing
-  //COMMON_COMPONENT* deflate();	 //COMPONENT_COMMON/nothing
   void		precalc_last(const CARD_LIST*);
 
   void		tr_eval(ELEMENT*)const;
-  //void	ac_eval(ELEMENT*)const; //EVAL_BM_ACTION_BASE
-  //bool	has_tr_eval()const;	//EVAL_BM_BASE/true
-  //bool	has_ac_eval()const;	//EVAL_BM_BASE/true
   TIME_PAIR	tr_review(COMPONENT*);
   std::string	name()const		{return "pwl";}
   bool		ac_too()const		{return false;}
@@ -159,7 +154,7 @@ TIME_PAIR EVAL_BM_PWL::tr_review(COMPONENT* d)
     // index (x) is time
     ELEMENT* dd = prechecked_cast<ELEMENT*>(d);
     assert(dd);
-    double x = dd->_y[0].x + SIM::_dtmin * .01;
+    double x = dd->_y[0].x + d->_sim->_dtmin * .01;
     DPAIR here(x, BIGBIG);
     std::vector<DPAIR>::iterator begin = _num_table.begin();
     std::vector<DPAIR>::iterator end   = _num_table.end();

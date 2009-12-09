@@ -1,4 +1,4 @@
-/* $Id: spice-wrapper.cc,v 26.129 2009/11/10 16:39:44 al Exp $ -*- C++ -*-
+/* $Id: spice-wrapper.cc,v 26.136 2009/12/07 23:20:42 al Exp $ -*- C++ -*-
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -59,9 +59,9 @@ extern "C" {
 }
 /*--------------------------------------------------------------------------*/
 // gnucap includes
+//#include "globals.h"
 #include "u_xprobe.h"
 #include "d_subckt.h"
-#include "globals.h"
 #include "e_storag.h"
 #include "e_model.h"
 /*--------------------------------------------------------------------------*/
@@ -123,16 +123,25 @@ static COMMON_SUBCKT Default_Params(CC_STATIC);
  * DEVnoise   	not used -- noise
 */
 /*--------------------------------------------------------------------------*/
+union SPICE_MODEL_DATA {
+  mutable GENmodel _gen;// generic -- use this one
+  MODEL _full;		// determines size
+  char  _space;		// char pointer for fill_n
+  
+  SPICE_MODEL_DATA() {
+    std::fill_n(&_space, sizeof(MODEL), '\0');
+  }
+  SPICE_MODEL_DATA(const SPICE_MODEL_DATA& p) 
+    : _full(p._full) {
+  }
+};
+/*--------------------------------------------------------------------------*/
 class MODEL_SPICE : public MODEL_CARD{
 private:
   static int _count;
   static CKTcircuit _ckt;
 public:
-  union {
-    mutable GENmodel _gen_model_raw;	// generic -- use this one
-    MODEL _model_raw;			// determines size
-    char  _model_raw_space;		// pointer for fill_n
-  };
+  SPICE_MODEL_DATA _spice_model;
   std::string _key;
   std::string _level;
   PARAM_LIST  _params;
@@ -175,13 +184,13 @@ private:
 public:
 private:
   union {
-    mutable GENinstance _geninst;
+    mutable GENinstance _spice_instance;
     INSTANCE _inst;
     char _inst_space;
   };
   std::string _modelname;
   const MODEL_SPICE* _model;
-  GENmodel* _model_spice;
+  const SPICE_MODEL_DATA* _spice_model;
   node_t _nodes[MATRIX_NODES];
   COMPLEX* _matrix[MATRIX_NODES+OFFSET];	// For tran, real is now, imag is saved.
   COMPLEX _matrix_core[MATRIX_NODES+OFFSET][MATRIX_NODES+OFFSET];
@@ -192,6 +201,7 @@ public:
   double* (_states[8]); // array of 8 pointers
   double* _states_1;
   int _num_states;
+  int _maxEqNum;
 private:
   explicit DEV_SPICE(const DEV_SPICE& p);
 public:
@@ -269,7 +279,7 @@ private:
   void init_ckt()		{MODEL_SPICE::init_ckt();}
   void update_ckt()const;
   void localize_ckt()const;
-  int* spice_nodes()const	{return &(_geninst.GENnode1);}
+  int* spice_nodes()const	{return &(_spice_instance.GENnode1);}
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -325,10 +335,10 @@ CKTcircuit MODEL_SPICE::_ckt;
 #define assert_ckt_initialized(ckt) {				\
     assert(ckt);						\
     assert((ckt)->CKTnomTemp == OPT::tnom_c + CONSTCtoK);	\
-    assert(((ckt)->CKTcurrentAnalysis == DOING_DCOP) == SIM::command_is_op());	  \
-    assert(((ckt)->CKTcurrentAnalysis == DOING_TRCV) == SIM::command_is_dc());	  \
-    assert(((ckt)->CKTcurrentAnalysis == DOING_AC  ) == SIM::analysis_is_ac());	  \
-    assert(((ckt)->CKTcurrentAnalysis == DOING_TRAN) == SIM::analysis_is_tran()); \
+    assert(((ckt)->CKTcurrentAnalysis == DOING_DCOP) == CKT_BASE::_sim->command_is_op());	\
+    assert(((ckt)->CKTcurrentAnalysis == DOING_TRCV) == CKT_BASE::_sim->command_is_dc());	\
+    assert(((ckt)->CKTcurrentAnalysis == DOING_AC  ) == CKT_BASE::_sim->analysis_is_ac());	\
+    assert(((ckt)->CKTcurrentAnalysis == DOING_TRAN) == CKT_BASE::_sim->analysis_is_tran());	\
     assert((ckt)->CKTbypass  == false);				\
     assert((ckt)->CKTabstol == OPT::abstol);			\
     assert((ckt)->CKTreltol == OPT::reltol);			\
@@ -343,17 +353,17 @@ CKTcircuit MODEL_SPICE::_ckt;
 void MODEL_SPICE::init_ckt()
 {
   assert(ckt());
-  ckt()->CKTtime = SIM::time0;
-  ckt()->CKTtemp    = SIM::temp_c + CONSTCtoK; //manage by update
+  ckt()->CKTtime = _sim->_time0;
+  ckt()->CKTtemp    = _sim->_temp_c + CONSTCtoK; //manage by update
   ckt()->CKTnomTemp = OPT::tnom_c + CONSTCtoK;
   ckt()->CKTintegrateMethod = 0; // disable
-  if (command_is_op()) {
+  if (_sim->command_is_op()) {
     ckt()->CKTcurrentAnalysis = DOING_DCOP;
-  }else if (command_is_dc()) {
+  }else if (_sim->command_is_dc()) {
     ckt()->CKTcurrentAnalysis = DOING_TRCV;
-  }else if (command_is_ac()) {
+  }else if (_sim->command_is_ac()) {
     ckt()->CKTcurrentAnalysis = DOING_AC;
-  }else if (analysis_is_tran()) {
+  }else if (_sim->analysis_is_tran()) {
     ckt()->CKTcurrentAnalysis = DOING_TRAN;
   }else{ // probably probe
     ckt()->CKTcurrentAnalysis = 0;
@@ -383,8 +393,8 @@ void MODEL_SPICE::init_ckt()
 
 #define assert_ckt_up_to_date(ckt) {				\
     assert_ckt_initialized(ckt);				\
-    assert((ckt)->CKTtime == SIM::time0);			\
-    assert((ckt)->CKTtemp == SIM::temp_c + CONSTCtoK);		\
+    assert((ckt)->CKTtime == CKT_BASE::_sim->_time0);		\
+    assert((ckt)->CKTtemp == CKT_BASE::_sim->_temp_c + CONSTCtoK);	\
   }
 
 void DEV_SPICE::update_ckt()const
@@ -392,11 +402,11 @@ void DEV_SPICE::update_ckt()const
   assert_ckt_initialized(ckt());
   ckt()->CKTgmin = OPT::gmin;
   ckt()->CKTstat = NULL; // mark as not localized
-  ckt()->CKTtime = SIM::time0;
+  ckt()->CKTtime = _sim->_time0;
   ckt()->CKTdelta = NOT_VALID; // localized
-  ckt()->CKTtemp = SIM::temp_c + CONSTCtoK;
+  ckt()->CKTtemp = _sim->_temp_c + CONSTCtoK;
   ckt()->CKTmode = 0;
-  ckt()->CKTomega = SIM::jomega.imag();
+  ckt()->CKTomega = _sim->_jomega.imag();
   assert_ckt_up_to_date(ckt());
 }
 
@@ -461,29 +471,29 @@ void DEV_SPICE::localize_ckt()const
   assert_ckt_localized(ckt());
 }
 
-#define assert_model_raw() {			\
-    assert(_gen_model_raw.GENmodType == 0);	\
-    assert(_gen_model_raw.GENnextModel == NULL);\
-    assert(_gen_model_raw.GENinstances == NULL);\
+#define assert_model_raw() {				\
+    assert(_spice_model._gen.GENmodType == 0);		\
+    assert(_spice_model._gen.GENnextModel == NULL);	\
+    assert(_spice_model._gen.GENinstances == NULL);	\
   }
 #define assert_model_unlocalized() {		\
-    assert(_model->_gen_model_raw.GENinstances == NULL);\
-    assert(_model_spice);			\
-    assert(_model_spice->GENmodType == 0);	\
-    assert(_model_spice->GENnextModel == NULL);	\
-    assert(_model_spice->GENinstances == NULL);	\
-    assert(_model_spice->GENmodName);		\
+    assert(_model->_spice_model._gen.GENinstances == NULL);\
+    assert(_spice_model);			\
+    assert(_spice_model->_gen.GENmodType == 0);	\
+    assert(_spice_model->_gen.GENnextModel == NULL);	\
+    assert(_spice_model->_gen.GENinstances == NULL);	\
+    assert(_spice_model->_gen.GENmodName);		\
   }
-#define assert_model_localized() {		\
-    assert(_model_spice);			\
-    assert(_model_spice->GENmodType == 0);	\
-    assert(_model_spice->GENnextModel == NULL);	\
-    assert(_model_spice->GENinstances); 	\
-    assert(_model_spice->GENmodName);		\
+#define assert_model_localized() {			\
+    assert(_spice_model);				\
+    assert(_spice_model->_gen.GENmodType == 0);		\
+    assert(_spice_model->_gen.GENnextModel == NULL);	\
+    assert(_spice_model->_gen.GENinstances);		\
+    assert(_spice_model->_gen.GENmodName);		\
   }
 #define assert_instance() {			\
-    assert(_geninst.GENnextInstance == NULL);	\
-    assert(_geninst.GENname == NULL);		\
+    assert(_spice_instance.GENnextInstance == NULL);	\
+    assert(_spice_instance.GENname == NULL);		\
   }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -511,7 +521,7 @@ struct IFVA {
 	//cmd >> _v->cValue;
 	incomplete();
 	break;
-      case IF_NODE:untested();	incomplete();		break;
+      case IF_NODE:untested();	incomplete();	break;
       case IF_STRING:
 	{
 	  //assert(!(_v->sValue));
@@ -532,18 +542,17 @@ struct IFVA {
 /*--------------------------------------------------------------------------*/
 MODEL_SPICE::MODEL_SPICE(const DEV_SPICE* p) 
   :MODEL_CARD(p),
-   _model_raw(),
+   _spice_model(),
    _key(),
    _level(),
    _params()
 {
-  std::fill_n(&_model_raw_space, sizeof(MODEL), '\0');
   assert_model_raw();
 }
 /*--------------------------------------------------------------------------*/
 MODEL_SPICE::MODEL_SPICE(const MODEL_SPICE& p)
   :MODEL_CARD(p),
-   _model_raw(p._model_raw),
+   _spice_model(p._spice_model),
    _key(p._key),
    _level(p._level),
    _params(p._params)
@@ -570,7 +579,7 @@ void MODEL_SPICE::Set_param_by_name(std::string Name, std::string new_value)
       IFvalue Value;
       IFVA v(&Value, Parms.dataType);
       v = new_value;
-      int ok = info.DEVmodParam(Parms.id, &Value, &_gen_model_raw);
+      int ok = info.DEVmodParam(Parms.id, &Value, &_spice_model._gen);
       assert(ok == OK);
       return;
     }else{
@@ -613,7 +622,7 @@ void MODEL_SPICE::precalc_first()
   init_ckt();
   if (info.DEVsetup) {
     assert_model_raw();
-    int ok = info.DEVsetup(NULL, &_gen_model_raw, ckt(), NULL);
+    int ok = info.DEVsetup(NULL, &_spice_model._gen, ckt(), NULL);
     assert(ok == OK);
   }else{untested();
   }
@@ -623,12 +632,12 @@ void MODEL_SPICE::set_dev_type(const std::string& new_type)
 {
   assert_model_raw();
 
-  //_gen_model_raw.set_mod_name(short_label());
+  //_spice_model._gen.set_mod_name(short_label());
   std::string s = short_label();
   char* p = new char[s.length()+1]; //BUG//memory leak
   s.copy(p, std::string::npos);
   p[s.length()] = '\0';
-  _gen_model_raw.GENmodName = p;
+  _spice_model._gen.GENmodName = p;
 
   _key = new_type;
   if (OPT::case_insensitive) {
@@ -690,7 +699,7 @@ DEV_SPICE::DEV_SPICE()
    _inst(),
    _modelname(""),
    _model(NULL),
-   _model_spice(NULL),
+   _spice_model(NULL),
    _nodes(),
    _matrix(),
    _matrix_core(),
@@ -698,7 +707,8 @@ DEV_SPICE::DEV_SPICE()
    _i1(),
    _v1(),
    _states_1(NULL),
-   _num_states(0)
+   _num_states(0),
+   _maxEqNum(0)
 {
   attach_common(&Default_Params);
   std::fill_n(&_inst_space, sizeof(INSTANCE), '\0');
@@ -734,7 +744,7 @@ DEV_SPICE::DEV_SPICE(const DEV_SPICE& p)
    _inst(p._inst),
    _modelname(p._modelname),
    _model(p._model),
-   _model_spice(p._model_spice),
+   _spice_model(p._spice_model),
    _nodes(),
    _matrix(),
    _matrix_core(),
@@ -742,7 +752,8 @@ DEV_SPICE::DEV_SPICE(const DEV_SPICE& p)
    _i1(),
    _v1(),
    _states_1(NULL),
-   _num_states(p._num_states)
+   _num_states(p._num_states),
+   _maxEqNum(p._maxEqNum)
 {
   assert_instance();
 
@@ -792,7 +803,7 @@ DEV_SPICE::~DEV_SPICE()
       assert(!_states[ii]);
     }
     assert(!_states_1);
-    assert(!_model_spice);
+    assert(!_spice_model);
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -846,9 +857,9 @@ void DEV_SPICE::Set_param_by_index(int i, std::string& new_value, int offset)
     IFVA v(&Value, Parms.dataType);
     v = new_value;
 #ifdef JSPICE3
-    int ok = info.DEVparam(ckt(), Parms.id, &Value, &_geninst, NULL);
+    int ok = info.DEVparam(ckt(), Parms.id, &Value, &_spice_instance, NULL);
 #else
-    int ok = info.DEVparam(Parms.id, &Value, &_geninst, NULL);
+    int ok = info.DEVparam(Parms.id, &Value, &_spice_instance, NULL);
 #endif
     assert(ok == OK);
   }else{untested();
@@ -896,23 +907,21 @@ void DEV_SPICE::expand()
     if (!_model) {
       throw Exception_Model_Type_Mismatch(long_label(), _modelname, DEVICE_TYPE);
     }else{
-      _geninst.GENmodPtr = &(_model->_gen_model_raw);
-      _model_spice = &(_model->_gen_model_raw);
-      _model_spice->GENinstances = &_geninst;
-      assert_model_localized();
-      
       SMPmatrix* matrix = reinterpret_cast<SMPmatrix*>(_matrix);
       _num_states = 0;
-      MODEL model_spice_copy(*reinterpret_cast<MODEL*>(_model_spice));
-      GENmodel* gen_model_copy = reinterpret_cast<GENmodel*>(&model_spice_copy);
+
+      _spice_instance.GENmodPtr = &(_model->_spice_model._gen);
+      _spice_model = &(_model->_spice_model);
+      SPICE_MODEL_DATA spice_model_copy(*_spice_model);
+      spice_model_copy._gen.GENinstances = &_spice_instance;
       //-------------
-      int ok = info.DEVsetup(matrix, gen_model_copy, ckt(), &_num_states);
+      int ok = info.DEVsetup(matrix, &(spice_model_copy._gen), ckt(), &_num_states);
       // memory pointer setup, and sets _num_states
       // undesired side effects: sets values, messes up model
       //-------------
       assert(ok == OK);
+      _maxEqNum = ckt()->CKTmaxEqNum;
       trace1("expand", ckt()->CKTmaxEqNum);
-      _model_spice->GENinstances = NULL;
       assert_model_unlocalized();      
     }
   }
@@ -937,7 +946,7 @@ void DEV_SPICE::expand()
   //std::fill_n(_v1, matrix_nodes()+OFFSET, 0);
   
   //-------- fix up internal nodes
-  if (is_first_expand()) {
+  if (_sim->is_first_expand()) {
     int start_internal = 0;
     if (UNCONNECTED_NODES == uGROUND) {
       for (int ii = net_nodes(); ii < max_nodes(); ++ii) {itested();
@@ -1022,11 +1031,6 @@ void DEV_SPICE::precalc_last()
   STORAGE::precalc_last();
   init_ckt();
 
-  _model_spice = &(_model->_gen_model_raw);
-  _model_spice->GENinstances = &_geninst;
-  assert_model_localized();
-  
-  int  maxEqNum_stash = ckt()->CKTmaxEqNum;		// save the real nodes
   int* node = spice_nodes(); // treat as array	//
   int  node_stash[MATRIX_NODES];			//
   notstd::copy_n(node, matrix_nodes(), node_stash);	// save the real nodes
@@ -1060,19 +1064,21 @@ void DEV_SPICE::precalc_last()
   {
     SMPmatrix* matrix = reinterpret_cast<SMPmatrix*>(_matrix);
     int num_states_garbage = 0;
-    MODEL model_spice_copy(*reinterpret_cast<MODEL*>(_model_spice));
-    GENmodel* gen_model_copy = reinterpret_cast<GENmodel*>(&model_spice_copy);
-    int ok = info.DEVsetup(matrix, gen_model_copy, ckt(), &num_states_garbage);
+
+    assert(_spice_model == &(_model->_spice_model));
+    SPICE_MODEL_DATA spice_model_copy(*_spice_model);
+    spice_model_copy._gen.GENinstances = &_spice_instance;
+
+    int ok = info.DEVsetup(matrix, &(spice_model_copy._gen), ckt(), &num_states_garbage);
+
     assert(ok == OK);
     assert(num_states_garbage == _num_states);
     trace3("precalc", maxEqNum_stash, ckt()->CKTmaxEqNum, (maxEqNum_stash == ckt()->CKTmaxEqNum));
-    assert(maxEqNum_stash == ckt()->CKTmaxEqNum);
+    assert(_maxEqNum == ckt()->CKTmaxEqNum);
     notstd::copy_n(node_stash, matrix_nodes(), node); // put back real nodes
     // hopefully, the matrix pointers are the same as last time!
   }
   assert(!is_constant());
-  assert_model_localized();
-  _model_spice->GENinstances = NULL;
   assert_model_unlocalized();
   assert_instance();
 }
@@ -1085,16 +1091,16 @@ void DEV_SPICE::internal_precalc()
     assert_instance();
 
     assert_model_unlocalized();
-    _model_spice->GENinstances = &_geninst;
+    _spice_model->_gen.GENinstances = &_spice_instance;
     assert_model_localized();
     
     // ELEMENT::precalc(); .. don't call .. more analysis needed
     //-----
-    int ok = info.DEVtemperature(_model_spice, ckt());
+    int ok = info.DEVtemperature(&(_spice_model->_gen), ckt());
     assert(ok == OK);
     //-----
     set_converged();
-    _model_spice->GENinstances = NULL;
+    _spice_model->_gen.GENinstances = NULL;
 
     assert(!is_constant());
     assert_instance();
@@ -1128,7 +1134,7 @@ bool DEV_SPICE::tr_needs_eval()const
     return false;
   }else if (!converged()) {
     return true;
-  }else if (is_advance_iteration()) {
+  }else if (_sim->is_advance_iteration()) {
     return true;
   }else if (_time[1] == 0) {
     //BUG// needed for ngspice jfet, but not for spice3f5 jfet
@@ -1175,31 +1181,31 @@ bool DEV_SPICE::do_tr()
   localize_ckt();
 
   assert_model_unlocalized();
-  _model_spice->GENinstances = &_geninst;
+  _spice_model->_gen.GENinstances = &_spice_instance;
   assert_model_localized();
 
-  if (analysis_is_tran_dynamic()) {
-    if ((_time[1] == 0) && is_first_iteration()) {
+  if (_sim->analysis_is_tran_dynamic()) {
+    if ((_time[1] == 0) && _sim->is_first_iteration()) {
       ckt()->CKTmode = MODETRAN | MODEINITTRAN;
     }else{
       ckt()->CKTmode = MODETRAN | MODEINITFLOAT;
     }
   }else{
-    if (analysis_is_tran_static()) {
+    if (_sim->analysis_is_tran_static()) {
       ckt()->CKTmode = MODETRANOP;
-    }else if (analysis_is_tran_restore()) {
+    }else if (_sim->analysis_is_tran_restore()) {
       ckt()->CKTmode = MODETRAN;
-    }else if (command_is_dc()) {
+    }else if (_sim->command_is_dc()) {
       ckt()->CKTmode = MODEDCTRANCURVE;
-    }else if (command_is_op()) {
+    }else if (_sim->command_is_op()) {
       ckt()->CKTmode = MODEDCOP;
     }else{unreachable();
       ckt()->CKTmode = 0;
     }
-    if (SIM::uic_now()) {
+    if (_sim->uic_now()) {
       ckt()->CKTmode |= MODEINITFIX;
       ckt()->CKTmode |= MODEUIC;
-    }else if (SIM::initial_step()) {
+    }else if (_sim->is_initial_step()) {
       ckt()->CKTmode |= MODEINITJCT;
     }else{
       ckt()->CKTmode |= MODEINITFLOAT;
@@ -1217,7 +1223,6 @@ bool DEV_SPICE::do_tr()
       }
     }
   }
-
   { // clear for copy out
     ckt()->CKTtroubleElt = NULL;
     ckt()->CKTnoncon = 0;
@@ -1234,7 +1239,7 @@ bool DEV_SPICE::do_tr()
 
   // do the work -- it might also do convergence checking, might not
   //-----
-  info.DEVload(_model_spice, ckt());
+  info.DEVload(&(_spice_model->_gen), ckt());
   //-----
   // convergence check -- gnucap method
   set_converged(ckt()->CKTnoncon == 0);
@@ -1257,7 +1262,7 @@ bool DEV_SPICE::do_tr()
   if (converged() && info.DEVconvTest) {
     ckt()->CKTnoncon = 0;
     ckt()->CKTrhs = _v1;    // Spice overlaps _i0 with _v1 as CKTrhs
-    info.DEVconvTest(_model_spice, ckt());
+    info.DEVconvTest(&(_spice_model->_gen), ckt());
     set_converged(ckt()->CKTnoncon == 0);
   }else{
     // either no separate test or already failed
@@ -1273,13 +1278,14 @@ bool DEV_SPICE::do_tr()
 			   0, OPT::reltol*OPT::loadtol);
     }
   }
+  
   if (needs_load) {
     q_load();
   }else{
   }
 
   assert_model_localized();
-  _model_spice->GENinstances = NULL;
+  _spice_model->_gen.GENinstances = NULL;
   assert_model_unlocalized();
   return converged();
 }
@@ -1287,10 +1293,10 @@ bool DEV_SPICE::do_tr()
 void DEV_SPICE::tr_load()
 {
 #ifndef NDEBUG
-  if (_loaditer == iteration_tag()) {untested();
+  if (_loaditer == _sim->iteration_tag()) {untested();
     error(bDANGER, long_label() + " internal error: double load\n");
   }
-  _loaditer = iteration_tag();
+  _loaditer = _sim->iteration_tag();
 #endif
 
   int ihit[MATRIX_NODES+OFFSET];
@@ -1333,7 +1339,7 @@ void DEV_SPICE::tr_unload()
       _matrix[ii][jj].real() = 0;
     }
   }
-  mark_inc_mode_bad();
+  _sim->mark_inc_mode_bad();
   tr_load();
 }
 /*--------------------------------------------------------------------------*/
@@ -1347,19 +1353,19 @@ TIME_PAIR DEV_SPICE::tr_review()
     //q_accept();
     
     assert_model_unlocalized();
-    _model_spice->GENinstances = &_geninst;
+    _spice_model->_gen.GENinstances = &_spice_instance;
     assert_model_localized();
     
     ckt()->CKTtroubleElt = NULL;
     double timestep = NEVER;
     //-----
-    info.DEVtrunc(_model_spice, ckt(), &timestep);
+    info.DEVtrunc(&(_spice_model->_gen), ckt(), &timestep);
     //-----
     
     _time_by._error_estimate = tr_review_check_and_convert(timestep);
     _time_by._event = NEVER;
 
-    _model_spice->GENinstances = NULL;
+    _spice_model->_gen.GENinstances = NULL;
     assert_model_unlocalized();
     return _time_by;
   }else{
@@ -1370,12 +1376,12 @@ TIME_PAIR DEV_SPICE::tr_review()
 void DEV_SPICE::tr_accept()
 {
   assert_model_unlocalized();
-  _model_spice->GENinstances = &_geninst;
+  _spice_model->_gen.GENinstances = &_spice_instance;
   assert_model_localized();
   
   //STORAGE::tr_accept(); // doesn't do anything
 
-  if (analysis_is_dcop() || analysis_is_ac()) {
+  if (_sim->analysis_is_dcop() || _sim->analysis_is_ac()) {
     localize_ckt();
 
     // don't copy in
@@ -1384,11 +1390,11 @@ void DEV_SPICE::tr_accept()
     // _n[ii].v0() is not correct -- may have been cleared
     
     ckt()->CKTmode = MODEINITSMSIG;
-    info.DEVload(_model_spice, ckt());
+    info.DEVload(&(_spice_model->_gen), ckt());
   }else{itested();
   }
   assert_model_localized();
-  _model_spice->GENinstances = NULL;
+  _spice_model->_gen.GENinstances = NULL;
   assert_model_unlocalized();
 }
 /*--------------------------------------------------------------------------*/
@@ -1417,7 +1423,7 @@ double DEV_SPICE::tr_probe_num(const std::string& x)const
       int datatype = Parms.dataType;
       if (datatype & IF_ASK && Umatch(x, std::string(Parms.keyword) + ' ')) {
 	IFvalue v;
-	int ok = info.DEVask(ckt(), &_geninst, Parms.id, &v, NULL);
+	int ok = info.DEVask(ckt(), &_spice_instance, Parms.id, &v, NULL);
 	if (ok == OK) {
 	  switch (datatype & 0xff) {
 	  case IF_FLAG:
@@ -1465,12 +1471,12 @@ void DEV_SPICE::do_ac()
     assert(_num_states >= 0);
 
     assert_model_unlocalized();
-    _model_spice->GENinstances = &_geninst;
+    _spice_model->_gen.GENinstances = &_spice_instance;
     assert_model_localized();
 
     localize_ckt();
     ckt()->CKTmode = MODEAC;
-    ckt()->CKTomega = SIM::jomega.imag();
+    ckt()->CKTomega = _sim->_jomega.imag();
 
     // clear for copy out
     ckt()->CKTtroubleElt = NULL;
@@ -1483,15 +1489,15 @@ void DEV_SPICE::do_ac()
     }
     
     if (info.DEVpzLoad) {
-      info.DEVpzLoad(_model_spice, ckt(), reinterpret_cast<SPcomplex*>(&SIM::jomega));
+      info.DEVpzLoad(&(_spice_model->_gen), ckt(), reinterpret_cast<SPcomplex*>(&_sim->_jomega));
     }else if (info.DEVacLoad) {
-      info.DEVacLoad(_model_spice, ckt());
+      info.DEVacLoad(&(_spice_model->_gen), ckt());
     }else{unreachable();
       // nothing
     }
 
     assert_model_localized();
-    _model_spice->GENinstances = NULL;
+    _spice_model->_gen.GENinstances = NULL;
     assert_model_unlocalized();
   }else{untested();
     // there is no acLoad function

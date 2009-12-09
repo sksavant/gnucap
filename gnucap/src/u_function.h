@@ -1,4 +1,4 @@
-/*$Id: u_function.h,v 26.116 2009/08/18 05:05:06 al Exp $ -*- C++ -*-
+/*$Id: u_function.h,v 26.131 2009/11/20 08:22:10 al Exp $ -*- C++ -*-
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -25,10 +25,13 @@
 /*--------------------------------------------------------------------------*/
 class CS;
 class CARD_LIST;
+class WAVE;
 /*--------------------------------------------------------------------------*/
 class FUNCTION {
 public:
   virtual std::string eval(CS&, const CARD_LIST*)const = 0;
+protected:
+  WAVE* find_wave(const std::string& probe_name)const;
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

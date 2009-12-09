@@ -1,4 +1,4 @@
-/*$Id: globals.cc,v 26.113 2009/08/12 03:37:19 al Exp $ -*- C++ -*-
+/*$Id: globals.cc,v 26.136 2009/12/07 23:20:42 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -39,6 +39,9 @@ DISPATCHER<CARD> device_dispatcher;
 DISPATCHER<LANGUAGE> language_dispatcher;
 DISPATCHER<FUNCTION> function_dispatcher;
 DISPATCHER<FUNCTION> measure_dispatcher;
+DISPATCHER<CKT_BASE> status_dispatcher;
+DISPATCHER<CKT_BASE> help_dispatcher;
+DISPATCHER<PROBELIST> probe_dispatcher;
 
 // for the rest, order should not matter, but it is convenient here
 CARD_LIST CARD_LIST::card_list;	// root circuit 
@@ -50,7 +53,6 @@ PROBELIST PROBE_LISTS::store[sCOUNT]; /* list of pts to store for postproc */
 // the rest of this should not be here, is residue of old stuff
 STATUS status;
 std::string head;
-LOGIC_NODE* nstat;		// node status flags
 /*--------------------------------------------------------------------------*/
 /* sweep command.  This will go away with a rewrite of looping */
 const int swp_nest_max = 1;	/* no loop, "future" expansion		*/

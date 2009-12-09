@@ -1,4 +1,4 @@
-/*$Id: findbr.cc,v 26.83 2008/06/05 04:46:59 al Exp $ -*- C++ -*-
+/*$Id: findbr.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -23,6 +23,9 @@
  * returns the branch pointer
  */
 //testing=script,sparse 2006.07.17
+#include "l_lib.h"
+#include "constant.h"
+#include "e_cardlist.h"
 #include "ap.h"
 #include "e_card.h"
 /*--------------------------------------------------------------------------*/

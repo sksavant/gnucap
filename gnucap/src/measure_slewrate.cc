@@ -1,4 +1,4 @@
-/*$Id: measure_slewrate.cc,v 26.125 2009/10/15 20:58:21 al Exp $ -*- C++ -*-
+/*$Id: measure_slewrate.cc,v 26.131 2009/11/20 08:22:10 al Exp $ -*- C++ -*-
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -20,8 +20,8 @@
  * 02110-1301, USA.
  *------------------------------------------------------------------
  */
+#include "l_compar.h"
 #include "u_parameter.h"
-#include "s__.h"
 #include "m_wave.h"
 #include "u_function.h"
 /*--------------------------------------------------------------------------*/
@@ -41,7 +41,7 @@ public:
 
     unsigned here = Cmd.cursor();
     Cmd >> probe_name;
-    WAVE* w = SIM::find_wave(probe_name);
+    WAVE* w = find_wave(probe_name);
 
     if (!w) {
       Cmd.reset(here);
@@ -67,7 +67,7 @@ public:
     }while (Cmd.more() && !Cmd.stuck(&here));
 
     if (!w) {
-      w = SIM::find_wave(probe_name);
+      w = find_wave(probe_name);
     }else{
     }
     

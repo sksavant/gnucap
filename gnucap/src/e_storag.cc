@@ -1,4 +1,4 @@
-/*$Id: e_storag.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: e_storag.cc,v 26.132 2009/11/24 04:26:37 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -114,9 +114,9 @@ bool STORAGE::tr_needs_eval()const
   //assert(!is_q_for_eval());
   return (!OPT::lcbypass
 	  || !converged() 
-	  || is_advance_or_first_iteration()
+	  || _sim->is_advance_or_first_iteration()
 	  || !conchk(_y[0].x, tr_input(), OPT::abstol)
-	  || SIM::uic_now());
+	  || _sim->uic_now());
 }
 /*--------------------------------------------------------------------------*/
 /* differentiate: this is what Spice calls "integrate".
@@ -126,16 +126,16 @@ bool STORAGE::tr_needs_eval()const
  */
 FPOLY1 differentiate(const FPOLY1* q, const FPOLY1* i, double* time, METHOD method)
 {
-  if (CKT_BASE::analysis_is_static()) {
+  if (CKT_BASE::_sim->analysis_is_static()) {
     assert(time[0] == 0.);
     return FPOLY1(q[0].x, 0., 0.);
-  }else if (CKT_BASE::analysis_is_restore()) {
+  }else if (CKT_BASE::_sim->analysis_is_restore()) {
     /* leave it alone to restart from a previous solution */
     /* it goes this way to continue a transient analysis */
     assert(time[0] > 0);
     return i[0];
   }else{
-    assert(CKT_BASE::analysis_is_tran_dynamic());
+    assert(CKT_BASE::_sim->analysis_is_tran_dynamic());
     if (time[1] == 0) {
       method = mEULER;	// Bogus current in previous step.  Force Euler.
     }else{
@@ -172,15 +172,15 @@ FPOLY1 differentiate(const FPOLY1* q, const FPOLY1* i, double* time, METHOD meth
 /*--------------------------------------------------------------------------*/
 double STORAGE::tr_c_to_g(double c, double g)const
 {
-  if (analysis_is_static()) {
+  if (_sim->analysis_is_static()) {
     assert(_time[0] == 0.);
     return 0.;
-  }else if (analysis_is_restore()) {itested();
+  }else if (_sim->analysis_is_restore()) {itested();
     assert(_time[0] > 0);
     return g;
     // no change, fake
   }else{
-    assert(analysis_is_tran_dynamic());
+    assert(_sim->analysis_is_tran_dynamic());
     METHOD method;
     if (_time[1] == 0) {
       method = mEULER; // Bogus current in previous step.  Force Euler.
@@ -205,15 +205,8 @@ TIME_PAIR STORAGE::tr_review()
   if (_method_a == mEULER) {
     // Backward Euler, no step control, take it as it comes
   }else{
-    try {
-      double timestep = tr_review_trunc_error(_y);
-      _time_by.min_error_estimate(tr_review_check_and_convert(timestep));
-    } catch (Exception_Time_Step& e) {untested();
-      error(bTRACE,"storage element step control error:%s %g\n",
-	    e.message().c_str(), e._ts);
-      error(bTRACE, "using Euler, disabling time step control\n");    
-      _method_a = mEULER;
-    }
+    double timestep = tr_review_trunc_error(_y);
+    _time_by.min_error_estimate(tr_review_check_and_convert(timestep));
   }
   return _time_by;
 }

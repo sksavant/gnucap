@@ -1,4 +1,4 @@
-/*$Id: c__cmd.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: c__cmd.cc,v 26.130 2009/11/15 21:51:59 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -115,7 +115,7 @@ void CMD::command(const std::string& cs, CARD_LIST* scope)
   if (c) {
     c->do_it(cmd, scope);
   }else{itested();
-    throw Exception_Bad_Internal_Command(s);
+    throw Exception("bad internal command: " + s);
   }
 }
 /*--------------------------------------------------------------------------*/

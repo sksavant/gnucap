@@ -1,4 +1,4 @@
-/*$Id: d_subckt.h,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: d_subckt.h,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -28,6 +28,7 @@
 #include "e_subckt.h"
 /*--------------------------------------------------------------------------*/
 #define PORTS_PER_SUBCKT 100
+//BUG// fixed limit on number of ports
 /*--------------------------------------------------------------------------*/
 class INTERFACE MODEL_SUBCKT : public COMPONENT {
 private:
@@ -86,6 +87,7 @@ private: // override virtual
   void		expand();
   void		precalc_last();
   double	tr_probe_num(const std::string&)const;
+  int param_count_dont_print()const {return common()->COMMON_COMPONENT::param_count();}
 
   std::string port_name(int i)const {itested();
     if (_parent) {itested();
@@ -111,16 +113,14 @@ public:
 	   ~COMMON_SUBCKT()		{--_count;}
   bool operator==(const COMMON_COMPONENT&)const;
   COMMON_COMPONENT* clone()const	{return new COMMON_SUBCKT(*this);}
-  std::string	name()const		{untested(); return "subckt";}
+  std::string	name()const		{itested(); return "subckt";}
   static int	count()			{return _count;}
 
-  void set_param_by_name(std::string Name, std::string value) {_params.set(Name, value);}
+  void set_param_by_name(std::string Name, std::string Value) {_params.set(Name, Value);}
   bool		param_is_printable(int)const;
   std::string	param_name(int)const;
   std::string	param_name(int,int)const;
   std::string	param_value(int)const;
-  std::string	param_type(int)const	{incomplete(); return "";}
-  std::string	param_default(int)const {incomplete(); return "";}
   int param_count()const
 	{return (static_cast<int>(_params.size()) + COMMON_COMPONENT::param_count());}
 

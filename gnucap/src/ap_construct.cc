@@ -1,4 +1,4 @@
-/*$Id: ap_construct.cc,v 26.117 2009/08/19 15:28:06 al Exp $ -*- C++ -*-
+/*$Id: ap_construct.cc,v 26.130 2009/11/15 21:51:59 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -42,7 +42,6 @@ CS::CS(CS::STDIN)
    _length(0),
    _begin_match(0),
    _end_match(0),
-   _ms(msEXACT),
    _ok(true),
    _line_number(0)
 {
@@ -56,7 +55,6 @@ CS::CS(CS::INC_FILE, const std::string& name)
    _length(0),
    _begin_match(0),
    _end_match(0),
-   _ms(msEXACT),
    _ok(true),
    _line_number(0)
 {
@@ -74,7 +72,6 @@ CS::CS(CS::WHOLE_FILE, const std::string& name)
    _length(0),
    _begin_match(0),
    _end_match(0),
-   _ms(msEXACT),
    _ok(true),
    _line_number(0)
 {
@@ -102,7 +99,6 @@ CS::CS(CS::STRING, const std::string& s)
    _length(static_cast<unsigned>(s.length())),
    _begin_match(0),
    _end_match(0),
-   _ms(msEXACT),
    _ok(true),
    _line_number(0)
 {

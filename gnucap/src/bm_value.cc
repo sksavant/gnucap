@@ -1,4 +1,4 @@
-/*$Id: bm_value.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: bm_value.cc,v 26.130 2009/11/15 21:51:59 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -25,52 +25,44 @@
 //testing=script 2005.10.07
 #include "bm.h"
 /*--------------------------------------------------------------------------*/
-const double _default_value (0);
-/*--------------------------------------------------------------------------*/
 static EVAL_BM_VALUE p1(CC_STATIC);
-static DISPATCHER<COMMON_COMPONENT>::INSTALL
-d1(&bm_dispatcher, "value", &p1);
-/*--------------------------------------------------------------------------*/
-EVAL_BM_VALUE::EVAL_BM_VALUE(int c)
-  :EVAL_BM_ACTION_BASE(c),
-   _value(0)
-{
-}
-/*--------------------------------------------------------------------------*/
-EVAL_BM_VALUE::EVAL_BM_VALUE(const EVAL_BM_VALUE& p)
-  :EVAL_BM_ACTION_BASE(p),
-   _value(p._value)
-{
-}
+static DISPATCHER<COMMON_COMPONENT>::INSTALL d1(&bm_dispatcher, "value|eval_bm_value", &p1);
 /*--------------------------------------------------------------------------*/
 bool EVAL_BM_VALUE::operator==(const COMMON_COMPONENT& x)const
 {
   const EVAL_BM_VALUE* p = dynamic_cast<const EVAL_BM_VALUE*>(&x);
-  bool rv = p
-    && _value == p->_value
-    && EVAL_BM_ACTION_BASE::operator==(x);
-  if (rv) {
-    incomplete();
-    untested();
-  }
-  return rv;
+  return  p && EVAL_BM_ACTION_BASE::operator==(x);
 }
 /*--------------------------------------------------------------------------*/
 void EVAL_BM_VALUE::print_common_obsolete_callback(OMSTREAM& o, LANGUAGE* lang)const
 {
-  assert(lang);
   o << _value;
   EVAL_BM_ACTION_BASE::print_common_obsolete_callback(o, lang);
 }
 /*--------------------------------------------------------------------------*/
+bool EVAL_BM_VALUE::is_trivial()const
+{
+  return  !(_bandwidth.has_hard_value()
+	    || _delay.has_hard_value()
+	    || _phase.has_hard_value()
+	    || _ooffset.has_hard_value()
+	    || _ioffset.has_hard_value()
+	    || _scale.has_hard_value()
+	    || _tc1.has_hard_value()
+	    || _tc2.has_hard_value()
+	    || _ic.has_hard_value()
+	    || _tnom_c.has_hard_value()
+	    || _dtemp.has_hard_value()
+	    || _temp_c.has_hard_value());
+}
+/*--------------------------------------------------------------------------*/
 void EVAL_BM_VALUE::precalc_first(const CARD_LIST* Scope)
 {
-  assert(Scope);
-  EVAL_BM_ACTION_BASE::precalc_first(Scope);
   if (modelname() != "") {
     _value = modelname();
+  }else{
   }
-  _value.e_val(_default_value, Scope);
+  EVAL_BM_ACTION_BASE::precalc_first(Scope);
 }
 /*--------------------------------------------------------------------------*/
 void EVAL_BM_VALUE::tr_eval(ELEMENT* d)const

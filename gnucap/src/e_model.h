@@ -1,4 +1,4 @@
-/*$Id: e_model.h,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: e_model.h,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -58,20 +58,14 @@ public: // override virtuals
   std::string param_name(int)const;
   std::string param_name(int,int)const;
   std::string param_value(int)const;
-  std::string param_type(int)const	{incomplete(); return "";}
-  std::string param_default(int)const	{incomplete(); return "";}
   int param_count()const {return (1 + CARD::param_count());}
 public:
   virtual void	tr_eval(COMPONENT*)const{unreachable();}
   virtual void	ac_eval(COMPONENT*)const{unreachable();}
   virtual COMMON_COMPONENT* new_common()const {return 0;}
-  virtual SDP_CARD* new_sdp(COMMON_COMPONENT*)const
-					{unreachable();return 0;};
-
+  virtual SDP_CARD* new_sdp(COMMON_COMPONENT*)const {unreachable();return 0;};
   virtual bool parse_params_obsolete_callback(CS&) {unreachable(); return false;}
-
   virtual bool is_valid(const COMPONENT*)const {return true;}
-
   const CARD* component_proto()const {itested(); return _component_proto;}
 protected:
   const CARD* _component_proto;

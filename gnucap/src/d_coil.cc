@@ -1,4 +1,4 @@
-/*$Id: d_coil.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: d_coil.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -53,23 +53,11 @@ public: // override virtual
   bool	   has_iv_probe()const  {return true;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_INDUCTANCE(*this);}
-  //void   precalc_first();	//STORAGE
   void     expand();
-  //void   precalc_last();	//STORAGE
-  //void   map_nodes();		//ELEMENT
-
   void	   tr_iwant_matrix();
   void     tr_begin();
-  //void   tr_restore();	//STORAGE
-  //void   dc_advance();	//STORAGE
-  //void   tr_advance();	//STORAGE
-  //void   tr_regress();	//ELEMENT
-  //bool   tr_needs_eval()const;//STORAGE
-  //void   tr_queue_eval();	//ELEMENT
   bool	   do_tr();
   void	   tr_load();
-  //TIME_PAIR tr_review();	//STORAGE
-  //void   tr_accept();		//CARD/nothing
   void	   tr_unload();
   double   tr_involts()const	{return tr_outvolts();}
   double   tr_input()const;
@@ -77,14 +65,12 @@ public: // override virtual
   double   tr_input_limited()const;
   double   tr_amps()const;
   double   tr_probe_num(const std::string&)const;
-
   void	   ac_iwant_matrix();
   void	   ac_begin()		{_loss1 = _loss0 = ((!_c_model) ? 0. : 1.); _ev = _y[0].f1;}
   void	   do_ac();
   void	   ac_load();
   COMPLEX  ac_involts()const	{return ac_outvolts();}
   COMPLEX  ac_amps()const;
-  //XPROBE ac_probe_ext(const std::string&)const;//ELEMENT
 
   std::string port_name(int i)const {itested();
     assert(i >= 0);
@@ -130,40 +116,26 @@ private: // override virtual
   bool	   has_iv_probe()const  {untested(); return false;}
   bool	   use_obsolete_callback_parse()const {return false;}
   CARD*	   clone()const		{return new DEV_MUTUAL_L(*this);}
-  //void   precalc_first();	//STORAGE
   void     expand_first();
   void	   expand_last();
   void	   precalc_last();
-  //void   map_nodes()		//ELEMENT
-
   void     tr_iwant_matrix()	{tr_iwant_matrix_passive();}
   void     tr_begin();
-  //void   tr_restore();	//STORAGE
   void     dc_advance();
   void     tr_advance();
-  //void   tr_regress();	//ELEMENT
-  //bool   tr_needs_eval();	//DEV_INDUCTANCE
-  //void   tr_queue_eval();	//ELEMENT
-  bool     do_tr()		{SIM::late_evalq.push_back(this); return true;}
+  bool     do_tr()		{_sim->_late_evalq.push_back(this); return true;}
   bool     do_tr_last();
   void	   tr_load();
   TIME_PAIR tr_review()		{return TIME_PAIR(NEVER,NEVER);}
-  //void   tr_accept();		//CARD/nothing
   void	   tr_unload();
-  //double tr_involts()const		//DEV_INDUCTANCE
   double   tr_input()const		{return tr_involts();}
-  //double tr_involts_limited()const	//DEV_INDUCTANCE
   double   tr_input_limited()const	{untested(); return tr_involts_limited();}
   double   tr_amps()const		{untested(); return _loss0 * tr_outvolts();}
   double   tr_probe_num(const std::string&)const;
 
   void	   ac_iwant_matrix()	{ac_iwant_matrix_passive();}
-  //void   ac_begin();		//DEV_INDUCTANCE
-  //void   do_ac();		//DEV_INDUCTANCE
   void	   ac_load();
-  //COMPLEX ac_involts()const;	//DEV_INDUCTANCE
   COMPLEX  ac_amps()const	{untested(); return _loss0 * ac_outvolts();}
-  //XPROBE ac_probe_ext(const std::string&)const;//ELEMENT
 
   void	   set_port_by_name(std::string& Name, std::string& Value)
 		{untested(); COMPONENT::set_port_by_name(Name,Value);}
@@ -244,7 +216,7 @@ DEV_MUTUAL_L::DEV_MUTUAL_L(const DEV_MUTUAL_L& p)
 void DEV_INDUCTANCE::expand()
 {
   STORAGE::expand();
-  if (is_first_expand()) {
+  if (_sim->is_first_expand()) {
     if (!_c_model) {
       _n[IN1].set_to_ground(this);
     }else{
@@ -274,7 +246,7 @@ void DEV_MUTUAL_L::expand_first()
 void DEV_MUTUAL_L::expand_last()
 {
   STORAGE::expand(); // skip DEV_INDUCTANCE
-  if (is_first_expand()) {
+  if (_sim->is_first_expand()) {
     _n[OUT2] = _input->n_(IN1);
     _n[OUT1] = _output->n_(IN1);
   }else{untested();
@@ -293,7 +265,7 @@ void DEV_MUTUAL_L::precalc_last()
   _lm = value() * sqrt(l1 * l2);
   trace3(long_label().c_str(), l1, l2, _lm);
 
-  if (is_first_expand()) {
+  if (_sim->is_first_expand()) {
     assert(_y[0].x  == 0.);
     assert(_y[0].f0 == LINEAR);
     _y[0].f1 = -_lm; // override
@@ -313,11 +285,11 @@ void DEV_INDUCTANCE::tr_iwant_matrix()
     assert(_n[OUT2].m_() != INVALID_NODE);
     assert(_n[IN1].m_() != INVALID_NODE);
     
-    aa.iwant(_n[OUT1].m_(),_n[IN1].m_());
-    aa.iwant(_n[OUT2].m_(),_n[IN1].m_());
+    _sim->_aa.iwant(_n[OUT1].m_(),_n[IN1].m_());
+    _sim->_aa.iwant(_n[OUT2].m_(),_n[IN1].m_());
     
-    lu.iwant(_n[OUT1].m_(),_n[IN1].m_());
-    lu.iwant(_n[OUT2].m_(),_n[IN1].m_());
+    _sim->_lu.iwant(_n[OUT1].m_(),_n[IN1].m_());
+    _sim->_lu.iwant(_n[OUT2].m_(),_n[IN1].m_());
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -465,7 +437,7 @@ void DEV_MUTUAL_L::tr_load()
 void DEV_INDUCTANCE::tr_unload()
 {untested();
   _loss0 = _m0.c0 = _m0.c1 = 0.;
-  mark_inc_mode_bad();
+  _sim->mark_inc_mode_bad();
   tr_load();
 }
 /*--------------------------------------------------------------------------*/
@@ -512,8 +484,8 @@ void DEV_INDUCTANCE::ac_iwant_matrix()
     assert(_n[OUT2].m_() != INVALID_NODE);
     assert(_n[IN1].m_() != INVALID_NODE);
     
-    acx.iwant(_n[OUT1].m_(),_n[IN1].m_());
-    acx.iwant(_n[OUT2].m_(),_n[IN1].m_());
+    _sim->_acx.iwant(_n[OUT1].m_(),_n[IN1].m_());
+    _sim->_acx.iwant(_n[OUT2].m_(),_n[IN1].m_());
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -526,13 +498,13 @@ void DEV_INDUCTANCE::do_ac()
     assert(dynamic_cast<DEV_MUTUAL_L*>(this) || has_tr_eval() || _ev == double(value()));
   }
   if (!_c_model) {
-    if (_ev * SIM::jomega == 0.) {untested();
+    if (_ev * _sim->_jomega == 0.) {untested();
       _acg = 1. / OPT::shortckt;
     }else{
-      _acg = 1. / (_ev * SIM::jomega);
+      _acg = 1. / (_ev * _sim->_jomega);
     }
   }else{
-    _acg =  -_loss0 * _loss0 * _ev * SIM::jomega;
+    _acg =  -_loss0 * _loss0 * _ev * _sim->_jomega;
   }
 }
 /*--------------------------------------------------------------------------*/

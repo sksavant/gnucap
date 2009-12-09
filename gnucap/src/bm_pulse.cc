@@ -1,4 +1,4 @@
-/*$Id: bm_pulse.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: bm_pulse.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -56,14 +56,7 @@ private: // override vitrual
   void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
 
   void		precalc_first(const CARD_LIST*);
-  //void  	expand(const COMPONENT*);	//COMPONENT_COMMON/nothing
-  //COMMON_COMPONENT* deflate();		//COMPONENT_COMMON/nothing
-  //void	precalc_last(const CARD_LIST*);	//COMPONENT_COMMON
-
   void		tr_eval(ELEMENT*)const;
-  //void	ac_eval(ELEMENT*)const; //EVAL_BM_ACTION_BASE
-  //bool	has_tr_eval()const;	//EVAL_BM_BASE/true
-  //bool	has_ac_eval()const;	//EVAL_BM_BASE/true
   TIME_PAIR	tr_review(COMPONENT*);
   std::string	name()const		{return "pulse";}
   bool		ac_too()const		{return false;}
@@ -154,7 +147,7 @@ void EVAL_BM_PULSE::precalc_first(const CARD_LIST* Scope)
 /*--------------------------------------------------------------------------*/
 void EVAL_BM_PULSE::tr_eval(ELEMENT* d)const
 {
-  double time = SIM::time0;
+  double time = d->_sim->_time0;
   if (0 < _period && _period < BIGBIG) {
     //time = fmod(time,_period);
     if (time > _delay) {
@@ -183,8 +176,8 @@ void EVAL_BM_PULSE::tr_eval(ELEMENT* d)const
 /*--------------------------------------------------------------------------*/
 TIME_PAIR EVAL_BM_PULSE::tr_review(COMPONENT* d)
 {
-  double time = SIM::time0;
-  time += SIM::_dtmin * .01;  // hack to avoid duplicate events from numerical noise
+  double time = d->_sim->_time0;
+  time += d->_sim->_dtmin * .01;  // hack to avoid duplicate events from numerical noise
   double raw_time = time;
 
   if (0 < _period && _period < BIGBIG) {
@@ -216,12 +209,12 @@ bool EVAL_BM_PULSE::parse_numlist(CS& cmd)
   unsigned start = cmd.cursor();
   unsigned here = cmd.cursor();
   for (PARAMETER<double>* i = &_iv;  i < &_end;  ++i) {
-    PARAMETER<double> value(NOT_VALID);
-    cmd >> value;
+    PARAMETER<double> val(NOT_VALID);
+    cmd >> val;
     if (cmd.stuck(&here)) {
       break;
     }else{
-      *i = value;
+      *i = val;
     }
   }
   return cmd.gotit(start);

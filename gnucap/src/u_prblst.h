@@ -1,4 +1,4 @@
-/*$Id: u_prblst.h,v 26.81 2008/05/27 05:34:00 al Exp $ -*- C++ -*-
+/*$Id: u_prblst.h,v 26.136 2009/12/07 23:20:42 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -43,16 +43,21 @@ public:
   typedef _container::const_iterator const_iterator;
   void	   listing(const std::string&)const;
   void     clear();
+
   void	   remove_list(CS&);
   void     remove_one(CKT_BASE*);
   void     add_list(CS&);
   int	   size()const		{return static_cast<int>(bag.size());}
   const_iterator begin()const	{return bag.begin();}
   const_iterator end()const	{return bag.end();}
-  iterator begin()	{return bag.begin();}
-  iterator end()	{return bag.end();}
+  iterator begin()		{return bag.begin();}
+  iterator end()		{return bag.end();}
+
+  virtual void	open(CS&)	{incomplete();}
+  virtual void	send(OMSTREAM, double)	{incomplete();}
+  virtual void	close()		{incomplete();}
 private:
-  void	   erase(iterator b, iterator e) {bag.erase(b,e);}
+  void	  erase(iterator b, iterator e) {bag.erase(b,e);}
   void	  push_new_probe(const std::string& param, const CKT_BASE* object);
   bool    add_branches(const std::string&,const std::string&,const CARD_LIST*);
   void    add_all_nodes(const std::string&);

@@ -1,4 +1,4 @@
-/*$Id: d_vcg.cc,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+/*$Id: d_vcg.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -49,37 +49,18 @@ private: // override virtual
   int	   net_nodes()const	{return 4;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_VCG(*this);}
-  //void   expand();		//COMPONENT
-  //void   precalc();		//ELEMENT
-  //void   map_nodes();		//ELEMENT
-
   void	   tr_iwant_matrix()	{tr_iwant_matrix_extended();}
   void     tr_begin();
-  //void   tr_restore();	//ELEMENT
-  //void   dc_advance();	//ELEMENT
-  //void   tr_advance();	//ELEMENT
-  //void   tr_regress();	//ELEMENT
-  //bool   tr_needs_eval();	//ELEMENT
-  //void   tr_queue_eval();	//ELEMENT
   bool	   do_tr();
   void	   tr_load()		{tr_load_shunt(); tr_load_active();}
-  //TIME_PAIR tr_review();	//ELEMENT
-  //void   tr_accept();		//CARD/nothing
   void	   tr_unload()	{untested(); tr_unload_shunt(); tr_unload_active();}
   double   tr_involts()const	{return dn_diff(_n[IN1].v0(), _n[IN2].v0());}
-  //double tr_input()const	//ELEMENT
   double   tr_involts_limited()const {return volts_limited(_n[IN1],_n[IN2]);}
-  //double tr_input_limited()const //ELEMENT
-  //double tr_amps()const	//ELEMENT
-  //double tr_probe_num(const std::string&)const;//ELEMENT
-
   void	    ac_iwant_matrix()	{ac_iwant_matrix_extended();}
   void	    ac_begin()		{_ev = _y[0].f0;  _acg = _m0.c1;}
   void	    do_ac();
   void	    ac_load()		{ac_load_shunt(); ac_load_active();}
   COMPLEX   ac_involts()const	{return _n[IN1]->vac() - _n[IN2]->vac();}
-  //COMPLEX ac_amps()const;	//ELEMENT
-  //XPROBE  ac_probe_ext(const std::string&)const;//ELEMENT
 
   std::string port_name(int i)const {untested();
     assert(i >= 0);

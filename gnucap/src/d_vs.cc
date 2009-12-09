@@ -1,4 +1,4 @@
-/*$Id: d_vs.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: d_vs.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -45,38 +45,20 @@ private: // override virtual
   bool	   has_iv_probe()const  {return true;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_VS(*this);}
-  //void   precalc_first();	//ELEMENT
-  //void   expand();		//COMPONENT
   void     precalc_last();
-  //void   map_nodes();		//ELEMENT
-
   void	   tr_iwant_matrix()	{tr_iwant_matrix_passive();}
   void	   tr_begin();
-  //void   tr_restore();	//ELEMENT
-  //void   dc_advance();	//ELEMENT
-  //void   tr_advance();	//ELEMENT
-  //void   tr_regress();	//ELEMENT
-  //bool   tr_needs_eval();	//ELEMENT
-  //void   tr_queue_eval();	//ELEMENT
   bool	   do_tr();
   void	   tr_load()		{tr_load_shunt(); tr_load_source();}
-  //TIME_PAIR tr_review();	//ELEMENT
-  //void   tr_accept();		//CARD/nothing
   void	   tr_unload()		{untested();tr_unload_source();}
   double   tr_involts()const	{return 0.;}
-  //double tr_input()const	//ELEMENT
   double   tr_involts_limited()const {unreachable(); return 0.;}
-  //double tr_input_limited()const //ELEMENT
-  //double tr_amps()const	//ELEMENT
-  //double tr_probe_num(const std::string&)const;//ELEMENT
-
   void	   ac_iwant_matrix()	{ac_iwant_matrix_passive();}
-  void	   ac_begin()	{_loss1 = _loss0 = 1./OPT::shortckt; _acg = _ev = 0.;}
+  void	   ac_begin()		{_loss1 = _loss0 = 1./OPT::shortckt; _acg = _ev = 0.;}
   void	   do_ac();
   void	   ac_load()		{ac_load_shunt(); ac_load_source();}
   COMPLEX  ac_involts()const	{return 0.;}
   COMPLEX  ac_amps()const	{return (_acg + ac_outvolts()*_loss0);}
-  //XPROBE ac_probe_ext(const std::string&)const;//ELEMENT
 
   std::string port_name(int i)const {
     assert(i >= 0);
@@ -105,9 +87,9 @@ void DEV_VS::tr_begin()
   _m1 = _m0;    
   if (!using_tr_eval()) {
     if (_n[OUT2].m_() == 0) {
-      set_limit(value());
+      _sim->set_limit(value());
     }else if (_n[OUT1].m_() == 0) {untested();
-      set_limit(-value());
+      _sim->set_limit(-value());
     }else{untested();
       //BUG// don't set limit
     }
@@ -119,12 +101,12 @@ bool DEV_VS::do_tr()
 {
   assert(_m0.x == 0.);
   if (using_tr_eval()) {
-    _y[0].x = SIM::time0;
+    _y[0].x = _sim->_time0;
     tr_eval();
     if (_n[OUT2].m_() == 0) {
-      set_limit(_y[0].f1);
+      _sim->set_limit(_y[0].f1);
     }else if (_n[OUT1].m_() == 0) {
-      set_limit(-_y[0].f1);
+      _sim->set_limit(-_y[0].f1);
     }else{
       //BUG// don't set limit
     }

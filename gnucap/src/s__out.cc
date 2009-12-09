@@ -1,4 +1,4 @@
-/*$Id: s__out.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: s__out.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -22,6 +22,8 @@
  * tr,dc analysis output functions (and some ac)
  */
 //testing=obsolete,script 2005.09.17
+#include "u_sim_data.h"
+#include "u_status.h"
 #include "m_wave.h"
 #include "u_prblst.h"
 #include "declare.h"	/* plottr, plopen */
@@ -31,22 +33,20 @@
  */
 const PROBELIST& SIM::alarmlist()const
 {
-  return PROBE_LISTS::alarm[_mode];
+  return PROBE_LISTS::alarm[_sim->_mode];
 }
 const PROBELIST& SIM::plotlist()const
 {
-  return PROBE_LISTS::plot[_mode];
+  return PROBE_LISTS::plot[_sim->_mode];
 }
 const PROBELIST& SIM::printlist()const
 {
-  return PROBE_LISTS::print[_mode];
+  return PROBE_LISTS::print[_sim->_mode];
 }
 const PROBELIST& SIM::storelist()const
 {
-  return PROBE_LISTS::store[_mode];
+  return PROBE_LISTS::store[_sim->_mode];
 }
-
-WAVE* SIM::waves = NULL;
 /*--------------------------------------------------------------------------*/
 /* SIM::out: output the data, "keep" for ac reference
  */
@@ -57,7 +57,7 @@ void SIM::outdata(double x)
   print_results(x);
   alarm();
   store_results(x);
-  reset_iteration_counter(iPRINTSTEP);
+  _sim->reset_iteration_counter(iPRINTSTEP);
   ::status.hidden_steps = 0;
   ::status.output.stop();
 }
@@ -66,12 +66,12 @@ void SIM::outdata(double x)
  */
 void SIM::head(double start, double stop, const std::string& col1)
 {
-  if (waves) {
-    delete [] waves;
+  if (_sim->_waves) {
+    delete [] _sim->_waves;
   }else{
   }
 
-  waves = new WAVE [storelist().size()];
+  _sim->_waves = new WAVE [storelist().size()];
 
 
   if (!plopen(start, stop, plotlist())) {
@@ -131,24 +131,8 @@ void SIM::store_results(double x)
   int ii = 0;
   for (PROBELIST::const_iterator
 	 p=storelist().begin();  p!=storelist().end();  ++p) {
-    waves[ii++].push(x, p->value());
+    _sim->_waves[ii++].push(x, p->value());
   }
-}
-/*--------------------------------------------------------------------------*/
-WAVE* SIM::find_wave(const std::string& probe_name)
-{
-  int ii = 0;
-  for (PROBELIST::const_iterator
-       p  = PROBE_LISTS::store[CKT_BASE::_mode].begin();
-       p != PROBE_LISTS::store[CKT_BASE::_mode].end();
-       ++p) {
-    if (wmatch(p->label(), probe_name)) {
-      return &(waves[ii]);
-    }else{
-    }
-    ++ii;
-  }
-  return NULL;
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

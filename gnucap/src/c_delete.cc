@@ -1,4 +1,4 @@
-/*$Id: c_delete.cc,v 26.83 2008/06/05 04:46:59 al Exp $ -*- C++ -*-
+/*$Id: c_delete.cc,v 26.131 2009/11/20 08:22:10 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -28,7 +28,7 @@
 // usually before anything else.
 
 #include "d_subckt.h"
-#include "globals.h"
+#include "c_comand.h"
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/

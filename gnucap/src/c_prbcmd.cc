@@ -1,4 +1,4 @@
-/*$Id: c_prbcmd.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: c_prbcmd.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -24,7 +24,8 @@
  * command line operations
  */
 //testing=script,sparse 2006.07.17
-#include "s__.h"
+#include "u_sim_data.h"
+#include "c_comand.h"
 #include "u_prblst.h"
 #include "globals.h"
 /*--------------------------------------------------------------------------*/
@@ -32,7 +33,7 @@ namespace {
 /*--------------------------------------------------------------------------*/
 void do_probe(CS& cmd, PROBELIST *probes)
 {
-  SIM::set_command_none();
+  CKT_BASE::_sim->set_command_none();
   enum {aADD, aDELETE, aNEW} action;
   SIM_MODE simtype = s_NONE;
 
@@ -74,7 +75,7 @@ void do_probe(CS& cmd, PROBELIST *probes)
     }else if (cmd.umatch("clear ")) {untested();/* clear */
       probes[simtype].clear();
     }else{					/* add/remove */
-      SIM::init();
+      CKT_BASE::_sim->init();
       if (cmd.match1('-')) {itested();		/* setup cases like: */
 	action = aDELETE;			/* .probe ac + ....  */
 	cmd.skip();

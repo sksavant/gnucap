@@ -1,4 +1,4 @@
-/*$Id: main.cc,v 26.122 2009/09/23 11:23:50 al Exp $ -*- C++ -*-
+/*$Id: main.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -23,6 +23,7 @@
  * it all starts here
  */
 //testing=script 2006.07.14
+#include "e_cardlist.h"
 #include "u_lang.h"
 #include "ap.h"
 #include "patchlev.h"

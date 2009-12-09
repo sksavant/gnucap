@@ -1,4 +1,4 @@
-/*$Id: c_status.cc,v 26.83 2008/06/05 04:46:59 al Exp $ -*- C++ -*-
+/*$Id: c_status.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -26,7 +26,9 @@
  *   If "allocate" is changed, this must also be changed.
  */
 //testing=script 2006.07.17
-#include "s_tr.h"
+#include "u_sim_data.h"
+#include "u_status.h"
+#include "c_comand.h"
 #include "globals.h"
 /*--------------------------------------------------------------------------*/
 namespace {
@@ -71,25 +73,30 @@ public:
     }
     
     IO::mstdout
-      << "iterations: op=" << ::status.iter[s_OP]
-      << ", dc=" << ::status.iter[s_DC]
-      << ", tran=" << ::status.iter[s_TRAN]
-      << ", fourier=" << ::status.iter[s_FOURIER]
-      << ", total=" << ::status.iter[iTOTAL]
-      << "\n";
+      << "iterations: op=" << _sim->_iter[s_OP]
+      << ", dc=" << _sim->_iter[s_DC]
+      << ", tran=" << _sim->_iter[s_TRAN]
+      << ", fourier=" << _sim->_iter[s_FOURIER]
+      << ", total=" << _sim->_iter[iTOTAL]
+      << "\n";    
+    for(DISPATCHER<CKT_BASE>::const_iterator
+	  i = status_dispatcher.begin();
+	i != status_dispatcher.end();
+	++i) {
+      CKT_BASE* c = i->second;
+      if (c) {
+	IO::mstdout << c->status();
+      }else{
+      }
+    }
     IO::mstdout
-      << "transient timesteps: accepted=" << TRANSIENT::steps_accepted()
-      << ", rejected=" << TRANSIENT::steps_rejected()
-      << ", total=" << TRANSIENT::steps_total()
-      << "\n";  
-    IO::mstdout
-      << "nodes: user=" << ::status.user_nodes
-      << ", subckt=" << ::status.subckt_nodes
-      << ", model=" << ::status.model_nodes
-      << ", total=" << ::status.total_nodes
+      << "nodes: user=" << _sim->_user_nodes
+      << ", subckt=" << _sim->_subckt_nodes
+      << ", model=" << _sim->_model_nodes
+      << ", total=" << _sim->_total_nodes
       << "\n";  
     IO::mstdout.form("dctran density=%.1f%%, ac density=%.1f%%\n",
-		 aa.density()*100., acx.density()*100.);
+		 _sim->_aa.density()*100., _sim->_acx.density()*100.);
   }
 } p;
 DISPATCHER<CMD>::INSTALL d(&command_dispatcher, "status", &p);

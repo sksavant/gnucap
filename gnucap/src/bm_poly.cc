@@ -1,4 +1,4 @@
-/*$Id: bm_poly.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: bm_poly.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -48,14 +48,7 @@ private: // override vitrual
   void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
 
   void		precalc_first(const CARD_LIST*);
-  //void  	expand(const COMPONENT*);	//COMPONENT_COMMON/nothing
-  //COMMON_COMPONENT* deflate();		//COMPONENT_COMMON/nothing
-  //void	precalc_last(const CARD_LIST*);	//COMPONENT_COMMON
-
   void		tr_eval(ELEMENT*)const;
-  //void	ac_eval(ELEMENT*)const; //EVAL_BM_ACTION_BASE
-  //bool	has_tr_eval()const;	//EVAL_BM_BASE/true
-  //bool	has_ac_eval()const;	//EVAL_BM_BASE/true
   std::string	name()const		{return "poly";}
   bool		ac_too()const		{untested();return false;}
   bool		parse_numlist(CS&);
@@ -161,8 +154,8 @@ bool EVAL_BM_POLY::parse_numlist(CS& cmd)
   unsigned here = cmd.cursor();
   for (;;) {
     unsigned old_here = here;
-    PARAMETER<double> value;
-    cmd >> value;
+    PARAMETER<double> val;
+    cmd >> val;
     if (cmd.stuck(&here)) {
       // no more, graceful finish
       break;
@@ -172,7 +165,7 @@ bool EVAL_BM_POLY::parse_numlist(CS& cmd)
 	cmd.reset(old_here);
 	break;
       }else{
-	_c.push_back(value);
+	_c.push_back(val);
       }
     }
   }

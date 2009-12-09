@@ -1,4 +1,4 @@
-/* $Id: d_mos.model,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/* $Id: d_mos.model,v 26.132 2009/11/24 04:26:37 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -325,11 +325,11 @@ device BUILT_IN_MOS {
       }
     }
     brh->_y[0].f1 = cap;
-    if (d->analysis_is_tran_dynamic()) {
+    if (d->_sim->analysis_is_tran_dynamic()) {
       cap = (brh->_y[0].f1 + brh->_y[1].f1) / 2;
       brh->_y[0].f0 = (brh->_y[0].x - brh->_y[1].x) * cap + brh->_y[1].f0;
     }else{
-      assert(d->analysis_is_static() || d->analysis_is_restore());
+      assert(d->_sim->analysis_is_static() || d->_sim->analysis_is_restore());
       brh->_y[0].f0 = brh->_y[0].x * brh->_y[0].f1;
     }
     trace3(brh->long_label().c_str(), brh->_y[0].x, brh->_y[0].f0, brh->_y[0].f1);
@@ -374,11 +374,11 @@ device BUILT_IN_MOS {
     cap += brh->value();		/* else overlap only */
     
     brh->_y[0].f1 = cap;
-    if (d->analysis_is_tran_dynamic()) {
+    if (d->_sim->analysis_is_tran_dynamic()) {
       cap = (brh->_y[0].f1 + brh->_y[1].f1) / 2;
       brh->_y[0].f0 = (brh->_y[0].x - brh->_y[1].x) * cap + brh->_y[1].f0;
     }else{
-      assert(d->analysis_is_static() || d->analysis_is_restore());
+      assert(d->_sim->analysis_is_static() || d->_sim->analysis_is_restore());
       brh->_y[0].f0 = brh->_y[0].x * brh->_y[0].f1;
     }
     trace3(brh->long_label().c_str(), brh->_y[0].x, brh->_y[0].f0, brh->_y[0].f1);
@@ -423,11 +423,11 @@ device BUILT_IN_MOS {
     cap += brh->value();		/* else overlap only */
     
     brh->_y[0].f1 = cap;
-    if (d->analysis_is_tran_dynamic()) {
+    if (d->_sim->analysis_is_tran_dynamic()) {
       cap = (brh->_y[0].f1 + brh->_y[1].f1) / 2;
       brh->_y[0].f0 = (brh->_y[0].x - brh->_y[1].x) * cap + brh->_y[1].f0;
     }else{
-      assert(d->analysis_is_static() || d->analysis_is_restore());
+      assert(d->_sim->analysis_is_static() || d->_sim->analysis_is_restore());
       brh->_y[0].f0 = brh->_y[0].x * brh->_y[0].f1;
     }
     trace3(brh->long_label().c_str(), brh->_y[0].x, brh->_y[0].f0, brh->_y[0].f1);
@@ -443,7 +443,7 @@ device BUILT_IN_MOS {
       vds = -vds;
       error(bTRACE, "after: vds=%g vgs=%g vbs=%g\n", vds, vgs, vbs);
       if (OPT::dampstrategy & dsREVERSE) {
-	SIM::fulldamp = true;
+	_sim->_fulldamp = true;
 	untested();
 	error(bTRACE, long_label() + ":reverse damp\n");
       }
@@ -496,7 +496,7 @@ bool DEV_BUILT_IN_MOS::do_tr()
   bool was_sbfwd = sbfwd;
   polarity_t polarity = m->polarity;
 
-  if (initial_step()) {
+  if (_sim->is_initial_step()) {
     reversed = false;
     vds = vgs = vbs = 0.;
   }else{
@@ -569,11 +569,13 @@ bool DEV_BUILT_IN_MOS::do_tr()
   	||  was_saturated != saturated  ||  was_reversed != reversed  
 	||  was_sbfwd != sbfwd) {
     if (OPT::dampstrategy & dsDEVREGION) {
-      SIM::fulldamp = true;
+      _sim->_fulldamp = true;
+    }else{
     }
     #if defined(DO_TRACE)
       error(bTRACE,"%s:%d: region change\n", long_label().c_str(), evaliter());
     #endif
+  }else{
   }
   return converged();
 }

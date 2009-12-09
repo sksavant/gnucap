@@ -1,4 +1,4 @@
-/*$Id: d_cap.cc,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+/*$Id: d_cap.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -50,37 +50,18 @@ protected: // override virtual
   bool	   has_iv_probe()const  {return true;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_CAPACITANCE(*this);}
-  //void   expand();		//COMPONENT
-  //void   precalc();		//STORAGE
-  //void   map_nodes();		//ELEMENT
-
   void	   tr_iwant_matrix()	{tr_iwant_matrix_passive();}
-  //void   tr_begin();		//STORAGE
-  //void   tr_restore();	//STORAGE
-  //void   dc_advance();	//STORAGE
-  //void   tr_advance();	//STORAGE
-  //void   tr_regress();	//ELEMENT
-  //bool   tr_needs_eval();	//STORAGE
-  //void   tr_queue_eval();	//ELEMENT
   bool	   do_tr();
   void	   tr_load()		{tr_load_passive();}
-  //TIME_PAIR tr_review();	//STORAGE
-  //void   tr_accept();		//CARD/nothing
   void	   tr_unload()		{tr_unload_passive();}
   double   tr_involts()const	{return tr_outvolts();}
-  //double tr_input()const	//ELEMENT
   double   tr_involts_limited()const {return tr_outvolts_limited();}
-  //double tr_input_limited()const //ELEMENT
-  //double tr_amps()const	//ELEMENT
   double   tr_probe_num(const std::string&)const;
-
   void	   ac_iwant_matrix()	{ac_iwant_matrix_passive();}
   void	   ac_begin()		{_ev = _y[0].f1;}
   void	   do_ac();
   void	   ac_load()		{ac_load_passive();}
   COMPLEX  ac_involts()const	{itested();return ac_outvolts();}
-  //COMPLEX ac_amps()const;	//ELEMENT
-  //XPROBE ac_probe_ext(const std::string&)const;//ELEMENT
 
   std::string port_name(int i)const {
     assert(i >= 0);
@@ -106,37 +87,12 @@ private: // override virtual
   bool	   has_iv_probe()const  {untested(); return false;}
   bool	   f_is_value()const	{untested();return true;}
   CARD*	   clone()const		{return new DEV_TRANSCAP(*this);}
-  //void   expand();		//COMPONENT
-  //void   precalc();		//STORAGE
-  //void   map_nodes();		//ELEMENT
-
   void	   tr_iwant_matrix()	{tr_iwant_matrix_active();}
-  //void   tr_begin();		//STORAGE
-  //void   tr_restore();	//STORAGE
-  //void   dc_advance();	//STORAGE
-  //void   tr_advance();	//STORAGE
-  //void   tr_regress();	//ELEMENT
-  //bool   tr_needs_eval();	//STORAGE
-  //void   tr_queue_eval();	//ELEMENT
-  //bool   do_tr();		//DEV_CAPACITANCE
   void	   tr_load()		{tr_load_active();}
-  //TIME_PAIR tr_review();	//STORAGE
-  //void   tr_accept();		//CARD/nothing
-  //void   tr_unload();		//DEV_CAPACITANCE
   double   tr_involts()const	{return dn_diff(_n[IN1].v0(),_n[IN2].v0());}
-  //double tr_input()const	//ELEMENT
   double   tr_involts_limited()const {return volts_limited(_n[IN1],_n[IN2]);}
-  //double tr_input_limited()const //ELEMENT
-  //double tr_amps()const	//ELEMENT
-  //double tr_probe_num(const std::string&)const;//DEV_CAPACITANCE
-
-  void	    ac_iwant_matrix()	{ac_iwant_matrix_active();}
-  //void    ac_begin();		//DEV_CAPACITANCE
-  //void    do_ac();		//DEV_CAPACITANCE
-  void	    ac_load()		{untested(); ac_load_active();}
-  //COMPLEX ac_involts()const;	//DEV_CAPACITANCE
-  //COMPLEX ac_amps()const;	//ELEMENT
-  //XPROBE  ac_probe_ext(const std::string&)const;//ELEMENT
+  void	   ac_iwant_matrix()	{ac_iwant_matrix_active();}
+  void	   ac_load()		{untested(); ac_load_active();}
 
   std::string port_name(int i)const {untested();
     assert(i >= 0);
@@ -163,37 +119,11 @@ private: // override virtual
   bool	   has_iv_probe()const  {untested(); return false;}
   bool	   f_is_value()const	{untested();return true;}
   CARD*	   clone()const		{return new DEV_VCCAP(*this);}
-  //void   expand();		//COMPONENT
-  //void   precalc();		//STORAGE
-  //void   map_nodes();		//ELEMENT
-
   void	   tr_iwant_matrix()	{tr_iwant_matrix_extended();}
-  //void   tr_begin();		//STORAGE
-  //void   tr_restore();	//STORAGE
-  //void   dc_advance();	//STORAGE
-  //void   tr_advance();	//STORAGE
-  //void   tr_regress();	//ELEMENT
-  //bool   tr_needs_eval();	//STORAGE
-  //void   tr_queue_eval();	//ELEMENT
   bool     do_tr();
-  //void   tr_load();		//DEV_CAPACITANCE
-  //TIME_PAIR tr_review();	//STORAGE
-  //void   tr_accept();		//CARD/nothing
-  //void   tr_unload();		//DEV_CAPACITANCE
   double   tr_involts()const	{return dn_diff(_n[IN1].v0(),_n[IN2].v0());}
-  //double tr_input()const	//ELEMENT
   double   tr_involts_limited()const {return volts_limited(_n[IN1],_n[IN2]);}
-  //double tr_input_limited()const //ELEMENT
-  //double tr_amps()const	//ELEMENT
-  //double tr_probe_num(const std::string&)const;//DEV_CAPACITANCE
-
-  void	    ac_iwant_matrix()	{ac_iwant_matrix_extended();}
-  //void    ac_begin();		//DEV_CAPACITANCE
-  //void    do_ac();		//DEV_CAPACITANCE
-  //void    ac_load();		//DEV_CAPACITANCE
-  //COMPLEX ac_involts()const;	//DEV_CAPACITANCE
-  //COMPLEX ac_amps()const;	//ELEMENT
-  //XPROBE  ac_probe_ext()const;//ELEMENT
+  void	   ac_iwant_matrix()	{ac_iwant_matrix_extended();}
 
   std::string port_name(int i)const {untested();
     assert(i >= 0);
@@ -233,7 +163,7 @@ void DEV_CAPACITANCE::do_ac()
     assert(_ev == _y[0].f1);
     assert(has_tr_eval() || _ev == double(value()));
   }
-  _acg = _ev * SIM::jomega;
+  _acg = _ev * _sim->_jomega;
 }
 /*--------------------------------------------------------------------------*/
 double DEV_CAPACITANCE::tr_probe_num(const std::string& x)const

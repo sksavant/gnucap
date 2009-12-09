@@ -1,4 +1,4 @@
-/*$Id: c_genrat.cc,v 26.83 2008/06/05 04:46:59 al Exp $ -*- C++ -*-
+/*$Id: c_genrat.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -22,8 +22,9 @@
  * set up generator for transient analysis
  */
 //testing=script,sparse 2006.07.16
-#include "s__.h"
+#include "u_sim_data.h"
 #include "globals.h"
+#include "c_comand.h"
 /*--------------------------------------------------------------------------*/
 static double freq = 0;
 static double ampl = 1;
@@ -31,7 +32,7 @@ static double phaz = 0.;
 static double maxv = 1.;
 static double minv = 0.;
 static double offset = 0.;
-static double init = 0.;
+static double init_ = 0.;
 static double rise = 1e-12;
 static double fall = 1e-12;
 static double delay = 0.;
@@ -54,7 +55,7 @@ public:
 	|| ::Get(cmd, "ma{x}",	    &maxv)
 	|| ::Get(cmd, "mi{n}",	    &minv)
 	|| ::Get(cmd, "o{ffset}",   &offset)
-	|| ::Get(cmd, "i{nitial}",  &init)
+	|| ::Get(cmd, "i{nitial}",  &init_)
 	|| ::Get(cmd, "r{ise}",	    &rise,   mPOSITIVE)
 	|| ::Get(cmd, "f{all}",	    &fall,   mPOSITIVE)
 	|| ::Get(cmd, "d{elay}",    &delay,  mPOSITIVE)
@@ -71,7 +72,7 @@ public:
     where << "  max="	<< maxv;
     where << "  min="	<< minv;
     where << "  offset="<< offset;
-    where << "  init="	<< init;
+    where << "  init="	<< init_;
     where << "  rise="	<< rise;
     where << "  fall="	<< fall;
     where << "  delay="	<< delay;
@@ -85,17 +86,17 @@ DISPATCHER<CMD>::INSTALL d(&command_dispatcher, "generator", &p);
 /*--------------------------------------------------------------------------*/
 double gen()
 {
-  if (SIM::time0 <= delay) {
-    return init;
+  if (CKT_BASE::_sim->_time0 <= delay) {
+    return init_;
   }
-  double loctime = SIM::time0 - delay;
+  double loctime = CKT_BASE::_sim->_time0 - delay;
   if (period > 0.) {
     untested();
     loctime = fmod(loctime, period);
   }
 
   double level;
-  if (SIM::time0 <= delay + rise) {			/* initial rise */
+  if (CKT_BASE::_sim->_time0 <= delay + rise) {			/* initial rise */
     level = (maxv - 0) * (loctime/rise) + 0;
   }else if (loctime <= rise) {				/* rising       */
     untested();
@@ -111,9 +112,9 @@ double gen()
   }
   level *= (freq == 0.) 
     ? ampl
-    : ampl * sin(M_TWO_PI * freq*(SIM::time0-delay) + phaz * DTOR);
-  return (SIM::time0 <= delay + rise)
-    ? level + (offset - init) * (loctime/rise) + init
+    : ampl * sin(M_TWO_PI * freq*(CKT_BASE::_sim->_time0-delay) + phaz * DTOR);
+  return (CKT_BASE::_sim->_time0 <= delay + rise)
+    ? level + (offset - init_) * (loctime/rise) + init_
     : level + offset;
 }
 /*--------------------------------------------------------------------------*/

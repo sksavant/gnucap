@@ -1,4 +1,4 @@
-/*$Id: u_lang.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
+/*$Id: u_lang.cc,v 26.131 2009/11/20 08:22:10 al Exp $ -*- C++ -*-
  * Copyright (C) 2006 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -19,11 +19,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+#include "c_comand.h"
 #include "d_dot.h"
 #include "d_coment.h"
 #include "d_subckt.h"
 #include "e_model.h"
-#include "globals.h"
 #include "u_lang.h"
 /*--------------------------------------------------------------------------*/
 void LANGUAGE::parse_top_item(CS& cmd, CARD_LIST* Scope)
@@ -53,7 +53,7 @@ const CARD* LANGUAGE::find_proto(const std::string& Name, const CARD* Scope)
   if (p) {itested();
     return p;
   }else if ((p = command_dispatcher[Name])) {
-    return new DEV_DOT;
+    return new DEV_DOT;	//BUG// memory leak
   }else if ((p = device_dispatcher[Name])) {
     return p;
   }else if ((p = model_dispatcher[Name])) {
@@ -82,7 +82,7 @@ const CARD* LANGUAGE::find_proto(const std::string& Name, const CARD* Scope)
       s = Name;
     }
     if ((command_dispatcher[s])) {
-      return new DEV_DOT; //BUG// we will look it up twice
+      return new DEV_DOT; //BUG// we will look it up twice, //BUG// memory leak
     }else{
       return NULL;
     }

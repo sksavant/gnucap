@@ -1,4 +1,4 @@
-/*$Id: s_tr_set.cc,v 26.113 2009/08/12 03:37:19 al Exp $ -*- C++ -*-
+/*$Id: s_tr_set.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -22,6 +22,7 @@
  * set up transient and fourier analysis
  */
 //testing=script 2007.11.21
+#include "u_sim_data.h"
 #include "u_prblst.h"
 #include "ap.h"
 #include "s_tr.h"
@@ -82,7 +83,7 @@ void TRANSIENT::setup(CS& Cmd)
 	_tstop  = arg2;
 	/* _tstep unchanged */
       }else if (arg1 >= arg2) {		    /* 2 args: _tstop, _tstep */
-	_tstart = last_time;
+	_tstart = _sim->_last_time;
 	_tstop  = arg1;
 	_tstep  = arg2;
       }else{ /* arg1 < arg2 */		    /* 2 args: _tstep, _tstop */
@@ -93,8 +94,8 @@ void TRANSIENT::setup(CS& Cmd)
     }else{itested();
       assert(arg1.has_hard_value());
       arg1.e_val(0.,_scope);
-      if (arg1 > last_time) {untested();	    /* 1 arg: _tstop */
-	_tstart = last_time;
+      if (arg1 > _sim->_last_time) {untested();	    /* 1 arg: _tstop */
+	_tstart = _sim->_last_time;
 	_tstop  = arg1;
 	/* _tstep unchanged */
       }else if (arg1 == 0.) {itested();	    /* 1 arg: _tstart */
@@ -102,17 +103,17 @@ void TRANSIENT::setup(CS& Cmd)
 	_tstart = 0.;
 	_tstop  = oldrange;
 	/* _tstep unchanged */
-      }else{untested(); /* arg1 < last_time, but not 0 */  /* 1 arg: _tstep */
+      }else{untested(); /* arg1 < _sim->_last_time, but not 0 */  /* 1 arg: _tstep */
 	double oldrange = _tstop - _tstart;
-	_tstart = last_time;
-	_tstop  = last_time + oldrange;
+	_tstart = _sim->_last_time;
+	_tstop  = _sim->_last_time + oldrange;
 	_tstep  = arg1;
       }
     }
   }else{ /* no args */
     double oldrange = _tstop - _tstart;
-    _tstart = last_time;
-    _tstop  = last_time + oldrange;
+    _tstart = _sim->_last_time;
+    _tstop  = _sim->_last_time + oldrange;
     /* _tstep unchanged */
   }
   if (Cmd.match1("'\"({") || Cmd.is_pfloat()) {
@@ -125,14 +126,14 @@ void TRANSIENT::setup(CS& Cmd)
   _tstop.e_val(NOT_INPUT, _scope);
   _tstep.e_val(NOT_INPUT, _scope);
 
-  if  (_cold || _tstart < last_time  ||  last_time <= 0.) {
+  if  (_cold || _tstart < _sim->_last_time  ||  _sim->_last_time <= 0.) {
     _cont = false;
-    time1 = time0 = 0.;
+    time1 = _sim->_time0 = 0.;
   }else{
     _cont = true;
-    time1 = time0 = last_time;
+    time1 = _sim->_time0 = _sim->_last_time;
   }
-  freq = ((_tstop > _tstart) ? (1 / (_tstop - _tstart)) : (0.));
+  _sim->_freq = ((_tstop > _tstart) ? (1 / (_tstop - _tstart)) : (0.));
 
   if (!_tstep.has_good_value()) {
     throw Exception("transient: time step is required");
@@ -150,12 +151,12 @@ void TRANSIENT::setup(CS& Cmd)
   }
 
   if (_dtmin_in.has_hard_value()) {
-    _dtmin = _dtmin_in;
+    _sim->_dtmin = _dtmin_in;
   }else if (_dtratio_in.has_hard_value()) {
-    _dtmin = _dtmax / _dtratio_in;
+    _sim->_dtmin = _dtmax / _dtratio_in;
   }else{
     // use larger of soft values
-    _dtmin = std::max(double(_dtmin_in), _dtmax/_dtratio_in);
+    _sim->_dtmin = std::max(double(_dtmin_in), _dtmax/_dtratio_in);
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -165,22 +166,22 @@ void TRANSIENT::options(CS& Cmd)
 {
   _out = IO::mstdout;
   _out.reset(); //BUG// don't know why this is needed
-  temp_c = OPT::temp_c;
+  _sim->_temp_c = OPT::temp_c;
   bool ploton = IO::plotset  &&  plotlist().size() > 0;
-  uic = _cold = false;
+  _sim->_uic = _cold = false;
   _trace = tNONE;
   unsigned here = Cmd.cursor();
   do{
     ONE_OF
       || Get(Cmd, "c{old}",	   &_cold)
-      || Get(Cmd, "dte{mp}",	   &temp_c,  mOFFSET, OPT::temp_c)
+      || Get(Cmd, "dte{mp}",	   &_sim->_temp_c,  mOFFSET, OPT::temp_c)
       || Get(Cmd, "dtma{x}",	   &_dtmax_in)
       || Get(Cmd, "dtmi{n}",	   &_dtmin_in)
       || Get(Cmd, "dtr{atio}",	   &_dtratio_in)
       || Get(Cmd, "pl{ot}",	   &ploton)
       || Get(Cmd, "sk{ip}",	   &_skip_in)
-      || Get(Cmd, "te{mperature}", &temp_c)
-      || Get(Cmd, "uic",	   &uic)
+      || Get(Cmd, "te{mperature}", &_sim->_temp_c)
+      || Get(Cmd, "uic",	   &_sim->_uic)
       || (Cmd.umatch("tr{ace} {=}") &&
 	  (ONE_OF
 	   || Set(Cmd, "n{one}",      &_trace, tNONE)

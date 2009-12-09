@@ -1,4 +1,4 @@
-/*$Id: l_dispatcher.h,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: l_dispatcher.h,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2006 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -40,8 +40,8 @@ public:
     }
   }
 
-  //typedef typename std::map<std::string, T*>::const_iterator const_iterator;
-  class const_iterator : public std::map<std::string, T*>::const_iterator {};
+  typedef typename std::map<std::string, T*>::const_iterator const_iterator;
+  //class const_iterator : public std::map<std::string, T*>::const_iterator {};
 
   const_iterator begin()const		{assert(_map); return _map->begin();}
   const_iterator end()const		{assert(_map); return _map->end();}
@@ -157,6 +157,15 @@ public:
     }else{
     }
     return p;
+  }
+
+  T* clone(std::string s) {
+    T* proto = (*this)[s];
+    if (proto) {
+      return proto->clone();
+    }else{itested();
+      return NULL;
+    }
   }
 
   class INSTALL {

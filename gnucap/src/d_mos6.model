@@ -1,4 +1,4 @@
-/* $Id: d_mos6.model,v 26.111 2009/06/11 04:20:10 al Exp $ -*- C++ -*-
+/* $Id: d_mos6.model,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -84,7 +84,7 @@ model BUILT_IN_MOS6 {
 	    phi = (2. * P_K_Q) * tnom_k * log(nsub/NI);
 	    if (phi < .1) {
 	      untested();
-	      error(((!is_first_expand()) ? (bDEBUG) : (bWARNING)),
+	      error(((!_sim->is_first_expand()) ? (bDEBUG) : (bWARNING)),
 		    long_label() + ": calculated phi too small, using .1\n");
 	      phi = .1;
 	    }
@@ -115,7 +115,7 @@ model BUILT_IN_MOS6 {
 	 +.5*(m->egap-egap) + m->polarity* .5 * (phi-m->phi)), m->phi))";
     }
     code_pre {
-      double temp = SIM::temp_c + P_CELSIUS0;
+      double temp = d->_sim->_temp_c + P_CELSIUS0;
       double tempratio  = temp / m->tnom_k;
       double tempratio4 = tempratio * sqrt(tempratio);
       double kt = temp * P_K;

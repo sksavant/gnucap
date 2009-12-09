@@ -1,5 +1,5 @@
-/*$Id: s__aux.cc,v 26.81 2008/05/27 05:34:00 al Exp $ -*- C++ -*-
- * Copyright (C) 2001 Albert Davis
+/*$Id: u_function.cc,v 26.131 2009/11/20 08:22:10 al Exp $ -*- C++ -*-
+ * Copyright (C) 2009 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
  * This file is part of "Gnucap", the Gnu Circuit Analysis Package
@@ -19,41 +19,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  *------------------------------------------------------------------
- * aux functions associated with the SIM class
  */
-//testing=script 2006.07.14
-#include "s__.h"
+#include "e_base.h"
+#include "u_function.h"
 /*--------------------------------------------------------------------------*/
-void SIM::set_limit()
+WAVE* FUNCTION::find_wave(const std::string& probe_name)const
 {
-  for (int ii = 1;  ii <= ::status.total_nodes;  ++ii) {
-    CKT_BASE::set_limit(v0[ii]);
-  }
-}
-/*--------------------------------------------------------------------------*/
-void SIM::keep_voltages()
-{
-  if (!freezetime) {
-    for (int ii = 1;  ii <= ::status.total_nodes;  ++ii) {
-      vdc[ii] = v0[ii];
-    }
-    last_time = (time0 > 0.) ? time0 : 0.;
-  }else{untested();
-  }
-}
-/*--------------------------------------------------------------------------*/
-void SIM::restore_voltages()
-{
-  for (int ii = 1;  ii <= ::status.total_nodes;  ++ii) {
-    vt1[ii] = v0[ii] = vdc[ii];
-  }
-}
-/*--------------------------------------------------------------------------*/
-void SIM::zero_voltages()
-{
-  for (int ii = 1;  ii <= ::status.total_nodes;  ++ii) {
-    vt1[ii] = v0[ii] = vdc[ii] = i[ii] = 0.;
-  }
+  return CKT_BASE::find_wave(probe_name);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

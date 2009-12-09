@@ -1,4 +1,4 @@
-/*$Id: bm_cond.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: bm_cond.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -24,9 +24,43 @@
  * An array "_func" stores handles to commons specific to each mode.
  */
 //testing=script 2006.07.13
+#include "e_elemnt.h"
 #include "bm.h"
 /*--------------------------------------------------------------------------*/
+namespace {
+/*--------------------------------------------------------------------------*/
 static EVAL_BM_VALUE func_zero(CC_STATIC);
+/*--------------------------------------------------------------------------*/
+class EVAL_BM_COND : public EVAL_BM_BASE {
+private:
+  COMMON_COMPONENT* _func[sCOUNT];
+  bool _set[sCOUNT];
+  explicit	EVAL_BM_COND(const EVAL_BM_COND& p);
+public:
+  explicit	EVAL_BM_COND(int c=0);
+		~EVAL_BM_COND();
+private: // override virtual
+  bool  operator==(const COMMON_COMPONENT&)const;
+  COMMON_COMPONENT* clone()const	{return new EVAL_BM_COND(*this);}
+  void  parse_common_obsolete_callback(CS&);
+  void  print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
+  
+  void  	precalc_first(const CARD_LIST*);
+  void		expand(const COMPONENT*);
+  COMMON_COMPONENT* deflate();
+  void  	precalc_last(const CARD_LIST*);
+
+  void  tr_eval(ELEMENT*d)const
+	{assert(_func[d->_sim->sim_mode()]); _func[d->_sim->sim_mode()]->tr_eval(d);}
+  void  ac_eval(ELEMENT*d)const
+	{assert(_func[s_AC]);	   _func[s_AC]->ac_eval(d);}
+  TIME_PAIR tr_review(COMPONENT*d)
+	{assert(_func[d->_sim->sim_mode()]); return _func[d->_sim->sim_mode()]->tr_review(d);}
+  void  tr_accept(COMPONENT*d)
+	{assert(_func[d->_sim->sim_mode()]); _func[d->_sim->sim_mode()]->tr_accept(d);}
+  std::string name()const		{itested(); return "????";}
+};
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 EVAL_BM_COND::EVAL_BM_COND(int c)
   :EVAL_BM_BASE(c)
@@ -89,21 +123,25 @@ void EVAL_BM_COND::parse_common_obsolete_callback(CS& cmd) //used
 
 
     COMMON_COMPONENT* c = EVAL_BM_ACTION_BASE::parse_func_type(cmd);
-
     if (!c) {
       // no match for func_type
       if (cmd.more()) {
-	// if there is anything left, assume it's a "model", for now
-	//c = new EVAL_BM_MODEL;
-	if (cmd.match1("\"'{")) {
+	if (!cmd.match1("\"'{")) {
 	  // quoted means it is a parameter or expression
-	  c = new EVAL_BM_VALUE;
-	}else{
-	  // assume it's a "model", for now
+	  // otherwise assume it's a "model", for now
 	  // it might not be, but we fix later
-	  c = new EVAL_BM_MODEL;
+	  c = bm_dispatcher.clone("eval_bm_model");
+	}else{
 	}
+	if (!c) {
+	  c = bm_dispatcher.clone("eval_bm_value");
+	}else{
+	}
+      }else{
+	// no more
       }
+    }else{
+      // got bm function
     }
     
     if (is_source		// Spice compatibility
@@ -111,7 +149,9 @@ void EVAL_BM_COND::parse_common_obsolete_callback(CS& cmd) //used
 	&& !_set[s_DC]
 	&& dynamic_cast<EVAL_BM_VALUE*>(c)) {
       mode = s_DC;
+    }else{
     }
+
     if (c) {
       c->parse_common_obsolete_callback(cmd); //BUG//callback
     }else{
@@ -144,8 +184,8 @@ void EVAL_BM_COND::parse_common_obsolete_callback(CS& cmd) //used
 
   if (!_func[s_FOURIER])	     {attach_common(_func[s_TRAN],&(_func[s_FOURIER]));}
 
-  const EVAL_BM_ACTION_BASE* c = 
-    prechecked_cast<const EVAL_BM_ACTION_BASE*>(_func[s_NONE]);
+  const EVAL_BM_ACTION_BASE* c = prechecked_cast<const EVAL_BM_ACTION_BASE*>(_func[s_NONE]);
+
   if (!_func[s_AC] && _set[s_NONE] && (!is_source || c->ac_too()))
 				   {attach_common(_func[s_NONE],&(_func[s_AC]));}
   if (!_func[s_AC])		   {attach_common(&func_zero,  &(_func[s_AC]));}
@@ -193,10 +233,10 @@ void EVAL_BM_COND::precalc_first(const CARD_LIST* Scope)
   COMMON_COMPONENT* did_this = NULL;
   for (int i = 1; i < sCOUNT; ++i) {
     assert(_func[i]);
-    if (_func[i] != did_this) {itested();
+    if (_func[i] != did_this) {
       _func[i]->precalc_first(Scope);
       did_this = _func[i];
-    }else{itested();
+    }else{
       // already did
     }
   }
@@ -210,7 +250,7 @@ void EVAL_BM_COND::precalc_last(const CARD_LIST* Scope)
   COMMON_COMPONENT* did_this = NULL;
   for (int i = 1; i < sCOUNT; ++i) {
     assert(_func[i]);
-    if (_func[i] != did_this) {itested();
+    if (_func[i] != did_this) {
       _func[i]->precalc_last(Scope);
       did_this = _func[i];
     }else{itested();
@@ -240,6 +280,11 @@ void EVAL_BM_COND::print_common_obsolete_callback(OMSTREAM& o, LANGUAGE* lang)co
     }else{
     }
   }
+}
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+EVAL_BM_COND p1(CC_STATIC);
+DISPATCHER<COMMON_COMPONENT>::INSTALL d1(&bm_dispatcher, "eval_bm_cond", &p1);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

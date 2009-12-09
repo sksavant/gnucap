@@ -1,4 +1,4 @@
-/*$Id: mg_out_common.cc,v 26.128 2009/11/10 04:21:03 al Exp $ -*- C++ -*-
+/*$Id: mg_out_common.cc,v 26.130 2009/11/15 21:51:08 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -133,16 +133,16 @@ void make_common_set_param_by_index(std::ofstream& out, const Device& d)
 {
   make_tag();
   out <<
-    "void COMMON_" << d.name() << "::set_param_by_index(int i, std::string& value, int offset)\n"
+    "void COMMON_" << d.name() << "::set_param_by_index(int I, std::string& Value, int Offset)\n"
     "{\n"
-    "  switch (COMMON_" << d.name() << "::param_count() - 1 - i) {\n";
+    "  switch (COMMON_" << d.name() << "::param_count() - 1 - I) {\n";
   size_t i = 0;
   for (Parameter_List::const_iterator 
        p = d.common().override().begin(); 
        p != d.common().override().end();
        ++p) {
     if (!((**p).user_name().empty())) {
-      out << "  case " << i++ << ":  " << (**p).code_name() << " = value; break;\n";
+      out << "  case " << i++ << ":  " << (**p).code_name() << " = Value; break;\n";
     }else{unreachable();
     }
   }
@@ -152,14 +152,14 @@ void make_common_set_param_by_index(std::ofstream& out, const Device& d)
        p != d.common().raw().end();
        ++p) {
     if (!((**p).user_name().empty())) {
-      out << "  case " << i++ << ":  " << (**p).code_name() << " = value; break;\n";
+      out << "  case " << i++ << ":  " << (**p).code_name() << " = Value; break;\n";
     }else{unreachable();
     }
   }
   assert(i == d.common().override().size() + d.common().raw().size());
 
   out <<
-    "  default: COMMON_COMPONENT::set_param_by_index(i, value, offset);\n"
+    "  default: COMMON_COMPONENT::set_param_by_index(I, Value, Offset);\n"
     "  }\n"
     "}\n"
     "/*--------------------------------------------------------------------------*/\n";

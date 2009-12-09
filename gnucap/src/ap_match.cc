@@ -1,4 +1,4 @@
-/*$Id: ap_match.cc,v 26.115 2009/08/17 22:49:30 al Exp $ -*- C++ -*-
+/*$Id: ap_match.cc,v 26.131 2009/11/20 08:22:10 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -39,7 +39,7 @@ CS& CS::umatch(const std::string& s)
     if ((!*str2) || (*str2 == '|')) {
       _ok = true;
       break;
-    }else if ((str2[0] == '\\') && (peek() == str2[1])) {itested();
+    }else if ((str2[0] == '\\') && (peek() == str2[1])) {
       skip();
       str2 += 2;
     }else if ((!optional) && (*str2 == '{')) {

@@ -1,4 +1,4 @@
-/*$Id: s_fo.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: s_fo.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -24,6 +24,8 @@
  * outputs results of fft
  */
 //testing=script 2007.11.21
+#include "u_sim_data.h"
+#include "u_status.h"
 #include "m_phase.h"
 #include "declare.h"	/* plclose, plclear, fft */
 #include "u_prblst.h"
@@ -46,6 +48,7 @@ public:
   ~FOURIER() {}
 private:
   explicit FOURIER(const FOURIER&): TRANSIENT() {unreachable(); incomplete();}
+  std::string status()const {return "";}
   void	setup(CS&);	/* s_fo_set.cc */
   void	fftallocate();
   void	fftunallocate();
@@ -69,21 +72,19 @@ static	double  db(COMPLEX);
 void FOURIER::do_it(CS& Cmd, CARD_LIST* Scope)
 {
   _scope = Scope;
-  set_command_fourier();
+  _sim->set_command_fourier();
   reset_timers();
   ::status.four.reset().start();
   
   try {
-    init();
-    alloc_vectors();
-    
-    aa.reallocate();
-    aa.dezero(OPT::gmin);
-    aa.set_min_pivot(OPT::pivtol);
-    
-    lu.reallocate();
-    lu.dezero(OPT::gmin);
-    lu.set_min_pivot(OPT::pivtol);
+    _sim->init();
+    _sim->alloc_vectors();    
+    _sim->_aa.reallocate();
+    _sim->_aa.dezero(OPT::gmin);
+    _sim->_aa.set_min_pivot(OPT::pivtol);    
+    _sim->_lu.reallocate();
+    _sim->_lu.dezero(OPT::gmin);
+    _sim->_lu.set_min_pivot(OPT::pivtol);
     
     setup(Cmd);
     fftallocate();
@@ -101,9 +102,9 @@ void FOURIER::do_it(CS& Cmd, CARD_LIST* Scope)
   }
   
   fftunallocate();
-  unalloc_vectors();
-  lu.unallocate();
-  aa.unallocate();
+  _sim->unalloc_vectors();
+  _sim->_lu.unallocate();
+  _sim->_aa.unallocate();
   
   ::status.four.stop();
   ::status.total.stop();
@@ -286,27 +287,27 @@ void FOURIER::setup(CS& Cmd)
   }
 
   _timesteps = to_pow_of_2(_fstop*2 / _fstep) + 1;
-  if (_cold  ||  last_time <= 0.) {
+  if (_cold  ||  _sim->_last_time <= 0.) {
     _cont = false;
     _tstart = 0.;
   }else{
     _cont = true;
-    _tstart = last_time;
+    _tstart = _sim->_last_time;
   }
   _tstop = _tstart + 1. / _fstep;
   _tstep = 1. / _fstep / (_timesteps-1);
-  time1 = time0 = _tstart;
+  time1 = _sim->_time0 = _tstart;
 
-  freq = _fstep;
+  _sim->_freq = _fstep;
 
   _dtmax = std::min(double(_dtmax_in), _tstep / double(_skip_in));
   if (_dtmin_in.has_hard_value()) {
-    _dtmin = _dtmin_in;
+    _sim->_dtmin = _dtmin_in;
   }else if (_dtratio_in.has_hard_value()) {
-    _dtmin = _dtmax / _dtratio_in;
+    _sim->_dtmin = _dtmax / _dtratio_in;
   }else{
     // use smaller of soft values
-    _dtmin = std::min(double(_dtmin_in), _dtmax/_dtratio_in);
+    _sim->_dtmin = std::min(double(_dtmin_in), _dtmax/_dtratio_in);
   }
 }
 /*--------------------------------------------------------------------------*/

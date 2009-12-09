@@ -1,4 +1,4 @@
-/*$Id: m_matrix.h,v 26.96 2008/10/09 05:36:27 al Exp $ -*- C++ -*-
+/*$Id: m_matrix.h,v 26.131 2009/11/20 08:22:10 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -732,6 +732,8 @@ void BSMATRIX<T>::fbsub(T* x, const T* b, T* c) const
       x[ii] -= u(ii,jj) * x[jj];
     }
   }
+  x[0] = 0.;
+  //BUG// some things don't work unless there is a zero here.
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

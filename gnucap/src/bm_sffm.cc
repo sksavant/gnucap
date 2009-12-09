@@ -1,4 +1,4 @@
-/*$Id: bm_sffm.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: bm_sffm.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -22,6 +22,7 @@
  * SPICE compatible SFFM
  */
 //testing=script 2005.10.07
+#include "e_elemnt.h"
 #include "l_denoise.h"
 #include "u_lang.h"
 #include "bm.h"
@@ -58,14 +59,7 @@ private: // override vitrual
   void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
 
   void		precalc_first(const CARD_LIST*);
-  //void  	expand(const COMPONENT*);	//COMPONENT_COMMON/nothing
-  //COMMON_COMPONENT* deflate();		//COMPONENT_COMMON/nothing
-  //void	precalc_last(const CARD_LIST*);	//COMPONENT_COMMON
-
   void		tr_eval(ELEMENT*)const;
-  //void	ac_eval(ELEMENT*)const; //EVAL_BM_ACTION_BASE
-  //bool	has_tr_eval()const;	//EVAL_BM_BASE/true
-  //bool	has_ac_eval()const;	//EVAL_BM_BASE/true
   TIME_PAIR	tr_review(COMPONENT*);
   std::string	name()const		{return "sffm";}
   bool		ac_too()const		{return false;}
@@ -152,7 +146,7 @@ void EVAL_BM_SFFM::precalc_first(const CARD_LIST* Scope)
 /*--------------------------------------------------------------------------*/
 void EVAL_BM_SFFM::tr_eval(ELEMENT* d)const
 {
-  double time = SIM::time0;
+  double time = d->_sim->_time0;
   double mod = (_modindex * sin(M_TWO_PI * _signal * time));
   double ev = _offset + _amplitude * sin(M_TWO_PI * _carrier * time + mod);
   tr_finish_tdv(d, ev);
@@ -160,7 +154,7 @@ void EVAL_BM_SFFM::tr_eval(ELEMENT* d)const
 /*--------------------------------------------------------------------------*/
 TIME_PAIR EVAL_BM_SFFM::tr_review(COMPONENT* d)
 {
-  double time = SIM::time0 + SIM::_dtmin * .01;
+  double time = d->_sim->_time0 + d->_sim->_dtmin * .01;
   double old_time;
   double N = 0;
   double old_N;
@@ -195,7 +189,7 @@ TIME_PAIR EVAL_BM_SFFM::tr_review(COMPONENT* d)
     trace2("", time, N);
   } while (std::abs(dn_diff(time, old_time)) > 0);
 
-  d->_time_by.min_error_estimate(SIM::time0 + 1. / (_samples * _carrier));
+  d->_time_by.min_error_estimate(d->_sim->_time0 + 1. / (_samples * _carrier));
   d->_time_by.min_event(old_time);
   
   return d->_time_by;
@@ -206,13 +200,13 @@ bool EVAL_BM_SFFM::parse_numlist(CS& cmd)
   unsigned start = cmd.cursor();
   unsigned here = cmd.cursor();
   for (PARAMETER<double>* i = &_offset;  i < &_end;  ++i) {
-    PARAMETER<double> value(NOT_VALID);
-    cmd >> value;
+    PARAMETER<double> val(NOT_VALID);
+    cmd >> val;
     if (cmd.stuck(&here)) {
       break;
     }else{
       untested();
-      *i = value;
+      *i = val;
     }
   }
   if (cmd.gotit(start)) {

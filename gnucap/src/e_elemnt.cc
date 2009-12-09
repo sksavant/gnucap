@@ -1,4 +1,4 @@
-/*$Id: e_elemnt.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: e_elemnt.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -25,7 +25,6 @@
 #include "m_divdiff.h"
 #include "u_xprobe.h"
 #include "e_aux.h"
-#include "bm.h"
 #include "e_elemnt.h"
 /*--------------------------------------------------------------------------*/
 ELEMENT::ELEMENT()
@@ -84,7 +83,7 @@ void ELEMENT::precalc_last()
 
   //BUG// This is needed for AC analysis without doing op (or dc or tran ...) first.
   // Something like it should be moved to ac_begin.
-  if (is_first_expand()) {
+  if (_sim->is_first_expand()) {
     _y[0].x  = 0.;
     _y[0].f0 = LINEAR;
     _y[0].f1 = value();
@@ -108,24 +107,24 @@ void ELEMENT::tr_begin()
 /*--------------------------------------------------------------------------*/
 void ELEMENT::tr_restore()
 {
-  if (_time[0] > SIM::time0) {itested();
+  if (_time[0] > _sim->_time0) {itested();
     for (int i=0  ; i<OPT::_keep_time_steps-1; ++i) {itested();
       _time[i] = _time[i+1];
       _y[i] = _y[i+1];
     }
     _time[OPT::_keep_time_steps-1] = 0.;
     _y[OPT::_keep_time_steps-1]    = FPOLY1(0., 0., 0.);
-  }else if (_time[0] == SIM::time0) {
+  }else if (_time[0] == _sim->_time0) {
   }else{untested();
   }
 
-  //assert(_time[0] == SIM::time0);
-  if (_time[0] != SIM::time0) {itested();
+  //assert(_time[0] == _sim->_time0);
+  if (_time[0] != _sim->_time0) {itested();
     error(bDANGER, "//BUG// restore time mismatch.  last=%g, using=%g\n",
-	  _time[0], SIM::time0);
+	  _time[0], _sim->_time0);
     //BUG// happens when continuing after a ^c,
     // when the last step was not printed
-    // _time[0] is the non-printed time.  SIM::time0 is the printed time.
+    // _time[0] is the non-printed time.  _sim->_time0 is the printed time.
   }else{
   }
 
@@ -136,7 +135,7 @@ void ELEMENT::tr_restore()
 /*--------------------------------------------------------------------------*/
 void ELEMENT::dc_advance()
 {
-  assert(SIM::time0 == 0.); // DC
+  assert(_sim->_time0 == 0.); // DC
 
   for (int i=OPT::_keep_time_steps-1; i>=0; --i) {
     assert(_time[i] == 0.);
@@ -147,27 +146,27 @@ void ELEMENT::dc_advance()
 /*--------------------------------------------------------------------------*/
 void ELEMENT::tr_advance()
 {
-  assert(_time[0] < SIM::time0); // moving forward
+  assert(_time[0] < _sim->_time0); // moving forward
   
   for (int i=OPT::_keep_time_steps-1; i>0; --i) {
     assert(_time[i] < _time[i-1] || _time[i] == 0.);
     _time[i] = _time[i-1];
     _y[i] = _y[i-1];
   }
-  _time[0] = SIM::time0;
+  _time[0] = _sim->_time0;
 
   _dt = _time[0] - _time[1];
 }
 /*--------------------------------------------------------------------------*/
 void ELEMENT::tr_regress()
 {
-  assert(_time[0] >= SIM::time0); // moving backwards
-  assert(_time[1] <= SIM::time0); // but not too far backwards
+  assert(_time[0] >= _sim->_time0); // moving backwards
+  assert(_time[1] <= _sim->_time0); // but not too far backwards
 
   for (int i=OPT::_keep_time_steps-1; i>0; --i) {
     assert(_time[i] < _time[i-1] || _time[i] == 0.);
   }
-  _time[0] = SIM::time0;
+  _time[0] = _sim->_time0;
 
   _dt = _time[0] - _time[1];
 }
@@ -194,8 +193,8 @@ void ELEMENT::tr_iwant_matrix_passive()
   assert(_n[OUT1].m_() != INVALID_NODE);
   assert(_n[OUT2].m_() != INVALID_NODE);
 
-  aa.iwant(_n[OUT1].m_(),_n[OUT2].m_());
-  lu.iwant(_n[OUT1].m_(),_n[OUT2].m_());
+  _sim->_aa.iwant(_n[OUT1].m_(),_n[OUT2].m_());
+  _sim->_lu.iwant(_n[OUT1].m_(),_n[OUT2].m_());
 }
 /*--------------------------------------------------------------------------*/
 void ELEMENT::tr_iwant_matrix_active()
@@ -209,19 +208,19 @@ void ELEMENT::tr_iwant_matrix_active()
   assert(_n[IN1].m_() != INVALID_NODE);
   assert(_n[IN2].m_() != INVALID_NODE);
 
-  //aa.iwant(_n[OUT1].m_(),_n[OUT2].m_());
-  aa.iwant(_n[OUT1].m_(),_n[IN1].m_());
-  aa.iwant(_n[OUT1].m_(),_n[IN2].m_());
-  aa.iwant(_n[OUT2].m_(),_n[IN1].m_());
-  aa.iwant(_n[OUT2].m_(),_n[IN2].m_());
-  //aa.iwant(_n[IN1].m_(),_n[IN2].m_());
+  //_sim->_aa.iwant(_n[OUT1].m_(),_n[OUT2].m_());
+  _sim->_aa.iwant(_n[OUT1].m_(),_n[IN1].m_());
+  _sim->_aa.iwant(_n[OUT1].m_(),_n[IN2].m_());
+  _sim->_aa.iwant(_n[OUT2].m_(),_n[IN1].m_());
+  _sim->_aa.iwant(_n[OUT2].m_(),_n[IN2].m_());
+  //_sim->_aa.iwant(_n[IN1].m_(),_n[IN2].m_());
 
-  //lu.iwant(_n[OUT1].m_(),_n[OUT2].m_());
-  lu.iwant(_n[OUT1].m_(),_n[IN1].m_());
-  lu.iwant(_n[OUT1].m_(),_n[IN2].m_());
-  lu.iwant(_n[OUT2].m_(),_n[IN1].m_());
-  lu.iwant(_n[OUT2].m_(),_n[IN2].m_());
-  //lu.iwant(_n[IN1].m_(),_n[IN2].m_());
+  //_sim->_lu.iwant(_n[OUT1].m_(),_n[OUT2].m_());
+  _sim->_lu.iwant(_n[OUT1].m_(),_n[IN1].m_());
+  _sim->_lu.iwant(_n[OUT1].m_(),_n[IN2].m_());
+  _sim->_lu.iwant(_n[OUT2].m_(),_n[IN1].m_());
+  _sim->_lu.iwant(_n[OUT2].m_(),_n[IN2].m_());
+  //_sim->_lu.iwant(_n[IN1].m_(),_n[IN2].m_());
 }
 /*--------------------------------------------------------------------------*/
 void ELEMENT::tr_iwant_matrix_extended()
@@ -233,8 +232,8 @@ void ELEMENT::tr_iwant_matrix_extended()
   for (int ii = 0;  ii < matrix_nodes();  ++ii) {
     if (_n[ii].m_() >= 0) {
       for (int jj = 0;  jj < ii ;  ++jj) {
-	aa.iwant(_n[ii].m_(),_n[jj].m_());
-	lu.iwant(_n[ii].m_(),_n[jj].m_());
+	_sim->_aa.iwant(_n[ii].m_(),_n[jj].m_());
+	_sim->_lu.iwant(_n[ii].m_(),_n[jj].m_());
       }
     }else{itested();
       // node 1 is grounded or invalid
@@ -245,17 +244,17 @@ void ELEMENT::tr_iwant_matrix_extended()
 void ELEMENT::ac_iwant_matrix_passive()
 {
   trace2(long_label().c_str(), _n[OUT1].m_(), _n[OUT2].m_());
-  acx.iwant(_n[OUT1].m_(),_n[OUT2].m_());
+  _sim->_acx.iwant(_n[OUT1].m_(),_n[OUT2].m_());
 }
 /*--------------------------------------------------------------------------*/
 void ELEMENT::ac_iwant_matrix_active()
 {
-  //acx.iwant(_n[OUT1].m_(),_n[OUT2].m_());
-  acx.iwant(_n[OUT1].m_(),_n[IN1].m_());
-  acx.iwant(_n[OUT1].m_(),_n[IN2].m_());
-  acx.iwant(_n[OUT2].m_(),_n[IN1].m_());
-  acx.iwant(_n[OUT2].m_(),_n[IN2].m_());
-  //acx.iwant(_n[IN1].m_(),_n[IN2].m_());
+  //_sim->_acx.iwant(_n[OUT1].m_(),_n[OUT2].m_());
+  _sim->_acx.iwant(_n[OUT1].m_(),_n[IN1].m_());
+  _sim->_acx.iwant(_n[OUT1].m_(),_n[IN2].m_());
+  _sim->_acx.iwant(_n[OUT2].m_(),_n[IN1].m_());
+  _sim->_acx.iwant(_n[OUT2].m_(),_n[IN2].m_());
+  //_sim->_acx.iwant(_n[IN1].m_(),_n[IN2].m_());
 }
 /*--------------------------------------------------------------------------*/
 void ELEMENT::ac_iwant_matrix_extended()
@@ -267,7 +266,7 @@ void ELEMENT::ac_iwant_matrix_extended()
   for (int ii = 0;  ii < matrix_nodes();  ++ii) {
     if (_n[ii].m_() >= 0) {
       for (int jj = 0;  jj < ii ;  ++jj) {
-	acx.iwant(_n[ii].m_(),_n[jj].m_());
+	_sim->_acx.iwant(_n[ii].m_(),_n[jj].m_());
       }
     }else{itested();
       // node 1 is grounded or invalid
@@ -335,13 +334,13 @@ double ELEMENT::tr_probe_num(const std::string& x)const
   //}else if (Umatch(x, "didt ")) {untested();
     //double i0  = (_m0.c1  * _m0.x  + _m0.c0);
     //double it1 = (mt1.f1 * mt1.x + mt1.c0);
-    //return  (i0 - it1) / (time0 - time1);
+    //return  (i0 - it1) / (_sim->_time0 - _time1);
   }else if (Umatch(x, "r ")) {
     return (_m0.c1!=0.) ? 1/_m0.c1 : MAXDBL;
   }else if (Umatch(x, "z ")) {
-    return port_impedance(_n[OUT1], _n[OUT2], lu, mfactor()*(_m0.c1+_loss0));
+    return port_impedance(_n[OUT1], _n[OUT2], _sim->_lu, mfactor()*(_m0.c1+_loss0));
   }else if (Umatch(x, "zraw ")) {
-    return port_impedance(_n[OUT1], _n[OUT2], lu, 0.);
+    return port_impedance(_n[OUT1], _n[OUT2], _sim->_lu, 0.);
   }else{
     return COMPONENT::tr_probe_num(x);
   }
@@ -378,9 +377,9 @@ XPROBE ELEMENT::ac_probe_ext(const std::string& x)const
       return XPROBE(1. / admittance);
     }
   }else if (Umatch(x, "z ")) {			/* port impedance */
-    return XPROBE(port_impedance(_n[OUT1], _n[OUT2], acx, mfactor()*admittance));
+    return XPROBE(port_impedance(_n[OUT1], _n[OUT2], _sim->_acx, mfactor()*admittance));
   }else if (Umatch(x, "zraw ")) {		/* port impedance, raw */
-    return XPROBE(port_impedance(_n[OUT1], _n[OUT2], acx, COMPLEX(0.)));
+    return XPROBE(port_impedance(_n[OUT1], _n[OUT2], _sim->_acx, COMPLEX(0.)));
   }else{ 					/* bad parameter */
     return COMPONENT::ac_probe_ext(x);
   }
@@ -444,8 +443,8 @@ double ELEMENT::tr_review_check_and_convert(double timestep)
   if (timestep == NEVER) {
     time_future = NEVER;
   }else{
-    if (timestep < SIM::_dtmin) {
-      timestep = SIM::_dtmin;
+    if (timestep < _sim->_dtmin) {
+      timestep = _sim->_dtmin;
     }else{
     }
 

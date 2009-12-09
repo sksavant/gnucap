@@ -1,4 +1,4 @@
-/*$Id: s_dc.cc,v 26.126 2009/10/16 05:29:28 al Exp $ -*- C++ -*-
+/*$Id: s_dc.cc,v 26.132 2009/11/24 04:26:37 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -22,9 +22,11 @@
  * dc analysis top
  */
 //testing=script,complete 2006.07.14
+#include "u_status.h"
 #include "u_prblst.h"
 #include "u_cardst.h"
 #include "e_elemnt.h"
+#include "s__.h"
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
@@ -61,7 +63,10 @@ protected:
   bool _cont;			/* flag: continue from previous run */
   TRACE _trace;			/* enum: show extended diagnostics */
   enum {ONE_PT, LIN_STEP, LIN_PTS, TIMES, OCTAVE, DECADE} _stepmode[DCNEST];
+  static double temp_c_in;	/* ambient temperature, input and sweep variable */
 };
+/*--------------------------------------------------------------------------*/
+double	DCOP::temp_c_in = 0.;
 /*--------------------------------------------------------------------------*/
 class DC : public DCOP {
 public:
@@ -87,11 +92,11 @@ private:
 void DC::do_it(CS& Cmd, CARD_LIST* Scope)
 {
   _scope = Scope;
-  time0 = 0.;
-  set_command_dc();
-  _phase = p_INIT_DC;
+  _sim->_time0 = 0.;
+  _sim->set_command_dc();
+  _sim->_phase = p_INIT_DC;
   ::status.dc.reset().start();
-  temp_c = temp_c_in;
+  _sim->_temp_c = temp_c_in;
   command_base(Cmd);
   ::status.dc.stop();
 }
@@ -99,11 +104,11 @@ void DC::do_it(CS& Cmd, CARD_LIST* Scope)
 void OP::do_it(CS& Cmd, CARD_LIST* Scope)
 {
   _scope = Scope;
-  time0 = 0.;
-  set_command_op();
-  _phase = p_INIT_DC;
+  _sim->_time0 = 0.;
+  _sim->set_command_op();
+  _sim->_phase = p_INIT_DC;
   ::status.op.reset().start();
-  temp_c = temp_c_in;
+  _sim->_temp_c = temp_c_in;
   command_base(Cmd);
   ::status.op.stop();
 }
@@ -121,16 +126,16 @@ DCOP::DCOP()
     _reverse[ii] = false;
     _step[ii]=0.;
     _linswp[ii]=true;
-    _sweepval[ii]=&genout;
+    _sweepval[ii]=&_sim->_genout;
     _zap[ii]=NULL; 
     _stepmode[ii] = ONE_PT;
   }
   
   //BUG// in SIM.  should be initialized there.
-  genout=0.;
+  _sim->_genout=0.;
   temp_c_in=OPT::temp_c;
   _out=IO::mstdout;
-  uic=false;
+  _sim->_uic=false;
 }
 /*--------------------------------------------------------------------------*/
 void DCOP::finish(void)
@@ -148,7 +153,7 @@ void DCOP::finish(void)
 /*--------------------------------------------------------------------------*/
 void OP::setup(CS& Cmd)
 {
-  temp_c = temp_c_in;
+  _sim->_temp_c = temp_c_in;
   _cont = false;
   _trace = tNONE;
   _out = IO::mstdout;
@@ -169,13 +174,13 @@ void OP::setup(CS& Cmd)
   }
   
   _step[0] = 0.;
-  genout = 0.;
+  _sim->_genout = 0.;
 
   options(Cmd,0);
 
   _n_sweeps = 1;
   Cmd.check(bWARNING, "what's this?");
-  freq = 0;
+  _sim->_freq = 0;
 
   IO::plotout = (ploton) ? IO::mstdout : OMSTREAM();
   initio(_out);
@@ -216,9 +221,9 @@ void DC::setup(CS& Cmd)
 	// leave it as it was .. repeat Cmd with no args
       }
       
-      genout = 0.;
+      _sim->_genout = 0.;
       temp_c_in = OPT::temp_c;
-      temp_c = temp_c_in;
+      _sim->_temp_c = temp_c_in;
       options(Cmd,_n_sweeps);
     }
   }else{ 
@@ -240,10 +245,10 @@ void DC::setup(CS& Cmd)
       _zap[ii]->set_constant(false);		// so it will be updated
       _sweepval[ii] = _zap[ii]->set__value();	// point to value to patch
     }else{ // generator
-      _sweepval[ii] = &genout;			// point to value to patch
+      _sweepval[ii] = &_sim->_genout;			// point to value to patch
     }
   }
-  freq = 0;
+  _sim->_freq = 0;
 }
 /*--------------------------------------------------------------------------*/
 void DCOP::fix_args(int Nest)
@@ -298,7 +303,7 @@ void DCOP::fix_args(int Nest)
 /*--------------------------------------------------------------------------*/
 void DCOP::options(CS& Cmd, int Nest)
 {
-  uic = _loop[Nest] = _reverse_in[Nest] = false;
+  _sim->_uic = _loop[Nest] = _reverse_in[Nest] = false;
   unsigned here = Cmd.cursor();
   do{
     ONE_OF
@@ -336,14 +341,14 @@ void DCOP::options(CS& Cmd, int Nest)
 void DCOP::sweep()
 {
   head(_start[0], _stop[0], " ");
-  bypass_ok = false;
-  set_inc_mode_bad();
+  _sim->_bypass_ok = false;
+  _sim->set_inc_mode_bad();
   if (_cont) {untested();
-    restore_voltages();
+    _sim->restore_voltages();
   }else{
   }
   
-  clear_limit();
+  _sim->clear_limit();
   CARD_LIST::card_list.tr_begin();
   sweep_recursive(_n_sweeps);
 }
@@ -358,7 +363,7 @@ void DCOP::sweep_recursive(int Nest)
   
   first(Nest);
   do {
-    temp_c = temp_c_in;
+    _sim->_temp_c = temp_c_in;
     if (Nest == 0) {
       int converged = solve_with_homotopy(itl,_trace);
       if (!converged) {itested();
@@ -366,10 +371,10 @@ void DCOP::sweep_recursive(int Nest)
       }else{
       }
       ::status.accept.start();
-      set_limit();
+      _sim->set_limit();
       CARD_LIST::card_list.tr_accept();
       ::status.accept.stop();
-      keep_voltages();
+      _sim->keep_voltages();
       outdata(*_sweepval[Nest]);
       itl = OPT::DCXFER;
     }else{
@@ -396,7 +401,7 @@ void DCOP::first(int Nest)
     next(Nest);
   }else{
   }
-  _phase = p_INIT_DC;
+  _sim->_phase = p_INIT_DC;
 }
 /*--------------------------------------------------------------------------*/
 bool DCOP::next(int Nest)
@@ -445,7 +450,7 @@ bool DCOP::next(int Nest)
       }
     }
   }
-  _phase = p_DC_SWEEP;
+  _sim->_phase = p_DC_SWEEP;
   return ok;
 }
 /*--------------------------------------------------------------------------*/

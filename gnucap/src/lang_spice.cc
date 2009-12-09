@@ -1,4 +1,4 @@
-/*$Id: lang_spice_in.cc,v 26.125 2009/10/15 20:58:21 al Exp $ -*- C++ -*-
+/*$Id: lang_spice.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2006 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -20,15 +20,84 @@
  * 02110-1301, USA.
  */
 //testing=script 2007.07.13
-#include "globals.h"
+#include "u_status.h"
+#include "c_comand.h"
 #include "d_dot.h"
 #include "d_coment.h"
 #include "d_subckt.h"
-#include "lang_spice.h"
+#include "u_lang.h"
 
 // header hack
 #include "d_logic.h"
 #include "bm.h"
+/*--------------------------------------------------------------------------*/
+namespace {
+/*--------------------------------------------------------------------------*/
+class LANG_SPICE_BASE : public LANGUAGE {
+public:
+  enum EOB {NO_EXIT_ON_BLANK, EXIT_ON_BLANK};
+
+public: // override virtual, used by callback
+  std::string arg_front()const {return " ";}
+  std::string arg_mid()const {return "=";}
+  std::string arg_back()const {return "";}
+
+public: // override virtual, called by commands
+  DEV_COMMENT*	parse_comment(CS&, DEV_COMMENT*);
+  DEV_DOT*	parse_command(CS&, DEV_DOT*);
+  MODEL_CARD*	parse_paramset(CS&, MODEL_CARD*);
+  MODEL_SUBCKT* parse_module(CS&, MODEL_SUBCKT*);
+  COMPONENT*	parse_instance(CS&, COMPONENT*);
+  std::string	find_type_in_string(CS&);
+public: // "local?", called by own commands
+  void parse_module_body(CS&, MODEL_SUBCKT*, CARD_LIST*, const std::string&,
+			 EOB, const std::string&);
+private: // local
+  void parse_type(CS&, CARD*);
+  void parse_args(CS&, CARD*);
+  void parse_label(CS&, CARD*);
+  void parse_ports(CS&, COMPONENT*, int minnodes, int start, int num_nodes, bool all_new);
+private: // compatibility hacks
+  void parse_element_using_obsolete_callback(CS&, COMPONENT*);
+  void parse_logic_using_obsolete_callback(CS&, COMPONENT*);
+
+private: // override virtual, called by print_item
+  void print_paramset(OMSTREAM&, const MODEL_CARD*);
+  void print_module(OMSTREAM&, const MODEL_SUBCKT*);
+  void print_instance(OMSTREAM&, const COMPONENT*);
+  void print_comment(OMSTREAM&, const DEV_COMMENT*);
+  void print_command(OMSTREAM&, const DEV_DOT*);
+private: // local
+  void print_args(OMSTREAM&, const MODEL_CARD*);
+  void print_type(OMSTREAM&, const COMPONENT*);
+  void print_args(OMSTREAM&, const COMPONENT*);
+  void print_label(OMSTREAM&, const COMPONENT*);
+  void print_ports(OMSTREAM&, const COMPONENT*);
+};
+/*--------------------------------------------------------------------------*/
+class LANG_SPICE : public LANG_SPICE_BASE {
+public:
+  std::string name()const {return "spice";}
+  bool case_insensitive()const {return true;}
+  UNITS units()const {return uSPICE;}
+  void parse_top_item(CS&, CARD_LIST*);
+} lang_spice;
+DISPATCHER<LANGUAGE>::INSTALL
+	ds(&language_dispatcher, lang_spice.name(), &lang_spice);
+/*--------------------------------------------------------------------------*/
+class LANG_ACS : public LANG_SPICE_BASE {
+public:
+  std::string name()const {return "acs";}
+  bool case_insensitive()const {return true;}
+  UNITS units()const {return uSPICE;}
+} lang_acs;
+DISPATCHER<LANGUAGE>::INSTALL
+	da(&language_dispatcher, lang_acs.name(), &lang_acs);
+/*--------------------------------------------------------------------------*/
+DEV_COMMENT p0;
+DISPATCHER<CARD>::INSTALL
+	d0(&device_dispatcher, ";|#|*|'|\"|dev_comment", &p0);
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 static void skip_pre_stuff(CS& cmd)
 {
@@ -254,11 +323,15 @@ void LANG_SPICE_BASE::parse_element_using_obsolete_callback(CS& cmd, COMPONENT* 
 
   if (!c) {
     xx->skip_dev_type(cmd); // (redundant)
-    c = new EVAL_BM_COND;
+    c = bm_dispatcher.clone("eval_bm_cond");
+  }else{
+  }
+  if (!c) {
+    c = bm_dispatcher.clone("eval_bm_value");
   }else{
   }
   assert(c);
-
+  
   // we have a blank common of the most general type
   // (or HSPICE kluge)
   // let it continue parsing
@@ -273,25 +346,17 @@ void LANG_SPICE_BASE::parse_element_using_obsolete_callback(CS& cmd, COMPONENT* 
   // At this point, there is ALWAYS a common "c", which may have more
   // commons attached to it.  Try to reduce its complexity.
   // "c->deflate()" may return "c" or some simplification of "c".
-  
+
   COMMON_COMPONENT* dc = c->deflate();
   
   // dc == deflated_common
   // It might be just "c".
   // It might be something else that is simpler but equivalent.
-
-  // check for a simple value
-  EVAL_BM_VALUE* dvc = dynamic_cast<EVAL_BM_VALUE*>(dc);
-
-  // dvc == deflated value common
-  // It might be "dc", if "dc" is a value common.
-  // It might be nothing.
-
-  if (dvc && !dvc->has_ext_args()) {
+  if (dc->is_trivial()) {
+    assert(dynamic_cast<EVAL_BM_VALUE*>(dc));
     // If it is a simple value, don't use a common.
     // Just store the value directly.
-    x->set_value(dvc->value());
-    x->_mfactor = dvc->mfactor();
+    x->obsolete_move_parameters_from_common(dc);
     delete c;
   }else{
     x->attach_common(dc);
@@ -607,6 +672,407 @@ void LANG_SPICE::parse_top_item(CS& cmd, CARD_LIST* Scope)
     cmd.get_line("gnucap-spice>");
     new__instance(cmd, NULL, Scope);
   }
+}
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+static char fix_case(char c)
+{
+  return ((OPT::case_insensitive) ? (static_cast<char>(tolower(c))) : (c));
+}
+/*--------------------------------------------------------------------------*/
+void LANG_SPICE_BASE::print_paramset(OMSTREAM& o, const MODEL_CARD* x)
+{
+  assert(x);
+  o << ".model " << x->short_label() << ' ' << x->dev_type() << " (";
+  print_args(o, x);
+  o << ")\n";
+}
+/*--------------------------------------------------------------------------*/
+void LANG_SPICE_BASE::print_module(OMSTREAM& o, const MODEL_SUBCKT* x)
+{
+  assert(x);
+  assert(x->subckt());
+
+  o << ".subckt " <<  x->short_label();
+  print_ports(o, x);
+  o << '\n';
+  
+  for (CARD_LIST::const_iterator 
+	 ci = x->subckt()->begin(); ci != x->subckt()->end(); ++ci) {
+    print_item(o, *ci);
+  }
+  
+  o << ".ends " << x->short_label() << "\n";
+}
+/*--------------------------------------------------------------------------*/
+void LANG_SPICE_BASE::print_instance(OMSTREAM& o, const COMPONENT* x)
+{
+  print_label(o, x);
+  print_ports(o, x);
+  print_type(o, x);
+  print_args(o, x);
+  o << '\n';
+}
+/*--------------------------------------------------------------------------*/
+void LANG_SPICE_BASE::print_comment(OMSTREAM& o, const DEV_COMMENT* x)
+{
+  assert(x);
+  if (x->comment()[1] != '+') {
+    o << x->comment() << '\n';
+  }else{
+  }
+  // Suppress printing of comment lines starting with "*+".
+  // These are generated as a way to display calculated values.
+}
+/*--------------------------------------------------------------------------*/
+void LANG_SPICE_BASE::print_command(OMSTREAM& o, const DEV_DOT* x)
+{
+  assert(x);
+  o << x->s() << '\n';
+}
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+void LANG_SPICE_BASE::print_args(OMSTREAM& o, const MODEL_CARD* x)
+{
+  assert(x);
+  if (x->use_obsolete_callback_print()) {
+    x->print_args_obsolete_callback(o, this);  //BUG//callback//
+  }else{
+    for (int ii = x->param_count() - 1;  ii >= x->param_count_dont_print();  --ii) {
+      if (x->param_is_printable(ii)) {
+	std::string arg = " " + x->param_name(ii) + "=" + x->param_value(ii);
+	o << arg;
+      }else{
+      }
+    }
+  }
+}
+/*--------------------------------------------------------------------------*/
+void LANG_SPICE_BASE::print_type(OMSTREAM& o, const COMPONENT* x)
+{
+  assert(x);
+  if (x->print_type_in_spice()) {
+    o << "  " << x->dev_type();
+  }else if (fix_case(x->short_label()[0]) != fix_case(x->id_letter())) {itested();
+    o << "  " << x->dev_type();
+  }else{
+    // don't print type
+  }
+}
+/*--------------------------------------------------------------------------*/
+void LANG_SPICE_BASE::print_args(OMSTREAM& o, const COMPONENT* x)
+{
+  assert(x);
+  o << ' ';
+  if (x->use_obsolete_callback_print()) {
+    x->print_args_obsolete_callback(o, this);  //BUG//callback//
+  }else{
+    for (int ii = x->param_count() - 1;  ii >= x->param_count_dont_print();  --ii) {
+      if (x->param_is_printable(ii)) {
+	if ((ii != x->param_count() - 1) || (x->param_name(ii) != x->value_name())) {
+	  // skip name if plain value
+	  o << " " << x->param_name(ii) << "=";
+	}else{
+	}
+	o << x->param_value(ii);
+      }else{
+      }
+    }
+  }
+}
+/*--------------------------------------------------------------------------*/
+void LANG_SPICE_BASE::print_label(OMSTREAM& o, const COMPONENT* x)
+{
+  assert(x);
+  std::string label = x->short_label();
+  o << label;
+}
+/*--------------------------------------------------------------------------*/
+void LANG_SPICE_BASE::print_ports(OMSTREAM& o, const COMPONENT* x)
+{
+  assert(x);
+
+  o <<  " ( ";
+  std::string sep = "";
+  for (int ii = 0;  x->port_exists(ii);  ++ii) {
+    o << sep << x->port_value(ii);
+    sep = " ";
+  }
+  for (int ii = 0;  x->current_port_exists(ii);  ++ii) {
+    o << sep << x->current_port_value(ii);
+    sep = " ";
+  }
+  o << " )";
+}
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+class CMD_MODEL : public CMD {
+  void do_it(CS& cmd, CARD_LIST* Scope)
+  {
+    // already got "model"
+    std::string my_name, base_name;
+    cmd >> my_name;
+    unsigned here1 = cmd.cursor();    
+    cmd >> base_name;
+    
+    // "level" kluge ....
+    // if there is a "level" keyword, with integer argument,
+    // tack that onto the given modelname and look for that
+    cmd.skip1b('(');
+    int level = 0;
+    {
+      unsigned here = cmd.cursor();
+      scan_get(cmd, "level ", &level);
+      if (!cmd.stuck(&here)) {
+	char buf[20];
+	sprintf(buf, "%u", level);
+	base_name += buf;
+      }else{
+      }
+    }
+
+    const MODEL_CARD* p = model_dispatcher[base_name];
+
+    if (p) {
+      MODEL_CARD* new_card = dynamic_cast<MODEL_CARD*>(p->clone());
+      if (exists(new_card)) {
+	assert(!new_card->owner());
+	lang_spice.parse_paramset(cmd, new_card);
+	Scope->push_back(new_card);
+      }else{untested();
+	cmd.warn(bDANGER, here1, "model: base has incorrect type");
+      }
+    }else{
+      cmd.warn(bDANGER, here1, "model: \"" + base_name + "\" no match");
+    }
+  }
+} p1;
+DISPATCHER<CMD>::INSTALL d1(&command_dispatcher, ".model", &p1);
+/*--------------------------------------------------------------------------*/
+class CMD_SUBCKT : public CMD {
+  void do_it(CS& cmd, CARD_LIST* Scope)
+  {
+    MODEL_SUBCKT* new_module = new MODEL_SUBCKT;
+    assert(new_module);
+    assert(!new_module->owner());
+    assert(new_module->subckt());
+    assert(new_module->subckt()->is_empty());
+    lang_spice.parse_module(cmd, new_module);
+    Scope->push_back(new_module);
+  }
+} p2;
+DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, ".subckt|.macro", &p2);
+/*--------------------------------------------------------------------------*/
+enum Skip_Header {NO_HEADER, SKIP_HEADER};
+/*--------------------------------------------------------------------------*/
+/* getmerge: actually do the work for "get", "merge", etc.
+ */
+static void getmerge(CS& cmd, Skip_Header skip_header, CARD_LIST* Scope)
+{
+  ::status.get.reset().start();
+  assert(Scope);
+
+  std::string file_name, section_name;
+  cmd >> file_name;
+  
+  bool  echoon = false;		/* echo on/off flag (echo as read from file) */
+  bool  liston = false;		/* list on/off flag (list actual values) */
+  bool  quiet = false;		/* don't echo title */
+  unsigned here = cmd.cursor();
+  do{
+    ONE_OF
+      || Get(cmd, "echo",  &echoon)
+      || Get(cmd, "list",  &liston)
+      || Get(cmd, "quiet", &quiet)
+      || Get(cmd, "section", &section_name)
+      ;
+  }while (cmd.more() && !cmd.stuck(&here));
+  if (cmd.more()) {
+    cmd >> section_name;
+  }else{
+  }
+  cmd.check(bWARNING, "need section, echo, list, or quiet");
+
+  CS file(CS::_INC_FILE, file_name);
+
+  if (skip_header) { // get and store the header line
+    file.get_line(">>>>");
+    head = file.fullstring();
+
+    if (!quiet) {
+      IO::mstdout << head << '\n';
+    }else{untested();
+    }
+  }else{
+  }
+  if (section_name == "") {
+    lang_spice.parse_module_body(file, NULL, Scope, ">>>>", lang_spice.NO_EXIT_ON_BLANK, ".end ");
+  }else{
+    try {
+      for (;;) {
+	file.get_line("lib " + section_name + '>');
+	if (file.umatch(".lib " + section_name + ' ')) {
+	  lang_spice.parse_module_body(file, NULL, Scope, section_name,
+			lang_spice.NO_EXIT_ON_BLANK, ".endl {" + section_name + "}");
+	}else{
+	  // skip it
+	}
+      }
+    }catch (Exception_End_Of_Input& e) {
+    }
+  }
+  ::status.get.stop();
+}
+/*--------------------------------------------------------------------------*/
+/* cmd_lib: lib command
+ */
+class CMD_LIB : public CMD {
+public:
+  void do_it(CS& cmd, CARD_LIST* Scope)
+  {
+    unsigned here = cmd.cursor();
+    std::string section_name, more_stuff;
+    cmd >> section_name >> more_stuff;
+    if (more_stuff != "") {
+      cmd.reset(here);
+      getmerge(cmd, NO_HEADER, Scope);
+    }else{
+      for (;;) {
+	cmd.get_line(section_name + '>');
+	if (cmd.umatch(".endl {" + section_name + "}")) {
+	  break;
+	}else{
+	  // skip it
+	}
+      }
+    }
+  }
+} p33;
+DISPATCHER<CMD>::INSTALL d33(&command_dispatcher, ".lib|lib", &p33);
+/*--------------------------------------------------------------------------*/
+/* cmd_include: include command
+ * as get or run, but do not clear first, inherit the run-mode.
+ */
+class CMD_INCLUDE : public CMD {
+public:
+  void do_it(CS& cmd, CARD_LIST* Scope)
+  {
+    getmerge(cmd, NO_HEADER, Scope);
+  }
+} p3;
+DISPATCHER<CMD>::INSTALL d3(&command_dispatcher, ".include", &p3);
+/*--------------------------------------------------------------------------*/
+/* cmd_merge: merge command
+ * as get, but do not clear first
+ */
+class CMD_MERGE : public CMD {
+public:
+  void do_it(CS& cmd, CARD_LIST* Scope)
+  {untested();
+    SET_RUN_MODE xx(rPRESET);
+    getmerge(cmd, NO_HEADER, Scope);
+  }
+} p4;
+DISPATCHER<CMD>::INSTALL d4(&command_dispatcher, ".merge|merge", &p4);
+/*--------------------------------------------------------------------------*/
+/* cmd_run: "<" and "<<" commands
+ * run in batch mode.  Spice format.
+ * "<<" clears old circuit first, "<" does not
+ * get circuit from file, execute dot cards in sequence
+ */
+class CMD_RUN : public CMD {
+public:
+  void do_it(CS& cmd, CARD_LIST* Scope)
+  {
+    while (cmd.match1('<')) {untested();
+      command("clear", Scope);
+      cmd.skip();
+      cmd.skipbl();
+    }
+    SET_RUN_MODE xx(rSCRIPT);
+    getmerge(cmd, SKIP_HEADER, Scope);
+  }
+} p5;
+DISPATCHER<CMD>::INSTALL d5(&command_dispatcher, "<", &p5);
+/*--------------------------------------------------------------------------*/
+/* cmd_get: get command
+ * get circuit from a file, after clearing the old one
+ * preset, but do not execute "dot cards"
+ */
+class CMD_GET : public CMD {
+public:
+  void do_it(CS& cmd, CARD_LIST* Scope)
+  {
+    SET_RUN_MODE xx(rPRESET);
+    command("clear", Scope);
+    getmerge(cmd, SKIP_HEADER, Scope);
+  }
+} p6;
+DISPATCHER<CMD>::INSTALL d6(&command_dispatcher, ".get|get", &p6);
+/*--------------------------------------------------------------------------*/
+/* cmd_build: build command
+ * get circuit description direct from keyboard (or stdin if redirected)
+ * Command syntax: build <before>
+ * Bare command: add to end of list
+ * If there is an arg: add before that element
+ * null line exits this mode
+ * preset, but do not execute "dot cards"
+ */
+class CMD_BUILD : public CMD {
+public:
+  void do_it(CS& cmd, CARD_LIST* Scope)
+  {
+    SET_RUN_MODE xx(rPRESET);
+    ::status.get.reset().start();
+    lang_spice.parse_module_body(cmd, NULL, Scope, ">", lang_spice.EXIT_ON_BLANK, ". ");
+    ::status.get.stop();
+  }
+} p7;
+DISPATCHER<CMD>::INSTALL d7(&command_dispatcher, ".build|build", &p7);
+/*--------------------------------------------------------------------------*/
+class CMD_SPICE : public CMD {
+public:
+  void do_it(CS&, CARD_LIST* Scope)
+  {
+    command("options lang=spice", Scope);
+  }
+} p8;
+DISPATCHER<CMD>::INSTALL d8(&command_dispatcher, "spice", &p8);
+/*--------------------------------------------------------------------------*/
+class CMD_ACS : public CMD {
+public:
+  void do_it(CS&, CARD_LIST* Scope)
+  {
+    command("options lang=acs", Scope);
+  }
+} p9;
+DISPATCHER<CMD>::INSTALL d9(&command_dispatcher, "acs", &p9);
+/*--------------------------------------------------------------------------*/
+class CMD_ENDC : public CMD {
+public:
+  void do_it(CS&, CARD_LIST* Scope)
+  {
+    if (OPT::language == &lang_acs) {
+      command("options lang=spice", Scope);
+    }else{
+    }
+  }
+} p88;
+DISPATCHER<CMD>::INSTALL d88(&command_dispatcher, ".endc", &p88);
+/*--------------------------------------------------------------------------*/
+class CMD_CONTROL : public CMD {
+public:
+  void do_it(CS&, CARD_LIST* Scope)
+  {
+    if (OPT::language == &lang_spice) {
+      command("options lang=acs", Scope);
+    }else{
+    }
+  }
+} p99;
+DISPATCHER<CMD>::INSTALL d99(&command_dispatcher, ".control", &p99);
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

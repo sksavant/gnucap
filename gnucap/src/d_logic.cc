@@ -1,4 +1,4 @@
-/*$Id: d_logic.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
+/*$Id: d_logic.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -90,7 +90,7 @@ void DEV_LOGIC::expand()
     const CARD* model = find_looking_out(subckt_name);
     
     if(!dynamic_cast<const MODEL_SUBCKT*>(model)) {untested();
-      error(((nstat) ? (bDEBUG) : (bWARNING)),
+      error(((!_sim->is_first_expand()) ? (bDEBUG) : (bWARNING)),
 	    long_label() + ": " + subckt_name + " is not a subckt, forcing digital\n");
     }else{
       _gatemode = OPT::mode;    
@@ -98,7 +98,7 @@ void DEV_LOGIC::expand()
       subckt()->expand();
     }
   }catch (Exception_Cant_Find&) {
-    error(((nstat) ? (bDEBUG) : (bWARNING)), 
+    error(((!_sim->is_first_expand()) ? (bDEBUG) : (bWARNING)), 
 	  long_label() + ": can't find subckt: " + subckt_name + ", forcing digital\n");
   }
   
@@ -190,7 +190,7 @@ void DEV_LOGIC::tr_advance()
   case moDIGITAL: 
     if (_n[OUTNODE]->in_transit()) {
       q_eval();
-      if (SIM::time0 >= _n[OUTNODE]->final_time()) {
+      if (_sim->_time0 >= _n[OUTNODE]->final_time()) {
 	_n[OUTNODE]->propagate();
       }else{untested();
       }
@@ -219,7 +219,7 @@ void DEV_LOGIC::tr_regress()
   case moDIGITAL: itested();
     if (_n[OUTNODE]->in_transit()) {itested();
       q_eval();
-      if (SIM::time0 >= _n[OUTNODE]->final_time()) {itested();
+      if (_sim->_time0 >= _n[OUTNODE]->final_time()) {itested();
 	_n[OUTNODE]->propagate();
       }else{itested();
       }
@@ -240,11 +240,11 @@ bool DEV_LOGIC::tr_needs_eval()const
   case moMIXED:   unreachable(); break;
   case moDIGITAL:
     //assert(!is_q_for_eval());
-    if (analysis_is_restore()) {untested();
-    }else if (analysis_is_static()) {
+    if (_sim->analysis_is_restore()) {untested();
+    }else if (_sim->analysis_is_static()) {
     }else{
     }
-    return (analysis_is_static() || analysis_is_restore());
+    return (_sim->analysis_is_static() || _sim->analysis_is_restore());
   case moANALOG:
     untested();
     assert(!is_q_for_eval());
@@ -268,14 +268,14 @@ void DEV_LOGIC::tr_queue_eval()
 bool DEV_LOGIC::tr_eval_digital()
 {
   assert(_gatemode == moDIGITAL);
-  if (analysis_is_restore()) {untested();
-  }else if (analysis_is_static()) {
+  if (_sim->analysis_is_restore()) {untested();
+  }else if (_sim->analysis_is_static()) {
   }else{
   }
-  if (analysis_is_static() || analysis_is_restore()) {
+  if (_sim->analysis_is_static() || _sim->analysis_is_restore()) {
     tr_accept();
   }else{
-    assert(analysis_is_tran_dynamic());
+    assert(_sim->analysis_is_tran_dynamic());
   }
   
   const COMMON_LOGIC* c = prechecked_cast<const COMMON_LOGIC*>(common());
@@ -380,7 +380,7 @@ void DEV_LOGIC::tr_accept()
   if (want_analog()) {
     if (_gatemode == moDIGITAL) {untested();
       error(bTRACE, "%s:%u:%g switch to analog, %s\n", long_label().c_str(),
-	    iteration_tag(), SIM::time0, _failuremode.c_str());
+	    _sim->iteration_tag(), _sim->_time0, _failuremode.c_str());
       _oldgatemode = _gatemode;
       _gatemode = moANALOG;
     }else{
@@ -390,24 +390,24 @@ void DEV_LOGIC::tr_accept()
     assert(want_digital());
     if (_gatemode == moANALOG) {
       error(bTRACE, "%s:%u:%g switch to digital\n",
-	    long_label().c_str(), iteration_tag(), SIM::time0);
+	    long_label().c_str(), _sim->iteration_tag(), _sim->_time0);
       _oldgatemode = _gatemode;
       _gatemode = moDIGITAL;
     }else{
     }
     assert(_gatemode == moDIGITAL);
-    if (analysis_is_restore()) {untested();
-    }else if (analysis_is_static()) {
+    if (_sim->analysis_is_restore()) {untested();
+    }else if (_sim->analysis_is_static()) {
     }else{
     }
-    if (!SIM::bypass_ok
+    if (!_sim->_bypass_ok
 	|| _lastchangenode != OUTNODE
-	|| analysis_is_static()
-	|| analysis_is_restore()) {
+	|| _sim->analysis_is_static()
+	|| _sim->analysis_is_restore()) {
       LOGICVAL future_state = c->logic_eval(&_n[BEGIN_IN]);
       //		         ^^^^^^^^^^
       if ((_n[OUTNODE]->is_unknown()) &&
-	  (analysis_is_static() || analysis_is_restore())) {
+	  (_sim->analysis_is_static() || _sim->analysis_is_restore())) {
 	_n[OUTNODE]->force_initial_value(future_state);
 	/* This happens when initial DC is digital.
 	 * Answers could be wrong if order in netlist is reversed 
@@ -432,12 +432,12 @@ void DEV_LOGIC::tr_accept()
 	if (_n[OUTNODE]->lv() == lvUNKNOWN
 	    || future_state.lv_future() != _n[OUTNODE]->lv_future()) {
 	  _n[OUTNODE]->set_event(m->delay, future_state);
-	  SIM::new_event(_n[OUTNODE]->final_time(), this);
+	  _sim->new_event(_n[OUTNODE]->final_time());
 	  //assert(future_state == _n[OUTNODE].lv_future());
 	  if (_lastchangenode == OUTNODE) {
 	    unreachable();
 	    error(bDANGER, "%s:%u:%g non-event state change\n",
-		  long_label().c_str(), iteration_tag(), SIM::time0);
+		  long_label().c_str(), _sim->iteration_tag(), _sim->_time0);
 	  }else{
 	  }
 	}else{

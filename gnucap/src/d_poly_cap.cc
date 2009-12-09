@@ -1,4 +1,4 @@
-/*$Id: d_poly_cap.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: d_poly_cap.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -55,38 +55,20 @@ protected: // override virtual
   int	   min_nodes()const	{return net_nodes();}
   int	   matrix_nodes()const	{return _n_ports*2;}
   int	   net_nodes()const	{return _n_ports*2;}
-  CARD*	   clone()const	       {unreachable();return new DEV_CPOLY_CAP(*this);}
-  //void   expand();		//COMPONENT
-  //void   precalc();		//STORAGE
-  //void   map_nodes();		//ELEMENT
-
+  CARD*	   clone()const	        {unreachable();return new DEV_CPOLY_CAP(*this);}
   void	   tr_iwant_matrix()	{tr_iwant_matrix_extended();}
-  //void   tr_begin();		//STORAGE
-  //void   tr_restore();	//STORAGE
-  //void   dc_advance();	//STORAGE
-  //void   tr_advance();	//STORAGE
-  //void   tr_regress();	//ELEMENT
   bool	   tr_needs_eval()const	{/*assert(!is_q_for_eval());*/ return true;}
-  //void   tr_queue_eval();	//ELEMENT
   bool	   do_tr();
   void	   tr_load();
   TIME_PAIR tr_review()		{return _time_by.reset();}//BUG//review(_i0.f0, _it1.f0);}
-  //void   tr_accept();		//CARD/nothing
   void	   tr_unload();
   double   tr_involts()const	{unreachable(); return NOT_VALID;}
-  //double tr_input()const	//ELEMENT
   double   tr_involts_limited()const {unreachable(); return NOT_VALID;}
-  //double tr_input_limited()const //ELEMENT
   double   tr_amps()const;
-  //double tr_probe_num(const std::string&)const;//ELEMENT
-
   void	   ac_iwant_matrix()	{ac_iwant_matrix_extended();}
-  //void   ac_begin();		//CARD/nothing
-  //void   do_ac();		//CARD/nothing
   void	   ac_load();
   COMPLEX  ac_involts()const	{itested(); return NOT_VALID;}
   COMPLEX  ac_amps()const	{itested(); return NOT_VALID;}
-  //XPROBE ac_probe_ext(const std::string&)const;//ELEMENT
 
   std::string port_name(int)const {untested();
     incomplete();
@@ -168,8 +150,8 @@ bool DEV_CPOLY_CAP::do_tr_con_chk_and_q()
   q_load();
 
   assert(_vy1);
-  set_converged(conchk(_load_time, SIM::time0));
-  _load_time = SIM::time0;
+  set_converged(conchk(_load_time, _sim->_time0));
+  _load_time = _sim->_time0;
   for (int i=0; converged() && i<=_n_ports; ++i) {
     set_converged(conchk(_vy1[i], _vy0[i]));
   }
@@ -235,7 +217,7 @@ void DEV_CPOLY_CAP::tr_unload()
 {untested();
   std::fill_n(_vi0, _n_ports+1, 0.);
   _m0.c0 = _m0.c1 = 0.;
-  mark_inc_mode_bad();
+  _sim->mark_inc_mode_bad();
   tr_load();
 }
 /*--------------------------------------------------------------------------*/
@@ -250,10 +232,10 @@ double DEV_CPOLY_CAP::tr_amps()const
 /*--------------------------------------------------------------------------*/
 void DEV_CPOLY_CAP::ac_load()
 {
-  _acg = _vy0[1] * SIM::jomega;
+  _acg = _vy0[1] * _sim->_jomega;
   ac_load_passive();
   for (int i=2; i<=_n_ports; ++i) {
-    ac_load_extended(_n[OUT1], _n[OUT2], _n[2*i-2], _n[2*i-1], _vy0[i] * SIM::jomega);
+    ac_load_extended(_n[OUT1], _n[OUT2], _n[2*i-2], _n[2*i-1], _vy0[i] * _sim->_jomega);
   }
 }
 /*--------------------------------------------------------------------------*/
