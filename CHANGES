@@ -1,0 +1,14 @@
+- added Doxyfile
+- added tw
+  - waves, measurements
+  - step control
+- changed problelist to *probelist
+- added "math probes" (preliminary, stupid)
+- allow inf as double value (hack), breaks i.* as variable
+- added ADP. not in use much.
+- added time-as-parameter (hack)
+- added command history
+- allow parameters as probe (HACK)
+      ( fixme: allow expressions )
+- repaired sweep for batchmode. 
+    uses parameters and breaks interactive mode sweep

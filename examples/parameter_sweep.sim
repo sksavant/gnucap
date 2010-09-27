@@ -1,0 +1,7 @@
+* simple parameter sweep example
+.parameter b=5
+.sweep 10 a 0 5
+.eval a+b
+go
+
+.echo done
