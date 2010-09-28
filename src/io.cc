@@ -25,7 +25,13 @@
 #include "io_.h"
 
 OMSTREAM IO::mstdout(stdout);
+
+#ifdef DO_TRACE
+OMSTREAM IO::error(stdout);
+#else
 OMSTREAM IO::error(stderr);
+#endif
+
 OMSTREAM IO::plotout;
 bool	IO::plotset(false);
 int	IO::formaat(0);

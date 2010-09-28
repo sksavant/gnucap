@@ -6,6 +6,21 @@ vim:ts=8:sw=2:et:
 /* This file is no longer automatically generated. */
 
 #define WS_COLS 11
+/*
+static double WS[10][WS_COLS] =
+// wrong order   ^^  ^^ needed
+{ { .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 },
+  { .0 , .0 , .009, .01, .32, .32, .32, .37, .32, .1 , .0 },
+  { .0 , .01, .01, .01,  .1, .26, .32, .32, .20, .14, .0 },
+  { .0 , .01, .09, .02, .32, .47, .46, .25, .10, .10, .0 },
+  { .0 , .09, .02, .07, .47, .32, .31, .31, .13, .10, .0 },
+  { .0 , .01, .06, .37, .48, .32, .14, .13, .10, .0 , .0 },
+  { .0 , .02, .01, .26, .27, .19, .11, .10, .0 , .0 , .0 },
+  { .0 , .4 , .32, .25, .25, .1 , .1 , .0 , .0 , .0 , .0 },
+  { .0 , .26, .37, .26, .1 , .1 , .0 , .0 , .0 , .0 , .0 },
+  { .11, .1 , .0 , .0 , .0 ,  0 , .0 , .0 , .0 , .0 , .0 } };
+*/
+
 static double WS[10][WS_COLS] =
 // wrong order   ^^  ^^ needed
 { { .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 },
@@ -17,7 +32,7 @@ static double WS[10][WS_COLS] =
   { .0 , .32, .40, .26, .27, .19, .11, .10, .0 , .0 , .0 },
   { .0 , .4 , .32, .25, .25, .1 , .1 , .0 , .0 , .0 , .0 },
   { .0 , .26, .37, .26, .1 , .1 , .0 , .0 , .0 , .0 , .0 },
-  { .11, .1 , .0 , .0 , .0 ,  0 , .0 , .0 , .0 , .0 , .0 } };
+  { .0 , .11, .1 , .0 , .0 , .0 ,  0 , .0 , .0 , .0 , .0 } };
 
 #include "e_aux.h"
 #include "e_storag.h"
@@ -562,7 +577,7 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
   int cols = WS_COLS;
   int rows = 10;
 
-  long double up = 1;
+  long double up = pow(10, -6.5);
   long double down = 1;
   long double uref=1;
   // double lambda=1;
@@ -577,8 +592,8 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
 
   for(row=0; row < rows; row++ ) {
     up *= base;
+    down=pow(10,3.5);
     for(col=0; col < cols; col++ ) {
-      down *=base;
       if ( WS[row][col] == .0 ) continue;
 
       
@@ -587,9 +602,10 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
       RCD1->attach(this); // ?
       RCD1->Uref = uref;
       RCD1->Recommon = up;
-      RCD1->weight = WS[row][col];
+      double wt = WS[row][col];
+      RCD1->weight = wt;
       RCD1->Rccommon0 = down;
-      trace5("MODEL_BUILT_IN_BTI_INF::attach_rcds ", row, col, k, up, down); 
+      trace6("MODEL_BUILT_IN_BTI_INF::attach_rcds ", row, col, k, up, down, wt); 
 
       //double _rr = _rr_.subs(runter=runter, u_gate_=uref)
 
@@ -601,9 +617,9 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
 
       COMMON_COMPONENT::attach_common(RCD1, (COMMON_COMPONENT**)&(_RCD[k]));
       k++;
+      down /= base;
       
     }
-    down=1;
 
   }
   

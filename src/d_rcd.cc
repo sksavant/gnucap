@@ -50,8 +50,9 @@ MODEL_BUILT_IN_RCD::MODEL_BUILT_IN_RCD(const BASE_SUBCKT* p)
    Re(1e6),
    Rc(1e6),
    flags(int(USE_OPT)),
-   uref(0)
-   ,modelparm(0)
+   uref(0),
+   modelparm(0),
+   positive(true)
 {
   if (ENV::run_mode != rPRE_MAIN) {
     ++_count;
@@ -68,7 +69,8 @@ MODEL_BUILT_IN_RCD::MODEL_BUILT_IN_RCD(const MODEL_BUILT_IN_RCD& p)
    Rc(p.Rc),
    flags(p.flags),
    uref(p.uref),
-   modelparm(p.modelparm)
+   modelparm(p.modelparm),
+   positive(p.positive)
 {
   if (ENV::run_mode != rPRE_MAIN) {
     ++_count;
@@ -78,11 +80,13 @@ MODEL_BUILT_IN_RCD::MODEL_BUILT_IN_RCD(const MODEL_BUILT_IN_RCD& p)
 /*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_RCD_SYM::MODEL_BUILT_IN_RCD_SYM(const BASE_SUBCKT* p) 
   : MODEL_BUILT_IN_RCD(p){ }
-MODEL_BUILT_IN_RCD_NET::MODEL_BUILT_IN_RCD_NET(const BASE_SUBCKT* p)  
-  : MODEL_BUILT_IN_RCD(p){ }
 /*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_RCD_SYM::MODEL_BUILT_IN_RCD_SYM(const MODEL_BUILT_IN_RCD_SYM& p)  
   : MODEL_BUILT_IN_RCD(p){ }
+/*--------------------------------------------------------------------------*/
+MODEL_BUILT_IN_RCD_NET::MODEL_BUILT_IN_RCD_NET(const BASE_SUBCKT* p)  
+  : MODEL_BUILT_IN_RCD(p){ }
+/*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_RCD_NET::MODEL_BUILT_IN_RCD_NET(const MODEL_BUILT_IN_RCD_NET& p) 
   : MODEL_BUILT_IN_RCD(p){ }
 /*--------------------------------------------------------------------------*/
@@ -118,11 +122,12 @@ void MODEL_BUILT_IN_RCD::precalc_first()
     MODEL_CARD::precalc_first();
     e_val(&(this->anneal), true, par_scope);
     e_val(&(this->Remodel), 1e6, par_scope);
-    e_val(&(this->Re), 1e6, par_scope);
-    e_val(&(this->Rc), 1e6, par_scope);
+    e_val(&(this->Re), 1.0, par_scope);
+    e_val(&(this->Rc), 1.0, par_scope);
     e_val(&(this->flags), int(USE_OPT), par_scope);
     e_val(&(this->uref), 0.0, par_scope);
     e_val(&(this->modelparm), 0, par_scope);
+    e_val(&(this->positive), true, par_scope);
     // final adjust: code_pre
     // final adjust: override
     // final adjust: raw
@@ -170,6 +175,7 @@ void MODEL_BUILT_IN_RCD::set_param_by_index(int i, std::string& value, int offse
   case 6: flags = value; break;
   case 7: uref = value; break;
   case 8: modelparm = value; break;
+  case 9: positive = value; break;
   default: throw Exception_Too_Many(i, 7, offset); break;
   }
 }
@@ -186,6 +192,7 @@ bool MODEL_BUILT_IN_RCD::param_is_printable(int i)const
   case 6:  return (!(flags & USE_OPT));
   case 7:  return (uref.has_hard_value());
   case 8:  return (modelparm.has_hard_value());
+  case 9:  return (positive.has_hard_value());
   default: return false;
   }
 }
@@ -202,6 +209,7 @@ std::string MODEL_BUILT_IN_RCD::param_name(int i)const
   case 6:  return "flags";
   case 7:  return "uref";
   case 8:  return "modelparm";
+  case 9:  return "positive";
   default: return "";
   }
 }
@@ -212,15 +220,9 @@ std::string MODEL_BUILT_IN_RCD::param_name(int i, int j)const
     return param_name(i);
   }else if (j == 1) {
     switch (MODEL_BUILT_IN_RCD::param_count() - 1 - i) {
-    case 0:  return "";
-    case 1:  return "";
-    case 2:  return "";
-    case 3:  return "";
     case 4:  return "Re";
     case 5:  return "Rc";
-    case 6:  return "";
-    case 7:  return "";
-    case 8:  return "";
+    case 9:  return "pos";
     default: return "";
     }
   }else{
@@ -240,6 +242,7 @@ std::string MODEL_BUILT_IN_RCD::param_value(int i)const
   case 6:  return flags.string();
   case 7:  return uref.string();
   case 8:  return modelparm.string();
+  case 9:  return positive.string();
   default: return "";
   }
 }
@@ -505,7 +508,7 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
 
     // fix weithgt to match u_end
     _weight = weight *  m->uref / teiler / ueff;
-    trace4("fitting common to uref", _Re, m->uref, Uref, _Rc0);
+    trace4("COMMON_BUILT_IN_RCD::precalc_last fitting common to uref", _Re, m->uref, Uref, _Rc0);
     assert (weight != 0);
     assert (_weight != 0);
 
@@ -855,6 +858,18 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
     return  static_cast<double>(_region);
   }else if (Umatch(x, "trr ")) {
     return  ( _Ccgfill->tr_rel_err() );
+  }else if (Umatch(x, "te ")) {
+      return  ( c->__tau_upi(exp(1)-1) );
+  }else if (Umatch(x, "tc ")) {
+      return  ( c->__Rc(0) );
+#ifdef DO_TRACE
+  }else if (Umatch(x, "adpdebug ")) {
+    return  ( _Ccgfill->debug() );
+#endif
+  }else if (Umatch(x, "re ")) {
+      return  ( c->__Re(1) );
+  }else if (Umatch(x, "rc ")) {
+      return  ( c->__Rc(1) );
   }else if (Umatch(x, "wdt ")) {
     return  ( _Ccgfill->wdT() );
   }else if (Umatch(x, "net ")) {
@@ -905,15 +920,29 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
       return _Ccgfill->get_tt() * c->_weight;
     }
   }else if (Umatch(x, "vc ")) {
-    return  ( _n[n_ic].v0() - _n[n_b].v0() );
+    if( m->use_net()){
+      return  ( _n[n_ic].v0() - _n[n_b].v0() );
+    }else{
+      return _Ccgfill->get_tt();
+    }
   }else if (Umatch(x, "RE ")) {
     return  c->_Re;
+  }else if (Umatch(x, "tc ")) {
+      return  ( c->__Rc(0) );
+  }else if (Umatch(x, "re ")) {
+      return  ( c->__Re(1) );
+  }else if (Umatch(x, "rc ")) {
+      return  ( c->__Rc(1) );
   }else if (Umatch(x, "wdt ")) {
     return  ( _Ccgfill->wdT() );
   }else if (Umatch(x, "Rc ")) {
     return  c->_Rc0;
   }else if (Umatch(x, "tr1 ")) {
     return  ( _Ccgfill->tr_get_old() );
+#ifdef DO_TRACE
+  }else if (Umatch(x, "adpdebug ")) {
+    return  ( _Ccgfill->debug() );
+#endif
   }else if (Umatch(x, "tr ")) {
     return  ( _Ccgfill->tr_get() );
   }else if (Umatch(x, "vwtr ")) {
@@ -1022,8 +1051,14 @@ void DEV_BUILT_IN_RCD::tr_stress() const
   assert(m);
   assert(c->sdp());
 
+  if( m->positive) {
+
+    assert (_Ccgfill->get_total()>= 0);
+    assert (  _n[n_u].v0()  - _n[n_b].v0() >=0 );
+  }
 //  trace1(("DEV_BUILT_IN_RCD::tr_stress() "+ std::string(c->modelname()) ).c_str(), m->use_net());
   if( m->use_net()) return;
+
 
   //double  fill = _n[n_ic].v0();
   double  fill = _Ccgfill->get_total();
@@ -1058,9 +1093,6 @@ void DEV_BUILT_IN_RCD::tr_stress() const
         case 0:
         case 1:
         default:
-        // double  involts_old = _sim->_vt1[_n[n_u]->m_()] - _sim->_vt1[_n[n_b]->m_()];
-        //
-        //
         newfill = (fill - uend) * exp(-h/tau) + uend;
   }
 

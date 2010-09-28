@@ -58,6 +58,7 @@ struct INTERFACE SIM_DATA {
   bool _freezetime;	/* flag: don't advance stored time */
   int _iter[iCOUNT];
   int _tt_iter;
+  int _tt_done;
   int _tt_accepted;
   int _tt_rejects;
   int _user_nodes;
@@ -167,7 +168,8 @@ struct INTERFACE SIM_DATA {
   void count_iterations(int i)	{assert(up_order(0,i,iCOUNT-1)); ++_iter[i];}
   int iteration_tag()const      {return _iter[iTOTAL];}
   int iteration_number()const   {return _iter[iSTEP];}
-  int tt_iteration_number()const   {return _tt_iter;}
+  int tt_iteration_number()const   {return _tt_iter;} // accepted steps
+  int tt_iteration_tries()const   {return _tt_done;} // accepted steps
   bool is_initial_step()	{return (_iter[_mode] <= 1  && analysis_is_static());}
   bool is_advance_iteration()const   {return (_iter[iSTEP] == 0);}
   bool is_advance_or_first_iteration()const {assert(_iter[iSTEP]>=0); return (_iter[iSTEP]<=1);}
@@ -179,10 +181,12 @@ struct INTERFACE SIM_DATA {
 
   private:
   int _order_tt;
+  int last_order_tt;
+
   public:
   int _stepno; // number of transient steps accepted.
   void update_tt_order();
-  unsigned int get_tt_order();
+  unsigned int get_tt_order() const;
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

@@ -301,7 +301,6 @@ bool DEV_VCVS2::do_tr()
   _m0 = CPOLY1(_y[0]);
   _m0 *= -_loss0;
 
-  std::cerr << "DEV_VCVS2::do_tr " << value() << " " << " " <<   " loss " << _loss0 << "\n";
   return converged();
 }
 /*--------------------------------------------------------------------------*/

@@ -169,7 +169,7 @@ public:
       // blank string means to use default value
       _v = _s; // where does it come from?
       if (recursion > 1) {
-        error(bWARNING, "parameter " + *first_name + " has no value\n");
+        error(bWARNING, "PARAMETER::e_val: " + *first_name + " has no value\n");
       }else{
       }
     }else if (_s != "#") {

@@ -64,9 +64,8 @@ public: // override virtual
 #endif
   TIME_PAIR tr_review();
   virtual void  tr_stress() const    {
-	  std::cerr << "HOMEBREW device " << short_label() << ": no stress\n";
-
-  } // calcul
+	  trace0( "HOMEBREW device " + short_label() );
+  }
 
   //void   map_nodes();
   void	   tr_iwant_matrix() = 0;

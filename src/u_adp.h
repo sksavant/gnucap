@@ -58,6 +58,9 @@ class ADP_NODE {
     const COMPONENT* _c;
   public:
     std::string short_label() {return name;}
+#ifdef DO_TRACE
+    virtual double debug();
+#endif
 
     ADP_NODE( ):
       tt_value(0),
@@ -128,7 +131,7 @@ class ADP_NODE_RCD : public ADP_NODE {
  public:
    ADP_NODE_RCD(COMPONENT*x): ADP_NODE(x) { }
 
-  void tt_expect2() { tt_expect2_exp(); }
+   void tt_expect2() { tt_expect2_exp(); }
         // nonsense  
 
 

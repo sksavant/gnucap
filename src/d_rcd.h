@@ -59,7 +59,7 @@ public: // override virtual
   void tt_eval(COMPONENT*)const;
   bool      is_valid(const COMPONENT*)const;
   void      tr_eval(COMPONENT*)const;
-  virtual void      stress_apply(COMPONENT*)const {unreachable();}
+  virtual void      stress_apply( DEV_BUILT_IN_RCD*)const {unreachable();}
 public: // not virtual
   static int count() {return _count;}
 private: // strictly internal
@@ -72,6 +72,7 @@ public: // input parameters
   PARAMETER<int> flags;	// 
   PARAMETER<double> uref;	// 
   PARAMETER<int> modelparm;	// just a test
+  PARAMETER<bool> positive;	// only take positive stress
 public: // calculated parameters
   virtual bool use_net() const {unreachable(); return 1;}
 };
@@ -158,8 +159,8 @@ public: // functions...
   double __Rc(double ueff)const
   { return _Rc0 + ueff * _lambda * _Rc1; }
   double __tau_upi ( double ueff ) const{
-    double   rr = __Rc(ueff);
-    double  rh =  __Re(ueff)  ;
+    double  rr = __Rc(ueff);
+    double  rh = __Re(ueff)  ;
     return float( rr / ( 1+rr/rh )  ) ;
   }
 

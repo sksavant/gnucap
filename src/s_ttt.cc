@@ -196,20 +196,21 @@ void TTT::first()
     trace0("loadq nonempty -- clearing");
     _sim->_loadq.clear() ; // why?
   }
-  _Time1 = 0;
-  _sim->_dT0 = 0;
-  _sim->_dT1 = 0;
-  _sim->_dT2 = 0;
-  _sim->update_tt_order();
+
+  {
+    _Time1 = 0;
+    _sim->_dT0 = 0;
+    _sim->_dT1 = 0;
+    _sim->_dT2 = 0;
+  }
 
   assert(_sim->get_tt_order() == 0 );
 
   assert(_sim->_Time0 <= _Tstart);
   _Time_by_user_request = _sim->_Time0 + _Tstep; /* set next user step */
 
-  assert(_Tstep>0);
+  if (_Tstop>0) assert(_Tstep>0);
 
-  _sim->_tt_iter = 0; // first iteration = 0
   _sim->_tt_accepted = 0;
   _sim->_tt_rejects = 0;
 // _stepno_tt = 0;
@@ -248,7 +249,7 @@ void TTT::first()
   assert( _sim->_mode  == s_TTT );
   _accepted_tt = true;
 
-  trace0("TTT accepting first");
+  trace0("TTT::first accepting first");
 
   // accept_tt();
   _sim->update_tt_order();
@@ -275,21 +276,28 @@ void TTT::first()
 /*--------------------------------------------------------------------------*/
 void TTT::sweep_tt()
 {
+// FIXME  if no first then recycle data
+  _sim->_dT0 = 0;
+  _sim->_dT1 = 0;
+  _sim->_dT2 = 0;
+  _sim->update_tt_order();
+  _sim->_tt_iter = 0;
+  _sim->_tt_done = 0;
+
+
+  //end fixme
   trace6( "TTT::sweep_tt() begin ", _Time1, _sim->_Time0, _Tstart, _Tstop, _Tstep, _sim->tt_iteration_number());
   head_tt(_tstart, _tstop, "TTime");
   assert( _sim->_mode  == s_TTT );
   assert(_sim->_Time0 >= 0 );
 
-  if ( !_tt_cont ){
-    //std::cout << "* first\n";
-    first();
-    trace0("first done");
-  }else if( _Tstop == _Tstart ){
-     // only print things...
-     //
+  if( _Tstop == _Tstart ){
+     trace0("TTT::sweep_tt just printing...");
      outdata_b4(_sim->_Time0); // first output tt data
-     
      return;
+  }else if ( !_tt_cont  ){
+    first();
+    trace0("TTT::sweep_tt first done");
   } else {
     time1 = 0.;
     CARD_LIST::card_list.do_forall( &CARD::stress_apply );
@@ -337,7 +345,7 @@ void TTT::sweep_tt()
 
   assert (_Time1 == _Tstart);
   
-  trace5( "TTT::sweep_tt entering next loop ", _sim->_Time0,  _Time1 , _sim->_dT0 , _accepted , _accepted_tt ); 
+  trace6( "TTT::sweep_tt entering next loop ", _sim->_Time0,  _Time1 , _sim->_dT0 , _sim->_dT1 , _accepted , _accepted_tt ); 
   while(next())
   {
     trace0("TTT loop");
@@ -398,6 +406,8 @@ void TTT::sweep_tt()
 void TTT::sweep() // tr sweep wrapper.
 {
   trace0("TTT::sweep()");
+  _sim->update_tt_order();
+
   CKT_BASE::tt_behaviour_rel = 0; // *= new_dT/(time0-time1);
   CKT_BASE::tt_behaviour_del = 0; //  *= new_dT/(time0-time1);
   //  ADP_LIST::adp_list.do_forall( &ADP::tt_commit );
@@ -450,9 +460,6 @@ void TTT::tt_advance()
   trace2("TTT::tt_advance", _sim->_Time0, _Time1);
   _sim->_tt_iter++;
 
-
-  _sim->update_tt_order();
-
   _Time1 = _sim->_Time0;
   _sim->_dT3 = _sim->_dT2;
   _sim->_dT2 = _sim->_dT1;
@@ -460,7 +467,6 @@ void TTT::tt_advance()
   _sim->_dT0 = 0;
   ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_advance );
 
-  _sim->update_tt_order();
 }
 /*--------------------------------------------------------------------------*/
 bool TTT::review_tt()
@@ -629,7 +635,7 @@ void TTT::setup(CS& Cmd)
   if (Cmd.match1("'\"({") || Cmd.is_pfloat()) {
     PARAMETER<double> arg1, arg2, arg3, arg4, arg5, arg6;
     Cmd >> arg1;
-      arg1.e_val(0.0,_scope);
+    arg1.e_val(0.0,_scope);
     if (Cmd.match1("'\"({") || Cmd.is_float()) {
       Cmd >> arg2;
       arg2.e_val(0.0,_scope);
@@ -637,12 +643,12 @@ void TTT::setup(CS& Cmd)
     }
     if (Cmd.match1("'\"({") || Cmd.is_float()) {
       Cmd >> arg3;
+      arg3.e_val(0.0,_scope);
     }else{
     }
     if (Cmd.match1("'\"({") || Cmd.is_float()) {
       Cmd >> arg4;
       arg4.e_val(0.0,_scope);
-      std::cerr << "TTT: " << arg4.debugstring() << "\n";
     }else{
     }
     if (Cmd.match1("'\"({") || Cmd.is_float()) {
@@ -654,6 +660,7 @@ void TTT::setup(CS& Cmd)
     }else{
     }
 
+    trace4("TTT::setup args ", arg1, arg2 , arg3 , arg4);
 
     if (arg4.has_hard_value()) {	    /* 4 args: all */
       _tt_cont=false;
@@ -681,19 +688,22 @@ void TTT::setup(CS& Cmd)
       _Tstart = _sim->_last_Time;
 
       if(arg1<arg2){
-        _Tstop  = arg2; // as tran
+        _Tstop  = arg2; 
         _Tstep = arg1;
       }else{
-        _Tstop  = arg1; // as tran
+        _Tstop  = arg1; 
         _Tstep = arg2;
       }
+
+
+      trace4("TTT::setup 2 args ", _tstep, _tstop , _Tstep , _Tstop);
 
 
     } else if (arg1.has_hard_value() ) {
       _Tstart = _sim->_last_Time;
       _Tstop  = arg1; // as tran
 
-      // to trigger prints... (hack)
+      // to trigger prints... (hack?)
       if(double(_Tstop) == 0) _Tstop = double( _Tstart );
 
     } else {
@@ -808,7 +818,8 @@ void TTT::setup(CS& Cmd)
   }
 
   steps_total_out_ = (int) 1+ ceil( ( (_tstop - _tstart ) / _tstep ) );
-  std::cerr << "TTTT::setup " << steps_total_out_ << ": " << _tstep << _tstop << _tstart  << "\n";
+  steps_total_out_ = steps_total_out_ ;
+  trace4( "TTT::setup ",  steps_total_out_ , _tstep , _tstop ,_tstart );
 
 }
 /*--------------------------------------------------------------------------*/
@@ -874,6 +885,13 @@ bool TTT::next()
     // accepted step. calculating _new_dT
     assert ( _Time1 == _sim->_Time0 ); // advance ...
     _new_dT = max( (double) _tstop, (_sim->_dT1 + _Tstep)/2 ) ; // fmin( get_new_dT(), _Tstep );
+
+    if (_sim->get_tt_order() < 2){
+      ///FIXME
+      _out << "* TTT order hack "<< _sim->get_tt_order() <<"\n";
+      _new_dT = ( _tstop );
+    }
+
 
     if(_new_dT < _dTmin){
       std::cout << "TT @" << _sim->_Time0 << "step too small: " << _new_dT << " " << _dTmin << "\n";
