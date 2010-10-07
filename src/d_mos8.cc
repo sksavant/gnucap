@@ -5146,11 +5146,11 @@ void MODEL_BUILT_IN_MOS8::tr_eval(COMPONENT* brh)const
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_MOS8::tr_stress( const COMPONENT* c ) const
+void MODEL_BUILT_IN_MOS8::do_tr_stress( const COMPONENT* c ) const
 {
-  MODEL_BUILT_IN_MOS_BASE::tr_stress(c);
+  MODEL_BUILT_IN_MOS_BASE::do_tr_stress(c);
 
-  DEV_BUILT_IN_MOS* d = (DEV_BUILT_IN_MOS*)c;
+  const DEV_BUILT_IN_MOS* d = ( const DEV_BUILT_IN_MOS*)c;
   const MODEL_BUILT_IN_MOS8* m = this;
   ADP_BUILT_IN_MOS8* a = (ADP_BUILT_IN_MOS8*) c->adp();
 
@@ -5322,15 +5322,15 @@ double ADP_BUILT_IN_MOS8::tr_probe_num(const std::string& x)const
 
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_MOS8::stress_apply( const COMPONENT* brh) const
+void MODEL_BUILT_IN_MOS8::do_stress_apply(  COMPONENT* brh) const
 {
-  MODEL_BUILT_IN_MOS_BASE::stress_apply(brh);
+  MODEL_BUILT_IN_MOS_BASE::do_stress_apply(brh);
 
-  const DEV_BUILT_IN_MOS* d = prechecked_cast<const DEV_BUILT_IN_MOS*>(brh);
+  DEV_BUILT_IN_MOS* d = prechecked_cast<DEV_BUILT_IN_MOS*>(brh);
   assert(d);
-  COMMON_BUILT_IN_MOS* c = (COMMON_BUILT_IN_MOS*)(d->common());
+  const COMMON_BUILT_IN_MOS* c = (const COMMON_BUILT_IN_MOS*)(d->common());
   assert(c);
-  SDP_BUILT_IN_MOS8* s = (SDP_BUILT_IN_MOS8*)(c->sdp());
+  const SDP_BUILT_IN_MOS8* s = (const SDP_BUILT_IN_MOS8*)(c->sdp());
   assert(s);
   ADP_BUILT_IN_MOS8* a = (ADP_BUILT_IN_MOS8*)(d->adp());
   assert(a);

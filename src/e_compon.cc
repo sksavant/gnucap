@@ -62,7 +62,7 @@ void COMMON_COMPONENT::attach_common(COMMON_COMPONENT*c, COMMON_COMPONENT**to)
 {
   assert(to);
   if (c == *to) {
-    untested();
+    itested();
     // The new and old are the same object.  Do nothing.
   }else if (!c) {untested();
     // There is no new common.  probably a simple element
@@ -288,7 +288,7 @@ void COMMON_COMPONENT::tt_commit(ELEMENT*x)const
 {
   untested0( x->short_label().c_str()); 
   assert(_model);
-  _model->tt_commit(x);
+  _model->do_tt_commit(x);
 }
 /*--------------------------------------------------------------------------*/
 void COMMON_COMPONENT::tr_eval(ELEMENT*x)const
@@ -1028,7 +1028,7 @@ void COMPONENT::tr_do_behaviour(){
 /*--------------------------------------------------------------------------*/
 void COMPONENT::tt_accept()
 {
-  std::cerr << "COMPON::tt_accept() " << short_label() << "\n";
+  trace0( "COMPON::tt_accept() " + short_label() );
   if(_amps==NULL){
     _amps = (double*) malloc(sizeof (double) * net_nodes() * TRANSIENT::total_outsteps() );
   }

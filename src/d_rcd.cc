@@ -26,11 +26,6 @@ namespace MODEL_BUILT_IN_RCD_DISPATCHER {
   static MODEL_BUILT_IN_RCD_NET p1(&p1d);
   static DISPATCHER<MODEL_CARD>::INSTALL
     d1(&model_dispatcher, "rcdnet|rcdmodel", &p1);
-
-  static DEV_BUILT_IN_RCD p2d;
-  static MODEL_BUILT_IN_RCD_SYM p2(&p2d);
-  static DISPATCHER<MODEL_CARD>::INSTALL
-    d2(&model_dispatcher, "rcdsym", &p2);
 }
 /*--------------------------------------------------------------------------*/
 void SDP_BUILT_IN_RCD::init(const COMMON_COMPONENT* cc)
@@ -61,6 +56,10 @@ MODEL_BUILT_IN_RCD::MODEL_BUILT_IN_RCD(const BASE_SUBCKT* p)
   set_default(&_tnom_c, OPT::tnom_c);
 }
 /*--------------------------------------------------------------------------*/
+void MODEL_BUILT_IN_RCD::do_tr_stress( const COMPONENT* ) const {
+  unreachable();
+}
+/*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_RCD::MODEL_BUILT_IN_RCD(const MODEL_BUILT_IN_RCD& p)
   :MODEL_CARD(p),
    anneal(p.anneal),
@@ -78,11 +77,6 @@ MODEL_BUILT_IN_RCD::MODEL_BUILT_IN_RCD(const MODEL_BUILT_IN_RCD& p)
   }
 }
 /*--------------------------------------------------------------------------*/
-MODEL_BUILT_IN_RCD_SYM::MODEL_BUILT_IN_RCD_SYM(const BASE_SUBCKT* p) 
-  : MODEL_BUILT_IN_RCD(p){ }
-/*--------------------------------------------------------------------------*/
-MODEL_BUILT_IN_RCD_SYM::MODEL_BUILT_IN_RCD_SYM(const MODEL_BUILT_IN_RCD_SYM& p)  
-  : MODEL_BUILT_IN_RCD(p){ }
 /*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_RCD_NET::MODEL_BUILT_IN_RCD_NET(const BASE_SUBCKT* p)  
   : MODEL_BUILT_IN_RCD(p){ }
@@ -489,9 +483,9 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
     double up = Recommon;
     double down =  Rccommon0;
 
-    double rad=ueff*ueff*up*up + 2.0*(up*up + up*down)*ueff + up*up - 2*up*down + down*down;
+    double rad = double(ueff*ueff*up*up + 2.0*(up*up + up*down)*ueff + up*up - 2*up*down + down*down);
     //double s = ueff*up + up - down;
-    double up_res = 1.0/2.0*(ueff*up + up - down + sqrt(rad))/ueff;
+    double up_res = double ( 1.0/2.0*(ueff*up + up - down + sqrt(rad))/ueff );
     double down_res = down;
 
     _Re  = up_res;
@@ -499,7 +493,7 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
     _Rc1 = up_res;
 
     //double _rr = _rr_.subs(runter=runter, u_gate_=uref)
-    double _rr = down + up * mu * ueff;
+    double _rr = double (down + up * mu * ueff);
 
     // double _rh = _rh_.subs(runter=runter, u_gate_=uref)  
     double _rh = down;
@@ -507,7 +501,7 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
     double teiler =  ( _rr/(_rr+_rh) );
 
     // fix weithgt to match u_end
-    _weight = weight *  m->uref / teiler / ueff;
+    _weight = double (weight *  m->uref / teiler / ueff );
     trace4("COMMON_BUILT_IN_RCD::precalc_last fitting common to uref", _Re, m->uref, Uref, _Rc0);
     assert (weight != 0);
     assert (_weight != 0);
@@ -527,11 +521,6 @@ namespace DEV_BUILT_IN_RCD_DISPATCHER {
   static DEV_BUILT_IN_RCD p0;
   static DISPATCHER<CARD>::INSTALL
     d0(&device_dispatcher, "Z|rcd", &p0);
-
-//  static DEV_BUILT_IN_RCD_SYM p1;
-//  static DISPATCHER<CARD>::INSTALL
-//    d1(&device_dispatcher, "rcdsym", &p1);
-//
 }
 /*--------------------------------------------------------------------------*/
 static EVAL_BUILT_IN_RCD_GRc Eval_GRc(CC_STATIC);
@@ -641,7 +630,7 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p)
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::expand()
 {
-  BASE_SUBCKT::expand(); // calls common->expand, attached model
+  BASE_SUBCKT::expand(); // calls common->expand, attaches model
   assert(_n);
   assert(common());
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
@@ -676,6 +665,7 @@ void DEV_BUILT_IN_RCD::expand()
     untested(); // rebuild circuit??
   }
 }
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::expand_sym() {
   assert(_n);
@@ -912,12 +902,22 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(c->sdp());
   assert(s);
   // const ADP_BUILT_IN_RCD* a = prechecked_cast<const ADP_BUILT_IN_RCD*>(adp());
+  //
+  // FIXME 
+  double lambda=1;
+  double uref_= m->uref;
 
   if (Umatch(x, "vw{v} ")) {
     if( m->use_net()){
       return  ( _n[n_ic].v0() - _n[n_b].v0() ) * c->_weight;
     }else{
       return _Ccgfill->get_tt() * c->_weight;
+    }
+  }else if (Umatch(x, "net ")) {
+    if( m->use_net()){
+      return  1;
+    }else{
+      return  0;
     }
   }else if (Umatch(x, "vc ")) {
     if( m->use_net()){
@@ -927,16 +927,14 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
     }
   }else if (Umatch(x, "RE ")) {
     return  c->_Re;
-  }else if (Umatch(x, "tc ")) {
-      return  ( c->__Rc(0) );
-  }else if (Umatch(x, "re ")) {
-      return  ( c->__Re(1) );
-  }else if (Umatch(x, "rc ")) {
-      return  ( c->__Rc(1) );
-  }else if (Umatch(x, "wdt ")) {
-    return  ( _Ccgfill->wdT() );
   }else if (Umatch(x, "Rc ")) {
     return  c->_Rc0;
+  }else if (Umatch(x, "tc ")) {
+      return  ( c->__Rc(0) );
+  }else if (Umatch(x, "te ")) {
+      return  ( c->__Re( exp(lambda* uref_) -1    ) );
+  }else if (Umatch(x, "wdt ")) {
+    return  ( _Ccgfill->wdT() );
   }else if (Umatch(x, "tr1 ")) {
     return  ( _Ccgfill->tr_get_old() );
 #ifdef DO_TRACE
@@ -955,21 +953,21 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
 /*--------------------------------------------------------------------------*/
 // cc_direct
 
-double ADP_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
+double ADP_BUILT_IN_RCD::tt_probe_num(const std::string& )const
  {untested(); return 888;}
-double ADP_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
+double ADP_BUILT_IN_RCD::tr_probe_num(const std::string& )const
 {untested(); return 888;}
-void ADP_BUILT_IN_RCD::init(const COMPONENT* c)
+void ADP_BUILT_IN_RCD::init(const COMPONENT* )
 {
   untested();
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD::tt_eval(COMPONENT* c)const
+void MODEL_BUILT_IN_RCD::tt_eval(COMPONENT* )const
 {
   untested();
 }
 /*--------------------------------------------------------------------------*/
-ADP_CARD* MODEL_BUILT_IN_RCD::new_adp(COMPONENT* c)const
+ADP_CARD* MODEL_BUILT_IN_RCD::new_adp(const COMPONENT* c)const
 {
   untested0("MODEL_BUILT_IN_RCD::new_adp");
   assert(c);
@@ -1010,7 +1008,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(c->sdp());
   assert(s);
 
-  m->stress_apply(this);
+  m->do_stress_apply(this);
 
   double fill=_Ccgfill->get_tt();
   trace2("(stress_apply)", fill, _sim->tt_iteration_number() );
@@ -1032,12 +1030,10 @@ void DEV_BUILT_IN_RCD::stress_apply()
 
 }
 ///*------------------------------------*/
-void MODEL_BUILT_IN_RCD_NET::stress_apply( DEV_BUILT_IN_RCD* d ) const
-{
-
+void MODEL_BUILT_IN_RCD_NET::do_expand(const  COMPONENT* ) {
 }
-///*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_SYM::stress_apply( DEV_BUILT_IN_RCD* d ) const
+///*------------------------------------*/
+void MODEL_BUILT_IN_RCD_NET::do_stress_apply( COMPONENT*  ) const
 {
 
 }
@@ -1052,60 +1048,28 @@ void DEV_BUILT_IN_RCD::tr_stress() const
   assert(c->sdp());
 
   if( m->positive) {
-
-    assert (_Ccgfill->get_total()>= 0);
-    assert (  _n[n_u].v0()  - _n[n_b].v0() >=0 );
+    if ( _Ccgfill->get_total() < 0 ){
+      trace1(("DEV_BUILT_IN_RCD::tr_stress fill is negative: " + short_label()).c_str() ,  _Ccgfill->get_total() );
+    }
+    if (  _n[n_u].v0()  - _n[n_b].v0() < -1e-10 ){
+      trace1(("DEV_BUILT_IN_RCD::tr_stress input is negative: " + short_label()).c_str() ,   _n[n_u].v0()  - _n[n_b].v0() );
+      assert (false );
+    }
   }
-//  trace1(("DEV_BUILT_IN_RCD::tr_stress() "+ std::string(c->modelname()) ).c_str(), m->use_net());
+
+
+
   if( m->use_net()) return;
+  m->do_tr_stress(this);
 
 
-  //double  fill = _n[n_ic].v0();
-  double  fill = _Ccgfill->get_total();
-  double  ueff = _n[n_u].v0()  - _n[n_b].v0();
-
-  trace3("DEV_BUILT_IN_RCD::tr_stress ", _n[n_b].v0(), _n[n_u].v0(), _n[n_ic].v0() );
-
-  // use positive values for pmos
-  ueff=ueff;
-
-  double h = _sim->_dt0;
-  double uend;
-  double tau;
-
-  double rc=c->__Rc(ueff);
-  if (fill < ueff){
-    trace2("DEV_BUILT_IN_RCD::tr_stress open", fill, ueff);
-    double re=c->__Re(ueff);
-    tau = ( rc / ( 1+rc/re )  ) ;
-    uend = ueff / (re/rc +1) ;
-
-  }else{
-    // diode closed.
-    trace0("DEV_BUILT_IN_RCD::tr_stress closed");
-    tau=rc;
-    uend=0;
-
-  }
-
-  double newfill;
-  switch(_sim->_stepno){
-        case 0:
-        case 1:
-        default:
-        newfill = (fill - uend) * exp(-h/tau) + uend;
-  }
-
-  // double bulkpot=_n[n_b].v0();
-
-  trace6("DEV_BUILT_IN_RCD::tr_stress ", fill, h, tau, newfill, ueff, uend );
-
-//  _sim->_v0[_n[n_ic]->m_()] = newfill ; 
-//  _sim->_vdc[_n[n_ic]->m_()] = newfill ; 
-
-  _Ccgfill->tr_add(newfill-fill);
-  trace4("DEV_BUILT_IN_RCD::tr_stress ", fill, h, tau, (newfill-fill)/h );
 }
+/*------------------------------------------------------------------*/
+double DEV_BUILT_IN_RCD::involts() const {
+  return _n[n_u].v0()  - _n[n_b].v0();
+}
+/*------------------------------------------------------------------*/
+/*------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::tr_stress_last() const
 {
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
@@ -1126,7 +1090,7 @@ void DEV_BUILT_IN_RCD::tr_stress_last() const
   }
 }
 ///*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_RCD::tt_commit()
+void DEV_BUILT_IN_RCD::tt_commit() const
 {
   return;
 }
@@ -1175,5 +1139,6 @@ bool DEV_BUILT_IN_RCD::do_tr()
 //
 /*--------------------------------------------------------------------------*/
 
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

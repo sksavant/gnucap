@@ -39,11 +39,13 @@ class PARAM_LIST; //unnnec?
 //class MODEL_BUILT_IN_BTI;
 /*--------------------------------------------------------------------------*/
 
+
 template <class T>
 class PARAMETER {
 private:
   mutable T _v;
   std::string _s;
+  T my_infty() const;
 public:
   T _NOT_INPUT();
 
@@ -113,6 +115,9 @@ private:
 template <class T>
 inline T PARAMETER<T>::_NOT_INPUT(){ return NOT_INPUT ;}
 /*--------------------------------------------------------------------------*/
+template <>
+inline int PARAMETER<int>::_NOT_INPUT(){ untested(); return 0;}
+/*--------------------------------------------------------------------------*/
 
 template <>
 class PARAMETER<std::string> {
@@ -169,7 +174,7 @@ public:
       // blank string means to use default value
       _v = _s; // where does it come from?
       if (recursion > 1) {
-        error(bWARNING, "PARAMETER::e_val: " + *first_name + " has no value\n");
+        error(bWARNING, "PARAMETER::e_val: " + *first_name + " has no value (" +def+")\n");
       }else{
       }
     }else if (_s != "#") {
@@ -201,7 +206,7 @@ public:
     trace0(("Evaluated " +_s + " to " + _v).c_str());
     return _v;
   }
-  void	parse(CS& cmd) {}
+  void	parse(CS& cmd);
 
   std::string value()const {
     trace0(("PARAMETER::std::string " + _s + " -> " + _v ).c_str());
@@ -388,6 +393,8 @@ inline std::string PARAMETER<std::string>::lookup_solve(const std::string& def,
   const PARAM_LIST* pl = scope->params();
   PARAMETER<double> x =  (pl->deep_lookup(_s));
   return x.string();
+
+  return def;
 }
 /*--------------------------------------------------------------------------*/
 template <>
@@ -421,6 +428,14 @@ inline T PARAMETER<T>::lookup_solve(const T& def, const CARD_LIST* scope)const
 }
 #endif
 /*--------------------------------------------------------------------------*/
+
+/*--------------------------------------------------------------------------*/
+template <>
+inline double PARAMETER<double>::my_infty()const{ return inf; }
+
+template <class T>
+inline T PARAMETER<T>::my_infty()const{ untested(); return 0; }
+
 template <class T>
 T PARAMETER<T>::e_val(const T& def, const CARD_LIST* scope)const
 {
@@ -436,10 +451,10 @@ T PARAMETER<T>::e_val(const T& def, const CARD_LIST* scope)const
  
   trace0("PARAMETER<T>::e_val " + _s + " " + to_string(_v)); 
   if (_v == inf) {
-    return inf;
+    return my_infty();
   }
   if (_s == "inf") {
-    return inf;
+    return my_infty();
   }
   ++recursion;
   if (_s == "") {

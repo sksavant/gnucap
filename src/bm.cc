@@ -94,7 +94,7 @@ void EVAL_BM_ACTION_BASE::ac_final_adjust(T* y)const
   if (_bandwidth != NOT_INPUT && _bandwidth != 0.) {untested();
     assert(y->imag() == 0);
     double ratio = CKT_BASE::_sim->_freq / _bandwidth;
-    double coeff = y->real() / (1.+(ratio*ratio));
+    double coeff = double( y->real() / (1.+(ratio*ratio)) );
     *y = T(coeff, -coeff * ratio);
   }else{
   }

@@ -308,6 +308,10 @@ public:	// obsolete -- do not use in new code
 public:
   ADP_CARD* adp()const {return(_adp);}
   void attach_adp(ADP_CARD* a);
+  virtual void tt_prepare(){
+    std::cerr << "COMP::tt_prep()\n";
+    tt_init_i();
+  }
 protected:
   double  _tr_amps_diff_cur;
   double  _tr_amps_diff_max;
@@ -319,10 +323,6 @@ protected:
   void tt_behaviour_update();
   void tr_behaviour(){ tt_behaviour_update(); }
   virtual void tt_next() {  }
-  void tt_prepare(){
-    std::cerr << "COMP::tt_prep()\n";
-    tt_init_i();
-  }
 
   virtual void tt_init_i(){
 	  std::cerr << short_label() << " COMP:init_i have " << net_nodes() << "nodes "<< TRANSIENT::total_outsteps() << "\n";
@@ -340,7 +340,7 @@ protected:
 
   }
   void tr_diff_amps();
-  void tt_accept();
+  void tt_accept(); // !const bc. behauviour
   double _amps_max_diff;
   double get_amps_max_diff(){ return _amps_max_diff; }
   virtual void tr_do_behaviour();

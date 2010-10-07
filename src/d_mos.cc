@@ -1490,21 +1490,20 @@ bool DEV_BUILT_IN_MOS::do_tr()
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::stress_apply( )
 {
-  COMMON_BUILT_IN_MOS* c = (COMMON_BUILT_IN_MOS*)(common());
-  assert(c);
-  MODEL_BUILT_IN_MOS_BASE* m = (MODEL_BUILT_IN_MOS_BASE*)(c->model());
+  const COMMON_BUILT_IN_MOS* c = (const COMMON_BUILT_IN_MOS*) common();
+  const MODEL_BUILT_IN_MOS_BASE* m = (const MODEL_BUILT_IN_MOS_BASE*)(c->model());
   assert(m);
 
-  m->stress_apply(this);
+  m->do_stress_apply(this);
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_stress( ) const
 {
   const COMMON_COMPONENT* cc = common();
-  MODEL_BUILT_IN_MOS_BASE* m = ( MODEL_BUILT_IN_MOS_BASE*)(cc->model());
+  const MODEL_BUILT_IN_MOS_BASE* m = ( const MODEL_BUILT_IN_MOS_BASE*)(cc->model());
   assert(m);
 
-  m->tr_stress( this );
+  m->do_tr_stress( this );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1541,20 +1540,20 @@ void DEV_BUILT_IN_MOS::tt_prepare() // NOT const
 {
   BASE_SUBCKT::tt_prepare();
 
-  COMMON_BUILT_IN_MOS* c = (COMMON_BUILT_IN_MOS*)(common());
+  const COMMON_BUILT_IN_MOS* c = (const COMMON_BUILT_IN_MOS*)(common());
   assert(c);
   assert(c->model());
 
-  MODEL_BUILT_IN_MOS_BASE* m = (MODEL_BUILT_IN_MOS_BASE*)(c->model());
+  const MODEL_BUILT_IN_MOS_BASE* m = (const MODEL_BUILT_IN_MOS_BASE*)(c->model());
   assert(m);
 
-  m->tt_prepare(this);
+  m->do_tt_prepare(this);
 }
 /*--------------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS::tt_accept()
 {
   //FIXME: move c to ADP_CARD. merge ADP_card with DEV?
-  const DEV_BUILT_IN_MOS* c = (DEV_BUILT_IN_MOS*) (bti_stress->c());
+  const DEV_BUILT_IN_MOS* c = (const DEV_BUILT_IN_MOS*) (bti_stress->c());
   SIM_DATA* sim = c->_sim;
   std::cerr << "ADP_BUILT_IN_MOS::tt_accept " << c->long_label() << "\n";
   std::cerr << "ADP_BUILT_IN_MOS::tt_accept time " << sim->_Time0 << "\n";
@@ -1567,7 +1566,7 @@ void ADP_BUILT_IN_MOS::tt_accept()
 void ADP_BUILT_IN_MOS::tt_commit()
 {
   //FIXME: move c to ADP_CARD. merge ADP_card with DEV?
-  const DEV_BUILT_IN_MOS* c = (DEV_BUILT_IN_MOS*) (bti_stress->c());
+  const DEV_BUILT_IN_MOS* c = (const DEV_BUILT_IN_MOS*) (bti_stress->c());
   SIM_DATA* sim = c->_sim;
   std::cerr << "ADP_BUILT_IN_MOS::tt_commit " << c->long_label() << "\n";
   std::cerr << "ADP_BUILT_IN_MOS::tt_commit time " << sim->_Time0 << "\n";

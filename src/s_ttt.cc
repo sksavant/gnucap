@@ -817,7 +817,7 @@ void TTT::setup(CS& Cmd)
     _sim->_dtmin = std::max(double(_dtmin_in), _dtmax/_dtratio_in);
   }
 
-  steps_total_out_ = (int) 1+ ceil( ( (_tstop - _tstart ) / _tstep ) );
+  steps_total_out_ = (int) (1 + ceil( ( (_tstop - _tstart ) / _tstep ) ));
   steps_total_out_ = steps_total_out_ ;
   trace4( "TTT::setup ",  steps_total_out_ , _tstep , _tstop ,_tstart );
 
@@ -887,9 +887,10 @@ bool TTT::next()
     _new_dT = max( (double) _tstop, (_sim->_dT1 + _Tstep)/2 ) ; // fmin( get_new_dT(), _Tstep );
 
     if (_sim->get_tt_order() < 2){
-      ///FIXME
-      _out << "* TTT order hack "<< _sim->get_tt_order() <<"\n";
+      trace1( "TTT order hack ",  _sim->get_tt_order());
       _new_dT = ( _tstop );
+    } else {
+
     }
 
 
@@ -1024,7 +1025,7 @@ void TTT::head_tt(double start, double stop, const std::string& col1)
 /*--------------------------------------------------------------------------*/
 /* SIM::head: initialize waves
 */
-void TTT::head(double start, double stop, const std::string& col1)
+void TTT::head(double /* start */ , double /* stop */, const std::string& )
 {
   assert( _sim->_mode==s_TTT );
   {
@@ -1105,7 +1106,7 @@ void TTT::outdata_tt(double x)
 /*--------------------------------------------------------------------------*/
 
 // print during tr. i.e. print from storelist
-void TTT::print_results(double x)
+void TTT::print_results(double )
 {
   trace0("TTT::print_results()");
   SIM_MODE oldmode=_sim->_mode;

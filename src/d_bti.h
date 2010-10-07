@@ -46,7 +46,7 @@ public: // override virtual
   virtual void      precalc_first();
   virtual void      precalc_last();
   SDP_CARD* new_sdp(COMMON_COMPONENT* c)const;
-  ADP_CARD* new_adp(COMPONENT* c)const;
+  ADP_CARD* new_adp( const COMPONENT* c)const;
   virtual void      set_param_by_index(int, std::string&, int);
   virtual bool      param_is_printable(int)const;
   virtual std::string param_name(int)const;
@@ -55,7 +55,7 @@ public: // override virtual
   virtual int param_count()const {return (8);}
   bool      is_valid(const COMPONENT*)const;
   void      tr_eval(COMPONENT*)const;
-  virtual void stress_apply(COMPONENT*)const{ std::cerr<<"virtual stress apply(C)\n" ;}
+  virtual void do_stress_apply(COMPONENT*)const{ std::cerr<<"virtual stress apply(C)\n" ;}
   virtual void attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const;
 
   //copy from subckt (stupid)
@@ -119,7 +119,7 @@ public:
 public: // override virtual
   virtual void attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const ;
   std::string dev_type()const {return "bti_single";}
-  void      set_dev_type(const std::string& nt) {}
+  void      set_dev_type(const std::string& ) {}
   CARD*     clone()const {return new MODEL_BUILT_IN_BTI_INF(*this);}
   void      set_param_by_index(int, std::string&, int);
   bool      param_is_printable(int)const;
@@ -143,7 +143,7 @@ public:
 public: // override virtual
   virtual void attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const ;
   std::string dev_type()const {return "bti_single";}
-  void      set_dev_type(const std::string& nt) {}
+  void      set_dev_type(const std::string& ) {}
   CARD*     clone()const {return new MODEL_BUILT_IN_BTI_SINGLE(*this);}
   void      set_param_by_index(int, std::string&, int);
   bool      param_is_printable(int)const;
@@ -218,7 +218,7 @@ private: // override virtual
   //void    tr_restore();        //BASE_SUBCKT
   //void    tt_commit();         //BASE_SUBCKT
   void    stress_apply(); 
-  void      tt_commit( );   
+  void      tt_commit( ) const;   
   //void    tt_prepare();         //BASE_SUBCKT
   //void    dc_advance();        //BASE_SUBCKT
   //void    tr_advance();        //BASE_SUBCKT

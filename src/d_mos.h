@@ -278,7 +278,7 @@ protected:
 private:
   void      stress_eval( ) {  std::cerr << "DEV-Stress " << ids << "\n" ;}
 public:
-  COMPONENT* BTI(){
+  COMPONENT* BTI() const {
 	  assert(_BTI);
 	  return(_BTI);
   }

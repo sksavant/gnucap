@@ -120,7 +120,7 @@ double ADP_NODE_LIST::tt_review()
       buf=tmp;
       minci=*ci;
     }
-    assert(buf>0);
+    assert(buf>=0);
   }
 
   if(minci){

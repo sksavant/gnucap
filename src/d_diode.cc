@@ -1112,9 +1112,8 @@ void ADP_BUILT_IN_DIODE::init(const COMPONENT* cc)
   assert(cc);
 }
 
-
-
-ADP_CARD* MODEL_BUILT_IN_DIODE::new_adp(COMPONENT* c)const
+/*--------------------------------------------------------------------------*/
+ADP_CARD* MODEL_BUILT_IN_DIODE::new_adp(const COMPONENT* c)const
 {
   assert(c);
   return MODEL_CARD::new_adp(c);

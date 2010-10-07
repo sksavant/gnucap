@@ -74,7 +74,7 @@ public:
   static double tt_behaviour_del;
   static double tt_behaviour_rel;
   void tt_prepare();
-  virtual void tr_stress_last() {}
+  virtual void tr_stress_last() const {}
   virtual double      tt_probe_num(const std::string&)const;
 };
 /*--------------------------------------------------------------------------*/

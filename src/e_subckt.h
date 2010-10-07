@@ -68,17 +68,18 @@ protected: // override virtual
   //                  why   ^^^^^^^^^^^^^^ ?
   void	  tt_next()         
          { assert(subckt()); subckt()->do_forall( &CARD::tt_next );}
-  virtual void	tt_commit()
+  virtual void	tt_commit() const
          { assert(subckt()); subckt()->do_forall( &CARD::tt_commit );}
-  virtual void	stress_apply()
-         { assert(subckt()); subckt()->do_forall( &CARD::stress_apply );}
-  virtual void	tt_accept()
+  virtual void	tt_accept() // !const (beh)
          { assert(subckt()); subckt()->do_forall( &CARD::tt_accept );}
   virtual void	tr_stress_last() const
          { assert(subckt()); 
            const CARD_LIST* s = subckt();
            s->do_forall( &CARD::tr_stress_last );
          }
+  // not const?
+  virtual void	stress_apply()
+         { assert(subckt()); subckt()->do_forall( &CARD::stress_apply );}
 
   void	  tr_restore()	{assert(subckt()); subckt()->tr_restore();}
   void	  dc_advance()	{assert(subckt()); subckt()->dc_advance();}

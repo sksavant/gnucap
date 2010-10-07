@@ -44,7 +44,7 @@ namespace {
  */
 
   // copy from c_modify
-double sweep_fix(CS& cmd, double start, double last)
+double sweep_fix(CS&, double start, double last)
 {
   double value = start;
   if (swp_steps[swp_nest] != 0 )  {

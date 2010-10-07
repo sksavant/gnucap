@@ -61,7 +61,6 @@ private: // override virtual
   hp_float_t tr_involts()const {return dn_diff(_n[IN1].v0(), _n[IN2].v0());}
   hp_float_t tr_involts_limited()const {return volts_limited(_n[IN1],_n[IN2]);}
   hp_float_t tr_amps()const{ std::cout << short_label() ; return 881;}	//HOMEBREW
-  bool      tr_needs_eval() {return true;}
   bool      has_tr_eval()const {return true;}
   void      tr_eval();
   bool      conv_check() const;
@@ -78,9 +77,11 @@ private: // override virtual
     static std::string names[] = {"p", "n", "ps", "ns"};
     return names[i];
   }
+public:
+  bool     tr_needs_eval() const {return true;}
  
 private:
-  virtual void tt_next();
+  virtual void tt_next(); // !const
 };
 /*--------------------------------------------------------------------------*/
 void DEV_VCVS2::tr_iwant_matrix() // extended aus ELEMENT

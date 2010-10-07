@@ -302,10 +302,10 @@ MATH_OP strtotype(std::string s)
 /*--------------------------------------------------------------------------*/
 /* add_expr add things to list
  */
-PROBE* PROBELIST::add_expr(const std::string&s, 
+PROBE* PROBELIST::add_expr(const std::string& , 
 			     const MATH_OP type,
 			     const CARD_LIST* scope,
-                             CS& cmd, PROBELIST& list )
+                             CS& cmd, PROBELIST& )
 {
   untested();
   assert(scope);

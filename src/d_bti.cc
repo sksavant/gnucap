@@ -120,7 +120,7 @@ MODEL_BUILT_IN_BTI_SINGLE::MODEL_BUILT_IN_BTI_SINGLE(const
 {
 }
 /*--------------------------------------------------------------------------*/
-ADP_CARD* MODEL_BUILT_IN_BTI::new_adp(COMPONENT* c)const
+ADP_CARD* MODEL_BUILT_IN_BTI::new_adp(const COMPONENT* c)const
 {
   assert(c);
   return MODEL_CARD::new_adp(c);
@@ -371,9 +371,9 @@ void MODEL_BUILT_IN_BTI_MATRIX::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
       COMMON_BUILT_IN_RCD* RCD1 = new COMMON_BUILT_IN_RCD;
       RCD1->set_modelname( rcd_model_name ); // <= !
       RCD1->attach(this); // ?
-      RCD1->Uref = uref;
-      RCD1->Recommon = up;
-      RCD1->Rccommon0 = down;
+      RCD1->Uref = double( uref );
+      RCD1->Recommon = double(up);
+      RCD1->Rccommon0 = double(down);
 
       trace5("MODEL_BUILT_IN_BTI_MATRIX::attach_rcds ", row, col, k, up, down); 
 
@@ -600,11 +600,11 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
       COMMON_BUILT_IN_RCD* RCD1 = new COMMON_BUILT_IN_RCD;
       RCD1->set_modelname( rcd_model_name ); // <= !
       RCD1->attach(this); // ?
-      RCD1->Uref = uref;
-      RCD1->Recommon = up;
+      RCD1->Uref = double( uref );
+      RCD1->Recommon = double (up);
       double wt = WS[row][col];
       RCD1->weight = wt;
-      RCD1->Rccommon0 = down;
+      RCD1->Rccommon0 = double(down);
       trace6("MODEL_BUILT_IN_BTI_INF::attach_rcds ", row, col, k, up, down, wt); 
 
       //double _rr = _rr_.subs(runter=runter, u_gate_=uref)
@@ -866,7 +866,7 @@ void MODEL_BUILT_IN_BTI::attach_rcds(COMMON_BUILT_IN_RCD** _RCDc) const
 double MODEL_BUILT_IN_BTI::hoch(int i) const {
   int n = rcd_number;
   //int type = m->bti_type;
-  int a=sqrt(n);
+  int a = int(sqrt(n));
   int col=i % a;
   // int row=i / a;
 
@@ -876,7 +876,7 @@ double MODEL_BUILT_IN_BTI::hoch(int i) const {
 double MODEL_BUILT_IN_BTI::runter(int i) const{
   int n = rcd_number;
   //int type = m->bti_type;
-  int a=sqrt(n);
+  int a = int(sqrt(n));
   // int col=i % a;
   int row=i / a;
 
@@ -1158,7 +1158,7 @@ void DEV_BUILT_IN_BTI::tr_stress() const {
   subckt()->do_forall( &CARD::tr_stress );
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_BTI::tt_commit() {
+void DEV_BUILT_IN_BTI::tt_commit() const {
   untested();
   //FIXME, subckt default
   //        RCD reicht!
@@ -1176,8 +1176,8 @@ void DEV_BUILT_IN_BTI::stress_apply() {
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-void ADP_BUILT_IN_BTI::init(const COMPONENT* c) { }
+void ADP_BUILT_IN_BTI::init(const COMPONENT* ) { }
 void ADP_BUILT_IN_BTI::tt_commit() {}
 void ADP_BUILT_IN_BTI::tt_accept() {}
-double ADP_BUILT_IN_BTI::tt_probe_num(const std::string& x)const {untested(); return 888;}
-double ADP_BUILT_IN_BTI::tr_probe_num(const std::string& x)const {untested(); return 888;}
+double ADP_BUILT_IN_BTI::tt_probe_num(const std::string& )const {untested(); return 888;}
+double ADP_BUILT_IN_BTI::tr_probe_num(const std::string& )const {untested(); return 888;}

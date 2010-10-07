@@ -42,6 +42,7 @@ protected:
 public:
   explicit MODEL_BUILT_IN_RCD(const BASE_SUBCKT*);
   ~MODEL_BUILT_IN_RCD() {--_count;}
+  virtual void     do_expand(const COMPONENT*){};
 public: // override virtual
   virtual std::string dev_type()const;
   virtual void      set_dev_type(const std::string& nt);
@@ -49,7 +50,7 @@ public: // override virtual
   void      precalc_first();
   void      precalc_last();
   SDP_CARD* new_sdp(COMMON_COMPONENT* c)const;
-  ADP_CARD* new_adp(COMPONENT* c)const;
+  ADP_CARD* new_adp( const COMPONENT* c)const;
   void      set_param_by_index(int, std::string&, int);
   bool      param_is_printable(int)const;
   std::string param_name(int)const;
@@ -59,7 +60,8 @@ public: // override virtual
   void tt_eval(COMPONENT*)const;
   bool      is_valid(const COMPONENT*)const;
   void      tr_eval(COMPONENT*)const;
-  virtual void      stress_apply( DEV_BUILT_IN_RCD*)const {unreachable();}
+  virtual void      do_stress_apply( COMPONENT*)const {unreachable();}
+  virtual void      do_tr_stress( const COMPONENT*) const;        
 public: // not virtual
   static int count() {return _count;}
 private: // strictly internal
@@ -84,29 +86,10 @@ class MODEL_BUILT_IN_RCD_NET : public MODEL_BUILT_IN_RCD {
     explicit MODEL_BUILT_IN_RCD_NET(const BASE_SUBCKT* p);
     // ~MODEL_BUILT_IN_RCD_NET() {  ~MODEL_BUILT_IN_RCD() };
     bool use_net() const { return(1); }
-    virtual  void stress_apply( DEV_BUILT_IN_RCD* d ) const ;
+    virtual  void do_stress_apply( COMPONENT* ) const ;
     std::string dev_type()const;
     CARD*     clone()const {return new MODEL_BUILT_IN_RCD_NET(*this);}
-};
-/*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-class MODEL_BUILT_IN_RCD_SYM : public MODEL_BUILT_IN_RCD {
-  protected:
-    explicit MODEL_BUILT_IN_RCD_SYM(const MODEL_BUILT_IN_RCD_SYM& p);
-  public:
-    explicit MODEL_BUILT_IN_RCD_SYM(const BASE_SUBCKT* p);
-    // ~MODEL_BUILT_IN_RCD_SYM() : ~MODEL_BUILT_IN_RCD {}
-    bool use_net() const { return(0); }
-    virtual  void stress_apply( DEV_BUILT_IN_RCD* d ) const;
-    std::string dev_type()const 
-    { trace0("SYM::dev_type()");
-      return "rcdsym";}
-    void      set_dev_type(const std::string& nt)
-    {
-     trace0(("MODEL_BUILT_IN_RCD_SYM::set_dev_type() " + nt).c_str()); 
-    };
-    CARD*     clone()const {return new MODEL_BUILT_IN_RCD_SYM(*this);}
-
+    void     do_expand(const COMPONENT*);
 };
 /*--------------------------------------------------------------------------*/
 class COMMON_BUILT_IN_RCD
@@ -154,7 +137,7 @@ public: // calculated parameters
   double cj_adjusted;	// 
 public: // functions...
   //double _Ueff( double ug);
-  double __Re(double ueff)const
+  double __Re(double)const
   { return _Re; }
   double __Rc(double ueff)const
   { return _Rc0 + ueff * _lambda * _Rc1; }
@@ -205,7 +188,7 @@ public:
     if( _Ccgfill ) 
       ADP_NODE_LIST::adp_node_list.erase( _Ccgfill );
   }
-private: // override virtual
+protected: // override virtual
   char      id_letter()const     {untested();return 'Z';}
   bool      print_type_in_spice()const {return true;}
   std::string value_name()const  {return "area";}
@@ -217,14 +200,14 @@ private: // override virtual
   int       int_nodes()const     {return 1;}
   CARD*     clone()const         {return new DEV_BUILT_IN_RCD(*this);}
   void      precalc_first() {COMPONENT::precalc_first(); if(subckt()) subckt()->precalc_first();}
-  void      expand();
+  virtual   void      expand();
   void      precalc_last()  {COMPONENT::precalc_last(); assert(subckt()); subckt()->precalc_last();}
   //void    map_nodes();         //BASE_SUBCKT
   //void    tr_begin();          //BASE_SUBCKT
-  void    tr_stress() const;        
+  virtual void    tr_stress() const;        
   //void    tr_restore();        //BASE_SUBCKT
   void    stress_apply(); 
-  void      tt_commit();   
+  void      tt_commit() const;   
   void      tt_prepare();         //BASE_SUBCKT
   void      dc_advance() {set_not_converged(); BASE_SUBCKT::dc_advance();}
   void      tr_advance() {set_not_converged(); BASE_SUBCKT::tr_advance();}
@@ -247,6 +230,7 @@ private: // override virtual
   //void    ac_load();           //BASE_SUBCKT
   //XPROBE  ac_probe_ext(CS&)const;//CKT_BASE/nothing
 public:
+  double    involts()const;
   static int  count() {return _count;}
 public: // may be used by models
 private: // not available even to models
@@ -263,7 +247,7 @@ public: // netlist
   COMPONENT* _Rc;
   COMPONENT* _GRc;
   ADP_NODE* _Ccgfill;
-private: // node list
+protected: // node list
   enum {n_u, n_b, n_ic};
   node_t _nodes[3];
   std::string port_name(int i)const {
@@ -280,11 +264,17 @@ private: // node list
 class DEV_BUILT_IN_RCD_NET : public DEV_BUILT_IN_RCD{
   private:
   TIME_PAIR  tr_review(){ return BASE_SUBCKT::tr_review(); }
+  void expand();
 };
 /*--------------------------------------------------------------------------*/
 class DEV_BUILT_IN_RCD_SYM : public DEV_BUILT_IN_RCD{
+  explicit DEV_BUILT_IN_RCD_SYM(const DEV_BUILT_IN_RCD_SYM& p);
+  public:
+  explicit DEV_BUILT_IN_RCD_SYM();
   private:
   TIME_PAIR  tr_review(){ return BASE_SUBCKT::tr_review();}
+  void expand();
+  void    tr_stress() const;        
 };
 /*--------------------------------------------------------------------------*/
 // h_direct

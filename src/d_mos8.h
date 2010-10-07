@@ -211,10 +211,10 @@ protected:
 public:
   explicit MODEL_BUILT_IN_MOS8(const BASE_SUBCKT*);
   ~MODEL_BUILT_IN_MOS8() {--_count;}
-  void tr_stress( const COMPONENT* c ) const;
-  virtual ADP_CARD* new_adp(const COMPONENT* c)const; //alles const. attach vielleicht !const
+  virtual ADP_CARD* new_adp( const COMPONENT* c)const; //alles const. attach vielleicht !const
 public: // override virtual
-  void stress_apply(const COMPONENT* c)const;
+  void do_stress_apply(COMPONENT* c)const;
+  void do_tr_stress( const COMPONENT* c ) const;
   std::string dev_type()const;
   void      set_dev_type(const std::string& nt);
   CARD*     clone()const {return new MODEL_BUILT_IN_MOS8(*this);}

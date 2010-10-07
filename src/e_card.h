@@ -150,16 +150,16 @@ public:	// obsolete -- do not use in new code
   virtual void print_args_obsolete_callback(OMSTREAM&,LANGUAGE*)const {unreachable();}
   //--------------------------------------------------------------------
 public:	// tt
-  virtual void   tt_next()            {} // set times back to 0, leaving state alone
-  virtual void   tt_commit()          {}
-  virtual void   tt_accept()          {}
+  virtual void   tt_next()      {} // set times back to 0, leaving state alone
+  virtual void   tt_commit()   const {}
+  virtual void   tt_accept()    {}
 //  virtual void   tt_prepare()           {}
   virtual void  tt_prepare() {  } // save unstressed parameters
   virtual void  tt_init_i() {  } // save unstressed parameters
-  virtual void  tt_prepare( COMPONENT* ) { untested0("CARD::tt_prepare(c)") ; } // save unstressed parameters
   virtual void	 tr_stress()	const	{    } // calculate stress during tr
   virtual void	 tr_stress_last() const	{  untested();  } // calculate stress during tr
-  virtual void	 stress_apply();//	{ std::cerr << "CARD::stress_apply\n"} // not const (element)
+  virtual void	 stress_apply(); // not const (element)
+  // virtual void   stress_apply(COMPONENT* )const{ unreachable();}
   virtual void	 tr_save_amps( int ){ } // behaviouir??
   hp_float_t tr_behaviour_del; // behaviour now.
   hp_float_t tt_behaviour_del;

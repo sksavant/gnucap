@@ -70,7 +70,7 @@ public: // override virtual
   void      precalc_first();
   void      precalc_last();
   SDP_CARD* new_sdp(COMMON_COMPONENT* c)const;
-  ADP_CARD* new_adp(COMPONENT* c)const;
+  ADP_CARD* new_adp( const COMPONENT* c)const;
   void      set_param_by_index(int, std::string&, int);
   bool      param_is_printable(int)const;
   std::string param_name(int)const;
@@ -79,7 +79,7 @@ public: // override virtual
   int param_count()const {return (22);}
   bool      is_valid(const COMPONENT*)const;
   void      tr_eval(COMPONENT*)const;
-  virtual void      stress_apply(COMPONENT*)const{ std::cerr<<"virtual stress apply(C)\n" ;}
+  virtual void      do_stress_apply(COMPONENT*)const{ std::cerr<<"virtual stress apply(C)\n" ;}
 public: // not virtual
   static int count() {return _count;}
 private: // strictly internal

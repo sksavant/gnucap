@@ -72,8 +72,8 @@ public: // override virtual
   CARD*     clone()const {return new MODEL_BUILT_IN_MOS123(*this);}
   void      precalc_first();
   void      precalc_last();
-  SDP_CARD* new_sdp(COMMON_COMPONENT* c)const;
-  ADP_CARD* new_adp(const COMPONENT* c)const; // COMPONENT nicht const, wegen counter?
+  SDP_CARD* new_sdp( COMMON_COMPONENT* c)const;
+  ADP_CARD* new_adp( const COMPONENT* c)const; // COMPONENT nicht const, wegen counter?
   void      set_param_by_index(int, std::string&, int);
   bool      param_is_printable(int)const;
   std::string param_name(int)const;
@@ -83,7 +83,7 @@ public: // override virtual
   bool      is_valid(const COMPONENT*)const;
   void      tr_eval(COMPONENT*)const;
 
-  void tr_stress( const COMPONENT* c ) const;
+  void do_tr_stress( const COMPONENT* c ) const;
 
 
 
@@ -116,8 +116,8 @@ protected: // ttt start values. not needed outside (?)
   double vto_0; // ?
   double vto_raw_0; ///?
 public:
-  virtual void stress_apply(COMPONENT*) const;
-  virtual void tt_prepare(COMPONENT*) const;
+  virtual void do_stress_apply(COMPONENT*) const;
+  virtual void do_tt_prepare(COMPONENT*) const;
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

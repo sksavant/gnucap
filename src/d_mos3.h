@@ -88,8 +88,8 @@ public: // override virtual
   CARD*     clone()const {return new MODEL_BUILT_IN_MOS3(*this);}
   void      precalc_first();
   void      precalc_last();
-  SDP_CARD* new_sdp(COMMON_COMPONENT* c)const;
-  virtual ADP_CARD* new_adp(DEV_BUILT_IN_MOS* c)const;
+  SDP_CARD* new_sdp(COMMON_COMPONENT* c)const; //y !const COMMON_COMPONENT*?
+  virtual ADP_CARD* new_adp( const COMPONENT* c)const;
   void      set_param_by_index(int, std::string&, int);
   bool      param_is_printable(int)const;
   std::string param_name(int)const;
@@ -98,9 +98,10 @@ public: // override virtual
   int param_count()const {return (15 + MODEL_BUILT_IN_MOS123::param_count());}
   bool      is_valid(const COMPONENT*)const;
   void      tr_eval(COMPONENT*)const;
-  virtual void    stress_apply( COMPONENT* ) const;
 
-  virtual void tt_prepare( COMPONENT* );
+public: // stress and tt
+  virtual void do_stress_apply( COMPONENT* ) const;
+  virtual void do_tt_prepare( COMPONENT* ) const;
 public: // not virtual
   static int count() {return _count;}
 private: // strictly internal

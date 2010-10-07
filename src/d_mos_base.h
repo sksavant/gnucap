@@ -73,9 +73,9 @@ public: // override virtual
   CARD*     clone()const {return new MODEL_BUILT_IN_MOS_BASE(*this);}
   void      precalc_first();
   void      precalc_last();
-  SDP_CARD* new_sdp(COMMON_COMPONENT* c)const;
-  virtual ADP_CARD* new_adp(const COMPONENT* c)const {unreachable(); return NULL;}
-  void tt_prepare( COMPONENT* c) const;
+  SDP_CARD* new_sdp(COMMON_COMPONENT* )const; // y !const COMMON_COMPONENT*??
+  virtual ADP_CARD* new_adp( const COMPONENT* )const {unreachable(); return NULL;}
+  void do_tt_prepare( COMPONENT* c) const;
   void      set_param_by_index(int, std::string&, int);
   bool      param_is_printable(int)const;
   std::string param_name(int)const;
@@ -121,9 +121,9 @@ public: // calculated parameters
   bool needs_isub;	// 
   bool use_bti()const {return _use_bti;}
 public: // other thiongs
-  virtual void stress_apply( const COMPONENT* C ) const;
+  virtual void do_stress_apply( COMPONENT* C ) const;
   // virtual??
-  virtual void tr_stress( const COMPONENT* C ) const ;
+  virtual void do_tr_stress( const COMPONENT* C ) const ;
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

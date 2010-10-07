@@ -36,11 +36,9 @@ int MODEL_BUILT_IN_MOS123::_count = 0;
 
 
 
-void MODEL_BUILT_IN_MOS123::tt_prepare( COMPONENT* c) const
+void MODEL_BUILT_IN_MOS123::do_tt_prepare( COMPONENT* c) const
 {
-  
 	std::cerr << "MODEL_BUILT_IN_MOS123::tt_prepare\n";
-
         assert ( c->adp() == NULL );
 	c->attach_adp( new_adp( c ) );
 }
@@ -159,9 +157,9 @@ void MODEL_BUILT_IN_MOS123::set_dev_type(const std::string& new_type)
   }
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_MOS123::stress_apply(COMPONENT* c) const
+void MODEL_BUILT_IN_MOS123::do_stress_apply(COMPONENT* c) const
 {
-  MODEL_BUILT_IN_MOS_BASE::stress_apply(c);
+  MODEL_BUILT_IN_MOS_BASE::do_stress_apply(c);
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_MOS123::precalc_first()
@@ -403,13 +401,13 @@ void MODEL_BUILT_IN_MOS123::tr_eval(COMPONENT*)const
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_MOS123::tr_stress( const COMPONENT* c ) const
+void MODEL_BUILT_IN_MOS123::do_tr_stress( const COMPONENT* c ) const
 {
-  MODEL_BUILT_IN_MOS_BASE::tr_stress(c);
+  MODEL_BUILT_IN_MOS_BASE::do_tr_stress(c);
 
   const COMMON_COMPONENT* cc = c->common();
   const MODEL_BUILT_IN_MOS123* m = prechecked_cast<const MODEL_BUILT_IN_MOS123*>(cc->model());
-  DEV_BUILT_IN_MOS* d = (DEV_BUILT_IN_MOS*)c;
+  const DEV_BUILT_IN_MOS* d = (const DEV_BUILT_IN_MOS*)c;
   assert(m == this);
   ADP_BUILT_IN_MOS123* a = (ADP_BUILT_IN_MOS123*) c->adp();
 

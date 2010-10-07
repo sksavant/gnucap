@@ -74,13 +74,14 @@ public:
   PARAMETER<double> _tnom_c;
 public:
 
-  virtual void tt_commit(COMPONENT*)const{ untested();}
-  virtual void stress_apply(COMPONENT*)const{ std::cerr<<"model.h stress apply(C)\n" ;}
-  virtual void stress_apply( )const{ unreachable();}
+  virtual void do_tt_commit(COMPONENT*)const{ untested();}
+  virtual void do_stress_apply(COMPONENT*)const{ trace0("model.h stress apply(C)") ;}
+  void do_stress_apply()const{unreachable();} // not used for models.
+
 		 // void      stress_calc(COMPONENT*)const{   ;} //sollte eval heissen...
 		 //   void      stress_calc( )const{   ;} //sollte eval heissen...?
 		 //
-  virtual ADP_CARD* new_adp(COMPONENT* d)const
+  virtual ADP_CARD* new_adp( const COMPONENT* d)const
 					{unreachable(); // ?
 						std::cerr << "MODEL_CARD::new_adp. empty adpcard for " << d->short_label() <<  "\n";
 						return( new ADP_CARD() ); // empty adpcard...

@@ -46,7 +46,7 @@ public: // override virtual
   void     tr_begin();
   void     tr_restore();
   void     tr_adapt();
- virtual void     tr_init(double x) { unreachable(); }
+  virtual void    tr_init(double) { unreachable(); }
   void     dc_advance();
   void     tr_advance();
   //void   tr_regress();	//ELEMENT

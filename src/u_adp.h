@@ -39,10 +39,12 @@ class ADP_NODE {
 
     double Time_delta_old()const { return CKT_BASE::_sim->_dT1 ;}
 
+    inline double Time0()const { return ( CKT_BASE::_sim->_Time0 ); }
     inline double dT0()const { return ( CKT_BASE::_sim->_dT0 ); }
     inline double dT1()const { return ( CKT_BASE::_sim->_dT1 ); }
     inline double dT2()const { return ( CKT_BASE::_sim->_dT2 ); }
 
+    void tt_expect_();
     virtual void tt_expect0(){ tt_expect0_const(); }
     void tt_expect0_const();
     virtual void tt_expect1(){ tt_expect1_linear(); }
@@ -51,6 +53,7 @@ class ADP_NODE {
     void tt_expect1_something();
     virtual void tt_expect2(){ tt_expect2_quadratic(); }
     void tt_expect2_quadratic();
+    void tt_expect2_linear();
     void tt_expect2_something();
     void tt_expect2_exp();
 
@@ -118,6 +121,7 @@ class ADP_NODE {
     }
 
   private:
+    int _order;
     ADP_CARD* a;
 };
 /*--------------------------------------------------------------------------*/
@@ -149,8 +153,8 @@ class ADP_CARD {
     virtual ~ADP_CARD() {}
     virtual void init(const COMPONENT*) {}
 
-    virtual double tr_probe_num(const std::string& x)const { unreachable(); return 888; }
-    virtual double tt_probe_num(const std::string& x)const { unreachable(); return 888; }
+    virtual double tr_probe_num(const std::string& )const { unreachable(); return 888; }
+    virtual double tt_probe_num(const std::string& )const { unreachable(); return 888; }
 
     virtual void tt_commit_first(){ }
     virtual void tt_commit(){ }

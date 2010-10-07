@@ -266,10 +266,8 @@ void MODEL_BUILT_IN_MOS3::precalc_first()
     // final adjust: done
 }
 /*--------------------------------------------------------------------------*/
-ADP_CARD* MODEL_BUILT_IN_MOS3::new_adp(DEV_BUILT_IN_MOS* c)const
+ADP_CARD* MODEL_BUILT_IN_MOS3::new_adp( const COMPONENT* c)const
 {
-  std::cerr << "MODEL_BUILT_IN_MOS3::new_adp\n";
-
   return MODEL_BUILT_IN_MOS123::new_adp(c);
 }
 /*--------------------------------------------------------------------------*/
@@ -412,12 +410,10 @@ std::string MODEL_BUILT_IN_MOS3::param_value(int i)const
   }
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_MOS3::tt_prepare( COMPONENT* c)
+void MODEL_BUILT_IN_MOS3::do_tt_prepare( COMPONENT* c) const
 {
-
-	std::cerr << "MODEL_BUILT_IN_MOS3::tt_prepare\n";
-        MODEL_BUILT_IN_MOS123::tt_prepare(c);
-
+  trace0( "MODEL_BUILT_IN_MOS3::tt_prepare");
+  MODEL_BUILT_IN_MOS123::do_tt_prepare(c);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -427,15 +423,15 @@ bool MODEL_BUILT_IN_MOS3::is_valid(const COMPONENT* d)const
   return MODEL_BUILT_IN_MOS123::is_valid(d);
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_MOS3::stress_apply(COMPONENT* brh) const
+void MODEL_BUILT_IN_MOS3::do_stress_apply(COMPONENT* brh) const
 {
-  MODEL_BUILT_IN_MOS123::stress_apply(brh);
+  MODEL_BUILT_IN_MOS123::do_stress_apply(brh);
 
   DEV_BUILT_IN_MOS* d = prechecked_cast<DEV_BUILT_IN_MOS*>(brh);
   assert(d);
-  COMMON_BUILT_IN_MOS* c = (COMMON_BUILT_IN_MOS*)(d->common());
+  const COMMON_BUILT_IN_MOS* c = (const COMMON_BUILT_IN_MOS*)(d->common());
   assert(c);
-  SDP_BUILT_IN_MOS3* s = (SDP_BUILT_IN_MOS3*)(c->sdp());
+  const SDP_BUILT_IN_MOS3* s = (const SDP_BUILT_IN_MOS3*)(c->sdp());
   assert(s);
   ADP_BUILT_IN_MOS3* a = (ADP_BUILT_IN_MOS3*)(d->adp());
   assert(a);

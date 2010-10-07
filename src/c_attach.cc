@@ -1,4 +1,5 @@
 /*$Id: c_attach.cc,v 1.2 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -23,9 +24,31 @@
 //testing=informal
 #include "e_cardlist.h"
 #include "c_comand.h"
+#include "constant.h"
 #include "globals.h"
+// #include "u_opt.h"
 /*--------------------------------------------------------------------------*/
 namespace {
+
+  bool search_file( std::string &name ){
+    const char* h ="HOME";
+    const char* home= getenv(h);
+
+    std::string pathlist[4] = { OPT::libpath , "./",  LIBDIR,
+      std::string(home) + std::string("/.gnucap/lib/") };
+
+    // FIXME. use libpath 
+
+    for(int i=1; i<4 ; i++) {
+      if ( FILE* tmp = fopen( (pathlist[i] + "/" + name).c_str(), "r" ) ) {
+        fclose(tmp);
+        name = pathlist[i]+name;
+        return true;
+      }
+    }
+    return false;
+
+  }
 /*--------------------------------------------------------------------------*/
 std::map<const std::string, void*> attach_list;
 /*--------------------------------------------------------------------------*/
@@ -67,6 +90,9 @@ public:
       }
     }else{
     }
+    
+    file_name = search_file(file_name);
+
     handle = dlopen(file_name.c_str(), check | dl_scope);
     if (handle) {
       attach_list[file_name] = handle;

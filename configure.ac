@@ -23,13 +23,28 @@
 
 AC_PREREQ(2.59)
 AC_INIT([src/main.cc])
-# this is any file in the source directory
-# used as a check to be sure we found it
+AC_CONFIG_MACRO_DIR([m4])
 
-AM_INIT_AUTOMAKE(gnucap, 2009-12-07)
+AM_INIT_AUTOMAKE(fucap, 2009-12-07)
 AM_CONFIG_HEADER([config.h])
 
 AM_MAINTAINER_MODE
+test "$sodir" = "\${prefix}/etc" && sodir='../etc'
+
+#AC_PREFIX_DEFAULT("${prefix}")
+
+sodir = '/foobar'
+
+sysconfdir='/bar/etc'
+libdir="${prefix}/lib"
+
+
+
+AC_DEFINE_UNQUOTED([PREFIX], "${prefix}", "Prefix")
+AC_DEFINE_UNQUOTED([SODIR], "${sodir}", "shared object path")
+AC_DEFINE_UNQUOTED([LIBDIR], "${libdir}", "shared object path")
+AC_DEFINE_UNQUOTED([SOMETESTDIR], "${sysconfdir}", "just a test")
+
 
 AC_MSG_CHECKING([if debug code should be compiled in])
 AC_ARG_ENABLE([debug],
@@ -81,6 +96,10 @@ AC_LANG([C++])
 
 #AC_CHECK_LIB([termcap], [main])	
 #AC_CHECK_LIB([readline], [main])
+AC_CHECK_LIB([m], [cos])
+AC_CHECK_LIB([gslcblas], [cblas_dgemm])
+AC_CHECK_LIB([gsl], [gsl_blas_dgemm])
+AC_CHECK_LIB([gsl], [gsl_fit_linear])
 AC_ARG_WITH([readline],
 [AS_HELP_STRING([--with-readline],
   [support command line editing @<:@default=yes@:>@])],
@@ -93,6 +112,10 @@ if test "x$with_readline" != xno ; then
 fi    
 
 AC_CHECK_LIB([dl], [dlopen])
+LT_INIT([disable-static])
+AC_DISABLE_STATIC
+AC_PROG_LIBTOOL
+
 
 # Checks for header files.
 #AC_CHECK_HEADERS([fcntl.h unistd.h])
@@ -155,6 +178,7 @@ AC_OUTPUT([
 	examples/Makefile
 	modelgen/Makefile
 	src/Makefile
+	nonGPL/Makefile
 	])
 
 AC_MSG_RESULT([

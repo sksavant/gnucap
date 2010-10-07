@@ -156,7 +156,7 @@ public:
   virtual  hp_float_t  tr_amps()const;
   virtual  COMPLEX ac_involts()const		= 0;
   virtual  COMPLEX ac_amps()const;
-  virtual void tt_next();
+  virtual void tt_next() ;// !const
   virtual void tt_prepare(){
 	  COMPONENT::tt_prepare();
   }

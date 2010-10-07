@@ -1,6 +1,27 @@
-// vim:ts=8:sw=2:et:
+/* vim:ts=8:sw=2:et:
+ * Copyright (C) 2010 Felix Salfelder
+ * Author: felix@salfelder.org
+ *
+ * This file is part of "Gnucap", the Gnu Circuit Analysis Package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
+ */
 
 #include "u_adp.h"
+#include <gsl/gsl_fit.h>
 #define DEBUG_ADP
 
 /*
@@ -29,13 +50,18 @@ double ADP_NODE::tt_review( ) {
   trace1("ADP_NODE::tt_review", _c->_sim->tt_iteration_number());
   assert(tr_expect == tr_expect);
   assert(tr_expect != HUGE_VAL );
+  hp_float_t myreltol = OPT::adpreltol;
+  hp_float_t myabstol = OPT::adpabstol;
+
+  // FIXME: implement abs err!
+  if( myreltol == 0 ) return 0;
+
   _rel_tr_err = fabs (tr_value - tr_expect) / (fabs(tr_value) + fabs(tr_expect)); // ++ nenner?
   _abs_tr_err = fabs (tr_value - tr_expect);
 
-  hp_float_t myreltol = OPT::adpreltol;
-  hp_float_t myabstol = OPT::adpabstol;
   trace2("ADP_NODE::tt_review", myreltol, inf);
   if( myreltol == inf && myabstol == inf ) return inf;
+  if( myreltol == 0 && myabstol == 0 ) return 0;
 
 // baut die zeit nicht ein!
   //double wanted_dT = sqrt( 1 / ( _rel_tr_err ) ) * (( myreltol  ))  ;
@@ -44,6 +70,9 @@ double ADP_NODE::tt_review( ) {
   //dT0 == last try?
   //std::cout << dT0() << "\n";
   double wanted_dT = sqrt( dT0() / _rel_tr_err )  * (( myreltol  ))  ;
+  if( wanted_dT < 0  || wanted_dT != wanted_dT) {
+    error(bDANGER, "wanted_dT %f\n", wanted_dT);
+  }
 
   if( _rel_tr_err != _rel_tr_err ) wanted_dT = NEVER;
   if( !(_rel_tr_err == _rel_tr_err) ) wanted_dT = NEVER;
@@ -52,6 +81,7 @@ double ADP_NODE::tt_review( ) {
 
   int order = _c->_sim->get_tt_order();
   assert(wanted_dT >= 0 );
+
   _wdT = wanted_dT * ( order+1) / 3;
   return wanted_dT  ;
 }
@@ -127,6 +157,10 @@ void ADP_NODE::tt_accept()
   tr_value0=tr_value;
   tt_value += tr_value0; // set output value
 
+
+  assert(tt_value < 1e10);
+  assert(tr_value0 < 1e10);
+
   trace1(("ADP_NODE::tt_accept done " + _c->short_label()).c_str(), get_tt());
 }
 /*----------------------------------------------------------------------------*/
@@ -194,6 +228,56 @@ void ADP_NODE::tt_expect1_linear(){
 
   trace6(( "ADP_NODE::tt_expect1_linear "+_c->short_label()).c_str(), get_tr(), get1(), tt_expect, diff, tr_expect, tr_duration() );
 
+
+  if (tt_expect < 0 ){
+    //positive?
+    int order = _c->_sim->get_tt_order();
+    error(bDANGER, "* ADP_NODE::tt_expect1_linear error step %i, Time0=%f (%f,%f,%f), %s, tt_value = %g, ( %g, %g, (%g)) %i tt: %f, expecting %f\n", \
+        _c->_sim->tt_iteration_number(),
+        _c->_sim->_Time0,   dT0(), Time_delta(), dT1(),
+        _c->short_label().c_str(), tt_value, 
+        tr_value2, tr_value1, tr_expect,
+        order,
+         get1(),
+        tt_expect);
+//    assert(false);
+  }
+}
+/*---------------------------------*/
+// 3 points denoising expect
+void ADP_NODE::tt_expect2_linear(){
+  trace4(( "ADP_NODE::tt_expect2_linear " + _c->short_label()).c_str(), tr_value, tr_value0, tr_value1, tr_value2 );
+  trace3(( "ADP_NODE::tt_expect2_linear " + _c->short_label()).c_str(), Time_delta(), get1(), dT1() );
+  // tr_expect = fabs( (tr_value1) + ( (tr_value1) - (tr_value2)) * (hp_float_t) ((Time_delta() )/dT1()));
+  //
+
+  hp_float_t t1 = dT2();
+  hp_float_t t2 = dT1()+dT2();
+  hp_float_t t3 = dT0()+dT1()+dT2();
+
+
+  
+
+  // expected tr for time0
+
+  const double x[3]={0, t1, t2};
+  const double y[3]={tr_value3, tr_value2, tr_value1};
+
+  double c0, c1, cov00, cov01, cov11, sumsq;
+  gsl_fit_linear( x, 1, y, 1, 3, &c0, &c1, &cov00, &cov01, &cov11, &sumsq);
+
+  tr_expect = c0 + c1 * t3;
+
+  if(tr_expect != tr_expect) tr_expect=0;
+  if(tr_value1 != tr_value1) assert(false);
+
+  hp_float_t diff = (tr_value1 + tr_expect)/2 * Time_delta() / tr_duration();
+  tt_expect = get1() + diff;
+  assert (tt_expect == tt_expect);
+
+  trace6(( "ADP_NODE::tt_expect1_linear "+_c->short_label()).c_str(), get_tr(), get1(), tt_expect, diff, tr_expect, tr_duration() );
+
+
   if (tt_expect < 0 ){
     //positive?
     int order = _c->_sim->get_tt_order();
@@ -214,11 +298,18 @@ void ADP_NODE::tt_expect1_square(){
 }
 /*---------------------------------*/
 void ADP_NODE::tt_expect2_exp(){
-  trace3(( "ADP_NODE::tt_expect2_exp() "+_c->short_label()).c_str(), tr_value3, tr_value2,  tr_value1 );
 
-  hp_float_t f0 = tr_value3;
-  hp_float_t f1 = tr_value2;
-  hp_float_t f2 = tr_value1;
+  hp_float_t sign=1;
+        
+  if (tr_value1 < 0 && tr_value2 < 0 && tr_value3 <0){
+        sign=-1;
+  } else if ( ! (tr_value1 > 0 && tr_value2 > 0 && tr_value3 >0) ){
+     return tt_expect1_linear();       
+  }
+
+  hp_float_t f0 = sign*tr_value3;
+  hp_float_t f1 = sign*tr_value2;
+  hp_float_t f2 = sign*tr_value1;
 
   hp_float_t t0 = 0;
   hp_float_t t1 = dT2();
@@ -242,9 +333,9 @@ void ADP_NODE::tt_expect2_exp(){
 
   hp_float_t c=exp(a);
 
-  tr_expect = c * exp(alpha*t3);
+  tr_expect = sign*c * exp(alpha*t3);
 
-  trace3(( "ADP_NODE::tt_expect2_exp() "+_c->short_label()).c_str(), alpha, a, tr_expect );
+  trace6(( "ADP_NODE::tt_expect2_exp() "+_c->short_label()).c_str(),  Time0(), tr_value3, tr_value2, tr_value1, get1(), tr_expect );
   assert( tr_expect == tr_expect );
 
   hp_float_t E = - c/alpha;
@@ -253,7 +344,7 @@ void ADP_NODE::tt_expect2_exp(){
 
   trace4("ADP_NODE::tt_expect2_exp", delta, delta_trapez, tt_value1, get() );
   delta_trapez = delta_trapez; // unused_variable...
-  tt_expect = get1() + delta;
+  tt_expect = get1() +  sign * delta;
 
   if ( tt_expect != tt_expect){
      std::cerr << "tt_expect is broken:\n" 
@@ -271,13 +362,18 @@ void ADP_NODE::tt_expect2_exp(){
 
   if (tt_expect < 0 ){
     //positive?
-    error(bDANGER, "* ADP_NODE::tt_expect2_exp error step %i, Time0=%f, %s, tt_value = %g, ( %g, %g, %g, %g) \n", \
+    error(bDANGER, "* ADP_NODE::tt_expect2_exp error step %i, Time0=%f, %s, tt_value = %g, ( %g, %g, %g, %g) tte: %f \n", \
         _c->_sim->tt_iteration_number(),
          dT0(),
-        _c->short_label().c_str(), tt_value, tr_value, tr_value0, tr_value1, tr_value2);
+        _c->short_label().c_str(), tt_value, tr_value, tr_value0, tr_value1, tr_value2,
+        tt_expect
+        );
 //    assert(false);
   }
 
+  //sanitycheck
+  if ( f0<0 && f1<0 && f2 <0)
+    assert (tr_expect <= 0);
 
 }
 /*---------------------------------*/
@@ -348,26 +444,8 @@ void ADP_NODE::tt_commit( )
 
   assert( tr_expect != HUGE_VAL );
   assert( tr_expect == tr_expect );
-  int order = _c->_sim->get_tt_order();
 
-  switch(order){
-    case 0:
-      assert(false);
-      break;
-    case 1:
-      tt_expect0();
-      break;
-    case 2:
-      tt_expect1();
-      break;
-    case 3:
-      // FIXME assert( tr_dd12 == ( tr_value1 - tr_value2 ) / dT1());
-      tr_dd12 = ( tr_value1 - tr_value2 ) / dT1();
-      tt_expect2();
-      break;
-    default:
-      assert(false);
-  }
+  tt_expect_();
 
   assert(tr_expect != HUGE_VAL );
   assert(tr_expect == tr_expect);
@@ -383,11 +461,48 @@ void ADP_NODE::tt_commit( )
   if (tt_expect < 0 ){
     //positive?
     error(bDANGER, "* ADP_NODE::tt_commit error step %i, order %i\n", \
-        _c->_sim->tt_iteration_number(), order);
+        _c->_sim->tt_iteration_number(), _order);
   }
   trace6(("tt_values " + _c->short_label() + " ").c_str(),
       tr_value3, tr_value2, tr_value1, tr_expect, _c->_sim->tt_iteration_number(), tt_expect - tt_value1);
   trace6(("tt_values " + _c->short_label() + " ").c_str(),
       tt_value3, tt_value2, tt_value1, tt_expect, _c->_sim->tt_iteration_number(), _c->_sim->get_tt_order() );
 
+
+
+}
+/*---------------------------------*/
+void ADP_NODE::tt_expect_( ){
+  _order = _c->_sim->get_tt_order();
+
+  switch(_order){
+    case 0:
+      assert(false);
+      break;
+    case 1:
+      tt_expect0();
+      break;
+    case 2:
+      tt_expect1();
+      if ( tr_value1<0 && tr_value2<0 )
+        assert (tr_expect <= 0);
+
+      break;
+    case 3:
+      // FIXME assert( tr_dd12 == ( tr_value1 - tr_value2 ) / dT1());
+      tr_dd12 = ( tr_value1 - tr_value2 ) / dT1();
+      tt_expect2();
+      if ( tr_value1<0 && tr_value2<0 && tr_value3<0) {
+        if (tr_expect>0)error(bDANGER, "too big %f\n" , tr_expect );
+        error(bDANGER, "* ADP_NODE::tt_commit error step %i, Time0=%f, %s, tt_value = %g, ( %g, %g, %g, %g) tte: %g\n", \
+            _c->_sim->tt_iteration_number(),
+            dT0(),
+            _c->short_label().c_str(), tt_value, tr_value, tr_value0, tr_value1, tr_value2, tt_expect);
+        assert (tr_expect <= 0);
+
+      }
+      break;
+    default:
+      assert(false);
+  }
 }

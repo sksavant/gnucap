@@ -59,6 +59,7 @@ double	OPT::defl = 100e-6;
 double	OPT::defw = 100e-6;
 double	OPT::defad = 0.;
 double	OPT::defas = 0.;
+std::string	OPT::libpath = ""; // PREFIX/?
 
 bool	OPT::clobber = true;
 bool	OPT::keys_between_nodes = true;

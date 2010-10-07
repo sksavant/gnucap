@@ -16,10 +16,10 @@
 
 
 
-pkgdatadir = $(datadir)/gnucap
-pkgincludedir = $(includedir)/gnucap
-pkglibdir = $(libdir)/gnucap
-pkglibexecdir = $(libexecdir)/gnucap
+pkgdatadir = $(datadir)/fucap
+pkgincludedir = $(includedir)/fucap
+pkglibdir = $(libdir)/fucap
+pkglibexecdir = $(libexecdir)/fucap
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 install_sh_DATA = $(install_sh) -c -m 644
 install_sh_PROGRAM = $(install_sh) -c
@@ -32,6 +32,8 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+build_triplet = x86_64-unknown-linux-gnu
+host_triplet = x86_64-unknown-linux-gnu
 subdir = doc
 DIST_COMMON = $(dist_man_MANS) $(dist_pkgdocs_DATA) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in COPYING INSTALL
@@ -74,36 +76,56 @@ DATA = $(dist_pkgdocs_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = ${SHELL} /home/felix/extern/fucap/trunk/missing --run aclocal-1.11
 AMTAR = ${SHELL} /home/felix/extern/fucap/trunk/missing --run tar
+AR = ar
 AUTOCONF = ${SHELL} /home/felix/extern/fucap/trunk/missing --run autoconf
 AUTOHEADER = ${SHELL} /home/felix/extern/fucap/trunk/missing --run autoheader
 AUTOMAKE = ${SHELL} /home/felix/extern/fucap/trunk/missing --run automake-1.11
 AWK = gawk
-CPPFLAGS = -DTRACE_UNTESTED -DDO_TRACE -DTRACE_UNTESTED
+CC = gcc
+CCDEPMODE = depmode=gcc3
+CFLAGS = -g -O2 -DTRACE_UNTESTED -Wall -W -Wno-sign-compare -Wpointer-arith -Wcast-qual -Wwrite-strings -Wconversion -Woverloaded-virtual -Wlong-long -Wsign-compare -Wcast-align
+CPP = gcc -E
+CPPFLAGS =  -DTRACE_UNTESTED
 CXX = g++
+CXXCPP = g++ -E
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -g -O2
+CXXFLAGS = -g -O2 -DTRACE_UNTESTED -Wall -W -Wno-sign-compare -Wpointer-arith -Wcast-qual -Wwrite-strings -Wconversion -Woverloaded-virtual -Wlong-long -Wsign-compare -Wcast-align
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
+DSYMUTIL = 
+DUMPBIN = 
 ECHO_C = 
 ECHO_N = -n
 ECHO_T = 
+EGREP = /bin/grep -E
 EXEEXT = 
+FGREP = /bin/grep -F
+GREP = /bin/grep
 INSTALL = /usr/bin/install -c
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
+LD = /usr/bin/ld -m elf_x86_64
 LDFLAGS =  -rdynamic
 LIBOBJS = 
-LIBS = -ldl -lreadline -ltermcap 
+LIBS = -ldl -lreadline -ltermcap -lgsl -lgsl -lgslcblas -lm 
+LIBTOOL = $(SHELL) $(top_builddir)/libtool
+LIPO = 
+LN_S = ln -s
 LTLIBOBJS = 
 MAINT = #
 MAKEINFO = ${SHELL} /home/felix/extern/fucap/trunk/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
 MODELGEN = ../modelgen/gnucap-modelgen
+NM = /usr/bin/nm -B
+NMEDIT = 
+OBJDUMP = objdump
 OBJEXT = o
-PACKAGE = gnucap
+OTOOL = 
+OTOOL64 = 
+PACKAGE = fucap
 PACKAGE_BUGREPORT = 
 PACKAGE_NAME = 
 PACKAGE_STRING = 
@@ -111,37 +133,50 @@ PACKAGE_TARNAME =
 PACKAGE_URL = 
 PACKAGE_VERSION = 
 PATH_SEPARATOR = :
+RANLIB = ranlib
+SED = /bin/sed
 SET_MAKE = 
-SHELL = /bin/sh
-STRIP = 
+SHELL = /bin/bash
+STRIP = strip
 VERSION = 2009-12-07
 abs_builddir = /home/felix/extern/fucap/trunk/doc
 abs_srcdir = /home/felix/extern/fucap/trunk/doc
 abs_top_builddir = /home/felix/extern/fucap/trunk
 abs_top_srcdir = /home/felix/extern/fucap/trunk
+ac_ct_CC = gcc
 ac_ct_CXX = g++
+ac_ct_DUMPBIN = 
 am__include = include
 am__leading_dot = .
 am__quote = 
 am__tar = ${AMTAR} chof - "$$tardir"
 am__untar = ${AMTAR} xf -
 bindir = ${exec_prefix}/bin
+build = x86_64-unknown-linux-gnu
 build_alias = 
+build_cpu = x86_64
+build_os = linux-gnu
+build_vendor = unknown
 builddir = .
 datadir = ${datarootdir}
 datarootdir = ${prefix}/share
 docdir = ${datarootdir}/doc/${PACKAGE}
 dvidir = ${docdir}
 exec_prefix = ${prefix}
+host = x86_64-unknown-linux-gnu
 host_alias = 
+host_cpu = x86_64
+host_os = linux-gnu
+host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
 install_sh = ${SHELL} /home/felix/extern/fucap/trunk/install-sh
-libdir = ${exec_prefix}/lib
+libdir = /home/felix/.local64/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
 localstatedir = ${prefix}/var
+lt_ECHO = echo
 mandir = ${datarootdir}/man
 mkdir_p = /bin/mkdir -p
 oldincludedir = /usr/include
@@ -152,7 +187,7 @@ psdir = ${docdir}
 sbindir = ${exec_prefix}/sbin
 sharedstatedir = ${prefix}/com
 srcdir = .
-sysconfdir = ${prefix}/etc
+sysconfdir = /bar/etc
 target_alias = 
 top_build_prefix = ../
 top_builddir = ..
@@ -196,6 +231,12 @@ $(top_srcdir)/configure: # $(am__configure_deps)
 $(ACLOCAL_M4): # $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+
+mostlyclean-libtool:
+	-rm -f *.lo
+
+clean-libtool:
+	-rm -rf .libs _libs
 install-man1: $(dist_man_MANS)
 	@$(NORMAL_INSTALL)
 	test -z "$(man1dir)" || $(MKDIR_P) "$(DESTDIR)$(man1dir)"
@@ -338,7 +379,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic mostlyclean-am
+clean-am: clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-am
 	-rm -f Makefile
@@ -390,7 +431,7 @@ maintainer-clean-am: distclean-am maintainer-clean-generic
 
 mostlyclean: mostlyclean-am
 
-mostlyclean-am: mostlyclean-generic
+mostlyclean-am: mostlyclean-generic mostlyclean-libtool
 
 pdf: pdf-am
 
@@ -406,17 +447,18 @@ uninstall-man: uninstall-man1
 
 .MAKE: install-am install-strip
 
-.PHONY: all all-am check check-am clean clean-generic distclean \
-	distclean-generic distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am \
-	install-dist_pkgdocsDATA install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-man1 \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-generic pdf pdf-am ps ps-am uninstall uninstall-am \
-	uninstall-dist_pkgdocsDATA uninstall-man uninstall-man1
+.PHONY: all all-am check check-am clean clean-generic clean-libtool \
+	distclean distclean-generic distclean-libtool distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-dist_pkgdocsDATA \
+	install-dvi install-dvi-am install-exec install-exec-am \
+	install-html install-html-am install-info install-info-am \
+	install-man install-man1 install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-generic mostlyclean-libtool pdf pdf-am \
+	ps ps-am uninstall uninstall-am uninstall-dist_pkgdocsDATA \
+	uninstall-man uninstall-man1
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
