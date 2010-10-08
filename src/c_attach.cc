@@ -34,6 +34,8 @@ namespace {
     const char* h ="HOME";
     const char* home= getenv(h);
 
+    if (name[0] == '/') return true; // fixme
+
     std::string pathlist[4] = { OPT::libpath , "./",  LIBDIR,
       std::string(home) + std::string("/.gnucap/lib/") };
 
@@ -42,9 +44,10 @@ namespace {
     for(int i=1; i<4 ; i++) {
       if ( FILE* tmp = fopen( (pathlist[i] + "/" + name).c_str(), "r" ) ) {
         fclose(tmp);
-        name = pathlist[i]+name;
+        name = pathlist[i]+"/"+name;
         return true;
       }
+      trace0( (" not found " + pathlist[i] + "/" + name).c_str());
     }
     return false;
 
@@ -91,7 +94,9 @@ public:
     }else{
     }
     
-    file_name = search_file(file_name);
+    if ( ! search_file(file_name) ){
+      throw Exception_CS("cannot find file", cmd);
+    }
 
     handle = dlopen(file_name.c_str(), check | dl_scope);
     if (handle) {

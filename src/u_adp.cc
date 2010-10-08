@@ -33,17 +33,17 @@
 
 /*----------------------------------------------------------------------------*/
 void ADP_NODE::init(){
-      tr_value=(0.);
-      tr_value0=(0.);
-      tr_value1=(0.);
-      tr_value2=(0.);
-      tt_value=0.;
-      tt_value0=(0.);
-      tt_value1=(0.);
-      name=std::string("");
-      _c=(NULL); 
-    }
-
+  tr_value=(0.);
+  tr_value0=(0.);
+  tr_value1=(0.);
+  tr_value2=(0.);
+  tt_value=0.;
+  tt_value0=(0.);
+  tt_value1=(0.);
+  name=std::string("");
+  _c=(NULL); 
+}
+/*----------------------------------------------------------------------------*/
 double ADP_NODE::tr_duration()const{ return _c->_sim->_last_time; }
 /*----------------------------------------------------------------------------*/
 double ADP_NODE::tt_review( ) {
@@ -130,8 +130,6 @@ void ADP_NODE::tt_accept()
   // untested();
 
   switch( order ){
-    case 9:
-      assert(false);
     case 0:
       tt_accept_first();
       // tr_dd12 = ( tr_value0 - tr_value1 ) / dT0();
@@ -184,7 +182,6 @@ void ADP_NODE::tt_advance(){
 }
 /*----------------------------------------------------------------------------*/
 //  tt_value1 += diff;
-// FIXME : token sollte probe heissen
 void ADP_NODE::tt_commit_first( )
 {
   trace2(("ADP_NODE::tt_commit_first() " + _c->short_label()).c_str(), get_tt(), get_tr());
@@ -255,9 +252,6 @@ void ADP_NODE::tt_expect2_linear(){
   hp_float_t t2 = dT1()+dT2();
   hp_float_t t3 = dT0()+dT1()+dT2();
 
-
-  
-
   // expected tr for time0
 
   const double x[3]={0, t1, t2};
@@ -281,7 +275,7 @@ void ADP_NODE::tt_expect2_linear(){
   if (tt_expect < 0 ){
     //positive?
     int order = _c->_sim->get_tt_order();
-    error(bDANGER, "* ADP_NODE::tt_expect1_linear error step %i, Time0=%f (%f,%f,%f), %s, tt_value = %g, ( %g, %g, (%g)) %i tt: %f, expecting %f\n", \
+    error(bDANGER, "* ADP_NODE::tt_expect2_linear error step %i, Time0=%f (%f,%f,%f), %s, tt_value = %g, ( %g, %g, (%g)) %i tt: %f, expecting %f\n", \
         _c->_sim->tt_iteration_number(),
         _c->_sim->_Time0,   dT0(), Time_delta(), dT1(),
         _c->short_label().c_str(), tt_value, 

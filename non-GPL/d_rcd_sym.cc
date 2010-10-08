@@ -158,7 +158,6 @@ void MODEL_BUILT_IN_RCD_SYM::do_tr_stress( const COMPONENT* brh) const {
   trace1("MODEL_BUILT_IN_RCD_SYM::tr_stress ", c->involts() );
 
   // use positive values for pmos
-  ueff=ueff;
 
   double h = _sim->_dt0;
   double uend;

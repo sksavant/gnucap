@@ -12,3 +12,4 @@
       ( fixme: allow expressions )
 - repaired sweep for batchmode. 
     uses parameters and breaks interactive mode sweep
+- make output easier to parse for gnuplot 

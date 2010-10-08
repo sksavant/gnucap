@@ -1,38 +1,14 @@
 /* $Id: d_bti.cc,v 1.7 2010-09-07 07:46:19 felix Exp $ -*- C++ -*-
-vim:ts=8:sw=2:et:
-*/
-
+ * vim:ts=8:sw=2:et:
+ *
+ *
+ * (c) 2010 Felix Salfelder
+ *
+ * GPLv3
+ *
+ */
 
 /* This file is no longer automatically generated. */
-
-#define WS_COLS 11
-/*
-static double WS[10][WS_COLS] =
-// wrong order   ^^  ^^ needed
-{ { .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 },
-  { .0 , .0 , .009, .01, .32, .32, .32, .37, .32, .1 , .0 },
-  { .0 , .01, .01, .01,  .1, .26, .32, .32, .20, .14, .0 },
-  { .0 , .01, .09, .02, .32, .47, .46, .25, .10, .10, .0 },
-  { .0 , .09, .02, .07, .47, .32, .31, .31, .13, .10, .0 },
-  { .0 , .01, .06, .37, .48, .32, .14, .13, .10, .0 , .0 },
-  { .0 , .02, .01, .26, .27, .19, .11, .10, .0 , .0 , .0 },
-  { .0 , .4 , .32, .25, .25, .1 , .1 , .0 , .0 , .0 , .0 },
-  { .0 , .26, .37, .26, .1 , .1 , .0 , .0 , .0 , .0 , .0 },
-  { .11, .1 , .0 , .0 , .0 ,  0 , .0 , .0 , .0 , .0 , .0 } };
-*/
-
-static double WS[10][WS_COLS] =
-// wrong order   ^^  ^^ needed
-{ { .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 },
-  { .0 , .0 , .1 , .1 , .32, .32, .32, .37, .32, .1 , .0 },
-  { .0 , .1 , .1 , .1 ,  .1, .26, .32, .32, .20, .14, .0 },
-  { .0 , .1 , .29, .29, .32, .47, .46, .25, .10, .10, .0 },
-  { .0 , .29, .32, .37, .47, .32, .31, .31, .13, .10, .0 },
-  { .0 , .21, .26, .37, .48, .32, .14, .13, .10, .0 , .0 },
-  { .0 , .32, .40, .26, .27, .19, .11, .10, .0 , .0 , .0 },
-  { .0 , .4 , .32, .25, .25, .1 , .1 , .0 , .0 , .0 , .0 },
-  { .0 , .26, .37, .26, .1 , .1 , .0 , .0 , .0 , .0 , .0 },
-  { .0 , .11, .1 , .0 , .0 , .0 ,  0 , .0 , .0 , .0 , .0 } };
 
 #include "e_aux.h"
 #include "e_storag.h"
@@ -477,165 +453,6 @@ namespace MODEL_BUILT_IN_BTI_MATRIX_DISPATCHER {
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-MODEL_BUILT_IN_BTI_INF::MODEL_BUILT_IN_BTI_INF(const
-    MODEL_BUILT_IN_BTI_INF& p)
-  :MODEL_BUILT_IN_BTI(p)
-{
-}
-/*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_BTI_INF::precalc_first()
-{
-  const CARD_LIST* par_scope = scope();
-  assert(par_scope);
-  MODEL_BUILT_IN_BTI::precalc_first();
-
-  rcd_number=63;
-}
-/*--------------------------------------------------------------------------*/
-MODEL_BUILT_IN_BTI_INF::MODEL_BUILT_IN_BTI_INF(const BASE_SUBCKT* p)
-  :MODEL_BUILT_IN_BTI(p)
-{
-}
-/*--------------------------------------------------------------------------*/
-std::string MODEL_BUILT_IN_BTI_INF::param_value(int i)const
-{
-  switch (param_count() - 1 - i) {
-  case 0:  return "...";
-  }
-  return MODEL_BUILT_IN_BTI::param_value(i);
-}
-/*--------------------------------------------------------------------------*/
-std::string MODEL_BUILT_IN_BTI_INF::param_name(int i)const
-{
-  switch (param_count() - 1 - i ){
-        case 0: return "======";
-//        case 1: return "fooo";
-  }
-  return MODEL_BUILT_IN_BTI::param_name(i );
-
-}
-/*--------------------------------------------------------------------------*/
-bool MODEL_BUILT_IN_BTI_INF::param_is_printable(int i)const
-{
-  switch (param_count() - 1 - i) {
-  case 0:  return (false);
-//  case 1:  return (true);
-  default: return MODEL_BUILT_IN_BTI::param_is_printable( i );
-  }
-}
-/*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_BTI_INF::set_param_by_index(int i, std::string& value, int offset)
-{
-  switch (param_count() - 1 - i) {
-  case 0: untested(); break;
-//  case 1: fooo = value; break;
-  default: MODEL_BUILT_IN_BTI::set_param_by_index(i,value,offset);
-  }
-}
-/*--------------------------------------------------------------------------*/
-std::string MODEL_BUILT_IN_BTI_INF::RCD_name(int i) const{
-
-  int row=0;
-  int col=0;
-  int pos=0;
-  int find=0;
-
-  while( true  ){
-    row = pos/WS_COLS;
-    col = pos%WS_COLS;
- //   trace3("MODEL_BUILT_IN_BTI_INF::RCD_name", pos, row, col);
-
-
-    if(WS[row][col]==.0){
-//      trace1("MODEL_BUILT_IN_BTI_INF::RCD_name", WS[row][col]);
-      pos++;
-      continue;
-
-    }else{
-      if(find == i) break;
-      find++;
-    }
-    pos++;
-
-  }
-  row = pos/WS_COLS;
-  col = pos%WS_COLS;
-
-  trace3("MODEL_BUILT_IN_BTI_INF::RCD_name()", i, row, col);
-
-  stringstream a;
-  a << "R_" << row << "_" << col ;
-  return a.str();
-
-}
-/*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
-{
-  trace0("MODEL_BUILT_IN_BTI_INF::attach_rcds()");
-  trace0(rcd_model_name.string().c_str());
-  int row, col;
-  int cols = WS_COLS;
-  int rows = 10;
-
-  long double up = pow(10, -6.5);
-  long double down = 1;
-  long double uref=1;
-  // double lambda=1;
-  double base=10;
-  //double mu=1;
-  int k=0;
-
-  // k
-  // 1 2 3
-  // 4 5 6
-  // 7 8 9
-
-  for(row=0; row < rows; row++ ) {
-    up *= base;
-    down=pow(10,3.5);
-    for(col=0; col < cols; col++ ) {
-      if ( WS[row][col] == .0 ) continue;
-
-      
-      COMMON_BUILT_IN_RCD* RCD1 = new COMMON_BUILT_IN_RCD;
-      RCD1->set_modelname( rcd_model_name ); // <= !
-      RCD1->attach(this); // ?
-      RCD1->Uref = double( uref );
-      RCD1->Recommon = double (up);
-      double wt = WS[row][col];
-      RCD1->weight = wt;
-      RCD1->Rccommon0 = double(down);
-      trace6("MODEL_BUILT_IN_BTI_INF::attach_rcds ", row, col, k, up, down, wt); 
-
-      //double _rr = _rr_.subs(runter=runter, u_gate_=uref)
-
-      assert( rcd_number > k );
-
-      //stringstream a;
-      //a << "RCD_" << i << "_" << j;
-      //_RCD[k]->set_label(a.str());
-
-      COMMON_COMPONENT::attach_common(RCD1, (COMMON_COMPONENT**)&(_RCD[k]));
-      k++;
-      down /= base;
-      
-    }
-
-  }
-  
-  trace2(" done attaching rcds ", rcd_number, k );
-  assert( rcd_number == k );
-
-}
-/*--------------------------------------------------------------------------*/
-namespace MODEL_BUILT_IN_BTI_INF_DISPATCHER { 
-  static DEV_BUILT_IN_BTI p3d;
-  static MODEL_BUILT_IN_BTI_INF p3(&p3d);
-  static DISPATCHER<MODEL_CARD>::INSTALL
-    d3(&model_dispatcher, "bti_inf", &p3);
-}
-/*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 std::string MODEL_BUILT_IN_BTI_SINGLE::param_value(int i)const
 {
@@ -921,22 +738,6 @@ void COMMON_BUILT_IN_BTI::precalc_last(const CARD_LIST* par_scope)
 
   assert(c == this);
   return;
-//
-//  int i;
-//  int n=m->rcd_number;
-//  for(i=0; i<n; i++ ){
-//    // subcircuit commons, recursive
-//    COMMON_BUILT_IN_RCD* RCD1 = new COMMON_BUILT_IN_RCD;
-//    RCD1->set_modelname(m->rcd_model_name );
-////    RCD1->set_modelname("rcdmodel" );
-//    RCD1->attach(model()); // was tut das hier??
-//    RCD1->weight = 1;
-//    RCD1->Recommon = hoch(i) ;
-//    RCD1->Rccommon0 = runter(i);
-//    RCD1->Rccommon1 = hoch(i)  ;
-//    attach_common(RCD1, &_RCD[i]);
-//  }
-
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -982,7 +783,7 @@ DEV_BUILT_IN_BTI::DEV_BUILT_IN_BTI(const DEV_BUILT_IN_BTI& p)
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_BTI::expand()
 {
-  BASE_SUBCKT::expand(); // calls common->expand, attached model
+  BASE_SUBCKT::expand(); // calls common->expand, attaches model
   assert(_n);
   assert(common());
   const COMMON_BUILT_IN_BTI* c = static_cast<const COMMON_BUILT_IN_BTI*>(common());

@@ -13,6 +13,8 @@ class ADP_CARD;
 // collects transient (stress) data and extrapolates.
 class ADP_NODE {
   protected:
+
+    // history needs cleanup.
     hp_float_t tr_expect;
     hp_float_t tr_value;
     hp_float_t tr_value0;
@@ -126,21 +128,16 @@ class ADP_NODE {
 };
 /*--------------------------------------------------------------------------*/
 class BTI_ADP : public ADP_NODE {
-
-        // nonsense  
-
+        // nonsense   ?
 };
 /*--------------------------------------------------------------------------*/
 class ADP_NODE_RCD : public ADP_NODE {
  public:
    ADP_NODE_RCD(COMPONENT*x): ADP_NODE(x) { }
-
    void tt_expect2() { tt_expect2_exp(); }
-        // nonsense  
-
-
 };
 /*--------------------------------------------------------------------------*/
+// ADP card is only a stub...
 class ADP_CARD {
 // manages stress data and stores device parameters.
   private:
