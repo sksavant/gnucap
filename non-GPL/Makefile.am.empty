@@ -1,0 +1,18 @@
+# Makefile.am template.
+# (c) 2010 Felix Salfelder
+#
+# GPLv2 (ironically)
+#
+# copy this file to Makefile.am and replace NONGPL with the name of your
+# library.
+# rerun ./autogen.sh and ./configure in ..
+
+LIBS = -shared 
+
+AM_CPPFLAGS=-I../src
+
+
+lib_LTLIBRARIES = libNONGPL.la
+libd_rcd_sym_la_SOURCES = NONGPL.cc
+include_HEADERS = NONGPL.h
+
