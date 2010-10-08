@@ -1,0 +1,5 @@
+
+- parameter names starting with "i" are broken, this is because "inf" is a
+  float value and the float test only considers the first character.
+
+- some bug with store_results not in time (cap)

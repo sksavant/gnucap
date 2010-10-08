@@ -22,18 +22,17 @@
 #  02110-1301, USA.
 
 AC_PREREQ(2.59)
-AC_INIT([src/main.cc])
-AC_CONFIG_MACRO_DIR([m4])
+AC_INIT([mumble],[1.1])
+AC_CONFIG_SRCDIR([src/main.cc])
 
 AM_INIT_AUTOMAKE(fucap, 2009-12-07)
+AC_CONFIG_MACRO_DIR([m4])
 AM_CONFIG_HEADER([config.h])
 
 AM_MAINTAINER_MODE
-test "$sodir" = "\${prefix}/etc" && sodir='../etc'
 
 #AC_PREFIX_DEFAULT("${prefix}")
 
-sodir = '/foobar'
 
 sysconfdir='/bar/etc'
 libdir="${prefix}/lib"
@@ -178,7 +177,7 @@ AC_OUTPUT([
 	examples/Makefile
 	modelgen/Makefile
 	src/Makefile
-	nonGPL/Makefile
+	non-GPL/Makefile
 	])
 
 AC_MSG_RESULT([
