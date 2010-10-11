@@ -21,11 +21,16 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 #  02110-1301, USA.
 
-AC_PREREQ(2.59)
-AC_INIT([mumble],[1.1])
+AC_PREREQ(2.67)
+AC_INIT([fucap],[1.1])
+AM_INIT_AUTOMAKE(fucap, 2009-12-07)
+
+AC_PROG_CXX
+
+AC_PROG_MAKE_SET 
+
 AC_CONFIG_SRCDIR([src/main.cc])
 
-AM_INIT_AUTOMAKE(fucap, 2009-12-07)
 AC_CONFIG_MACRO_DIR([m4])
 AM_CONFIG_HEADER([config.h])
 
@@ -34,7 +39,7 @@ AM_MAINTAINER_MODE
 #AC_PREFIX_DEFAULT("${prefix}")
 
 
-sysconfdir='/bar/etc'
+#sysconfdir='/bar/etc'
 libdir="${prefix}/lib"
 
 
@@ -42,7 +47,6 @@ libdir="${prefix}/lib"
 AC_DEFINE_UNQUOTED([PREFIX], "${prefix}", "Prefix")
 AC_DEFINE_UNQUOTED([SODIR], "${sodir}", "shared object path")
 AC_DEFINE_UNQUOTED([LIBDIR], "${libdir}", "shared object path")
-AC_DEFINE_UNQUOTED([SOMETESTDIR], "${sysconfdir}", "just a test")
 
 
 AC_MSG_CHECKING([if debug code should be compiled in])
