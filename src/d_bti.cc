@@ -8,12 +8,8 @@
  *
  */
 
-/* This file is no longer automatically generated. */
-
 #include "e_aux.h"
 #include "e_storag.h"
-// #include "d_mos_base.h"
-
 #include "globals.h"
 #include "e_elemnt.h"
 // #include "e_compon.h"
