@@ -35,6 +35,7 @@ class ADP_NODE {
     double _rel_tt_err;
     double _rel_tr_err;
     double _wdT;
+    bool _positive;
 
     double Time_delta()  const
     { return ( CKT_BASE::_sim->_dT0 ); }

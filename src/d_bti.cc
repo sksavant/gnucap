@@ -54,7 +54,8 @@ MODEL_BUILT_IN_BTI::MODEL_BUILT_IN_BTI(const BASE_SUBCKT* p)
    bti_type(0),
    bti_base(10.0),
    anneal(true),
-   rcd_model_name( (std::string) "rcdmodel")
+   rcd_model_name( (std::string) "rcdmodel"),
+   weight(0.199)
    //,rcd_model( MODEL_BUILT_IN_RCD() )
 {
   if (ENV::run_mode != rPRE_MAIN) {
@@ -107,7 +108,8 @@ MODEL_BUILT_IN_BTI::MODEL_BUILT_IN_BTI(const MODEL_BUILT_IN_BTI& p)
    bti_type(p.bti_type),
    bti_base(p.bti_base),
    anneal(p.anneal),
-   rcd_model_name(p.rcd_model_name)
+   rcd_model_name(p.rcd_model_name),
+   weight(p.weight)
 //,   rcd_model( MODEL_BUILT_IN_RCD() )
 {
   if (ENV::run_mode != rPRE_MAIN) {
@@ -146,8 +148,9 @@ std::string MODEL_BUILT_IN_BTI::param_value(int i)const
   case 5:  return rcd_number.string();
   case 6:  return anneal.string();
   case 7:  return rcd_model_name.string();
+  case 8:  return weight.string();
 //  case 8:  return "some string"; // rcd_model.string();
-  default: return "";
+  default: return "unknown";
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -181,16 +184,8 @@ void MODEL_BUILT_IN_BTI::precalc_first()
     e_val(&(this->rcd_number), 1, par_scope);
     e_val(&(this->anneal), true, par_scope);
     e_val(&(this->rcd_model_name), std::string("rcd_model_hc"), par_scope);
-   // e_val(&(this->rcd_model), (MODEL_BUILT_IN_BTI*) NULL, par_scope);
-    // final adjust: mid
-    // final adjust: calculated
-    // final adjust: post
+    e_val(&(this->weight), 0.123, par_scope);
 
-      if (true) {
-	int i=0; //test.
-        i=i;
-      }
-    // final adjust: done
 }
 /*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_BTI_MATRIX::MODEL_BUILT_IN_BTI_MATRIX(const BASE_SUBCKT* p)
@@ -258,7 +253,9 @@ void MODEL_BUILT_IN_BTI::set_param_by_index(int i, std::string& value, int offse
   case 7: rcd_model_name = value;
           trace0(("set rcd_model_name to " +  rcd_model_name.string()).c_str());
           break;
-  default: throw Exception_Too_Many(i, 6, offset); break;
+  case 8: weight = value; break;
+  default: throw Exception_Too_Many(i, MODEL_BUILT_IN_BTI::param_count(), offset);
+           break;
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -280,6 +277,7 @@ std::string MODEL_BUILT_IN_BTI::param_name(int i)const
   case 5:  return "rcd_number";
   case 6:  return "anneal";
   case 7:  return "rcd_model_name";
+  case 8:  return "weight";
   default: return "";
   }
 }
@@ -644,11 +642,15 @@ void COMMON_BUILT_IN_BTI::expand(const COMPONENT* d)
   const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(_sdp);
   assert(s);
 
+
+
   // subcircuit commons, recursive
   //
 
   m->attach_rcds( (COMMON_BUILT_IN_RCD**) _RCD);
   trace0("COMMON_BUILT_IN_BTI::expand attached rcds");
+
+  weight=m->weight;
 
   assert ( _RCD[1] != _RCD[0] );
   assert(c == this);
@@ -716,7 +718,8 @@ void COMMON_BUILT_IN_BTI::precalc_last(const CARD_LIST* par_scope)
     // final adjust: raw
     e_val(&(this->lambda), 1.0, par_scope);
     e_val(&(this->number), 0, par_scope);
-    e_val(&(this->weight), 1.0, par_scope);
+
+    e_val(&weight, m->weight, par_scope);
     // final adjust: mid
     // final adjust: calculated
     // final adjust: post

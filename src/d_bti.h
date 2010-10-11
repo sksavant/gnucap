@@ -55,7 +55,7 @@ public: // override virtual
   virtual std::string param_name(int)const;
   virtual std::string param_name(int,int)const;
   virtual std::string param_value(int)const;
-  virtual int param_count()const {return (8);}
+  virtual int param_count()const {return (9);}
   bool      is_valid(const COMPONENT*)const;
   void      tr_eval(COMPONENT*)const;
   virtual void do_stress_apply(COMPONENT*)const{ std::cerr<<"virtual stress apply(C)\n" ;}
@@ -78,6 +78,7 @@ public: // input parameters
   PARAMETER<double> bti_base;	// 
   PARAMETER<bool> anneal;	// 
   PARAMETER<std::string> rcd_model_name;	// 
+  PARAMETER<double> weight;	// 
 //  PARAMETER<MODEL_BUILT_IN_RCD> rcd_model;	// 
 public: // calculated parameters
   virtual std::string RCD_name(int)const;

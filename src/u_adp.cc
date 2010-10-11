@@ -40,6 +40,7 @@ void ADP_NODE::init(){
   tt_value=0.;
   tt_value0=(0.);
   tt_value1=(0.);
+  _positive = true;
   name=std::string("");
   _c=(NULL); 
 }
@@ -349,12 +350,10 @@ void ADP_NODE::tt_expect2_exp(){
         << "( "      << t1  << ", " <<  f1 <<" )\n"
         << "( "      << t2  << ", " <<  f2 <<" )\n"
         << "( "      << t3  << ", ?    )\n";
-
      tt_expect1_linear();
-
   }
 
-  if (tt_expect < 0 ){
+  if (tt_expect < -1e-8){
     //positive?
     error(bDANGER, "* ADP_NODE::tt_expect2_exp error step %i, Time0=%f, %s, tt_value = %g, ( %g, %g, %g, %g) tte: %f \n", \
         _c->_sim->tt_iteration_number(),
@@ -452,7 +451,7 @@ void ADP_NODE::tt_commit( )
   tt_value0 = tt_value = tt_expect;
   tr_value0 = tr_value = tr_expect;
 
-  if (tt_expect < 0 ){
+  if (tt_expect < -1e-8 ){
     //positive?
     error(bDANGER, "* ADP_NODE::tt_commit error step %i, order %i\n", \
         _c->_sim->tt_iteration_number(), _order);
@@ -486,9 +485,8 @@ void ADP_NODE::tt_expect_( ){
       // FIXME assert( tr_dd12 == ( tr_value1 - tr_value2 ) / dT1());
       tr_dd12 = ( tr_value1 - tr_value2 ) / dT1();
       tt_expect2();
-      if ( tr_value1<0 && tr_value2<0 && tr_value3<0) {
-        if (tr_expect>0)error(bDANGER, "too big %f\n" , tr_expect );
-        error(bDANGER, "* ADP_NODE::tt_commit error step %i, Time0=%f, %s, tt_value = %g, ( %g, %g, %g, %g) tte: %g\n", \
+      if ( tr_value1<0 && tr_value2<0 && tr_value3<0 && tr_expect>0) {
+        error(bDANGER, "* ADP_NODE::tt_expect_ error step %i, Time0=%f, %s, tt_value = %g, ( %g, %g, %g, %g) tte: %g\n", \
             _c->_sim->tt_iteration_number(),
             dT0(),
             _c->short_label().c_str(), tt_value, tr_value, tr_value0, tr_value1, tr_value2, tt_expect);
