@@ -1,7 +1,7 @@
 /*$Id: s_ttt.cc,v 1.33 2010-09-22 13:19:51 felix Exp $ -*- C++ -*-
  * vim:ts=2:sw=2:et:
- * Copyright (C) 2001 Albert Davis
- * Author: Albert Davis <aldavis@gnu.org>
+ * Copyright (C) 2010
+ * Author: Felix Salfelder
  *
  * This file is part of "Gnucap", the Gnu Circuit Analysis Package
  *
@@ -17,11 +17,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * Foundation, Inc., 53 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  *------------------------------------------------------------------
- * performs tt
- * taken from fourier. cleanup needed.
+ * performs tt analysis
  */
 #include "m_phase.h"
 #include "declare.h"	/* plclose, plclear, fft */
@@ -34,6 +33,9 @@
 #include "u_status.h"
 #include "u_function.h" // after?
 #include "m_wave.h"
+#include "u_prblst.h"
+#include "ap.h"
+#include "s_tr.h"
 
 
 // #include "globals.h" ??
@@ -44,86 +46,85 @@
 /*--------------------------------------------------------------------------*/
 
 namespace {
-  /*--------------------------------------------------------------------------*/
-  class TTT : public TRANSIENT {
-    public:
-      void	do_it(CS&, CARD_LIST*);
-      std::string status()const;
+/*--------------------------------------------------------------------------*/
+class TTT : public TRANSIENT {
+  public:
+    void	do_it(CS&, CARD_LIST*);
+    std::string status()const;
 
-      explicit TTT():
-        TRANSIENT(),
-        _Tstart(0.), // ?? unused?
-        _Tstop(0.),
-        _Tstep(0.),
-        _timesteps(0),
-        _fdata_tt(NULL),
-        _tt_store(0)
-    {
-    }
-      ~TTT() {}
-    public:
-      int step_tt_cause()const;
+    explicit TTT():
+      TRANSIENT(),
+      _Tstart(0.), // ?? unused?
+      _Tstop(0.),
+      _Tstep(0.),
+      _timesteps(0),
+      _fdata_tt(NULL),
+      _tt_store(0) { }
+    ~TTT() {}
+  public:
+    int step_tt_cause()const;
 
-    private:
-      explicit TTT(const TTT&): 
-        TRANSIENT(),
-        _Tstart(0.), // ?? unused?
-        _Tstop(0.),
-        _Tstep(0.),
-        _timesteps(0),
-        _fdata_tt(NULL)
-      {unreachable(); incomplete();}
-      void	setup(CS&);	/* s_fo_set.cc */
-      void	allocate();
-      void  rescale_behaviour();
-      void	unallocate();
-      bool	next();
-      void	out_tt();
-      void	outdata_tt(double);
-      void	outdata_b4(double);
-      bool	review_tt();
-      void	options(CS&);
-      void	sweep();
-      void	sweep_tt();
-      double get_new_dT();
-      void	accept_tt();
-      void	tt_advance();
-      void	print_head_tr();
-      void	head(double,double,const std::string&);
-      void	head_tt(double,double,const std::string&);
-      void	set_step_tt_cause(STEP_CAUSE);
-      void	first();
-      void	fohead(const PROBE&);
-      void	store_results(double); // override virtual
-      void	store_results_tt(double); 
-      void	print_stored_results_tt(double); 
-    private:
-      PARAMETER<double> _Tstart;	// unused?
-      PARAMETER<double> _Tstop;	/* user stop Time */
-      PARAMETER<double> _Tstep;	/* user Tstep */
-      PARAMETER<double> _dTmin_in;
-      PARAMETER<double> _dTratio_in;
-      int    _timesteps;	/* number of time steps in tran analysis, incl 0 */
-      int    _Timesteps;	/* number of time steps in tt analysis, incl 0 */
-      int print_tr_probe_number;
-      double _Time1;
-      int    steps_total_tt;
-      double behaviour_time();
-      double _time_by_adp;
-      double _dT_by_adp;
-      double _time_by_beh;
-      double _dT_by_beh;
-      double _dTmin;
-      double _dTmax;
-      void   outdata(double);
-      void   print_results(double);
-      void   print_results_tt(double);
-      double _Time_by_user_request;
-      bool   _accepted_tt;
-      COMPLEX** _fdata_tt;	/* storage to allow postprocessing */
-      double*   _tt_store;
-  };
-  /*--------------------------------------------------------------------------*/
+  private:
+    explicit TTT(const TTT&): 
+      TRANSIENT(),
+      _Tstart(0.), // ?? unused?
+      _Tstop(0.),
+      _Tstep(0.),
+      _timesteps(0),
+      _fdata_tt(NULL)
+    {unreachable(); incomplete();}
+    void	setup(CS&);	/* s_fo_set.cc */
+    void	allocate();
+    void  rescale_behaviour();
+    void	unallocate();
+    bool	next();
+    void	out_tt();
+    void	outdata_tt(double);
+    void	outdata_b4(double);
+    bool	review_tt();
+    void	options(CS&);
+    void	sweep();
+    void	sweep_tt();
+    double get_new_dT();
+    void	accept_tt();
+    void	tt_advance();
+    void	print_head_tr();
+    void	head(double,double,const std::string&);
+    void	head_tt(double,double,const std::string&);
+    void	set_step_tt_cause(STEP_CAUSE);
+    void	first();
+    void	fohead(const PROBE&);
+    void	store_results(double); // override virtual
+    void	store_results_tt(double); 
+    void	print_stored_results_tt(double); 
+  private:
+    PARAMETER<double> _Tstart;	// unused?
+    PARAMETER<double> _Tstop;	/* user stop Time */
+    PARAMETER<double> _Tstep;	/* user Tstep */
+    PARAMETER<double> _dTmin_in;
+    PARAMETER<double> _dTratio_in;
+    int    _timesteps;	/* number of time steps in tran analysis, incl 0 */
+    int    _Timesteps;	/* number of time steps in tt analysis, incl 0 */
+    int print_tr_probe_number;
+    double _Time1;
+    int    steps_total_tt;
+    double behaviour_time();
+    double _time_by_adp;
+    double _dT_by_adp;
+    double _time_by_beh;
+    double _dT_by_beh;
+    double _dTmin;
+    double _dTmax;
+    void   outdata(double);
+    void   print_results(double);
+    void   print_results_tt(double);
+    double _Time_by_user_request;
+    bool   _accepted_tt;
+    COMPLEX** _fdata_tt;	/* storage to allow postprocessing */
+    double*   _tt_store;
+}; // TTT : TRANSIENT
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 #define check_consistency_tt() {						\
   trace4("", __LINE__, newTime, almost_fixed_Time, fixed_Time);	\
   assert(almost_fixed_Time <= fixed_Time);				\
@@ -589,34 +590,7 @@ void TTT::unallocate()
 static TTT p10;
 DISPATCHER<CMD>::INSTALL d10(&command_dispatcher, "twotimetran", &p10);
 /*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-/*$Id: s_ttt.cc,v 1.33 2010-09-22 13:19:51 felix Exp $ -*- C++ -*-
- * Copyright (C) 2001 Albert Davis
- * Author: Albert Davis <aldavis@gnu.org>
- *
- * This file is part of "Gnucap", the Gnu Circuit Analysis Package
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301, USA.
- *------------------------------------------------------------------
- * set up transient and fourier analysis
- */
 //testing=script 2007.11.21
-#include "u_prblst.h"
-#include "ap.h"
-#include "s_tr.h"
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 void TTT::setup(CS& Cmd)
@@ -823,7 +797,6 @@ void TTT::setup(CS& Cmd)
 
 }
 /*--------------------------------------------------------------------------*/
-
 void TTT::options(CS& Cmd)
 {
   //good idea??
@@ -836,7 +809,7 @@ void TTT::options(CS& Cmd)
   _sim->_uic = _cold = false;
   _trace = tNONE;
   // unsigned here = Cmd.cursor();
-  // }while (Cmd.more() && !Cmd.stuck(&here));
+  // while (Cmd.more() && !Cmd.stuck(&here));
   Cmd.check(bWARNING, "wHat's this?");
 
   IO::plotout = (ploton) ? IO::mstdout : OMSTREAM();
@@ -846,12 +819,11 @@ void TTT::options(CS& Cmd)
   _dTmin_in.e_val(OPT::dTmin, _scope);
   _dtratio_in.e_val(OPT::dtratio, _scope);
   _skip_in.e_val(1, _scope);
-  }
+}
 /*--------------------------------------------------------------------------*/
-double behaviour_timestep(){
-
+double behaviour_timestep()
+{
   return 1000000;
-
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1264,4 +1236,4 @@ void TTT::store_results(double x)
   }
 }
 
-}
+} // namespace

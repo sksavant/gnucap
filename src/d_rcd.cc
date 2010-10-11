@@ -542,7 +542,7 @@ void EVAL_BUILT_IN_RCD_GRc::tr_eval(ELEMENT* d)const
   assert(m);
 
   // FIXME: merge with __Rc somehow
-  double _c[3] = { c->_Rc0, c->_Rc1 * _lambda, 0 };
+  double _c[3] = { c->_Rc0, c->_Rc1 * c->_lambda, 0 };
   double x = (d->_y[0].x);
   //    trace1("Rc", x);
   double f0 = 0.;

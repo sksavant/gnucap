@@ -407,8 +407,9 @@ TIME_PAIR CARD_LIST::tr_review()
 {
   trace0("CARD_LIST::tr_review()");
   TIME_PAIR time_by(NEVER,NEVER);
-  if (begin() == end())
+  if (begin() == end()) {
     trace0("CARD_LIST::tr_review  empty");
+  }
 
   for (iterator ci=begin(); ci!=end(); ++ci) {
     trace_func_comp();

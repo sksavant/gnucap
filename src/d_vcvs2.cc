@@ -235,10 +235,13 @@ void DEV_VCVS2::tr_eval()
   // y->f0 += _ooffset;
 
   bool bla = conv_check();
-  if (!bla)
+  if (!bla) {
     trace1("DEV_VCVS2::tr_eval no convx",_sim->_time0);
+  }
   else
+  {
     trace1("DEV_VCVS2::tr_eval convx",_sim->_time0);
+  }
   set_converged(bla);
 }
 /*--------------------------------------------------------------------------*/
