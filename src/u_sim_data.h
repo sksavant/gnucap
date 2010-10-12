@@ -61,6 +61,7 @@ struct INTERFACE SIM_DATA {
   int _tt_done;
   int _tt_accepted;
   int _tt_rejects;
+  int _tt_rejects_total;
   int _user_nodes;
   int _subckt_nodes;
   int _model_nodes;

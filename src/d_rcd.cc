@@ -11,6 +11,7 @@
 
 
 #include "e_aux.h"
+#include "u_adp.h"
 #include "e_storag.h"
 // #include "d_mos_base.h"
 
@@ -19,6 +20,7 @@
 #include "d_rcd.h"
 
 /*--------------------------------------------------------------------------*/
+class ADP_NODE;
 static bool dummy=false;
 const double NA(NOT_INPUT);
 const double INF(BIGBIG);
@@ -634,6 +636,11 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p)
   // overrides
 }
 /*--------------------------------------------------------------------------*/
+ADP_NODE* MODEL_BUILT_IN_RCD::new_adp_node(const COMPONENT* c) const{
+  return(new ADP_NODE(c));
+}
+/*--------------------------------------------------------------------------*/
+
 void DEV_BUILT_IN_RCD::expand()
 {
   BASE_SUBCKT::expand(); // calls common->expand, attaches model
@@ -652,7 +659,8 @@ void DEV_BUILT_IN_RCD::expand()
   }else{
   }
   trace0("DEV_BUILT_IN_RCD::expand()");
-  _Ccgfill = new ADP_NODE_RCD(this);
+//  _Ccgfill = new ADP_NODE_RCD(this);
+  _Ccgfill = m->new_adp_node(this);
   ADP_NODE_LIST::adp_node_list.push_back( _Ccgfill );
 
   expand_net();
@@ -930,6 +938,12 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
     }
   }else if (Umatch(x, "RE ")) {
     return  c->_Re;
+  }else if (Umatch(x, "ttr ")) {
+    return  ( _Ccgfill->tt_rel_err() );
+  }else if (Umatch(x, "trr ")) {
+    return  ( _Ccgfill->tr_rel_err() );
+  }else if (Umatch(x, "order ")) {
+    return  _Ccgfill->order();
   }else if (Umatch(x, "Rc ")) {
     return  c->_Rc0;
   }else if (Umatch(x, "tc ")) {
@@ -1032,7 +1046,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
 
 }
 ///*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_NET::do_expand(const  COMPONENT* )
+void MODEL_BUILT_IN_RCD_NET::do_expand(const  COMPONENT* ) const
 {
 }
 ///*--------------------------------------------------------------------------*/
@@ -1124,4 +1138,6 @@ double COMMON_BUILT_IN_RCD::__Re(double ) const
 { return _Re; }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+void ADP_NODE_RCD::tt_expect1(){ return tt_expect1_exp();}
+void ADP_NODE_RCD::tt_expect2(){ return tt_expect2_exp();}
 /*--------------------------------------------------------------------------*/

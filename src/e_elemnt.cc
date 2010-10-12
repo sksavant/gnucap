@@ -126,7 +126,7 @@ void ELEMENT::tt_next()
     trace1("timedelta ", _time[0] - _sim->_time0 );
     // error(bDANGER, "//BUG// restore time mismatch.  last=%g, using=%g\n",
 	//  _time[0], _sim->_time0);
-    trace2( ( "HACK? "+ short_label() + ": ELEMENT::tr_next, time mismatch, setting back to 0 " ).c_str(),
+    trace2( ( "HACK? " + short_label() + ": ELEMENT::tr_next, time mismatch, setting back to 0 " ).c_str(),
         _sim->_time0, _time[0] );
     //BUG// happens when continuing after a ^c,
     // when the last step was not printed
@@ -204,11 +204,27 @@ void ELEMENT::tr_advance()
 /*--------------------------------------------------------------------------*/
 void ELEMENT::tr_regress()
 {
+    assert(_time[0] >= _sim->_time0); // moving backwards
+      assert(_time[1] <= _sim->_time0); // but not too far backwards
+
+        for (int i=OPT::_keep_time_steps-1; i>0; --i) {
+              assert(_time[i] < _time[i-1] || _time[i] == 0.);
+                }
+          _time[0] = _sim->_time0;
+
+            _dt = _time[0] - _time[1];
+}
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+/* some regress hack??
+void ELEMENT::tr_regress()
+{
   trace3("ELEMENT::tr_regress", _time[0], _time[1], _sim->_time0);
   assert(_time[0] >= _sim->_time0); // moving backwards
 //  assert(_time[1] <= _sim->_time0); // but not too far backwards
   if (  _time[1] <  _sim->_time0){
-    error(bDANGER, "regress //BUG// some time mismatch.  _time[1]=%.17f, _sim->_time0=%.17f\n",
+    error(bDANGER, "regress %s //BUG// some time mismatch.  _time[1]=%.17f, _sim->_time0=%.17f\n",
+        (short_label()).c_str(),
     _time[1], _sim->_time0);
   }
 
@@ -219,6 +235,7 @@ void ELEMENT::tr_regress()
 
   _dt = _time[0] - _time[1];
 }
+*/
 /*--------------------------------------------------------------------------*/
 TIME_PAIR ELEMENT::tr_review()
 {

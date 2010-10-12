@@ -49,7 +49,8 @@ protected:
 public:
   explicit MODEL_BUILT_IN_RCD(const BASE_SUBCKT*);
   ~MODEL_BUILT_IN_RCD() {--_count;}
-  virtual void     do_expand(const COMPONENT*){};
+  virtual void     do_expand(const COMPONENT*)const {};
+  virtual ADP_NODE* new_adp_node(const COMPONENT*) const;
 public: // override virtual
   virtual std::string dev_type()const;
   virtual void      set_dev_type(const std::string& nt);
@@ -96,7 +97,7 @@ class MODEL_BUILT_IN_RCD_NET : public MODEL_BUILT_IN_RCD {
     virtual  void do_stress_apply( COMPONENT* ) const ;
     std::string dev_type()const;
     CARD*     clone()const {return new MODEL_BUILT_IN_RCD_NET(*this);}
-    void     do_expand(const COMPONENT*);
+    void     do_expand(const COMPONENT*) const;
 };
 /*--------------------------------------------------------------------------*/
 class COMMON_BUILT_IN_RCD

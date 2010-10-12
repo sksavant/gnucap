@@ -214,6 +214,7 @@ void TTT::first()
 
   _sim->_tt_accepted = 0;
   _sim->_tt_rejects = 0;
+  _sim->_tt_rejects_total = 0;
 // _stepno_tt = 0;
 
   _sim->_Time0 = _Tstart; //  _Time_by_user_request;
@@ -379,6 +380,7 @@ void TTT::sweep_tt()
       trace3( "TTT::sweep_tt (loop) NOT accepted ", _sim->_Time0, _sim->_dT0, _dT_by_adp );
       // step_cause_tt = trfail;
       _sim->_tt_rejects++;
+      _sim->_tt_rejects_total++;
       CARD_LIST::card_list.do_forall( &CARD::tt_next );
       continue;  
     }
@@ -391,6 +393,9 @@ void TTT::sweep_tt()
     _sim->update_tt_order();
     accept_tt(); 
     assert( _sim->_mode  == s_TTT );
+    // 
+    _out << "*\n";
+    //
     print_stored_results_tt(_sim->_Time0);
     outdata_tt(_sim->_Time0); // first output tt data
 
@@ -460,6 +465,7 @@ void TTT::tt_advance()
 {
   trace2("TTT::tt_advance", _sim->_Time0, _Time1);
   _sim->_tt_iter++;
+  _sim->_tt_rejects=0;
 
   _Time1 = _sim->_Time0;
   _sim->_dT3 = _sim->_dT2;
@@ -513,9 +519,9 @@ void TTT::do_it(CS& Cmd, CARD_LIST* Scope)
   _scope = Scope;
   _sim->set_command_tt();
 
-  // command_base copy
   reset_timers();
   ::status.ttt.reset().start();
+  ::status.tt_tries=0;
 
   try {
     _sim->init();
@@ -853,8 +859,7 @@ bool TTT::next()
 
 //    _Tstep = fmin( _dT_by_adp, _dT_by_beh );
    
-  } else {
-    // accepted step. calculating _new_dT
+  } else { // accepted step. calculating _new_dT
     assert ( _Time1 == _sim->_Time0 ); // advance ...
     _new_dT = max( (double) _tstop, (_sim->_dT1 + _Tstep)/2 ) ; // fmin( get_new_dT(), _Tstep );
 
@@ -922,6 +927,7 @@ bool TTT::next()
   assert( _sim->_Time0 >= _sim->_dT0 );
   assert( _sim->_Time0 > 0 );
 
+  _sim->update_tt_order();
   ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_commit );
   CARD_LIST::card_list.do_forall( &CARD::tt_commit ); // ?
 

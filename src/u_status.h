@@ -60,6 +60,7 @@ public:
   int control_tt;
   int hidden_steps;
   int hidden_steps_tt;
+  int tt_tries;
   
   void compute_overhead()const {
     overhead = total - advance - queue - evaluate - load - lud - back 

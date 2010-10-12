@@ -136,9 +136,11 @@ void TRANSIENT::sweep()
 	++_stepno;
 	++(_sim->_stepno);
 	_time_by_user_request += _tstep;	/* advance user time */
+        _time_by_user_request = min(_time_by_user_request, (double)_tstop);
+        trace1("TRANSIENT::sweep advance ", _time_by_user_request );
       }else{
       }
-      assert(_sim->_time0 < _time_by_user_request);
+      assert(_sim->_time0 <= _time_by_user_request);
     }else{
       reject();
       assert(time1 < _time_by_user_request);
@@ -256,7 +258,7 @@ void TRANSIENT::first()
     assert(newtime <= almost_fixed_time);				\
     /*assert(newtime == almost_fixed_time || newtime <= almost_fixed_time - _sim->_dtmin);*/ \
     assert(newtime > time1);						\
-    assert(newtime > reftime);						\
+    assert(newtime >= reftime);						\
     assert(new_dt > 0.);						\
     assert(new_dt >= _sim->_dtmin);						\
     assert(newtime <= _time_by_user_request);				\
@@ -289,6 +291,7 @@ bool TRANSIENT::next()
   STEP_CAUSE new_control = scNO_ADVANCE;
 
   if (_sim->_time0 == time1) {
+    trace0("TRANSIENT::next init");
     // initial step -- could be either t==0 or continue
     // for the first time, just guess
     // make it 100x smaller than expected
@@ -312,12 +315,16 @@ bool TRANSIENT::next()
     trace2("TRANSIENT::next ", step_cause(), old_dt);
     trace3("TRANSIENT::next ", time1, _sim->_time0, reftime);
     trace1("TRANSIENT::next ", _time_by_user_request);
+    std::cerr.precision(17);
+    std::cerr << "TRANSIENT::next " << _time_by_user_request << "\n";
 
     newtime = _time_by_user_request;
+    trace3("TRANSIENT::next request ", newtime, new_dt, reftime);
     new_dt = newtime - reftime;
     new_control = scUSER;
     double fixed_time = newtime;
     double almost_fixed_time = newtime;
+    if(new_dt>0)
     check_consistency();
     
     // event queue, events that absolutely will happen
@@ -335,14 +342,15 @@ bool TRANSIENT::next()
       fixed_time = newtime;
       almost_fixed_time = newtime;
       check_consistency();
+      trace3("TRANSIENT::next top ", newtime, new_dt, _sim->_eq.top());
     }else{
     }
-    trace2("TRANSIENT::next _eq", reftime, newtime);
     
     // device events that may not happen
     // not sure of exact time.  will be rescheduled if wrong.
     // ok to move by _sim->_dtmin.  time is not that accurate anyway.
     if (_time_by_ambiguous_event < newtime - _sim->_dtmin) {  
+      trace3("TRANSIENT::next here ", newtime, new_dt, _time_by_ambiguous_event);
       if (_time_by_ambiguous_event < time1 + 2*_sim->_dtmin) {untested();
 	double mintime = time1 + 2*_sim->_dtmin;
 	if (newtime - _sim->_dtmin < mintime) {untested();
@@ -367,9 +375,10 @@ bool TRANSIENT::next()
       new_dt = newtime - reftime;
       new_control = scTE;
       check_consistency();
+      trace3("TRANSIENT::next err", newtime, new_dt, _time_by_error_estimate);
     }else{
     }
-    trace3("TRANSIENT::next estimate", newtime, new_dt, _time_by_error_estimate);
+    trace3("TRANSIENT::next ", newtime, new_dt, _time_by_error_estimate);
     
     // skip parameter
     if (new_dt > _dtmax) {
@@ -429,6 +438,7 @@ bool TRANSIENT::next()
 	double steps = 1 + floor((target_dt - _sim->_dtmin) / new_dt);
 	assert(steps > 0);
 	new_dt = target_dt / steps;
+        trace3("TRANSIENT::next ", reftime, new_dt, reftime+new_dt);
 	newtime = reftime + new_dt;
 	check_consistency();
       }
@@ -442,6 +452,7 @@ bool TRANSIENT::next()
       newtime = reftime + new_dt;
       new_control = scSMALL;
       check_consistency();
+      trace1("TRANSIENT::next too small trap", newtime);
     }else{
     }
     trace1("TRANSIENT::next got sth", newtime);
@@ -451,12 +462,15 @@ bool TRANSIENT::next()
       //newtime = _time_by_user_request;
       //new_dt = newtime - reftime;
       new_control = scUSER;
+      if (new_dt>0)
       check_consistency();			   
     }else{
     }
-    check_consistency();
-    assert(!_accepted || newtime > _sim->_time0);
-    assert(_accepted || newtime <= _sim->_time0);
+    if (new_dt>0){
+      check_consistency();
+      assert(!_accepted || newtime > _sim->_time0);
+      assert(_accepted || newtime <= _sim->_time0);
+    }
   }
   
   set_step_cause(new_control);
@@ -489,12 +503,17 @@ bool TRANSIENT::next()
     set_step_cause(scREJECT);
     _sim->mark_inc_mode_bad();
     check_consistency2();
+  }else if ( _sim->_time0 >= _time_by_user_request ){
+    trace3("TRANSIENT::next: already there", _sim->_time0, time1, newtime );
+    time1=_sim->_time0;
+    new_dt=0;
+   
   }else if (newtime < _sim->_time0 + _sim->_dtmin) {untested();
     /* Another evaluation at the same time. */
     /* Keep the most recent step, but creep along. */
     assert(newtime > _sim->_time0 - _sim->_dtmin);
     error(bDANGER, "zero time step\n");
-    error(bDANGER, "newtime=%e  rejectedtime=%e  oldtime=%e\n", newtime, _sim->_time0, time1);
+    error(bDANGER, "newtime=%e  rejectedtime=%e  time1=%e requested=%e\n", newtime, _sim->_time0, time1, _time_by_user_request);
     if (_accepted) {untested();
       time1 = _sim->_time0;
     }else{untested();
@@ -502,7 +521,8 @@ bool TRANSIENT::next()
     }
     check_consistency2();
     newtime = _sim->_time0 + _sim->_dtmin;
-    if (newtime > _time_by_user_request) {untested();
+    if (newtime > _time_by_user_request) {
+      untested();
       newtime = _time_by_user_request;
       set_step_cause(scUSER);
     }else{untested();
@@ -531,12 +551,17 @@ bool TRANSIENT::next()
   }
   //BUG// what if it is later rejected?  It's lost!
 
-  check_consistency2();
+  if (new_dt>0)check_consistency2();
   ++::status.hidden_steps;
   ++steps_total_;
   ::status.review.stop();
-  trace1("TRANSIENT::next", _sim->_time0 );
-  return (_sim->_time0 <= _tstop + _sim->_dtmin);
+  bool ret= _sim->_time0 < _tstop + _sim->_dtmin;
+  ret &= time1 < _time_by_user_request;
+  std::cerr.precision(17);
+  std::cerr << "TRANSIENT::next time0 " << _sim->_time0 << " " << _tstop <<  "\n";
+  std::cerr << "TRANSIENT::next dtmin " << 1+_sim->_dtmin << " "  <<  "\n";
+  trace4("TRANSIENT::next", _sim->_time0, _tstop, _sim->_dtmin, (double) ret );
+  return (ret);
 }
 /*--------------------------------------------------------------------------*/
 bool TRANSIENT::review()

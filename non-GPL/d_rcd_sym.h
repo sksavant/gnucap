@@ -28,7 +28,8 @@ class MODEL_BUILT_IN_RCD_SYM : public MODEL_BUILT_IN_RCD {
      trace0(("MODEL_BUILT_IN_RCD_SYM::set_dev_type() " + nt).c_str()); 
     };
     CARD* clone()const {return new MODEL_BUILT_IN_RCD_SYM(*this);}
-    void do_expand(const COMPONENT*);
+    void do_expand(const COMPONENT*) const;
+   ADP_NODE* new_adp_node(const COMPONENT*) const;
 
 };
 /*--------------------------------------------------------------------------*/

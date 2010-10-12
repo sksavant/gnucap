@@ -140,6 +140,10 @@ double PROBE::probe_node(void)const
     return CKT_BASE::tt_behaviour_rel;
   }else if (Umatch(_what, "brel ") && CKT_BASE::_sim->_mode == s_TRAN) {
     return CKT_BASE::tr_behaviour_rel;
+  }else if (Umatch(_what, "rejects ") && CKT_BASE::_sim->_mode == s_TTT) {
+    return CKT_BASE::_sim->_tt_rejects;
+  }else if (Umatch(_what, "dt ") && CKT_BASE::_sim->_mode == s_TTT) {
+    return CKT_BASE::_sim->_dT0;
   }else if (Umatch(_what, "bypass ")) {untested();
     return OPT::bypass + 10*CKT_BASE::_sim->_bypass_ok;
   }else if (Umatch(_what, "control ")) {

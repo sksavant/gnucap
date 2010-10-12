@@ -51,6 +51,7 @@ class ADP_NODE {
     virtual void tt_expect0(){ tt_expect0_const(); }
     void tt_expect0_const();
     virtual void tt_expect1(){ tt_expect1_linear(); }
+    void tt_expect1_exp();
     void tt_expect1_linear();
     void tt_expect1_square();
     void tt_expect1_something();
@@ -64,6 +65,7 @@ class ADP_NODE {
     const COMPONENT* _c;
   public:
     std::string short_label() {return name;}
+    int order() const{return _order;} // order used for extrapolation.
 #ifdef DO_TRACE
     virtual double debug();
 #endif
@@ -124,7 +126,7 @@ class ADP_NODE {
     }
 
   private:
-    int _order;
+    int _order; // order used for extrapolation.
     ADP_CARD* a;
 };
 /*--------------------------------------------------------------------------*/
@@ -134,8 +136,9 @@ class BTI_ADP : public ADP_NODE {
 /*--------------------------------------------------------------------------*/
 class ADP_NODE_RCD : public ADP_NODE {
  public:
-   ADP_NODE_RCD(COMPONENT*x): ADP_NODE(x) { }
-   void tt_expect2() { tt_expect2_exp(); }
+   ADP_NODE_RCD(const COMPONENT*x): ADP_NODE(x) { }
+   void tt_expect1();
+   void tt_expect2();
 };
 /*--------------------------------------------------------------------------*/
 // ADP card is only a stub...

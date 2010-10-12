@@ -11,6 +11,7 @@
 
 #include "globals.h"
 #include "e_elemnt.h"
+#include "u_adp.h"
 #include "d_rcd_sym.h"
 
 /*--------------------------------------------------------------------------*/
@@ -93,7 +94,8 @@ namespace MODEL_BUILT_IN_RCD_DISPATCHER {
     d2(&model_dispatcher, "rcdsym", &p2);
 }
 ///*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_SYM::do_expand(const  COMPONENT* ) {
+void MODEL_BUILT_IN_RCD_SYM::do_expand(const  COMPONENT* ) const
+{
 }
 /*--------------------------------------------------------------------------*/
 std::string MODEL_BUILT_IN_RCD_SYM::dev_type()const
@@ -200,3 +202,6 @@ DEV_BUILT_IN_RCD_SYM::DEV_BUILT_IN_RCD_SYM()
   // overrides
 }
 /*--------------------------------------------------------------------------*/
+ADP_NODE* MODEL_BUILT_IN_RCD_SYM::new_adp_node(const COMPONENT* c) const{
+  return new ADP_NODE_RCD(c);
+}
