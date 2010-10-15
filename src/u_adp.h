@@ -12,6 +12,25 @@ class ADP_CARD;
 /*--------------------------------------------------------------------------*/
 // collects transient (stress) data and extrapolates.
 class ADP_NODE {
+  public:
+    ADP_NODE( ):
+      tt_value(0),
+      tt_value0(0),
+      tt_value1(1)
+  { init(); unreachable(); }
+
+    explicit ADP_NODE( const COMPONENT* cin2 )
+      { init(); _c = cin2; }
+    explicit ADP_NODE( const COMPONENT* cin3, std::string name_in2 )
+      { init(); _c=cin3; name=name_in2;}
+    explicit ADP_NODE( const COMPONENT* cin, const char name_in[] ) 
+      { init(); _c=cin;  name=std::string(name_in); }
+    explicit ADP_NODE( ADP_CARD* ac, const COMPONENT* cin, const char name_in[] )
+      { init(); _c=cin;  name=std::string(name_in); a=ac; }
+    virtual void init();
+    std::string short_label() {return name;}
+    int order() const{return _order;} // order used for extrapolation.
+    const COMPONENT* c(){return _c;}
   protected:
 
     // history needs cleanup.
@@ -36,6 +55,8 @@ class ADP_NODE {
     double _rel_tr_err;
     double _wdT;
     bool _positive;
+    double _sign;
+
 
     double Time_delta()  const
     { return ( CKT_BASE::_sim->_dT0 ); }
@@ -47,44 +68,36 @@ class ADP_NODE {
     inline double dT1()const { return ( CKT_BASE::_sim->_dT1 ); }
     inline double dT2()const { return ( CKT_BASE::_sim->_dT2 ); }
 
-    void tt_expect_();
-    virtual void tt_expect0(){ tt_expect0_const(); }
-    void tt_expect0_const();
-    virtual void tt_expect1(){ tt_expect1_linear(); }
-    void tt_expect1_exp();
-    void tt_expect1_linear();
-    void tt_expect1_square();
-    void tt_expect1_something();
-    virtual void tt_expect2(){ tt_expect2_quadratic(); }
-    void tt_expect2_quadratic();
-    void tt_expect2_linear();
-    void tt_expect2_something();
-    void tt_expect2_exp();
+    void         tr_expect_();
+    virtual void tr_expect_1(){ tr_expect_1_const(); }
+    void         tr_expect_1_const();
+
+    virtual void tr_expect_2(){ tr_expect_2_linear(); }
+    void         tr_expect_2_exp();
+    void         tr_expect_2_linear();
+    void         tr_expect_2_square();
+    void         tr_expect_2_something();
+
+    virtual void tr_expect_3(){ tr_expect_3_quadratic(); }
+    void         tr_expect_3_quadratic();
+    void         tr_expect_3_linear();
+    void         tr_expect_3_something();
+    void         tr_expect_3_exp();
+    void         tr_expect_3_exp_fit();
+
+    void tt_integrate_( double );
+    virtual void tt_integrate_2( double a ) { return tt_integrate_3_exp( a ); }
+    void tt_integrate_2_exp(double);
+    virtual void tt_integrate_3( double a ) { return tt_integrate_3_exp( a ); }
+    void tt_integrate_3_exp(double);
 
     std::string name;
     const COMPONENT* _c;
+    hp_float_t _debug;
+    void (ADP_NODE::*_integration_used)( double );
   public:
-    std::string short_label() {return name;}
-    int order() const{return _order;} // order used for extrapolation.
-#ifdef DO_TRACE
-    virtual double debug();
-#endif
 
-    ADP_NODE( ):
-      tt_value(0),
-      tt_value0(0),
-      tt_value1(1)
-  { init(); 
-  unreachable(); }
-    const COMPONENT* c(){return _c;}
 
-    void init();
-    explicit ADP_NODE( const COMPONENT* cin2 ) { init(); _c = cin2; }
-    explicit ADP_NODE( const COMPONENT* cin3, std::string name_in2 ) { init(); _c=cin3; name=name_in2;}
-    explicit ADP_NODE( const COMPONENT* cin, const char name_in[] ) 
-      { init(); _c=cin;  name=std::string(name_in); }
-    explicit ADP_NODE( ADP_CARD* ac, const COMPONENT* cin, const char name_in[] )
-      { init(); _c=cin;  name=std::string(name_in); a=ac; }
     hp_float_t get_total() const { return( get_tr() + get_tt() );}
     hp_float_t get() const {return get_tt();}
     hp_float_t get_tt() const { assert( tt_value == tt_value ); return tt_value; }
@@ -128,6 +141,10 @@ class ADP_NODE {
   private:
     int _order; // order used for extrapolation.
     ADP_CARD* a;
+#ifdef DO_TRACE
+  public:
+    virtual double debug();
+#endif
 };
 /*--------------------------------------------------------------------------*/
 class BTI_ADP : public ADP_NODE {
@@ -137,8 +154,8 @@ class BTI_ADP : public ADP_NODE {
 class ADP_NODE_RCD : public ADP_NODE {
  public:
    ADP_NODE_RCD(const COMPONENT*x): ADP_NODE(x) { }
-   void tt_expect1();
-   void tt_expect2();
+   void tr_expect_2();
+   void tr_expect_3();
 };
 /*--------------------------------------------------------------------------*/
 // ADP card is only a stub...

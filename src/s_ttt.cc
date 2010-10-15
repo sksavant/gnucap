@@ -382,8 +382,15 @@ void TTT::sweep_tt()
       _sim->_tt_rejects++;
       _sim->_tt_rejects_total++;
       CARD_LIST::card_list.do_forall( &CARD::tt_next );
+      if(OPT::printrejected){
+        _out <<"*";
+        print_stored_results_tt(_sim->_Time0);
+        _out <<"*";
+        outdata_tt(_sim->_Time0); // first output tt data
+      }
       continue;  
-    }
+    } else 
+    _out << "*\n";
 
 
 
@@ -394,7 +401,6 @@ void TTT::sweep_tt()
     accept_tt(); 
     assert( _sim->_mode  == s_TTT );
     // 
-    _out << "*\n";
     //
     print_stored_results_tt(_sim->_Time0);
     outdata_tt(_sim->_Time0); // first output tt data
@@ -485,15 +491,15 @@ bool TTT::review_tt()
   assert(_sim->_Time0 - _sim->_dT0 >=0 );
 
   //FIXME
-  _dT_by_adp = max( ADP_LIST::adp_list.tt_review(), (double) _tstop );
-  _dT_by_adp = max( ADP_NODE_LIST::adp_node_list.tt_review(), (double) _tstop );
+  _dT_by_adp =  ADP_LIST::adp_list.tt_review()           + _tstop;
+  _dT_by_adp =  ADP_NODE_LIST::adp_node_list.tt_review() + _tstop;
   _dT_by_beh = OPT::behreltol/CKT_BASE::tt_behaviour_rel * _sim->_dT0;
 
   _dT_by_beh = max ( _dT_by_beh, (double) _tstop );
 
   // std::cout << "wanted by adp:" << _dT_by_adp << "\n";
 
-  _time_by_adp = _Time1 + _dT_by_adp; // FIXME
+  _time_by_adp = _Time1 + _dT_by_adp;
   _time_by_beh = _Time1 + _dT_by_beh + 1e9;
 
   trace5("Times ", _Time1, _time_by_adp, _time_by_beh, _dT_by_adp, _dT_by_beh);
@@ -861,9 +867,11 @@ bool TTT::next()
    
   } else { // accepted step. calculating _new_dT
     assert ( _Time1 == _sim->_Time0 ); // advance ...
-    _new_dT = max( (double) _tstop, (_sim->_dT1 + _Tstep)/2 ) ; // fmin( get_new_dT(), _Tstep );
+    _new_dT = min( (double) _dT_by_adp, (_sim->_dT1 + _Tstep)/2 ) ; // fmin( get_new_dT(), _Tstep );
+   //  _new_dT = max( _new_dT,  (double) _tstop ) ; // fmin( get_new_dT(), _Tstep );
 
-    if (_sim->get_tt_order() < 2){
+
+    if (_sim->get_tt_order() < 1){
       trace1( "TTT order hack ",  _sim->get_tt_order());
       _new_dT = ( _tstop );
     } else {

@@ -95,11 +95,12 @@ public:
   static double vntol;	    // absolute voltage error tolerance
   static double tttol;	    // transient error overestimation factor
   static int adporder;	    // adp extrapolation order
-  static std::string libpath;	    // adp extrapolation order
+  static std::string libpath;	 // sharedobject searchpath
   static double adpreltol;	    // adp allowed relative aging misprediction
   static double behreltol;	    // beh allowed relative
   static double adpkorr;	    // adp correction
   static double adpabstol;	    // adp ?
+  static bool printrejected;	    // adp ?
   static double trtol;	    // transient error overestimation factor
   static double chgtol;	    // charge tolerance
   static double pivtol;	    // minimum acceptable pivot

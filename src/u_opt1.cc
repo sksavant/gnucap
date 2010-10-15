@@ -41,6 +41,7 @@ double	OPT::trtol = 7.0;
 double	OPT::tttol = 1;
 double	OPT::adpabstol = 1;
 double	OPT::adpreltol = 0.001;
+bool	OPT::printrejected = false;
 double	OPT::behreltol = 0.001;
 double	OPT::adpkorr = 0.;
 double	OPT::chgtol = 1e-14;

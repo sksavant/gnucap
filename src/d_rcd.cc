@@ -857,6 +857,8 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
 
   if (Umatch(x, "region ")) {
     return  static_cast<double>(_region);
+  }else if (Umatch(x, "tra ")) {
+    return  ( _Ccgfill->tr_abs_err() );
   }else if (Umatch(x, "trr ")) {
     return  ( _Ccgfill->tr_rel_err() );
   }else if (Umatch(x, "te ")) {
@@ -942,6 +944,8 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
     return  ( _Ccgfill->tt_rel_err() );
   }else if (Umatch(x, "trr ")) {
     return  ( _Ccgfill->tr_rel_err() );
+  }else if (Umatch(x, "tra ")) {
+    return  ( _Ccgfill->tr_abs_err() );
   }else if (Umatch(x, "order ")) {
     return  _Ccgfill->order();
   }else if (Umatch(x, "Rc ")) {
@@ -1138,6 +1142,6 @@ double COMMON_BUILT_IN_RCD::__Re(double ) const
 { return _Re; }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-void ADP_NODE_RCD::tt_expect1(){ return tt_expect1_exp();}
-void ADP_NODE_RCD::tt_expect2(){ return tt_expect2_exp();}
+void ADP_NODE_RCD::tr_expect_2(){ return tr_expect_2_exp();}
+void ADP_NODE_RCD::tr_expect_3(){ return tr_expect_3_exp();}
 /*--------------------------------------------------------------------------*/
