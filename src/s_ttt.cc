@@ -203,6 +203,7 @@ void TTT::first()
     _sim->_dT0 = 0;
     _sim->_dT1 = 0;
     _sim->_dT2 = 0;
+    _dT_by_adp = _tstop;
   }
 
   assert(_sim->get_tt_order() == 0 );
@@ -224,7 +225,8 @@ void TTT::first()
   CARD_LIST::card_list.do_forall( &CARD::tt_prepare );
 
   _sim->set_command_tt();
-  std::cout << "\n";
+
+  trace1("TTT::first", _sim->_Time0);
   outdata_b4(_sim->_Time0); // first output tt data
   ::status.tran.reset().start();
 
@@ -406,7 +408,6 @@ void TTT::sweep_tt()
     outdata_tt(_sim->_Time0); // first output tt data
 
     tt_advance();
-    //_sim->_tt_iter++;
 
     // reset times to 0, keep circuit state (similar tr_restore)
     CARD_LIST::card_list.do_forall( &CARD::tt_next );
@@ -491,8 +492,8 @@ bool TTT::review_tt()
   assert(_sim->_Time0 - _sim->_dT0 >=0 );
 
   //FIXME
-  _dT_by_adp =  ADP_LIST::adp_list.tt_review()           + _tstop;
-  _dT_by_adp =  ADP_NODE_LIST::adp_node_list.tt_review() + _tstop;
+//  _dT_by_adp = ADP_LIST::adp_list.tt_review()           + _tstop; 
+  _dT_by_adp = ADP_NODE_LIST::adp_node_list.tt_review(); 
   _dT_by_beh = OPT::behreltol/CKT_BASE::tt_behaviour_rel * _sim->_dT0;
 
   _dT_by_beh = max ( _dT_by_beh, (double) _tstop );
@@ -504,6 +505,8 @@ bool TTT::review_tt()
 
   trace5("Times ", _Time1, _time_by_adp, _time_by_beh, _dT_by_adp, _dT_by_beh);
   // ? _sim->_Time0 - _sim->_dT0 + _dT_by_beh; // 1e-2/CKT_BASE::tt_behaviour_rel + Time1;
+  //
+  if (_dT_by_adp < _tstop) return true;
 
   if( _time_by_beh < _sim->_Time0 ){
     _out << "* beh " << _sim->_dT0 << " " << _dT_by_adp << " \n";
@@ -867,21 +870,22 @@ bool TTT::next()
    
   } else { // accepted step. calculating _new_dT
     assert ( _Time1 == _sim->_Time0 ); // advance ...
-    _new_dT = min( (double) _dT_by_adp, (_sim->_dT1 + _Tstep)/2 ) ; // fmin( get_new_dT(), _Tstep );
-   //  _new_dT = max( _new_dT,  (double) _tstop ) ; // fmin( get_new_dT(), _Tstep );
+    _new_dT = min( (double) _dT_by_adp, (_sim->_dT1 + _Tstep)/2 ) ; 
+    _new_dT = max( _new_dT,  (double) _tstop ) ; // fmin( get_new_dT(), _Tstep );
+
+    _out << "* newstep " << _new_dT << "\n";
 
 
-    if (_sim->get_tt_order() < 1){
-      trace1( "TTT order hack ",  _sim->get_tt_order());
-      _new_dT = ( _tstop );
-    } else {
+   // if (_sim->get_tt_order() < 0){
+   //   trace1( "TTT order hack ",  _sim->get_tt_order());
+   //   _new_dT = ( _tstop );
+   // } else {
 
-    }
+   // }
 
 
     if(_new_dT < _dTmin){
-      std::cout << "TT @" << _sim->_Time0 << "step too small: " << _new_dT << " " << _dTmin << "\n";
-      error(bWARNING, "step too small\n");
+      error(bWARNING, "step too small %e %e adp %e\n", _new_dT, _dTmin, _dT_by_adp );
       return false;
     }
 
@@ -1069,12 +1073,12 @@ void TTT::print_head_tr()
 }
 
 /*--------------------------------------------------------------------------*/
-void TTT::outdata_b4(double x)
+void TTT::outdata_b4(double time)
 {
   assert( _sim->_mode  == s_TTT );
   ::status.output.start();
-//  std::cout << "*(trying) ";
-  print_results_tt( x );
+  trace1("TTT::outdata_b4", time);
+  print_results_tt( time );
   ::status.output.stop();
 }
 /*--------------------------------------------------------------------------*/
@@ -1204,7 +1208,7 @@ void TTT::print_results_tt(double x)
     _out << x;
     for (PROBELIST::const_iterator
         p=printlist().begin();  p!=printlist().end();  ++p) {
-      _out << "" << (*p)->value();
+      _out <<  (*p)->value();
     }
     _out << '\n';
   }else{

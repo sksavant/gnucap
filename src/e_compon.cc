@@ -388,25 +388,25 @@ COMPONENT::COMPONENT()
    _mfactor_fixed(NOT_VALID),
    _converged(false),
    _q_for_eval(-1),
-   _time_by()
-   , _adp(0)
+   _time_by(),
+   _amps(0),
+   _amps_new(0),
+   _adp(0)
 {
   _sim->uninit();
 }
 /*--------------------------------------------------------------------------*/
 COMPONENT::COMPONENT(const COMPONENT& p)
   :CARD(p),
-	//tr_behaviour_del(0),
-	//tr_behaviour_rel(0),
    _common(0),
    _value(p._value),
    _mfactor(p._mfactor),
    _mfactor_fixed(p._mfactor_fixed),
    _converged(p._converged),
    _q_for_eval(-1),
-   _time_by(p._time_by)
-   , _amps(p._amps),
-   _amps_new(p._amps_new),
+   _time_by(p._time_by),
+   _amps(0),
+   _amps_new(0),
    _adp(0)
 {
   _sim->uninit();
@@ -416,6 +416,8 @@ COMPONENT::COMPONENT(const COMPONENT& p)
 /*--------------------------------------------------------------------------*/
 COMPONENT::~COMPONENT()
 {
+  if (_amps)     free (_amps);
+  if (_amps_new) free (_amps_new);
   detach_common();
   _sim->uninit();
 }
@@ -876,13 +878,13 @@ void COMPONENT::tr_save_amps(int n)
     _amps_new[ n*k + j ]= tmp;
   }
 
+  trace1("COMPONENT::tr_save_amps" ,  _tr_amps_diff_max);
   tr_behaviour_del = _tr_amps_diff_max;
 }
 /*--------------------------------------------------------------------------*/
 void COMPONENT::tt_behaviour_update()
 {
-  //device behaviour 
-//  trace <<  "COMPONENT::tr_behaviour_update of " << short_label() << " adding " << tr_behaviour_del << " to " << tt_behaviour_del <<"\n";
+  trace1("COMPONENT::tt_behaviour_update" ,  tr_behaviour_del);
 
   tt_behaviour_del += tr_behaviour_del;
   tt_behaviour_rel += tr_behaviour_rel;
@@ -1026,12 +1028,24 @@ void COMPONENT::tr_do_behaviour(){
 
 
 /*--------------------------------------------------------------------------*/
+void COMPONENT::tt_prepare(){
+
+  if(_amps==NULL){
+    _amps = (double*) malloc(sizeof (double) * net_nodes() * TRANSIENT::total_outsteps() );
+    _amps[0]=8888;
+     trace0( "COMPON::tt_accept amps " + short_label() );
+  }
+
+}
+/*--------------------------------------------------------------------------*/
 void COMPONENT::tt_accept()
 {
   trace0( "COMPON::tt_accept() " + short_label() );
-  if(_amps==NULL){
-    _amps = (double*) malloc(sizeof (double) * net_nodes() * TRANSIENT::total_outsteps() );
-  }
+
+  // idee: at first tr, _amps is 0 == no history
+  // fixme C++
+
+  // not here...
   double* tmp = _amps;
   _amps=_amps_new;
   _amps_new=tmp;

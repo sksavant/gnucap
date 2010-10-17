@@ -13,28 +13,28 @@ class ADP_CARD;
 // collects transient (stress) data and extrapolates.
 class ADP_NODE {
   public:
-    ADP_NODE( ):
-      tt_value(0),
-      tt_value0(0),
-      tt_value1(1)
-  { init(); unreachable(); }
-
-    explicit ADP_NODE( const COMPONENT* cin2 )
-      { init(); _c = cin2; }
-    explicit ADP_NODE( const COMPONENT* cin3, std::string name_in2 )
+    explicit ADP_NODE( const COMPONENT* cin2 ) : dbg(0)
+      { init(); _c = cin2; name +="b"; }
+    explicit ADP_NODE( const COMPONENT* cin3, std::string name_in2 ) : dbg(0)
       { init(); _c=cin3; name=name_in2;}
-    explicit ADP_NODE( const COMPONENT* cin, const char name_in[] ) 
+    explicit ADP_NODE( const COMPONENT* cin, const char name_in[] ) : dbg(0)
       { init(); _c=cin;  name=std::string(name_in); }
-    explicit ADP_NODE( ADP_CARD* ac, const COMPONENT* cin, const char name_in[] )
+    explicit ADP_NODE( ADP_CARD* ac, const COMPONENT* cin, const char name_in[] ) : dbg(0)
       { init(); _c=cin;  name=std::string(name_in); a=ac; }
+    // virtual ADP_NODE(){ return ADP_NODE(*this); };
+    ~ADP_NODE( );
+    ADP_NODE( const ADP_NODE& );
     virtual void init();
-    std::string short_label() {return name;}
+    std::string short_label() const  {return name;}
+    std::string label() const  {return name;} // fixme
     int order() const{return _order;} // order used for extrapolation.
     const COMPONENT* c(){return _c;}
   protected:
+    int dbg;
 
     // history needs cleanup.
     hp_float_t tr_expect;
+    hp_float_t _delta_expect;
     hp_float_t tr_value;
     hp_float_t tr_value0;
     hp_float_t tr_value1;
@@ -45,6 +45,12 @@ class ADP_NODE {
     hp_float_t tt_value0;
     hp_float_t tt_value1;
     hp_float_t tt_value2;
+
+    hp_float_t *_val_bef; // replce tt_value0 ... 
+    hp_float_t *_val_aft;
+    hp_float_t *_der_aft;
+    hp_float_t *_delta;
+
     double tt_value3;
     double tt_first_time;
     double tt_first_value;
@@ -85,18 +91,33 @@ class ADP_NODE {
     void         tr_expect_3_exp();
     void         tr_expect_3_exp_fit();
 
-    void tt_integrate_( double );
-    virtual void tt_integrate_2( double a ) { return tt_integrate_3_exp( a ); }
-    void tt_integrate_2_exp(double);
-    virtual void tt_integrate_3( double a ) { return tt_integrate_3_exp( a ); }
-    void tt_integrate_3_exp(double);
+    double tt_integrate_( double );
+
+    virtual double tt_integrate_1( double a ) { return tt_integrate_1_const( a ); }
+    double tt_integrate_1_const( double a );
+    double tt_integrate_1_linear(double);
+
+    virtual double tt_integrate_2( double a ) { return tt_integrate_2_exp( a ); }
+    double tt_integrate_2_exp(double);
+    double tt_integrate_2_linear(double);
+
+    virtual double tt_integrate_3( double a ) { return tt_integrate_3_exp( a ); }
+    double tt_integrate_3_exp(double);
+
+    void tr_correct_3_exp( );
+    void tr_correct_2_exp( );
+    void tr_correct_1_exp( );
+    void tr_correct_1_const( );
+    void tr_correct_generic( );
 
     std::string name;
     const COMPONENT* _c;
     hp_float_t _debug;
-    void (ADP_NODE::*_integration_used)( double );
-  public:
+    double (ADP_NODE::*_integrator)( double );
+    void (ADP_NODE::*_corrector)( );
 
+  public:
+    virtual std::string type() const {return "basic";};
 
     hp_float_t get_total() const { return( get_tr() + get_tt() );}
     hp_float_t get() const {return get_tt();}
@@ -153,9 +174,13 @@ class BTI_ADP : public ADP_NODE {
 /*--------------------------------------------------------------------------*/
 class ADP_NODE_RCD : public ADP_NODE {
  public:
-   ADP_NODE_RCD(const COMPONENT*x): ADP_NODE(x) { }
+   ADP_NODE_RCD( const COMPONENT*x): ADP_NODE(x) { name+="test"; }
+   ADP_NODE_RCD( const ADP_NODE& );
+
+   // virtual ADP_NODE(){ return ADP_NODE_RCD(*this); };
    void tr_expect_2();
    void tr_expect_3();
+   virtual std::string type() const {return "rcd";};
 };
 /*--------------------------------------------------------------------------*/
 // ADP card is only a stub...

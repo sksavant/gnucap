@@ -139,6 +139,7 @@ char* ftos(double num, int fieldwidth, int len, int fmt)
     strncpy(str," NaN", 4);
   }else
 #endif
+	  trace1("ftos ", num );
   if (num == NOT_VALID) {
     strncpy(str," ??", 3);
   }else if (num == NOT_INPUT) {

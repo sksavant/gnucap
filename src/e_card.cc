@@ -36,14 +36,17 @@ CARD::CARD()
    _owner(0),
    _constant(false),
    _n(0),
-   _net_nodes(0)
+   _net_nodes(0),
+	tr_behaviour_del(0),
+	tt_behaviour_del(0),
+	tr_behaviour_rel(0),
+	tt_behaviour_rel(0)
 {
 }
 /*--------------------------------------------------------------------------*/
 CARD::CARD(const CARD& p)
   :CKT_BASE(p),
    _evaliter(-100),
-	//        
 	_subckt(0), //BUG// isn't this supposed to copy????
 	_owner(0),
 	_constant(p._constant),

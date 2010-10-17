@@ -308,10 +308,7 @@ public:	// obsolete -- do not use in new code
 public:
   ADP_CARD* adp()const {return(_adp);}
   void attach_adp(ADP_CARD* a);
-  virtual void tt_prepare(){
-    std::cerr << "COMP::tt_prep()\n";
-    tt_init_i();
-  }
+  virtual void tt_prepare();
 protected:
   double  _tr_amps_diff_cur;
   double  _tr_amps_diff_max;

@@ -90,6 +90,8 @@ double const MAXDBL    = std::numeric_limits<double>::max();
 double const MAXDBL    = DBL_MAX;
 #endif
 
+// WAAH HACK
+
 double const BIGBIG    =  (MAXDBL)*(.9247958);	/* unlikely number	  */
 //double const OVERDUE   = -(MAXDBL)*(.9347958);/* unlikely number	  */
 double const NEVER     =  (MAXDBL)*(.9447958);	/* unlikely number	  */

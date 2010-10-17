@@ -29,8 +29,7 @@ class MODEL_BUILT_IN_RCD_SYM : public MODEL_BUILT_IN_RCD {
     };
     CARD* clone()const {return new MODEL_BUILT_IN_RCD_SYM(*this);}
     void do_expand(const COMPONENT*) const;
-   ADP_NODE* new_adp_node(const COMPONENT*) const;
-
+    ADP_NODE* new_adp_node(const COMPONENT*) const;
 };
 /*--------------------------------------------------------------------------*/
 class DEV_BUILT_IN_RCD_SYM : public DEV_BUILT_IN_RCD{
@@ -42,6 +41,5 @@ class DEV_BUILT_IN_RCD_SYM : public DEV_BUILT_IN_RCD{
   void expand();
   void    tr_stress() const;        
 };
-
 /*--------------------------------------------------------------------------*/
 #endif

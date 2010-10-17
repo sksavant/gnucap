@@ -167,35 +167,6 @@ void DEV_VCVS2::tr_regress()
   _dt = _time[0] - _time[1];
 }
 /*--------------------------------------------------------------------------*/
-//void EVAL_BM_POLY::tr_eval(ELEMENT* d)const
-//{
-//  double x = ioffset(d->_y[0].x);
-//  double f0 = 0.;
-//  double f1 = 0.;
-//  for (size_t i=_c.size()-1; i>0; --i) {
-//    f0 += _c[i];
-//    f0 *= x;
-//    f1 *= x;
-//    f1 += _c[i]*int(i);
-//  }
-//  f0 += _c[0];
-//
-//  if (_abs && f0 < 0) {
-//    f0 = -f0;
-//    f1 = -f1;
-//  }
-//
-//  if (f0 > _max) {
-//    f0 = _max;
-//    f1 = 0;
-//  }else if (f0 < _min) {
-//    f0 = _min;
-//    f1 = 0;
-//  }
-//
-//  d->_y[0] = FPOLY1(x, f0, f1);
-//  tr_final_adjust(&(d->_y[0]), d->f_is_value());
-//}
 void DEV_VCVS2::tr_eval()
 {
   double x = (_y[0].x);

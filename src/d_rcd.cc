@@ -637,7 +637,7 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p)
 }
 /*--------------------------------------------------------------------------*/
 ADP_NODE* MODEL_BUILT_IN_RCD::new_adp_node(const COMPONENT* c) const{
-  return(new ADP_NODE(c));
+  return(new ADP_NODE_RCD(c));
 }
 /*--------------------------------------------------------------------------*/
 
@@ -659,7 +659,6 @@ void DEV_BUILT_IN_RCD::expand()
   }else{
   }
   trace0("DEV_BUILT_IN_RCD::expand()");
-//  _Ccgfill = new ADP_NODE_RCD(this);
   _Ccgfill = m->new_adp_node(this);
   ADP_NODE_LIST::adp_node_list.push_back( _Ccgfill );
 

@@ -295,12 +295,12 @@ void HOMEBREW::tr_save_amps(int n){
 	_amps_new[ n ]= tramps;
 
 
+
+        trace1("HOMEBREW::tr_save_amps:", _tr_amps_sum_cur);
 	tr_behaviour_del = _tr_amps_diff_cur;
 	tr_behaviour_rel = _tr_amps_diff_cur / _tr_amps_sum_cur;
 
 
-//	tr_behaviour_del = 0;
-//	tr_behaviour_rel = 0;
 
 	COMPONENT::tr_behaviour();
 

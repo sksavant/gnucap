@@ -348,47 +348,51 @@ hp_float_t ELEMENT::tr_amps()const
 {
 	//return 44;
   trace5("", _loss0, tr_outvolts(), _m0.c1, tr_involts(), _m0.c0);
-    hp_float_t root = fixzero((_loss0 * tr_outvolts() + _m0.c1 * tr_involts() + _m0.c0),
-  		 _m0.c0);
+  hp_float_t root = fixzero((_loss0 * tr_outvolts() + _m0.c1 * tr_involts() + _m0.c0),
+      _m0.c0);
 
-    assert (root==root);
+  assert (root==root);
   return (root);
 }
 /*--------------------------------------------------------------------------*/
 void ELEMENT::tr_save_amps(int n){
 
-//	std::cerr << "ELEMENT::tr_save_amps " << short_label() << "\n";
-	hp_float_t tramps=tr_amps();
+  trace2( "ELEMENT::tr_save_amps ",  n, _sim->_tt_accepted);
+  hp_float_t tramps = tr_amps();
 
-	hp_float_t _tr_amps_diff_cur;
-	hp_float_t _tr_amps_sum_cur;
+  hp_float_t _tr_amps_diff_cur;
+  hp_float_t _tr_amps_sum_cur;
 
-	trace2( "saving _amps[ ",  n ,  net_nodes() );
+  if( _amps_new == 0 ){
+    incomplete(); // somebody forgot to initilize
+    return;
+  }
 
-	if(_amps!=0) {
-		_tr_amps_sum_cur = fabs( _amps[n] ) + fabs( tramps );
-		_tr_amps_diff_cur = fabs( _amps[n] - tramps );
-//		std::cerr << "ELEMENT::tr_save_amps: not first. diff= " << _tr_amps_diff_cur << "\n";
-	} else {
+  if(_amps!=0) {
+    trace3( "saving _amps[ ",  n ,  net_nodes(), _amps[n] );
+    _tr_amps_sum_cur = fabs( _amps[n] ) + fabs( tramps );
+    _tr_amps_diff_cur = fabs( _amps[n] - tramps );
+    //		std::cerr << "ELEMENT::tr_save_amps: not first. diff= " << _tr_amps_diff_cur << "\n";
+  } else {
+    trace2( "dummy _amps[ ",  n ,  net_nodes() );
+    _tr_amps_diff_cur = 0;
+    _tr_amps_sum_cur = 1;
+  }
 
-		_tr_amps_diff_cur = 0;
-		_tr_amps_sum_cur = 1;
-
-	}
-
-//	std::cerr << short_label() << ": saving _amps[ " << n << " ]" << _amps << " \n";
-	trace2( (short_label() + " have ").c_str(), tramps, n);
-	_amps_new[ n ]= tramps;
-
-
-	tr_behaviour_del = _tr_amps_diff_cur;
-	tr_behaviour_rel = _tr_amps_diff_cur / _tr_amps_sum_cur;
+  //	std::cerr << short_label() << ": saving _amps[ " << n << " ]" << _amps << " \n";
+  trace2( (short_label() + " have ").c_str(), tramps, n);
+  _amps_new[ n ]= tramps;
 
 
-//	tr_behaviour_del = 0;
-//	tr_behaviour_rel = 0;
+  trace1("ELEMENT::tr_save_amps", _tr_amps_sum_cur);
+  tr_behaviour_del = _tr_amps_diff_cur;
+  tr_behaviour_rel = _tr_amps_diff_cur / _tr_amps_sum_cur;
 
-	COMPONENT::tr_behaviour();
+
+  //	tr_behaviour_del = 0;
+  //	tr_behaviour_rel = 0;
+
+  COMPONENT::tr_behaviour();
 
 }
 /*--------------------------------------------------------------------------*/

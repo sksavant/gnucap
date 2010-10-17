@@ -97,12 +97,10 @@ ADP_NODE_LIST& ADP_NODE_LIST::erase_all()
  * also sets some flags for mixed-mode
  */
 /*--------------------------------------------------------------------------*/
-/* apply things to all cards
- */
+/* apply things to all cards */
 ADP_NODE_LIST& ADP_NODE_LIST::do_forall( void (ADP_NODE::*thing)( )  )
 {
   for (iterator ci=begin(); ci!=end(); ++ci) {
-//    trace0(("doing something to"+ (*ci)->short_label()).c_str() );
     ((*ci)->*thing)( );
   }
   return *this;

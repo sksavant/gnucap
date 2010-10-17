@@ -115,7 +115,7 @@ const std::string PROBE::label(void)const
 /*--------------------------------------------------------------------------*/
 double PROBE::value(void)const
 {
-  trace0("PROBE::value()");
+  trace0(("PROBE::value()"+_what).c_str());
 
   if (_brh) {
     return _brh->probe_num(_what);
