@@ -29,6 +29,9 @@ void DEV_BUILT_IN_RCD_SYM::tr_stress() const
   assert(m);
   assert(c->sdp());
 
+  unreachable(); //obsolete.
+  assert(false);
+
   if( m->positive) {
     if ( _Ccgfill->get_total() < 0 ){
       trace1(("DEV_BUILT_IN_RCD::tr_stress fill is negative: " + short_label()).c_str() ,  _Ccgfill->get_total() );
@@ -84,6 +87,7 @@ void DEV_BUILT_IN_RCD_SYM::tr_stress() const
 //  _sim->_vdc[_n[n_ic]->m_()] = newfill ; 
 
   _Ccgfill->tr_add(newfill-fill);
+  assert(newfill==newfill);
   trace4("DEV_BUILT_IN_RCD::tr_stress ", fill, h, tau, (newfill-fill)/h );
 }
 ///*--------------------------------------------------------------------------*/
@@ -164,20 +168,21 @@ void MODEL_BUILT_IN_RCD_SYM::do_tr_stress( const COMPONENT* brh) const {
   double h = _sim->_dt0;
   double uend;
   double tau;
+  double re=0;
 
   double rc = cc->__Rc(ueff);
+
   if (fill < ueff){
     trace2("DEV_BUILT_IN_RCD::tr_stress open", fill, ueff);
-    double re = cc->__Re(ueff);
+    re = cc->__Re(ueff);
     tau = ( rc / ( 1+rc/re )  ) ;
     uend = ueff / (re/rc +1) ;
 
   }else{
     // diode closed.
-    trace0("DEV_BUILT_IN_RCD::tr_stress closed");
+    trace3("DEV_BUILT_IN_RCD::tr_stress closed", rc, fill, ueff);
     tau=rc;
     uend=0;
-
   }
 
   double newfill;
@@ -188,8 +193,9 @@ void MODEL_BUILT_IN_RCD_SYM::do_tr_stress( const COMPONENT* brh) const {
         newfill = (fill - uend) * exp(-h/tau) + uend;
   }
 
+  trace6("DEV_BUILT_IN_RCD::tr_stress ", fill, h, tau, (newfill-fill)/h, rc, re );
+  assert(newfill == newfill);
   c->_Ccgfill->tr_add(newfill-fill);
-  trace4("DEV_BUILT_IN_RCD::tr_stress ", fill, h, tau, (newfill-fill)/h );
 }
 /*--------------------------------------------------------------------------*/
 DEV_BUILT_IN_RCD_SYM::DEV_BUILT_IN_RCD_SYM()

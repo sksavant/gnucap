@@ -122,20 +122,15 @@ void MODEL_BUILT_IN_RCD::precalc_first()
     MODEL_CARD::precalc_first();
     e_val(&(this->anneal), true, par_scope);
     e_val(&(this->Remodel), 1e6, par_scope);
-    e_val(&(this->Re), 1.0, par_scope);
-    e_val(&(this->Rc), 1.0, par_scope);
+    e_val(&(this->Re), NA, par_scope);
+    e_val(&(this->Rc), NA, par_scope);
     e_val(&(this->flags), int(USE_OPT), par_scope);
-    e_val(&(this->uref), 0.0, par_scope);
+    e_val(&(this->uref), NA, par_scope);
     e_val(&(this->modelparm), 0, par_scope);
     e_val(&(this->positive), true, par_scope);
     // final adjust: code_pre
     // final adjust: override
     // final adjust: raw
-    e_val(&(this->anneal), true, par_scope);
-    e_val(&(this->Remodel), 1e6, par_scope);
-    e_val(&(this->flags), int(USE_OPT), par_scope);
-    e_val(&(this->uref), 0.0, par_scope);
-    e_val(&(this->modelparm), 0, par_scope);
     // final adjust: mid
     // final adjust: calculated
     // final adjust: post
@@ -481,8 +476,9 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
   // subcircuit commons, recursive
   assert(c == this);
 
-  if (m->uref!=0.0){
-    long double ueff = ( exp ( lambda * m->uref ) - 1 );
+  if (Uref!=0.0){
+    trace3("COMMON_BUILT_IN_RCD::precalc_last", Uref, Recommon, Rccommon0);
+    long double ueff = ( exp ( lambda * Uref ) - 1 );
 
     double up   =  Recommon;
     double down =  Rccommon0;
@@ -495,6 +491,9 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
     _Re  = up_res;
     _Rc0 = down_res;
     _Rc1 = up_res;
+    trace3("", _Re, _Rc0, _Rc1);
+    assert( _Rc1 == _Rc1 );
+    assert( _Rc0 == _Rc0 );
 
     //double _rr = _rr_.subs(runter=runter, u_gate_=uref)
     double _rr = double (down + up * mu * ueff);
@@ -505,8 +504,8 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
     double teiler =  ( _rr/(_rr+_rh) );
 
     // fix weithgt to match u_end
-    _weight = double (weight *  m->uref / teiler / ueff );
-    trace4("COMMON_BUILT_IN_RCD::precalc_last fitting common to uref", _Re, m->uref, Uref, _Rc0);
+    _weight = double (weight *  Uref / teiler / ueff );
+    trace4("COMMON_BUILT_IN_RCD::precalc_last fitting common to uref", _Re, Uref, Uref, _Rc0);
     assert (weight != 0);
     assert (_weight != 0);
 
@@ -528,7 +527,12 @@ namespace DEV_BUILT_IN_RCD_DISPATCHER {
 }
 /*--------------------------------------------------------------------------*/
 double COMMON_BUILT_IN_RCD::__Rc(double ueff) const
-{ return ( _Rc0 + ueff * _lambda * _Rc1 ); }
+{
+   double ret = ( _Rc0 + ueff * _lambda * _Rc1 ); 
+   trace4("COMMON_BUILT_IN_RCD::__Rc()", ueff, _Rc0, _Rc1, _lambda);
+   assert (ret==ret);
+   return ret;
+}
 /*--------------------------------------------------------------------------*/
 static EVAL_BUILT_IN_RCD_GRc Eval_GRc(CC_STATIC);
 void EVAL_BUILT_IN_RCD_GRc::tr_eval(ELEMENT* d)const
@@ -861,7 +865,7 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "trr ")) {
     return  ( _Ccgfill->tr_rel_err() );
   }else if (Umatch(x, "te ")) {
-      return  ( c->__tau_upi(exp(m->uref)-1) );
+      return  ( c->__tau_upi(exp(c->Uref)-1) );
   }else if (Umatch(x, "tc ")) {
       return  ( c->__Rc(0) );
 #ifdef DO_TRACE
@@ -917,7 +921,6 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   //
   // FIXME 
   double lambda=1;
-  double uref_= m->uref;
 
   if (Umatch(x, "vw{v} ")) {
     if( m->use_net()){
@@ -949,10 +952,12 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
     return  _Ccgfill->order();
   }else if (Umatch(x, "Rc ")) {
     return  c->_Rc0;
+  }else if (Umatch(x, "uref ")) {
+    return  ( c->Uref );
   }else if (Umatch(x, "tc ")) {
-      return  ( c->__Rc(0) );
+    return  ( c->__Rc(0) );
   }else if (Umatch(x, "te ")) {
-      return  ( c->__Re( exp(lambda* uref_) -1    ) );
+    return  ( c->__Re( exp(lambda* c->Uref) -1    ) );
   }else if (Umatch(x, "wdt ")) {
     return  ( _Ccgfill->wdT() );
   }else if (Umatch(x, "tr1 ")) {
@@ -1093,8 +1098,7 @@ void DEV_BUILT_IN_RCD::tr_stress_last() const
   assert(m);
   assert(c->sdp());
   if(m->use_net()){
-
-    double  fill = ((ELEMENT*)_Ccg)->tr_involts();
+    double fill = ((ELEMENT*)_Ccg)->tr_involts();
     trace2(("tr_stress_last " + short_label()).c_str(), fill, _sim->tt_iteration_number()  );
     _Ccgfill->tr_stress_last(fill);
 

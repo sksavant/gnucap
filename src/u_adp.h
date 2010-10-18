@@ -33,7 +33,6 @@ class ADP_NODE {
     int dbg;
 
     // history needs cleanup.
-    hp_float_t tr_expect;
     hp_float_t _delta_expect;
     hp_float_t tr_value;
     hp_float_t tr_value0;
@@ -104,24 +103,28 @@ class ADP_NODE {
     virtual double tt_integrate_3( double a ) { return tt_integrate_3_exp( a ); }
     double tt_integrate_3_exp(double);
 
-    void tr_correct_3_exp( );
-    void tr_correct_2_exp( );
-    void tr_correct_1_exp( );
-    void tr_correct_1_const( );
-    void tr_correct_generic( );
+    double tr_correct_3_exp( );
+    double tr_correct_2_exp( );
+    double tr_correct_1_exp( );
+    double tr_correct_1_const( );
+    double tr_correct_generic( );
 
     std::string name;
     const COMPONENT* _c;
     hp_float_t _debug;
     double (ADP_NODE::*_integrator)( double );
-    void (ADP_NODE::*_corrector)( );
+    double (ADP_NODE::*_corrector)( );
 
   public:
     virtual std::string type() const {return "basic";};
 
     hp_float_t get_total() const { return( get_tr() + get_tt() );}
     hp_float_t get() const {return get_tt();}
-    hp_float_t get_tt() const { assert( tt_value == tt_value ); return tt_value; }
+    hp_float_t get_tt() const {
+      if ( tt_value == tt_value )       return tt_value; 
+      trace1(( "no tt_value" + short_label()).c_str(),tt_value);
+      assert(false);
+    }
     hp_float_t get0()const { assert( tt_value0 == tt_value0 ); return tt_value0; }
     hp_float_t get1()const { assert( tt_value1 == tt_value1 ); return tt_value1; }
     hp_float_t tt_get_sum()const  {return tt_value0 + tr_value0; }
