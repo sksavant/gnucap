@@ -79,7 +79,7 @@ MODEL_BUILT_IN_RCD::MODEL_BUILT_IN_RCD(const MODEL_BUILT_IN_RCD& p)
 {
   if (ENV::run_mode != rPRE_MAIN) {
     ++_count;
-  }else{untested();//194
+  }else{untested();
   }
 }
 /*--------------------------------------------------------------------------*/

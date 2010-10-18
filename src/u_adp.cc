@@ -53,8 +53,6 @@ void ADP_NODE::init(){
   _abs_tt_err = 0;
   name = std::string(""); // inherit label?
   dbg++;
-  tt_value0 = (0.); //obsolete
-  tt_value1 = (0.); //obsolete
   _val_bef = new double[3];
   _val_aft = new double[3]; // necessary?? should be _delta + _val_bef
   _der_aft = new double[3];
@@ -90,7 +88,6 @@ double ADP_NODE::tr_duration()const{ return _c->_sim->_last_time; }
 // called right after tr
 double ADP_NODE::tt_review( ) {
   // call corrector...
-  _debug = tr_value;
   double delta_model;
   if (_corrector){
     trace0("correction");
@@ -122,9 +119,9 @@ double ADP_NODE::tt_review( ) {
   if( myreltol == 0 ) return 0;
 
   trace2("ADP_NODE::tt_review", myreltol, inf);
-  if( _abs_tr_err == 0 ) return inf;
-  if( myreltol == inf && myabstol == inf ) return inf;
-  if( myreltol == 0 && myabstol == 0 ) return 0;
+  if( _abs_tr_err == 0 ) { _wdT = inf; return inf; }
+  if( myreltol == inf && myabstol == inf ) { _wdT = inf; return inf;}
+  if( myreltol == 0 && myabstol == 0 ) {_wdT=0; return 0;}
 
 // FIXME: _order.
 //
@@ -144,6 +141,7 @@ double ADP_NODE::tt_review( ) {
   assert(_delta_expect == _delta_expect);
   tt_value += tr_value; // only printed if OPT::printrejected
 
+  _debug=_wdT;
   return _wdT;
 }
 /*----------------------------------------------------------------------------*/
@@ -155,7 +153,7 @@ TIME_PAIR ADP_NODE::tt_preview( ) {
 /*----------------------------------------------------------------------------*/
 void ADP_NODE::reset() {
   trace1( "ADP_NODE::reset()", _c->_sim->_Time0 );
-  tr_value = 0; // tt_value1 = 0; tt_value0 =0;
+  tr_value = 0; // _val_bef[1] = 0; _val_bef[0] =0;
 }
 /*----------------------------------------------------------------------------*/
 void ADP_NODE::tt_accept()
@@ -207,7 +205,7 @@ void ADP_NODE::tt_accept()
 
   assert(tt_value == tt_value);
 
-  tt_value0 = tt_value; // obsolete
+  _val_bef[0] = tt_value; // obsolete
   _val_bef[0] = tt_value;
 
   tt_value += _delta[0]; // (printed) output value
@@ -226,8 +224,6 @@ void ADP_NODE::tt_accept_first( )
   assert( _c->_sim->get_tt_order() == 0 );
 
   assert(0  == _c->_sim->_dT0);
-  tt_value2 = tt_value1; // obsolete
-  tt_value1 = tt_value0; // obsolete
   _val_bef[2] = _val_bef[1];
   _val_bef[1] = _val_bef[0];
 
@@ -240,8 +236,8 @@ void ADP_NODE::tt_accept_first( )
 
 //  tr_value = 0;
 
-  assert(tt_value0 >= 0 );
-  assert(tt_value0 >= tt_value1);
+  assert(_val_bef[0] >= 0 );
+  assert(_val_bef[0] >= _val_bef[1]);
 
  // FIXME tt_value??
   tt_value += _delta[0];
@@ -265,9 +261,7 @@ void ADP_NODE::tt_advance(){
   _delta[0] = 888; // invalidate
   tr_value = 999; 
 
-  tt_value3 = tt_value2; //obsolete
-  tt_value2 = tt_value1; //obsolete
-  tt_value1 = tt_value0; //obsolete
+  _val_bef[1] = _val_bef[0]; //obsolete
   _val_bef[2] = _val_bef[1];
   _val_bef[1] = _val_bef[0];
 
@@ -282,10 +276,10 @@ void ADP_NODE::tt_advance(){
 
   trace2(("ADP_NODE::tt_advance done " + _c->short_label()).c_str(), get_tt(), get_tr());
   tr_value0=_delta[0]; // obsolete
-  tt_value0 = tt_value; // obsolete
+  _val_bef[0] = tt_value; // obsolete
 }
 /*----------------------------------------------------------------------------*/
-//  tt_value1 += diff;
+//  _val_bef[1] += diff;
 void ADP_NODE::tt_commit_first( )
 {
   trace2(("ADP_NODE::tt_commit_first() " + _c->short_label()).c_str(), get_tt(), get_tr());
@@ -295,7 +289,7 @@ void ADP_NODE::tt_commit_first( )
   assert(_c->_sim->get_tt_order() == 0 );
 
   tt_first_time = _c->_sim->_Time0;
-  tt_first_value = tt_value0;
+  tt_first_value = _val_bef[0];
   assert(_delta_expect != HUGE_VAL );
 }
 /*---------------------------------*/
@@ -451,17 +445,34 @@ void ADP_NODE::tr_expect_2_exp(){
   //hp_float_t t2 = tr_duration()/2;
   //hp_float_t t1 = t2+dT1();
 
-  double ln2 = log(_sign*_der_aft[2]*h);
-  double ln1 = log(_sign*_der_aft[1]*h);
 
-  double ln0 = ln1 + (dT0()-h) * (ln1-ln2)/dT1();
+  //dashier geht nicht. kleine schritte zu schlecht.
+  double d1=_delta[1];
+  double d2=_delta[2];
+  double alpha = log ( d1/d2 ) / dT1();
+  _delta_expect = d1 * exp (alpha*dT0());
 
-  _delta_expect = _sign  * exp(ln0);
+
+  d1/=h;
+  d2/=h;
+  d1=_der_aft[1];
+  d2=_der_aft[2];
+
+  alpha = log ( d1/d2 ) ;
+  // derv(x) = d1 * exp (alpha*x);
+  //  _delta_expect  int_{dT0-h}^dT0 derv
+  // _delta_expect = d1 / alpha * (exp(alpha*dT0()/dT1()) - exp(alpha*(dT0()-h)/dT1()));
+  _delta_expect = d1 / alpha/dT1() * (pow(d1/d1,dT0()/dT1()) - pow(d1/d2,(dT0()-h)/dT1()));
+
+
+
+
 
   // _der_aft_exp = _sign * exp(ln0);
-  trace5("ADP_NODE::tr_expect_2_exp", \
+  trace6("ADP_NODE::tr_expect_2_exp", \
       _delta_expect, _der_aft[2], _der_aft[1],
-      _delta[2], _delta[1]);
+      _delta[2], _delta[1], dT0());
+  trace2("ADP_NODE::tr_expect_2_exp", _delta[1]/h, _delta[2]/h);
 
   assert(_delta_expect == _delta_expect);
   assert(_delta_expect < 1e2 );
@@ -652,7 +663,7 @@ void ADP_NODE::tr_expect_3_exp_fit(){
   hp_float_t delta = E * ( - exp( t3*alpha ) + exp(t2*alpha) )/ _c->_sim->_last_time ;
   hp_float_t delta_trapez = (tr_value1 + _delta_expect)/2 * Time_delta() / _c->_sim->_last_time;
 
-  trace4("ADP_NODE::tt_expect3_exp", delta, delta_trapez, tt_value1, get() );
+  trace4("ADP_NODE::tt_expect3_exp", delta, delta_trapez, _val_bef[1], get() );
   delta_trapez = delta_trapez; // unused_variable...
   tt_expect = get1() +  sign * delta;
 
@@ -764,17 +775,17 @@ double ADP_NODE::tr_correct_1_exp(){
   double new_delta; // return value. new value for tr_value.
   double h = tr_duration();
 
-  //assert(tt_value1 == _val_bef[1]);
+  //assert(_val_bef[1] == _val_bef[1]);
   assert(tr_value1 == _delta[1]);
 
   double a = tr_value1;
   double b = tt_expect;
   double c = tr_value;
-  double d = tt_value1;
+  double d = _val_bef[1];
   double dT = dT0();
 
   trace4(("ADP_NODE::tr_correct_1_exp, _der_aft? " + label()).c_str(),
-      tr_value1, tt_expect, tr_value, tt_value1 );
+      tr_value1, tt_expect, tr_value, _val_bef[1] );
 
   //model value as
   /// t \mapsto K* (exp (tau*t) -1 + d )
@@ -791,14 +802,17 @@ double ADP_NODE::tr_correct_1_exp(){
   _der_aft[0] = (b - d)*pow((a - b - c + d),((dT + h)/h))*log(-(a - c)/(b - d) + 1)/((c/a -
         1)*h*pow((-b + d),((dT + h)/h)));
   // _der_aft[1] = tau * K *( exp(tau* (h) )) ;
-  _der_aft[1] = ((a*b - a*d)*log(-b + d) - (a*b - a*d)*log(a - b - c + d))*
-    pow( (a - b - c + d),(dT/h))/((a - c)*h*pow((-b + d),(dT/h)));
+  _der_aft[1] =
+   -((a*a - a*b - a*c + a*d)*log(-b + d) - (a*a - a*b - a*c + a*d)*log(a -
+         b - c + d))/((a - c)*h);
 
   //FIXME.
   if (_der_aft[0] != _der_aft[0]) {
+    trace1("ADP_NODE::tr_correct_1_exp error", _der_aft[0]);
     _der_aft[0] = new_delta /h;
   }
   if (_der_aft[1] != _der_aft[1]) {
+    trace5("ADP_NODE::tr_correct_1_exp error", _der_aft[1], a-c, -b+d, a - b - c + d, (a*a - a*b - a*c + a*d) );
     _der_aft[1] = _delta[1]/h;
   }
 
@@ -813,7 +827,6 @@ double ADP_NODE::tr_correct_1_exp(){
   trace5(("ADP_NODE::tr_correct_1_exp, " + label()).c_str(), \
      _delta_expect,  _der_aft[1], _der_aft[0], _delta[1], _delta[0]);
 
-  _debug=new_delta - tr_value;
   return new_delta;
 }
 /*---------------------------------*/
@@ -836,7 +849,7 @@ void ADP_NODE::tt_commit( )
       dT0(), dT1(),
       _c->_sim->get_tt_order(),
       _c->_sim->_Time0,
-      tt_value0, tt_value1
+      _val_bef[0], _val_bef[1]
       );
 
   tr_expect_();
@@ -858,9 +871,9 @@ void ADP_NODE::tt_commit( )
         _c->_sim->tt_iteration_number(), _order,tt_expect);
   }
   trace6(("tt_values " + _c->short_label() + " ").c_str(),
-      tr_value3, tr_value2, tr_value1, _delta_expect, _c->_sim->tt_iteration_number(), tt_expect - tt_value1);
+      tr_value3, tr_value2, tr_value1, _delta_expect, _c->_sim->tt_iteration_number(), tt_expect - _val_bef[1]);
   trace6(("tt_values " + _c->short_label() + " ").c_str(),
-      tt_value3, tt_value2, tt_value1, tt_expect, _c->_sim->tt_iteration_number(), _c->_sim->get_tt_order() );
+      tt_value3, _val_bef[2], _val_bef[1], tt_expect, _c->_sim->tt_iteration_number(), _c->_sim->get_tt_order() );
 
 
 

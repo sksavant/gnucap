@@ -495,10 +495,8 @@ bool TTT::review_tt()
 //  _dT_by_adp = ADP_LIST::adp_list.tt_review()           + _tstop; 
   _dT_by_adp = ADP_NODE_LIST::adp_node_list.tt_review(); 
   _dT_by_beh = OPT::behreltol/CKT_BASE::tt_behaviour_rel * _sim->_dT0;
-
   _dT_by_beh = max ( _dT_by_beh, (double) _tstop );
 
-  // std::cout << "wanted by adp:" << _dT_by_adp << "\n";
 
   _time_by_adp = _Time1 + _dT_by_adp;
   _time_by_beh = _Time1 + _dT_by_beh + 1e9;
@@ -506,7 +504,7 @@ bool TTT::review_tt()
   trace5("Times ", _Time1, _time_by_adp, _time_by_beh, _dT_by_adp, _dT_by_beh);
   // ? _sim->_Time0 - _sim->_dT0 + _dT_by_beh; // 1e-2/CKT_BASE::tt_behaviour_rel + Time1;
   //
-  if (_dT_by_adp < _tstop) return true;
+  if ((_dT_by_adp < _tstop )&& (_tstop == _sim->_dT0 )) return true;
 
   if( _time_by_beh < _sim->_Time0 ){
     _out << "* beh " << _sim->_dT0 << " " << _dT_by_adp << " \n";
@@ -873,7 +871,8 @@ bool TTT::next()
     _new_dT = min( (double) _dT_by_adp, (_sim->_dT1 + _Tstep)/2 ) ; 
     _new_dT = max( _new_dT,  (double) _tstop ) ; // fmin( get_new_dT(), _Tstep );
 
-    _out << "* newstep " << _new_dT << "\n";
+    // _out << "* newstep " << _new_dT << "\n";
+//    _out << "* newstep " << _new_dT << " ( " << _dT_by_adp << " )\n";
 
 
    // if (_sim->get_tt_order() < 0){
@@ -916,7 +915,6 @@ bool TTT::next()
     trace6( "TTT::next no next @ Time0: " , _sim->_Time0,  _sim->_dT0, _new_dT, _dTmin, _tstop, _new_Time0 );
     trace5( "TTT::next no next @ Time0: " , _Time1, _Tstop,  _new_dT >= _dTmin ,  _Tstop - _Time1 >= _dTmin ,  _new_Time0 + _tstop <= _Tstop );
     _sim->_last_Time = _Time1 + _tstop; // FIXME
-//    std::cout << "* last Time set to " << _sim->_last_Time <<" Tstop :"<< _Tstop << "\n";
       
     return (false);
   } else {
@@ -1188,9 +1186,6 @@ void TTT::store_results_tt(double x)
   }else{
   }
 
-//  std::cout << "* trying ";
-//  print_stored_results_tt(x);
-//  trace
 }
 /*--------------------------------------------------------------------------*/
 void TTT::print_results_tt(double x)

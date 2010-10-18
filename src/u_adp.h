@@ -41,11 +41,8 @@ class ADP_NODE {
     hp_float_t tr_value3, tr_dd23, tr_dd123;
     hp_float_t tt_expect;
     hp_float_t tt_value;
-    hp_float_t tt_value0;
-    hp_float_t tt_value1;
-    hp_float_t tt_value2;
 
-    hp_float_t *_val_bef; // replce tt_value0 ... 
+    hp_float_t *_val_bef; // replce _val_bef[0] ... 
     hp_float_t *_val_aft;
     hp_float_t *_der_aft;
     hp_float_t *_delta;
@@ -125,14 +122,14 @@ class ADP_NODE {
       trace1(( "no tt_value" + short_label()).c_str(),tt_value);
       assert(false);
     }
-    hp_float_t get0()const { assert( tt_value0 == tt_value0 ); return tt_value0; }
-    hp_float_t get1()const { assert( tt_value1 == tt_value1 ); return tt_value1; }
-    hp_float_t tt_get_sum()const  {return tt_value0 + tr_value0; }
+    hp_float_t get0()const { assert( _val_bef[0] == _val_bef[0] ); return _val_bef[0]; }
+    hp_float_t get1()const { assert( _val_bef[1] == _val_bef[1] ); return _val_bef[1]; }
+    hp_float_t tt_get_sum()const  {return _val_bef[0] + tr_value0; }
     void tr_add(double x ){tr_value += x;}
     void tr_set(double x ){tr_value = x;}
     double tt_review( );
     TIME_PAIR tt_preview( );
-    void reset(); //{tr_value = 0; tt_value1 = 0; tt_value0 =0;}
+    void reset(); //{tr_value = 0; _val_bef[1] = 0; _val_bef[0] =0;}
     void reset_tr() { tr_value = 0;
       trace0(("ADP_NODE::reset_tr() " + short_label()).c_str() );
     }
@@ -154,7 +151,7 @@ class ADP_NODE {
 
     void tt_accept( );
     void tt_clear( ) { tr_value = tr_value0 = tr_value1 = tr_value2 = 0;
-                       tt_value = tt_value0 = tt_value1 = tt_value2 = 0;
+                       tt_value = _val_bef[0] = _val_bef[1] = _val_bef[2] = 0;
     }
 
     void print()
