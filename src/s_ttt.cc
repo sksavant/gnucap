@@ -851,7 +851,7 @@ bool TTT::next()
   if( !_accepted_tt ){
     trace3("!accepted_tt... ", _sim->_Time0, _time_by_beh, _time_by_adp);
     trace3("!accepted_tt... ", _sim->_dT0, _dT_by_beh, _dT_by_adp);
-    _new_dT = _sim->_dT0/2;
+    _new_dT = 0.9* _sim->_dT0; // back at least this much.
     if( _time_by_beh < _sim->_Time0 ){
       assert(_time_by_beh >= 0);
       _new_dT= fmin(_new_dT,_dT_by_beh * 0.9);
@@ -872,7 +872,7 @@ bool TTT::next()
     _new_dT = max( _new_dT,  (double) _tstop ) ; // fmin( get_new_dT(), _Tstep );
 
     // _out << "* newstep " << _new_dT << "\n";
-//    _out << "* newstep " << _new_dT << " ( " << _dT_by_adp << " )\n";
+    _out << "* newstep " << _new_dT << " ( " << _dT_by_adp << " )\n";
 
 
    // if (_sim->get_tt_order() < 0){
