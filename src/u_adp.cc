@@ -105,7 +105,7 @@ double ADP_NODE::tt_review( ) {
   // FIXME: implement abs err!
   _abs_tr_err = fabs (tr_value - delta_model);
 
-  if (_abs_tr_err < 1e-15 ) { 
+  if (_abs_tr_err < 1e-12 ) { 
     _rel_tr_err = 0;
   } else {
     _rel_tr_err = fabs (tr_value - delta_model) / max( fabs(tr_value) , fabs(delta_model));
@@ -458,32 +458,42 @@ void ADP_NODE::tr_expect_2_exp(){
 
   d1/=h;
   d2/=h;
-  //d1=_der_aft[1];
   double alpha = - log ( d2/d1 ) / dT1();
   double _delta_expect_approx = d1 * exp (alpha*dT0()) * h;
 
-  d2=_der_aft[2];
+  //d1=_der_aft[1]; // dashier muesste man noch ausrechnen.
+  //
+  //
+  // expect using deltas as derivatives.
+  d1=_delta[1] / h;
+  d2=_delta[2] / h;
+//  d2=_der_aft[2];
 
-  double beta = log ( d1/d2 ) ;
-  double q =  ( d1/d2 ) ;
-  double p = pow(q,-h);
+  alpha = - log ( d2/d1 ) / dT1();
+  double q =  ( d2/d1 ) ;
+  double p = pow(q,-h/dT1());
   double r = 1-p;
-  // derv(x) = d1 * exp (alpha*x);
-  // _delta_expect = int_{dT0-h}^dT0 derv
-  //               = d1 / alpha * (exp(alpha*dT0()) - exp(alpha*(dT0()-h)));
-  //               = d1 / (beta /dT1()) * (pow(d1/d2,dT0()) - pow(d1/d2,(dT0()-h)));
-  //               = d1 / beta *dT1() * (pow(d1/d2,dT0()))* ( 1  - pow(d1/d2,(-h))));
-  //               = d1 *dT1()           pow(d1/d2,dT0())* ( 1  - pow(d1/d2,(-h)))/beta;
-  //               = d1 *dT1()           pow(d1/d2,dT0()))*
-  //                     ( 1 - pow(q,-h)))/ log( q )
-  //               = d1 *dT1()*  pow(d1/d2,dT0()))*
-  //                ( 1 - pow(q,-h)))/ log( pow(q,-h()) ) * ( h)) 
-  //               = d1 *dT1()*  pow(d1/d2,dT0())*
-  //                1/ log( (r+1)^(1/r) ) * ( h)) 
-  _delta_expect  = d1 * dT1() * pow(d1/d2,dT0()) / log( foo(r) ) * ( h) ;
+  // derv(x) = d1 * exp (alpha*x);  ##
+  // _delta_expect = int_{dT0-h}^dT0 derv ##
+  //               = d1 / alpha * (exp(alpha*dT0()) - exp(alpha*(dT0()-h))); ##
+  //               = d1 / (beta /dT1()) * (pow(q,-dT0()/dT1)) - pow(q,-(dT0()-h)/dT1)); 
+  //               = d1 / beta * dT1()  * (pow(q,-dT0()/dT1)) * ( 1  - pow(q,(-h)/dT1)));
+  //               = d1 *dT1()           pow(q,-dT0()/dT1)* ( 1  - pow(q,(-h)))/beta;
+  //               = d1 *dT1()           pow(q,-dT0()/dT1)*
+  //                     ( 1 - pow(q,-h/dT1)))/ log( q )
+  //               = d1 *dT1()           pow(q,-dT0()/dT1)*
+  //                ( 1 - pow(q,-h/dt1)))/ log( pow(q,-h/dT1 ()) ) * ( h/dT1)) 
+  //               = d1 *dT1()*  pow(q,-dT0()/dT1)*
+  //                1/ log( (r+1)^(1/r) ) * ( h/dT1)) 
+  _delta_expect_approx  = d1 * pow(q,-dT0()/dT1()) / log( foo(r) ) * ( h) ;
 
-  _delta_expect=_delta_expect_approx;
+ //
+ //expect using deltas.
+  d1=_delta[1] / h;
+  d2=_delta[2] / h;
+  _delta_expect = pow(d1,((dT0() + dT1())/dT1())) / pow(d2,(dT0()/dT1()))*h;
 
+  //std::cout << "***" <<   _delta_expect << " vs " << _delta_expect_approx << "\n";
 
   // _der_aft_exp = _sign * exp(ln0);
   trace6("ADP_NODE::tr_expect_2_exp", \
@@ -497,8 +507,8 @@ void ADP_NODE::tr_expect_2_exp(){
   _corrector = &ADP_NODE::tr_correct_generic;
   tt_expect = tt_integrate_2_exp(_delta_expect);
 }
-/*----------------------------------------------------------------------*/
-double ADP_NODE::tt_integrate_2_exp(double tr_) {
+/*----------------------------------------------------------------------
+double tt_integrate_2_exp_alt(double tr_) {
   trace2("ADP_NODE::tt_integrate_2_exp", tr_value1, tr_);
   trace2("ADP_NODE::tt_integrate_2_exp", tr_value1,  _sign);
   assert(tr_value1 == _delta[1]);
@@ -514,6 +524,48 @@ double ADP_NODE::tt_integrate_2_exp(double tr_) {
   if (delta != delta || delta==-inf || delta==inf){ 
     delta= (tr_ + tr_value1)/2 * (dT0()-h) / h ;
     incomplete(); // call another thiongh.
+  }
+
+  assert(delta != -inf);
+  assert(delta != inf);
+
+  double ret = get1() + tr_value1 + _sign * delta;
+
+  trace5(( "ADP_NODE::tt_integrate_2_exp "+_c->short_label()).c_str(),
+      tr_value2, tr_value1, tr_, tt_expect, delta );
+
+  assert(ret == ret);
+  _integrator = &ADP_NODE::tt_integrate_2_exp;
+  return ret;
+}
+----------------------------------------------------------------------*/
+double my_log(double x){
+  if(x>0) return log(x);
+  return -log(x);
+}
+/*---*/
+double ADP_NODE::tt_integrate_2_exp(double tr_) {
+  trace2("ADP_NODE::tt_integrate_2_exp", tr_value1, tr_);
+  trace2("ADP_NODE::tt_integrate_2_exp", tr_value1,  _sign);
+  assert(tr_value1 == _delta[1]);
+  hp_float_t h = tr_duration();
+  
+  double del1 = _delta[1];
+  double del2 = _delta[2];
+  double dTo = dT0();
+  double dTi = dT1();
+  double delta = (pow(del1,(dTo/dTi))*pow(del2,((dTi + h)/dTi))
+                 - pow(del1,((dTi + h)/dTi)) * pow(del2,(dTo/dTi))) *
+        dTi/
+        (((log(del1) - log(del2)) * 
+        pow(del1,(h/dTi)) -
+        (log(del1) - log(del2))*
+        pow(del2,(h/dTi)))*
+        pow(del2,(dTo/dTi)));
+
+  if (delta != delta || delta==-inf || delta==inf){ 
+    delta= (tr_ + tr_value1)/2 * (dT0()-h) / h ;
+    incomplete(); // call another thing.
   }
 
   assert(delta != -inf);
@@ -832,7 +884,6 @@ double ADP_NODE::tr_correct_1_exp(){
   _der_aft[1] =
    -((a*a - a*b - a*c + a*d)*log(-b + d) - (a*a - a*b - a*c + a*d)*log(a -
          b - c + d))/((a - c)*h);
-
 
 
   if (_der_aft[1] != _der_aft[1]) {

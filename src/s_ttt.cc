@@ -849,22 +849,20 @@ bool TTT::next()
   assert(_sim->_Time0 >=0);
 
   if( !_accepted_tt ){
-    trace3("!accepted_tt... ", _sim->_Time0, _time_by_beh, _time_by_adp);
-    trace3("!accepted_tt... ", _sim->_dT0, _dT_by_beh, _dT_by_adp);
-    _new_dT = 0.9* _sim->_dT0; // back at least this much.
+    _new_dT = 0.9 * ( _sim->_dT0 - _tstop ) + _tstop; // back at least this much.
     if( _time_by_beh < _sim->_Time0 ){
       assert(_time_by_beh >= 0);
-      _new_dT= fmin(_new_dT,_dT_by_beh * 0.9);
+      _new_dT= fmin(_new_dT,_dT_by_beh);
     }
     if ( _time_by_adp < _sim->_Time0 ){
       assert(_time_by_adp >= 0);
-      _new_dT = fmin(_new_dT, _dT_by_adp * 0.9);
+      _new_dT = fmin(_new_dT, _dT_by_adp);
     } 
 
     assert(_new_dT == _new_dT );
     trace1( "TTT::next after reject: ", _Time1 );
-
 //    _Tstep = fmin( _dT_by_adp, _dT_by_beh );
+    std::cout << "* retry " << _new_dT << " ( " << _dT_by_adp << " )\n";
    
   } else { // accepted step. calculating _new_dT
     assert ( _Time1 == _sim->_Time0 ); // advance ...
