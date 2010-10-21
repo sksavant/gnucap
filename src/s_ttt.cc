@@ -867,10 +867,11 @@ bool TTT::next()
   } else { // accepted step. calculating _new_dT
     assert ( _Time1 == _sim->_Time0 ); // advance ...
     _new_dT = min( (double) _dT_by_adp, (_sim->_dT1 + _Tstep)/2 ) ; 
+    _new_dT = min( (double) _new_dT, _sim->_dT1 * 2) ; 
     _new_dT = max( _new_dT,  (double) _tstop ) ; // fmin( get_new_dT(), _Tstep );
 
     // _out << "* newstep " << _new_dT << "\n";
-    _out << "* newstep " << _new_dT << " ( " << _dT_by_adp << " )\n";
+    _out << "* newstep " << _new_dT << " ( " << _dT_by_adp << " " << _sim->_dT1   << " )\n";
 
 
    // if (_sim->get_tt_order() < 0){

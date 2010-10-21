@@ -95,7 +95,9 @@ class ADP_NODE {
 
     virtual double tt_integrate_2( double a ) { return tt_integrate_2_exp( a ); }
     double tt_integrate_2_exp(double);
+    double tt_integrate_2_exp_different(double);
     double tt_integrate_2_linear(double);
+    double tt_integrate_2_linear2(double);
 
     virtual double tt_integrate_3( double a ) { return tt_integrate_3_exp( a ); }
     double tt_integrate_3_exp(double);

@@ -119,7 +119,7 @@ void TRANSIENT::sweep()
     }
   }
   while (next()) {
-    trace2("TRANSIENT::sweep entering loop", _sim->_time0, _sim->_dtmin);
+    trace2("TRANSIENT::sweep entering loop", _sim->_time0 -_tstop, _sim->_dtmin);
     _sim->_bypass_ok = false;
     _sim->_phase = p_TRAN;
     _sim->_genout = gen();
@@ -137,6 +137,8 @@ void TRANSIENT::sweep()
 	++(_sim->_stepno);
 	_time_by_user_request += _tstep;	/* advance user time */
         _time_by_user_request = min(_time_by_user_request, (double)_tstop);
+        std::cerr.precision(19);
+        std::cerr << "TRANSIENT::next set _time_by_user_request: " << _time_by_user_request << " " << _tstop << "\n";
         trace1("TRANSIENT::sweep advance ", _time_by_user_request );
       }else{
       }
@@ -259,19 +261,16 @@ void TRANSIENT::first()
     /*assert(newtime == almost_fixed_time || newtime <= almost_fixed_time - _sim->_dtmin);*/ \
     assert(newtime > time1);						\
     assert(newtime >= reftime);						\
-    assert(new_dt > 0.);						\
-    assert(new_dt >= _sim->_dtmin);						\
-    assert(newtime <= _time_by_user_request);				\
-    /*assert(newtime == _time_by_user_request*/				\
-    /*	   || newtime < _time_by_user_request - _sim->_dtmin);	*/	\
+    assert(new_dt == 0 || new_dt >= _sim->_dtmin);	                \
+    /*assert(newtime <= _time_by_user_request);*/				\
+    assert(newtime == _time_by_user_request				\
+    	   || newtime <= _time_by_user_request + _sim->_dtmin);		\
   }
 #define check_consistency2() {						\
     assert(newtime > time1);						\
-    assert(new_dt > 0.);						\
-    assert(new_dt >= _sim->_dtmin);						\
-    assert(newtime <= _time_by_user_request);				\
-    /*assert(newtime == _time_by_user_request	*/			\
-    /*	   || newtime < _time_by_user_request - _sim->_dtmin);*/		\
+    assert(new_dt ==  0. || new_dt >= _sim->_dtmin);					\
+    assert(newtime == _time_by_user_request			\
+    	   || newtime <= _time_by_user_request + _sim->_dtmin);	\
   }
 /*--------------------------------------------------------------------------*/
 /* next: go to next time step
@@ -280,10 +279,10 @@ void TRANSIENT::first()
  */
 bool TRANSIENT::next()
 {
-  trace0("TRANSIENT::next()");
+  double old_dt = _sim->_time0 - time1;
+  trace3("TRANSIENT::next()", time1, _sim->_time0, old_dt);
   ::status.review.start();
 
-  double old_dt = _sim->_time0 - time1;
   assert(old_dt >= 0);
   
   double newtime = NEVER;
@@ -316,15 +315,20 @@ bool TRANSIENT::next()
     trace3("TRANSIENT::next ", time1, _sim->_time0, reftime);
     trace1("TRANSIENT::next ", _time_by_user_request);
     std::cerr.precision(17);
-    std::cerr << "TRANSIENT::next " << _time_by_user_request << "\n";
+    std::cerr << "TRANSIENT::next _time_by_user_request: " << _time_by_user_request << "\n";
 
     newtime = _time_by_user_request;
-    trace3("TRANSIENT::next request ", newtime, new_dt, reftime);
+    trace4("TRANSIENT::next request ", newtime, new_dt, reftime, _sim->_dtmin);
     new_dt = newtime - reftime;
+    if(new_dt < _sim->_dtmin){
+      new_dt=_sim->_dtmin;
+      newtime = reftime + _sim->_dtmin;
+    }
     new_control = scUSER;
     double fixed_time = newtime;
     double almost_fixed_time = newtime;
-    if(new_dt>0)
+
+    trace4("TRANSIENT::next ", newtime, new_dt, reftime, _sim->_dtmin);
     check_consistency();
     
     // event queue, events that absolutely will happen
@@ -345,12 +349,14 @@ bool TRANSIENT::next()
       trace3("TRANSIENT::next top ", newtime, new_dt, _sim->_eq.top());
     }else{
     }
+
+    
     
     // device events that may not happen
     // not sure of exact time.  will be rescheduled if wrong.
     // ok to move by _sim->_dtmin.  time is not that accurate anyway.
     if (_time_by_ambiguous_event < newtime - _sim->_dtmin) {  
-      trace3("TRANSIENT::next here ", newtime, new_dt, _time_by_ambiguous_event);
+      trace3("TRANSIENT::next ambi ", newtime, new_dt, _time_by_ambiguous_event);
       if (_time_by_ambiguous_event < time1 + 2*_sim->_dtmin) {untested();
 	double mintime = time1 + 2*_sim->_dtmin;
 	if (newtime - _sim->_dtmin < mintime) {untested();
@@ -367,7 +373,7 @@ bool TRANSIENT::next()
       check_consistency();
     }else{
     }
-    trace3("TRANSIENT::next ambi", newtime, new_dt, _time_by_ambiguous_event);
+    trace3("TRANSIENT::next after ambi", newtime, new_dt, _time_by_ambiguous_event);
     
     // device error estimates
     if (_time_by_error_estimate < newtime - _sim->_dtmin) {
@@ -457,6 +463,12 @@ bool TRANSIENT::next()
     }
     trace1("TRANSIENT::next got sth", newtime);
 
+    if ( _time_by_user_request - _sim->_dtmin < newtime  && newtime <  _time_by_user_request ){
+       newtime = _time_by_user_request - _sim->_dtmin;
+       new_dt = _sim->_dtmin;
+       trace2("TRANSIENT::next making step smaller", newtime, new_dt);
+    }
+
     // if all that makes it close to user_requested, make it official
     if (up_order(newtime-_sim->_dtmin, _time_by_user_request, newtime+_sim->_dtmin)) {
       //newtime = _time_by_user_request;
@@ -468,13 +480,17 @@ bool TRANSIENT::next()
     }
     if (new_dt>0){
       check_consistency();
-      assert(!_accepted || newtime > _sim->_time0);
-      assert(_accepted || newtime <= _sim->_time0);
+      assert(!_accepted || newtime > _sim->_time0 || time1 <= _time_by_user_request );
+      assert( _accepted || newtime <= _sim->_time0);
     }
+
+
   }
+
   
   set_step_cause(new_control);
 
+  std::cerr << "TRANSIENT::next time0 " << newtime <<  "\n";
   trace1("TRANSIENT::next got it i think", newtime);
   
   /* check to be sure */
@@ -482,6 +498,7 @@ bool TRANSIENT::next()
     /* It's really bad. */
     /* Reject the most recent step, back up as much as possible, */
     /* and creep along */
+    trace3("TRANSIENT::next ", newtime, time1, _sim->_dtmin );
     assert(!_accepted);
     assert(step_cause() < scREJECT);
     assert(step_cause() >= 0);
@@ -519,6 +536,7 @@ bool TRANSIENT::next()
     }else{untested();
       assert(_converged);
     }
+    trace3( "TRANSIENT::next:", newtime, time1, new_dt);
     check_consistency2();
     newtime = _sim->_time0 + _sim->_dtmin;
     if (newtime > _time_by_user_request) {
@@ -556,10 +574,11 @@ bool TRANSIENT::next()
   ++steps_total_;
   ::status.review.stop();
   bool ret= _sim->_time0 < _tstop + _sim->_dtmin;
-  ret &= time1 < _time_by_user_request;
+  ret = ret &&  time1 < _time_by_user_request;
+  ret = ret &&  newtime <= _time_by_user_request;
   std::cerr.precision(17);
   std::cerr << "TRANSIENT::next time0 " << _sim->_time0 << " " << _tstop <<  "\n";
-  std::cerr << "TRANSIENT::next dtmin " << 1+_sim->_dtmin << " "  <<  "\n";
+  std::cerr << "TRANSIENT::next time0 " << _sim->_time0 << " " << _tstop <<  "\n";
   trace4("TRANSIENT::next", _sim->_time0, _tstop, _sim->_dtmin, (double) ret );
   return (ret);
 }
