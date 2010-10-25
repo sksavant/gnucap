@@ -94,6 +94,7 @@ void ELEMENT::precalc_last()
 /*--------------------------------------------------------------------------*/
 void ELEMENT::tr_begin()
 {
+  trace0(("ELEMENT::tr_begin for " + short_label()).c_str());
   _time[0] = 0.;
   _y[0].x  = 0.;
   _y[0].f0 = LINEAR;
@@ -123,7 +124,7 @@ void ELEMENT::tt_next()
 
   //assert(_time[0] == _sim->_time0);
   if (_time[0] != _sim->_time0) {itested();
-    trace1("timedelta ", _time[0] - _sim->_time0 );
+    trace1("ELEMENT::tt_next timedelta ", _time[0] - _sim->_time0 );
     // error(bDANGER, "//BUG// restore time mismatch.  last=%g, using=%g\n",
 	//  _time[0], _sim->_time0);
     trace2( ( "HACK? " + short_label() + ": ELEMENT::tr_next, time mismatch, setting back to 0 " ).c_str(),
@@ -132,6 +133,7 @@ void ELEMENT::tt_next()
     // when the last step was not printed
     // _time[0] is the non-printed time.  _sim->_time0 is the printed time.
   }else{
+    trace2(("tt_next for " + short_label()).c_str(), _time[0], _sim->_time0);
   }
 
   for (int i=OPT::_keep_time_steps-1; i>=0; --i) {
@@ -143,6 +145,7 @@ void ELEMENT::tt_next()
 /*--------------------------------------------------------------------------*/
 void ELEMENT::tr_restore()
 {
+  trace0(("ELEMENT::tr_restore for " + short_label()).c_str());
   if (_time[0] > _sim->_time0) {itested();
     trace0("shift back");
     std::cout << "* shift " << _time[0] << " > " << _sim->_time0 << "\n";
@@ -178,9 +181,12 @@ void ELEMENT::tr_restore()
 /*--------------------------------------------------------------------------*/
 void ELEMENT::dc_advance()
 {
-  trace0(("dc for " + short_label()).c_str());
+  trace2(("ELEMENT::dc_advance for " + short_label()).c_str(), _sim->_time0, _sim->_dt0);
   assert(_sim->_time0 == 0.); // DC
 
+  for (int i=OPT::_keep_time_steps-1; i>=0; --i) {
+    trace2(("ELEMENT::dc_advance " + short_label()).c_str(), i, _time[i]);
+  }
   for (int i=OPT::_keep_time_steps-1; i>=0; --i) {
     assert(_time[i] == 0.);
   }
@@ -190,6 +196,7 @@ void ELEMENT::dc_advance()
 /*--------------------------------------------------------------------------*/
 void ELEMENT::tr_advance()
 {
+  trace1("ELEMENT::tr_advance ", _sim->_time0 );
   assert(_time[0] < _sim->_time0); // moving forward
   
   for (int i=OPT::_keep_time_steps-1; i>0; --i) {
@@ -204,15 +211,15 @@ void ELEMENT::tr_advance()
 /*--------------------------------------------------------------------------*/
 void ELEMENT::tr_regress()
 {
-    assert(_time[0] >= _sim->_time0); // moving backwards
-      assert(_time[1] <= _sim->_time0); // but not too far backwards
+  assert(_time[0] >= _sim->_time0); // moving backwards
+  assert(_time[1] <= _sim->_time0); // but not too far backwards
 
-        for (int i=OPT::_keep_time_steps-1; i>0; --i) {
-              assert(_time[i] < _time[i-1] || _time[i] == 0.);
-                }
-          _time[0] = _sim->_time0;
+  for (int i=OPT::_keep_time_steps-1; i>0; --i) {
+    assert(_time[i] < _time[i-1] || _time[i] == 0.);
+  }
+  _time[0] = _sim->_time0;
 
-            _dt = _time[0] - _time[1];
+  _dt = _time[0] - _time[1];
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

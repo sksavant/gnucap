@@ -151,8 +151,9 @@ void SIM::finish_building_evalq(void)
 /*--------------------------------------------------------------------------*/
 void SIM::advance_time(void)
 {
-  ::status.advance.start();
   static double last_iter_time;
+  trace2("SIM::advance_time()", _sim->_time0, last_iter_time);
+  ::status.advance.start();
   if (_sim->_time0 > 0) {
     if (_sim->_time0 > last_iter_time) {	/* moving forward */
       notstd::copy_n(_sim->_v0, _sim->_total_nodes+1, _sim->_vt1);

@@ -181,13 +181,14 @@ struct INTERFACE SIM_DATA {
   bool uic_now() {return _uic && analysis_is_static() && _time0==0.;}
 
   private:
-  int _order_tt;
+  int _tt_order;
   int last_order_tt;
 
   public:
   int _stepno; // number of transient steps accepted.
   void update_tt_order();
   unsigned int get_tt_order() const;
+  void force_tt_order(unsigned int i){ untested(); _tt_order = i;}
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

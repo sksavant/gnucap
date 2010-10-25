@@ -30,6 +30,7 @@
 #include "e_adplist.h"
 #include "u_adp.h"
 #include "u_time_pair.h"
+#include "omp.h"
 /*--------------------------------------------------------------------------*/
 ADP_NODE_LIST::ADP_NODE_LIST()
   :_parent(NULL),
@@ -100,6 +101,7 @@ ADP_NODE_LIST& ADP_NODE_LIST::erase_all()
 /* apply things to all cards */
 ADP_NODE_LIST& ADP_NODE_LIST::do_forall( void (ADP_NODE::*thing)( )  )
 {
+// #pragma omp parallel for
   for (iterator ci=begin(); ci!=end(); ++ci) {
     ((*ci)->*thing)( );
   }

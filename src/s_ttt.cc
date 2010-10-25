@@ -38,6 +38,7 @@
 #include "s_tr.h"
 
 
+
 // #include "globals.h" ??
 #include "e_adplist.h"
 /*--------------------------------------------------------------------------*/
@@ -93,6 +94,7 @@ class TTT : public TRANSIENT {
     void	head_tt(double,double,const std::string&);
     void	set_step_tt_cause(STEP_CAUSE);
     void	first();
+    void  first_after_interruption();
     void	fohead(const PROBE&);
     void	store_results(double); // override virtual
     void	store_results_tt(double); 
@@ -189,22 +191,25 @@ void TTT::rescale_behaviour()
 void TTT::first()
 {
   trace0("TTT::first()");
+  _sim->force_tt_order(0);
   _sim->zero_voltages();
   ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_clear ); 
 
+  _Time1 = 0;
+  _sim->_dT0 = 0;
+  _sim->_dT1 = 0;
+  _sim->_dT2 = 0;
+  _dT_by_adp = _tstop;
+
   if (_sim->_loadq.size()){
     untested();
-    trace0("loadq nonempty -- clearing");
+    trace0("TTT::first loadq nonempty -- clearing");
     _sim->_loadq.clear() ; // why?
   }
 
-  {
-    _Time1 = 0;
-    _sim->_dT0 = 0;
-    _sim->_dT1 = 0;
-    _sim->_dT2 = 0;
-    _dT_by_adp = _tstop;
-  }
+  // tell gnuplot that we start from the beginning.
+  _out << "\n";
+
 
   assert(_sim->get_tt_order() == 0 );
 
@@ -233,8 +238,9 @@ void TTT::first()
   CARD_LIST::card_list.tr_begin();
 
 // dashier nach TTT::first()?
-
   TTT::sweep();
+  trace0("TTT::first sweep done");
+
   CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
 
   // assert (_sim->_loadq.empty());
@@ -246,17 +252,16 @@ void TTT::first()
   //ADP_LIST::adp_list.do_forall( &ADP::tt_accept_first );
   //CARD_LIST::card_list.do_forall( &CARD::tt_accept ); //?
 
-  assert(_sim->_Time0 >= 0 );
 
   _sim->set_command_tt();
 
+  assert(_sim->_Time0 >= 0 );
   assert( _sim->_mode  == s_TTT );
   _accepted_tt = true;
 
   trace0("TTT::first accepting first");
 
   // accept_tt();
-  _sim->update_tt_order();
   CARD_LIST::card_list.do_forall( &CARD::tt_accept ); //?
 
   // FIXME : what's this?
@@ -270,10 +275,63 @@ void TTT::first()
 
   outdata_tt(_sim->_Time0); // first.
 
-  tt_advance();
-  // _sim->_tt_iter++;
-  CARD_LIST::card_list.do_forall( &CARD::tt_next );
+  _sim->update_tt_order();
+/// END accept
+
+
+  /* next
+   * tt_advance();
+   *   CARD_LIST::card_list.do_forall( &CARD::tt_next );
+   */
 } //first
+/*--------------------------------------------------------------------------*/
+// why not directly run into loop?
+void TTT::first_after_interruption(){
+    // _sim->update_tt_order();
+    _sim->force_tt_order(0); assert(_sim->get_tt_order() == 0 );
+    time1 = 0.;
+    _sim->_dT0=_sim->_last_time;
+
+    trace1("TTT::sweep_tt inside TT", _sim->_last_time);
+
+    // huh?
+    CARD_LIST::card_list.do_forall( &CARD::stress_apply );
+
+    outdata_b4(_sim->_Time0); // first output tt data
+
+    CARD_LIST::card_list.do_forall( &CARD::tt_next );
+
+    _inside_tt=true;
+    TTT::sweep();
+    CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
+    _inside_tt=false;
+
+
+    set_step_tt_cause(scUSER);
+    ++::status.hidden_steps;
+    ::status.review.stop();
+
+    _accepted_tt = true;
+
+    // accept_tt();
+    CARD_LIST::card_list.do_forall( &CARD::tt_accept ); //?
+
+
+    ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_accept ); 
+
+    // FIXME : what's this?
+    ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_commit_first ); // sort of tt_prepare?
+    ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_accept ); 
+
+    CARD_LIST::card_list.do_forall( &CARD::tt_accept );
+
+    outdata_tt(_sim->_Time0); // first.
+
+    /* next
+     *    tt_advance();
+     */
+    //hack?
+}
 /*--------------------------------------------------------------------------*/
 // do a 2nd tt to check aging impact.
 // ie. take some norm of node-voltage difference over time.
@@ -281,10 +339,6 @@ void TTT::first()
 void TTT::sweep_tt()
 {
 // FIXME  if no first then recycle data
-  _sim->_dT0 = 0;
-  _sim->_dT1 = 0;
-  _sim->_dT2 = 0;
-  _sim->update_tt_order();
   _sim->_tt_iter = 0;
   _sim->_tt_done = 0;
 
@@ -300,45 +354,14 @@ void TTT::sweep_tt()
      outdata_b4(_sim->_Time0); // first output tt data
      return;
   }else if ( !_tt_cont  ){
+    trace0("TTT::sweep_tt from the beginning...");
+    _sim->_dT0 = 0;
+    _sim->_dT1 = 0;
+    _sim->_dT2 = 0;
     first();
     trace0("TTT::sweep_tt first done");
-  } else {
-    time1 = 0.;
-    CARD_LIST::card_list.do_forall( &CARD::stress_apply );
-    outdata_b4(_sim->_Time0); // first output tt data
-    trace0("TTT:: resetting ADP_NODES");
-    _inside_tt=true;
-    TTT::sweep();
-    _inside_tt=false;
-
-    CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
-
-    set_step_tt_cause(scUSER);
-    ++::status.hidden_steps;
-    ::status.review.stop();
-
-    _accepted_tt = true;
-
-    // accept_tt();
-    _sim->update_tt_order();
-    CARD_LIST::card_list.do_forall( &CARD::tt_accept ); //?
-
-    // FIXME : what's this?
-    ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_commit_first ); // sort of tt_prepare?
-    ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_accept ); 
-
-    ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_commit_first ); // sort of tt_prepare?
-    ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_accept ); 
-
-    CARD_LIST::card_list.do_forall( &CARD::tt_accept );
-
-    outdata_tt(_sim->_Time0); // first.
-
-
-    tt_advance();
-    // _sim->_tt_iter++;
-    CARD_LIST::card_list.do_forall( &CARD::tt_next );
-
+  } else { // strange way of doing first next loop
+    first_after_interruption();
   }
 
   // assert (_sim->_loadq.empty());
@@ -366,8 +389,6 @@ void TTT::sweep_tt()
     TTT::sweep();
     _inside_tt=false;
 
-    // breaks C1: _sim->zero_some_voltages();
-    //
     if(!_accepted) 
     {
       std::cerr << "TTT::sweep: sweep complains\n";
@@ -383,6 +404,7 @@ void TTT::sweep_tt()
       // step_cause_tt = trfail;
       _sim->_tt_rejects++;
       _sim->_tt_rejects_total++;
+      trace0("TTT::sweep calling tt_next on CL");
       CARD_LIST::card_list.do_forall( &CARD::tt_next );
       if(OPT::printrejected){
         _out <<"*";
@@ -392,14 +414,11 @@ void TTT::sweep_tt()
       }
       continue;  
     } else 
-    _out << "*\n";
-
-
+      _out << "*\n";
 
     trace3( "TTT::sweep_tt sweep at " , _sim->_Time0, _sim->_dT0, _sim->_dT1 );
     //      ADP_LIST::adp_list.do_forall( &ADP::tt_commit );
     //   ADP_REWIEW
-    _sim->update_tt_order();
     accept_tt(); 
     assert( _sim->_mode  == s_TTT );
     // 
@@ -407,19 +426,18 @@ void TTT::sweep_tt()
     print_stored_results_tt(_sim->_Time0);
     outdata_tt(_sim->_Time0); // first output tt data
 
-    tt_advance();
 
-    // reset times to 0, keep circuit state (similar tr_restore)
-    CARD_LIST::card_list.do_forall( &CARD::tt_next );
-
+    /* in next now
+     *  tt_advance();
+     *   CARD_LIST::card_list.do_forall( &CARD::tt_next );
+     */
   }
 
 }
 /*--------------------------------------------------------------------------*/
 void TTT::sweep() // tr sweep wrapper.
 {
-  trace0("TTT::sweep()");
-  _sim->update_tt_order();
+  trace1("TTT::sweep() ", _inside_tt);
 
   CKT_BASE::tt_behaviour_rel = 0; // *= new_dT/(time0-time1);
   CKT_BASE::tt_behaviour_del = 0; //  *= new_dT/(time0-time1);
@@ -466,21 +484,22 @@ void TTT::accept_tt()
   ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_accept ); // schiebt tt_valuei weiter.
   ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_accept ); // schiebt tt_valuei weiter.
   _sim->_tt_accepted++;
+
 }
 /*--------------------------------------------------------------------------*/
-void TTT::tt_advance()
+void TTT::tt_advance() // FIXME: merge advance & accept ??
 {
   trace2("TTT::tt_advance", _sim->_Time0, _Time1);
   _sim->_tt_iter++;
   _sim->_tt_rejects=0;
-
   _Time1 = _sim->_Time0;
+
+
   _sim->_dT3 = _sim->_dT2;
   _sim->_dT2 = _sim->_dT1;
   _sim->_dT1 = _sim->_dT0;
   _sim->_dT0 = 0;
   ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_advance );
-
 }
 /*--------------------------------------------------------------------------*/
 bool TTT::review_tt()
@@ -523,6 +542,7 @@ bool TTT::review_tt()
 // copied from ttf
 void TTT::do_it(CS& Cmd, CARD_LIST* Scope)
 {
+  trace0("TTT::do_it() ");
   _scope = Scope;
   _sim->set_command_tt();
 
@@ -541,6 +561,12 @@ void TTT::do_it(CS& Cmd, CARD_LIST* Scope)
     _sim->_lu.set_min_pivot(OPT::pivtol);
 
     setup(Cmd);
+  }catch (Exception& e) {itested();
+    error(bDANGER, e.message() + '\n');
+    return;
+  }
+
+  try {
     allocate();
 
     ::status.set_up.stop();
@@ -549,14 +575,16 @@ void TTT::do_it(CS& Cmd, CARD_LIST* Scope)
       case rBATCH:	untested();
       case rINTERACTIVE:  itested();
       case rSCRIPT:  sweep_tt(); //out_tt();
-                          break;
+                     break;
       case rPRESET:	untested(); /*nothing*/ break;
     }
-  }catch (Exception& e) {itested();
+
+    unallocate();
+
+  } catch (Exception& e) {itested();
     error(bDANGER, e.message() + '\n');
   }
 
-  unallocate();
   _sim->unalloc_vectors();
   _sim->_lu.unallocate();
   _sim->_aa.unallocate();
@@ -570,7 +598,7 @@ void TTT::allocate()
 {
   int probes = printlist().size();
   assert(!_tt_store);
-  trace1("allocating probes ", probes);
+  trace1("TTT::allocate allocating probes ", probes);
   _tt_store = new double[probes];
 }
 /*--------------------------------------------------------------------------*/
@@ -580,10 +608,11 @@ void TTT::unallocate()
 {
   // int probes = printlist().size();
   assert (_tt_store);
-  trace2("freeing _tt_store", printlist().size(), storelist().size());
+  trace2("TTT::unallocate freeing _tt_store", printlist().size(), storelist().size());
+  incomplete(); //unallocate at deconstruction...
+                // make consecutive sims faster.
   delete[] _tt_store;
   _tt_store = NULL;
-
 
   PROBE_LISTS::store[s_TRAN].clear();
 
@@ -662,6 +691,7 @@ void TTT::setup(CS& Cmd)
       _Tstep  = arg3;
       _Tstop  = arg4;
       _Tstart = 0; //HACK?
+      assert((double)_tstep!=0);
 
       trace4("TTT::setup ", _tstep, _tstop , _Tstep , _Tstop);
 
@@ -842,57 +872,60 @@ double behaviour_timestep()
 /*--------------------------------------------------------------------------*/
 bool TTT::next()
 {
-  double _new_dT;
-  double _new_Time0;
+  _Time1 = _sim->_Time0;      
+  double new_dT;
+  double new_Time0;
+
   trace3( "TTT::next()", _sim->_Time0 ,  _Time1, _sim->tt_iteration_number() );
 
   assert(_sim->_Time0 >=0);
 
   if( !_accepted_tt ){
-    _new_dT = 0.9 * ( _sim->_dT0 - _tstop ) + _tstop; // back at least this much.
+    new_dT = 0.9 * ( _sim->_dT0 - _tstop ) + _tstop; // back at least this much.
     if( _time_by_beh < _sim->_Time0 ){
       assert(_time_by_beh >= 0);
-      _new_dT= fmin(_new_dT,_dT_by_beh);
+      new_dT= fmin(new_dT,_dT_by_beh);
     }
     if ( _time_by_adp < _sim->_Time0 ){
       assert(_time_by_adp >= 0);
-      _new_dT = fmin(_new_dT, _dT_by_adp);
+      new_dT = fmin(new_dT, _dT_by_adp);
     } 
 
-    assert(_new_dT == _new_dT );
+    assert(new_dT == new_dT );
     trace1( "TTT::next after reject: ", _Time1 );
 //    _Tstep = fmin( _dT_by_adp, _dT_by_beh );
-    std::cout << "* retry " << _new_dT << " ( " << _dT_by_adp << " )\n";
+    std::cout << "* retry " << new_dT << " ( " << _dT_by_adp << " )\n";
    
-  } else { // accepted step. calculating _new_dT
+  } else { // accepted step. calculating new_dT
     assert ( _Time1 == _sim->_Time0 ); // advance ...
-    _new_dT = min( (double) _dT_by_adp, (_sim->_dT1 + _Tstep)/2 ) ; 
-    _new_dT = min( (double) _new_dT, _sim->_dT1 * 2) ; 
-    _new_dT = max( _new_dT,  (double) _tstop ) ; // fmin( get_new_dT(), _Tstep );
+    new_dT = min( (double) _dT_by_adp, (_sim->_dT1 + _Tstep)/2 ) ; 
+    new_dT = min( (double) new_dT, _sim->_dT1 * 2) ; 
+    new_dT = max( new_dT,  (double) _tstop ) ; // fmin( get_new_dT(), _Tstep );
 
-    // _out << "* newstep " << _new_dT << "\n";
-    _out << "* newstep " << _new_dT << " ( " << _dT_by_adp << " " << _sim->_dT1   << " )\n";
+    // _out << "* newstep " << new_dT << "\n";
+    _out << "* newstep " << new_dT << " ( " << _dT_by_adp << " " << _sim->_dT1   << " )\n";
 
 
    // if (_sim->get_tt_order() < 0){
    //   trace1( "TTT order hack ",  _sim->get_tt_order());
-   //   _new_dT = ( _tstop );
+   //   new_dT = ( _tstop );
    // } else {
 
    // }
 
 
-    if(_new_dT < _dTmin){
-      error(bWARNING, "step too small %e %e adp %e\n", _new_dT, _dTmin, _dT_by_adp );
+    if(new_dT < _dTmin){
+      error(bWARNING, "step too small %e %e adp %e\n", new_dT, _dTmin, _dT_by_adp );
       return false;
     }
 
     // last step handler.
-    _new_dT = min(_new_dT, _Tstop - _Time1 - _tstop );
-    if( _sim->_dT1 &&  _new_dT > 4*_sim->_dT1 ) _new_dT = 4*_sim->_dT1;
+    new_dT = min(new_dT, _Tstop - _Time1 - _tstop );
+    if (_sim->_dT1 > 0)
+    assert( new_dT < 4 * _sim->_dT1 );
 
 
-    trace3( "TTT::next Time1: ", _Time1 , _new_dT, _dTmin );
+    trace3( "TTT::next Time1: ", _Time1 , new_dT, _dTmin );
     std::cerr << "TTT::next @" << _sim->_Time0 << " step " <<_Tstep << " not too small: " << _dTmin <<"\n";
     ::status.review.start();
     ++::status.hidden_steps_tt;
@@ -901,29 +934,41 @@ bool TTT::next()
 
   }
 
-  _new_dT = max (_new_dT, (double) _tstop );
-  trace1("TTT::next ", _new_dT);
-  _new_Time0 = _Time1 + _new_dT;
+  new_dT = max (new_dT, (double) _tstop );
+  trace1("TTT::next ", new_dT);
+  new_Time0 = _Time1 + new_dT;
 
 
-  bool another_step=( ( _new_dT >= _dTmin  )
+  bool another_step=( ( new_dT >= _dTmin  )
                  && ( _Tstop - _Time1 >= _dTmin ) 
-                 && (  _new_Time0 <= _Tstop - _tstop   ));
+                 && (  new_Time0 <= _Tstop - _tstop   ));
 
   if(!another_step) {
-    trace6( "TTT::next no next @ Time0: " , _sim->_Time0,  _sim->_dT0, _new_dT, _dTmin, _tstop, _new_Time0 );
-    trace5( "TTT::next no next @ Time0: " , _Time1, _Tstop,  _new_dT >= _dTmin ,  _Tstop - _Time1 >= _dTmin ,  _new_Time0 + _tstop <= _Tstop );
+    trace6( "TTT::next no next @ Time0: " , _sim->_Time0,  _sim->_dT0, new_dT, _dTmin, _tstop, new_Time0 );
+    trace5( "TTT::next no next @ Time0: " ,\
+        _Time1, _Tstop,  new_dT >= _dTmin ,  _Tstop - _Time1 >= _dTmin ,  new_Time0 + _tstop <= _Tstop );
     _sim->_last_Time = _Time1 + _tstop; // FIXME
       
     return (false);
   } else {
-    trace3("TTT::next another step ", _new_dT, _Time1, _Tstop);
+    trace3("TTT::next another step ", new_dT, _Time1, _Tstop);
   }
 
-  // _new_dT = max(0.0,_new_dT);
 
-  _sim->_dT0 = _new_dT;
-  _sim->_Time0 = _new_Time0;
+  if (another_step && _accepted_tt){
+      //changes all _dTi. sets Time1=_Time0
+      tt_advance();
+      trace0("TTT::sweep calling tt_next on CL");
+      CARD_LIST::card_list.do_forall( &CARD::tt_next );
+  }
+
+
+
+  // new_dT = max(0.0,new_dT);
+
+  _sim->_dT0 = new_dT;
+  _sim->_Time0 = new_Time0;
+  _sim->update_tt_order();
 
   _sim->restore_voltages();
   ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_commit );
@@ -936,7 +981,6 @@ bool TTT::next()
   assert( _sim->_Time0 >= _sim->_dT0 );
   assert( _sim->_Time0 > 0 );
 
-  _sim->update_tt_order();
   ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_commit );
   CARD_LIST::card_list.do_forall( &CARD::tt_commit ); // ?
 
@@ -1002,11 +1046,8 @@ void TTT::head_tt(double start, double stop, const std::string& col1)
 
   trace3("TTT::tt_head probe TRAN", printlist().size(), storelist().size(), oldstore.size());
 
-
   _sim->_waves = new WAVE[storelist().size()];
   _sim->_mode=oldmode;
-
-
 
 }
 /*--------------------------------------------------------------------------*/
@@ -1168,7 +1209,7 @@ void TTT::print_stored_results_tt(double x)
 /*--------------------------------------------------------------------------*/
 void TTT::store_results_tt(double x)
 {
-  trace0("TTT::store_results_tt()");
+ // trace0("TTT::store_results_tt()");
   if ( printlist().size() ==0)
   {
     return;
@@ -1239,7 +1280,7 @@ std::string TTT::status()const
  */
 void TTT::store_results(double x)
 {
-  trace0("TTT::store_results()");
+  // trace0("TTT::store_results()");
   _sim->_mode=s_TRAN;
   int ii = 0;
   for (PROBELIST::const_iterator

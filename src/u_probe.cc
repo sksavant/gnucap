@@ -142,7 +142,9 @@ double PROBE::probe_node(void)const
     return CKT_BASE::tr_behaviour_rel;
   }else if (Umatch(_what, "rejects ") && CKT_BASE::_sim->_mode == s_TTT) {
     return CKT_BASE::_sim->_tt_rejects;
-  }else if (Umatch(_what, "dt ") && CKT_BASE::_sim->_mode == s_TTT) {
+  }else if (Umatch(_what, "dT ") && CKT_BASE::_sim->_mode == s_TTT) {
+    return CKT_BASE::_sim->_dT0;
+  }else if (Umatch(_what, "dtt ")) {untested();
     return CKT_BASE::_sim->_dT0;
   }else if (Umatch(_what, "bypass ")) {untested();
     return OPT::bypass + 10*CKT_BASE::_sim->_bypass_ok;
@@ -156,6 +158,8 @@ double PROBE::probe_node(void)const
     return ::status.hidden_steps;
   }else if (Umatch(_what, "temp{erature} ")) {untested();
     return CKT_BASE::_sim->_temp_c;
+  }else if (Umatch(_what, "ttime ")) {untested();
+    return CKT_BASE::_sim->_Time0;
   }else if (Umatch(_what, "time ")) {untested();
     return CKT_BASE::_sim->_time0;
   }else{

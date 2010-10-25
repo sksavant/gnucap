@@ -27,7 +27,7 @@ class ADP_NODE {
     virtual void init();
     std::string short_label() const  {return name;}
     std::string label() const  {return name;} // fixme
-    int order() const{return _order;} // order used for extrapolation.
+    int order() const; 
     const COMPONENT* c(){return _c;}
   protected:
     int dbg;
@@ -35,8 +35,6 @@ class ADP_NODE {
     // history needs cleanup.
     hp_float_t _delta_expect;
     hp_float_t tr_value;
-    hp_float_t tr_value0;
-    hp_float_t tr_value1;
     hp_float_t tr_value2, tr_dd12;
     hp_float_t tr_value3, tr_dd23, tr_dd123;
     hp_float_t tt_expect;
@@ -126,7 +124,7 @@ class ADP_NODE {
     }
     hp_float_t get0()const { assert( _val_bef[0] == _val_bef[0] ); return _val_bef[0]; }
     hp_float_t get1()const { assert( _val_bef[1] == _val_bef[1] ); return _val_bef[1]; }
-    hp_float_t tt_get_sum()const  {return _val_bef[0] + tr_value0; }
+    hp_float_t tt_get_sum()const  {return _val_bef[0] + _delta[0]; }
     void tr_add(double x ){tr_value += x;}
     void tr_set(double x ){tr_value = x;}
     double tt_review( );
@@ -137,7 +135,7 @@ class ADP_NODE {
     }
     hp_float_t tr_get( ) const { return ( tr_value );}
     hp_float_t get_tr( ) const { return ( tr_value );}
-    double tr_get_old(){ return (tr_value1);}
+    double tr_get_old(){ return (_delta[1]);}
     double tr_abs_err()const{ return _abs_tr_err; }
     double tr_rel_err()const{ return _rel_tr_err; }
     double tt_abs_err()const{ return _abs_tt_err; }
@@ -152,7 +150,7 @@ class ADP_NODE {
     void tt_advance();
 
     void tt_accept( );
-    void tt_clear( ) { tr_value = tr_value0 = tr_value1 = tr_value2 = 0;
+    void tt_clear( ) { tr_value = _delta[0] = _delta[1] = tr_value2 = 0;
                        tt_value = _val_bef[0] = _val_bef[1] = _val_bef[2] = 0;
     }
 

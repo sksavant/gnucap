@@ -14,7 +14,7 @@ LW=2
 LOGSCALE=""
 #LOGSCALE="set logscale x;"
 
-all: rcd_tw.1.2.ps \
+alltest: rcd_tw.1.2.ps \
 	  rcd_tr.1.2.ps
 
 %.ckt: %.sch models.mod

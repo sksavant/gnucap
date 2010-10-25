@@ -2,7 +2,7 @@
 ##
 ## Top level automake file for gnucap
 
-SUBDIRS=	doc examples modelgen src non-GPL
+SUBDIRS=	doc examples modelgen src non-GPL tests
 
 EXTRA_DIST=	autogen.sh Makefile.template configure.old
 

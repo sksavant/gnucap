@@ -54,15 +54,16 @@ namespace TR {
 /*--------------------------------------------------------------------------*/
 void TRANSIENT::sweep()
 {
+  trace4("TRANSIENT::sweep()", _tstart, _tstop, _cont, _inside_tt );
   _sim->_phase = p_INIT_DC;
   head(_tstart, _tstop, "Time");
   _sim->_bypass_ok = false;
   _sim->set_inc_mode_bad();
  
   if ( _inside_tt ) {
-    untested1( "continuing tt", _sim->_time0 );
+    trace0("TRANSIENT::sweep _inside_tt");
+
   } else if ( _cont ) {  // use the data from last time
-    trace1( "restoring tt", _sim->_time0 );
     _sim->_phase = p_RESTORE;
     _sim->restore_voltages();
     CARD_LIST::card_list.tr_restore();
@@ -73,11 +74,12 @@ void TRANSIENT::sweep()
   }
   
   first();
+  trace0( "TRANSIENT::sweep first done" );
   _sim->_genout = gen();
   
   // assert (_sim->_loadq.empty());
   if (_sim->uic_now() || _inside_tt ) {
-    trace0("uic_now solve");
+    trace2("TRANSIENT::sweep uic_now solve", time1, _sim->_time0);
     advance_time();
     if (!_inside_tt) {
       std::cout << "TRANSIENT::sweep zeroing voltages\n";
@@ -236,6 +238,7 @@ int TRANSIENT::step_cause()const
 /*--------------------------------------------------------------------------*/
 void TRANSIENT::first()
 {
+  trace0( "TRANSIENT::first()" );
   /* usually, _sim->_time0, time1 == 0, from setup */
   assert(_sim->_time0 == time1);
   assert(_sim->_time0 <= _tstart);

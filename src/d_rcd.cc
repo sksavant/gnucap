@@ -449,22 +449,24 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
   COMMON_COMPONENT::precalc_last(par_scope);
   COMMON_BUILT_IN_RCD* c = this;
   const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(model());
-    // final adjust: code_pre
-    // final adjust: override
-    // final adjust: raw
-    e_val(&(this->perim), 0.0, par_scope);
-    e_val(&(this->weight), 1.0, par_scope);
-    e_val(&(this->Recommon), m->Re, par_scope);
-    e_val(&(this->Rccommon0), m->Rc, par_scope);
-    e_val(&(this->Rccommon1), m->Re, par_scope);
-    e_val(&(this->Uref), m->uref, par_scope);
-    e_val(&(this->mu), 1.0, par_scope);
-    e_val(&(this->lambda), 1.0, par_scope);
-    e_val(&(this->dummy_capture), false, par_scope);
-    e_val(&(this->dummy_emit), false, par_scope);
-    // final adjust: mid
-    // final adjust: calculated
-    cj_adjusted = 19.0;
+  // final adjust: code_pre
+  // final adjust: override
+  // final adjust: raw
+  e_val(&(this->perim), 0.0, par_scope);
+  e_val(&(this->weight), 1.0, par_scope);
+  e_val(&(this->Recommon), m->Re, par_scope);
+  e_val(&(this->Rccommon0), m->Rc, par_scope);
+  e_val(&(this->Rccommon1), m->Re, par_scope);
+  e_val(&(this->Uref), m->uref, par_scope);
+  e_val(&(this->mu), 1.0, par_scope);
+  e_val(&(this->lambda), 1.0, par_scope);
+  e_val(&(this->dummy_capture), false, par_scope);
+  e_val(&(this->dummy_emit), false, par_scope);
+  // final adjust: mid
+  // final adjust: calculated
+  cj_adjusted = 19.0;
+
+  if(Uref == NA) Uref=0.0;
 
   // size dependent
   //delete _sdp;
@@ -476,7 +478,7 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
   // subcircuit commons, recursive
   assert(c == this);
 
-  if (Uref!=0.0){
+  if (Uref!=0.0 ){
     trace3("COMMON_BUILT_IN_RCD::precalc_last", Uref, Recommon, Rccommon0);
     long double ueff = ( exp ( lambda * Uref ) - 1 );
 

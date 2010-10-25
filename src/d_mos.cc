@@ -1621,13 +1621,14 @@ void DEV_BUILT_IN_MOS::tr_save_amps(int trstep)
   int j = 3;
   int k = j;
 
+  incomplete();
 
   hp_float_t tramps0= tr_probe_num("id");
-  trace2(("DEV_BUILT_IN_MOS::tr_save_amps" + long_label()).c_str(),trstep, tramps0);
+  trace2(("DEV_BUILT_IN_MOS::tr_save_amps " + long_label()).c_str(),trstep, tramps0);
   hp_float_t tramps1=  ((ELEMENT*)_Cgb)->tr_amps() 
                      +((_Cgd) ? ((ELEMENT*)_Cgd)->tr_amps() : 0 )
                      +((_Cgs) ? ((ELEMENT*)_Cgs)->tr_amps() : 0 )                   ;  
-  trace2(("DEV_BUILT_IN_MOS::tr_save_amps" + long_label()).c_str(),trstep, tramps1);
+  trace2(("DEV_BUILT_IN_MOS::tr_save_amps " + long_label()).c_str(),trstep, tramps1);
 
   // bloeder bug
   hp_float_t tramps2 = 0;
@@ -1676,9 +1677,11 @@ void DEV_BUILT_IN_MOS::tr_save_amps(int trstep)
     _tr_amps_scale_max =  fmax( _tr_amps_diff_max, fabs(diff2/sum2) ) ;
     _tr_amps_scale_max =  fmax( _tr_amps_diff_max, fabs(diff3/sum3) ) ;
   }
-  _amps_new[ trstep*k+0] = tramps0;
-  _amps_new[ trstep*k+1] = tramps1;
-  _amps_new[ trstep*k+2] = tramps2;
+
+
+ // _amps_new[ trstep*k+0] = tramps0;
+ // _amps_new[ trstep*k+1] = tramps1;
+ // _amps_new[ trstep*k+2] = tramps2;
 
   tr_behaviour_del = _tr_amps_diff_max;
   tr_behaviour_rel = _tr_amps_scale_max;

@@ -1,3 +1,4 @@
 - history lines. not words.
 - .for as .sweep replacement. nesting!
 - (more) tests
+- OPT:: doesnt read from params

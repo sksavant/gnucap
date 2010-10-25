@@ -272,13 +272,14 @@ void SIM_DATA::update_tt_order()
   if(_dT0 == 0 ) new_order=0; // ?
   if( OPT::adporder < new_order ) new_order = OPT::adporder;
 
-  if (_order_tt != new_order ) {
-	  _order_tt=min(new_order, _order_tt+1);
-	  trace3("SIM_DATA::update_tt_order ", tt_iteration_number(),  new_order, _order_tt );
-
+  if (_tt_order != new_order ) {
+	  _tt_order=min(new_order, _tt_order+1);
+	  trace3("SIM_DATA::update_tt_order ", tt_iteration_number(),  new_order, _tt_order );
+  } else {
+	  trace2("SIM_DATA::update_tt_order unchanged.", _tt_order, _dT0);
   }
 }
 /*--------------------------------------------------------------------------*/
-unsigned int SIM_DATA::get_tt_order() const {return _order_tt;}
+unsigned int SIM_DATA::get_tt_order() const {return _tt_order;}
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
