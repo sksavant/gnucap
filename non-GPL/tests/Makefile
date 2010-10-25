@@ -2,7 +2,7 @@
 NTESTS=bti_sweep_tw.1.3.ps \
        bti_single_tw.1.3.ps \
        bti_sweep_tol.1.3.ps \
-		 rcd_tw.1.3.ps \
+		 rcd_tw.1.2.ps \
 		 rcd_cons_tw.1.3.ps
 
 

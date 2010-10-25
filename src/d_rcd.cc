@@ -861,7 +861,7 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
   assert(s);
 
   if (Umatch(x, "region ")) {
-    return  static_cast<double>(_region);
+    return  static_cast<double>(region());
   }else if (Umatch(x, "tra ")) {
     return  ( _Ccgfill->tr_abs_err() );
   }else if (Umatch(x, "trr ")) {
@@ -954,6 +954,8 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
     return  _Ccgfill->order();
   }else if (Umatch(x, "Rc ")) {
     return  c->_Rc0;
+  }else if (Umatch(x, "region ")) {
+    return  ( m->tt_region( this ) );
   }else if (Umatch(x, "uref ")) {
     return  ( c->Uref );
   }else if (Umatch(x, "tc ")) {
@@ -987,6 +989,26 @@ double ADP_BUILT_IN_RCD::tr_probe_num(const std::string& )const
 void ADP_BUILT_IN_RCD::init(const COMPONENT* )
 {
   untested();
+}
+/*--------------------------------------------------------------------------*/
+region_t MODEL_BUILT_IN_RCD::region( const COMPONENT* )const
+{
+  return UNKNOWN;
+}
+/*--------------------------------------------------------------------------*/
+int MODEL_BUILT_IN_RCD::tt_region( const COMPONENT* )const
+{
+  return 179;
+}
+/*--------------------------------------------------------------------------*/
+region_t DEV_BUILT_IN_RCD::region(  )const
+{
+  return UNKNOWN;
+}
+/*--------------------------------------------------------------------------*/
+int  DEV_BUILT_IN_RCD::tt_region(  )const
+{
+  return 14;
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_RCD::tt_eval(COMPONENT* )const
@@ -1147,6 +1169,7 @@ double COMMON_BUILT_IN_RCD::__Re(double ) const
 { return _Re; }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+void ADP_NODE_RCD::tr_expect_1(){ return tr_expect_1_exp();}
 void ADP_NODE_RCD::tr_expect_2(){ return tr_expect_2_exp();}
 void ADP_NODE_RCD::tr_expect_3(){ return tr_expect_3_exp();}
 /*--------------------------------------------------------------------------*/

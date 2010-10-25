@@ -5,6 +5,9 @@
 #include "e_compon.h"
 #include "u_time_pair.h"
 #include "io_trace.h"
+
+typedef int adp_region_t;
+
 /*--------------------------------------------------------------------------*/
 class ADP_NODE_LIST;
 class ADP_LIST;
@@ -71,10 +74,12 @@ class ADP_NODE {
     void         tr_expect_();
     virtual void tr_expect_1(){ tr_expect_1_const(); }
     void         tr_expect_1_const();
+    void         tr_expect_1_exp();
 
     virtual void tr_expect_2(){ tr_expect_2_linear(); }
     void         tr_expect_2_exp();
     void         tr_expect_2_linear();
+    void         tr_expect_2_avg();
     void         tr_expect_2_square();
     void         tr_expect_2_something();
 
@@ -88,8 +93,9 @@ class ADP_NODE {
     double tt_integrate_( double );
 
     virtual double tt_integrate_1( double a ) { return tt_integrate_1_const( a ); }
-    double tt_integrate_1_const( double a );
-    double tt_integrate_1_linear(double);
+    double tt_integrate_1_const( double );
+    double tt_integrate_1_exp( double );
+    double tt_integrate_1_linear( double );
 
     virtual double tt_integrate_2( double a ) { return tt_integrate_2_exp( a ); }
     double tt_integrate_2_exp(double);
@@ -111,8 +117,10 @@ class ADP_NODE {
     hp_float_t _debug;
     double (ADP_NODE::*_integrator)( double );
     double (ADP_NODE::*_corrector)( );
+    int _region;
 
   public:
+    virtual int region() const;
     virtual std::string type() const {return "basic";};
 
     hp_float_t get_total() const { return( get_tr() + get_tt() );}
@@ -125,8 +133,8 @@ class ADP_NODE {
     hp_float_t get0()const { assert( _val_bef[0] == _val_bef[0] ); return _val_bef[0]; }
     hp_float_t get1()const { assert( _val_bef[1] == _val_bef[1] ); return _val_bef[1]; }
     hp_float_t tt_get_sum()const  {return _val_bef[0] + _delta[0]; }
-    void tr_add(double x ){tr_value += x;}
-    void tr_set(double x ){tr_value = x;}
+    void tr_add(double x );//{tr_value += x;}
+    void tr_set(double x ); //{tr_value = x;}
     double tt_review( );
     TIME_PAIR tt_preview( );
     void reset(); //{tr_value = 0; _val_bef[1] = 0; _val_bef[0] =0;}
@@ -178,6 +186,7 @@ class ADP_NODE_RCD : public ADP_NODE {
    ADP_NODE_RCD( const ADP_NODE& );
 
    // virtual ADP_NODE(){ return ADP_NODE_RCD(*this); };
+   void tr_expect_1();
    void tr_expect_2();
    void tr_expect_3();
    virtual std::string type() const {return "rcd";};

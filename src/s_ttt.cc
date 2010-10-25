@@ -241,7 +241,6 @@ void TTT::first()
   TTT::sweep();
   trace0("TTT::first sweep done");
 
-  CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
 
   // assert (_sim->_loadq.empty());
 
@@ -303,7 +302,6 @@ void TTT::first_after_interruption(){
 
     _inside_tt=true;
     TTT::sweep();
-    CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
     _inside_tt=false;
 
 
@@ -383,9 +381,9 @@ void TTT::sweep_tt()
     trace1( "TTT::sweep calling TRANSIENT::sweep", _cont );
     store_results_tt(_sim->_Time0); // first output tt data
 
-    ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::reset_tr );
 
     _inside_tt=true;
+    ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::reset_tr );
     TTT::sweep();
     _inside_tt=false;
 
@@ -396,7 +394,6 @@ void TTT::sweep_tt()
       continue;
     }
 
-    CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
     _accepted_tt = review_tt();
 
     if(! _accepted_tt ){
@@ -437,6 +434,12 @@ void TTT::sweep_tt()
 /*--------------------------------------------------------------------------*/
 void TTT::sweep() // tr sweep wrapper.
 {
+  ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::reset_tr );
+  _sim->_mode=s_TRAN;
+  int i= storelist().size();
+  while(i--> 0) _sim->_waves[i].initialize();
+  _sim->_mode=s_TTT;
+
   trace1("TTT::sweep() ", _inside_tt);
 
   CKT_BASE::tt_behaviour_rel = 0; // *= new_dT/(time0-time1);
@@ -453,6 +456,7 @@ void TTT::sweep() // tr sweep wrapper.
   // if (_tt_cont) _inside_tt = true;
   try{
     TRANSIENT::sweep();
+    CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
   }catch (Exception& e) {
     untested();
     std::cout << "* " << e.message() <<  "\n";
@@ -872,7 +876,6 @@ double behaviour_timestep()
 /*--------------------------------------------------------------------------*/
 bool TTT::next()
 {
-  _Time1 = _sim->_Time0;      
   double new_dT;
   double new_Time0;
 
@@ -897,6 +900,8 @@ bool TTT::next()
     std::cout << "* retry " << new_dT << " ( " << _dT_by_adp << " )\n";
    
   } else { // accepted step. calculating new_dT
+    _Time1 = _sim->_Time0;       // FIXME
+
     assert ( _Time1 == _sim->_Time0 ); // advance ...
     new_dT = min( (double) _dT_by_adp, (_sim->_dT1 + _Tstep)/2 ) ; 
     new_dT = min( (double) new_dT, _sim->_dT1 * 2) ; 
@@ -1047,6 +1052,7 @@ void TTT::head_tt(double start, double stop, const std::string& col1)
   trace3("TTT::tt_head probe TRAN", printlist().size(), storelist().size(), oldstore.size());
 
   _sim->_waves = new WAVE[storelist().size()];
+
   _sim->_mode=oldmode;
 
 }

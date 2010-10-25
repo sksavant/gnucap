@@ -85,6 +85,9 @@ public: // input parameters
   PARAMETER<bool> positive;	// only take positive stress
 public: // calculated parameters
   virtual bool use_net() const {unreachable(); return 1;}
+public: // probes
+  virtual region_t region(const COMPONENT* ) const;
+  virtual int tt_region(const COMPONENT* ) const;
 };
 /*--------------------------------------------------------------------------*/
 class MODEL_BUILT_IN_RCD_NET : public MODEL_BUILT_IN_RCD {
@@ -244,8 +247,9 @@ private: // not available even to models
   void     expand_sym();
   static int _count;
 public: // input parameters
-public: // calculated parameters
   region_t _region;	// fwd, reverse, unknown
+private: // calculated parameters
+  int _tt_region;	// fwd, reverse, unknown
 public: // netlist
   COMPONENT* _Ccg;
   COMPONENT* _Ye;
@@ -263,6 +267,8 @@ protected: // node list
     return names[i];
   }
   public:
+  virtual region_t region() const ;
+  virtual int tt_region() const ;
   virtual void tr_stress_last() const;
   private:
 };

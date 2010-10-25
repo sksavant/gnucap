@@ -1,12 +1,12 @@
 * RCDsym test
 *.option adporder=3
 
-.option printrejected yes
+*.options printrejected=yes
 
-.model my_rcdnet rcdnet RC=100 RE=100
+.model my_rcdnet rcdnet RC=1000 RE=1000
 
 * common par!
-z1  nin 0   my_rcdnet (RE=1000 , RC0=1000, RC1=1000, REDUMMY=0, RCDUMMY=0, WEIGHT=1 )
+z1 nin 0 my_rcdnet ( WEIGHT=1 )
 
 V1 nin 0 pulse ( iv=0 pv=amplitude delay=delay rise=1n fall=1n width=width period=period )
 .param amplitude=1
@@ -19,6 +19,5 @@ V1 nin 0 pulse ( iv=0 pv=amplitude delay=delay rise=1n fall=1n width=width perio
 
 
 .tw 1 10 10 1000
-
 .param amplitude=0
 .tw 4000

@@ -177,7 +177,6 @@ void MODEL_BUILT_IN_RCD_SYM::do_tr_stress( const COMPONENT* brh) const {
     re = cc->__Re(ueff);
     tau = ( rc / ( 1+rc/re )  ) ;
     uend = ueff / (re/rc +1) ;
-
   }else{
     // diode closed.
     trace3("DEV_BUILT_IN_RCD::tr_stress closed", rc, fill, ueff);
@@ -207,6 +206,15 @@ DEV_BUILT_IN_RCD_SYM::DEV_BUILT_IN_RCD_SYM()
 //  ++_count;
   // overrides
 }
+/*--------------------------------------------------------------------------*/
+int  MODEL_BUILT_IN_RCD_SYM::tt_region(const COMPONENT* brh) const{
+  const DEV_BUILT_IN_RCD* c = (const DEV_BUILT_IN_RCD*) brh;
+
+  assert(c);
+  return ( (c->_Ccgfill)->region() );
+}
+
+
 /*--------------------------------------------------------------------------*/
 ADP_NODE* MODEL_BUILT_IN_RCD_SYM::new_adp_node(const COMPONENT* c) const{
   return new ADP_NODE_RCD(c);

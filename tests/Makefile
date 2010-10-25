@@ -15,7 +15,8 @@ LOGSCALE=""
 #LOGSCALE="set logscale x;"
 
 alltest: rcd_tw.1.2.ps \
-	  rcd_tr.1.2.ps
+	  rcd_tr.1.2.ps \
+	  rcd_cons_tw.1.3.ps
 
 %.ckt: %.sch models.mod
 	gnetlist -g spice-sdb -o $@ $<
