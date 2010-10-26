@@ -1,0 +1,43 @@
+* sweep over several adbreltol
+.include non-GPL.inc
+* .DC Vinput 0 5 .01
+* .DC Vinput 1 2 .01
+
+.option adpabstol 1
+.option adpreltol 1e-3
+
+.model my_rcdmodel rcdsym re=10 rc=10
+.model my_btimodel bti_single rcd_model_name="my_rcdmodel"
+
+*==============  Begin SPICE netlist of main design ============
+.options TEMP=25
+
+.model my_rcdmodel rcdsym RC=111+1000
+.model my_btimodel bti_single ( rcd_number=1 rcd_model_name=rcd_model_string )
+.param rcd_model_string=my_rcdmodel
+
+
+B1 nin 0 my_btimodel
+V1 nin 0 pulse ( iv=0 pv=amplitude delay=3m rise=1n fall=fall width=width period=period )
+.param amplitude=1
+.param period=6m
+.param fall=1n
+.param width=2.9m
+
+.param fall=0
+.param period=0
+.param width=0
+
+.print tw amplitude vw(b1)
+
+.param ttend=100
+
+************************************
+.option adpreltol=1
+.tw 10u 6m {ttend/10} {ttend}
+
+.option adpreltol=0.01
+.tw 10u 6m {ttend/10} {ttend}
+
+.option adpreltol=0.0001
+.tw 10u 6m {ttend/10} {ttend}

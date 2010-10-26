@@ -1,0 +1,42 @@
+* sweep over several voltages
+.include non-GPL.inc
+
+*.options adpreltol 1
+*.option dupcheck
+
+*.options trtol=0.001
+*.options abstol=0.0001
+
+.option adpabstol 1
+.option adpreltol 1e-3
+
+.model my_rcdmodel rcdsym re=10 rc=10
+.model my_btimodel bti_single rcd_model_name="my_rcdmodel"
+
+.model my_btimodel bti_single ( rcd_number=1 rcd_model_name=my_rcdmodel uref=1)
+.param rcd_model_string=my_rcdmodel
+
+.model bti_matrix_model bti_matrix ( rcd_number=1 rcd_model_name=rcd_model_string rows=3 cols=3 base=10 uref=1 )
+
+
+* B1 nin 0 bti_matrix_model
+B1 nin 0 bti_matrix_model
+V1 nin 0 pulse ( iv=0 pv=amplitude delay=3m rise=1n fall=fall width=width period=period )
+.param amplitude=1
+.param period=6m
+.param fall=1n
+.param width=2.9m
+** end bti.ckt
+
+.param fall=0
+.param period=0
+.param width=0
+
+.param amplitude 0
+.print tw amplitude vw(b1)
+
+.param ttend=10
+
+.param amplitude=1
+.tw 10u 6m {1/10} {ttend}
+
