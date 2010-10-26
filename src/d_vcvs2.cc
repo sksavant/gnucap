@@ -104,7 +104,7 @@ void DEV_VCVS2::tr_iwant_matrix() // extended aus ELEMENT
 /*--------------------------------------------------------------------------*/
 void DEV_VCVS2::tr_advance()
 {
-  untested();
+  // untested();
   assert(_time[0] < _sim->_time0); // moving forward
   
   for (int i=OPT::_keep_time_steps-1; i>0; --i) {
@@ -119,7 +119,7 @@ void DEV_VCVS2::tr_advance()
 /*--------------------------------------------------------------------------*/
 void DEV_VCVS2::tr_load()
 {
-  untested();
+  // untested();
 
   tr_load_shunt();
 
@@ -155,7 +155,7 @@ void DEV_VCVS2::tr_load()
 /*--------------------------------------------------------------------------*/
 void DEV_VCVS2::tr_regress()
 {
-  untested();
+  // untested();
   assert(_time[0] >= _sim->_time0); // moving backwards
   assert(_time[1] <= _sim->_time0); // but not too far backwards
 
@@ -233,16 +233,16 @@ bool DEV_VCVS2::conv_check()const
 /*--------------------------------------------------------------------------*/
 void DEV_VCVS2::precalc_last()
 {
-  untested();
+  // untested();
   HOMEBREW::precalc_last();
   set_constant(!has_tr_eval());
-  untested();
+  // untested();
   set_converged(!has_tr_eval());
 }
 /*--------------------------------------------------------------------------*/
 void DEV_VCVS2::tr_begin()
 {
-  untested();
+  // untested();
   std::cerr << "DEV_VCVS2::tr_begin " << value() << " 1\n";
 
 //void HOMEBREW::tr_begin()
@@ -282,7 +282,7 @@ bool DEV_VCVS2::do_tr()
 void DEV_VCVS2::tt_next()
 {
   // was tut das hier?
-  untested0(("tt_next for " + short_label()).c_str());
+  // untested0(("tt_next for " + short_label()).c_str());
   if (_time[0] > _sim->_time0) {itested();
     for (int i=0  ; i<OPT::_keep_time_steps-1; ++i) {itested();
       _time[i] = _time[i+1];

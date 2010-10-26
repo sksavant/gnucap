@@ -326,7 +326,6 @@ bool CARD_LIST::tr_needs_eval()const
     }else{itested();
     }
   }
-  untested();
   return false;
 }
 /*--------------------------------------------------------------------------*/

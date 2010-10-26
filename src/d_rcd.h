@@ -143,6 +143,7 @@ public: // calculated parameters
   double _Rc0;
   double _Rc1;
   double _weight;
+  double _wcorr; // correction for uref fit.
   double _lambda;
   SDP_CARD* _sdp;
   double cj_adjusted;	// 
@@ -150,7 +151,7 @@ public: // functions...
   //double _Ueff( double ug);
   double __Re(double ueff)const;
   double __Rc(double ueff)const;
-  double __tau_upi ( double ueff ) const{
+  double __tau_up ( double ueff ) const{
     double  rr = __Rc(ueff);
     double  rh = __Re(ueff)  ;
     return float( rr / ( 1+rr/rh )  ) ;

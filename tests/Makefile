@@ -292,5 +292,8 @@ plots: inv_amp_p_1ks.2.3.ps
 	plot '$<' using 2:3" |gnuplot
 
 
+all:
+
+install:
 
 .PRECIOUS: %.out %.ckt

@@ -100,7 +100,7 @@ void Expression::leaf(CS& File)
     arglist(File);
     push_back(new Token_SYMBOL(name, ""));
   }else{itested();
-    throw Exception_CS("what's this?", File);
+    throw Exception_CS("what's this? (leaf)", File);
   }
 }
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -121,6 +121,8 @@ void Expression::factor(CS& File)
   }else{
     leaf(File);
   }
+   factortail(File); // taken from gnucap-a.
+
   if (t) {
     push_back(t);
   }else{
@@ -204,6 +206,20 @@ void Expression::exptail(CS& File)
     exptail(File);
   }else{
   }
+}
+/*--------------------------------------------------------------------------*/
+void Expression::factortail(CS& File){
+	  if (File >> "**") {
+		      factor (File);
+				    push_back(new Token_BINOP("**"));
+					     }
+	    else if (File >> "^") {
+		      factor (File);
+				    push_back(new Token_BINOP("**"));
+					     }
+	    else
+		 {
+			   }
 }
 /*--------------------------------------------------------------------------*/
 void Expression::expression(CS& File)

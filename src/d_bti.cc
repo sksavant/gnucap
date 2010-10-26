@@ -551,6 +551,7 @@ bool COMMON_BUILT_IN_BTI::operator==(const COMMON_COMPONENT& x)const
   return (p
     && lambda == p->lambda
     && number == p->number
+    && 0
     && weight == p->weight
     && _sdp == p->_sdp
     && COMMON_COMPONENT::operator==(x));

@@ -376,7 +376,7 @@ inline void ELEMENT::tr_load_extended(const node_t& no1, const node_t& no2,
 				      const node_t& ni1, const node_t& ni2,
 				      T* new_value, T* old_value)
 {
-  untested();
+  // untested();
   assert( new_value == new_value);
   T d = dampdiff(new_value, *old_value);
   if (d != 0.) {

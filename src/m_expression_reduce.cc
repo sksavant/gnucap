@@ -47,6 +47,8 @@ Token* Token_BINOP::op(const Token* T1, const Token* T2)const
     b = (T1->data())->subtract(T2->data());
   }else if (name() == "/") {
     b = (T1->data())->divide(T2->data());
+  }else if (name() == "**" || name() == "^") {
+    b = (T1->data())->powerof(T2->data());
   }else if (name() == "==") {
     b = (T1->data())->equal(T2->data());
   }else if (name() == "!=") {

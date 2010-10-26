@@ -170,10 +170,8 @@ class ADP_NODE {
   private:
     int _order; // order used for extrapolation.
     ADP_CARD* a;
-#ifdef DO_TRACE
   public:
     virtual double debug();
-#endif
 };
 /*--------------------------------------------------------------------------*/
 class BTI_ADP : public ADP_NODE {

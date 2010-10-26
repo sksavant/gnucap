@@ -565,8 +565,6 @@ void MODEL_BUILT_IN_MOS_BASE::do_tr_stress( const COMPONENT* c ) const
 
   hp_float_t btistress = 0.0; //  m->polarity * ((ELEMENT*)(d->_RCD_bti[0]))->tr_outvolts();
         
-  std::cerr << "MODEL_BUILT_IN_MOS_BASE of "<<  d->short_label()  << " btistress:"  << btistress  << " "  << 
-    exp(btistress) <<   "\n";
   a->bti_stress->tr_add( dt * exp(btistress * polarity)  );
   
   if ( use_bti() ){

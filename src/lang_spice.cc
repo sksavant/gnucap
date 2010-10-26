@@ -168,7 +168,7 @@ static int count_ports(CS& cmd, int maxnodes, int minnodes, int leave_tail, int 
   }
   if (num_nodes < start) {
     cmd.reset(spots.back());
-    throw Exception("what's this?");
+    throw Exception("what's this (spice)?");
   }else{
   }
 
@@ -366,7 +366,7 @@ void LANG_SPICE_BASE::parse_element_using_obsolete_callback(CS& cmd, COMPONENT* 
     }else{
     }
   }
-  cmd.check(bDANGER, "what's this?");
+  cmd.check(bDANGER, "what's this (obsolete callback)?");
 }
 /*--------------------------------------------------------------------------*/
 void LANG_SPICE_BASE::parse_logic_using_obsolete_callback(CS& cmd, COMPONENT* x)

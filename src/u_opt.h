@@ -101,6 +101,7 @@ public:
   static double behreltol;	    // beh allowed relative
   static double adpkorr;	    // adp correction
   static double adpabstol;	    // adp ?
+  static bool behave;	    // use behaviour...
   static bool printrejected;	    // adp ?
   static double trtol;	    // transient error overestimation factor
   static double chgtol;	    // charge tolerance

@@ -273,10 +273,10 @@ void SIM_DATA::update_tt_order()
   if( OPT::adporder < new_order ) new_order = OPT::adporder;
 
   if (_tt_order != new_order ) {
-	  _tt_order=min(new_order, _tt_order+1);
 	  trace3("SIM_DATA::update_tt_order ", tt_iteration_number(),  new_order, _tt_order );
+	  _tt_order=min(new_order, _tt_order+1);
   } else {
-	  trace2("SIM_DATA::update_tt_order unchanged.", _tt_order, _dT0);
+	  trace3("SIM_DATA::update_tt_order unchanged.", _tt_order, _dT0, _dT1);
   }
 }
 /*--------------------------------------------------------------------------*/

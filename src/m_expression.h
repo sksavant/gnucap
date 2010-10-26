@@ -128,6 +128,7 @@ private: // expression-in.cc
   void arglist(CS& File);
   void leaf(CS& File);
   void factor(CS& File);
+  void factortail(CS& File);
   void termtail(CS& File);
   void term(CS& File);
   void addexptail(CS& File);

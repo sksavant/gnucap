@@ -108,7 +108,7 @@ void TRANSIENT::sweep()
     if (printnow) {
       _sim->keep_voltages();
       outdata(_sim->_time0);
-      if( _sim->_mode  == s_TTT ){
+      if( _sim->_mode  == s_TTT && OPT::behave ){
         CARD_LIST::card_list.do_forall( &CARD::tr_save_amps, _sim->_stepno );
         trace0("TRANSIENT::saved amps");
         CKT_BASE::tt_behaviour_del +=  CKT_BASE::tr_behaviour_del;
@@ -139,8 +139,8 @@ void TRANSIENT::sweep()
 	++(_sim->_stepno);
 	_time_by_user_request += _tstep;	/* advance user time */
         _time_by_user_request = min(_time_by_user_request, (double)_tstop);
-        std::cerr.precision(19);
-        std::cerr << "TRANSIENT::next set _time_by_user_request: " << _time_by_user_request << " " << _tstop << "\n";
+        // std::cerr.precision(19);
+        //std::cerr << "TRANSIENT::next set _time_by_user_request: " << _time_by_user_request << " " << _tstop << "\n";
         trace1("TRANSIENT::sweep advance ", _time_by_user_request );
       }else{
       }
@@ -156,7 +156,7 @@ void TRANSIENT::sweep()
 			  || (step_cause() == scUSER && _sim->_time0+_sim->_dtmin > _tstart)));
       if (printnow) {
         _sim->keep_voltages();
-        if( _sim->_mode  == s_TTT )
+        if( _sim->_mode  == s_TTT && OPT::behave )
           CARD_LIST::card_list.do_forall( &CARD::tr_save_amps, (_sim->_stepno) );
         // hack
         //
@@ -317,8 +317,8 @@ bool TRANSIENT::next()
     trace2("TRANSIENT::next ", step_cause(), old_dt);
     trace3("TRANSIENT::next ", time1, _sim->_time0, reftime);
     trace1("TRANSIENT::next ", _time_by_user_request);
-    std::cerr.precision(17);
-    std::cerr << "TRANSIENT::next _time_by_user_request: " << _time_by_user_request << "\n";
+    //std::cerr.precision(17);
+    //std::cerr << "TRANSIENT::next _time_by_user_request: " << _time_by_user_request << "\n";
 
     newtime = _time_by_user_request;
     trace4("TRANSIENT::next request ", newtime, new_dt, reftime, _sim->_dtmin);
@@ -493,7 +493,7 @@ bool TRANSIENT::next()
   
   set_step_cause(new_control);
 
-  std::cerr << "TRANSIENT::next time0 " << newtime <<  "\n";
+  //  std::cerr << "TRANSIENT::next time0 " << newtime <<  "\n";
   trace1("TRANSIENT::next got it i think", newtime);
   
   /* check to be sure */
@@ -579,9 +579,9 @@ bool TRANSIENT::next()
   bool ret= _sim->_time0 < _tstop + _sim->_dtmin;
   ret = ret &&  time1 < _time_by_user_request;
   ret = ret &&  newtime <= _time_by_user_request;
-  std::cerr.precision(17);
-  std::cerr << "TRANSIENT::next time0 " << _sim->_time0 << " " << _tstop <<  "\n";
-  std::cerr << "TRANSIENT::next time0 " << _sim->_time0 << " " << _tstop <<  "\n";
+ // std::cerr.precision(17);
+ // std::cerr << "TRANSIENT::next time0 " << _sim->_time0 << " " << _tstop <<  "\n";
+ // std::cerr << "TRANSIENT::next time0 " << _sim->_time0 << " " << _tstop <<  "\n";
   trace4("TRANSIENT::next", _sim->_time0, _tstop, _sim->_dtmin, (double) ret );
   return (ret);
 }

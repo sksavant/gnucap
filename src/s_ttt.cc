@@ -258,7 +258,7 @@ void TTT::first()
   assert( _sim->_mode  == s_TTT );
   _accepted_tt = true;
 
-  trace0("TTT::first accepting first");
+  trace0("TTT::first accepting first .");
 
   // accept_tt();
   CARD_LIST::card_list.do_forall( &CARD::tt_accept ); //?
@@ -272,9 +272,8 @@ void TTT::first()
 
   CARD_LIST::card_list.do_forall( &CARD::tt_accept );
 
-  outdata_tt(_sim->_Time0); // first.
 
-  _sim->update_tt_order();
+
 /// END accept
 
 
@@ -379,6 +378,7 @@ void TTT::sweep_tt()
 
     CARD_LIST::card_list.do_forall( &CARD::stress_apply );
     trace1( "TTT::sweep calling TRANSIENT::sweep", _cont );
+
     store_results_tt(_sim->_Time0); // first output tt data
 
 
@@ -489,6 +489,8 @@ void TTT::accept_tt()
   ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_accept ); // schiebt tt_valuei weiter.
   _sim->_tt_accepted++;
 
+  _sim->update_tt_order();
+
 }
 /*--------------------------------------------------------------------------*/
 void TTT::tt_advance() // FIXME: merge advance & accept ??
@@ -503,6 +505,7 @@ void TTT::tt_advance() // FIXME: merge advance & accept ??
   _sim->_dT2 = _sim->_dT1;
   _sim->_dT1 = _sim->_dT0;
   _sim->_dT0 = 0;
+    _sim->update_tt_order();
   ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_advance );
 }
 /*--------------------------------------------------------------------------*/
@@ -900,6 +903,7 @@ bool TTT::next()
     std::cout << "* retry " << new_dT << " ( " << _dT_by_adp << " )\n";
    
   } else { // accepted step. calculating new_dT
+
     _Time1 = _sim->_Time0;       // FIXME
 
     assert ( _Time1 == _sim->_Time0 ); // advance ...
@@ -973,7 +977,9 @@ bool TTT::next()
 
   _sim->_dT0 = new_dT;
   _sim->_Time0 = new_Time0;
-  _sim->update_tt_order();
+
+  if (_accepted_tt)
+    _sim->update_tt_order();
 
   _sim->restore_voltages();
   ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_commit );
@@ -1256,6 +1262,7 @@ void TTT::print_results_tt(double x)
   }
 }
 /*--------------------------------------------------------------------------*/
+// save things during TR
 void TTT::outdata(double x)
 {
   assert( _sim->_mode  == s_TTT );

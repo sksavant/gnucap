@@ -310,6 +310,7 @@ bool COMMON_BUILT_IN_RCD::operator==(const COMMON_COMPONENT& x)const
     && Rccommon1 == p->Rccommon1
     && Uref == p->Uref
     && mu == p->mu
+    && 0
     && lambda == p->lambda
     && dummy_capture == p->dummy_capture
     && dummy_emit == p->dummy_emit
@@ -466,7 +467,13 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
   // final adjust: calculated
   cj_adjusted = 19.0;
 
-  if(Uref == NA) Uref=0.0;
+  _lambda = 1;
+  lambda=1;
+
+  if((double)Uref == NA) { 
+    Uref = 0.0;
+  }
+
 
   // size dependent
   //delete _sdp;
@@ -506,10 +513,18 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
     double teiler =  ( _rr/(_rr+_rh) );
 
     // fix weithgt to match u_end
-    _weight = double (weight *  Uref / teiler / ueff );
-    trace4("COMMON_BUILT_IN_RCD::precalc_last fitting common to uref", _Re, Uref, Uref, _Rc0);
+    //
+    _wcorr = double ( Uref / teiler / ueff );
+    _weight = weight * _wcorr;
+    _wcorr=1;
+
+    trace5("COMMON_BUILT_IN_RCD::precalc_last fitting common to uref", _Re, Uref, Uref, _Rc0, Recommon);
+    trace3("COMMON_BUILT_IN_RCD::precalc_last fitting common to uref", 
+        __tau_up(exp(lambda*Uref)-1), Recommon, __tau_up(exp(lambda*Uref)-1)- Recommon );
     assert (weight != 0);
     assert (_weight != 0);
+
+    assert(  abs( __tau_up(exp(lambda*Uref)-1) - Recommon)/Recommon <1e-2 );
 
   } else {
     _Re  = Recommon;
@@ -518,7 +533,6 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
     _weight = weight;
     assert (weight != 0);
   }
-  _lambda = 1;
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -586,8 +600,8 @@ void EVAL_BUILT_IN_RCD_Ye::tr_eval(ELEMENT* d)const
 
   if ( volts >= 0 ){
     p->_region = FORWARD;
-    d->_y[0].f1 = 1 / c->__Re(1);
-    d->_y[0].f0 = d->_y[0].x / c->__Re(1);
+    d->_y[0].f1 = 1 / c->__Re(volts);
+    d->_y[0].f0 = d->_y[0].x / c->__Re(volts);
   }else{               
     p->_region = REVERSE;
     d->_y[0].f1 = 0;
@@ -867,7 +881,7 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "trr ")) {
     return  ( _Ccgfill->tr_rel_err() );
   }else if (Umatch(x, "te ")) {
-      return  ( c->__tau_upi(exp(c->Uref)-1) );
+      return  ( c->__tau_up(exp(c->Uref)-1) );
   }else if (Umatch(x, "tc ")) {
       return  ( c->__Rc(0) );
 #ifdef DO_TRACE
@@ -889,9 +903,9 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "vw{v} ")) {
     assert (c->_weight != 0);
     if (m->use_net())
-      return  ( _n[n_ic].v0() - _n[n_b].v0() ) * c->_weight;
+      return  ( _n[n_ic].v0() - _n[n_b].v0() ) * c->_weight * c->_wcorr;
     else
-      return _Ccgfill->get_total() * c->_weight;
+      return _Ccgfill->get_total() * c->_weight * c->_wcorr;
   }else if (Umatch(x, "v{c} ")) {
     if (m->use_net())
       return _n[n_ic].v0() - _n[n_b].v0();
@@ -966,10 +980,8 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
     return  ( _Ccgfill->wdT() );
   }else if (Umatch(x, "tr1 ")) {
     return  ( _Ccgfill->tr_get_old() );
-#ifdef DO_TRACE
   }else if (Umatch(x, "adpdebug ")) {
     return  ( _Ccgfill->debug() );
-#endif
   }else if (Umatch(x, "tr ")) {
     return  ( _Ccgfill->tr_get() );
   }else if (Umatch(x, "vwtr ")) {

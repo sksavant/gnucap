@@ -86,11 +86,11 @@ protected: // override virtual
   void	  tr_advance()	{assert(subckt()); subckt()->tr_advance();}
   void	  tr_regress()	{assert(subckt()); subckt()->tr_regress();}
   bool	  tr_needs_eval()const
-	{  untested0(long_label().c_str());
+	{ //  untested0(long_label().c_str());
 		assert(subckt()); return subckt()->tr_needs_eval();}
   void	  tr_queue_eval() {assert(subckt()); subckt()->tr_queue_eval();}
   bool	  do_tr()
-	{  untested0(long_label().c_str());
+	{ // untested0(long_label().c_str());
 		assert(subckt());set_converged(subckt()->do_tr());return converged();}
   void	  tr_load()	{assert(subckt()); subckt()->tr_load();}
   TIME_PAIR tr_review()	{
