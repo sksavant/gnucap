@@ -9,6 +9,9 @@
 CONFIG_SHELL=/bin/sh
 export CONFIG_SHELL
 
+libtoolize -c -f -i
+
+
 echo "Running aclocal..."
 aclocal $ACLOCAL_FLAGS || exit 1
 
