@@ -115,7 +115,9 @@ if test "x$with_readline" != xno ; then
 fi    
 
 AC_CHECK_LIB([dl], [dlopen])
+
 LT_INIT([disable-static])
+
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 
