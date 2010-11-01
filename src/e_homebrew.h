@@ -71,6 +71,7 @@ public: // override virtual
   void	   tr_iwant_matrix() = 0;
   void	   ac_iwant_matrix() = 0;
   double   tr_probe_num(const std::string&)const;
+  double   tt_probe_num(const std::string&)const;
   XPROBE   ac_probe_ext(const std::string&)const;
 
 protected: // inline, below

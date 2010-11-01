@@ -764,6 +764,7 @@ double ADP_NODE::tt_integrate_( double ){
 //  _val_bef[1] += diff;
 void ADP_NODE::tt_commit_first( )
 {
+  assert (order()==0);
   _integrator = 0;
   _corrector = 0;
   trace2(("ADP_NODE::tt_commit_first() " + _c->short_label()).c_str(), get_tt(), get_tr());
@@ -780,6 +781,8 @@ void ADP_NODE::tt_commit( )
  //  called before apply...
  //  sets expected values for already guessed dT0
 
+  if (order()==0)
+    tt_commit_first();
 
   trace1(( "ADP_NODE::tt_commit "+_c->short_label()).c_str(), tt_value );
   trace6(("ADP_NODE::tt_commit " + _c->short_label()).c_str(),

@@ -306,6 +306,16 @@ void HOMEBREW::tr_save_amps(int n){
 
 }
 /*--------------------------------------------------------------------------*/
+double HOMEBREW::tt_probe_num(const std::string& x)const
+{
+  if (Umatch(x, "value ")) {
+    return value();
+
+  }
+  return 17;
+
+}
+/*----*/
 double HOMEBREW::tr_probe_num(const std::string& x)const
 {
   if (Umatch(x, "v{out} ")) {

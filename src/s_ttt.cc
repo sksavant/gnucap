@@ -224,9 +224,7 @@ void TTT::first()
 // _stepno_tt = 0;
 
   _sim->_Time0 = _Tstart; //  _Time_by_user_request;
-
   assert(_sim->_Time0 >= 0 );
-
   CARD_LIST::card_list.do_forall( &CARD::tt_prepare );
 
   _sim->set_command_tt();
@@ -266,14 +264,10 @@ void TTT::first()
   // FIXME : what's this?
   ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_commit_first ); // sort of tt_prepare?
   ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_accept ); 
-
   ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_commit_first ); // sort of tt_prepare?
   ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_accept ); 
-
   CARD_LIST::card_list.do_forall( &CARD::tt_accept );
-
-
-
+  outdata_tt(_sim->_Time0); // first.
 /// END accept
 
 
@@ -310,18 +304,13 @@ void TTT::first_after_interruption(){
 
     _accepted_tt = true;
 
-    // accept_tt();
+    // accept_tt(); ?
     CARD_LIST::card_list.do_forall( &CARD::tt_accept ); //?
-
-
     ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_accept ); 
-
     // FIXME : what's this?
     ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_commit_first ); // sort of tt_prepare?
     ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_accept ); 
-
     CARD_LIST::card_list.do_forall( &CARD::tt_accept );
-
     outdata_tt(_sim->_Time0); // first.
 
     /* next
@@ -900,7 +889,8 @@ bool TTT::next()
     assert(new_dT == new_dT );
     trace1( "TTT::next after reject: ", _Time1 );
 //    _Tstep = fmin( _dT_by_adp, _dT_by_beh );
-    std::cout << "* retry " << new_dT << " ( " << _dT_by_adp << " )\n";
+    if ( OPT::printrejected)
+      std::cout << "* retry " << new_dT << " ( " << _dT_by_adp << " )\n";
    
   } else { // accepted step. calculating new_dT
 
@@ -912,7 +902,8 @@ bool TTT::next()
     new_dT = max( new_dT,  (double) _tstop ) ; // fmin( get_new_dT(), _Tstep );
 
     // _out << "* newstep " << new_dT << "\n";
-    _out << "* newstep " << new_dT << " ( " << _dT_by_adp << " " << _sim->_dT1   << " )\n";
+    if ( OPT::printrejected) // fixme. tracesteps.
+      _out << "* newstep " << new_dT << " ( " << _dT_by_adp << " " << _sim->_dT1   << " )\n";
 
 
    // if (_sim->get_tt_order() < 0){

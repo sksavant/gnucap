@@ -72,6 +72,8 @@ void MODEL_BUILT_IN_BTI_SINGLE::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
   assert(rcd_number==1);
   COMMON_BUILT_IN_RCD* RCD1 = new COMMON_BUILT_IN_RCD;
   RCD1->set_modelname( rcd_model_name ); // <= !
+  std::cout << "* uref single " << uref << "\n";
+  RCD1->Uref = double( uref );
   trace0(("MODEL_BUILT_IN_BTI_SINGLE::attach_rcds set_modelname " + (std::string) rcd_model_name).c_str());
   RCD1->attach(this); // ?
   COMMON_COMPONENT::attach_common(RCD1, (COMMON_COMPONENT**)&(_RCD[i]));
@@ -185,6 +187,7 @@ void MODEL_BUILT_IN_BTI::precalc_first()
     e_val(&(this->anneal), true, par_scope);
     e_val(&(this->rcd_model_name), std::string("rcd_model_hc"), par_scope);
     e_val(&(this->weight), 0.123, par_scope);
+    e_val(&(this->uref), 1.0, par_scope);
 
 }
 /*--------------------------------------------------------------------------*/
@@ -254,6 +257,7 @@ void MODEL_BUILT_IN_BTI::set_param_by_index(int i, std::string& value, int offse
           trace0(("set rcd_model_name to " +  rcd_model_name.string()).c_str());
           break;
   case 8: weight = value; break;
+  case 9: uref = value; break;
   default: throw Exception_Too_Many(i, MODEL_BUILT_IN_BTI::param_count(), offset);
            break;
   }
@@ -278,6 +282,7 @@ std::string MODEL_BUILT_IN_BTI::param_name(int i)const
   case 6:  return "anneal";
   case 7:  return "rcd_model_name";
   case 8:  return "weight";
+  case 9:  return "uref";
   default: return "";
   }
 }
@@ -298,6 +303,7 @@ std::string MODEL_BUILT_IN_BTI::param_name(int i, int j)const
     case 6:  return "";
     case 7:  return "rcd_model";
     case 8:  return "";
+    case 9:  return "uref";
     default: return "";
     }
   }else{
@@ -324,7 +330,6 @@ void MODEL_BUILT_IN_BTI_MATRIX::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
 
   long double up = 1;
   long double down = 1;
-  long double uref = 1;
   //double lambda=1;
   //double mu=1;
 
@@ -843,7 +848,8 @@ void DEV_BUILT_IN_BTI::expand()
       }
       {
         node_t nodes[] = {_n[n_iu], _n[n_b], _n[n_g], _n[n_b]};
-        _Ubti->set_parameters("Ubti", this, NULL, c->lambda, 0, NULL, 4, nodes);
+        // exp( v uref ) - 1 =! uref
+        _Ubti->set_parameters("Ubti", this, NULL, m->uref, 0, NULL, 4, nodes);
       }
     }
 

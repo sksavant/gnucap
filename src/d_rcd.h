@@ -151,11 +151,11 @@ public: // functions...
   //double _Ueff( double ug);
   double __Re(double ueff)const;
   double __Rc(double ueff)const;
-  double __tau_up ( double ueff ) const{
+  double __tau_up ( double ueff ) const; /*{
     double  rr = __Rc(ueff);
     double  rh = __Re(ueff)  ;
     return float( rr / ( 1+rr/rh )  ) ;
-  }
+    } */ 
 
 public: // attached commons
 };

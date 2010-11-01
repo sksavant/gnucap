@@ -37,7 +37,8 @@ void DEV_BUILT_IN_RCD_SYM::tr_stress() const
       trace1(("DEV_BUILT_IN_RCD::tr_stress fill is negative: " + short_label()).c_str() ,  _Ccgfill->get_total() );
     }
     if (  _n[n_u].v0()  - _n[n_b].v0() < -1e-10 ){
-      trace1(("DEV_BUILT_IN_RCD::tr_stress input is negative: " + short_label()).c_str() ,   _n[n_u].v0()  - _n[n_b].v0() );
+      trace1(("DEV_BUILT_IN_RCD::tr_stress input is negative: " + 
+            short_label()).c_str() ,   _n[n_u].v0()  - _n[n_b].v0() );
       assert (false );
     }
   }
@@ -45,30 +46,28 @@ void DEV_BUILT_IN_RCD_SYM::tr_stress() const
 
   //double  fill = _n[n_ic].v0();
   double  fill = _Ccgfill->get_total();
-  double  ueff = _n[n_u].v0()  - _n[n_b].v0();
+  double  uin = _n[n_u].v0()  - _n[n_b].v0(); // FIXME,Uin/
 
   trace3("DEV_BUILT_IN_RCD::tr_stress ", _n[n_b].v0(), _n[n_u].v0(), _n[n_ic].v0() );
 
   // use positive values for pmos
-  ueff=ueff;
+  uin;
 
   double h = _sim->_dt0;
   double uend;
   double tau;
 
-  double rc=c->__Rc(ueff);
-  if (fill < ueff){
-    trace2("DEV_BUILT_IN_RCD::tr_stress open", fill, ueff);
-    double re=c->__Re(ueff);
+  double rc = c->__Rc(uin);
+  if (fill < uin){
+    trace2("DEV_BUILT_IN_RCD::tr_stress open", fill, uin);
+    double re = c->__Re(uin);
     tau = ( rc / ( 1+rc/re )  ) ;
-    uend = ueff / (re/rc +1) ;
-
+    uend = uin / (re/rc +1) ;
   }else{
     // diode closed.
     trace0("DEV_BUILT_IN_RCD::tr_stress closed");
     tau=rc;
     uend=0;
-
   }
 
   double newfill;
@@ -81,7 +80,7 @@ void DEV_BUILT_IN_RCD_SYM::tr_stress() const
 
   // double bulkpot=_n[n_b].v0();
 
-  trace6("DEV_BUILT_IN_RCD::tr_stress ", fill, h, tau, newfill, ueff, uend );
+  trace6("DEV_BUILT_IN_RCD::tr_stress ", fill, h, tau, newfill, uin, uend );
 
 //  _sim->_v0[_n[n_ic]->m_()] = newfill ; 
 //  _sim->_vdc[_n[n_ic]->m_()] = newfill ; 

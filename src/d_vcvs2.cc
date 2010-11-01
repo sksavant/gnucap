@@ -175,7 +175,8 @@ void DEV_VCVS2::tr_eval()
   double _max=100;
   double _min=-100;
 
-  f0 = exp(x)-1; // _c[0] +    x * _c[1] + x * x * _c[2] ;
+ //       value = uref...
+  f0 = value() * (exp( x / value() ) - 1 ) / ( exp(1) -1 ) ; // _c[0] +    x * _c[1] + x * x * _c[2] ;
   f1 = 0; // exp(x); //_c[1] + 2 *x * _c[2];
   //f1 = exp(x); //_c[1] + 2 *x * _c[2];
   //

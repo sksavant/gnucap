@@ -487,7 +487,7 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
 
   if (Uref!=0.0 ){
     trace3("COMMON_BUILT_IN_RCD::precalc_last", Uref, Recommon, Rccommon0);
-    long double ueff = ( exp ( lambda * Uref ) - 1 );
+    long double ueff = Uref; // ( exp ( lambda * Uref ) - 1 );
 
     double up   =  Recommon;
     double down =  Rccommon0;
@@ -503,38 +503,35 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
     trace3("", _Re, _Rc0, _Rc1);
     assert( _Rc1 == _Rc1 );
     assert( _Rc0 == _Rc0 );
-
     //double _rr = _rr_.subs(runter=runter, u_gate_=uref)
     double _rr = double (down + up * mu * ueff);
 
     // double _rh = _rh_.subs(runter=runter, u_gate_=uref)  
     double _rh = down;
-
     double teiler =  ( _rr/(_rr+_rh) );
+    double uend_bad = (c->Uref / (c->__Re(c->Uref) / c->__Rc(c->Uref) +1));
 
-    // fix weithgt to match u_end
-    //
-    _wcorr = double ( Uref / teiler / ueff );
-    _weight = weight * _wcorr;
-    _wcorr=1;
-
-    trace5("COMMON_BUILT_IN_RCD::precalc_last fitting common to uref", _Re, Uref, Uref, _Rc0, Recommon);
-    trace3("COMMON_BUILT_IN_RCD::precalc_last fitting common to uref", 
-        __tau_up(exp(lambda*Uref)-1), Recommon, __tau_up(exp(lambda*Uref)-1)- Recommon );
+    _wcorr = double ( Uref / uend_bad );
+    _weight = weight;
+    // sanity check.
     assert (weight != 0);
     assert (_weight != 0);
-
-    assert(  abs( __tau_up(exp(lambda*Uref)-1) - Recommon)/Recommon <1e-2 );
-
+    assert(  abs( __tau_up(Uref) - Recommon)/Recommon <1e-6 );
   } else {
     _Re  = Recommon;
     _Rc0 = Rccommon0;
     _Rc1 = Rccommon1;
     _weight = weight;
+    _wcorr = 1;
     assert (weight != 0);
   }
 }
 /*--------------------------------------------------------------------------*/
+double COMMON_BUILT_IN_RCD::__tau_up ( double ueff ) const{
+  double  rr = __Rc(ueff);
+  double  rh = __Re(ueff)  ;
+  return float( rr / ( 1+rr/rh )  ) ;
+} 
 /*--------------------------------------------------------------------------*/
 namespace DEV_BUILT_IN_RCD_DISPATCHER { 
   static DEV_BUILT_IN_RCD p0;
@@ -881,7 +878,7 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "trr ")) {
     return  ( _Ccgfill->tr_rel_err() );
   }else if (Umatch(x, "te ")) {
-      return  ( c->__tau_up(exp(c->Uref)-1) );
+      return  ( c->__tau_up(c->Uref) );
   }else if (Umatch(x, "tc ")) {
       return  ( c->__Rc(0) );
 #ifdef DO_TRACE
@@ -889,7 +886,7 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
     return  ( _Ccgfill->debug() );
 #endif
   }else if (Umatch(x, "re ")) {
-      return  ( c->__Re(1) );
+      return  ( c->__Re(c->Uref) );
   }else if (Umatch(x, "rc ")) {
       return  ( c->__Rc(1) );
   }else if (Umatch(x, "wdt ")) {
@@ -940,9 +937,9 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
 
   if (Umatch(x, "vw{v} ")) {
     if( m->use_net()){
-      return  ( _n[n_ic].v0() - _n[n_b].v0() ) * c->_weight;
+      return  ( _n[n_ic].v0() - _n[n_b].v0() ) * c->_weight * c->_wcorr;
     }else{
-      return _Ccgfill->get_tt() * c->_weight;
+      return _Ccgfill->get_tt() * c->_weight * c->_wcorr;
     }
   }else if (Umatch(x, "net ")) {
     if( m->use_net()){
@@ -972,10 +969,12 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
     return  ( m->tt_region( this ) );
   }else if (Umatch(x, "uref ")) {
     return  ( c->Uref );
+  }else if (Umatch(x, "uend ")) {
+    return (c->Uref / (c->__Re(c->Uref) / c->__Rc(c->Uref) +1) * c->_wcorr ) * c->_weight;
   }else if (Umatch(x, "tc ")) {
     return  ( c->__Rc(0) );
   }else if (Umatch(x, "te ")) {
-    return  ( c->__Re( exp(lambda* c->Uref) -1    ) );
+    return  ( c->__tau_up( c->Uref ) );
   }else if (Umatch(x, "wdt ")) {
     return  ( _Ccgfill->wdT() );
   }else if (Umatch(x, "tr1 ")) {
