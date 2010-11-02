@@ -7,16 +7,19 @@
 .option adpreltol 1e-3
 
 .model my_rcdmodel rcdsym re=10 rc=10
-.model my_btimodel bti_single rcd_model_name="my_rcdmodel"
+.model my_btimodel bti_single rcd_model_name="my_rcdmodel" uref=1
 
+.model my_rcdmodel2 rcdsym_v2 re=10 rc=10
+.model my_btimodel2 bti_single rcd_model_name="my_rcdmodel2" uref=1
 
-.model my_rcdmodel rcdsym RC=111+1000
-.model my_btimodel bti_single ( rcd_number=1 rcd_model_name=rcd_model_string )
 .param rcd_model_string=my_rcdmodel
 
 .model bti_matrix_model bti_matrix ( rcd_number=1 rcd_model_name=rcd_model_string rows=3 cols=3 base=10  )
+.model bti_matrix_model2 bti_matrix ( rcd_number=1 rcd_model_name=my_rcdmodel2 rows=3 cols=3 base=10  )
 
 B1 nin 0 bti_matrix_model
+B2 nin 0 bti_matrix_model2
+
 V1 nin 0 pulse ( iv=0 pv=amplitude delay=3m rise=1n fall=fall width=width period=period )
 .param amplitude=1
 .param period=6m
@@ -28,11 +31,11 @@ V1 nin 0 pulse ( iv=0 pv=amplitude delay=3m rise=1n fall=fall width=width period
 .param width=0
 
 .param amplitude 0
-.print tw amplitude vw(b1)
+.print tw amplitude vw(b1) vw(b2)
 
 .param ttend=1
 ***************************
-.sweep 3 a 0.75 1.5
+.sweep 5 a 0.75 1.5
 .param amplitude=a
 .tw 10u 6m {ttend/10} {ttend}
 go
