@@ -32,6 +32,8 @@ void DEV_BUILT_IN_RCD_SYM::tr_stress() const
   unreachable(); //obsolete.
   assert(false);
 
+  bool use_1_uend = m -> norm_uin;
+
   if( m->positive) {
     if ( _Ccgfill->get_total() < 0 ){
       trace1(("DEV_BUILT_IN_RCD::tr_stress fill is negative: " + short_label()).c_str() ,  _Ccgfill->get_total() );
@@ -48,21 +50,27 @@ void DEV_BUILT_IN_RCD_SYM::tr_stress() const
   double  fill = _Ccgfill->get_total();
   double  uin = _n[n_u].v0()  - _n[n_b].v0(); // FIXME,Uin/
 
+
   trace3("DEV_BUILT_IN_RCD::tr_stress ", _n[n_b].v0(), _n[n_u].v0(), _n[n_ic].v0() );
 
   // use positive values for pmos
-  uin;
 
   double h = _sim->_dt0;
-  double uend;
   double tau;
-
+  double re = c->__Re(uin);
   double rc = c->__Rc(uin);
-  if (fill < uin){
+  double uend = 1 / (re/rc +1) ;
+
+
+  if (use_1_uend){
+    uend = 1 / (re/rc +1) ;
+  }else if (fill < uend){
     trace2("DEV_BUILT_IN_RCD::tr_stress open", fill, uin);
-    double re = c->__Re(uin);
     tau = ( rc / ( 1+rc/re )  ) ;
+
     uend = uin / (re/rc +1) ;
+
+
   }else{
     // diode closed.
     trace0("DEV_BUILT_IN_RCD::tr_stress closed");
