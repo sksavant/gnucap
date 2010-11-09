@@ -31,6 +31,10 @@ V1 nin 0 pulse ( iv=0 pv=amplitude delay=delay rise=1n fall=1n width=width perio
 .param amplitude=1.0
 .tw 10u 6m 6m 24m
 .param amplitude=0
+.tw 12m
+.param amplitude=1
+.tw 24m
+.param amplitude=0
 .tw 48m
 .param amplitude=1.0
 .tw 72m
@@ -40,3 +44,8 @@ V1 nin 0 pulse ( iv=0 pv=amplitude delay=delay rise=1n fall=1n width=width perio
 .tw 108m
 .param amplitude=0
 .tw 120m
+.param amplitude=0
+.tw 132m
+.param amplitude=1
+.tw 156m
+

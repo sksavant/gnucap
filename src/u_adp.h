@@ -123,8 +123,9 @@ class ADP_NODE {
     virtual int region() const;
     virtual std::string type() const {return "basic";};
 
-    hp_float_t get_total() const { return( get_tr() + get_tt() );}
+    hp_float_t get_total() const;
     hp_float_t get() const {return get_tt();}
+    void tt_set(double);
     hp_float_t get_tt() const {
       if ( tt_value == tt_value )       return tt_value; 
       trace1(( "no tt_value" + short_label()).c_str(),tt_value);
@@ -156,6 +157,7 @@ class ADP_NODE {
     void tt_commit_first();
     void tt_accept_first();
     void tt_advance();
+    void tt_last();
 
     void tt_accept( );
     void tt_clear( ) { tr_value = _delta[0] = _delta[1] = tr_value2 = 0;
@@ -208,6 +210,7 @@ class ADP_CARD {
 
     virtual void tt_commit_first(){ }
     virtual void tt_commit(){ }
+    virtual void tt_last(){ }
     virtual void tt_accept_first(){ }
     virtual void tr_commit_first(){ }
     virtual void tr_accept(){ }

@@ -55,8 +55,9 @@ public: // override virtual
   virtual std::string param_name(int)const;
   virtual std::string param_name(int,int)const;
   virtual std::string param_value(int)const;
-  virtual int param_count()const {return (10);}
+  virtual int param_count()const {return (11);}
   bool      is_valid(const COMPONENT*)const;
+  bool      is_v2()const{return (bool) v2;}
   void      tr_eval(COMPONENT*)const;
   virtual void do_stress_apply(COMPONENT*)const{ std::cerr<<"virtual stress apply(C)\n" ;}
   virtual void attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const;
@@ -80,6 +81,7 @@ public: // input parameters
   PARAMETER<std::string> rcd_model_name;	// 
   PARAMETER<double> weight;	// 
   PARAMETER<double> uref;
+  PARAMETER<bool> v2;	// 
 //  PARAMETER<MODEL_BUILT_IN_RCD> rcd_model;	// 
 public: // calculated parameters
   virtual std::string RCD_name(int)const;

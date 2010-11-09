@@ -236,7 +236,6 @@ inline void HOMEBREW::ac_load_inode()
 /*--------------------------------------------------------------------------*/
 inline void HOMEBREW::tr_load_shunt()
 {
-  untested();
   assert(_loss0 == _loss0);
   double d = dampdiff(&_loss0, _loss1);
   if (d != 0.) {
@@ -247,7 +246,7 @@ inline void HOMEBREW::tr_load_shunt()
 }
 /*--------------------------------------------------------------------------*/
 inline void HOMEBREW::tr_unload_shunt()
-{untested();
+{
   _loss0 = 0.;
   _sim->mark_inc_mode_bad();
   tr_load_shunt();

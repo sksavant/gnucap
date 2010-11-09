@@ -36,7 +36,8 @@ void DEV_BUILT_IN_RCD_SYM_V2::tr_stress() const
 
 }
 ///*--------------------------------------------------------------------------*/
-namespace MODEL_BUILT_IN_RCD_DISPATCHER { 
+namespace MODEL_BUILT_IN_RCD_DISPATCHER
+{ 
   static DEV_BUILT_IN_RCD_SYM_V2 p3d;
   static MODEL_BUILT_IN_RCD_SYM_V2 p3(&p3d);
   static DISPATCHER<MODEL_CARD>::INSTALL
@@ -58,7 +59,8 @@ MODEL_BUILT_IN_RCD_SYM_V2::MODEL_BUILT_IN_RCD_SYM_V2(const BASE_SUBCKT* p)
 MODEL_BUILT_IN_RCD_SYM_V2::MODEL_BUILT_IN_RCD_SYM_V2(const MODEL_BUILT_IN_RCD_SYM_V2& p)  
   : MODEL_BUILT_IN_RCD(p){ }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_RCD_SYM_V2::expand() {
+void DEV_BUILT_IN_RCD_SYM_V2::expand()
+{
   assert(_n);
   assert(common());
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
@@ -95,28 +97,31 @@ void DEV_BUILT_IN_RCD_SYM_V2::expand() {
   }
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_SYM_V2::do_tr_stress( const COMPONENT* brh) const {
-
+void MODEL_BUILT_IN_RCD_SYM_V2::do_tr_stress( const COMPONENT* brh) const
+{
   const MODEL_BUILT_IN_RCD_SYM_V2* m = this;
   const DEV_BUILT_IN_RCD* c = (const DEV_BUILT_IN_RCD*) brh;
   const COMMON_BUILT_IN_RCD* cc = static_cast<const COMMON_BUILT_IN_RCD*>(c->common());
   //double  fill = _n[n_ic].v0();
-  //
 
-  double  fill = c->_Ccgfill->get_total();
-  double  uin = c->involts();
+  double fill = c->_Ccgfill->get_total();
+  double uin = c->involts();
 
+  trace2("MODEL_BUILT_IN_RCD_SYM_V2::do_tr_stress ", fill, uin );
   trace1("MODEL_BUILT_IN_RCD_SYM_V2::tr_stress ", c->involts() );
-
-  bool use_1_uend = m -> norm_uin;
+  assert (fill>=0);
+  if (fill > 1 ){
+    error(bDANGER, " RCD_V2 fill %f too big", fill );
+    fill = 1;
+  }
 
   if( m->positive) {
     if ( c->_Ccgfill->get_total() < 0 ){
-      trace1(("DEV_BUILT_IN_RCD::tr_stress fill is negative: " +
+      trace1(("DEV_BUILT_IN_RCD_SYM_V2::tr_stress fill is negative: " +
             short_label()).c_str() ,  c->_Ccgfill->get_total() );
     }
     if (  c->involts() < -1e-10 ){
-      trace1(("DEV_BUILT_IN_RCD::tr_stress input is negative: " + 
+      trace1(("DEV_BUILT_IN_RCD_SYM_V2::tr_stress input is negative: " + 
             short_label()).c_str() ,   c->involts() );
       assert (false );
     }
@@ -127,50 +132,83 @@ void MODEL_BUILT_IN_RCD_SYM_V2::do_tr_stress( const COMPONENT* brh) const {
   assert (fill==fill);
   assert (uin==uin);
 
-
   //trace3("DEV_BUILT_IN_RCD_SYM_V2::tr_stress ", _n[n_b].v0(), _n[n_u].v0(), _n[n_ic].v0() );
-
   // use positive values for pmos
 
   double h = _sim->_dt0;
-  double re = 1/m->__Ge(uin,cc);
-  double ge = m->__Ge(uin,cc);
-  double rc = m->__Rc(uin,cc);
-  double uend = 1 / (1/ge/rc +1) ;
 
-  double tau = ( rc / ( 1+rc*ge )  ) ;
+
+  double tau_e_here = m->__Re( uin, cc);
+  double tau_c_here = m->__Rc( uin, cc);
+
+
+  double uend=1/(1+tau_e_here/tau_c_here);
+  double tau;
+
+  if (fill < uend){
+    tau= tau_e_here;
+  }else{
+    tau= tau_c_here;
+  }
 
   double newfill;
-  switch(_sim->_stepno){
+  switch(_sim->_stepno){ incomplete();
         case 0:
         case 1:
         default:
         newfill = (fill - uend) * exp(-h/tau) + uend;
   }
-  assert(newfill >= 0);
-  assert(newfill <= 1);
+  if( newfill <= 0 ){
+    untested();
+    newfill = 0;
+  }
 
   // double bulkpot=_n[n_b].v0();
 
+  trace4("DEV_BUILT_IN_RCD_SYM_V2::tr_stress ", tau_c_here, tau_e_here, _sim->_Time0, _sim->_time0 );
   trace6("DEV_BUILT_IN_RCD_SYM_V2::tr_stress ", fill, h, tau, newfill, uin, uend );
 
 //  _sim->_v0[_n[n_ic]->m_()] = newfill ; 
 //  _sim->_vdc[_n[n_ic]->m_()] = newfill ; 
 
   c->_Ccgfill->tr_add(newfill-fill);
+  trace4("DEV_BUILT_IN_RCD_SYM_V2::tr_stress ", fill, h, tau, (newfill-fill)/h );
+  assert(newfill >= 0 );
+
+  if (newfill > 1 ){
+    error(bDANGER, " RCD_V2 _wdTi %f too big", newfill );
+    newfill=1;
+  }
   assert(newfill==newfill);
-  trace4("DEV_BUILT_IN_RCD::tr_stress ", fill, h, tau, (newfill-fill)/h );
+  assert(h>0);
 }
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD_SYM_V2::__Rc(double uin, const COMMON_COMPONENT* c) const {
+// precalc doesnt know device!!
+void MODEL_BUILT_IN_RCD_SYM_V2::do_tt_prepare( COMPONENT* brh) const{
+  const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
+  const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
+  trace0("MODEL_BUILT_IN_RCD_SYM_V2::do_tt_prepare\n");
+  //std::cout << "* " << cc->_wcorr << "\n";
+  c->_Ccgfill->tt_set( -cc->_wcorr );
+}
+/*--------------------------------------------------------------------------*/
+double MODEL_BUILT_IN_RCD_SYM_V2::vth(const COMPONENT* brh) const{
+  const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
+  const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
+  return (c->_Ccgfill->get_tt()+ cc->_wcorr )* cc->_weight;
+}
+/*--------------------------------------------------------------------------*/
+double MODEL_BUILT_IN_RCD_SYM_V2::__Re(double uin, const COMMON_COMPONENT* c) const {
   assert(c);
-   const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
-   double ret = ( cc->_Rc0 + uin* cc->_Rc1 ); 
-   return ret;
+  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
+  double Y = cc->Recommon * exp(cc->Uref* cc->_lambda) ;
+  return Y / exp( cc->_lambda * uin );
 }
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD_SYM_V2::__Re(double uin, const COMMON_COMPONENT* c ) const {
-  return 1/__Ge(uin,c);
+double MODEL_BUILT_IN_RCD_SYM_V2::__Rc(double uin, const COMMON_COMPONENT* c ) const {
+  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
+  double X = cc->Rccommon0;
+  return X * exp( cc->_lambda * uin );
 }
 /*--------------------------------------------------------------------------*/
 double MODEL_BUILT_IN_RCD_SYM_V2::__Ge(double uin, const COMMON_COMPONENT* c ) const {

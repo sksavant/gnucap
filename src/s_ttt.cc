@@ -399,11 +399,9 @@ void TTT::sweep_tt()
         outdata_tt(_sim->_Time0); // first output tt data
       }
       continue;  
-    } else 
-      _out << "*\n";
+    }
 
     trace3( "TTT::sweep_tt sweep at " , _sim->_Time0, _sim->_dT0, _sim->_dT1 );
-    //      ADP_LIST::adp_list.do_forall( &ADP::tt_commit );
     //   ADP_REWIEW
     accept_tt(); 
     assert( _sim->_mode  == s_TTT );
@@ -418,6 +416,8 @@ void TTT::sweep_tt()
      *   CARD_LIST::card_list.do_forall( &CARD::tt_next );
      */
   }
+
+  ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_last );
 
 }
 /*--------------------------------------------------------------------------*/
@@ -1196,6 +1196,7 @@ void TTT::print_stored_results_tt(double x)
     untested0( "no ttprint" );
     return;
   }
+  _out << "*\n";
   assert( _sim->_mode  == s_TTT );
   if (!IO::plotout.any()) {
     assert(x != NOT_VALID);

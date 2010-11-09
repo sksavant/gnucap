@@ -640,7 +640,7 @@ void TRANSIENT::accept()
   }
   ++steps_accepted_;
   if( _sim->analysis_is_tt()){
-    CARD_LIST::card_list.do_forall( &CARD::tr_stress );
+    if (_sim->_dt0>0) CARD_LIST::card_list.do_forall( &CARD::tr_stress );
     trace0( "TRANSIENT::accept: done stressing cardlist");
   }
   ::status.accept.stop();

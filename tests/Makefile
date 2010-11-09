@@ -260,6 +260,7 @@ realclean: clean
 clean:
 	rm -f *~ $(CIRQUITS)
 	rm -f *.raw *.out 
+	rm -f *.ps
 
 %.tr: %.sim %.ckt
 	echo "plot '<gnucap  -b $< 2>/dev/null | ./gc2gp ' using 1:3 with lines; pause 10" | gnuplot

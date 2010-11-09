@@ -36,6 +36,7 @@ public:
 };
 /*--------------------------------------------------------------------------*/
 class DEV_BUILT_IN_RCD;
+class COMMON_BUILT_IN_RCD;
 class TDP_BUILT_IN_RCD{
 public:
   explicit TDP_BUILT_IN_RCD(const DEV_BUILT_IN_RCD*);
@@ -50,8 +51,11 @@ public:
   explicit MODEL_BUILT_IN_RCD(const BASE_SUBCKT*);
   ~MODEL_BUILT_IN_RCD() {--_count;}
   virtual void     do_expand(const COMPONENT*)const {};
+  virtual void     do_tt_prepare(COMPONENT*)const;
   virtual ADP_NODE* new_adp_node(const COMPONENT*) const;
 public: // override virtual
+  virtual bool v2() const{return false;}
+  virtual double vth(const COMPONENT*) const;
   virtual std::string dev_type()const;
   virtual void      set_dev_type(const std::string& nt);
   CARD*     clone()const {return new MODEL_BUILT_IN_RCD(*this);}
@@ -64,7 +68,7 @@ public: // override virtual
   std::string param_name(int)const;
   std::string param_name(int,int)const;
   std::string param_value(int)const;
-  int param_count()const {return (9);}
+  int param_count()const {return (10);}
   void tt_eval(COMPONENT*)const;
   bool      is_valid(const COMPONENT*)const;
   void      tr_eval(COMPONENT*)const;
@@ -83,11 +87,15 @@ public: // input parameters
   PARAMETER<double> uref;	// 
   PARAMETER<int> modelparm;	// just a test
   PARAMETER<bool> positive;	// only take positive stress
+  PARAMETER<bool> norm_uin;	// normalized uin
 public: // calculated parameters
   virtual bool use_net() const {unreachable(); return 1;}
 public: // probes
   virtual region_t region(const COMPONENT* ) const;
   virtual int tt_region(const COMPONENT* ) const;
+  virtual double __Ge(double uin, const COMMON_COMPONENT* )const;
+  virtual double __Re(double uin, const COMMON_COMPONENT* cc)const ;
+  virtual double __Rc(double uin, const COMMON_COMPONENT* cc)const ;
 };
 /*--------------------------------------------------------------------------*/
 class MODEL_BUILT_IN_RCD_NET : public MODEL_BUILT_IN_RCD {
@@ -101,6 +109,7 @@ class MODEL_BUILT_IN_RCD_NET : public MODEL_BUILT_IN_RCD {
     std::string dev_type()const;
     CARD*     clone()const {return new MODEL_BUILT_IN_RCD_NET(*this);}
     void     do_expand(const COMPONENT*) const;
+    double vth(const COMPONENT* )const;
 };
 /*--------------------------------------------------------------------------*/
 class COMMON_BUILT_IN_RCD
@@ -139,6 +148,7 @@ public: // input parameters
   PARAMETER<bool> dummy_capture;// use dummy as emit resistor
   PARAMETER<bool> dummy_emit;	// use dummy as emit resistor
 public: // calculated parameters
+  double X;
   double _Re;
   double _Rc0;
   double _Rc1;
@@ -241,6 +251,8 @@ protected: // override virtual
   //XPROBE  ac_probe_ext(CS&)const;//CKT_BASE/nothing
 public:
   double    involts()const;
+  virtual double E()const {return 3;}
+  virtual double vth() const;
   static int  count() {return _count;}
 public: // may be used by models
 private: // not available even to models
@@ -278,6 +290,7 @@ class DEV_BUILT_IN_RCD_NET : public DEV_BUILT_IN_RCD{
   private:
   TIME_PAIR  tr_review(){ return BASE_SUBCKT::tr_review(); }
   void expand();
+  public:
 };
 /*--------------------------------------------------------------------------*/
 // h_direct

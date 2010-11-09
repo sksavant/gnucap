@@ -15,8 +15,9 @@ class MODEL_BUILT_IN_RCD_SYM_V2 : public MODEL_BUILT_IN_RCD {
   protected:
     explicit MODEL_BUILT_IN_RCD_SYM_V2(const MODEL_BUILT_IN_RCD_SYM_V2& p);
   public:
-  virtual bool v2() const{return true;}
     explicit MODEL_BUILT_IN_RCD_SYM_V2(const BASE_SUBCKT* p);
+    virtual void     do_tt_prepare(COMPONENT*)const;
+    virtual bool v2() const{return true;}
     // ~MODEL_BUILT_IN_RCD_SYM_V2() : ~MODEL_BUILT_IN_RCD {}
     bool use_net() const { return(0); }
     void do_stress_apply( COMPONENT* d ) const;
@@ -35,6 +36,7 @@ class MODEL_BUILT_IN_RCD_SYM_V2 : public MODEL_BUILT_IN_RCD {
     double __Re(double uin, const COMMON_COMPONENT* cc)const;
     double __Rc(double uin, const COMMON_COMPONENT* cc)const;
     double __Ge(double uin, const COMMON_COMPONENT* cc)const;
+    double vth( const COMPONENT* cc)const;
 };
 /*--------------------------------------------------------------------------*/
 class DEV_BUILT_IN_RCD_SYM_V2 : public DEV_BUILT_IN_RCD{

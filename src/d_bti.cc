@@ -78,7 +78,6 @@ void MODEL_BUILT_IN_BTI_SINGLE::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
   RCD1->attach(this); // ?
   COMMON_COMPONENT::attach_common(RCD1, (COMMON_COMPONENT**)&(_RCD[i]));
   // assert (RCD1 == _RCD[i]);
-
 }
 /*--------------------------------------------------------------------------*/
  MODEL_BUILT_IN_BTI_SINGLE::MODEL_BUILT_IN_BTI_SINGLE(const BASE_SUBCKT* p)
@@ -188,6 +187,7 @@ void MODEL_BUILT_IN_BTI::precalc_first()
     e_val(&(this->rcd_model_name), std::string("rcd_model_hc"), par_scope);
     e_val(&(this->weight), 0.123, par_scope);
     e_val(&(this->uref), 1.0, par_scope);
+    e_val(&(this->v2), false, par_scope);
 
 }
 /*--------------------------------------------------------------------------*/
@@ -258,6 +258,7 @@ void MODEL_BUILT_IN_BTI::set_param_by_index(int i, std::string& value, int offse
           break;
   case 8: weight = value; break;
   case 9: uref = value; break;
+  case 10: v2 = value; break;
   default: throw Exception_Too_Many(i, MODEL_BUILT_IN_BTI::param_count(), offset);
            break;
   }
@@ -283,6 +284,7 @@ std::string MODEL_BUILT_IN_BTI::param_name(int i)const
   case 7:  return "rcd_model_name";
   case 8:  return "weight";
   case 9:  return "uref";
+  case 10:  return "v2";
   default: return "";
   }
 }
@@ -304,6 +306,7 @@ std::string MODEL_BUILT_IN_BTI::param_name(int i, int j)const
     case 7:  return "rcd_model";
     case 8:  return "";
     case 9:  return "uref";
+    case 10:  return "v2";
     default: return "";
     }
   }else{
@@ -800,6 +803,7 @@ void DEV_BUILT_IN_BTI::expand()
   const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(c->sdp());
   assert(s);
 
+
   if (!_RCD) {
     trace1("alloc COMP", m->rcd_number);
     _RCD = new COMPONENT*[m->rcd_number];
@@ -815,7 +819,6 @@ void DEV_BUILT_IN_BTI::expand()
   }
 
   if (_sim->is_first_expand()) {
-    trace0("ife");
     precalc_first();
     precalc_last();
     // local nodes
@@ -837,9 +840,17 @@ void DEV_BUILT_IN_BTI::expand()
     }
 
     // clone subckt elements
-    {
+    double Ubti_par = 0;
+    if (true) {
       if (!_Ubti) {
-        const CARD* p = device_dispatcher["vcvs2"];
+        const CARD* p ;
+        if (!m->is_v2()){
+          p = device_dispatcher["vcvs2"];
+          Ubti_par=m->uref;
+        }else{
+          p = device_dispatcher["vcvs"];
+          Ubti_par = 1.0;
+        }
         assert(p);
         _Ubti = dynamic_cast<COMPONENT*>(p->clone());
         assert(_Ubti);
@@ -849,7 +860,7 @@ void DEV_BUILT_IN_BTI::expand()
       {
         node_t nodes[] = {_n[n_iu], _n[n_b], _n[n_g], _n[n_b]};
         // exp( v uref ) - 1 =! uref
-        _Ubti->set_parameters("Ubti", this, NULL, m->uref, 0, NULL, 4, nodes);
+        _Ubti->set_parameters("Ubti", this, NULL, Ubti_par, 0, NULL, 4, nodes);
       }
     }
 
@@ -950,6 +961,11 @@ double DEV_BUILT_IN_BTI::tt_probe_num(const std::string& x)const
     double buf = 0;
     int i=m->rcd_number;
     while ( i-->0 )   buf += CARD::probe(_RCD[i],"vc");
+    return buf * c->weight;
+  }else if (Umatch(x, "vth ")) {
+    double buf = 0;
+    int i=m->rcd_number;
+    while ( i-->0 )   buf += CARD::probe(_RCD[i],"vth");
     return buf * c->weight;
   }else if (Umatch(x, "uin ")) {
     return  _n[n_b].v0() - _n[n_g].v0();
