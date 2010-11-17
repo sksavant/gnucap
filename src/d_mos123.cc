@@ -35,34 +35,12 @@ int MODEL_BUILT_IN_MOS123::_count = 0;
 /*--------------------------------------------------------------------------*/
 
 
-
+/* sort of expand of precalc? */
 void MODEL_BUILT_IN_MOS123::do_tt_prepare( COMPONENT* c) const
 {
 	std::cerr << "MODEL_BUILT_IN_MOS123::tt_prepare\n";
         assert ( c->adp() == NULL );
 	c->attach_adp( new_adp( c ) );
-}
-/*--------------------------------------------------------------------------*/
-
-
-
-void ADP_BUILT_IN_MOS123::init(const COMPONENT* c)
-{
-  std::cerr << "ADP_BUILT_IN_MOS123::init( " <<c<< " )\n";
-  assert(c);
-  const COMMON_BUILT_IN_MOS* cc = prechecked_cast<const COMMON_BUILT_IN_MOS*>(c->common());
-  assert(c);
-  const MODEL_BUILT_IN_MOS123* m = prechecked_cast<const MODEL_BUILT_IN_MOS123*>(cc->model());
-  assert(m);
-  const CARD_LIST* par_scope = m->scope();
-  assert(par_scope);
-  // adjust: override
-  // adjust: raw
-  // adjust: calculated
-  // code_post
-  // ids_stress=0.0; MOS BASE
-  vto=m->vto;
-  //
 }
 /*--------------------------------------------------------------------------*/
 void SDP_BUILT_IN_MOS123::init(const COMMON_COMPONENT* cc)
@@ -164,6 +142,7 @@ void MODEL_BUILT_IN_MOS123::do_stress_apply(COMPONENT* c) const
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_MOS123::precalc_first()
 {
+  trace0("MODEL_BUILT_IN_MOS123::precalc_first");
     const CARD_LIST* par_scope = scope();
     assert(par_scope);
     MODEL_BUILT_IN_MOS_BASE::precalc_first();
@@ -225,13 +204,37 @@ void MODEL_BUILT_IN_MOS123::precalc_first()
     // final adjust: done
 }
 /*--------------------------------------------------------------------------*/
-ADP_CARD* MODEL_BUILT_IN_MOS123::new_adp( const COMPONENT* c)const
+void ADP_BUILT_IN_MOS123::init(const COMPONENT* c)
 {
-
-  
+  std::cerr << "ADP_BUILT_IN_MOS123::init( " <<c-> long_label()<< " )\n";
+  assert(c);
+  ADP_BUILT_IN_MOS::init(c);
+  assert(c);
+  const COMMON_BUILT_IN_MOS* cc = prechecked_cast<const COMMON_BUILT_IN_MOS*>(c->common());
+  assert(cc);
+  const MODEL_BUILT_IN_MOS123* m = prechecked_cast<const MODEL_BUILT_IN_MOS123*>(cc->model());
+  assert(m);
+  const CARD_LIST* par_scope = m->scope();
+  assert(par_scope);
+  // adjust: override
+  // adjust: raw
+  // adjust: calculated
+  // code_post
+  // ids_stress=0.0; MOS BASE
+  vto=m->vto;
+  //
+}
+/*--------------------------------------------------------------------------*/
+ADP_CARD* MODEL_BUILT_IN_MOS123::new_adp(const COMPONENT* c)const
+{
   assert(c);
   const MODEL_BUILT_IN_MOS123* m = this;
-  std::cerr << "MODEL_BUILT_IN_MOS123::new_adp for " << c->short_label() << "\n";
+  const COMMON_COMPONENT* cc = prechecked_cast<const COMMON_COMPONENT*>(c->common());
+  std::cerr << "MODEL_BUILT_IN_MOS123::new_adp for " << c->long_label() << "\n";
+
+  assert(c->common() != NULL);
+  assert(cc != NULL);
+  assert( m == cc->model());
 
   ADP_BUILT_IN_MOS123* a = new ADP_BUILT_IN_MOS123(c);
 
@@ -239,14 +242,11 @@ ADP_CARD* MODEL_BUILT_IN_MOS123::new_adp( const COMPONENT* c)const
 
   //std::cerr << "aging vto: " << a->vto << " " << a << "\n";
 
-       assert( c->adp() == NULL );
-
-       assert (a!=NULL);
-
+  assert( c->adp() == NULL );
+  assert (a!=NULL);
   //std::cerr << c << " " << c->adp() << "\n";
 
   return a;
-
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_MOS123::precalc_last()

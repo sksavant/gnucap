@@ -44,7 +44,6 @@
 
 // doesnt work without yet.
 #define BTI_IN_SUBCKT
-// #define BTI_LATE_EVAL
 /*--------------------------------------------------------------------------*/
 const double NA(NOT_INPUT);
 const double INF(BIGBIG);
@@ -52,6 +51,10 @@ const double INF(BIGBIG);
 int DEV_BUILT_IN_MOS::_count = -1;
 int COMMON_BUILT_IN_MOS::_count = -1;
 static COMMON_BUILT_IN_MOS Default_BUILT_IN_MOS(CC_STATIC);
+/*--------------------------------------------------------------------------*/
+#ifndef BTI_IN_SUBCKT
+#define BTI_LATE_EVAL
+#endif
 /*--------------------------------------------------------------------------*/
 COMMON_BUILT_IN_MOS::COMMON_BUILT_IN_MOS(int c)
   :COMMON_COMPONENT(c),
@@ -249,6 +252,7 @@ void COMMON_BUILT_IN_MOS::expand(const COMPONENT* d)
     COMMON_BUILT_IN_BTI* bti = new COMMON_BUILT_IN_BTI; // nix single. hier kein model
     bti->number = 1;
     bti->set_modelname( m->bti_model_name.value()  );
+    bti->polarity =  m->polarity   ;
     bti->attach(model());
     attach_common(bti, &_bti);
 
@@ -903,8 +907,15 @@ void DEV_BUILT_IN_MOS::expand()
       }else{
       }
       {
-        node_t nodes[] = {_n[n_b], _n[n_g]};
-        _BTI->set_parameters("BTI", this, c->_bti, 1.0, 0, NULL, 2, nodes);
+        if (m->polarity==pP) { // stupid hack. use voltage source?
+          std::cout << "polap" << m->polarity <<"\n";
+          node_t nodes[] = {_n[n_b], _n[n_g]};
+          _BTI->set_parameters("BTI", this, c->_bti, 1.0, 0, NULL, 2, nodes);
+        } else {
+          node_t nodes[] = {_n[n_g], _n[n_b]};
+          std::cout << "polan" << m->polarity <<"\n";
+          _BTI->set_parameters("BTI", this, c->_bti, 1.0, 0, NULL, 2, nodes);
+        }
       }
     }
     {
@@ -917,7 +928,8 @@ void DEV_BUILT_IN_MOS::expand()
       }else{
       }
       {
-        node_t nodes[] = {_n[n_id], _n[n_is], _n[n_g], _n[n_is], _n[n_id], _n[n_g], _n[n_b], _n[n_is], _n[n_id], _n[n_b]};
+        node_t nodes[] = {_n[n_id], _n[n_is], _n[n_g], _n[n_is], _n[n_id],
+          _n[n_g], _n[n_b], _n[n_is], _n[n_id], _n[n_b]};
         _Ids->set_parameters("Ids", this, NULL, 0., 6, &idsxxx, 10, nodes);
       }
     }
@@ -968,27 +980,31 @@ void DEV_BUILT_IN_MOS::expand()
   subckt()->expand();
 
 #ifndef BTI_IN_SUBCKT
-  assert( (m->bti_model_name.value() != std::string("")) == m->use_bti );
-  if( m->use_bti ){
+  trace0("DEV_BUILT_IN_MOS::expand bti not in subckt");
+  assert( (m->bti_model_name.value() != std::string("")) == m->use_bti() );
+  if( m->use_bti() ){
     trace0("expanding bti");
-    _BTI -> expand();
-    _BTI->set_slave();
+    _BTI->expand();
+    // _BTI->set_slave();
   }
 #endif
-  //subckt()->precalc();
+  // subckt()->precalc();
   assert(!is_constant());
   subckt()->set_slave();
 
 
+  trace0("DEV_BUILT_IN_MOS::expand, ADP things");
   if ( adp() == NULL ){
     attach_adp( m->new_adp( (COMPONENT*) this ) );
   }else{
+    std::cerr << short_label() << "\n";
     assert(false);
   }
 }
 /*--------------------------------------------------------------------------*/
 double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
 {
+  const DEV_BUILT_IN_MOS* d = this;
   assert(_n);
   const COMMON_BUILT_IN_MOS* c = prechecked_cast<const COMMON_BUILT_IN_MOS*>(common());
   assert(c);
@@ -1007,6 +1023,11 @@ double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
 #endif
   }else if (Umatch(x, "vds ")) {
     return  _n[n_d].v0() - _n[n_s].v0();
+  }else if (Umatch(x, "dvth ")) { // hci???
+    // return a->dvth();
+    return 60;
+  }else if (Umatch(x, "dv_bti ")) { // hci???
+    return  ((const DEV_BUILT_IN_BTI*)(d->_BTI))->dvth();
   }else if (Umatch(x, "bti_stress ")) { // hci???
     return  a->bti_stress->tr_get();
   }else if (Umatch(x, "hci |bti ")) { // hci???
@@ -1348,6 +1369,7 @@ bool DEV_BUILT_IN_MOS::tr_needs_eval()const
     polarity_t polarity = m->polarity;
     node_t& eff_s((reversed) ? _n[n_id] : _n[n_is]);
     node_t& eff_d((reversed) ? _n[n_is] : _n[n_id]);
+    if(_BTI->tr_needs_eval()) return true;
     return !(conchk(vds,polarity*(eff_d.v0()-eff_s.v0()),OPT::vntol)
 	     && conchk(vgs, polarity*(_n[n_g].v0()-eff_s.v0()),
 		       OPT::vntol)
@@ -1451,7 +1473,7 @@ bool DEV_BUILT_IN_MOS::do_tr()
 
   set_converged( isconverged );
 
-  if( m->use_bti ){
+  if( m->use_bti() ){
     if(  converged() ){
       std::cout << "* btieval " << _sim->iteration_number() << " \n";
       set_converged(_BTI->do_tr());
@@ -1466,8 +1488,8 @@ bool DEV_BUILT_IN_MOS::do_tr()
 
   // BTI_HACK
 #ifndef BTI_IN_SUBCKT
-  if( m->use_bti &&  converged() )
-    set_converged(_BTI->do_tr());
+ // if( m->use_bti &&  converged() )
+   // set_converged(_BTI->do_tr());
 #endif
   
   trace3(long_label().c_str(), vds, vgs, vbs);
@@ -1485,14 +1507,22 @@ bool DEV_BUILT_IN_MOS::do_tr()
     #endif
   }else{
   }
+#ifdef BTI_IN_SUBCKT
   return converged();
+#else
+  return (converged() && _BTI->converged());
+#endif
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::stress_apply( )
 {
+
+
   const COMMON_BUILT_IN_MOS* c = (const COMMON_BUILT_IN_MOS*) common();
   const MODEL_BUILT_IN_MOS_BASE* m = (const MODEL_BUILT_IN_MOS_BASE*)(c->model());
   assert(m);
+
+  BASE_SUBCKT::stress_apply();
 
   m->do_stress_apply(this);
 }
@@ -1512,24 +1542,26 @@ double ADP_BUILT_IN_MOS::wdT() const{
 }
 void ADP_BUILT_IN_MOS::init(const COMPONENT* c)
 {
-  const COMMON_COMPONENT* cc = c->common();
+  trace0("ADP_BUILT_IN_MOS::init");
+  const COMMON_COMPONENT* cc = prechecked_cast<const COMMON_COMPONENT*>(c->common());
   const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
   assert(m);
+  assert(cc);
 
   // std::cerr << "ADP_BUILT_IN_MOS::init( " <<c<< " ) " << c->short_label() << "\n" ;
   bti_stress = new ADP_NODE(this,c, "bti" );
   // ADP_NODE_LIST::adp_node_list.push_back( bti_stress );
 
   // only mos>0?
-  ids_stress = new ADP_NODE(this,c, "ids" );
-  igd_stress = new ADP_NODE(this,c, "igs" );
-  ADP_NODE_LIST::adp_node_list.push_back( ids_stress );
-  ADP_NODE_LIST::adp_node_list.push_back( igd_stress );
+  ids_stress = new ADP_NODE(this, c, "ids" );
+  igd_stress = new ADP_NODE(this, c, "igs" );
 
+//  if use_hci
+//  ADP_NODE_LIST::adp_node_list.push_back( ids_stress );
+//  ADP_NODE_LIST::adp_node_list.push_back( igd_stress );
 
   vthscale_bti = 1;
   vthdelta_bti = 0;
-
 
   btistress_taken = 0;
   bti_eff_voltage = 0;
@@ -1582,6 +1614,7 @@ void ADP_BUILT_IN_MOS::tt_commit()
   // parameters FIXME. put somewhere else.
   // ble D_0 = 5.64e-4;  // cm cm / s
 
+
 }
 /*--------------------------------------------------------------------------*/
 double ADP_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
@@ -1610,6 +1643,14 @@ double ADP_BUILT_IN_MOS::tt_probe_num(const std::string& x)const
   }else{
      return 999;    //    return ADP_BUILT_IN_MOS::tr_probe_num(x); diode?
   }
+}
+/*--------------------------------------------------------------------------*/
+void DEV_BUILT_IN_MOS::tt_commit(){
+  BASE_SUBCKT::tt_commit();
+
+  //if(m->use_bti){
+  //  _BTI->tt_commit();
+  //}
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_save_amps(int trstep)
@@ -1704,7 +1745,7 @@ void      DEV_BUILT_IN_MOS::dc_advance() {set_not_converged(); BASE_SUBCKT::dc_a
 #ifndef BTI_IN_SUBCKT
   const COMMON_COMPONENT* cc = common();
   MODEL_BUILT_IN_MOS_BASE* m = ( MODEL_BUILT_IN_MOS_BASE*)(cc->model());
-  if(m->use_bti)
+  if(m->use_bti() )
     _BTI->dc_advance();
 #endif
   
@@ -1716,10 +1757,11 @@ void      DEV_BUILT_IN_MOS::precalc_last() {
   COMPONENT::precalc_last();
   if(subckt()) subckt()->precalc_last();
 #ifndef BTI_IN_SUBCKT
+  trace0("DEV_BUILT_IN_MOS::precalc_last bti notin sckt");
   const COMMON_COMPONENT* cc = common();
   MODEL_BUILT_IN_MOS_BASE* m = ( MODEL_BUILT_IN_MOS_BASE*)(cc->model());
-  if(m->use_bti)
-    _BTI->precalc_last();
+  //if(m->use_bti())
+  //  _BTI->precalc_last();
 #endif
 }
 /*--------------------------------------------------------------------------*/
@@ -1727,9 +1769,10 @@ void      DEV_BUILT_IN_MOS::precalc_first() {
   COMPONENT::precalc_first();
   if(subckt()) subckt()->precalc_first();
 #ifndef BTI_IN_SUBCKT
-  const COMMON_COMPONENT* cc = common();
-  MODEL_BUILT_IN_MOS_BASE* m = ( MODEL_BUILT_IN_MOS_BASE*)(cc->model());
-  if(m->use_bti)
-    _BTI->precalc_first();
+  trace0("DEV_BUILT_IN_MOS::precalc_first bti notin sckt");
+  // const COMMON_COMPONENT* cc = common();
+  //MODEL_BUILT_IN_MOS_BASE* m = ( MODEL_BUILT_IN_MOS_BASE*)(cc->model());
+  //if(m->use_bti())
+  //  _BTI->precalc_first();
 #endif
 }

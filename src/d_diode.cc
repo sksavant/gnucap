@@ -1009,11 +1009,15 @@ void DEV_BUILT_IN_DIODE::expand()
   subckt()->expand();
   //subckt()->precalc();
   assert(!is_constant());
+  trace0(("DEV_BUILT_IN_DIODE::expand " + long_label()).c_str() );
   if ( adp() == NULL ){
-    attach_adp( m->new_adp( (COMPONENT*) this ) );
+    assert(common());
+    assert(c);
+    //attach_adp( m->new_adp( (const COMPONENT*) this ) );
   }else{
     assert(false);
   }
+  trace0(("DEV_BUILT_IN_DIODE::expand done " + long_label()).c_str() );
 }
 /*--------------------------------------------------------------------------*/
 double DEV_BUILT_IN_DIODE::tr_probe_num(const std::string& x)const

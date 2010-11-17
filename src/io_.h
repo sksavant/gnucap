@@ -74,7 +74,7 @@ public:
   OMSTREAM& operator<<(char c);
   OMSTREAM& operator<<(const char* s);
   OMSTREAM& operator<<(double x)
-    {  trace1("op<< " ,x );
+    {  // trace1("op<< " ,x );
 		 return (*this)<<ftos(x,_fltwid,_fltdig,_format);}
   OMSTREAM& operator<<(bool x)		{return form("%d", x);}
   OMSTREAM& operator<<(int x)		{return form("%d", x);}

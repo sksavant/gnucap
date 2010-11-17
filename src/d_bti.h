@@ -170,6 +170,7 @@ public: // input parameters
   PARAMETER<int>    type;	// type
   PARAMETER<double> base;	
   PARAMETER<double> weight;	// weight
+  PARAMETER<polarity_t> polarity;	// polarity
 public: // calculated parameters
   SDP_CARD* _sdp;
 public: // attached commons
@@ -200,9 +201,9 @@ private: // override virtual
   //void    tr_begin();          //BASE_SUBCKT
   //void    tr_restore();        //BASE_SUBCKT
   //void    tt_commit();         //BASE_SUBCKT
-  void    stress_apply(); 
+  void      stress_apply(); 
   void      tt_commit( ) const;   
-  //void    tt_prepare();         //BASE_SUBCKT
+  void      tt_prepare();         //BASE_SUBCKT
   //void    dc_advance();        //BASE_SUBCKT
   //void    tr_advance();        //BASE_SUBCKT
   //void    tr_regress();        //BASE_SUBCKT
@@ -230,6 +231,7 @@ private: // override virtual
 public:
   static int  count() {return _count;}
   double vw()const;
+  double dvth()const;
 public: // may be used by models
 private: // not available even to models
   static int _count;

@@ -9,12 +9,10 @@
 .model my_rcdmodel rcdsym re=10 rc=10
 .model my_btimodel bti_single rcd_model_name="my_rcdmodel" uref=1
 
-.model my_rcdmodel2 rcdsym_v2 re=10 rc=10
+.model my_rcdmodel2 rcdsym_v2 re=10 rc=10 uref=1
 .model my_btimodel2 bti_single rcd_model_name="my_rcdmodel2" uref=1
 
-.param rcd_model_string=my_rcdmodel
-
-.model bti_matrix_model bti_matrix ( rcd_number=1 rcd_model_name=rcd_model_string rows=3 cols=3 base=10  )
+.model bti_matrix_model bti_matrix  ( rcd_number=1 rcd_model_name=my_rcdmodel  rows=3 cols=3 base=10  )
 .model bti_matrix_model2 bti_matrix ( rcd_number=1 rcd_model_name=my_rcdmodel2 rows=3 cols=3 base=10  )
 
 B1 nin 0 bti_matrix_model

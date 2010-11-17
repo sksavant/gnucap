@@ -267,11 +267,9 @@ void ADP_RESISTANCE::init(const COMPONENT* c)
   const COMMON_COMPONENT* cc = c->common();
   cc=cc;
 
-  // std::cerr << "ADP_RESISTANCE::init( " <<c<< " ) " << c->short_label() << "\n" ;
-
   i_stress = new ADP_NODE(this, c, "i");
 
-  ADP_NODE_LIST::adp_node_list.push_back( i_stress );
+  //ADP_NODE_LIST::adp_node_list.push_back( i_stress );
 
   // std::cerr << "i_stress@ " << c << "->" << this << "->" << i_stress << "\n";
   

@@ -150,6 +150,7 @@ public: // input parameters
 public: // calculated parameters
   double X;
   double _Re;
+  double _Re0;
   double _Rc0;
   double _Rc1;
   double _weight;

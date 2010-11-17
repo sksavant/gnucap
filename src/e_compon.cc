@@ -752,7 +752,7 @@ const std::string COMPONENT::current_port_value(int)const
 const MODEL_CARD* COMPONENT::find_model(const std::string& modelname)const
 {
   trace0(("COMPONENT::find_model" + short_label() + " " + modelname).c_str());
-  const char* tmp = modelname.c_str();
+  const char* tmp = modelname.c_str(); tmp=tmp;
   untested0(tmp);
   if (modelname == "") {
     throw Exception(long_label() + ": missing args -- need model name");
@@ -974,6 +974,9 @@ double COMPONENT::volts_limited(const node_t & n1, const node_t & n2)
   bool limiting = false;
 
   double v1 = n1.v0();
+  double v2 = n2.v0();
+
+  trace2("COMPONENT::volts_limited", v1 ,v2);
   assert(v1 == v1);
   if (v1 < _sim->_vmin) {
     limiting = true;
@@ -983,7 +986,6 @@ double COMPONENT::volts_limited(const node_t & n1, const node_t & n2)
     v1 = _sim->_vmax;
   }
 
-  double v2 = n2.v0();
   assert(v2 == v2);
   if (v2 < _sim->_vmin) {
     limiting = true;

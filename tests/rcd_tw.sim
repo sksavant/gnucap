@@ -18,6 +18,6 @@ V1 nin 0 pulse ( iv=0 pv=amplitude delay=delay rise=1n fall=1n width=width perio
 .print tw  vw(z1) tr(z1)  amplitude order(z1)
 
 
-.tw 1 10 10 1000
+.tw 1 10 1000 1000
 .param amplitude=0
 .tw 4000

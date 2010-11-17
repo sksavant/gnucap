@@ -3137,7 +3137,10 @@ void MODEL_BUILT_IN_MOS8::tr_eval(COMPONENT* brh)const
                      + (hp_float_t) (s->k3 + s->k3b * Vbseff) * tmp2 
                      + (hp_float_t) T1 
                      - (hp_float_t) DIBL_Sft;
-      assert(Vth>0);
+
+      trace5("DEV_BUILT_IN_MOS::tr_eval", Vth, polarity,
+          _sim->tt_iteration_number(), _sim->iteration_number(), a->vthdelta);
+      // assert(polarity*Vth>0);
 
       Vth += a->vthdelta;
       d->von = Vth;

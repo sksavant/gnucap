@@ -14,9 +14,15 @@ LW=2
 LOGSCALE=""
 #LOGSCALE="set logscale x;"
 
-alltest: rcd_tw.1.2.ps \
-	  rcd_tr.1.2.ps \
-	  rcd_cons_tw.1.3.ps
+short_test: rcd_tw.1.2.ps \
+            rcd_tr.1.2.ps \
+            rcd_cons_tw.1.3.ps \
+            rcd_cons_tw_more.1.3.ps \
+            bti_tw.1.2.ps
+
+
+compare: mos_level1_tw.1.2.ps  \
+         mos_level1_tr.1.2.ps
 
 %.ckt: %.sch models.mod
 	gnetlist -g spice-sdb -o $@ $<
@@ -90,6 +96,12 @@ alltest: rcd_tw.1.2.ps \
 		set terminal postscript portrait enhanced color dashed lw ${LW} 'Helvetica' 14; \
 		set output '$@'; \
 		plot '$<' using 1:6" |gnuplot
+
+%.1.7.ps: %.out
+	echo "set style ${STYLE}; \
+		set terminal postscript portrait enhanced color dashed lw ${LW} 'Helvetica' 14; \
+		set output '$@'; \
+		plot '$<' using 1:7" |gnuplot
 
 %.7.ps: %.out
 	echo "set style ${STYLE}; \
@@ -224,6 +236,12 @@ alltest: rcd_tw.1.2.ps \
 		     '$<' using 2:12, '$<' using 2:13,  '$<' using 2:14, '$<' using 2:15,\
 		     '$<' using 2:16, '$<' using 2:17,  '$<' using 2:18, '$<' using 2:19,\
 		     '$<' using 2:20" |gnuplot
+
+%.2.5-6.ps: %.out
+	echo "set style ${STYLE}; \
+		set terminal postscript portrait enhanced mono dashed lw ${LW} 'Helvetica' 14; \
+		set output '$@'; \
+		plot '$<' using 2:5, '$<' using 2:6" |gnuplot
 
 %.2.6.ps: %.out
 	echo "set style ${STYLE}; \

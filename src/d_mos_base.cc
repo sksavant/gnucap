@@ -28,6 +28,7 @@
 #include "globals.h"
 #include "e_elemnt.h"
 #include "d_mos_base.h"
+#include "d_bti.h"
 #include "u_adp.h"
 #include "e_adplist.h"
 /*--------------------------------------------------------------------------*/
@@ -576,20 +577,24 @@ void MODEL_BUILT_IN_MOS_BASE::do_tr_stress( const COMPONENT* c ) const
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_MOS_BASE::do_tt_prepare( COMPONENT* c) const
 {
-        if ( c->adp() == NULL ) {
-          c->attach_adp( new_adp( c ) );
-          std::cerr << "MODEL_BUILT_IN_MOS_BASE::tt_prepare: error. not already adp (?)\n";
-        } else{
-        }
+  trace0 ( "MODEL_BUILT_IN_MOS_BASE::tt_prepare" );
+  if ( c->adp() == NULL ) {
+    c->attach_adp( new_adp( c ) );
+    std::cerr << "MODEL_BUILT_IN_MOS_BASE::tt_prepare: error. not already adp (?)\n";
+  } else{
+  }
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_MOS_BASE::do_stress_apply(  COMPONENT* c) const
+void MODEL_BUILT_IN_MOS_BASE::do_stress_apply( COMPONENT* c ) const
 {
   const COMMON_COMPONENT* cc = c->common();
   cc=cc;
   ADP_BUILT_IN_MOS* a = (ADP_BUILT_IN_MOS*) c->adp();
 
   const DEV_BUILT_IN_MOS* d = (DEV_BUILT_IN_MOS*)(c);
+  DEV_BUILT_IN_BTI* B = dynamic_cast<DEV_BUILT_IN_BTI*>(d->_BTI);
+
+  assert(B);
   assert(d);
   assert(a);
 
@@ -599,8 +604,14 @@ void MODEL_BUILT_IN_MOS_BASE::do_stress_apply(  COMPONENT* c) const
   a->vthscale_bti = 1; //  exp ( 10000. * a->hci_stress->get() / c->w_in );
   a->vthdelta_bti = 0;
 
+  a->delta_vth= 0;
   if(use_bti()){
-    d->_BTI->stress_apply();
+    // this is done by subckt.
+    // d->_BTI->stress_apply();
+    a->delta_vth += B->dvth();
   }
+        
+
+
 }
 /*--------------------------------------------------------------------------*/

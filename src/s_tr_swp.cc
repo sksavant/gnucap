@@ -639,9 +639,15 @@ void TRANSIENT::accept()
     CARD_LIST::card_list.tr_accept();
   }
   ++steps_accepted_;
-  if( _sim->analysis_is_tt()){
+  if( _sim->analysis_is_tt() || OPT::trage ){
     if (_sim->_dt0>0) CARD_LIST::card_list.do_forall( &CARD::tr_stress );
     trace0( "TRANSIENT::accept: done stressing cardlist");
+    if ( OPT::trage ){
+      untested();
+      incomplete();
+      CARD_LIST::card_list.do_forall( &CARD::stress_apply );
+//      CARD_LIST::card_list.do_forall( &CARD::tr_reset );
+    }
   }
   ::status.accept.stop();
 }

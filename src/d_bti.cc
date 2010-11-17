@@ -65,6 +65,25 @@ MODEL_BUILT_IN_BTI::MODEL_BUILT_IN_BTI(const BASE_SUBCKT* p)
   set_default(&_tnom_c, OPT::tnom_c);
 }
 /*--------------------------------------------------------------------------*/
+MODEL_BUILT_IN_BTI::MODEL_BUILT_IN_BTI(const MODEL_BUILT_IN_BTI& p)
+  :MODEL_CARD(p),
+   gparallel(p.gparallel),
+   flags(p.flags),
+   mos_level(p.mos_level),
+   rcd_number(p.rcd_number),
+   bti_type(p.bti_type),
+   bti_base(p.bti_base),
+   anneal(p.anneal),
+   rcd_model_name(p.rcd_model_name),
+   weight(p.weight)
+//,   rcd_model( MODEL_BUILT_IN_RCD() )
+{
+  if (ENV::run_mode != rPRE_MAIN) {
+    ++_count;
+  }else{untested();//194
+  }
+}
+/*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_BTI_SINGLE::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
 {
   trace0("MODEL_BUILT_IN_BTI_SINGLE::attach_rcds()");
@@ -73,7 +92,7 @@ void MODEL_BUILT_IN_BTI_SINGLE::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
   COMMON_BUILT_IN_RCD* RCD1 = new COMMON_BUILT_IN_RCD;
   RCD1->set_modelname( rcd_model_name ); // <= !
   std::cout << "* uref single " << uref << "\n";
-  RCD1->Uref = double( uref );
+  RCD1->Uref = uref ;
   trace0(("MODEL_BUILT_IN_BTI_SINGLE::attach_rcds set_modelname " + (std::string) rcd_model_name).c_str());
   RCD1->attach(this); // ?
   COMMON_COMPONENT::attach_common(RCD1, (COMMON_COMPONENT**)&(_RCD[i]));
@@ -98,25 +117,6 @@ ADP_CARD* MODEL_BUILT_IN_BTI::new_adp(const COMPONENT* c)const
 {
   assert(c);
   return MODEL_CARD::new_adp(c);
-}
-/*--------------------------------------------------------------------------*/
-MODEL_BUILT_IN_BTI::MODEL_BUILT_IN_BTI(const MODEL_BUILT_IN_BTI& p)
-  :MODEL_CARD(p),
-   gparallel(p.gparallel),
-   flags(p.flags),
-   mos_level(p.mos_level),
-   rcd_number(p.rcd_number),
-   bti_type(p.bti_type),
-   bti_base(p.bti_base),
-   anneal(p.anneal),
-   rcd_model_name(p.rcd_model_name),
-   weight(p.weight)
-//,   rcd_model( MODEL_BUILT_IN_RCD() )
-{
-  if (ENV::run_mode != rPRE_MAIN) {
-    ++_count;
-  }else{untested();//194
-  }
 }
 /*--------------------------------------------------------------------------*/
 std::string MODEL_BUILT_IN_BTI::dev_type()const
@@ -186,7 +186,7 @@ void MODEL_BUILT_IN_BTI::precalc_first()
     e_val(&(this->anneal), true, par_scope);
     e_val(&(this->rcd_model_name), std::string("rcd_model_hc"), par_scope);
     e_val(&(this->weight), 0.123, par_scope);
-    e_val(&(this->uref), 1.0, par_scope);
+    e_val(&(this->uref), NOT_INPUT, par_scope);
     e_val(&(this->v2), false, par_scope);
 
 }
@@ -349,7 +349,8 @@ void MODEL_BUILT_IN_BTI_MATRIX::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
       COMMON_BUILT_IN_RCD* RCD1 = new COMMON_BUILT_IN_RCD;
       RCD1->set_modelname( rcd_model_name ); // <= !
       RCD1->attach(this); // ?
-      RCD1->Uref = double( uref );
+//  assert ((double)uref != NOT_INPUT );
+      RCD1->Uref = uref;
       RCD1->Recommon = double(up);
       RCD1->Rccommon0 = double(down);
 
@@ -520,6 +521,7 @@ COMMON_BUILT_IN_BTI::COMMON_BUILT_IN_BTI(int c)
    lambda(1.0),
    number(0),
    weight(1.0),
+   polarity(pN),
    _sdp(0),
    _RCD(0)
 {
@@ -531,6 +533,7 @@ COMMON_BUILT_IN_BTI::COMMON_BUILT_IN_BTI(const COMMON_BUILT_IN_BTI& p)
    lambda(p.lambda),
    number(p.number),
    weight(p.weight),
+   polarity(p.polarity),
    _sdp(0),
    _RCD(0)
 {
@@ -819,6 +822,7 @@ void DEV_BUILT_IN_BTI::expand()
   }
 
   if (_sim->is_first_expand()) {
+    trace0("DEV_BUILT_IN_BTI::expand, first");
     precalc_first();
     precalc_last();
     // local nodes
@@ -846,7 +850,10 @@ void DEV_BUILT_IN_BTI::expand()
         const CARD* p ;
         if (!m->is_v2()){
           p = device_dispatcher["vcvs2"];
-          Ubti_par=m->uref;
+          if (m->uref==NOT_INPUT )
+            Ubti_par=1;
+          else
+            Ubti_par=m->uref;
         }else{
           p = device_dispatcher["vcvs"];
           Ubti_par = 1.0;
@@ -894,11 +901,11 @@ void DEV_BUILT_IN_BTI::expand()
   if ( adp() == NULL ){
     attach_adp( m->new_adp( (COMPONENT*) this ) );
   }else{
-    assert(false);
   }
+  assert(adp());
 }
 /*--------------------------------------------------------------------------*/
-// voltage on cap. weighted.
+// resultung dvth.
 double DEV_BUILT_IN_BTI::vw()const{
   assert(_n);
   const COMMON_BUILT_IN_BTI* c = prechecked_cast<const COMMON_BUILT_IN_BTI*>(common());
@@ -912,6 +919,22 @@ double DEV_BUILT_IN_BTI::vw()const{
   int i=m->rcd_number;
   for(; i-->0;  buf += CARD::probe(_RCD[i],"vw") );
   return buf*c->weight;
+}
+/*--------------------------------------------------------------------------*/
+// voltage on cap. weighted.
+double DEV_BUILT_IN_BTI::dvth()const{
+  assert(_n);
+  const COMMON_BUILT_IN_BTI* c = prechecked_cast<const COMMON_BUILT_IN_BTI*>(common());
+  assert(c);
+  const MODEL_BUILT_IN_BTI* m = prechecked_cast<const MODEL_BUILT_IN_BTI*>(c->model());
+  assert(m);
+  const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(c->sdp());
+  assert(s);
+  const ADP_BUILT_IN_BTI* a = prechecked_cast<const ADP_BUILT_IN_BTI*>(adp()); a=a;
+  double buf = 0;
+  int i=m->rcd_number;
+  for(; i-->0;  buf += CARD::probe(_RCD[i],"dvth") );
+  return buf * c->weight;
 }
 /*--------------------------------------------------------------------------*/
 double DEV_BUILT_IN_BTI::tr_probe_num(const std::string& x)const
@@ -930,6 +953,11 @@ double DEV_BUILT_IN_BTI::tr_probe_num(const std::string& x)const
     int i=m->rcd_number;
     for(; i-->0;  buf += CARD::probe(_RCD[i],"vc") );
     return buf;
+  }else if (Umatch(x, "dvth |vth ")) {
+    double buf = 0;
+    int i=m->rcd_number;
+    while ( i-->0 )   buf += CARD::probe(_RCD[i],"dvth");
+    return buf * c->weight;
   }else if (Umatch(x, "vw ")) {
     return vw();
   }else if (Umatch(x, "wt ")) {
@@ -938,8 +966,8 @@ double DEV_BUILT_IN_BTI::tr_probe_num(const std::string& x)const
     return  _n[n_g].v0() - _n[n_b].v0();
   }else if (Umatch(x, "ueff ")) {
     return  _n[n_iu].v0() - _n[n_b].v0();
-  }else if (Umatch(x, "cutoff ")) {
-    return cutoff;
+  }else if (Umatch(x, "pol{arity} ")) {
+    return c->polarity;
   }else {
     return BASE_SUBCKT::tr_probe_num(x);
   }
@@ -962,11 +990,13 @@ double DEV_BUILT_IN_BTI::tt_probe_num(const std::string& x)const
     int i=m->rcd_number;
     while ( i-->0 )   buf += CARD::probe(_RCD[i],"vc");
     return buf * c->weight;
-  }else if (Umatch(x, "vth ")) {
+  }else if (Umatch(x, "dvth |vth ")) {
     double buf = 0;
     int i=m->rcd_number;
-    while ( i-->0 )   buf += CARD::probe(_RCD[i],"vth");
+    while ( i-->0 )   buf += CARD::probe(_RCD[i],"dvth");
     return buf * c->weight;
+  }else if (Umatch(x, "pol{arity} ")) {
+    return  c->polarity;
   }else if (Umatch(x, "uin ")) {
     return  _n[n_b].v0() - _n[n_g].v0();
   }else if (Umatch(x, "ueff ")) {
@@ -988,11 +1018,19 @@ void DEV_BUILT_IN_BTI::tt_commit() const {
   subckt()->do_forall( &CARD::tt_commit ); // sort of tt_prepare?
 }
 /*--------------------------------------------------------------------------*/
+void DEV_BUILT_IN_BTI::tt_prepare() {
+  trace0("DEV_BUILT_IN_BTI::tt_prepare");
+  untested();
+  //FIXME, subckt default
+  //        RCD reicht!
+  subckt()->do_forall( &CARD::tt_prepare ); // sort of tt_prepare?
+}
+/*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_BTI::stress_apply() {
   untested();
   //FIXME, subckt default
   //        RCD reicht!
-  subckt()->do_forall( &CARD::stress_apply ); // sort of tt_prepare?
+  subckt()->stress_apply();
 }
 /*--------------------------------------------------------------------------*/
 // cc_direct

@@ -161,8 +161,10 @@ void EVAL_BM_PULSE::tr_eval(ELEMENT* d)const
     ev = _iv;
   }else if (time >= _delay+_rise+_width) {	/* falling 	*/
     double interp = (time - (_delay+_rise+_width)) / _fall;
+	 assert(_pv != NOT_INPUT);
     ev = _pv + interp * (_iv - _pv);
   }else if (time >= _delay + _rise) {		/* pulse val 	*/
+	 assert(_pv != NOT_INPUT);
     ev = _pv;
   }else if (time >= _delay) {			/* rising 	*/
     double interp = (time - _delay) / _rise;

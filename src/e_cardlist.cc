@@ -257,6 +257,14 @@ CARD_LIST& CARD_LIST::dc_advance()
   return *this;
 }
 /*--------------------------------------------------------------------------*/
+CARD_LIST& CARD_LIST::stress_apply(  ) 
+{
+  for (const_iterator ci=begin(); ci!=end(); ++ci) {
+    (*ci)->stress_apply();
+  }
+  return *this;
+}
+/*--------------------------------------------------------------------------*/
 const CARD_LIST& CARD_LIST::tr_stress_last(  ) const
 {
   for (const_iterator ci=begin(); ci!=end(); ++ci) {

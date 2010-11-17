@@ -449,7 +449,6 @@ T PARAMETER<T>::e_val(const T& def, const CARD_LIST* scope)const
   }
   assert(first_name);
  
-  trace0("PARAMETER<T>::e_val " + _s + " " + to_string(_v)); 
   if (_v == inf) {
     return my_infty();
   }
@@ -480,6 +479,7 @@ T PARAMETER<T>::e_val(const T& def, const CARD_LIST* scope)const
     // start with # means we have a final value
   }
   --recursion;
+  // trace1("PARAMETER<T>::e_val ", _v);
   return _v;
 }
 /*--------------------------------------------------------------------------*/

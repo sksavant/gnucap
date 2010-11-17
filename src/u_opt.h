@@ -100,6 +100,7 @@ public:
   static double adpreltol;	    // adp allowed relative aging misprediction
   static double behreltol;	    // beh allowed relative
   static double adpkorr;	    // adp correction
+  static bool trage;	       // ageing during tr
   static double adpabstol;	    // adp ?
   static bool behave;	    // use behaviour...
   static bool printrejected;	    // adp ?

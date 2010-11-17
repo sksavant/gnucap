@@ -16,15 +16,12 @@ class ADP_CARD;
 // collects transient (stress) data and extrapolates.
 class ADP_NODE {
   public:
-    explicit ADP_NODE( const COMPONENT* cin2 ) : dbg(0)
-      { init(); _c = cin2; name +="b"; }
-    explicit ADP_NODE( const COMPONENT* cin3, std::string name_in2 ) : dbg(0)
-      { init(); _c=cin3; name=name_in2;}
-    explicit ADP_NODE( const COMPONENT* cin, const char name_in[] ) : dbg(0)
-      { init(); _c=cin;  name=std::string(name_in); }
-    explicit ADP_NODE( ADP_CARD* ac, const COMPONENT* cin, const char name_in[] ) : dbg(0)
-      { init(); _c=cin;  name=std::string(name_in); a=ac; }
-    // virtual ADP_NODE(){ return ADP_NODE(*this); };
+    explicit ADP_NODE( const COMPONENT* );
+    explicit ADP_NODE( const COMPONENT* , std::string name_in2 );//
+    explicit ADP_NODE( const COMPONENT* , const char name_in[] );
+    explicit ADP_NODE( ADP_CARD* ac, const COMPONENT* cin, const char name_in[] );
+    //: dbg(0)
+    //  { init(); _c=cin;  name=std::string(name_in); a=ac; }
     ~ADP_NODE( );
     ADP_NODE( const ADP_NODE& );
     virtual void init();
@@ -133,17 +130,16 @@ class ADP_NODE {
     }
     hp_float_t get0()const { assert( _val_bef[0] == _val_bef[0] ); return _val_bef[0]; }
     hp_float_t get1()const { assert( _val_bef[1] == _val_bef[1] ); return _val_bef[1]; }
+    hp_float_t get_aft_1()const;
     hp_float_t tt_get_sum()const  {return _val_bef[0] + _delta[0]; }
     void tr_add(double x );//{tr_value += x;}
     void tr_set(double x ); //{tr_value = x;}
     double tt_review( );
     TIME_PAIR tt_preview( );
-    void reset(); //{tr_value = 0; _val_bef[1] = 0; _val_bef[0] =0;}
-    void reset_tr() { tr_value = 0;
-      trace0(("ADP_NODE::reset_tr() " + short_label()).c_str() );
-    }
-    hp_float_t tr_get( ) const { return ( tr_value );}
-    hp_float_t get_tr( ) const { return ( tr_value );}
+    void reset();
+    void reset_tr();
+    hp_float_t tr_get( ) const; // { return ( tr_value );}
+    hp_float_t get_tr( ) const { return tr_get();}
     double tr_get_old(){ return (_delta[1]);}
     double tr_abs_err()const{ return _abs_tr_err; }
     double tr_rel_err()const{ return _rel_tr_err; }
@@ -182,7 +178,7 @@ class BTI_ADP : public ADP_NODE {
 /*--------------------------------------------------------------------------*/
 class ADP_NODE_RCD : public ADP_NODE {
  public:
-   ADP_NODE_RCD( const COMPONENT*x): ADP_NODE(x) { name+="test"; }
+   ADP_NODE_RCD( const COMPONENT*x): ADP_NODE(x) { name+=" (rcd)"; }
    ADP_NODE_RCD( const ADP_NODE& );
 
    // virtual ADP_NODE(){ return ADP_NODE_RCD(*this); };

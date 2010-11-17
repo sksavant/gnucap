@@ -267,9 +267,9 @@ void SIM_DATA::uninit()
 void SIM_DATA::update_tt_order()
 {
   int new_order=3;
-  if(_dT2 == 0 ) new_order=2;
-  if(_dT1 == 0 ) new_order=1;
-  if(_dT0 == 0 ) new_order=0; // ?
+  if(_dT2 == 0 ) new_order=3;
+  if(_dT1 == 0 ) new_order=2;
+  if(_dT0 == 0 ) new_order=1; // ?
   if( OPT::adporder < new_order ) new_order = OPT::adporder;
 
   if (_tt_order != new_order ) {

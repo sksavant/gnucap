@@ -258,15 +258,16 @@ void TTT::first()
 
   trace0("TTT::first accepting first .");
 
-  // accept_tt();
-  CARD_LIST::card_list.do_forall( &CARD::tt_accept ); //?
 
   // FIXME : what's this?
-  ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_commit_first ); // sort of tt_prepare?
-  ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_accept ); 
-  ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_commit_first ); // sort of tt_prepare?
-  ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_accept ); 
-  CARD_LIST::card_list.do_forall( &CARD::tt_accept );
+  //ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_commit_first ); // sort of tt_prepare?
+  //ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_accept ); 
+  //ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_commit_first ); // sort of tt_prepare?
+  //ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_accept ); 
+  //CARD_LIST::card_list.do_forall( &CARD::tt_accept );
+  accept_tt();
+
+
   outdata_tt(_sim->_Time0); // first.
 /// END accept
 
@@ -279,7 +280,6 @@ void TTT::first()
 /*--------------------------------------------------------------------------*/
 // why not directly run into loop?
 void TTT::first_after_interruption(){
-    // _sim->update_tt_order();
     _sim->force_tt_order(0); assert(_sim->get_tt_order() == 0 );
     time1 = 0.;
     _sim->_dT0=_sim->_last_time;
@@ -304,13 +304,8 @@ void TTT::first_after_interruption(){
 
     _accepted_tt = true;
 
-    // accept_tt(); ?
-    CARD_LIST::card_list.do_forall( &CARD::tt_accept ); //?
-    ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_accept ); 
-    // FIXME : what's this?
-    ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_commit_first ); // sort of tt_prepare?
-    ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_accept ); 
-    CARD_LIST::card_list.do_forall( &CARD::tt_accept );
+    accept_tt(); 
+    // 
     outdata_tt(_sim->_Time0); // first.
 
     /* next
@@ -479,7 +474,6 @@ void TTT::accept_tt()
   _sim->_tt_accepted++;
 
   _sim->update_tt_order();
-
 }
 /*--------------------------------------------------------------------------*/
 void TTT::tt_advance() // FIXME: merge advance & accept ??
@@ -489,12 +483,10 @@ void TTT::tt_advance() // FIXME: merge advance & accept ??
   _sim->_tt_rejects=0;
   _Time1 = _sim->_Time0;
 
-
   _sim->_dT3 = _sim->_dT2;
   _sim->_dT2 = _sim->_dT1;
   _sim->_dT1 = _sim->_dT0;
   _sim->_dT0 = 0;
-    _sim->update_tt_order();
   ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_advance );
 }
 /*--------------------------------------------------------------------------*/
@@ -968,9 +960,6 @@ bool TTT::next()
 
   _sim->_dT0 = new_dT;
   _sim->_Time0 = new_Time0;
-
-  if (_accepted_tt)
-    _sim->update_tt_order();
 
   _sim->restore_voltages();
   ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_commit );

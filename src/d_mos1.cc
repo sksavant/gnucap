@@ -27,6 +27,7 @@
 #include "globals.h"
 #include "e_elemnt.h"
 #include "d_mos1.h"
+#include "d_bti.h"
 /*--------------------------------------------------------------------------*/
 const double NA(NOT_INPUT);
 const double INF(BIGBIG);
@@ -321,6 +322,8 @@ void MODEL_BUILT_IN_MOS1::tr_eval(COMPONENT* brh)const
   assert(d);
   const COMMON_BUILT_IN_MOS* c = prechecked_cast<const COMMON_BUILT_IN_MOS*>(d->common());
   assert(c);
+  const ADP_BUILT_IN_MOS* a = prechecked_cast<const ADP_BUILT_IN_MOS*>(d->adp());
+  assert(a);
   const SDP_BUILT_IN_MOS1* s = prechecked_cast<const SDP_BUILT_IN_MOS1*>(c->sdp());
   assert(s);
   const MODEL_BUILT_IN_MOS1* m = this;
@@ -349,15 +352,20 @@ void MODEL_BUILT_IN_MOS1::tr_eval(COMPONENT* brh)const
       }
     }
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
+    //d->vto += ((const DEV_BUILT_IN_BTI*)(d->_BTI))->dvth();
+
     d->von = m->vto + m->gamma * (sarg - sqrt(m->phi))
       + .5 * (m->egap - t->egap) + .5 * (t->phi - m->phi);
+
+    d->von += a->delta_vth;   
+
     d->vgst = d->vdsat = d->vgs - d->von;
     if (d->vdsat < 0.) {
       d->vdsat = 0.;
     }
     d->cutoff = (d->vgst < 0.);
     d->saturated = (d->vds > d->vdsat);
-    trace3("", d->von, d->vgst, d->vdsat);
+    trace3("MODEL_BUILT_IN_MOS1", d->von, d->vgst, d->vdsat);
     double Lambda = (m->lambda != NA) ? m->lambda : 0.;
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
     if (d->cutoff) {

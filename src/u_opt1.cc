@@ -90,6 +90,7 @@ bool	OPT::traceload = true;
 int	OPT::itermin = 1;
 int	OPT::threads = 1;
 int	OPT::adporder = 2;
+bool	OPT::trage = false;
 double	OPT::vmax =  5;
 double	OPT::vmin = -5;
 double	OPT::dtmin = 1e-12;

@@ -273,6 +273,8 @@ private:
   virtual void tr_stress( ) const;
   virtual void stress_apply();
   virtual void tt_prepare( ); //NOT const
+public:
+  virtual void tt_commit( ); //NOT const
 protected:
   virtual  void tr_save_amps(int trstep); //
 private:
@@ -312,6 +314,7 @@ public:
   double vthdelta_bti ;
   double eff(){return bti_eff_voltage;}
   virtual double wdT()const;
+  double delta_vth;
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

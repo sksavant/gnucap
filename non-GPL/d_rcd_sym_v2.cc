@@ -54,10 +54,16 @@ std::string MODEL_BUILT_IN_RCD_SYM_V2::dev_type()const
 }
 /*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_RCD_SYM_V2::MODEL_BUILT_IN_RCD_SYM_V2(const BASE_SUBCKT* p) 
-  : MODEL_BUILT_IN_RCD(p){ }
+  : MODEL_BUILT_IN_RCD(p)
+{ 
+  uref=1; 
+}
 /*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_RCD_SYM_V2::MODEL_BUILT_IN_RCD_SYM_V2(const MODEL_BUILT_IN_RCD_SYM_V2& p)  
-  : MODEL_BUILT_IN_RCD(p){ }
+  : MODEL_BUILT_IN_RCD(p)
+{ 
+  
+}
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD_SYM_V2::expand()
 {
@@ -187,9 +193,10 @@ void MODEL_BUILT_IN_RCD_SYM_V2::do_tr_stress( const COMPONENT* brh) const
 void MODEL_BUILT_IN_RCD_SYM_V2::do_tt_prepare( COMPONENT* brh) const{
   const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
   const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
-  trace0("MODEL_BUILT_IN_RCD_SYM_V2::do_tt_prepare\n");
   //std::cout << "* " << cc->_wcorr << "\n";
   c->_Ccgfill->tt_set( -cc->_wcorr );
+
+  trace1( ( "MODEL_BUILT_IN_RCD_SYM_V2::do_tt_prepare" + brh->short_label()).c_str(),  -cc->_wcorr );
 }
 /*--------------------------------------------------------------------------*/
 double MODEL_BUILT_IN_RCD_SYM_V2::vth(const COMPONENT* brh) const{
@@ -202,7 +209,9 @@ double MODEL_BUILT_IN_RCD_SYM_V2::__Re(double uin, const COMMON_COMPONENT* c) co
   assert(c);
   const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
   double Y = cc->Recommon * exp(cc->Uref* cc->_lambda) ;
-  return Y / exp( cc->_lambda * uin );
+        trace2(" " , Y , cc->_Re0);
+  assert( Y = cc->_Re0);
+  return cc->_Re0 / exp( cc->_lambda * uin );
 }
 /*--------------------------------------------------------------------------*/
 double MODEL_BUILT_IN_RCD_SYM_V2::__Rc(double uin, const COMMON_COMPONENT* c ) const {
