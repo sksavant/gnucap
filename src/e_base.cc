@@ -35,7 +35,7 @@ static char fix_case(char c)
 }
 /*--------------------------------------------------------------------------*/
 double CKT_BASE::tr_probe_num(const std::string&)const {return NOT_VALID;}
-double CKT_BASE::tt_probe_num(const std::string&)const {return 888;}
+double CKT_BASE::tt_probe_num(const std::string&)const {return NOT_VALID;}
 XPROBE CKT_BASE::ac_probe_ext(const std::string&)const {return XPROBE(NOT_VALID, mtNONE);}
 /*--------------------------------------------------------------------------*/
 SIM_DATA sim_data;
@@ -71,7 +71,8 @@ double CKT_BASE::probe_num(const std::string& what)const
 {
   double x;
   if (_sim->analysis_is_tt()){
-	  return ( tt_probe_num(what) );
+	  x=  tt_probe_num(what) ;
+          if (x == NOT_VALID)  x = tr_probe_num(what);
   }else  if (_sim->analysis_is_ac()) {
 	  x = ac_probe_num(what);
   }else{

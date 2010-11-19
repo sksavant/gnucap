@@ -81,14 +81,14 @@ MODEL_BUILT_IN_RCD::MODEL_BUILT_IN_RCD(const MODEL_BUILT_IN_RCD& p)
   }
 }
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD::vth(const COMPONENT* brh) const{
+double MODEL_BUILT_IN_RCD::dvth(const COMPONENT* brh) const{
   const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
   const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
   return c->_Ccgfill->get_tt() * cc->_weight * cc->_wcorr;
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD_NET::vth(const COMPONENT* c) const{
+double MODEL_BUILT_IN_RCD_NET::dvth(const COMPONENT* c) const{
   const DEV_BUILT_IN_RCD* d = prechecked_cast<const DEV_BUILT_IN_RCD*>(c);
   const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(d->common());
   // read from CAP. _Ccgfill is only updated after tr
@@ -825,12 +825,12 @@ void DEV_BUILT_IN_RCD::expand_sym() {
   }
 }
 /*--------------------------------------------------------------------------*/
-double DEV_BUILT_IN_RCD::vth()const {
+double DEV_BUILT_IN_RCD::dvth()const {
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
   assert(c);
   assert(c->model());
   const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
-  return m->vth(this);
+  return m->dvth(this);
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::expand_net() {
@@ -1006,7 +1006,7 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "tr ")) {
     return  ( _Ccgfill->tr_get() );
   }else if (Umatch(x, "dvth |vth ")) {
-    return  ( m->vth(this) );
+    return  ( m->dvth(this) );
   }else if (Umatch(x, "vw{v} ")) {
     assert (c->_weight != .0);
     if (m->use_net()){
@@ -1049,14 +1049,15 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   //double lambda=1;
 
   if (Umatch(x, "vw{v} |dvth ")) {
-      assert ( c->_wcorr ==  c->_wcorr );
-      assert ( c->_weight == c->_weight);
-      assert ( _Ccgfill->get_tt() == _Ccgfill->get_tt() );
-    if( m->use_net()){
-      return  ( _n[n_ic].v0() - _n[n_b].v0() ) * c->_weight * c->_wcorr;
-    }else{
-      return _Ccgfill->get_tt() * c->_weight * c->_wcorr;
-    }
+    return  ( m->dvth(this) );
+    //  assert ( c->_wcorr ==  c->_wcorr );
+    //  assert ( c->_weight == c->_weight);
+    //  assert ( _Ccgfill->get_tt() == _Ccgfill->get_tt() );
+    //if( m->use_net()){
+    //  return  ( _n[n_ic].v0() - _n[n_b].v0() ) * c->_weight * c->_wcorr;
+    //}else{
+    //  return _Ccgfill->get_tt() * c->_weight * c->_wcorr;
+    //}
   }else if (Umatch(x, "net ")) {
     if( m->use_net()){
       return  1;
@@ -1096,13 +1097,11 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
             return( m->__Re(cc->Uref,cc));
     else
     return  ( c->__tau_up( c->Uref ) );
-  }else if (Umatch(x, "wdt ")) {
-    return  ( _Ccgfill->wdT() );
-  }else if (Umatch(x, "tr1 ")) {
-    return  ( _Ccgfill->tr_get_old() );
-  }else if (Umatch(x, "adpdebug ")) {
-    return  ( _Ccgfill->debug() );
-  }else if (Umatch(x, "vwtr ")) {
+  }
+  else if (Umatch(x, "wdt ")) { return  ( _Ccgfill->wdT() ); }
+  else if (Umatch(x, "tr1 ")) { return  ( _Ccgfill->tr_get_old() ); }
+  else if (Umatch(x, "adpdebug ")) { return  ( _Ccgfill->debug() ); }
+  else if (Umatch(x, "vwtr ")) {
     return  ( _Ccgfill->tr_get() * c->_weight );
   }else {
     return BASE_SUBCKT::tt_probe_num(x);

@@ -997,6 +997,8 @@ double DEV_BUILT_IN_BTI::tt_probe_num(const std::string& x)const
     return buf * c->weight;
   }else if (Umatch(x, "pol{arity} ")) {
     return  c->polarity;
+  }else if (Umatch(x, "num ")) {
+    return  m->rcd_number;
   }else if (Umatch(x, "uin ")) {
     return  _n[n_b].v0() - _n[n_g].v0();
   }else if (Umatch(x, "ueff ")) {

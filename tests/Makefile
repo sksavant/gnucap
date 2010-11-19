@@ -21,8 +21,10 @@ short_test: rcd_tw.1.2.ps \
             bti_tw.1.2.ps
 
 
-compare: mos_level1_tw.1.2.ps  \
-         mos_level1_tr.1.2.ps
+compare: mos_level1_tw.1.2-3.ps  \
+         mos_level1_tr.1.2-3.ps \
+         mos_level1_tw.1.6.ps  \
+         mos_level1_tr.1.4.ps
 
 %.ckt: %.sch models.mod
 	gnetlist -g spice-sdb -o $@ $<

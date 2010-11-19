@@ -36,7 +36,7 @@ class MODEL_BUILT_IN_RCD_SYM_V2 : public MODEL_BUILT_IN_RCD {
     double __Re(double uin, const COMMON_COMPONENT* cc)const;
     double __Rc(double uin, const COMMON_COMPONENT* cc)const;
     double __Ge(double uin, const COMMON_COMPONENT* cc)const;
-    double vth( const COMPONENT* cc)const;
+    double dvth( const COMPONENT* cc)const;
 };
 /*--------------------------------------------------------------------------*/
 class DEV_BUILT_IN_RCD_SYM_V2 : public DEV_BUILT_IN_RCD{

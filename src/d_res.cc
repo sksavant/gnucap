@@ -149,7 +149,7 @@ void DEV_RESISTANCE::stress_apply()
         assert(_value_new == _value_new);
 	double gesamtstress = ((ADP_RESISTANCE*)adp())->i_stress->get();
         assert (gesamtstress == gesamtstress);
-	R_aktuell = R_anfang * exp(gesamtstress/watt_jahre  * breite * R_anfang);
+	R_aktuell = R_anfang ; // * exp(gesamtstress/watt_jahre  * breite * R_anfang);
 	
 	double value_old;
 	value_old = R_aktuell; //anfang * exp(SIM::Time0/ 10.0);
@@ -182,7 +182,9 @@ void DEV_RESISTANCE::stress_apply()
         // tr_load_passive(); //MUSS!
         //  do_tr();
         //
-        tr_begin();
+
+
+        // tr_begin();
 }
 /*--------------------------------------------------------------------------*/
 void DEV_RESISTANCE::tr_begin()
@@ -200,7 +202,7 @@ void DEV_RESISTANCE::tr_begin()
   assert(_loss0 == 0.);
   assert(_loss1 == 0.);
   if (value() == 0. && !has_common()) {
-    error(bPICKY, long_label() + ": short circuit\n");
+    error(bPICKY, long_label() + ": short circuit trb\n");
   }else{
   }
 
@@ -219,7 +221,7 @@ bool DEV_RESISTANCE::do_tr()
     tr_eval();
     assert(_y[0].f0 != LINEAR);
     if (_y[0].f1 == 0.) {
-      error(bPICKY, long_label() + ": short circuit\n");
+      error(bPICKY, long_label() + ": short circuit tr\n");
       _y[0].f1 = OPT::shortckt;
       set_converged(conv_check());
     }else{

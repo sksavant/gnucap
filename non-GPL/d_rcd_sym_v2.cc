@@ -199,7 +199,7 @@ void MODEL_BUILT_IN_RCD_SYM_V2::do_tt_prepare( COMPONENT* brh) const{
   trace1( ( "MODEL_BUILT_IN_RCD_SYM_V2::do_tt_prepare" + brh->short_label()).c_str(),  -cc->_wcorr );
 }
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD_SYM_V2::vth(const COMPONENT* brh) const{
+double MODEL_BUILT_IN_RCD_SYM_V2::dvth(const COMPONENT* brh) const{
   const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
   const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
   return (c->_Ccgfill->get_tt()+ cc->_wcorr )* cc->_weight;

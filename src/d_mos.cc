@@ -908,7 +908,6 @@ void DEV_BUILT_IN_MOS::expand()
       }
       {
         if (m->polarity==pP) { // stupid hack. use voltage source?
-          std::cout << "polap" << m->polarity <<"\n";
           node_t nodes[] = {_n[n_b], _n[n_g]};
           _BTI->set_parameters("BTI", this, c->_bti, 1.0, 0, NULL, 2, nodes);
         } else {
