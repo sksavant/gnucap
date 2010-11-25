@@ -60,6 +60,7 @@ COMMON_COMPONENT::~COMMON_COMPONENT()
 /*--------------------------------------------------------------------------*/
 void COMMON_COMPONENT::attach_common(COMMON_COMPONENT*c, COMMON_COMPONENT**to)
 {
+  trace0("COMMON_COMPONENT::attach_common");
   assert(to);
   if (c == *to) {
     itested();

@@ -995,6 +995,7 @@ void DEV_BUILT_IN_MOS::expand()
   trace0("DEV_BUILT_IN_MOS::expand, ADP things");
   if ( adp() == NULL ){
     attach_adp( m->new_adp( (COMPONENT*) this ) );
+        //subckt()->push_front(adp());
   }else{
     std::cerr << short_label() << "\n";
     assert(false);
@@ -1023,10 +1024,10 @@ double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "vds ")) {
     return  _n[n_d].v0() - _n[n_s].v0();
   }else if (Umatch(x, "dvth ")) { // hci???
-    // return a->dvth();
-    return 60;
+    return a->delta_vth;
   }else if (Umatch(x, "dv_bti ")) { // hci???
-    return  ((const DEV_BUILT_IN_BTI*)(d->_BTI))->dvth();
+    if (d->_BTI) return  ((const DEV_BUILT_IN_BTI*)(d->_BTI))->dvth();
+    return(NA);
   }else if (Umatch(x, "bti_stress ")) { // hci???
     return  a->bti_stress->tr_get();
   }else if (Umatch(x, "hci |bti ")) { // hci???
@@ -1313,13 +1314,9 @@ double DEV_BUILT_IN_MOS::tt_probe_num(const std::string& x)const
       return  ((DEV_BUILT_IN_BTI*)_BTI)->vw();
     else
       return 888;
-  }else if (Umatch(x, "bti_eff ")) {
-    return  a->tt_probe_num(x);
   }else if (Umatch(x, "wdt ")) {
     return  a->wdT();
-  }else if (Umatch(x, "bti ")) {
-    return  a->tt_probe_num(x);
-  }else if (Umatch(x, "dvth_hci ")) {
+  }else if (Umatch(x, "hci |dvth_hci ")) {
     return  a->tt_probe_num(x);
   }else if (Umatch(x, "stress ")) {
     return 19999;
@@ -1368,7 +1365,7 @@ bool DEV_BUILT_IN_MOS::tr_needs_eval()const
     polarity_t polarity = m->polarity;
     node_t& eff_s((reversed) ? _n[n_id] : _n[n_is]);
     node_t& eff_d((reversed) ? _n[n_is] : _n[n_id]);
-    if(_BTI->tr_needs_eval()) return true;
+    if( m->use_bti() && _BTI->tr_needs_eval()) return true;
     return !(conchk(vds,polarity*(eff_d.v0()-eff_s.v0()),OPT::vntol)
 	     && conchk(vgs, polarity*(_n[n_g].v0()-eff_s.v0()),
 		       OPT::vntol)
@@ -1515,14 +1512,10 @@ bool DEV_BUILT_IN_MOS::do_tr()
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::stress_apply( )
 {
-
-
   const COMMON_BUILT_IN_MOS* c = (const COMMON_BUILT_IN_MOS*) common();
   const MODEL_BUILT_IN_MOS_BASE* m = (const MODEL_BUILT_IN_MOS_BASE*)(c->model());
   assert(m);
-
   BASE_SUBCKT::stress_apply();
-
   m->do_stress_apply(this);
 }
 /*--------------------------------------------------------------------------*/
@@ -1539,6 +1532,8 @@ void DEV_BUILT_IN_MOS::tr_stress( ) const
 double ADP_BUILT_IN_MOS::wdT() const{
   return ids_stress->wdT();
 }
+/*--------------------------------------------------------------------------*/
+//expand?
 void ADP_BUILT_IN_MOS::init(const COMPONENT* c)
 {
   trace0("ADP_BUILT_IN_MOS::init");
@@ -1554,10 +1549,6 @@ void ADP_BUILT_IN_MOS::init(const COMPONENT* c)
   // only mos>0?
   ids_stress = new ADP_NODE(this, c, "ids" );
   igd_stress = new ADP_NODE(this, c, "igs" );
-
-//  if use_hci
-//  ADP_NODE_LIST::adp_node_list.push_back( ids_stress );
-//  ADP_NODE_LIST::adp_node_list.push_back( igd_stress );
 
   vthscale_bti = 1;
   vthdelta_bti = 0;
@@ -1619,7 +1610,8 @@ void ADP_BUILT_IN_MOS::tt_commit()
 double ADP_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
 {
   if( Umatch("bti ", x) ){
-    return bti_stress->tr_get();
+    if(bti_stress) return bti_stress->tr_get();
+    return NA;
   } else if( Umatch("dvth_bti ", x) ) {
     return vthdelta_bti;
   }else{

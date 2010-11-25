@@ -524,7 +524,6 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
     Uref = 0.0;
   }
 
-
   // size dependent
   //delete _sdp;
   _sdp = m->new_sdp(this);
@@ -767,6 +766,12 @@ void DEV_BUILT_IN_RCD::expand()
   assert(c->sdp());
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(c->sdp());
   assert(s);
+
+
+  // doesnt work, expand is private
+  // m->do_expand();
+  // return;
+
   if (!subckt()) {
     new_subckt();
   }else{
@@ -775,7 +780,11 @@ void DEV_BUILT_IN_RCD::expand()
   _Ccgfill = m->new_adp_node(this);
   ADP_NODE_LIST::adp_node_list.push_back( _Ccgfill );
 
-  expand_net();
+  if(m->use_net()){
+    expand_net();
+  }else{
+    expand_net(); // sic.
+  }
 
   //precalc();
   subckt()->expand();
@@ -785,6 +794,9 @@ void DEV_BUILT_IN_RCD::expand()
     attach_adp( m->new_adp( (COMPONENT*) this ) );
   }else{
     untested(); // rebuild circuit??
+  }
+  if (m->v2()){
+    _Ccgfill->tt_set( -c->_wcorr );
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -1048,59 +1060,35 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   // FIXME 
   //double lambda=1;
 
-  if (Umatch(x, "vw{v} |dvth ")) {
-    return  ( m->dvth(this) );
-    //  assert ( c->_wcorr ==  c->_wcorr );
-    //  assert ( c->_weight == c->_weight);
-    //  assert ( _Ccgfill->get_tt() == _Ccgfill->get_tt() );
-    //if( m->use_net()){
-    //  return  ( _n[n_ic].v0() - _n[n_b].v0() ) * c->_weight * c->_wcorr;
-    //}else{
-    //  return _Ccgfill->get_tt() * c->_weight * c->_wcorr;
-    //}
-  }else if (Umatch(x, "net ")) {
-    if( m->use_net()){
-      return  1;
-    }else{
-      return  0;
-    }
-  }else if (Umatch(x, "vc ")) {
+  if (Umatch(x, "vw{v} |dvth ")) { return  ( m->dvth(this) ); }
+  else if (Umatch(x, "vc "))  {
     if( m->use_net()){
       return  ( _n[n_ic].v0() - _n[n_b].v0() );
     }else{
       return _Ccgfill->get_tt();
     }
-  }else if (Umatch(x, "tr ")) {
-    return  ( _Ccgfill->tr_get() );
-  }else if (Umatch(x, "RE ")) {
-    return  c->_Re;
-  }else if (Umatch(x, "ttr ")) {
-    return  ( _Ccgfill->tt_rel_err() );
-  }else if (Umatch(x, "trr ")) {
-    return  ( _Ccgfill->tr_rel_err() );
-  }else if (Umatch(x, "tra ")) {
-    return  ( _Ccgfill->tr_abs_err() );
-  }else if (Umatch(x, "order ")) {
-    return  _Ccgfill->order();
-  }else if (Umatch(x, "Rc ")) {
-    return  c->_Rc0;
-  }else if (Umatch(x, "region ")) {
-    return  ( m->tt_region( this ) );
-  }else if (Umatch(x, "uref ")) {
-    return  ( c->Uref );
-  }else if (Umatch(x, "uend ")) {
-    return (c->Uref / (c->__Re(c->Uref) / c->__Rc(c->Uref) +1) * c->_wcorr ) * c->_weight;
-  }else if (Umatch(x, "tc ")) {
-    return  ( c->__Rc(0) );
-  }else if (Umatch(x, "te ")) {
+  }
+  else if (Umatch(x, "net "   )) { return( (double ) m->use_net()); }
+  else if (Umatch(x, "tr "    )) { return( _Ccgfill->tr_get() ); }
+  else if (Umatch(x, "RE "    )) { return( c->_Re );}
+  else if (Umatch(x, "ttr "   )) { return( _Ccgfill->tt_rel_err() ); }
+  else if (Umatch(x, "trr "   )) { return( _Ccgfill->tr_rel_err() ); }
+  else if (Umatch(x, "tra "   )) { return( _Ccgfill->tr_abs_err() ); }
+  else if (Umatch(x, "order " )) { return( _Ccgfill->order() ); }
+  else if (Umatch(x, "Rc "    )) { return( c->_Rc0 ); }
+  else if (Umatch(x, "wdt "   )) { return( _Ccgfill->wdT() ); }
+  else if (Umatch(x, "tr1 "   )) { return( _Ccgfill->tr_get_old() ); }
+  else if (Umatch(x, "region ")) { return( m->tt_region( this ) ); }
+  else if (Umatch(x, "uref "  )) { return( c->Uref ); }
+  else if (Umatch(x, "uend "  )) { return( c->Uref / (c->__Re(c->Uref) / c->__Rc(c->Uref) +1) * c->_wcorr ) * c->_weight; }
+  else if (Umatch(x, "tc "    )) { return( c->__Rc(0) ); }
+  else if (Umatch(x, "adpdebug ")) { return  ( _Ccgfill->debug() ); }
+  else if (Umatch(x, "te ")) {
     if (m->v2())
             return( m->__Re(cc->Uref,cc));
     else
     return  ( c->__tau_up( c->Uref ) );
   }
-  else if (Umatch(x, "wdt ")) { return  ( _Ccgfill->wdT() ); }
-  else if (Umatch(x, "tr1 ")) { return  ( _Ccgfill->tr_get_old() ); }
-  else if (Umatch(x, "adpdebug ")) { return  ( _Ccgfill->debug() ); }
   else if (Umatch(x, "vwtr ")) {
     return  ( _Ccgfill->tr_get() * c->_weight );
   }else {

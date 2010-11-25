@@ -123,6 +123,18 @@ compare: mos_level1_tw.1.2-3.ps  \
 		set output '$@'; \
 		plot '$<' using 1:9" |gnuplot
 
+%.1.10.ps: %.out
+	echo "set style ${STYLE}; \
+		set terminal postscript portrait enhanced color dashed lw ${LW} 'Helvetica' 14; \
+		set output '$@'; \
+		plot '$<' using 1:10" |gnuplot
+
+%.1.11.ps: %.out
+	echo "set style ${STYLE}; \
+		set terminal postscript portrait enhanced color dashed lw ${LW} 'Helvetica' 14; \
+		set output '$@'; \
+		plot '$<' using 1:11" |gnuplot
+
 
 %.1.3-11.ps: %.out
 	echo "set style ${STYLE}; \

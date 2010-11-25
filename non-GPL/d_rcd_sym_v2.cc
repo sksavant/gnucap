@@ -44,8 +44,12 @@ namespace MODEL_BUILT_IN_RCD_DISPATCHER
     d2(&model_dispatcher, "rcdsym_v2", &p3);
 }
 ///*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_SYM_V2::do_expand(const  COMPONENT* ) const
+void MODEL_BUILT_IN_RCD_SYM_V2::do_expand(  COMPONENT* c) const
 {
+  DEV_BUILT_IN_RCD_SYM_V2* d = dynamic_cast<DEV_BUILT_IN_RCD_SYM_V2*>(c);
+  assert(d);
+  // d->expand();
+  
 }
 /*--------------------------------------------------------------------------*/
 std::string MODEL_BUILT_IN_RCD_SYM_V2::dev_type()const
@@ -202,7 +206,13 @@ void MODEL_BUILT_IN_RCD_SYM_V2::do_tt_prepare( COMPONENT* brh) const{
 double MODEL_BUILT_IN_RCD_SYM_V2::dvth(const COMPONENT* brh) const{
   const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
   const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
-  return (c->_Ccgfill->get_tt()+ cc->_wcorr )* cc->_weight;
+
+//  stupid hack.
+  if (_sim->analysis_is_tt()){
+    return (c->_Ccgfill->get_tt()+ cc->_wcorr )* cc->_weight;
+  } else {
+    return (c->_Ccgfill->get_total()+ cc->_wcorr )* cc->_weight;
+  }
 }
 /*--------------------------------------------------------------------------*/
 double MODEL_BUILT_IN_RCD_SYM_V2::__Re(double uin, const COMMON_COMPONENT* c) const {

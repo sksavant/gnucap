@@ -31,9 +31,6 @@
 2=history
 */
 
-bool is_number(double x){
-  return (( x != inf ) && (x != -inf ) && (x == x)) ;
-}
 
 /*----------------------------------------------------------------------------*/
 ADP_NODE::ADP_NODE( const COMPONENT* c, const char name_in[] ) : dbg(0)
@@ -283,18 +280,14 @@ void ADP_NODE::tt_accept()
   trace1(("ADP_NODE::tt_accept done " + _c->short_label()).c_str(), get_tt());
   assert(_val_bef[0] >=0 || !_positive);
 
-  if (( dT0() / tr_duration() ) < 1.000001){
-    trace5(("ADP_NODE::tt_accept" + _c->short_label()).c_str(), _val_bef[0] ,
-        _val_bef[1], _delta[0], _val_bef[0] - _val_bef[1] - _delta[1], _delta[1] );
-    assert(fabs( ( _val_bef[0] - _val_bef[1] - _delta[1]) / (_delta[1] + 1e-10)) < 1e-13);
+  if (( dT0() / tr_duration() ) < 1.000000001){
+    trace1(("ADP_NODE::tt_accept" + _c->short_label()).c_str(), dT0() / tr_duration() );
+    trace6(("ADP_NODE::tt_accept" + _c->short_label()).c_str(), _val_bef[0] ,
+        _val_bef[1], _delta[0], _val_bef[0] - _val_bef[1] - _delta[1], _delta[1],
+         ( _val_bef[0] - _val_bef[1] - _delta[1]) / (_delta[1] + 1e-10)  );
+    assert(fabs( ( _val_bef[0] - _val_bef[1] - _delta[1]) / (_delta[1] + 1e-10)) < 1e-5);
   }
 
-  // hier schon falsch
- // std::cout << " accept " << label() << " "  << tr_value <<"\n";
-  if ( dT0() / tr_duration() < 1.000001 ){
-    trace4("ADP_NODE::tt_accept ", _val_bef[0] , _val_bef[1] , _delta[1] ,  _val_bef[0] - _val_bef[1] - _delta[1] );
-    assert ( fabs ( ( _val_bef[0] - _val_bef[1] - _delta[1] ) / (_delta[1] + 1e-13) ) < 1e-12 );
-  }
 }
 /*----------------------------------------------------------------------------*/
 void ADP_NODE::tt_last( ) {
@@ -1197,4 +1190,6 @@ double ADP_NODE::tt_integrate_2_exp(double tr_) {
   return double(ret);
 }
 /*----------------------------------------------------------------------*/
+ADP_CARD::ADP_CARD() {unreachable();}
 /*----------------------------------------------------------------------*/
+ADP_CARD::ADP_CARD(const ADP_CARD&) {unreachable();} 

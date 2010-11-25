@@ -3142,7 +3142,7 @@ void MODEL_BUILT_IN_MOS8::tr_eval(COMPONENT* brh)const
           _sim->tt_iteration_number(), _sim->iteration_number(), a->vthdelta);
       // assert(polarity*Vth>0);
 
-      Vth += a->vthdelta;
+      Vth += a->delta_vth;
       d->von = Vth;
       
       dVth_dVb = t->k1ox * dsqrtPhis_dVb - t->k2ox  - dDelt_vth_dVb - dT2_dVb
@@ -3950,8 +3950,11 @@ void MODEL_BUILT_IN_MOS8::tr_eval(COMPONENT* brh)const
         double Vth = Vfb + t->phi + t->k1ox * sqrtPhis; 
         assert(Vth>0);
 
-//        Vth *= a->vthscale_hci;
-        Vth += a->vthdelta_hci;
+        std::cout << "*% \n";
+        Vth += a->delta_vth;
+
+        // mos1
+        // d->von += a->delta_vth;   
 
 	dVth_dVb = t->k1ox * dsqrtPhis_dVb; // redefinition
 	double Vgst = Vgs_eff - Vth;
@@ -5194,24 +5197,23 @@ void MODEL_BUILT_IN_MOS8::do_tr_stress( const COMPONENT* c ) const
       hcis = Ids * pow( Isub / fabs(d->ids),exponent)/H/W * dt;
       break;
     case pP:
-      double mg=3.0;
-      double ig=d->probe_num("ig");
+      double mg = 3.0;
+      double ig = d->probe_num("ig");
       hcis = (
           Wg/Hg * pow( fabs(ig)/W, mg ) 
           + (1-Wg)*Ids/H/W * pow(Isub/fabs(Ids), exponent)
           ) * dt;
-
+      trace6( "MODEL_BUILT_IN_MOS8::do_tr_stress", Wg, Hg, ig, W, mg, Ids );
+      assert(is_number(hcis));
   }
-  if (hcis> 1e-10)
+  if (hcis > 1e-10)
   {
 
   }
 
-  trace1( "DEV_BUILT_IN_MOS8::tr_stress", hcis );
+  trace1( "MODEL_BUILT_IN_MOS8::do_tr_stress", hcis );
   a->hci_stress->tr_add( hcis );
-
-
-
+  assert( ( a->hci_stress->tr_get()  < 1e6 ));
 }
 /*--------------------------------------------------------------------------*/
 
@@ -5236,7 +5238,7 @@ double DEV_BUILT_IN_MOS8::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "str_bti ")) {
     return  17;
   }else if (Umatch(x, "vth_hci ")) {
-    return  12;
+    return  12.2;
   }else {
     return DEV_BUILT_IN_MOS::tr_probe_num(x);
   }
@@ -5256,7 +5258,6 @@ void ADP_BUILT_IN_MOS8::init(const COMPONENT* c)
 	//  vto=m->vto;
 	//
 }
-			//
 /*--------------------------------------------------------------------------*/
 ADP_CARD* MODEL_BUILT_IN_MOS8::new_adp(const  COMPONENT* c)const
 {
@@ -5281,15 +5282,11 @@ double DEV_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
   assert(m);
   const SDP_BUILT_IN_MOS_BASE* s = prechecked_cast<const SDP_BUILT_IN_MOS_BASE*>(c->sdp());
   assert(s);
-  const ADP_BUILT_IN_MOS* a = prechecked_cast<const ADP_BUILT_IN_MOS*>(adp());
+  const ADP_BUILT_IN_MOS8* a = prechecked_cast<const ADP_BUILT_IN_MOS8*>(adp());
   assert(a);
 
-  if (Umatch(x, "hci ")) {
-    return  a->tt_probe_num(x);
-  }else if (Umatch(x, "bti ")) {
-    return  a->tt_probe_num(x);
-  }else if (Umatch(x, "dvth_hci ")) {
-    return  a->tt_probe_num(x);
+  if (Umatch(x, "hci |dvth_hci ")) {
+    return  a->vthdelta_hci;
   }else if (Umatch(x, "stress ")) {
     return 19999;
   }
@@ -5318,10 +5315,10 @@ double ADP_BUILT_IN_MOS8::tr_probe_num(const std::string& x)const
     ret= ADP_BUILT_IN_MOS::tr_probe_num(x);
   }
 
-   // maybe too small to output?
-   //  std::cerr << "ADP_BUILT_IN_MOS8::tr_probe_num " << x << ": " << ret << "\n";
+  // maybe too small to output?
+  //  std::cerr << "ADP_BUILT_IN_MOS8::tr_probe_num " << x << ": " << ret << "\n";
 
-    return ret;
+  return ret;
 
 }
 /*--------------------------------------------------------------------------*/
@@ -5343,14 +5340,14 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply(  COMPONENT* brh) const
 
  // double H = .0001;
 
+  if(use_hci()){
+    a->vthscale_hci = 1; //  exp ( 10000. * a->hci_stress->get() / c->w_in );
+    a->vthdelta_hci = polarity * pow( a->hci_stress->get() , 0.3 );
 
-  a->vthscale_hci = 1; //  exp ( 10000. * a->hci_stress->get() / c->w_in );
-  a->vthdelta_hci = pow( a->hci_stress->get() , 0.3 );
+    assert( -10 <  a->vthdelta_hci &&  a->vthdelta_hci <  10 );
 
-  a->vthdelta = a->vthdelta_hci;
-  if (use_bti())
-    a->vthdelta += ((DEV_BUILT_IN_BTI*)(d->_BTI))->vw();
-
+    a->delta_vth += a->vthdelta_hci;
+  }
 
 }
 /*--------------------------------------------------------------------------*/

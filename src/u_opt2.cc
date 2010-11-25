@@ -170,7 +170,7 @@ bool OPT::set_values(CS& cmd)
       || (Get(cmd, "lang{uage}",   &language)
 	  && ((case_insensitive = language->case_insensitive()),
 	      (units = language->units()), true))
-      || Get(cmd, "insensitive",   &case_insensitive)
+      || (  Get(cmd, "insensitive",   &case_insensitive) && std::cout << "*ins" << OPT::case_insensitive << "\n" )
       || (cmd.umatch("units {=}") &&
 	  (ONE_OF
 	   || Set(cmd, "si",	&units,	uSI)

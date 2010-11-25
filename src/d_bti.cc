@@ -189,6 +189,7 @@ void MODEL_BUILT_IN_BTI::precalc_first()
     e_val(&(this->uref), NOT_INPUT, par_scope);
     e_val(&(this->v2), false, par_scope);
 
+
 }
 /*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_BTI_MATRIX::MODEL_BUILT_IN_BTI_MATRIX(const BASE_SUBCKT* p)
@@ -559,6 +560,8 @@ if (_RCD) {  detach_common(&(_RCD[0]));
 bool COMMON_BUILT_IN_BTI::operator==(const COMMON_COMPONENT& x)const
 {
   const COMMON_BUILT_IN_BTI* p = dynamic_cast<const COMMON_BUILT_IN_BTI*>(&x);
+  trace0("COMMON_BUILT_IN_BTI::operator==");
+
   return (p
     && lambda == p->lambda
     && number == p->number

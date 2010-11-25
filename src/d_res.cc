@@ -139,12 +139,14 @@ void DEV_RESISTANCE::stress_apply()
 	//return; // skip (unfinished)
 
 	double watt_jahre = 1000000000; // entspricht 68 jahre bei 5V und 300 Ohm
+        watt_jahre=watt_jahre;
 	// double faktor_schlechter = 2; // nach 68 jahren wird der widerstand 10x höher sein
 	// R_aktuell: aktueller Widerstand
 	// R_anfang: ursprünglicher Widerstand
 	double R_aktuell;
 	double R_anfang = _value_new;
         double breite=1;
+        breite=breite;
 
         assert(_value_new == _value_new);
 	double gesamtstress = ((ADP_RESISTANCE*)adp())->i_stress->get();

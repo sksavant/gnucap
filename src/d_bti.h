@@ -74,7 +74,7 @@ public: // input parameters
   PARAMETER<double> gparallel;	// parallel conductance
   PARAMETER<int> flags;	// 
   PARAMETER<int> mos_level;	// 
-  PARAMETER<int> rcd_number;	// 
+  PARAMETER<int> rcd_number;	//  ??
   PARAMETER<int> bti_type;	// 
   PARAMETER<double> bti_base;	// 
   PARAMETER<bool> anneal;	// 

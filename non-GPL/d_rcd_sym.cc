@@ -15,9 +15,25 @@
 #include "d_rcd_sym.h"
 
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_SYM::do_stress_apply( COMPONENT*  ) const
+double MODEL_BUILT_IN_RCD_SYM::dvth( const COMPONENT* brh) const
 {
 
+  const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
+  const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
+
+  if ( _sim->analysis_is_tt() ){
+    return c->_Ccgfill->get_tt() * cc->_weight * cc->_wcorr;
+  }else{
+    return c->_Ccgfill->get_total() * cc->_weight * cc->_wcorr;
+  }
+
+}
+/*--------------------------------------------------------------------------*/
+void MODEL_BUILT_IN_RCD_SYM::do_stress_apply( COMPONENT*  ) const
+{
+  if (!_sim->analysis_is_tt()){
+//        _Ccgfill->
+  } 
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD_SYM::tr_stress() const
@@ -105,7 +121,7 @@ namespace MODEL_BUILT_IN_RCD_DISPATCHER {
     d2(&model_dispatcher, "rcdsym", &p2);
 }
 ///*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_SYM::do_expand(const  COMPONENT* ) const
+void MODEL_BUILT_IN_RCD_SYM::do_expand( COMPONENT* ) const
 {
 }
 /*--------------------------------------------------------------------------*/
@@ -193,10 +209,10 @@ void MODEL_BUILT_IN_RCD_SYM::do_tr_stress( const COMPONENT* brh) const {
 
   double newfill;
   switch(_sim->_stepno){
-        case 0:
-        case 1:
-        default:
-        newfill = (fill - uend) * exp(-h/tau) + uend;
+    case 0:
+    case 1:
+    default:
+      newfill = (fill - uend) * exp(-h/tau) + uend;
   }
 
   trace6("DEV_BUILT_IN_RCD::tr_stress ", fill, h, tau, (newfill-fill)/h, rc, re );
@@ -207,10 +223,10 @@ void MODEL_BUILT_IN_RCD_SYM::do_tr_stress( const COMPONENT* brh) const {
 DEV_BUILT_IN_RCD_SYM::DEV_BUILT_IN_RCD_SYM()
   :DEV_BUILT_IN_RCD()
 {
-//  _n = _nodes;
-//  attach_common(&Default_BUILT_IN_RCD);
+  //  _n = _nodes;
+  //  attach_common(&Default_BUILT_IN_RCD);
 
-//  ++_count;
+  //  ++_count;
   // overrides
 }
 /*--------------------------------------------------------------------------*/

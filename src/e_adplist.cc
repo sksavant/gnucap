@@ -211,18 +211,18 @@ ADP_LIST& ADP_LIST::do_forall( void (ADP_CARD::*thing)( )  )
   return *this;
 }
 /*--------------------------------------------------------------------------*/
-double ADP_LIST::tt_review()
+TIME_PAIR ADP_LIST::tt_review() const
 {
-  //TIME_PAIR time_by;
-  double buf=NEVER;
-  for (iterator ci=begin(); ci!=end(); ++ci) {
-    buf=fmin(buf,(**ci).tt_review());
-    if (buf<=0){
+  TIME_PAIR time_by;
+  for (const_iterator ci=begin(); ci!=end(); ++ci) {
+    TIME_PAIR buf=(**ci).tt_review();
+    time_by.min(buf);
+    if (buf._event<=0){
       std::cerr << "ADP_LIST::tt_review 0 -- not implemented?\n";
     }
   }
 
-  return buf;
+  return time_by;
 }
 /*--------------------------------------------------------------------------*/
 TIME_PAIR ADP_LIST::tt_preview()

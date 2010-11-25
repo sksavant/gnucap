@@ -171,9 +171,8 @@ PROBE* PROBELIST::add_list(CS& cmd)
       if (!cmd.skip1b(')')) {
         cmd.warn(bWARNING, "need )");
       }
-      if ( ! (CKT_BASE::_sim->analysis_is_tt()))
-        cmd.warn(bWARNING, "measurement for tt only");
-      std::cerr << "PROBELIST::add_list measurement: " << meas_descr << "\n";
+
+      trace0( ("PROBELIST::add_list measurement: (for tt only)" + meas_descr).c_str());
 
       MEAS_PROBE* p = new MEAS_PROBE(meas_descr, &CARD_LIST::card_list);
       bag.push_back(p);

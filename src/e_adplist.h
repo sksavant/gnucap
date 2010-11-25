@@ -90,7 +90,7 @@ public:
   ADP_LIST& push_back(ADP_CARD* c)  {_al.push_back(c);  return *this;}
 
 
-  double tt_review();
+  TIME_PAIR tt_review() const;
 
   TIME_PAIR tt_preview();
 

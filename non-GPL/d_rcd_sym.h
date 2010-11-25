@@ -28,10 +28,11 @@ class MODEL_BUILT_IN_RCD_SYM : public MODEL_BUILT_IN_RCD {
      trace0(("MODEL_BUILT_IN_RCD_SYM::set_dev_type() " + nt).c_str()); 
     };
     CARD* clone()const {return new MODEL_BUILT_IN_RCD_SYM(*this);}
-    void do_expand(const COMPONENT*) const;
+    void do_expand( COMPONENT*) const;
     ADP_NODE* new_adp_node(const COMPONENT*) const;
 //    region_t region(const COMPONENT*) const;
     int  tt_region(const COMPONENT*) const;
+    virtual double dvth(const COMPONENT*) const;
 };
 /*--------------------------------------------------------------------------*/
 class DEV_BUILT_IN_RCD_SYM : public DEV_BUILT_IN_RCD{

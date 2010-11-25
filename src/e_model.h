@@ -84,6 +84,7 @@ public:
   virtual ADP_CARD* new_adp( const COMPONENT* d)const
 					{unreachable(); // ?
 						std::cerr << "MODEL_CARD::new_adp. empty adpcard for " << d->short_label() <<  "\n";
+						// return NULL;
 						return( new ADP_CARD() ); // empty adpcard...
 					};
 		 //

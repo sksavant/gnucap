@@ -5,11 +5,9 @@ vim:ts=8:sw=2:et:
 
 /* This file is no longer automatically generated. */
 
-#define WS_COLS 11
-#define WS_ROWS 11
 #include "d_bti_inf.h"
 
-static double WS[WS_ROWS][WS_COLS] =
+static double MATRIX_MANY[WS_ROWS][WS_COLS] =
 // wrong order   ^^       ^^ due to C++
 { { .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 },
   { .0 , .0 , .1 , .1 , .32, .32, .32, .37, .32, .1 , .0 },
@@ -21,6 +19,8 @@ static double WS[WS_ROWS][WS_COLS] =
   { .0 , .4 , .32, .25, .25, .1 , .1 , .0 , .0 , .0 , .0 },
   { .0 , .26, .37, .26, .1 , .1 , .0 , .0 , .0 , .0 , .0 },
   { .0 , .11, .1 , .0 , .0 , .0 ,  0 , .0 , .0 , .0 , .0 } };
+
+static int COUNT_MANY = 63;
 
 static double MATRIX_FEW[WS_ROWS][WS_COLS] =
 // wrong order   ^^       ^^ due to C++
@@ -37,14 +37,19 @@ static double MATRIX_FEW[WS_ROWS][WS_COLS] =
 
 static int COUNT_FEW=7;
 
+
 /*--------------------------------------------------------------------------*/
 
 /*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_BTI_INF::MODEL_BUILT_IN_BTI_INF(const
     MODEL_BUILT_IN_BTI_INF& p)
   :MODEL_BUILT_IN_BTI(p),
-  matrix_number(0)
+  matrix_number(p.matrix_number)
 {
+  trace0("MODEL_BUILT_IN_BTI_INF::MODEL_BUILT_IN_BTI_INF");
+
+  _w_matrix=p._w_matrix;
+  rcd_number=p.rcd_number;
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_BTI_INF::precalc_first()
@@ -53,23 +58,30 @@ void MODEL_BUILT_IN_BTI_INF::precalc_first()
   assert(par_scope);
   MODEL_BUILT_IN_BTI::precalc_first();
 
-  assert(matrix_number == 0);
+  trace0("MODEL_BUILT_IN_BTI::precalc_first");
+
+  e_val(&(this->matrix_number), 0, par_scope);
+
+
+  std::cout << "* " <<  matrix_number << "\n";
   switch(matrix_number){
     case 0:
-      rcd_number=63;
-      _w_matrix = (double**) WS;
+      rcd_number = COUNT_MANY;
+      _w_matrix = MATRIX_MANY;
       break;
     case 1:
-      _w_matrix = (double**) MATRIX_FEW;
       rcd_number = COUNT_FEW;
+      _w_matrix = MATRIX_FEW;
       break;
   }
+
 }
 /*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_BTI_INF::MODEL_BUILT_IN_BTI_INF(const BASE_SUBCKT* p)
   :MODEL_BUILT_IN_BTI(p),
   matrix_number(0)
 {
+  _w_matrix=(0);
 }
 /*--------------------------------------------------------------------------*/
 int MODEL_BUILT_IN_BTI_INF::param_count()const{return MODEL_BUILT_IN_BTI::param_count() + 1;}
@@ -106,7 +118,7 @@ void MODEL_BUILT_IN_BTI_INF::set_param_by_index(int i, std::string& value, int o
 {
   switch (param_count() - 1 - i) {
   case 0: untested(); break;
-  case 1: matrix_number = (value); break;
+  case 1: matrix_number = value; break;
   default: MODEL_BUILT_IN_BTI::set_param_by_index(i,value,offset);
   }
 }
@@ -121,7 +133,7 @@ std::string MODEL_BUILT_IN_BTI_INF::RCD_name(int i) const{
   while( true  ){
     row = pos/WS_COLS;
     col = pos%WS_COLS;
-    if(WS[row][col]==.0){
+    if(_w_matrix[row][col]==.0){
       pos++;
       continue;
 
@@ -151,6 +163,9 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
   int cols = WS_COLS;
   int rows = 10;
 
+
+  assert(_w_matrix);
+
   long double up = pow(10, -6.5);
   long double down = 1;
   long double uref=1;
@@ -158,7 +173,7 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
   double base=10;
   //double mu=1;
   int k=0;
-
+  trace1("MODEL_BUILT_IN_BTI_INF::attach_rcds",_w_matrix[1][4]); 
   // k
   // 1 2 3
   // 4 5 6
@@ -168,17 +183,19 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
     up *= base;
     down=pow(10,3.5);
     for(col=0; col < cols; col++ ) {
-      if ( WS[row][col] == .0 ) continue;
+      trace2("MODEL_BUILT_IN_BTI_INF::attach_rcds ", row, col); 
+      if ( _w_matrix[row][col] == .0 ) continue;
 
       COMMON_BUILT_IN_RCD* RCD1 = new COMMON_BUILT_IN_RCD;
       RCD1->set_modelname( rcd_model_name ); // <= !
       RCD1->attach(this); // ?
       RCD1->Uref = double( uref );
       RCD1->Recommon = double (up);
-      double wt = WS[row][col];
+      double wt = _w_matrix[row][col];
       RCD1->weight = wt;
       RCD1->Rccommon0 = double(down);
       trace6("MODEL_BUILT_IN_BTI_INF::attach_rcds ", row, col, k, up, down, wt); 
+      trace2("MODEL_BUILT_IN_BTI_INF::attach_rcds ", matrix_number, rcd_number); 
 
       //double _rr = _rr_.subs(runter=runter, u_gate_=uref)
 

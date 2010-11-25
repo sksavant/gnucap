@@ -117,6 +117,7 @@ class ADP_NODE {
     int _region;
 
   public:
+    void apply(); // ?
     virtual int region() const;
     virtual std::string type() const {return "basic";};
 
@@ -189,20 +190,22 @@ class ADP_NODE_RCD : public ADP_NODE {
 };
 /*--------------------------------------------------------------------------*/
 // ADP card is only a stub...
-class ADP_CARD {
+class ADP_CARD  : public CARD {
 // manages stress data and stores device parameters.
   private:
-    explicit ADP_CARD(const ADP_CARD&) {unreachable();}  
+    explicit ADP_CARD(const ADP_CARD&); 
     static int _tt_order;
     double _wdT;
   public:
-    explicit ADP_CARD() {unreachable();}
     explicit ADP_CARD(const COMPONENT*) {}
+    explicit ADP_CARD();
     virtual ~ADP_CARD() {}
     virtual void init(const COMPONENT*) {}
 
     virtual double tr_probe_num(const std::string& )const { unreachable(); return 888; }
     virtual double tt_probe_num(const std::string& )const { unreachable(); return 888; }
+    virtual std::string value_name() const{ return "unknown";}
+
 
     virtual void tt_commit_first(){ }
     virtual void tt_commit(){ }
@@ -212,7 +215,7 @@ class ADP_CARD {
     virtual void tr_accept(){ }
     virtual void tt_accept(){ }
     virtual double wdT() const {return 999;}
-    virtual double tt_review(){ return 888; }
+    virtual TIME_PAIR tt_review(){ return TIME_PAIR(); }
     virtual TIME_PAIR tt_preview( ){ unreachable(); return TIME_PAIR(); }
 };
 /*--------------------------------------------------------------------------*/

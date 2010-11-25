@@ -8,10 +8,15 @@ NTESTS=bti_sweep_tw.1.3.ps \
        bti_sin_tw.1.2.ps \
        bti_tw.1.2-3.ps
 
-
-
 LONG_TESTS=bti_ac_single.1.2.ps \
-           bti_ac_5_7.1.2.ps
+           bti_ac_5_7.1.2.ps \
+           bti_ac.1.2.ps \
+			  mos_level1_tw.1.2.ps \
+			  mos_level1_tw.1.4.ps \
+			  mos_level1_tr.1.2.ps
+
+MOS_TESTS=
+
 
 all-here: gc2gp nongpl-tests longertests
 clean: clean-here

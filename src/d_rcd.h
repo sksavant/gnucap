@@ -50,7 +50,7 @@ protected:
 public:
   explicit MODEL_BUILT_IN_RCD(const BASE_SUBCKT*);
   ~MODEL_BUILT_IN_RCD() {--_count;}
-  virtual void     do_expand(const COMPONENT*)const {};
+  virtual void     do_expand( COMPONENT*)const {}; // doesnt work, not in use
   virtual void     do_tt_prepare(COMPONENT*)const;
   virtual ADP_NODE* new_adp_node(const COMPONENT*) const;
 public: // override virtual
@@ -221,7 +221,7 @@ protected: // override virtual
   int       int_nodes()const     {return 1;}
   CARD*     clone()const         {return new DEV_BUILT_IN_RCD(*this);}
   void      precalc_first() {COMPONENT::precalc_first(); if(subckt()) subckt()->precalc_first();}
-  virtual   void      expand();
+  virtual   void      expand(); // virtual??
   void      precalc_last()  {COMPONENT::precalc_last(); assert(subckt()); subckt()->precalc_last();}
   //void    map_nodes();         //BASE_SUBCKT
   //void    tr_begin();          //BASE_SUBCKT
