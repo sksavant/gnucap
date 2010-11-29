@@ -1307,17 +1307,21 @@ double DEV_BUILT_IN_MOS::tt_probe_num(const std::string& x)const
   const SDP_BUILT_IN_MOS_BASE* s = prechecked_cast<const SDP_BUILT_IN_MOS_BASE*>(c->sdp());
   assert(s);
   const ADP_BUILT_IN_MOS* a = prechecked_cast<const ADP_BUILT_IN_MOS*>(adp());
-  assert(a);
+  const DEV_BUILT_IN_BTI* B = dynamic_cast<const DEV_BUILT_IN_BTI*>(_BTI);
 
-  if (Umatch(x, "bti ")) {
-    if (m->use_bti())
-      return  ((DEV_BUILT_IN_BTI*)_BTI)->vw();
+  if (Umatch(x, "bti |dvth_bti ")) {
+    if (B)
+      return  (B->dvth());
     else
-      return 888;
+      return NA;
   }else if (Umatch(x, "wdt ")) {
     return  a->wdT();
   }else if (Umatch(x, "hci |dvth_hci ")) {
     return  a->tt_probe_num(x);
+  }else if (Umatch(x, "use_bti ")) {
+    return  m->use_bti();
+  }else if (Umatch(x, "dvth ")) { // hci???
+    if (a) return a->delta_vth;
   }else if (Umatch(x, "stress ")) {
     return 19999;
   }

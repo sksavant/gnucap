@@ -412,12 +412,14 @@ void LANG_SPICE_BASE::parse_type(CS& cmd, CARD* x)
 /*--------------------------------------------------------------------------*/
 void LANG_SPICE_BASE::parse_args(CS& cmd, CARD* x)
 {
+  trace0(("LANG_SPICE_BASE::parse_args " + (std::string) cmd).c_str() );
   assert(x);
   COMPONENT* xx = dynamic_cast<COMPONENT*>(x);
 
   cmd >> "params:";	// optional, skip it.
 
   if (!x->use_obsolete_callback_parse()) {
+  trace0(("LANG_SPICE_BASE::parse_args ocp") );
     int paren = cmd.skip1b('(');
     if (xx && cmd.is_float()) {		// simple unnamed value
       std::string value;
@@ -844,7 +846,7 @@ class CMD_MODEL : public CMD {
 	cmd.warn(bDANGER, here1, "model: base has incorrect type");
       }
     }else{
-      cmd.warn(bDANGER, here1, "model: \"" + base_name + "\" no match");
+      cmd.warn(bDANGER, here1, "model: \"" + base_name + "\" no  match");
     }
   }
 } p1;

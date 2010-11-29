@@ -58,7 +58,13 @@ struct TIME_PAIR {
   TIME_PAIR& min(double Error_Estimate, double Event) {untested();
     return min_error_estimate(Error_Estimate).min_event(Event);
   }
+  bool operator<(const TIME_PAIR&) const;
 };
+/*--------------------------------------------------------------------------*/
+inline bool TIME_PAIR::operator<(const TIME_PAIR& A) const
+{
+  return (_event<A._event);
+}
 /*--------------------------------------------------------------------------*/
 inline TIME_PAIR min(TIME_PAIR A, const TIME_PAIR& B)
 {

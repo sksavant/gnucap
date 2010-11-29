@@ -120,8 +120,8 @@ void MODEL_BUILT_IN_RCD_SYM_V2::do_tr_stress( const COMPONENT* brh) const
   trace2("MODEL_BUILT_IN_RCD_SYM_V2::do_tr_stress ", fill, uin );
   trace1("MODEL_BUILT_IN_RCD_SYM_V2::tr_stress ", c->involts() );
   assert (fill>=0);
-  if (fill > 1 ){
-    error(bDANGER, " RCD_V2 fill %f too big", fill );
+  if (fill > 1.000001 ){
+    error(bDANGER, " RCD_V2 fill %f too big\n", fill );
     fill = 1;
   }
 
@@ -185,8 +185,8 @@ void MODEL_BUILT_IN_RCD_SYM_V2::do_tr_stress( const COMPONENT* brh) const
   trace4("DEV_BUILT_IN_RCD_SYM_V2::tr_stress ", fill, h, tau, (newfill-fill)/h );
   assert(newfill >= 0 );
 
-  if (newfill > 1 ){
-    error(bDANGER, " RCD_V2 _wdTi %f too big", newfill );
+  if (newfill > 1.000001 ){
+    error(bDANGER, ("* RCD_V2 %f too big\n" + long_label() ).c_str() , newfill );
     newfill=1;
   }
   assert(newfill==newfill);

@@ -250,7 +250,7 @@ double MEAS_PROBE::value(void)const
 
 
   if (!Cmd.skip1b(')')) {
-    Cmd.warn(bWARNING, "need )");
+    Cmd.warn(bWARNING, "MEAS_PROBE::value need )");
   }else{
     std::istringstream st(value);
     double out;

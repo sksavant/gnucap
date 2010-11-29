@@ -168,9 +168,10 @@ PROBE* PROBELIST::add_list(CS& cmd)
     }else if (what == "meas") {
       std::string meas_descr;
       cmd >> meas_descr ; 
-      if (!cmd.skip1b(')')) {
-        cmd.warn(bWARNING, "need )");
-      }
+     // if (!cmd.skip1b(')')) {
+     //   cmd.warn(bWARNING, "add_list: need )");
+     // }
+//        cmd.warn(bWARNING, "add_list: need )?");
 
       trace0( ("PROBELIST::add_list measurement: (for tt only)" + meas_descr).c_str());
 

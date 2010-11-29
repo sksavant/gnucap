@@ -3,7 +3,7 @@
 *bug. still breaks things
 *.options insensitive=0
 
-.options adpreltol=0.001
+*.options adpreltol=0.001
 .include mos_level8.ckt
 
 *.print tw dvth(MP1.BTi) 
@@ -13,7 +13,9 @@
 *+dvth(MP1.a) hci(MP1.a)
 
 .store tran v(nout) v(ng)
-.print tw  dvth(Mp1) meas({max(probe="v(nout)")})
+.print tw  dvth(Mp1)
++ meas({max(probe="v(nout)")})
++ meas({min(probe="v(nout)")})
 
 *+dvth(b1) tr(MP1.BTI.RCD0) tr(B1.rcd0)
 *+ vc(B1.rcd0 ) te(MP1.BTI.rcd0) te(B1.rcd0) re(MP1.BTI.rcd0) re(B1.rcd0)

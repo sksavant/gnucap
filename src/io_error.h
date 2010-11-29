@@ -57,7 +57,7 @@ struct Exception_CS :public Exception {
 struct Exception_No_Match :public Exception{
   std::string _key;
   Exception_No_Match(const std::string& key)
-    :Exception("no match: " + key),
+    :Exception("exeception: no match: " + key),
      _key(key) {
   }
 };

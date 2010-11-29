@@ -29,6 +29,7 @@
 #include "e_model.h"
 #include "e_adplist.h"
 #include "u_adp.h"
+#include "u_opt.h"
 #include "u_time_pair.h"
 #include "omp.h"
 /*--------------------------------------------------------------------------*/
@@ -108,26 +109,31 @@ ADP_NODE_LIST& ADP_NODE_LIST::do_forall( void (ADP_NODE::*thing)( )  )
   return *this;
 }
 /*--------------------------------------------------------------------------*/
-double ADP_NODE_LIST::tt_review()
+TIME_PAIR ADP_NODE_LIST::tt_review()
 {
-  //TIME_PAIR time_by;
-  double buf=NEVER;
-  ADP_NODE* minci=NULL;
+  TIME_PAIR time_by;
+  ADP_NODE* minnode=NULL;
+  double event;
   for (iterator ci=begin(); ci!=end(); ++ci) {
-    double tmp=(*ci)->tt_review();
-        
-    if (tmp < buf){
-      buf=tmp;
-      minci=*ci;
+    TIME_PAIR tmp = (*ci)->tt_review();
+    if (tmp<time_by){
+      minnode = *ci;
+      event = tmp._event;
+    trace1(("ADP_NODE_LIST::tt_review min at" +minnode->label()).c_str(), event );
     }
-    assert(buf>=0);
+
+  time_by.min(tmp);
+        
   }
 
-  if(minci){
-    trace1(("ADP_NODE_LIST::tt_review min at" +minci->short_label()).c_str(), buf);
+  if(minnode){
+    if (OPT::tracewdtt){
+      std::cout << "* wdT min by " << minnode->label() << ": " <<
+        event << "\n";
+    }
   }
 
-  return buf;
+  return time_by;
 }
 /*--------------------------------------------------------------------------*/
 TIME_PAIR ADP_NODE_LIST::tt_preview()

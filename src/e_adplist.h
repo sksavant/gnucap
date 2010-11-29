@@ -194,7 +194,7 @@ public:
   ADP_NODE_LIST& push_back(ADP_NODE* c)  {_al.push_back(c);  return *this;}
 
 
-  double tt_review();
+  TIME_PAIR tt_review();
 
   TIME_PAIR tt_preview();
 

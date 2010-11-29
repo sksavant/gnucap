@@ -14,7 +14,7 @@ class ADP_LIST;
 class ADP_CARD;
 /*--------------------------------------------------------------------------*/
 // collects transient (stress) data and extrapolates.
-class ADP_NODE {
+class ADP_NODE : CKT_BASE { // better? : NODE
   public:
     explicit ADP_NODE( const COMPONENT* );
     explicit ADP_NODE( const COMPONENT* , std::string name_in2 );//
@@ -26,7 +26,7 @@ class ADP_NODE {
     ADP_NODE( const ADP_NODE& );
     virtual void init();
     std::string short_label() const  {return name;}
-    std::string label() const  {return name;} // fixme
+    std::string label() const;//  {return name;} // fixme
     int order() const; 
     const COMPONENT* c(){return _c;}
   protected:
@@ -135,7 +135,7 @@ class ADP_NODE {
     hp_float_t tt_get_sum()const  {return _val_bef[0] + _delta[0]; }
     void tr_add(double x );//{tr_value += x;}
     void tr_set(double x ); //{tr_value = x;}
-    double tt_review( );
+    TIME_PAIR tt_review( );
     TIME_PAIR tt_preview( );
     void reset();
     void reset_tr();

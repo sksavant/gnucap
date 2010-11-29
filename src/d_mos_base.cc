@@ -560,10 +560,10 @@ void MODEL_BUILT_IN_MOS_BASE::do_tr_stress( const COMPONENT* c ) const
   const COMMON_COMPONENT* cc = c->common();
   const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
   assert(m);
-  ADP_BUILT_IN_MOS* a = (ADP_BUILT_IN_MOS*) c->adp();
-  double dt=  ( _sim->_dt0 );
-  hp_float_t btistress = 0.0; //  m->polarity * ((ELEMENT*)(d->_RCD_bti[0]))->tr_outvolts();
-  a->bti_stress->tr_add( dt * exp(btistress * polarity)  );
+  // ADP_BUILT_IN_MOS* a = (ADP_BUILT_IN_MOS*) c->adp();
+  // double dt=  ( _sim->_dt0 );
+  //hp_float_t btistress = 0.0; //  m->polarity * ((ELEMENT*)(d->_RCD_bti[0]))->tr_outvolts();
+  //a->bti_stress->tr_add( dt * exp(btistress * polarity)  );
   if ( use_bti() ){
     d->BTI()->tr_stress();
   }
@@ -586,13 +586,9 @@ void MODEL_BUILT_IN_MOS_BASE::do_stress_apply( COMPONENT* c ) const
   ADP_BUILT_IN_MOS* a = (ADP_BUILT_IN_MOS*) c->adp();
   const DEV_BUILT_IN_MOS* d = (DEV_BUILT_IN_MOS*)(c);
 
-
   a->delta_vth= 0;
   assert(d);
   assert(a);
-
-  const MODEL_BUILT_IN_MOS_BASE* m = this;
-  m=m;
 
   a->vthscale_bti = 1; //  exp ( 10000. * a->hci_stress->get() / c->w_in );
   a->vthdelta_bti = 0;
@@ -600,8 +596,6 @@ void MODEL_BUILT_IN_MOS_BASE::do_stress_apply( COMPONENT* c ) const
   if(use_bti()){
     DEV_BUILT_IN_BTI* B = dynamic_cast<DEV_BUILT_IN_BTI*>(d->_BTI);
     assert(B);
-    // this is done by subckt.
-    // d->_BTI->stress_apply();
     a->delta_vth += B->dvth();
   }
   trace1("MODEL_BUILT_IN_MOS_BASE::do_stress_apply()", a->delta_vth);

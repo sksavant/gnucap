@@ -37,9 +37,16 @@ ADP_NODE::ADP_NODE( const COMPONENT* c, const char name_in[] ) : dbg(0)
 {
   init();
   _c = c;
+  //_owner = c; 
   assert(c);
   name = c->short_label() + "." +  std::string(name_in);
+//  _label = std::string(name_in);
 }
+/*----------------------------------------------------------------------------*/
+std::string ADP_NODE::label() const 
+{
+  return _c->long_label() + "." + name;
+} 
 /*----------------------------------------------------------------------------*/
 ADP_NODE::ADP_NODE( const COMPONENT* c, std::string name_in2 ) : dbg(0)
 {
@@ -124,12 +131,12 @@ void ADP_NODE::tr_set(double x ){
 double ADP_NODE::tr_duration()const{ return _c->_sim->_last_time; }
 /*----------------------------------------------------------------------------*/
 // called right after tr
-double ADP_NODE::tt_review( ) {
+TIME_PAIR ADP_NODE::tt_review( ) {
   double h = tr_duration();
   double delta_model;
   if (_corrector){
     assert(order()>0);
-    trace1("ADP_NODE::tt_review: correction ", _delta_expect);
+    trace1(("ADP_NODE::tt_review: correction " + label()).c_str(), _delta_expect);
     delta_model = (this->*_corrector)(); // value predicted by model.
     assert( delta_model != HUGE_VAL );
   } else {
@@ -143,7 +150,7 @@ double ADP_NODE::tt_review( ) {
   hp_float_t myabstol = OPT::adpabstol;
 
   if ( ( tr_value * delta_model ) < 0 ) {
-    trace2("ADP_NODE::tt_review: oops, sign has changed", tr_value,delta_model);
+    trace2(("ADP_NODE::tt_review: oops, sign has changed "+ label()).c_str(), tr_value,delta_model);
   }
 
   // FIXME: implement abs err!
@@ -161,17 +168,20 @@ double ADP_NODE::tt_review( ) {
 
   // _debug=_rel_tt_err;
 
-  if( myreltol == 0 ) return 0;
+  if( myreltol == 0 ) return TIME_PAIR(0,0);
 
-  trace2("ADP_NODE::tt_review", myreltol, inf);
-  if( _abs_tr_err == 0 ) { _wdT = inf; return inf; }
-  if( myreltol == inf && myabstol == inf ) { _wdT = inf; return inf;}
-  if( myreltol == 0 && myabstol == 0 ) {_wdT=0; return 0;}
+  trace3(("ADP_NODE::tt_review" + label() + "got tol").c_str(), myreltol, _abs_tr_err, _rel_tr_err);
+  if( _abs_tr_err == 0 ) {
+    trace1(("ADP_NODE::tt_review" + label() + "noabs").c_str(), TIME_PAIR(0, NEVER)._event );
+    _wdT = inf; return TIME_PAIR(0, NEVER);
+  }
+  if( myreltol == inf && myabstol == inf ) { _wdT = inf; return TIME_PAIR();}
+  if( myreltol == 0 && myabstol == 0 ) {_wdT=0; return TIME_PAIR(0,0);}
 
 // FIXME: _order.
 //
   _wdT = (dT0()-h) * sqrt( myreltol / _rel_tr_err )  + h;
-  trace4("ADP_NODE::tt_review", myreltol, inf, h, _rel_tr_err);
+  trace4("ADP_NODE::tt_review adaptive _wdT", myreltol, inf, h, _rel_tr_err);
   if( _wdT < 0  || _wdT != _wdT) {
     error(bDANGER, " dev: _wdT %s %f %f %f\n", name.c_str(), _wdT, dT0(), _rel_tr_err );
   }
@@ -187,7 +197,7 @@ double ADP_NODE::tt_review( ) {
   assert(_delta_expect == _delta_expect);
   tt_value += tr_value; // only printed if OPT::printrejected
 
-  return _wdT;
+  return( TIME_PAIR(0, _wdT));
 }
 /*----------------------------------------------------------------------------*/
 TIME_PAIR ADP_NODE::tt_preview( ) {
@@ -415,13 +425,13 @@ double ADP_NODE::tt_integrate_2_linear(double tr_){
   assert (ret == ret);
   _debug+=2;
 
-  trace6(( "ADP_NODE::tt_expect2_linear "+_c->short_label()).c_str(), get_tr(),
+  trace6(( "ADP_NODE::tt_integrate_2_linear "+_c->short_label()).c_str(), get_tr(),
       get1(), ret, delta, tr_, tr_duration() ); 
 
 
-  if (ret < 0 && _positive ){
+  if (ret < -1e-10 && _positive ){
     int order = _c->_sim->get_tt_order();
-    error(bDANGER, "* ADP_NODE::tt_expect2_linear neg step %i, Time0=%f (%f,%f,%f), %s, tt_value = %g, ( %g, %g; %g) %i tt: %f, expecting %f\n", \
+    error(bDANGER, "* ADP_NODE::tt_integrate_2_linear neg step %i, Time0=%f (%f,%f,%f), %s, tt_value = %g, ( %g, %g; %g) %i tt: %f, expecting %f\n", \
         _c->_sim->tt_iteration_number(),
         _c->_sim->_Time0,   dT0(), Time_delta(), dT1(),
         _c->short_label().c_str(), tt_value, 
@@ -431,15 +441,16 @@ double ADP_NODE::tt_integrate_2_linear(double tr_){
         ret);
 //    assert(false);
   }
+  if (ret < 0 && _positive ) ret =0;
   _integrator = &ADP_NODE::tt_integrate_2_linear;
   return ret;
 }
 /*---------------------------------*/
 void ADP_NODE::tr_expect_2_linear(){
   assert(_order==2);
-  trace4(( "ADP_NODE::tt_expect2_linear " + _c->short_label()).c_str(), 
+  trace4(( "ADP_NODE::tt_expect_2_linear " + _c->short_label()).c_str(), 
       tr_value, _delta[0], _delta[1], _delta[2] );
-  trace3(( "ADP_NODE::tt_expect2_linear " + _c->short_label()).c_str(), Time_delta(), get1(), dT1() );
+  trace3(( "ADP_NODE::tt_expect_2_linear " + _c->short_label()).c_str(), Time_delta(), get1(), dT1() );
   // _delta_expect = fabs( (_delta[1]) + ( (_delta[1]) - (_delta[2])) * (hp_float_t) ((Time_delta() )/dT1()));
   //
   // expected tr for time0
@@ -451,9 +462,9 @@ void ADP_NODE::tr_expect_2_linear(){
 
   tt_expect = tt_integrate_2_linear(_delta_expect);
 
-  if (tt_expect < 0 && _positive ){
+  if (tt_expect < -1e-10 && _positive ){
     int order = _c->_sim->get_tt_order();
-    error(bDANGER, "* ADP_NODE::tt_expect2_linear neg step %i, Time0=%f (%f,%f,%f), %s, tt_value = %g, ( %g, %g; %g) %i tt: %f, expecting %f\n", \
+    error(bDANGER, "* ADP_NODE::tt_expect_2_linear neg step %i, Time0=%f (%f,%f,%f), %s, tt_value = %g, ( %g, %g; %g) %i tt: %f, expecting %f\n", \
         _c->_sim->tt_iteration_number(),
         _c->_sim->_Time0,   dT0(), Time_delta(), dT1(),
         _c->short_label().c_str(), tt_value, 
@@ -463,6 +474,8 @@ void ADP_NODE::tr_expect_2_linear(){
         tt_expect);
 //    assert(false);
   }
+  if (tt_expect < 0 && _positive ) tt_expect =0;
+
   _corrector = NULL; // &ADP_NODE::tr_correct_1_exp; // HACK. ouch. move to ADP_EXP
   _integrator = &ADP_NODE::tt_integrate_2_linear;
 }
@@ -613,14 +626,16 @@ void ADP_NODE::tr_expect_3_exp(){
   tt_expect = tt_integrate_2_exp(_delta_expect); // 3 doesnt make sense yet?
 }
 /*----------------------------------------------------------------------*/
-double ADP_NODE::tr_correct_3_exp(){
-  trace0("ADP_NODE::tr_correct_3_exp");
-        return (tr_value+_delta_expect)/2;
+double ADP_NODE::tr_correct_3_exp()
+{
+  trace0(("ADP_NODE::tr_correct_3_exp correction " + label()).c_str());
+  return (tr_value+_delta_expect)/2;
 }
 /*----------------------------------------------------------------------*/
-double ADP_NODE::tr_correct_generic(){
+double ADP_NODE::tr_correct_generic()
+{
   // return(18);
-  trace0("ADP_NODE::tr_correct_generic");
+  trace0(("ADP_NODE::tr_correct_generic correction " + label()).c_str());
   return (tr_value+_delta_expect)/2;
 }
 /*----------------------------------------------------------------------*/
@@ -796,7 +811,7 @@ void ADP_NODE::tr_expect_1_const(){
       Time_delta(), _c->_sim->_time0, _c->_sim->_last_time );
 
   _delta_expect = _delta[1];
-  _corrector = &ADP_NODE::tr_correct_1_const;
+//  _corrector = &ADP_NODE::tr_correct_1_const;
   tt_expect = tt_integrate_1_const(_delta_expect);
 
 
@@ -839,7 +854,7 @@ double ADP_NODE::tt_integrate_1_const( double tr_){
 }
 /*---------------------------------*/
 double ADP_NODE::tr_correct_1_const(){
-  trace0("ADP_NODE::tr_correct_1_const");
+  trace0(("ADP_NODE::tr_correct_1_const correction " + label()).c_str());
   return  (_delta_expect + tr_value)/2;
 }
 /*---------------------------------*/
@@ -1058,7 +1073,7 @@ void ADP_NODE::tr_expect_2_exp(){
 /*---------------------------------*/
 double ADP_NODE::tr_correct_1_exp(){
   assert(order()!=0);
-  trace0("ADP_NODE::tr_correct_1_exp");
+  trace0(("ADP_NODE::tr_correct_1_exp correction " + label()).c_str());
 
   double new_delta; // return value. new value for tr_value.
   double h = tr_duration();
