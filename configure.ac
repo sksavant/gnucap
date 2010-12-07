@@ -49,6 +49,23 @@ AC_DEFINE_UNQUOTED([SODIR], "${sodir}", "shared object path")
 AC_DEFINE_UNQUOTED([LIBDIR], "${libdir}", "shared object path")
 
 
+AC_MSG_CHECKING([if nongpl code should be compiled in])
+AC_ARG_ENABLE([nongpl],
+[  --enable-nongpl            Enable building of debug code. [[default: disabled]]],
+[
+if test "X$enable_nongpl" = "Xno" ; then
+	AC_MSG_RESULT([no])
+else
+	AC_MSG_RESULT([yes])
+	enable_nongpl=yes
+fi
+],
+[
+	AC_MSG_RESULT([no])
+	enable_nongpl=no
+])
+
+
 AC_MSG_CHECKING([if debug code should be compiled in])
 AC_ARG_ENABLE([debug],
 [  --enable-debug            Enable building of debug code. [[default: disabled]]],

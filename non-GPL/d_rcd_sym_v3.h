@@ -4,23 +4,22 @@
  * nonGPL ?
  */
 
-#ifndef D_RCD_SYM_V2_H_INCLUDED
-#define D_RCD_SYM_V2_H_INCLUDED
+#ifndef D_RCD_SYM_V3_H_INCLUDED
+#define D_RCD_SYM_V3_H_INCLUDED
 
 #include "d_rcd_sym.h"
 
 class DEV_BUILT_IN_RCD;
 
-class MODEL_BUILT_IN_RCD_SYM_V2 : public MODEL_BUILT_IN_RCD_SYM {
+class MODEL_BUILT_IN_RCD_SYM_V3 : public MODEL_BUILT_IN_RCD_SYM {
   protected:
-    explicit MODEL_BUILT_IN_RCD_SYM_V2(const MODEL_BUILT_IN_RCD_SYM_V2& p);
+    explicit MODEL_BUILT_IN_RCD_SYM_V3(const MODEL_BUILT_IN_RCD_SYM_V3& p);
   public:
-    explicit MODEL_BUILT_IN_RCD_SYM_V2(const BASE_SUBCKT* p);
-//    virtual void     do_tt_prepare(COMPONENT*)const;
-    virtual void     do_precalc_last(COMMON_COMPONENT*, const
-        CARD_LIST*)const;
-    virtual bool v2() const{return true;}
-    // ~MODEL_BUILT_IN_RCD_SYM_V2() : ~MODEL_BUILT_IN_RCD {}
+    explicit MODEL_BUILT_IN_RCD_SYM_V3(const BASE_SUBCKT* p);
+    //virtual void do_tt_prepare(COMPONENT*)const;
+    virtual void do_precalc_last(COMMON_COMPONENT* ccmp, const CARD_LIST* par_scope)const;
+    virtual bool v2() const{return false;}
+    // ~MODEL_BUILT_IN_RCD_SYM_V3() : ~MODEL_BUILT_IN_RCD {}
     bool use_net() const { return(0); }
     void do_stress_apply( COMPONENT* d ) const;
     void do_tr_stress( const COMPONENT*) const;        
@@ -28,9 +27,9 @@ class MODEL_BUILT_IN_RCD_SYM_V2 : public MODEL_BUILT_IN_RCD_SYM {
     void      set_dev_type(const std::string& nt )
     {
       assert(&nt);
-     trace0(("MODEL_BUILT_IN_RCD_SYM_V2::set_dev_type() " + nt).c_str()); 
+     trace0(("MODEL_BUILT_IN_RCD_SYM_V3::set_dev_type() " + nt).c_str()); 
     };
-    CARD* clone()const {return new MODEL_BUILT_IN_RCD_SYM_V2(*this);}
+    CARD* clone()const {return new MODEL_BUILT_IN_RCD_SYM_V3(*this);}
     void do_expand( COMPONENT*) const;
     ADP_NODE* new_adp_node(const COMPONENT*) const;
 //    region_t region(const COMPONENT*) const;
@@ -38,13 +37,14 @@ class MODEL_BUILT_IN_RCD_SYM_V2 : public MODEL_BUILT_IN_RCD_SYM {
     double __Re(double uin, const COMMON_COMPONENT* cc)const;
     double __Rc(double uin, const COMMON_COMPONENT* cc)const;
     double __Ge(double uin, const COMMON_COMPONENT* cc)const;
+    double __tau(double uin, const COMMON_COMPONENT* cc)const;
     double dvth( const COMPONENT* cc)const;
 };
 /*--------------------------------------------------------------------------*/
-class DEV_BUILT_IN_RCD_SYM_V2 : public DEV_BUILT_IN_RCD{
-  explicit DEV_BUILT_IN_RCD_SYM_V2(const DEV_BUILT_IN_RCD_SYM_V2& p);
+class DEV_BUILT_IN_RCD_SYM_V3 : public DEV_BUILT_IN_RCD{
+  explicit DEV_BUILT_IN_RCD_SYM_V3(const DEV_BUILT_IN_RCD_SYM_V3& p);
   public:
-  explicit DEV_BUILT_IN_RCD_SYM_V2();
+  explicit DEV_BUILT_IN_RCD_SYM_V3();
   private:
   TIME_PAIR  tr_review(){ return BASE_SUBCKT::tr_review();}
   void expand();

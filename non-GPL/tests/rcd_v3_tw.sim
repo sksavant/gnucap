@@ -1,0 +1,30 @@
+* tw imitating rcd.sim
+.include non-GPL.inc
+
+.options adpreltol 0.01
+*.options printrejected=yes
+
+.model my_rcd rcdsym_v3 RE=1000 RC=my_RC uref=1
+.param my_rC=1
+
+* common par!
+z1 nin 0 my_rcd ( WEIGHT=1 )
+R1 nin nout 1
+
+V1 nin 0 pulse ( iv=0 pv=amplitude delay=delay rise=1n fall=1n width=width period=period )
+.param amplitude=1
+.param period=6m
+.param width=2.9m
+.param width=0
+.param delay=1n
+
+.print tw dvth(z1) tr(z1)  amplitude order(z1) region(z1) adpdebug(z1) tE(z1) tC(Z1) my_rC
+
+.sweep 15 a 1 15
+.param amplitude = 1
+.param my_RC = {2**a / 1}
+.tw 1 10 100 4000
+.param amplitude=0
+.tw 16000
+
+go

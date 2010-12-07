@@ -12,15 +12,15 @@
 #include "globals.h"
 #include "e_elemnt.h"
 #include "u_adp.h"
-#include "d_rcd_sym_v2.h"
+#include "d_rcd_sym_v3.h"
 
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_SYM_V2::do_stress_apply( COMPONENT*  ) const
+void MODEL_BUILT_IN_RCD_SYM_V3::do_stress_apply( COMPONENT*  ) const
 {
 
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_RCD_SYM_V2::tr_stress() const
+void DEV_BUILT_IN_RCD_SYM_V3::tr_stress() const
 {
 
   unreachable(); // obsolet....
@@ -38,38 +38,38 @@ void DEV_BUILT_IN_RCD_SYM_V2::tr_stress() const
 ///*--------------------------------------------------------------------------*/
 namespace MODEL_BUILT_IN_RCD_DISPATCHER
 { 
-  static DEV_BUILT_IN_RCD_SYM_V2 p3d;
-  static MODEL_BUILT_IN_RCD_SYM_V2 p3(&p3d);
+  static DEV_BUILT_IN_RCD_SYM_V3 p4d;
+  static MODEL_BUILT_IN_RCD_SYM_V3 p4(&p4d);
   static DISPATCHER<MODEL_CARD>::INSTALL
-    d2(&model_dispatcher, "rcdsym_v2", &p3);
+    d3(&model_dispatcher, "rcdsym_v3", &p4);
 }
 ///*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_SYM_V2::do_expand(  COMPONENT* c) const
+void MODEL_BUILT_IN_RCD_SYM_V3::do_expand(  COMPONENT* c) const
 {
-  DEV_BUILT_IN_RCD_SYM_V2* d = dynamic_cast<DEV_BUILT_IN_RCD_SYM_V2*>(c);
+  DEV_BUILT_IN_RCD_SYM_V3* d = dynamic_cast<DEV_BUILT_IN_RCD_SYM_V3*>(c);
   assert(d);
   // d->expand();
   
 }
 /*--------------------------------------------------------------------------*/
-std::string MODEL_BUILT_IN_RCD_SYM_V2::dev_type()const
+std::string MODEL_BUILT_IN_RCD_SYM_V3::dev_type()const
 {
   return "rcd";
 }
 /*--------------------------------------------------------------------------*/
-MODEL_BUILT_IN_RCD_SYM_V2::MODEL_BUILT_IN_RCD_SYM_V2(const BASE_SUBCKT* p) 
+MODEL_BUILT_IN_RCD_SYM_V3::MODEL_BUILT_IN_RCD_SYM_V3(const BASE_SUBCKT* p) 
   : MODEL_BUILT_IN_RCD_SYM(p)
 { 
   uref=1; 
 }
 /*--------------------------------------------------------------------------*/
-MODEL_BUILT_IN_RCD_SYM_V2::MODEL_BUILT_IN_RCD_SYM_V2(const MODEL_BUILT_IN_RCD_SYM_V2& p)  
+MODEL_BUILT_IN_RCD_SYM_V3::MODEL_BUILT_IN_RCD_SYM_V3(const MODEL_BUILT_IN_RCD_SYM_V3& p)  
   : MODEL_BUILT_IN_RCD_SYM(p)
 { 
   
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_RCD_SYM_V2::expand()
+void DEV_BUILT_IN_RCD_SYM_V3::expand()
 {
   assert(_n);
   assert(common());
@@ -82,15 +82,11 @@ void DEV_BUILT_IN_RCD_SYM_V2::expand()
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(c->sdp());
   assert(s);
 
-  trace0("DEV_BUILT_IN_RCD_SYM_V2::expand()");
+  trace0("DEV_BUILT_IN_RCD_SYM_V3::expand()");
 
   if (_sim->is_first_expand()) {
     precalc_first();
     precalc_last();
-    // local nodes
-    //assert(!(_n[n_ic].n_()));
-    //BUG// this assert fails on a repeat elaboration after a change.
-    //not sure of consequences when new_model_node called twice.
     if (!(_n[n_ic].n_())) {
       if (false) {
         _n[n_ic] = _n[n_b];
@@ -107,9 +103,18 @@ void DEV_BUILT_IN_RCD_SYM_V2::expand()
   }
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_SYM_V2::do_tr_stress( const COMPONENT* brh) const
+double MODEL_BUILT_IN_RCD_SYM_V3::__tau(double uin, const COMMON_COMPONENT* cc)const{
+        
+  double tau_e_here = __Re( uin, cc);
+  // double tau_e_inv = __Ge( uin, cc);
+  double tau_c_here = __Rc( uin, cc);
+  return tau_c_here  / ( tau_c_here/tau_e_here +1 );
+}
+/*--------------------------------------------------------------------------*/
+
+void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress( const COMPONENT* brh) const
 {
-  const MODEL_BUILT_IN_RCD_SYM_V2* m = this;
+  const MODEL_BUILT_IN_RCD_SYM_V3* m = this;
   const DEV_BUILT_IN_RCD* c = (const DEV_BUILT_IN_RCD*) brh;
   const COMMON_BUILT_IN_RCD* cc = static_cast<const COMMON_BUILT_IN_RCD*>(c->common());
   //double  fill = _n[n_ic].v0();
@@ -117,21 +122,21 @@ void MODEL_BUILT_IN_RCD_SYM_V2::do_tr_stress( const COMPONENT* brh) const
   double fill = c->_Ccgfill->get_total();
   double uin = c->involts();
 
-  trace2("MODEL_BUILT_IN_RCD_SYM_V2::do_tr_stress ", fill, uin );
-  trace1("MODEL_BUILT_IN_RCD_SYM_V2::tr_stress ", c->involts() );
+  trace2("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress ", fill, uin );
+  trace1("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress ", c->involts() );
   assert (fill>=0);
   if (fill > 1.000001 ){
-    error(bDANGER, " RCD_V2 fill %f too big\n", fill );
+    error(bDANGER, " RCD_V3 fill %f too big\n", fill );
     fill = 1;
   }
 
   if( m->positive) {
     if ( c->_Ccgfill->get_total() < 0 ){
-      trace1(("DEV_BUILT_IN_RCD_SYM_V2::tr_stress fill is negative: " +
+      trace1(("DEV_BUILT_IN_RCD_SYM_V3::tr_stress fill is negative: " +
             short_label()).c_str() ,  c->_Ccgfill->get_total() );
     }
     if (  c->involts() < -1e-10 ){
-      trace1(("DEV_BUILT_IN_RCD_SYM_V2::tr_stress input is negative: " + 
+      trace1(("DEV_BUILT_IN_RCD_SYM_V3::tr_stress input is negative: " + 
             short_label()).c_str() ,   c->involts() );
       assert (false );
     }
@@ -142,24 +147,18 @@ void MODEL_BUILT_IN_RCD_SYM_V2::do_tr_stress( const COMPONENT* brh) const
   assert (fill==fill);
   assert (uin==uin);
 
-  //trace3("DEV_BUILT_IN_RCD_SYM_V2::tr_stress ", _n[n_b].v0(), _n[n_u].v0(), _n[n_ic].v0() );
+  //trace3("DEV_BUILT_IN_RCD_SYM_V3::tr_stress ", _n[n_b].v0(), _n[n_u].v0(), _n[n_ic].v0() );
   // use positive values for pmos
 
   double h = _sim->_dt0;
 
-
   double tau_e_here = m->__Re( uin, cc);
+  //double tau_e_inv = m->__Ge( uin, cc);
   double tau_c_here = m->__Rc( uin, cc);
 
-
-  double uend=1/(1+tau_e_here/tau_c_here);
-  double tau;
-
-  if (fill < uend){
-    tau= tau_e_here;
-  }else{
-    tau= tau_c_here;
-  }
+  double uend = tau_c_here / ( tau_e_here + tau_c_here );
+  double tau = __tau(uin, cc);
+  double tau_up = cc->__tau_up(uin);
 
   double newfill;
   switch(_sim->_stepno){ incomplete();
@@ -175,59 +174,66 @@ void MODEL_BUILT_IN_RCD_SYM_V2::do_tr_stress( const COMPONENT* brh) const
 
   // double bulkpot=_n[n_b].v0();
 
-  trace4("DEV_BUILT_IN_RCD_SYM_V2::tr_stress ", tau_c_here, tau_e_here, _sim->_Time0, _sim->_time0 );
-  trace6("DEV_BUILT_IN_RCD_SYM_V2::tr_stress ", fill, h, tau, newfill, uin, uend );
+  trace5("MODEL_BUILT_IN_RCD_SYM_V3::tr_stress ", tau_c_here, tau_e_here, _sim->_Time0, _sim->_time0, tau_up );
+  trace6("MODEL_BUILT_IN_RCD_SYM_V3::tr_stress ", fill, h, tau, newfill, uin, uend );
 
 //  _sim->_v0[_n[n_ic]->m_()] = newfill ; 
 //  _sim->_vdc[_n[n_ic]->m_()] = newfill ; 
 
   c->_Ccgfill->tr_add(newfill-fill);
-  trace4("DEV_BUILT_IN_RCD_SYM_V2::tr_stress ", fill, h, tau, (newfill-fill)/h );
+  trace4("DEV_BUILT_IN_RCD_SYM_V3::tr_stress ", fill, h, tau, (newfill-fill)/h );
   assert(newfill >= 0 );
 
   if (newfill > 1.000001 ){
-    error(bDANGER, ("* RCD_V2 %f too big\n" + long_label() ).c_str() , newfill );
+    error(bDANGER, ("* RCD_V3 %f too big\n" + long_label() ).c_str() , newfill );
     newfill=1;
   }
   assert(newfill==newfill);
   assert(h>0);
+  assert(is_number(tau));
+  assert(is_number(uend));
 }
 /*--------------------------------------------------------------------------*/
+// precalc doesnt know device!!
+//void MODEL_BUILT_IN_RCD_SYM_V3::do_tt_prepare( COMPONENT* brh) const{
+//  const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
+//  const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
+//  //std::cout << "* " << cc->_wcorr << "\n";
+//  c->_Ccgfill->tt_set( -cc->_wcorr );
+//
+//  trace1( ( "MODEL_BUILT_IN_RCD_SYM_V3::do_tt_prepare" + brh->short_label()).c_str(),  -cc->_wcorr );
+//}
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD_SYM_V2::dvth(const COMPONENT* brh) const{
+double MODEL_BUILT_IN_RCD_SYM_V3::dvth(const COMPONENT* brh) const{
   const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
   const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
 
 //  stupid hack.
   if (_sim->analysis_is_tt()){
-    return (c->_Ccgfill->get_tt()+ cc->_wcorr )* cc->_weight;
+    return (c->_Ccgfill->get_tt()+ cc->_wcorr ) * cc->_weight;
   } else {
-    return (c->_Ccgfill->get_total()+ cc->_wcorr )* cc->_weight;
+    return (c->_Ccgfill->get_total()+ cc->_wcorr ) * cc->_weight;
   }
 }
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD_SYM_V2::__Re(double uin, const COMMON_COMPONENT* c) const {
-  assert(c);
+double MODEL_BUILT_IN_RCD_SYM_V3::__Re(double uin, const COMMON_COMPONENT* c) const {
   const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
-  double Y = cc->Recommon * exp(cc->Uref* cc->_lambda) ;
-        trace2(" " , Y , cc->_Re0);
-  assert( Y = cc->_Re0);
-  return cc->_Re0 / exp( cc->_lambda * uin );
+  return cc->_Re0/uin;
 }
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD_SYM_V2::__Rc(double uin, const COMMON_COMPONENT* c ) const {
+double MODEL_BUILT_IN_RCD_SYM_V3::__Rc(double uin, const COMMON_COMPONENT* c ) const {
   const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
-  double X = cc->Rccommon0;
-  return X * exp( cc->_lambda * uin );
+  return cc->_Rc0 * exp( cc->_Rc1 * uin );
 }
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD_SYM_V2::__Ge(double uin, const COMMON_COMPONENT* c ) const {
+double MODEL_BUILT_IN_RCD_SYM_V3::__Ge(double uin, const COMMON_COMPONENT* c ) const {
   const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
-  return uin/cc->X; 
+  return uin/cc->_Re0; 
 }
 /*--------------------------------------------------------------------------*/
-DEV_BUILT_IN_RCD_SYM_V2::DEV_BUILT_IN_RCD_SYM_V2()
-  :DEV_BUILT_IN_RCD() {
+DEV_BUILT_IN_RCD_SYM_V3::DEV_BUILT_IN_RCD_SYM_V3()
+  :DEV_BUILT_IN_RCD()
+{
 //  _n = _nodes;
 //  attach_common(&Default_BUILT_IN_RCD);
 
@@ -235,50 +241,50 @@ DEV_BUILT_IN_RCD_SYM_V2::DEV_BUILT_IN_RCD_SYM_V2()
   // overrides
 }
 /*--------------------------------------------------------------------------*/
-int  MODEL_BUILT_IN_RCD_SYM_V2::tt_region(const COMPONENT* brh) const{
+int  MODEL_BUILT_IN_RCD_SYM_V3::tt_region(const COMPONENT* brh) const{
   const DEV_BUILT_IN_RCD* c = (const DEV_BUILT_IN_RCD*) brh;
 
   assert(c);
   return ( (c->_Ccgfill)->region() );
 }
+
+
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last(COMMON_COMPONENT* ccmp, const CARD_LIST* par_scope)const{
+void MODEL_BUILT_IN_RCD_SYM_V3::do_precalc_last(COMMON_COMPONENT* ccmp, const CARD_LIST* par_scope)const
+{
   COMMON_BUILT_IN_RCD* cc = dynamic_cast<COMMON_BUILT_IN_RCD*>(ccmp);
-  const MODEL_BUILT_IN_RCD_SYM_V2* m=this;
   assert(cc);
-  cc->_Rc0 = cc->Rccommon0;
+  const MODEL_BUILT_IN_RCD_SYM_V3* m=this;
 
-  cc->X = cc->Rccommon0;
-  cc->_Re0 = cc->Recommon * exp(cc->Uref* cc->_lambda) ;
+  trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->Uref, cc->Recommon, cc->Rccommon0);
+  //long double ueff = cc->Uref; // ( exp ( lambda * Uref ) - 1 );
 
-  double re_0 = m->__Re(0.0,cc);
-  double rc_0 = m->__Rc(0.0,cc);
-  double rc_uref = m->__Rc(cc->Uref,cc);
-  double re_uref = m->__Re(cc->Uref,cc);
+  double up   =  cc->Recommon;
+  double down =  cc->Rccommon0;
 
-  double uend_uref = (1 / ( re_uref / rc_uref +1));
+  cc->_Re0 = (down  + up ) * up / down;
+  cc->_Rc0 = down;
+  cc->_Rc1 = log(up/down+1);
 
-  // vth(e ) = (e+_wcorr) * _wt
-  //_wcorr = -uend(0) 
-  cc->_wcorr = - 1/ (1+re_0/rc_0);
 
-  // vth(e(uref))=! Uref*weight
-  // vth( uend_uref ) = (  uend_uref+_wcorr ) * wt;
-  cc->_weight = cc->weight * cc->Uref / (  uend_uref+cc->_wcorr );
+  double uend_bad = (cc->Uref / (cc->__Re(cc->Uref) / cc->__Rc(cc->Uref) +1));
 
-  //double test = ( rc / ( 1+rc*ge )  ) ;
+  cc->_wcorr = double ( cc->Uref / uend_bad );
 
-  //trace6("COMMON_BUILT_IN_RCD::precalc_last v2", Recommon, Rccommon0, rc, X, _wcorr, test);
-  trace6("MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last" , uend_uref, cc->weight, cc->_weight, re_0, re_uref, m->uref );
-  trace2("MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last", re_0, re_uref);
-  trace2("MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last", rc_0, rc_uref);
-  assert(rc_0 <= rc_uref); // incresging...
-  assert(re_0 >= re_uref); // decreasing...
-  assert( cc->Recommon == cc->__Re(cc->Uref));
-  assert( abs(cc->Uref*cc->weight  - (uend_uref + cc->_wcorr ) * cc->_weight) < 1e-12);
+  cc->_weight = cc->weight;
+  // sanity check.
+  trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->__tau_up(cc->Uref), cc->Recommon, cc->Rccommon0);
+  trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->_Rc1, cc->_Re0, cc->_Rc0);
+  trace2("MODEL_BUILT_IN_RCD::do_precalc_last", m->__tau(0,cc), down);
+
+  assert( cc->weight != 0 );
+  assert( cc->_weight != 0 );
+  assert( abs( m->__tau(cc->Uref,cc) - cc->Recommon)/cc->Recommon <1e-6 );
+  assert( abs( m->__tau(0,cc) - down)/down <1e-6 );
+  assert( is_number( cc->_Rc1 ) );
+  assert( is_number( cc->_Rc0 ) );
 }
-
 /*--------------------------------------------------------------------------*/
-ADP_NODE* MODEL_BUILT_IN_RCD_SYM_V2::new_adp_node(const COMPONENT* c) const{
+ADP_NODE* MODEL_BUILT_IN_RCD_SYM_V3::new_adp_node(const COMPONENT* c) const{
   return new ADP_NODE_RCD(c);
 }

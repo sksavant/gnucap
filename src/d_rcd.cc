@@ -104,14 +104,17 @@ MODEL_BUILT_IN_RCD_NET::MODEL_BUILT_IN_RCD_NET(const BASE_SUBCKT* p)
 MODEL_BUILT_IN_RCD_NET::MODEL_BUILT_IN_RCD_NET(const MODEL_BUILT_IN_RCD_NET& p) 
   : MODEL_BUILT_IN_RCD(p){ }
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD::__Re(double uin, const COMMON_COMPONENT* cc)const {
-  const COMMON_BUILT_IN_RCD* c = prechecked_cast<const COMMON_BUILT_IN_RCD*>(cc);
-  return c->__Re(uin);
+double MODEL_BUILT_IN_RCD::__Rc(double uin, const COMMON_COMPONENT* ccmp)const {
+  const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(ccmp);
+  double ret = ( cc->_Rc0 + uin * cc->_lambda * cc->_Rc1 ); 
+  assert (is_number(ret));
+  return ret;
 }
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD::__Rc(double uin, const COMMON_COMPONENT* cc)const {
+double MODEL_BUILT_IN_RCD::__Re(double uin, const COMMON_COMPONENT* cc)const {
   const COMMON_BUILT_IN_RCD* c = prechecked_cast<const COMMON_BUILT_IN_RCD*>(cc);
-  return c->__Rc(uin);
+  return c->_Re0;
+//  return c->__Re(uin);
 }
 /*--------------------------------------------------------------------------*/
 double MODEL_BUILT_IN_RCD::__Ge(double uin, const COMMON_COMPONENT* )const {
@@ -266,6 +269,43 @@ std::string MODEL_BUILT_IN_RCD::param_value(int i)const
   case 10:  return norm_uin.string();
   default: return "";
   }
+}
+/*--------------------------------------------------------------------------*/
+void MODEL_BUILT_IN_RCD::do_precalc_last(COMMON_COMPONENT* ccmp, const CARD_LIST* par_scope)const
+{
+  COMMON_BUILT_IN_RCD* cc = dynamic_cast<COMMON_BUILT_IN_RCD*>(ccmp);
+  assert(cc);
+  //const MODEL_BUILT_IN_RCD* m = this;
+
+  trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->Uref, cc->Recommon, cc->Rccommon0);
+  long double ueff = cc->Uref; // ( exp ( lambda * Uref ) - 1 );
+
+  double up   =  cc->Recommon;
+  double down =  cc->Rccommon0;
+
+  double rad = double(ueff*ueff*up*up + 2.0*(up*up + up*down)*ueff + up*up - 2*up*down + down*down);
+  //double s = ueff*up + up - down;
+  double up_res = double ( 1.0/2.0*(ueff*up + up - down + sqrt(rad))/ueff );
+  double down_res = down;
+
+  cc->_Re0 = up_res;
+  cc->_Rc0 = down_res;
+  cc->_Rc1 = up_res;
+  // double _rr = _rr_.subs(runter=runter, u_gate_=uref)
+
+  // double _rh = _rh_.subs(runter=runter, u_gate_=uref)  
+  double uend_bad = (cc->Uref / (cc->__Re(cc->Uref) / cc->__Rc(cc->Uref) +1));
+
+  cc->_wcorr = double ( cc->Uref / uend_bad );
+  cc->_weight = cc->weight;
+  // sanity check.
+  trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->__tau_up(cc->Uref), cc->Recommon, cc->Rccommon0);
+  trace3("MODEL_BUILT_IN_RCD::do_precalc_last",cc->_Rc1, cc->_Re0, cc->_Rc0);
+  assert( cc->weight != 0 );
+  assert( cc->_weight != 0 );
+  assert( abs( cc->__tau_up(cc->Uref) - cc->Recommon)/cc->Recommon <1e-6 );
+  assert( is_number( cc->_Rc1 ) );
+  assert( is_number( cc->_Rc0 ) );
 }
 /*--------------------------------------------------------------------------*/
 bool MODEL_BUILT_IN_RCD::is_valid(const COMPONENT* d)const
@@ -500,9 +540,9 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
   e_val(&(this->Rccommon0), m->Rc, par_scope);
   e_val(&(this->Rccommon1), m->Re, par_scope);
   
-    trace4("uref...",  m->uref, NOT_INPUT, Uref , double (Uref));
+  trace4("uref...",  m->uref, NOT_INPUT, Uref , double (Uref));
   Uref.e_val( (double)m->uref, par_scope);
-    trace3("uref...",  m->uref, NOT_INPUT, Uref );
+  trace3("uref...",  m->uref, NOT_INPUT, Uref );
 
   e_val(&(this->mu), 1.0, par_scope);
   e_val(&(this->lambda), 1.0, par_scope);
@@ -532,98 +572,41 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
   assert(s);
 
   // subcircuit commons, recursive
+  cc->_wcorr=0;
+  cc->_zero=0;
+
 
   if(m->v2()){
-    _Rc0 = Rccommon0;
-    _Re = Recommon;
-
-    X = cc->Rccommon0;
-    cc->_Re0 = cc->Recommon * exp(cc->Uref* cc->_lambda) ;
-    //double Y = cc->Recommon * exp(cc->Uref* 1) ;
-
-    //double rc = m->__Rc((double)cc->Uref, (const COMMON_COMPONENT*) this);
-    //double ge = m->__Ge((double)cc->Uref, (const COMMON_COMPONENT*) this);
-    //double re = m->__Re((double)cc->Uref, (const COMMON_COMPONENT*) this);
-
-    double re_0 = m->__Re(0.0,this);
-    double rc_0 = m->__Rc(0.0,this);
-    double rc_uref = m->__Rc(cc->Uref,this);
-    double re_uref = m->__Re(cc->Uref,this);
-
-    double uend_uref = (1 / ( re_uref / rc_uref +1));
-
-    // vth(e ) = (e+_wcorr) * _wt
-    //_wcorr = -uend(0) 
-    _wcorr = - 1/ (1+re_0/rc_0);
-
-    // vth(e(uref))=! Uref*weight
-    // vth( uend_uref ) = (  uend_uref+_wcorr ) * wt;
-    _weight = weight * Uref / (  uend_uref+_wcorr );
-
-    //double test = ( rc / ( 1+rc*ge )  ) ;
-
-    //trace6("COMMON_BUILT_IN_RCD::precalc_last v2", Recommon, Rccommon0, rc, X, _wcorr, test);
-    trace6("COMMON_BUILT_IN_RCD::precalc_last v2 " , uend_uref, weight, _weight, re_0, re_uref, m->uref );
-    trace5("COMMON_BUILT_IN_RCD::precalc_last v2", uend_uref, weight, _weight, rc_0, rc_uref );
-    trace4("COMMON_BUILT_IN_RCD::precalc_last v2", Uref*weight, (uend_uref + _wcorr ) * _weight , _Re, _Rc0 );
-    trace1("COMMON_BUILT_IN_RCD::precalc_last v2", cc->_Re0);
-    trace2("COMMON_BUILT_IN_RCD::precalc_last v2", re_0, re_uref);
-    trace2("COMMON_BUILT_IN_RCD::precalc_last v2", rc_0, rc_uref);
-    assert(rc_0 < rc_uref); // incresging...
-    assert(re_0 > re_uref); // decreasing...
-    assert(Recommon == __Re(Uref));
-    assert( abs(Uref*weight  - (uend_uref + _wcorr ) * _weight) < 1e-12);
-
-
+    m->do_precalc_last(cc, par_scope );
   } else if (Uref!=0.0 ){
-    trace3("COMMON_BUILT_IN_RCD::precalc_last", Uref, Recommon, Rccommon0);
-    long double ueff = Uref; // ( exp ( lambda * Uref ) - 1 );
-
-    double up   =  Recommon;
-    double down =  Rccommon0;
-
-    double rad = double(ueff*ueff*up*up + 2.0*(up*up + up*down)*ueff + up*up - 2*up*down + down*down);
-    //double s = ueff*up + up - down;
-    double up_res = double ( 1.0/2.0*(ueff*up + up - down + sqrt(rad))/ueff );
-    double down_res = down;
-
-    _Re  = up_res;
-    _Rc0 = down_res;
-    _Rc1 = up_res;
-    trace3("", _Re, _Rc0, _Rc1);
-    assert( _Rc1 == _Rc1 );
-    assert( _Rc0 == _Rc0 );
-    //double _rr = _rr_.subs(runter=runter, u_gate_=uref)
-
-    // double _rh = _rh_.subs(runter=runter, u_gate_=uref)  
-    double uend_bad = (cc->Uref / (cc->__Re(cc->Uref) / cc->__Rc(cc->Uref) +1));
-
-    _wcorr = double ( Uref / uend_bad );
-    _weight = weight;
-    // sanity check.
-    assert (weight != 0);
-    assert (_weight != 0);
-    assert(  abs( __tau_up(Uref) - Recommon)/Recommon <1e-6 );
-  } else {
-    _Re  = Recommon;
-    _Rc0 = Rccommon0;
-    _Rc1 = _Re;
+    m->do_precalc_last(cc, par_scope );
+  } else { // no uref...
+    cc->_Re0  = Recommon;
+    cc->_Rc0 = Rccommon0;
+    cc->_Rc1 = _Re0;
 
     if(Rccommon1 != NA && Rccommon1 != NOT_INPUT ) _Rc1 = Rccommon1;
 
     _weight = weight;
     _wcorr = 1;
     assert (weight != 0);
-    trace5("COMMON_BUILT_IN_RCD::precalc_last no uref. simple model", _Re, _Rc0, _Rc1, __Re(1), __Rc(0));
+    trace5("COMMON_BUILT_IN_RCD::precalc_last no uref. simple model", _Re0, _Rc0, _Rc1, __Re(1), __Rc(0));
     Uref=1;
   }
+  trace3("COMMON_BUILT_IN_RCD::precalc_last", Uref*weight, _Re0, _Rc0 );
+  trace1("COMMON_BUILT_IN_RCD::precalc_last", cc->_Re0);
   trace1("COMMON_BUILT_IN_RCD::precalc_last done", m->v2());
 }
 /*--------------------------------------------------------------------------*/
+//double MODEL_BUILT_IN_RCD::__tau_up ( double uin, const COMMON_BUILT_IN_RCD* cc ) const{
+//        return cc->__tau_up(uin);
+//}
+/*--------------------------------------------------------------------------*/
 double COMMON_BUILT_IN_RCD::__tau_up ( double uin ) const{
-  double  rc = __Rc(uin);
-  double  re = __Re(uin)  ;
-  return float( rc / ( 1+rc/re )  ) ;
+  const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(model());
+  double  rc = m->__Rc(uin, this);
+  double  re = m->__Re(uin, this);
+  return float( rc / ( 1 + rc/re )  ) ;
 } 
 /*--------------------------------------------------------------------------*/
 namespace DEV_BUILT_IN_RCD_DISPATCHER { 
@@ -632,15 +615,20 @@ namespace DEV_BUILT_IN_RCD_DISPATCHER {
     d0(&device_dispatcher, "Z|rcd", &p0);
 }
 /*--------------------------------------------------------------------------*/
-double COMMON_BUILT_IN_RCD::__Re(double ) const
-{ return _Re; }
-/*--------------------------------------------------------------------------*/
-double COMMON_BUILT_IN_RCD::__Rc(double ueff) const
+double COMMON_BUILT_IN_RCD::__Re(double uin) const
 {
-   double ret = ( _Rc0 + ueff * _lambda * _Rc1 ); 
-   trace4("COMMON_BUILT_IN_RCD::__Rc()", ueff, _Rc0, _Rc1, _lambda);
-   assert (ret==ret);
-   return ret;
+  const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(model());
+  return m->__Re(uin,this);
+}
+/*--------------------------------------------------------------------------*/
+double COMMON_BUILT_IN_RCD::__Rc(double uin) const
+{
+  const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(model());
+  return m->__Rc(uin,this);
+
+   //double ret = ( _Rc0 + uin * _lambda * _Rc1 ); 
+   //assert (ret==ret);
+   //return ret;
 }
 /*--------------------------------------------------------------------------*/
 static EVAL_BUILT_IN_RCD_GRc Eval_GRc(CC_STATIC);
@@ -752,7 +740,6 @@ ADP_NODE* MODEL_BUILT_IN_RCD::new_adp_node(const COMPONENT* c) const{
   return(new ADP_NODE_RCD(c));
 }
 /*--------------------------------------------------------------------------*/
-
 void DEV_BUILT_IN_RCD::expand()
 {
   BASE_SUBCKT::expand(); // calls common->expand, attaches model
@@ -766,7 +753,6 @@ void DEV_BUILT_IN_RCD::expand()
   assert(c->sdp());
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(c->sdp());
   assert(s);
-
 
   // doesnt work, expand is private
   // m->do_expand();
@@ -1070,7 +1056,7 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   }
   else if (Umatch(x, "net "   )) { return( (double ) m->use_net()); }
   else if (Umatch(x, "tr "    )) { return( _Ccgfill->tr_get() ); }
-  else if (Umatch(x, "RE "    )) { return( c->_Re );}
+  else if (Umatch(x, "RE "    )) { return( c->_Re0 );}
   else if (Umatch(x, "ttr "   )) { return( _Ccgfill->tt_rel_err() ); }
   else if (Umatch(x, "trr "   )) { return( _Ccgfill->tr_rel_err() ); }
   else if (Umatch(x, "tra "   )) { return( _Ccgfill->tr_abs_err() ); }
@@ -1082,13 +1068,13 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   else if (Umatch(x, "uref "  )) { return( c->Uref ); }
   else if (Umatch(x, "uend "  )) { return( c->Uref / (c->__Re(c->Uref) / c->__Rc(c->Uref) +1) * c->_wcorr ) * c->_weight; }
   else if (Umatch(x, "tc "    )) { return( c->__Rc(0) ); }
-  else if (Umatch(x, "adpdebug ")) { return  ( _Ccgfill->debug() ); }
   else if (Umatch(x, "te ")) {
     if (m->v2())
             return( m->__Re(cc->Uref,cc));
     else
     return  ( c->__tau_up( c->Uref ) );
   }
+  else if (Umatch(x, "adpdebug ")) { return  ( _Ccgfill->debug() ); }
   else if (Umatch(x, "vwtr ")) {
     return  ( _Ccgfill->tr_get() * c->_weight );
   }else {

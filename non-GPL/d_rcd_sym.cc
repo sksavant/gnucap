@@ -48,7 +48,7 @@ void DEV_BUILT_IN_RCD_SYM::tr_stress() const
   unreachable(); //obsolete.
   assert(false);
 
-  bool use_1_uend = m -> norm_uin;
+  bool use_1_uend = m -> norm_uin; // usually false...
 
   if( m->positive) {
     if ( _Ccgfill->get_total() < 0 ){
@@ -218,6 +218,14 @@ void MODEL_BUILT_IN_RCD_SYM::do_tr_stress( const COMPONENT* brh) const {
   trace6("DEV_BUILT_IN_RCD::tr_stress ", fill, h, tau, (newfill-fill)/h, rc, re );
   assert(newfill == newfill);
   c->_Ccgfill->tr_add(newfill-fill);
+}
+/*--------------------------------------------------------------------------*/
+void MODEL_BUILT_IN_RCD_SYM::do_tt_prepare( COMPONENT* brh) const{
+  const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
+  const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
+  c->_Ccgfill->tt_set( cc->_zero );
+
+  trace2( ( "MODEL_BUILT_IN_RCD_SYM_V2::do_tt_prepare" + brh->short_label()).c_str(),  -cc->_wcorr, cc->_zero );
 }
 /*--------------------------------------------------------------------------*/
 DEV_BUILT_IN_RCD_SYM::DEV_BUILT_IN_RCD_SYM()

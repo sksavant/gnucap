@@ -51,6 +51,8 @@ public:
   explicit MODEL_BUILT_IN_RCD(const BASE_SUBCKT*);
   ~MODEL_BUILT_IN_RCD() {--_count;}
   virtual void     do_expand( COMPONENT*)const {}; // doesnt work, not in use
+  virtual void     do_precalc_last(COMMON_COMPONENT*, const
+      CARD_LIST*)const;
   virtual void     do_tt_prepare(COMPONENT*)const;
   virtual ADP_NODE* new_adp_node(const COMPONENT*) const;
 public: // override virtual
@@ -149,12 +151,13 @@ public: // input parameters
   PARAMETER<bool> dummy_emit;	// use dummy as emit resistor
 public: // calculated parameters
   double X;
-  double _Re;
+  double _Re1;
   double _Re0;
   double _Rc0;
   double _Rc1;
   double _weight;
   double _wcorr; // correction for uref fit.
+  double _zero;  // this much fill is dvth=0
   double _lambda;
   SDP_CARD* _sdp;
   double cj_adjusted;	// 
