@@ -204,18 +204,6 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress( const COMPONENT* brh) const
 //  trace1( ( "MODEL_BUILT_IN_RCD_SYM_V3::do_tt_prepare" + brh->short_label()).c_str(),  -cc->_wcorr );
 //}
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD_SYM_V3::dvth(const COMPONENT* brh) const{
-  const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
-  const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
-
-//  stupid hack.
-  if (_sim->analysis_is_tt()){
-    return (c->_Ccgfill->get_tt()+ cc->_wcorr ) * cc->_weight;
-  } else {
-    return (c->_Ccgfill->get_total()+ cc->_wcorr ) * cc->_weight;
-  }
-}
-/*--------------------------------------------------------------------------*/
 double MODEL_BUILT_IN_RCD_SYM_V3::__Re(double uin, const COMMON_COMPONENT* c) const {
   const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
   return cc->_Re0/uin;

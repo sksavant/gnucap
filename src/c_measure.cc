@@ -37,7 +37,7 @@ public:
     std::string assign_to, function;
     Cmd >> assign_to >> '=' >> function >> '(';
     if (FUNCTION* f = measure_dispatcher[function]) {
-      std::string value = f->eval(Cmd, Scope);
+      fun_t value = f->eval(Cmd, Scope);
       if (!Cmd.skip1b(')')) {
 	Cmd.warn(bWARNING, "need )");
       }else{

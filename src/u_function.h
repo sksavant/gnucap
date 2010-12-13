@@ -30,7 +30,7 @@ class WAVE;
 class FUNCTION {
 public:
 	// ARGH
-  virtual std::string eval(CS&, const CARD_LIST*)const = 0;
+  virtual fun_t eval(CS&, const CARD_LIST*)const = 0;
 protected:
   WAVE* find_wave(const std::string& probe_name)const;
 };

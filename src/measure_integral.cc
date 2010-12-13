@@ -29,7 +29,7 @@ namespace {
 /*--------------------------------------------------------------------------*/
 class MEASURE : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     std::string probe_name;
     PARAMETER<double> before(BIGBIG);
@@ -73,7 +73,7 @@ public:
 	area += .5 * (lower->second + i->second) * (i->first - lower->first);
 	lower = i;
       }
-      return to_string(area);
+      return to_fun_t(area);
     }else{
       throw Exception_No_Match(probe_name);
     }

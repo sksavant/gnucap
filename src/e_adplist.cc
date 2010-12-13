@@ -113,7 +113,7 @@ TIME_PAIR ADP_NODE_LIST::tt_review()
 {
   TIME_PAIR time_by;
   ADP_NODE* minnode=NULL;
-  double event;
+  double event = 0;
   for (iterator ci=begin(); ci!=end(); ++ci) {
     TIME_PAIR tmp = (*ci)->tt_review();
     if (tmp<time_by){

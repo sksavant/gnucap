@@ -261,6 +261,7 @@ void MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last(COMMON_COMPONENT* ccmp, const CA
   // vth(e ) = (e+_wcorr) * _wt
   //_wcorr = -uend(0) 
   cc->_wcorr = - 1/ (1+re_0/rc_0);
+  cc->_zero = 1/ (1+re_0/rc_0);
 
   // vth(e(uref))=! Uref*weight
   // vth( uend_uref ) = (  uend_uref+_wcorr ) * wt;
@@ -271,10 +272,10 @@ void MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last(COMMON_COMPONENT* ccmp, const CA
   //trace6("COMMON_BUILT_IN_RCD::precalc_last v2", Recommon, Rccommon0, rc, X, _wcorr, test);
   trace6("MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last" , uend_uref, cc->weight, cc->_weight, re_0, re_uref, m->uref );
   trace2("MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last", re_0, re_uref);
-  trace2("MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last", rc_0, rc_uref);
+  trace5("MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last", rc_0, rc_uref,  cc->Recommon, cc->__Re(cc->Uref), cc->Uref);
   assert(rc_0 <= rc_uref); // incresging...
   assert(re_0 >= re_uref); // decreasing...
-  assert( cc->Recommon == cc->__Re(cc->Uref));
+  assert( fabs(cc->Recommon - cc->__Re(cc->Uref))/cc->Recommon < 1e-12);
   assert( abs(cc->Uref*cc->weight  - (uend_uref + cc->_wcorr ) * cc->_weight) < 1e-12);
 }
 

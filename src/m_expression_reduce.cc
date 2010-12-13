@@ -123,9 +123,9 @@ void Token_SYMBOL::stack_op(Expression* E)const
       const Token* T1 = E->back(); // arglist
       E->pop_back();
       CS cmd(CS::_STRING, T1->name());      
-      std::string value = f->eval(cmd, E->_scope);
+      fun_t value = f->eval(cmd, E->_scope);
       const Float* v = new Float(value);
-      E->push_back(new Token_CONSTANT(value, v, ""));
+      E->push_back(new Token_CONSTANT( to_string(value), v, ""));
       delete T1;
     }else{
       throw Exception_No_Match(name()); //BUG// memory leak

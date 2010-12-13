@@ -30,7 +30,7 @@ namespace {
 /*--------------------------------------------------------------------------*/
 class MEASURE : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     std::string probe_name;
     PARAMETER<double> before(BIGBIG);
@@ -139,19 +139,24 @@ public:
       if (stop_time < BIGBIG) {
 	assert(stop_time > start_time);
 	if (expression) {
-	  return "((" + to_string(stop_val) + "-" + to_string(start_val) + ")/(" 
-	    + to_string(stop_time) + "-" + to_string(start_time) + "))";
+          return ( stop_val - start_val ) / (stop_time - start_time);
+
+        // STRING_FUN ?!
+	//  return "((" + to_string(stop_val) + "-" + to_string(start_val) + ")/(" 
+	//    + to_string(stop_time) + "-" + to_string(start_time) + "))";
+
+
 	}else{
-	  return to_string((stop_val-start_val)/(stop_time-start_time));
+	  return to_fun_t((stop_val-start_val)/(stop_time-start_time));
 	}
       }else{
-	return to_string(BIGBIG);
+	return to_fun_t(BIGBIG);
       }
     }else{
      // throw Exception_No_Match(probe_name);
     }
 
-    return "888";
+    return to_fun_t(888);
   }
 } p3;
 DISPATCHER<FUNCTION>::INSTALL d3(&measure_dispatcher, "ddt|slewrate|slope", &p3);

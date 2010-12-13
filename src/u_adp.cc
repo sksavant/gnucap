@@ -283,7 +283,7 @@ void ADP_NODE::tt_accept()
   if (tt_value <0 && _positive){
     untested();
     tt_value=0;
-
+//    _delta[0] -= _val_bef[0];
   }
 
   trace2(("ADP_NODE::tt_accept" + _c->short_label()).c_str(), tt_value, tr_value);
@@ -295,7 +295,8 @@ void ADP_NODE::tt_accept()
     trace6(("ADP_NODE::tt_accept" + _c->short_label()).c_str(), _val_bef[0] ,
         _val_bef[1], _delta[0], _val_bef[0] - _val_bef[1] - _delta[1], _delta[1],
          ( _val_bef[0] - _val_bef[1] - _delta[1]) / (_delta[1] + 1e-10)  );
-    assert(fabs( ( _val_bef[0] - _val_bef[1] - _delta[1]) / (_delta[1] + 1e-10)) < 1e-5);
+    assert( fabs( ( _val_bef[0] - _val_bef[1] - _delta[1])) < 1e-11 
+        || fabs( ( _val_bef[0] - _val_bef[1] - _delta[1]) / (_delta[1] + 1e-10)) < 1e-5);
   }
 
 }
@@ -303,6 +304,7 @@ void ADP_NODE::tt_accept()
 void ADP_NODE::tt_last( ) {
   _val_bef[0] = _val_bef[0] + _delta[0]; //FIXME. add tt_keep_values.
   if( _val_bef[0] < 0 && _positive ){    //FIXME. add tt_keep_values.
+    _delta[0]+=_val_bef[0];
     _val_bef[0] = 0;                       //FIXME. add tt_keep_values.
   }
 

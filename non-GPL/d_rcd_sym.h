@@ -19,7 +19,7 @@ class MODEL_BUILT_IN_RCD_SYM : public MODEL_BUILT_IN_RCD {
     explicit MODEL_BUILT_IN_RCD_SYM(const BASE_SUBCKT* p);
     // ~MODEL_BUILT_IN_RCD_SYM() : ~MODEL_BUILT_IN_RCD {}
     bool use_net() const { return(0); }
-    virtual void     do_tt_prepare(COMPONENT*)const;
+    virtual void do_tt_prepare(COMPONENT*)const;
     void do_stress_apply( COMPONENT* d ) const;
     void do_tr_stress( const COMPONENT*) const;        
     std::string dev_type()const ;

@@ -34,6 +34,8 @@
 // typedef double double; // has to be double
 //typedef long double hp_float_t;
 typedef double hp_float_t;
+typedef double fun_t;
+inline double to_fun_t(double x){return x;}
 /*--------------------------------------------------------------------------*/
 /* std collection of includes */
 // system

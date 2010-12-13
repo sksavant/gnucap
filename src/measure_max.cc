@@ -29,7 +29,7 @@ namespace {
 /*--------------------------------------------------------------------------*/
 class MEASURE : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     std::string probe_name;
     PARAMETER<double> before(BIGBIG);
@@ -73,7 +73,7 @@ public:
       double m = -BIGBIG;
       WAVE::const_iterator begin = lower_bound(w->begin(), w->end(), DPAIR(after, -BIGBIG));
       WAVE::const_iterator end   = upper_bound(w->begin(), w->end(), DPAIR(before, BIGBIG));
-      if (begin == end) return("nan");
+      if (begin == end) return(NAN);
       for (WAVE::const_iterator i = begin; i < end; ++i) {
 	double val = i->second;
 	if (val > m || (last && (val == m))) {
@@ -82,7 +82,7 @@ public:
 	}else{
 	}
       }
-      return to_string((arg) ? (time) : (m));
+      return to_fun_t((arg) ? (time) : (m));
     }else{
       throw Exception_No_Match(probe_name);
     }

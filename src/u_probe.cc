@@ -245,17 +245,18 @@ double MEAS_PROBE::value(void)const
   SIM_MODE oldmode=CKT_BASE::_sim->_mode;
   CKT_BASE::_sim->_mode=s_TRAN;
   // argh stupid string
-  std::string value = f->eval(Cmd, _scope);
+  fun_t value = f->eval(Cmd, _scope);
   CKT_BASE::_sim->_mode=oldmode;
 
 
   if (!Cmd.skip1b(')')) {
     Cmd.warn(bWARNING, "MEAS_PROBE::value need )");
   }else{
-    std::istringstream st(value);
-    double out;
-    st >> out;
-    return out;
+    // BUG kills n.
+    //std::istringstream st(value);
+    //double out;
+    //st >> out;
+    return value;
   }
 
   return 888;

@@ -1,4 +1,5 @@
 /*$Id: measure_min.cc,v 1.2 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -28,7 +29,7 @@ namespace {
 /*--------------------------------------------------------------------------*/
 class MEASURE : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  double eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     std::string probe_name;
     PARAMETER<double> before(BIGBIG);
@@ -80,7 +81,8 @@ public:
 	}else{
 	}
       }
-      return to_string((arg) ? (time) : (m));
+      std::cout << "measurement " << m << "("<< to_string(m)<< ") at " << time << "\n";
+      return ((arg) ? (time) : (m));
     }else{
       throw Exception_No_Match(probe_name);
     }

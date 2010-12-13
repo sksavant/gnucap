@@ -18,12 +18,12 @@ V1 nin 0 pulse ( iv=0 pv=amplitude delay=delay rise=1n fall=1n width=width perio
 .param width=0
 .param delay=1n
 
-.print tw dvth(z1) tr(z1)  amplitude order(z1) region(z1) adpdebug(z1) tE(z1) tC(Z1) my_rC
+.print tw vc(z1) dvth(z1) tr(z1)  amplitude order(z1) region(z1) adpdebug(z1) tE(z1) tC(Z1) my_rC
 
 .sweep 15 a 1 15
 .param amplitude = 1
-.param my_RC = {2**a / 1}
-.tw 1 10 100 4000
+.param my_RC = {2**a * 2 }
+.tw 1 10 4000 4000
 .param amplitude=0
 .tw 16000
 

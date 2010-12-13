@@ -28,7 +28,7 @@ namespace {
 /*--------------------------------------------------------------------------*/
 class MEASURE : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     std::string probe_name;
     PARAMETER<double> x;
@@ -60,7 +60,7 @@ public:
     
     if (w) {
       x.e_val(BIGBIG, Scope);
-      return to_string((derivative) ? (w->v_out(x).f1) : (w->v_out(x).f0));
+      return to_fun_t((derivative) ? (w->v_out(x).f1) : (w->v_out(x).f0));
     }else{
       throw Exception_No_Match(probe_name);
     }
