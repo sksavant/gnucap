@@ -5176,44 +5176,46 @@ void MODEL_BUILT_IN_MOS8::do_tr_stress( const COMPONENT* c ) const
   double Hg=m->h0;
 //  double m0 = m->m0;
 
-  if( Ids < 1e-40) 
-  {
-    trace1("MODEL_BUILT_IN_MOS8::tr_stress ids too small: ", d->ids );
-    return;
-  }
-  hp_float_t Isub;
-  if( d->reversed )
-    Isub=d->isb;
-  else
-    Isub = d->idb;
+  if (use_hci()){
+    if( Ids < 1e-40) 
+    {
+      trace1("MODEL_BUILT_IN_MOS8::tr_stress ids too small: ", d->ids );
+      return;
+    }
+    hp_float_t Isub;
+    if( d->reversed )
+      Isub=d->isb;
+    else
+      Isub = d->idb;
 
-  assert(Isub >= 0);
-  //  assert(d->ids >= 0); isnich
-  double dt=  ( _sim->_dt0 );
-//  assert( dt >= 0 )
+    assert(Isub >= 0);
+    //  assert(d->ids >= 0); isnich
+    double dt=  ( _sim->_dt0 );
+    //  assert( dt >= 0 )
 
-  switch(polarity){
-    case pN:
-      hcis = Ids * pow( Isub / fabs(d->ids),exponent)/H/W * dt;
-      break;
-    case pP:
-      double mg = 3.0;
-      double ig = d->probe_num("ig");
-      hcis = (
-          Wg/Hg * pow( fabs(ig)/W, mg ) 
-          + (1-Wg)*Ids/H/W * pow(Isub/fabs(Ids), exponent)
-          ) * dt;
-      trace6( "MODEL_BUILT_IN_MOS8::do_tr_stress", Wg, Hg, ig, W, mg, Ids );
-      assert(is_number(hcis));
-  }
-  if (hcis > 1e-10)
-  {
+    switch(polarity){
+      case pN:
+        hcis = Ids * pow( Isub / fabs(d->ids),exponent)/H/W * dt;
+        break;
+      case pP:
+        double mg = 3.0;
+        double ig = d->probe_num("ig");
+        hcis = (
+            Wg/Hg * pow( fabs(ig)/W, mg ) 
+            + (1-Wg)*Ids/H/W * pow(Isub/fabs(Ids), exponent)
+            ) * dt;
+        trace6( "MODEL_BUILT_IN_MOS8::do_tr_stress", Wg, Hg, ig, W, mg, Ids );
+        assert(is_number(hcis));
+    }
+    if (hcis > 1e-10)
+    {
 
-  }
+    }
 
-  trace1( "MODEL_BUILT_IN_MOS8::do_tr_stress", hcis );
-  a->hci_stress->tr_add( hcis );
-  assert( ( a->hci_stress->tr_get()  < 1e6 ));
+    trace1( "MODEL_BUILT_IN_MOS8::do_tr_stress", hcis );
+    a->hci_stress->tr_add( hcis );
+    assert( ( a->hci_stress->tr_get()  < 1e6 ));
+  } // end hci
 }
 /*--------------------------------------------------------------------------*/
 
@@ -5347,6 +5349,9 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply(  COMPONENT* brh) const
     assert( -10 <  a->vthdelta_hci &&  a->vthdelta_hci <  10 );
 
     a->delta_vth += a->vthdelta_hci;
+    assert (false); incomplete();
+  } else {
+
   }
 
 }

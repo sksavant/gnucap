@@ -138,11 +138,10 @@ TIME_PAIR ADP_NODE::tt_review( ) {
     assert(order()>0);
     trace1(("ADP_NODE::tt_review: correction " + label()).c_str(), _delta_expect);
     delta_model = (this->*_corrector)(); // value predicted by model.
-    assert( delta_model != HUGE_VAL );
   } else {
     delta_model = _delta_expect;
-    assert( delta_model != HUGE_VAL );
   }
+  assert( is_number (delta_model ) );
 
   trace1("ADP_NODE::tt_review", _c->_sim->tt_iteration_number());
   assert(delta_model == delta_model);

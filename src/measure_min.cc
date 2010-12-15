@@ -81,7 +81,6 @@ public:
 	}else{
 	}
       }
-      std::cout << "measurement " << m << "("<< to_string(m)<< ") at " << time << "\n";
       return ((arg) ? (time) : (m));
     }else{
       throw Exception_No_Match(probe_name);

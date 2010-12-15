@@ -1580,10 +1580,10 @@ void ADP_BUILT_IN_MOS::tt_accept()
 {
   //FIXME: move c to ADP_CARD. merge ADP_card with DEV?
   const DEV_BUILT_IN_MOS* c = (const DEV_BUILT_IN_MOS*) (bti_stress->c());
-  SIM_DATA* sim = c->_sim;
-  std::cerr << "ADP_BUILT_IN_MOS::tt_accept " << c->long_label() << "\n";
-  std::cerr << "ADP_BUILT_IN_MOS::tt_accept time " << sim->_Time0 << "\n";
-  std::cerr << "ADP_BUILT_IN_MOS::tt_accept stress " << bti_stress->get() << "\n";
+  //SIM_DATA* sim = c->_sim;
+//  std::cerr << "ADP_BUILT_IN_MOS::tt_accept " << c->long_label() << "\n";
+//  std::cerr << "ADP_BUILT_IN_MOS::tt_accept time " << sim->_Time0 << "\n";
+//  std::cerr << "ADP_BUILT_IN_MOS::tt_accept stress " << bti_stress->get() << "\n";
 
   btistress_taken  = bti_stress->get();
 
@@ -1594,16 +1594,16 @@ void ADP_BUILT_IN_MOS::tt_commit()
   //FIXME: move c to ADP_CARD. merge ADP_card with DEV?
   const DEV_BUILT_IN_MOS* c = (const DEV_BUILT_IN_MOS*) (bti_stress->c());
   SIM_DATA* sim = c->_sim;
-  std::cerr << "ADP_BUILT_IN_MOS::tt_commit " << c->long_label() << "\n";
-  std::cerr << "ADP_BUILT_IN_MOS::tt_commit time " << sim->_Time0 << "\n";
-  std::cerr << "ADP_BUILT_IN_MOS::tt_commit stress " << bti_stress->get() << "\n";
-  std::cerr << "ADP_BUILT_IN_MOS::tt_commit deltatime " << sim->_dT0 << "\n";
+//  std::cerr << "ADP_BUILT_IN_MOS::tt_commit " << c->long_label() << "\n";
+//  std::cerr << "ADP_BUILT_IN_MOS::tt_commit time " << sim->_Time0 << "\n";
+//  std::cerr << "ADP_BUILT_IN_MOS::tt_commit stress " << bti_stress->get() << "\n";
+//  std::cerr << "ADP_BUILT_IN_MOS::tt_commit deltatime " << sim->_dT0 << "\n";
 
   double stressdelta = bti_stress->get() - btistress_taken ;
   bti_eff_voltage = log(stressdelta/sim->_dT0);
 
-  std::cerr << "ADP_BUILT_IN_MOS::tt_commit stressdelta " << stressdelta << "\n";
-  std::cerr << "ADP_BUILT_IN_MOS::tt_commit eff_voltage " << bti_eff_voltage << "\n";
+//  std::cerr << "ADP_BUILT_IN_MOS::tt_commit stressdelta " << stressdelta << "\n";
+//  std::cerr << "ADP_BUILT_IN_MOS::tt_commit eff_voltage " << bti_eff_voltage << "\n";
 
   // parameters FIXME. put somewhere else.
   // ble D_0 = 5.64e-4;  // cm cm / s

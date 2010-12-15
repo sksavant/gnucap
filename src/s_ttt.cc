@@ -230,6 +230,7 @@ void TTT::first()
   _sim->set_command_tt();
 
   trace1("TTT::first", _sim->_Time0);
+
   outdata_b4(_sim->_Time0); // first output tt data
   ::status.tran.reset().start();
 
@@ -382,8 +383,8 @@ void TTT::sweep_tt()
     accept_tt(); 
     assert( _sim->_mode  == s_TTT );
     // 
-    //
-    print_stored_results_tt(_sim->_Time0);
+    // if OPT::printbefore
+   // print_stored_results_tt(_sim->_Time0);
     outdata_tt(_sim->_Time0); // first output tt data
 
 

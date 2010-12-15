@@ -9,8 +9,9 @@ vim:ts=8:sw=2:et:
 
 static double MATRIX_MANY[WS_ROWS][WS_COLS] =
 // wrong order   ^^       ^^ due to C++
+//  v R_0_0                                      v R_0_9
 { { .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 },
-  { .0 , .0 , .1 , .1 , .32, .32, .32, .37, .32, .1 , .0 },
+  { .0 , .0 , .1 , .1 , .32, .32, .32, .37, .32, .01, .0 },
   { .0 , .1 , .1 , .1 ,  .1, .26, .32, .32, .20, .14, .0 },
   { .0 , .1 , .29, .29, .32, .47, .46, .25, .10, .10, .0 },
   { .0 , .29, .32, .37, .47, .32, .31, .31, .13, .10, .0 },
@@ -19,12 +20,30 @@ static double MATRIX_MANY[WS_ROWS][WS_COLS] =
   { .0 , .4 , .32, .25, .25, .1 , .1 , .0 , .0 , .0 , .0 },
   { .0 , .26, .37, .26, .1 , .1 , .0 , .0 , .0 , .0 , .0 },
   { .0 , .11, .1 , .0 , .0 , .0 ,  0 , .0 , .0 , .0 , .0 } };
+//  ^ R_9_0
 
 static int COUNT_MANY = 63;
 
+static double MATRIX_FAST[WS_ROWS][WS_COLS] =
+// wrong order   ^^       ^^ due to C++
+//  v R_0_0                                      v R_0_9
+{ { .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 },
+  { .0 , .0 , .1 , .1 , .32, .32, .32, .37, .32, .01, .0 },
+  { .0 , .1 , .1 , .1 ,  .1, .26, .32, .32, .20, .14, .0 },
+  { .0 , .1 , .29, .29, .32, .47, .46, .25, .10, .10, .0 },
+  { .0 , .29, .32, .37, .47, .32, .31, .31, .13, .10, .0 },
+  { .0 , .21, .26, .37, .48, .32, .14, .13, .10, .0 , .0 },
+  { .0 , .32, .40, .26, .27, .19, .11, .10, .0 , .0 , .0 },
+  { .0 , .4 , .32, .25, .25, .1 , .1 , .0 , .0 , .0 , .0 },
+  { .0 , .0 , .37, .26, .1 , .1 , .0 , .0 , .0 , .0 , .0 },
+  { .0 , .0 , .0 , .0 , .0 , .0 ,  0 , .0 , .0 , .0 , .0 } };
+//  ^ R_9_0
+
+static int COUNT_FAST = 60;
+
 static double MATRIX_FEW[WS_ROWS][WS_COLS] =
 // wrong order   ^^       ^^ due to C++
-{ { .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 },
+{ { .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 },  //<= langsam
   { .0 , .0 , .0 , .00, .50, .00, .00, .00, .00, .00, .0 },
   { .0 , .00, .4 , .00, .00, .00, .00, .00, .00, .30, .0 },
   { .0 , .00, .00, .00, .00, .00, .76, .00, .00, .00, .0 },
@@ -33,7 +52,8 @@ static double MATRIX_FEW[WS_ROWS][WS_COLS] =
   { .0 , .00, .80, .00, .00, .00, .00, .00, .0 , .0 , .0 },
   { .0 , .00, .00, .00, .00, .00, .0 , .0 , .0 , .0 , .0 },
   { .0 , .00, .00, .00, .0 , .00, .0 , .0 , .0 , .0 , .0 },
-  { .0 , .21, .00, .0 , .0 , .0 ,  0 , .0 , .0 , .0 , .0 } };
+  { .0 , .21, .00, .0 , .0 , .0 ,  0 , .0 , .0 , .0 , .0 } };  //<=schnell
+//  ^^schnell                                 langsam ^^
 
 static int COUNT_FEW=7;
 
@@ -72,6 +92,10 @@ void MODEL_BUILT_IN_BTI_INF::precalc_first()
     case 1:
       rcd_number = COUNT_FEW;
       _w_matrix = MATRIX_FEW;
+      break;
+    case 2:
+      rcd_number = COUNT_FAST;
+      _w_matrix = MATRIX_FAST;
       break;
   }
 
@@ -166,9 +190,8 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
 
   assert(_w_matrix);
 
-  long double up = pow(10, -6.5);
-  long double down = 1;
-  long double uref=1;
+  long double up = pow(10, -7.5);
+  long double uref = 1;
   // double lambda=1;
   double base=10;
   //double mu=1;
@@ -178,11 +201,13 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
   // 1 2 3
   // 4 5 6
   // 7 8 9
+  long double down = pow(base,4.5);
 
   for(row=0; row < rows; row++ ) {
-    up *= base;
-    down=pow(10,3.5);
+    up = pow(10, -7.5);
+    down /= base;
     for(col=0; col < cols; col++ ) {
+      up *= base;
       trace2("MODEL_BUILT_IN_BTI_INF::attach_rcds ", row, col); 
       if ( _w_matrix[row][col] == .0 ) continue;
 
@@ -207,7 +232,6 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
 
       COMMON_COMPONENT::attach_common(RCD1, (COMMON_COMPONENT**)&(_RCD[k]));
       k++;
-      down /= base;
       
     }
 

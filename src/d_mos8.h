@@ -231,7 +231,8 @@ public: // override virtual
   void      tr_eval(COMPONENT*)const;
 public: // not virtual
   static int count() {return _count;}
-  bool use_hci()const { return true; incomplete(); } 
+  bool use_hci()const { return ((double)h0 != 0);
+                        } 
 private: // strictly internal
   static int _count;
 public: // input parameters
