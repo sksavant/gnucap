@@ -4,3 +4,4 @@
 - OPT:: doesnt read from params
 - ADP_NODE : NODE?
 - measurements: make measurement object to make preparse possible.
+- Inf-Inf repair (nan)

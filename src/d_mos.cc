@@ -91,7 +91,7 @@ COMMON_BUILT_IN_MOS::COMMON_BUILT_IN_MOS(const COMMON_BUILT_IN_MOS& p)
    _sb(0),
    _bti(0)
 {
-  trace0("some mos copy");
+//  trace0("some mos copy");
   ++_count;
 }
 /*--------------------------------------------------------------------------*/
@@ -1557,6 +1557,8 @@ void ADP_BUILT_IN_MOS::init(const COMPONENT* c)
   vthscale_bti = 1;
   vthdelta_bti = 0;
 
+  delta_vth=0;
+
   btistress_taken = 0;
   bti_eff_voltage = 0;
 }
@@ -1579,7 +1581,7 @@ void DEV_BUILT_IN_MOS::tt_prepare() // NOT const
 void ADP_BUILT_IN_MOS::tt_accept()
 {
   //FIXME: move c to ADP_CARD. merge ADP_card with DEV?
-  const DEV_BUILT_IN_MOS* c = (const DEV_BUILT_IN_MOS*) (bti_stress->c());
+  // const DEV_BUILT_IN_MOS* c = (const DEV_BUILT_IN_MOS*) (bti_stress->c());
   //SIM_DATA* sim = c->_sim;
 //  std::cerr << "ADP_BUILT_IN_MOS::tt_accept " << c->long_label() << "\n";
 //  std::cerr << "ADP_BUILT_IN_MOS::tt_accept time " << sim->_Time0 << "\n";

@@ -146,8 +146,7 @@ double CKT_BASE::ac_probe_num(const std::string& what)const
     }
     ++ii;
   }
-  std::cerr << _sim->_mode << " ";
-  trace0("CKT_BASE::find_wave( " + probe_name + " ) not found ");
+  trace1( ( "CKT_BASE::find_wave( " + probe_name + " ) not found ").c_str(),  _sim->_mode);
   return NULL;
 }
 /*--------------------------------------------------------------------------*/

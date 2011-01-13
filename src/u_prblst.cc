@@ -61,10 +61,20 @@ PROBELIST::~PROBELIST(){
 /*--------------------------------------------------------------------------*/
 void PROBELIST::clear(void)
 {
-  for (iterator p = begin();  p != end();  ++p) {
-    delete(*p);
-  }
   erase(begin(), end());
+}
+/*--------------------------------------------------------------------------*/
+void PROBELIST::erase( PROBELIST::iterator b, PROBELIST::iterator e )
+{
+  for (iterator i = b;  i != e;  ++i) {
+    trace0("PROBELIST::erase " );
+    assert (*i);
+    trace0(("PROBELIST::erase " + (*i)->label()).c_str());
+    delete(*i);
+    //b++;
+    trace0("PROBELIST::erase looop ");
+  }
+  bag.erase(b,e);
 }
 /*--------------------------------------------------------------------------*/
 /* check for match
@@ -98,12 +108,30 @@ void PROBELIST::remove_list(CS& cmd)
   }else{
   }
 
-  iterator x = remove(begin(), end(), parameter);
-  if (x != end()) {
-    erase(x, end());
+  int weg=0;
+
+  iterator x = end();
+  for (iterator p = begin();  p != end(); ) {
+    assert (*p);
+    if ((**p)==parameter){
+      // x = remove(begin(), end(), *p);
+      weg++;
+      // trace1(("PROBELIST::remove_list erasing " + parameter + (*p)->label()).c_str(), i-bag.size() );
+      delete(*p);
+      p=bag.erase( p);
+    } else {
+      ++p;}
+  }    
+
+  // iterator x = remove(begin(), end(), parameter);
+  if (weg!=0) {
+    trace0(("PROBELIST::remove_list erased " + parameter ).c_str() );
+    // delete *x; ?
+   //  erase(x, end());
   }else{itested();
     cmd.warn(bWARNING, mark, "probe isn't set -- can't remove");
   }
+  trace1("PROBELIST::remove_list", bag.size());
 }
 /*--------------------------------------------------------------------------*/
 /* check for match
@@ -116,9 +144,9 @@ void PROBELIST::remove_list(CS& cmd)
  */
 void PROBELIST::remove_one(CKT_BASE *brh)
 {
+  // trace0("PROBELIST::remove_one");
   assert(brh);
   iterator x = remove(begin(), end(), *brh);
-
 
   erase( x, end());
 }
@@ -155,7 +183,7 @@ PROBE* PROBELIST::add_list(CS& cmd)
 
     found_something = add_expr(what,op,&CARD_LIST::card_list, cmd, *this);
 
-    std::cerr << "pushing back mathop "<< what << " \n";
+    //trace << "pushing back mathop "<< what << " \n";
     bag.push_back( found_something ); //FIXME
     paren -= cmd.skip1b(')');
 
@@ -252,6 +280,7 @@ void PROBELIST::merge_probe( PROBE* m )
 /*--------------------------------------------------------------------------*/
 PROBE* PROBELIST::push_new_probe(const std::string& param,const CKT_BASE* object)
 {
+  trace0("PROBELIST::push_new_probe");
   PROBE* p = new PROBE(param, object);
   bag.push_back(p);
   return p;
@@ -310,8 +339,8 @@ PROBE* PROBELIST::add_expr(const std::string& ,
   untested();
   assert(scope);
   trace1( "PROBELIST::add_expr ", cmd.cursor() );
-  std::cerr << "PROBELIST::add_expr " << cmd.fullstring() << "\n";
-  std::cerr << "PROBELIST::add_expr arg0 " << cmd.cursor() << "\n";
+  //trace0(( std::string("PROBELIST::add_expr ") + cmd.fullstring()).c_str() );
+  //trace0(( std::string("PROBELIST::add_expr arg0 ") + cmd.cursor()).c_str() );
 
   PROBE* arg0 = PROBE_LISTS::expr[CKT_BASE::_sim->_mode].add_list(cmd);
 

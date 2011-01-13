@@ -41,6 +41,7 @@ PROBE::PROBE(const std::string& what,const CKT_BASE *brh)
 {
   if (_brh) {
     _brh->inc_probes();
+    trace1( ( "PROBE::PROBE ++probe: " + _what ).c_str(),  _brh->probes());
   }else{
   }
 }
@@ -56,6 +57,7 @@ PROBE::PROBE(const PROBE& p)
 {
   if (_brh) {
     _brh->inc_probes();
+    trace1( ( "PROBE::PROBE copy ++probe: " + _what ).c_str(),  _brh->probes());
   }else{
   }
 }
@@ -90,7 +92,7 @@ void PROBE::detach()
 {
   if (_brh) {
     _brh->dec_probes();
-    trace1( ( "PROBE::detach --probe: " + _what ).c_str(),  _brh->probes());
+    trace1( ( "PROBE::detach --probe: " + label() ).c_str(),  _brh->probes());
   }else{
     untested();
   }
@@ -104,8 +106,6 @@ void PROBE::detach()
  */
 const std::string PROBE::label(void)const
 {
-  trace0("PROBE::label()");
-  trace0(_what);
   if (_brh) {
     return _what + '(' + _brh->long_label() + ')';
   }else{
@@ -115,7 +115,7 @@ const std::string PROBE::label(void)const
 /*--------------------------------------------------------------------------*/
 double PROBE::value(void)const
 {
-  trace0(("PROBE::value()"+_what).c_str());
+  // trace0(("PROBE::value()"+_what).c_str());
 
   if (_brh) {
     return _brh->probe_num(_what);

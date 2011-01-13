@@ -66,7 +66,7 @@ void TRANSIENT::setup(CS& Cmd)
 	_tstart = arg1;			    /* _tstart _tstop _tstep */
 	_tstop  = arg2;				
 	_tstep  = arg3;
-        std::cout << "*  _tstart _tstop _tstep \n";
+        trace0( "*  _tstart _tstop _tstep \n" );
         std::cout << "\n"; // gnuplot. no newline command yet.
       }else if (arg1 > arg3) {untested();   /* eca (logical) order: */
 	_tstart = arg1;			    /* _tstart _tstop _tstep */

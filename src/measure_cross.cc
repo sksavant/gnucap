@@ -1,4 +1,6 @@
 /*$Id: measure_cross.cc,v 1.2 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
+ * * vim:ts=8:sw=2:et
+ *
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -102,6 +104,7 @@ public:
 	  break;
 	};
       }
+
       return to_fun_t(x_time);
     }else{
       throw Exception_No_Match(probe_name);

@@ -438,9 +438,9 @@ void TTT::sweep() // tr sweep wrapper.
 
   CKT_BASE::tt_behaviour_rel /= (_sim->_dT0);
   CKT_BASE::tt_behaviour_del /= (_sim->_dT0);
-//  std::cerr << "TTT::sweep_tt brel: " << CKT_BASE::tt_behaviour_rel << "\n";
-//  std::cerr << "TTT::sweep_tt bdel: " << CKT_BASE::tt_behaviour_del << "\n";
-//  std::cerr << "TTT::sweep_tt brel normalized: " << CKT_BASE::tt_behaviour_rel << "\n";
+//  std:: << "TTT::sweep_tt brel: " << CKT_BASE::tt_behaviour_rel << "\n";
+//  std:: << "TTT::sweep_tt bdel: " << CKT_BASE::tt_behaviour_del << "\n";
+//  std:: << "TTT::sweep_tt brel normalized: " << CKT_BASE::tt_behaviour_rel << "\n";
 
   // hier gibs noch kein behaviour.  
   // ::status.tran.stop();
@@ -891,7 +891,7 @@ bool TTT::next()
 
 
     trace3( "TTT::next Time1: ", _Time1 , new_dT, _dTmin );
-    std::cerr << "TTT::next @" << _sim->_Time0 << " step " <<_Tstep << " not too small: " << _dTmin <<"\n";
+//    trace0 << "TTT::next @" << _sim->_Time0 << " step " <<_Tstep << " not too small: " << _dTmin <<"\n";
     ::status.review.start();
     ++::status.hidden_steps_tt;
     ++steps_total_tt;

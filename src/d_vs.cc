@@ -48,7 +48,6 @@ private: // override virtual
   CARD*	   clone()const		{return new DEV_VS(*this);}
   void     precalc_last();
   void	   tr_iwant_matrix()	{
-	  std::cerr << "VS::trinwantmp "<< long_label()  <<"\n";
 	  tr_iwant_matrix_passive();}
   void	   tr_begin();
   bool	   do_tr();

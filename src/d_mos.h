@@ -314,7 +314,7 @@ public:
   double vthdelta_bti ;
   double eff(){return bti_eff_voltage;}
   virtual double wdT()const;
-  double delta_vth;
+  double delta_vth ;
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

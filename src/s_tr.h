@@ -64,7 +64,7 @@ public:
     _accepted(false)
   {
 	  steps_total_out_ = (int) ceil( ( (_tstop - _tstart ) / _tstep ) );
-	  std::cerr << "TRANSIENT: " << steps_total_out_ << _tstep << _tstop << _tstart  << "\n";
+	  trace4( "TRANSIENT()",  steps_total_out_, _tstep , _tstop, _tstart );
   }
   ~TRANSIENT() {}
 public:

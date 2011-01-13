@@ -1112,7 +1112,7 @@ double DEV_BUILT_IN_DIODE::tt_probe_num(const std::string& x)const
 
 void ADP_BUILT_IN_DIODE::init(const COMPONENT* cc)
 {
-	std::cerr << "ADP_BUILT_IN_DIODE::init " << cc->short_label() << "\n";
+  trace0(( "ADP_BUILT_IN_DIODE::init " + cc->short_label() ).c_str() );
   assert(cc);
 }
 

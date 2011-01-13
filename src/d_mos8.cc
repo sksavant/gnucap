@@ -3139,9 +3139,10 @@ void MODEL_BUILT_IN_MOS8::tr_eval(COMPONENT* brh)const
                      - (hp_float_t) DIBL_Sft;
 
       trace5("DEV_BUILT_IN_MOS::tr_eval", Vth, polarity,
-          _sim->tt_iteration_number(), _sim->iteration_number(), a->vthdelta);
+          _sim->tt_iteration_number(), _sim->iteration_number(), a->delta_vth);
       // assert(polarity*Vth>0);
 
+      trace1("MOS8 delta", a->delta_vth);
       Vth += a->delta_vth;
       d->von = Vth;
       
@@ -3150,7 +3151,9 @@ void MODEL_BUILT_IN_MOS8::tr_eval(COMPONENT* brh)const
 	+ s->kt2 * t->tempratio_1;
       dVth_dVd = -dDIBL_Sft_dVd; 
     }
-    trace3("", d->von, dVth_dVb, dVth_dVd);
+    trace1("", d->von);
+    trace1("", dVth_dVb);
+    trace1("", dVth_dVd);
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     /* Calculate n */
     double n, dn_dVb, dn_dVd;
@@ -5231,7 +5234,7 @@ double DEV_BUILT_IN_MOS8::tr_probe_num(const std::string& x)const
   const ADP_BUILT_IN_MOS8* a = (ADP_BUILT_IN_MOS8*)(adp());
   assert(a);
 
-  std::cerr << "MOS8 probe\n";
+  trace0( "MOS8 probe\n" );
   assert(false); // kommt hier eh nich hin.
 
   if (Umatch(x, "hci ")) {
@@ -5253,20 +5256,20 @@ void ADP_BUILT_IN_MOS8::init(const COMPONENT* c)
   hci_stress = new ADP_NODE(this,c, "hci" );
   ADP_NODE_LIST::adp_node_list.push_back( hci_stress );
 
-  std::cerr << "initin vthdelta\n";
+  trace0( "initin vthdelta\n" );
   vthdelta_hci=0;
-  vthdelta=0;
   vthscale_hci=1;
 	//  vto=m->vto;
 	//
+  // vthdelta=0; delta_vth
 }
 /*--------------------------------------------------------------------------*/
-ADP_CARD* MODEL_BUILT_IN_MOS8::new_adp(const  COMPONENT* c)const
+ADP_CARD* MODEL_BUILT_IN_MOS8::new_adp(const COMPONENT* c)const
 {
   assert(c);
   const MODEL_BUILT_IN_MOS8* m = this;
   m=m;
-  std::cerr << "MODEL_BUILT_IN_MOS8::new_adp for " << c->short_label() << "\n";
+  trace0(( "MODEL_BUILT_IN_MOS8::new_adp for " + c->short_label() ).c_str() );
 
   ADP_BUILT_IN_MOS8* a = new ADP_BUILT_IN_MOS8(c);
   assert( c->adp() == NULL );

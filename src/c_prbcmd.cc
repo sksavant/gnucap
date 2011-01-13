@@ -102,6 +102,7 @@ void do_probe(CS& cmd, PROBELIST *probes)
 	}else{
 	}
 	if (action == aDELETE) {
+          trace0( "do_probe aDELETE" );
 	  probes[simtype].remove_list(cmd);
 	}else{
           untested0("callng add_list");

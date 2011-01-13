@@ -279,7 +279,7 @@ static std::string getlines(FILE *fileptr)
     }else{
       trim(buffer);
       size_t count = strlen(buffer);
-      trace1("getlines", count);
+//      trace1("getlines", count);
       if ( count > 0 && buffer[count-1] == '\\') {itested();
 	buffer[count-1] = '\0';
       }else{

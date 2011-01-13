@@ -51,7 +51,7 @@ public:
 public:
   hp_float_t vthscale_hci;
   hp_float_t vthdelta_hci;
-  hp_float_t vthdelta;
+//  hp_float_t vthdelta;
 
 //  void tt_stress_apply( );?
 
