@@ -82,7 +82,7 @@ void TRANSIENT::sweep()
     trace2("TRANSIENT::sweep uic_now solve", time1, _sim->_time0);
     advance_time();
     if (!_inside_tt) {
-      std::cout << "TRANSIENT::sweep zeroing voltages\n";
+      std::cerr << "TRANSIENT::sweep zeroing voltages\n";
       _sim->zero_voltages(); // ?
     }
     CARD_LIST::card_list.do_tr();    //evaluate_models
@@ -264,16 +264,16 @@ void TRANSIENT::first()
     /*assert(newtime == almost_fixed_time || newtime <= almost_fixed_time - _sim->_dtmin);*/ \
     assert(newtime > time1);						\
     assert(newtime >= reftime);						\
-    assert(new_dt == 0 || new_dt >= _sim->_dtmin);	                \
-    /*assert(newtime <= _time_by_user_request);*/				\
+    assert(new_dt == 0 || new_dt / _sim->_dtmin > 0.999999);	        \
+    /*assert(newtime <= _time_by_user_request);*/		        \
     assert(newtime == _time_by_user_request				\
     	   || newtime <= _time_by_user_request + _sim->_dtmin);		\
   }
 #define check_consistency2() {						\
     assert(newtime > time1);						\
-    assert(new_dt ==  0. || new_dt >= _sim->_dtmin);					\
-    assert(newtime == _time_by_user_request			\
-    	   || newtime <= _time_by_user_request + _sim->_dtmin);	\
+    assert(new_dt == 0 || new_dt / _sim->_dtmin > 0.999999);	        \
+    assert(newtime == _time_by_user_request		          	\
+    	   || newtime <= _time_by_user_request + _sim->_dtmin);	        \
   }
 /*--------------------------------------------------------------------------*/
 /* next: go to next time step
@@ -437,6 +437,7 @@ bool TRANSIENT::next()
 	  new_dt = newtime - reftime;
 	}else{
 	}
+        trace2("TRANSIENT::next", new_dt, _sim->_dtmin );
 	check_consistency();
       }else{
 	// There will be a step change.

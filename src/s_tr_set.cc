@@ -100,7 +100,7 @@ void TRANSIENT::setup(CS& Cmd)
       if (arg1 > _sim->_last_time) {untested();	    /* 1 arg: _tstop */
 	_tstart = _sim->_last_time;
 	_tstop  = arg1;
-        std::cout << "*1arg, " << _tstart << " " << _tstop << "\n";
+        trace2(  "TRANSIENT::setup *1arg, " , _tstart , _tstop );
 	/* _tstep unchanged */
       }else if (arg1 == 0.) {itested();	    /* 1 arg: _tstart */
 	double oldrange = _tstop - _tstart;
