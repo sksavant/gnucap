@@ -129,7 +129,7 @@ TIME_PAIR ADP_NODE_LIST::tt_review()
   if(minnode){
     if (OPT::tracewdtt){
       std::cout << "* wdT min by " << minnode->label() << ": " <<
-        event << "\n";
+        event << " gain " <<   event/CKT_BASE::_sim->_dTmin << "\n";
     }
   }
 

@@ -739,6 +739,7 @@ void TTT::setup(CS& Cmd)
   }
 
   _dTmin= _tstop;
+  _sim->_dTmin= _tstop;
 
   if (_dTmin_in.has_hard_value()) {
     _dTmin = _dTmin_in;
