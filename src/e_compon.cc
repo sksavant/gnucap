@@ -1036,9 +1036,8 @@ void COMPONENT::tt_prepare(){
   if(_amps==NULL){
     _amps = (double*) malloc(sizeof (double) * net_nodes() * TRANSIENT::total_outsteps() );
     _amps[0]=8888;
-     trace0( "COMPON::tt_accept amps " + short_label() );
+    trace0( "COMPON::tt_accept amps " + short_label() );
   }
-
 }
 /*--------------------------------------------------------------------------*/
 void COMPONENT::tt_accept()

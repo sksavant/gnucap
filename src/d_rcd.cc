@@ -107,6 +107,9 @@ MODEL_BUILT_IN_RCD_NET::MODEL_BUILT_IN_RCD_NET(const MODEL_BUILT_IN_RCD_NET& p)
 double MODEL_BUILT_IN_RCD::__Rc(double uin, const COMMON_COMPONENT* ccmp)const {
   const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(ccmp);
   double ret = ( cc->_Rc0 + uin * cc->_lambda * cc->_Rc1 ); 
+  assert (is_number(cc->_lambda));
+  assert (is_number(cc->_Rc0));
+  assert (is_number(cc->_Rc1));
   assert (is_number(ret));
   return ret;
 }
@@ -153,8 +156,8 @@ void MODEL_BUILT_IN_RCD::precalc_first()
     MODEL_CARD::precalc_first();
     e_val(&(this->anneal), true, par_scope);
     e_val(&(this->Remodel), 1e6, par_scope);
-    e_val(&(this->Re), NA, par_scope);
-    e_val(&(this->Rc), NA, par_scope);
+    e_val(&(this->Re), 1.0, par_scope);
+    e_val(&(this->Rc), 1.0, par_scope);
     e_val(&(this->flags), int(USE_OPT), par_scope);
     e_val(&(this->uref), NA, par_scope);
     e_val(&(this->modelparm), 0, par_scope);
@@ -276,6 +279,11 @@ void MODEL_BUILT_IN_RCD::do_precalc_last(COMMON_COMPONENT* ccmp, const CARD_LIST
   COMMON_BUILT_IN_RCD* cc = dynamic_cast<COMMON_BUILT_IN_RCD*>(ccmp);
   assert(cc);
   //const MODEL_BUILT_IN_RCD* m = this;
+  //
+  if (is_number(cc->Uref)){
+  assert( is_number( cc->Rccommon0 ) && (double)cc->Rccommon0 != NA );
+  assert( is_number( cc->Rccommon1 ) );
+  }
 
   trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->Uref, cc->Recommon, cc->Rccommon0);
   long double ueff = cc->Uref; // ( exp ( lambda * Uref ) - 1 );
@@ -513,9 +521,9 @@ void COMMON_BUILT_IN_RCD::precalc_first(const CARD_LIST* par_scope)
   COMMON_COMPONENT::precalc_first(par_scope);
     e_val(&(this->perim), 0.0, par_scope);
     e_val(&(this->weight), 1.0, par_scope);
-    e_val(&(this->Recommon), NA, par_scope);
-    e_val(&(this->Rccommon0), NA, par_scope);
-    e_val(&(this->Rccommon1), NA, par_scope);
+    e_val(&(this->Recommon), 1.0, par_scope);
+    e_val(&(this->Rccommon0), 1.0, par_scope);
+    e_val(&(this->Rccommon1), 1.0, par_scope);
     e_val(&(this->Uref), 0.00001, par_scope);
     trace3("uref...",  Uref, NOT_INPUT, Uref );
     e_val(&(this->mu), 1.0, par_scope);
@@ -1207,8 +1215,8 @@ void DEV_BUILT_IN_RCD::tr_stress() const
     if ( _Ccgfill->get_total() < 0 ){
       trace1(("DEV_BUILT_IN_RCD::tr_stress fill is negative: " + short_label()).c_str() ,  _Ccgfill->get_total() );
     }
-    if (  _n[n_u].v0()  - _n[n_b].v0() < -1e-10 ){
-      trace1(("DEV_BUILT_IN_RCD::tr_stress input is negative: " + short_label()).c_str() ,   _n[n_u].v0()  - _n[n_b].v0() );
+    if (  involts() < -2e-1 ){ // overshoot!
+      error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress input %s is negative: %f\n", long_label().c_str(), involts() );
       assert(false);
     }
   }

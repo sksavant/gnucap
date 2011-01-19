@@ -106,12 +106,10 @@ void DEV_RESISTANCE::precalc_last()
 /*--------------------------------------------------------------------------*/
 void DEV_RESISTANCE::tt_prepare()
 {
-
   ELEMENT::tt_prepare();
 
-  std::cerr << "DEV_RESISTANCE::tt_prepare"  << short_label() << " " << value() << "\n";
+  trace0( "DEV_RESISTANCE::tt_prepare" );
   _value_new=value();
-
 }
 /*--------------------------------------------------------------------------*/
 void DEV_RESISTANCE::tr_stress()const
