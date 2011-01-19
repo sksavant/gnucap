@@ -249,9 +249,10 @@ void MODEL_BUILT_IN_MOS_BASE::precalc_first()
     if( bti_model_name.value() == std::string("") || 
         bti_model_name.value() == std::string("none") )
     {
-      untested0("no bti");
+      trace1(("MODEL_BUILT_IN_MOS_BASE::precalc_first no bti for " + long_label()).c_str(), polarity);
     } else {
-      untested0(("bti on" + bti_model_name.value()).c_str() );
+      trace1(("MODEL_BUILT_IN_MOS_BASE::precalc_first " + long_label() + 
+            "->" + bti_model_name.value()).c_str(), polarity );
       _use_bti=true;
     }
 

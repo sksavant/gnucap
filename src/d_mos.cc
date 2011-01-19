@@ -893,9 +893,9 @@ void DEV_BUILT_IN_MOS::expand()
     assert( (m->bti_model_name.value() != std::string("")) == m->use_bti() );
     if( m->bti_model_name.value() == std::string("") )
     {
-      trace0("no bti expand");
+      trace2("DEV_BUILT_IN_MOS::expand no bti expand", m->polarity, m->use_bti());
     }else{
-      trace0("bti expand");
+      trace2("DEV_BUILT_IN_MOS::expand", m->polarity, m->use_bti());
       if (!_BTI) {
         const CARD* p = device_dispatcher["bti"];
         assert(p);
@@ -982,7 +982,7 @@ void DEV_BUILT_IN_MOS::expand()
   trace0("DEV_BUILT_IN_MOS::expand bti not in subckt");
   assert( (m->bti_model_name.value() != std::string("")) == m->use_bti() );
   if( m->use_bti() ){
-    trace0("expanding bti");
+    trace1("DEV_BUILT_IN_MOS::expanding bti", polarity);
     _BTI->expand();
     // _BTI->set_slave();
   }

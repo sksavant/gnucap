@@ -82,8 +82,9 @@ public:
 		 //   void      stress_calc( )const{   ;} //sollte eval heissen...?
 		 //
   virtual ADP_CARD* new_adp( const COMPONENT* d)const
-					{unreachable(); // ?
-						std::cerr << "MODEL_CARD::new_adp. empty adpcard for " << d->short_label() <<  "\n";
+					{
+						unreachable(); // should not happen.
+						trace0( ( "MODEL_CARD::new_adp. empty adpcard for " + d->short_label() ).c_str());
 						// return NULL;
 						return( new ADP_CARD() ); // empty adpcard...
 					};

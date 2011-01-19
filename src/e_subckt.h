@@ -62,21 +62,10 @@ protected: // override virtual
   //void  precalc_last()	{assert(subckt()); subckt()->precalc();}
   //void  map_nodes();
   void	  tr_begin()	{assert(subckt()); subckt()->tr_begin();}
-  void	  tt_prepare() 
-         { COMPONENT::tt_prepare(); 
-           assert(subckt()); subckt()->do_forall( &CARD::tt_prepare );}
-  //                  why   ^^^^^^^^^^^^^^ ?
-  void	  tt_next()         
-         { assert(subckt()); subckt()->do_forall( &CARD::tt_next );}
-  virtual void	tt_commit() const
-         { assert(subckt()); subckt()->do_forall( &CARD::tt_commit );}
-  virtual void	tt_accept() // !const (beh)
-         { assert(subckt()); subckt()->do_forall( &CARD::tt_accept );}
+  void	tr_stress() const
+         { assert(subckt()); subckt()->do_forall( &CARD::tr_stress ); }
   virtual void	tr_stress_last() const
-         { assert(subckt()); 
-           const CARD_LIST* s = subckt();
-           s->do_forall( &CARD::tr_stress_last );
-         }
+         { assert(subckt()); subckt()->do_forall( &CARD::tr_stress_last ); }
   // not const?
   virtual void	stress_apply()
          { assert(subckt()); subckt()->do_forall( &CARD::stress_apply );}
@@ -106,6 +95,17 @@ protected: // override virtual
   void	  ac_begin()	{assert(subckt()); subckt()->ac_begin();}
   void	  do_ac()	{assert(subckt()); subckt()->do_ac();}
   void	  ac_load()	{assert(subckt()); subckt()->ac_load();}
+
+  void	  tt_prepare() 
+         { COMPONENT::tt_prepare();  // behaviour (not implemented)
+           assert(subckt()); subckt()->do_forall( &CARD::tt_prepare );}
+  //                  why   ^^^^^^^^^^^^^^ ? ( .subctk ) !
+  void	  tt_next()         
+         { assert(subckt()); subckt()->do_forall( &CARD::tt_next );}
+  virtual void	tt_commit() const
+         { assert(subckt()); subckt()->do_forall( &CARD::tt_commit );}
+  virtual void	tt_accept() // !const (beh)
+         { assert(subckt()); subckt()->do_forall( &CARD::tt_accept );}
   public:
   // virtual void	tr_stress_last() {untested(); }
 };

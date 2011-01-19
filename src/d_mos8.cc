@@ -753,7 +753,7 @@ void MODEL_BUILT_IN_MOS8::precalc_first()
     e_val(&(this->version), 3.3, par_scope);
     e_val(&(this->tox), 150.0e-10, par_scope);
     e_val(&(this->xpart), 0.0, par_scope);
-    e_val(&(this->h0), 1.0, par_scope);
+    e_val(&(this->h0), NA, par_scope);
     e_val(&(this->jctSidewallSatCurDensity), 0.0, par_scope);
     e_val(&(this->mjswg), NA, par_scope);
     e_val(&(this->pbswg), NA, par_scope);
@@ -845,7 +845,7 @@ void MODEL_BUILT_IN_MOS8::precalc_first()
     e_val(&(this->version), 3.3, par_scope);
     e_val(&(this->tox), 150.0e-10, par_scope);
     e_val(&(this->xpart), 0.0, par_scope);
-    e_val(&(this->h0), 1.0, par_scope);
+    e_val(&(this->h0), NA, par_scope);
     e_val(&(this->jctSidewallSatCurDensity), 0.0, par_scope);
     e_val(&(this->mjswg), mjsw, par_scope);
     e_val(&(this->pbswg), pbsw, par_scope);
@@ -5352,7 +5352,9 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply(  COMPONENT* brh) const
     assert( -10 <  a->vthdelta_hci &&  a->vthdelta_hci <  10 );
 
     a->delta_vth += a->vthdelta_hci;
-    assert (false); incomplete();
+
+    // std::cerr << "MODEL_BUILT_IN_MOS_BASE::do_stress_apply " << h0 << "\n";
+    // assert (false); incomplete();
   } else {
 
   }
@@ -5383,3 +5385,6 @@ void ADP_BUILT_IN_MOS8::tt_commit() {
 void ADP_BUILT_IN_MOS8::tt_accept() {
   ADP_BUILT_IN_MOS::tt_accept();
 }
+/*--------------------------------------------------------------------------*/
+bool MODEL_BUILT_IN_MOS8::use_hci()const { return (((double)h0 != 0) && (h0!=NA)); }
+/*--------------------------------------------------------------------------*/
