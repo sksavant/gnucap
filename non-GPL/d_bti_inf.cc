@@ -7,6 +7,23 @@ vim:ts=8:sw=2:et:
 
 #include "d_bti_inf.h"
 
+static double MATRIX_ALL[WS_ROWS][WS_COLS] =
+// wrong order   ^^       ^^ due to C++
+//  v R_0_0                                      v R_0_9
+{ { .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 },
+  { .0 , .0 , .1 , .1 , .32, .32, .32, .37, .32, .01, .0 },
+  { .0 , .1 , .1 , .1 ,  .1, .26, .32, .32, .20, .14, .0 },
+  { .0 , .1 , .29, .29, .32, .47, .46, .25, .10, .10, .0 },
+  { .0 , .29, .32, .37, .47, .32, .31, .31, .13, .10, .0 },
+  { .0 , .21, .26, .37, .48, .32, .14, .13, .10, .0 , .0 },
+  { .0 , .32, .40, .26, .27, .19, .11, .10, .0 , .0 , .0 },
+  { .0 , .4 , .32, .25, .25, .1 , .1 , .0 , .0 , .0 , .0 },
+  { .0 , .26, .37, .26, .1 , .1 , .0 , .0 , .0 , .0 , .0 },
+  { .0 , .11, .1 , .0 , .0 , .0 ,  0 , .0 , .0 , .0 , .0 } };
+//  ^ R_9_0
+
+static int COUNT_ALL = 63;
+
 static double MATRIX_MANY[WS_ROWS][WS_COLS] =
 // wrong order   ^^       ^^ due to C++
 //  v R_0_0                                      v R_0_9
@@ -24,7 +41,7 @@ static double MATRIX_MANY[WS_ROWS][WS_COLS] =
 
 static int COUNT_MANY = 63;
 
-static double MATRIX_FAST[WS_ROWS][WS_COLS] =
+static double MATRIX_LESS[WS_ROWS][WS_COLS] =
 // wrong order   ^^       ^^ due to C++
 //  v R_0_0                                      v R_0_9
 { { .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 , .0 },
@@ -39,7 +56,7 @@ static double MATRIX_FAST[WS_ROWS][WS_COLS] =
   { .0 , .0 , .0 , .0 , .0 , .0 ,  0 , .0 , .0 , .0 , .0 } };
 //  ^ R_9_0
 
-static int COUNT_FAST = 60;
+static int COUNT_LESS = 60;
 
 static double MATRIX_FEW[WS_ROWS][WS_COLS] =
 // wrong order   ^^       ^^ due to C++
@@ -51,8 +68,8 @@ static double MATRIX_FEW[WS_ROWS][WS_COLS] =
   { .0 , .00, .00, .00, .00, .00, .00, .00, .00, .0 , .0 },
   { .0 , .00, .80, .00, .00, .00, .00, .00, .0 , .0 , .0 },
   { .0 , .00, .00, .00, .00, .00, .0 , .0 , .0 , .0 , .0 },
-  { .0 , .00, .00, .00, .0 , .00, .0 , .0 , .0 , .0 , .0 },
-  { .0 , .21, .00, .0 , .0 , .0 ,  0 , .0 , .0 , .0 , .0 } };  //<=schnell
+  { .0 , .00, .21, .00, .0 , .00, .0 , .0 , .0 , .0 , .0 },
+  { .0 , .00, .00, .0 , .0 , .0 ,  0 , .0 , .0 , .0 , .0 } };  //<=schnell
 //  ^^schnell                                 langsam ^^
 
 static int COUNT_FEW=7;
@@ -78,24 +95,28 @@ void MODEL_BUILT_IN_BTI_INF::precalc_first()
   assert(par_scope);
   MODEL_BUILT_IN_BTI::precalc_first();
 
-  trace0("MODEL_BUILT_IN_BTI::precalc_first");
 
   e_val(&(this->matrix_number), 0, par_scope);
+  trace1("MODEL_BUILT_IN_BTI::precalc_first", matrix_number);
 
 
   std::cout << "* " <<  matrix_number << "\n";
   switch(matrix_number){
     case 0:
+      rcd_number = COUNT_ALL;
+      _w_matrix = MATRIX_ALL;
+      break;
+    case 1:
       rcd_number = COUNT_MANY;
       _w_matrix = MATRIX_MANY;
       break;
-    case 1:
+    case 2:
+      rcd_number = COUNT_LESS;
+      _w_matrix = MATRIX_LESS;
+      break;
+    case 3:
       rcd_number = COUNT_FEW;
       _w_matrix = MATRIX_FEW;
-      break;
-    case 2:
-      rcd_number = COUNT_FAST;
-      _w_matrix = MATRIX_FAST;
       break;
   }
 
@@ -171,7 +192,7 @@ std::string MODEL_BUILT_IN_BTI_INF::RCD_name(int i) const{
   row = pos/WS_COLS;
   col = pos%WS_COLS;
 
-  trace3("MODEL_BUILT_IN_BTI_INF::RCD_name()", i, row, col);
+  trace4("MODEL_BUILT_IN_BTI_INF::RCD_name()", i, row, col, _w_matrix[row][col]);
 
   stringstream a;
   a << "R_" << row << "_" << col ;

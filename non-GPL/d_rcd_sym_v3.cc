@@ -5,6 +5,8 @@
  */
 
 
+// die paperversion?
+
 #include "e_aux.h"
 #include "e_storag.h"
 // #include "d_mos_base.h"
@@ -124,7 +126,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress( const COMPONENT* brh) const
 
   trace2("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress ", fill, uin );
   trace1("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress ", c->involts() );
-  assert (fill>=0);
+  assert (fill>=-1e-9);
   if (fill > 1.000001 ){
     error(bDANGER, " RCD_V3 fill %f too big\n", fill );
     fill = 1;
@@ -135,9 +137,11 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress( const COMPONENT* brh) const
       trace1(("DEV_BUILT_IN_RCD_SYM_V3::tr_stress fill is negative: " +
             short_label()).c_str() ,  c->_Ccgfill->get_total() );
     }
-    if (  c->involts() < -1e-10 ){
-      trace1(("DEV_BUILT_IN_RCD_SYM_V3::tr_stress input is negative: " + 
-            short_label()).c_str() ,   c->involts() );
+
+    // FIXME: eine ebene hoeher
+    if (  c->involts() < -2e-1 ){
+      error( bDANGER, "DEV_BUILT_IN_RCD_SYM_V3::tr_stress input %s is negative: ",
+          short_label().c_str(), c->involts() );
       assert (false );
     }
   }
