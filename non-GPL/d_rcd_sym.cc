@@ -7,7 +7,6 @@
 
 #include "e_aux.h"
 #include "e_storag.h"
-// #include "d_mos_base.h"
 
 #include "globals.h"
 #include "e_elemnt.h"
@@ -17,16 +16,13 @@
 /*--------------------------------------------------------------------------*/
 double MODEL_BUILT_IN_RCD_SYM::dvth( const COMPONENT* brh) const
 {
-
   const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
   const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
-
   if ( _sim->analysis_is_tt() ){
     return c->_Ccgfill->get_tt() * cc->_weight * cc->_wcorr;
   }else{
     return c->_Ccgfill->get_total() * cc->_weight * cc->_wcorr;
   }
-
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_RCD_SYM::do_stress_apply( COMPONENT*  ) const
@@ -83,10 +79,7 @@ void DEV_BUILT_IN_RCD_SYM::tr_stress() const
   }else if (fill < uend){
     trace2("DEV_BUILT_IN_RCD::tr_stress open", fill, uin);
     tau = ( rc / ( 1+rc/re )  ) ;
-
     uend = uin / (re/rc +1) ;
-
-
   }else{
     // diode closed.
     trace0("DEV_BUILT_IN_RCD::tr_stress closed");
