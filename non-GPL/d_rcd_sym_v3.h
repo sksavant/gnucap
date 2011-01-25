@@ -31,13 +31,22 @@ class MODEL_BUILT_IN_RCD_SYM_V3 : public MODEL_BUILT_IN_RCD_SYM {
     };
     CARD* clone()const {return new MODEL_BUILT_IN_RCD_SYM_V3(*this);}
     void do_expand( COMPONENT*) const;
-    ADP_NODE* new_adp_node(const COMPONENT*) const;
+    ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
 //    region_t region(const COMPONENT*) const;
     int  tt_region(const COMPONENT*) const;
     double __Re(double uin, const COMMON_COMPONENT* cc)const;
     double __Rc(double uin, const COMMON_COMPONENT* cc)const;
     double __Ge(double uin, const COMMON_COMPONENT* cc)const;
     double __tau(double uin, const COMMON_COMPONENT* cc)const;
+    virtual void do_tr_stress_last( ADP_NODE* , const COMMON_COMPONENT* cc ) const;
+  private:
+    double __uin_iter(double& uin, double E, const COMMON_COMPONENT* cc)const;
+    double __E(double uin, const COMMON_COMPONENT* cc)const;
+    double __Edu(double uin, const COMMON_COMPONENT* cc)const;
+
+    long double __uin_iter(long double& uin,  double cur, double E, const COMMON_COMPONENT* cc)const;
+    long double __E(double uin, long double cur, const COMMON_COMPONENT* cc)const;
+    long double __Edu(double uin, long double cur, const COMMON_COMPONENT* cc)const;
 };
 /*--------------------------------------------------------------------------*/
 class DEV_BUILT_IN_RCD_SYM_V3 : public DEV_BUILT_IN_RCD{

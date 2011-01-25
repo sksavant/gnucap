@@ -4,6 +4,8 @@
  * nonGPL ?
  */
 
+// das ist die version, die es nicht geschafft hat, weil ein sprung in tau ist.
+
 
 #include "e_aux.h"
 #include "e_storag.h"
@@ -147,10 +149,8 @@ void MODEL_BUILT_IN_RCD_SYM_V2::do_tr_stress( const COMPONENT* brh) const
 
   double h = _sim->_dt0;
 
-
   double tau_e_here = m->__Re( uin, cc);
   double tau_c_here = m->__Rc( uin, cc);
-
 
   double uend=1/(1+tau_e_here/tau_c_here);
   double tau;
@@ -173,15 +173,10 @@ void MODEL_BUILT_IN_RCD_SYM_V2::do_tr_stress( const COMPONENT* brh) const
     newfill = 0;
   }
 
-  // double bulkpot=_n[n_b].v0();
-
   trace4("DEV_BUILT_IN_RCD_SYM_V2::tr_stress ", tau_c_here, tau_e_here, _sim->_Time0, _sim->_time0 );
   trace6("DEV_BUILT_IN_RCD_SYM_V2::tr_stress ", fill, h, tau, newfill, uin, uend );
 
-//  _sim->_v0[_n[n_ic]->m_()] = newfill ; 
-//  _sim->_vdc[_n[n_ic]->m_()] = newfill ; 
-
-  c->_Ccgfill->tr_add(newfill-fill);
+  c->_Ccgfill->tr_set(newfill-fill);
   trace4("DEV_BUILT_IN_RCD_SYM_V2::tr_stress ", fill, h, tau, (newfill-fill)/h );
   assert(newfill >= 0 );
 
@@ -280,6 +275,6 @@ void MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last(COMMON_COMPONENT* ccmp, const CA
 }
 
 /*--------------------------------------------------------------------------*/
-ADP_NODE* MODEL_BUILT_IN_RCD_SYM_V2::new_adp_node(const COMPONENT* c) const{
+ADP_NODE_RCD* MODEL_BUILT_IN_RCD_SYM_V2::new_adp_node(const COMPONENT* c) const{
   return new ADP_NODE_RCD(c);
 }
