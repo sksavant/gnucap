@@ -69,9 +69,10 @@ const std::string CKT_BASE::long_label()const
 /*--------------------------------------------------------------------------*/
 double CKT_BASE::probe_num(const std::string& what)const
 {
+  trace0(("CKT_BASE::probe_num "+ what).c_str() );
   double x;
   if (_sim->analysis_is_tt()){
-	  x=  tt_probe_num(what) ;
+	  x= tt_probe_num(what) ;
           if (x == NOT_VALID)  x = tr_probe_num(what);
   }else  if (_sim->analysis_is_ac()) {
 	  x = ac_probe_num(what);

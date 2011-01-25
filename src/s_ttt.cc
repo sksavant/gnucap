@@ -1227,8 +1227,12 @@ void TTT::outdata(double x)
 
   // SIM::alarm();
   _sim->_mode=s_TRAN;
+  if ( OPT::printrejected ) { //FIXME
+    TRANSIENT::print_results(x);
+  }
   store_results(x);
   _sim->_mode=s_TTT;
+  
 
   _sim->reset_iteration_counter(iPRINTSTEP);
   ::status.hidden_steps = 0;

@@ -35,6 +35,9 @@ class ADP_NODE : CKT_BASE { // better? : NODE
     // history needs cleanup.
     hp_float_t _delta_expect;
     hp_float_t tr_value;
+    double tr_noise;
+    float tr_rel_low;
+    float tr_rel_high;
     hp_float_t tr_value2, tr_dd12;
     hp_float_t tr_value3, tr_dd23, tr_dd123;
     hp_float_t tt_expect;
@@ -125,9 +128,8 @@ class ADP_NODE : CKT_BASE { // better? : NODE
     hp_float_t get() const {return get_tt();}
     void tt_set(double);
     hp_float_t get_tt() const {
-      if ( tt_value == tt_value )       return tt_value; 
-      trace1(( "no tt_value" + short_label()).c_str(),tt_value);
-      assert(false);
+      assert ( is_number(tt_value) );
+      return tt_value; 
     }
     hp_float_t get0()const { assert( _val_bef[0] == _val_bef[0] ); return _val_bef[0]; }
     hp_float_t get1()const { assert( _val_bef[1] == _val_bef[1] ); return _val_bef[1]; }
@@ -135,7 +137,9 @@ class ADP_NODE : CKT_BASE { // better? : NODE
     hp_float_t tt_get_sum()const  {return _val_bef[0] + _delta[0]; }
     void tr_add(double x );//{tr_value += x;}
     void tr_set(double x ); //{tr_value = x;}
-    TIME_PAIR tt_review( );
+    void set_tr_noise(double x ) {tr_noise = x;}
+    double get_tr_noise( ) {return tr_noise;}
+    virtual TIME_PAIR tt_review( );
     TIME_PAIR tt_preview( );
     void reset();
     void reset_tr();
@@ -178,15 +182,22 @@ class BTI_ADP : public ADP_NODE {
 };
 /*--------------------------------------------------------------------------*/
 class ADP_NODE_RCD : public ADP_NODE {
- public:
-   ADP_NODE_RCD( const COMPONENT*x): ADP_NODE(x) { name+=" (rcd)"; }
-   ADP_NODE_RCD( const ADP_NODE& );
+  public:
+    explicit ADP_NODE_RCD( const COMPONENT* c);
+    ADP_NODE_RCD( const ADP_NODE_RCD& );
+    ADP_NODE_RCD( const ADP_NODE& );
+
+    double get_uac() const {return uac;}
+    void set_uac(double x) {uac=x;}
 
    // virtual ADP_NODE(){ return ADP_NODE_RCD(*this); };
    void tr_expect_1();
    void tr_expect_2();
    void tr_expect_3();
    virtual std::string type() const {return "rcd";};
+   virtual TIME_PAIR tt_review( );
+  private:
+    double uac;
 };
 /*--------------------------------------------------------------------------*/
 // ADP card is only a stub...

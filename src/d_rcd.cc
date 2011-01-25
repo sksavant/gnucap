@@ -744,7 +744,7 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p)
   // overrides
 }
 /*--------------------------------------------------------------------------*/
-ADP_NODE* MODEL_BUILT_IN_RCD::new_adp_node(const COMPONENT* c) const{
+ADP_NODE_RCD* MODEL_BUILT_IN_RCD::new_adp_node(const COMPONENT* c) const{
   return(new ADP_NODE_RCD(c));
 }
 /*--------------------------------------------------------------------------*/
@@ -987,6 +987,11 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
     return  static_cast<double>(region());
   }else if (Umatch(x, "tra ")) {
     return  ( _Ccgfill->tr_abs_err() );
+  }else if (Umatch(x, "noise ")) {
+    assert(_Ccgfill);
+    return  ( _Ccgfill->get_tr_noise() );
+  }else if (Umatch(x, "uac ")) {
+    return  ( _Ccgfill->get_uac() );
   }else if (Umatch(x, "trr ")) {
     return  ( _Ccgfill->tr_rel_err() );
   }else if (Umatch(x, "te ")) {
@@ -1074,6 +1079,8 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   else if (Umatch(x, "tr1 "   )) { return( _Ccgfill->tr_get_old() ); }
   else if (Umatch(x, "region ")) { return( m->tt_region( this ) ); }
   else if (Umatch(x, "uref "  )) { return( c->Uref ); }
+
+  // FIXME:
   else if (Umatch(x, "uend "  )) { return( c->Uref / (c->__Re(c->Uref) / c->__Rc(c->Uref) +1) * c->_wcorr ) * c->_weight; }
   else if (Umatch(x, "tc "    )) { return( c->__Rc(0) ); }
   else if (Umatch(x, "te ")) {
@@ -1221,13 +1228,15 @@ void DEV_BUILT_IN_RCD::tr_stress() const
     }
   }
 
-  if( m->use_net()) return;
+  if( m->use_net()) { incomplete(); return; }
   m->do_tr_stress(this);
 }
 /*----------------------------------------------------------------------------*/
 double DEV_BUILT_IN_RCD::involts() const {
   return _n[n_u].v0()  - _n[n_b].v0();
 }
+/*----------------------------------------------------------------------------*/
+// FIXME: move pred/corr to here.
 /*----------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::tr_stress_last() const
 {
@@ -1237,16 +1246,22 @@ void DEV_BUILT_IN_RCD::tr_stress_last() const
   const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
   assert(m);
   assert(c->sdp());
+  double fill;
   if(m->use_net()){
-    double fill = ((ELEMENT*)_Ccg)->tr_involts();
-    _Ccgfill->tr_stress_last(fill) ; // -_Ccgfill->get());
+    fill = ((ELEMENT*)_Ccg)->tr_involts();
+    _Ccgfill->tr_stress_last(fill);
 
     trace2(("tr_stress_last " + short_label()).c_str(), fill, _sim->tt_iteration_number()  );
 
     trace3("DEV_BUILT_IN_RCD::tr_stress_last n ", _Ccgfill->get_tt(), _Ccgfill->get_tr(), _Ccgfill->get_total() );
   }else{
     trace3("DEV_BUILT_IN_RCD::tr_stress_last s ", _Ccgfill->get_tt(), _Ccgfill->get_tr(), _Ccgfill->get_total() );
+    fill=_Ccgfill->get_total();
+    // m->do_tr_stress_last(fill,c);
+    m->do_tr_stress_last(_Ccgfill,c);
+
   }
+
 }
 ///*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::tt_commit() const
@@ -1265,7 +1280,6 @@ void DEV_BUILT_IN_RCD::tt_prepare()
   untested();
   trace0(("DEV_BUILT_IN_RCD::tt_prepare " + short_label()).c_str());
   m->do_tt_prepare(this);
-
 }
 ///*--------------------------------------------------------------------------*/
 bool DEV_BUILT_IN_RCD::do_tr()

@@ -1369,7 +1369,7 @@ bool DEV_BUILT_IN_MOS::tr_needs_eval()const
     polarity_t polarity = m->polarity;
     node_t& eff_s((reversed) ? _n[n_id] : _n[n_is]);
     node_t& eff_d((reversed) ? _n[n_is] : _n[n_id]);
-    if( m->use_bti() && _BTI->tr_needs_eval()) return true;
+    if( m->use_bti() ) if ( _BTI->tr_needs_eval()) return true;
     return !(conchk(vds,polarity*(eff_d.v0()-eff_s.v0()),OPT::vntol)
 	     && conchk(vgs, polarity*(_n[n_g].v0()-eff_s.v0()),
 		       OPT::vntol)
