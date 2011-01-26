@@ -158,6 +158,8 @@ double PROBE::probe_node(void)const
     return ::status.hidden_steps;
   }else if (Umatch(_what, "temp{erature} ")) {untested();
     return CKT_BASE::_sim->_temp_c;
+  }else if (Umatch(_what, "gain ")) {
+    return CKT_BASE::_sim->_dT0/CKT_BASE::_sim->_dTmin;
   }else if (Umatch(_what, "ttime ")) {untested();
     return CKT_BASE::_sim->_Time0;
   }else if (Umatch(_what, "time ")) {untested();
@@ -240,7 +242,7 @@ double MEAS_PROBE::value(void)const
   Cmd >> function >> '(';
   FUNCTION* f = measure_dispatcher[function];
 
-  std::cerr << "mode " <<   CKT_BASE::_sim->sim_mode();
+  trace1("MEAS_PROBE::value mode " ,  CKT_BASE::_sim->sim_mode);
 
   SIM_MODE oldmode=CKT_BASE::_sim->_mode;
   CKT_BASE::_sim->_mode=s_TRAN;
@@ -299,14 +301,11 @@ double EVAL_PROBE::value(void)const
   CS cmd(CS::_STRING, _cmd);
   std::string name;
 
-
   Expression e(cmd);
   cmd.check(bDANGER, "syntax error");
   Expression r(e, _scope);
 
-
   return r.eval();
-
 }
 /*--------------------------------------------------------------------------*/
 EVAL_PROBE::EVAL_PROBE(const std::string& cmd, const CARD_LIST* scope)

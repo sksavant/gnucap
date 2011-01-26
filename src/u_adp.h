@@ -187,8 +187,8 @@ class ADP_NODE_RCD : public ADP_NODE {
     ADP_NODE_RCD( const ADP_NODE_RCD& );
     ADP_NODE_RCD( const ADP_NODE& );
 
-    double get_uac() const {return uac;}
-    void set_uac(double x) {uac=x;}
+    double get_udc() const {return udc;}
+    void set_udc(double x) {udc=x;}
 
    // virtual ADP_NODE(){ return ADP_NODE_RCD(*this); };
    void tr_expect_1();
@@ -197,7 +197,7 @@ class ADP_NODE_RCD : public ADP_NODE {
    virtual std::string type() const {return "rcd";};
    virtual TIME_PAIR tt_review( );
   private:
-    double uac;
+    double udc;
 };
 /*--------------------------------------------------------------------------*/
 // ADP card is only a stub...

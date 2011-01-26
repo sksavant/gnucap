@@ -990,8 +990,8 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "noise ")) {
     assert(_Ccgfill);
     return  ( _Ccgfill->get_tr_noise() );
-  }else if (Umatch(x, "uac ")) {
-    return  ( _Ccgfill->get_uac() );
+  }else if (Umatch(x, "udc ")) {
+    return  ( _Ccgfill->get_udc() );
   }else if (Umatch(x, "trr ")) {
     return  ( _Ccgfill->tr_rel_err() );
   }else if (Umatch(x, "te ")) {

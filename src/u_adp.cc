@@ -189,7 +189,9 @@ TIME_PAIR ADP_NODE::tt_review( ) {
 
 // FIXME: _order.
 //
+//???
   _wdT = (dT0()-h) * sqrt( myreltol / _rel_tr_err )  + h;
+  _wdT =  sqrt( 1+  myreltol / _rel_tr_err )  + h;
 
   if (_rel_tr_err >= 1 ){
     error( bDANGER, "stepdebug %i dev: %s reltr %f>1 model %E, tr_ %E fill %E\n",
@@ -369,7 +371,7 @@ void ADP_NODE::tt_accept_first( )
 ADP_NODE::ADP_NODE( const COMPONENT* c ) : dbg(0), tr_noise(0)
       { init(); _c = c; name += c->short_label(); }
 /*----------------------------------------------------------------------------*/
-ADP_NODE_RCD::ADP_NODE_RCD( const COMPONENT* c ) : ADP_NODE(c), uac(.2)
+ADP_NODE_RCD::ADP_NODE_RCD( const COMPONENT* c ) : ADP_NODE(c), udc(.2)
    { name+=" (rcd)"; }
 /*----------------------------------------------------------------------------*/
 // accept, print, advance.
@@ -445,7 +447,7 @@ void ADP_NODE::tr_expect_2_avg(){
 }
 /*---------------------------------*/
 double ADP_NODE::tt_integrate_2_linear(double tr_){
-  incomplete();
+  incomplete(); // regression?
   hp_float_t delta = (_delta[1] + tr_)/2 * ( dT0() / tr_duration() -1 );
   double ret = get_aft_1() + delta; // RET
   assert (ret == ret);
@@ -1310,9 +1312,6 @@ TIME_PAIR ADP_NODE_RCD::tt_review( ) {
   }
   _rel_tt_err = fabs (tt_value - tt_expect) / (fabs(tt_value) + fabs(tt_expect));
 
-
-
-
   tr_value = delta_model;
 
   trace3(("ADP_NODE::tt_review" + label() + "got tol").c_str(), myreltol, _abs_tr_err, _rel_tr_err);
@@ -1326,7 +1325,7 @@ TIME_PAIR ADP_NODE_RCD::tt_review( ) {
 
 // FIXME: _order.
 // 
-  _wdT = (dT0()) * sqrt( myreltol / _rel_tr_err )  + h;
+  _wdT =  log( 1+ myreltol / _rel_tr_err )  + h;
   // std::cout << myreltol << " " <<  tr_noise << " " << _rel_tr_err << " " << _abs_tr_err << " " << _wdT << "\n";
 
   if (_rel_tr_err >= 1 ){
