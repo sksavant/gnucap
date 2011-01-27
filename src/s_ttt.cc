@@ -336,7 +336,8 @@ void TTT::sweep_tt()
 
   assert (_Time1 == _Tstart);
   
-  trace6( "TTT::sweep_tt entering next loop ", _sim->_Time0,  _Time1 , _sim->_dT0 , _sim->_dT1 , _accepted , _accepted_tt ); 
+  trace6( "TTT::sweep_tt entering next loop ", _sim->_Time0,  _Time1 ,
+      _sim->_dT0 , _sim->_dT1 , _accepted , _accepted_tt ); 
   while(next())
   {
     assert( _sim->_Time0 > 0 );
@@ -384,7 +385,8 @@ void TTT::sweep_tt()
     assert( _sim->_mode  == s_TTT );
     // 
     // if OPT::printbefore
-   // print_stored_results_tt(_sim->_Time0);
+    //
+    print_stored_results_tt(_sim->_Time0);
     outdata_tt(_sim->_Time0); // first output tt data
 
 
@@ -845,6 +847,7 @@ bool TTT::next()
 {
   double new_dT;
   double new_Time0;
+  double step_grow_fact =10;
 
   trace3( "TTT::next()", _sim->_Time0 ,  _Time1, _sim->tt_iteration_number() );
 
@@ -873,7 +876,7 @@ bool TTT::next()
 
     assert ( _Time1 == _sim->_Time0 ); // advance ...
     new_dT = min( (double) _dT_by_adp, (_sim->_dT1 + _Tstep)/2 ) ; 
-    new_dT = min( (double) new_dT, _sim->_dT1 * 2) ; 
+    new_dT = min( (double) new_dT, _sim->_dT1 * step_grow_fact) ; 
     new_dT = max( new_dT,  (double) _tstop ) ; // fmin( get_new_dT(), _Tstep );
 
     if ( OPT::printrejected) // fixme. tracesteps.
@@ -888,7 +891,7 @@ bool TTT::next()
     // last step handler.
     new_dT = min(new_dT, _Tstop - _Time1 - _tstop );
     if (_sim->_dT1 > 0)
-    assert( new_dT < 4 * _sim->_dT1 );
+    assert( new_dT < (step_grow_fact+1) * _sim->_dT1 );
 
 
     trace3( "TTT::next Time1: ", _Time1 , new_dT, _dTmin );

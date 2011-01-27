@@ -242,7 +242,7 @@ double MEAS_PROBE::value(void)const
   Cmd >> function >> '(';
   FUNCTION* f = measure_dispatcher[function];
 
-  trace1("MEAS_PROBE::value mode " ,  CKT_BASE::_sim->sim_mode);
+  //trace1("MEAS_PROBE::value mode " ,  (double)CKT_BASE::_sim->sim_mode);
 
   SIM_MODE oldmode=CKT_BASE::_sim->_mode;
   CKT_BASE::_sim->_mode=s_TRAN;

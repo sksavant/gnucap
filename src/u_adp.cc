@@ -90,6 +90,7 @@ void ADP_NODE::init(){
     _der_aft[i] = 0; //unused?
     _delta[i] = NAN;
   }
+  _val_bef[0]=0;
 
   tt_value3=NAN; //FIXME
   tr_value3=NAN; //FIXME
@@ -386,7 +387,7 @@ void ADP_NODE::tt_advance(){
   _delta[2] = _delta[1];
   _delta[1] = _delta[0];
 
-  _delta[0] = 888; // invalidate
+  _delta[0] = -888; // invalidate
 
   _val_bef[2] = _val_bef[1];
   _val_bef[1] = _val_bef[0];
@@ -398,10 +399,9 @@ void ADP_NODE::tt_advance(){
   assert(is_number(_der_aft[2])|| _c->_sim->tt_iteration_number() < 3);
   assert(is_number(_der_aft[1])|| _c->_sim->tt_iteration_number() < 2);
 
-  _val_bef[0] = 12345;
-  assert (!_positive || _val_bef[0] >=0 );
 
-  trace2(("ADP_NODE::tt_advance done " + _c->short_label()).c_str(), get_tt(), get_tr());
+  trace3(("ADP_NODE::tt_advance done " + _c->short_label()).c_str(), get_tt(), get_tr(),_val_bef[0]);
+  assert (!_positive || _val_bef[0] >=0 );
 
   if (tr_duration() - dT0() < 1e-10){
     trace4(("ADP_NODE::tt_accept" + _c->short_label()).c_str(), _val_bef[1] ,
@@ -409,7 +409,8 @@ void ADP_NODE::tt_advance(){
     assert(fabs(_val_bef[1] - _val_bef[2] - _delta[1]) < 1e-15);
   }
 
-  tr_value = 9988; 
+  tr_value = -9988;  //invalidate
+  _val_bef[0] = -12345; //invalidate
 }
 /*---------------------------------*/
 hp_float_t ADP_NODE::get_total() const{
@@ -991,7 +992,8 @@ void ADP_NODE::tr_expect_( ){
       tr_dd12 = ( _delta[1] - _delta[2] ) / dT1();
       tr_expect_3();
       if ( _delta[1]<0 && _delta[2]<0 && tr_value3<0 && _delta_expect>0) {
-        error(bDANGER, "* ADP_NODE::tt_expect_ error step %i, Time0=%f, %s, tt_value = %g, ( %g, %g, %g, %g) tte: %g\n", \
+        error(bDANGER, "* ADP_NODE::tt_expect_ error step %i, Time0=%f, %s, "
+            "tt_value = %g, ( %g, %g, %g, %g) tte: %g\n", \
             _c->_sim->tt_iteration_number(),
             dT0(),
             _c->short_label().c_str(), tt_value, tr_value, _delta[0], _delta[1], _delta[2], tt_expect);
@@ -1002,8 +1004,9 @@ void ADP_NODE::tr_expect_( ){
     default:
       assert(false);
   }
-  trace5( "ADP_NODE::tr_expect_ done ", _delta[2], _delta[1], _delta_expect, _order, tt_expect);
-  assert(_val_bef[0] >=0 || !_positive);
+  trace6( "ADP_NODE::tr_expect_ done ", _delta[2], _delta[1], _delta_expect, _order, tt_expect,
+      _val_bef[0]);
+  assert(_val_bef[1] >=0 || !_positive);
   assert(tt_expect >=0 || !_positive);
   assert(_delta_expect == _delta_expect);
 

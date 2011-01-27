@@ -115,7 +115,11 @@ double MODEL_BUILT_IN_RCD_SYM_V3::__tau(double uin, const COMMON_COMPONENT* cc)c
 {
   double tau_e = __Re( uin, cc);
   double tau_c = __Rc( uin, cc);
-  return tau_c  / ( tau_c/tau_e +1 );
+  if (tau_c < tau_e){
+    return tau_c  / ( tau_c/tau_e +1 );
+  } else{
+    return tau_e  / ( tau_e/tau_c +1 );
+  }
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress( const COMPONENT* brh) const
@@ -169,6 +173,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress( const COMPONENT* brh) const
     default:
       newfill = (fill - uend) * exp(-h/tau) + uend;
   }
+  // std::cout << "uend"<<uend<< "newfill"<<newfill<<"\n";
   if( newfill <= 0 ){
     untested();
     newfill = 0;
@@ -177,7 +182,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress( const COMPONENT* brh) const
   trace4("MODEL_BUILT_IN_RCD_SYM_V3::tr_stress ", tau_c_here, tau_e_here, _sim->_Time0, _sim->_time0 );
   trace6("MODEL_BUILT_IN_RCD_SYM_V3::tr_stress ", fill, h, tau, newfill, uin, uend );
 
-  c->_Ccgfill->tr_set(newfill-fill); // ERROR?
+  c->_Ccgfill->tr_add(newfill-fill); // ERROR?
   assert(newfill-fill < 1 );
 
   trace4("DEV_BUILT_IN_RCD_SYM_V3::tr_stress ", fill, h, tau, (newfill-fill)/h );
@@ -199,7 +204,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( ADP_NODE* a, const COMMON_COM
   double E=ar->get_total();
   long double uin_eff=ar->get_udc();
 
-  trace0(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last " + a->label()).c_str());
+  trace1(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last " + a->label()).c_str(), old);
   assert(old<1.1);
   assert(E<=1.0001);
 
@@ -368,31 +373,34 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter(long double& uin, double old, 
         "at uin=%LE (old=%E)\n", uin, old);
   }
 
-  while( ( fabs(res) > OPT::abstol/10.0 || Q > square(OPT::reltol) ) && fabs(Euin-E)>1e-40 ) {
+  bool A=true;
+  bool B=true;
+  while( ( A || B ) && fabs(Euin-E)>1e-40 ) {
     if( i> 1000){
       error( bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter no converge uin= \
-          %LE, E=%E, res=%Lf, Q=%Lf\n", uin, E, res, Q);
+          %LE, E=%E, lres=%Lf, Q=%Lf s=%i%i\n", uin, E, log(fabs(res)), Q,A,B);
+      assert(i<100000);
       break;
     }
     if(!is_number(uin)){
       error( bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter uin wrong %E diff "
           "%E loking for %E \n", Euin, Edu, E );
+      assert(false);
       return( inf );
     }
     Edu = __Edu(uin, old, c);
     if(!is_number(Edu) || !is_number(1.0/Edu)){
       error( bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter Edu wrong at %LE Euin=%LE diff "
           "%LE looking for %E\n", uin, Euin, Edu, E  );
+      assert(false);
       break;
     }
     assert (is_number (Euin));
     assert (is_number (Edu));
     res  = (Euin-E)/Edu;
     i++;
-    Q= fabs(res/ uin);
+    Q= fabs( res / uin );
 
-    trace6("MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter loop", (double)uin, (double)Euin, Edu, E, i, (double)(Euin-E));
-    trace1("MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter loop", res);
     assert(is_number(res));
     uin -= res;
     assert(is_number(uin));
@@ -401,10 +409,15 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter(long double& uin, double old, 
     if(!is_number(Euin)) {
       error( bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter cannot evaluate E "
           "at uin=%LE (old=%E)\n", uin, old);
-      break;
+      assert(is_number(Euin)); break;
     }
+    B = Q > square(OPT::reltol);
+    A = ( fabs(res) > square(OPT::abstol)  );
   }
-  trace6("MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter done", (double)uin, (double)res, Edu, E, i, Q);
+
+  trace6("MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter done", (double)uin, (double)res, Edu, E, i, old);
+  trace1("MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter done", E-Euin );
+  assert(uin>=-0.001);
   return uin;
 }
 /*--------------------------------------------------------------------------*/
