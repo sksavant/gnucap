@@ -1032,7 +1032,6 @@ void ADP_NODE::tr_expect_1_exp(){
       Time_delta(), _c->_sim->_time0, _c->_sim->_last_time );
 
   _delta_expect = _delta[1];
-
   assert (_delta_expect < 0.1);
 
   _corrector = &ADP_NODE::tr_correct_1_exp;
@@ -1046,8 +1045,8 @@ void ADP_NODE::tr_expect_2_exp(){
   double h = tr_duration();
   // _debug+=1000;
   assert( order() == 2 );
-  assert( _delta[1] == _delta[1] );
-  assert( _delta[2] == _delta[2] );
+  assert( is_number(_delta[1]) );
+  assert( is_number(_delta[2]) );
   _sign = 1;
   if (_delta[1] <= 0 && _delta[2] < 0 ){
     _sign=-1;
@@ -1065,6 +1064,15 @@ void ADP_NODE::tr_expect_2_exp(){
     _order--;
     tr_expect_1_exp();
     _corrector = &ADP_NODE::tr_correct_1_exp;
+    return;
+  }
+  if ( fabs(_delta[1] - _delta[2]) < tr_noise ){
+    trace3(("ADP_NODE::tr_expect_2_exp just noise " +
+          short_label()).c_str(),  _delta[2], _delta[1], tr_noise);
+    incomplete();
+    _order--;
+    tr_expect_1_exp();
+  //  _corrector = &ADP_NODE::tr_correct_1_exp;
     return;
   }
   //hp_float_t t2 = tr_duration()/2;
@@ -1125,8 +1133,8 @@ double ADP_NODE::tr_correct_1_exp(){
   //assert(_val_bef[1] == _val_bef[1]);
 
   long double a = _delta[1];
+  //long double c = tr_value;
   long double b = tt_expect;
-  long double c = tr_value;
   long double d = _val_bef[1];
   long double dT = dT0();
 
@@ -1144,7 +1152,7 @@ double ADP_NODE::tr_correct_1_exp(){
   //
   
   long double d_b = d-b;
-  long double a_c = a-c;
+  long double a_c = _delta[1] - tr_value;
 
   
   if (  fabs ( a_c ) < tr_noise )  {
@@ -1166,13 +1174,14 @@ double ADP_NODE::tr_correct_1_exp(){
     return(tr_value + _delta[1])/2;
   }
   long double B = (1 + (a_c)/(d_b));
-  long double E = ( dT/h );
+  long double gain = ( dT/h );
+  assert(is_number(gain));
 
   if (B<0){
     B=0;
     untested();
   }
-  long double P = pow(B,E);
+  long double P = pow(B,gain);
 
   if ( !is_number((double)P) ) {
     trace0("ADP_NODE::tr_correct_1_exp P is not number. probably just noise");
@@ -1183,13 +1192,13 @@ double ADP_NODE::tr_correct_1_exp(){
   new_delta = (double)( a*P  );
 
   trace6(("ADP_NODE::tr_correct_1_exp, " + label()).c_str(), \
-      a, c, P, dT0(), B, E );
+      a, c, P, dT0(), B, gain );
   trace6(("ADP_NODE::tr_correct_1_exp, " + label()).c_str(), tt_expect,
       _val_bef[1], tt_value, _delta[1], tr_value, new_delta);
-  trace3( "ADP_NODE::tr_correct_1_exp " , _c->_sim->tt_iteration_number(), b-a, a_c);
+  trace4( "ADP_NODE::tr_correct_1_exp " , _c->_sim->tt_iteration_number(), d_b, a_c, 
+      CKT_BASE::_sim->_dT0/CKT_BASE::_sim->_dTmin );
 
   assert(is_number(B));
-  assert(is_number(E));
   assert(is_number(P));
   assert(is_number(new_delta));
   assert(new_delta * _delta[1] >= 0);
@@ -1208,7 +1217,6 @@ double ADP_NODE::tt_integrate_2_exp(double tr_) {
   trace4("ADP_NODE::tt_integrate_2_exp", _delta[1], tr_ , _sign, tr_value);
   trace4("ADP_NODE::tt_integrate_2_exp", tr_duration(), dT0(), _val_bef[1] +
       _delta[1], _val_bef[1]);
-  //_debug=1;
   hp_float_t h = tr_duration();
 
   assert (_sign * tr_       >= 0 );
@@ -1311,7 +1319,7 @@ TIME_PAIR ADP_NODE_RCD::tt_review( ) {
     _abs_tr_err = 0;
   } else {
     _rel_tr_err = _abs_tr_err / max( fabs(tr_value) , fabs(delta_model));
-    _rel_tr_err = fabs( tr_value-delta_model )/ fabs(tr_noise ) ;
+  //  _rel_tr_err = fabs( tr_value-delta_model )/ fabs(tr_noise ) ;
   }
   _rel_tt_err = fabs (tt_value - tt_expect) / (fabs(tt_value) + fabs(tt_expect));
 

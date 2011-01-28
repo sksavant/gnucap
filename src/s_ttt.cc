@@ -257,7 +257,8 @@ void TTT::first()
   assert( _sim->_mode  == s_TTT );
   _accepted_tt = true;
 
-  trace0("TTT::first accepting first .");
+  if (OPT::tracett)
+    _out << "* aceppting first\n";
 
 
   accept_tt();
@@ -427,7 +428,7 @@ void TTT::sweep() // tr sweep wrapper.
     CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
   }catch (Exception& e) {
     untested();
-    std::cout << "* " << e.message() <<  "\n";
+    std::cerr << "* " << e.message() <<  "\n";
     error(bDANGER, e.message() + '\n');
     _accepted=_accepted_tt=false;
     ::status.review.stop();
@@ -450,7 +451,8 @@ void TTT::sweep() // tr sweep wrapper.
 /*--------------------------------------------------------------------------*/
 void TTT::accept_tt()
 {
-  trace1("TTT::accept_tt", _sim->_Time0);
+  if (OPT::tracett)
+    _out << "* aceppting step " <<_sim->_tt_accepted << " at " <<  _sim->_Time0 <<"\n";
   //_sim->keep_voltages(); // bloss nicht. wegen last_time
   CARD_LIST::card_list.do_forall( &CARD::tt_accept ); //?
   ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_accept ); // schiebt tt_valuei weiter.
@@ -462,6 +464,8 @@ void TTT::accept_tt()
 /*--------------------------------------------------------------------------*/
 void TTT::tt_advance() // FIXME: merge advance & accept ??
 {
+  if (OPT::tracett)
+    _out << "* advancing\n";
   trace2("TTT::tt_advance", _sim->_Time0, _Time1);
   _sim->_tt_iter++;
   _sim->_tt_rejects=0;
@@ -470,7 +474,7 @@ void TTT::tt_advance() // FIXME: merge advance & accept ??
   _sim->_dT3 = _sim->_dT2;
   _sim->_dT2 = _sim->_dT1;
   _sim->_dT1 = _sim->_dT0;
-  _sim->_dT0 = 0;
+  _sim->_dT0 = -999; //invalidate
   ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_advance );
 }
 /*--------------------------------------------------------------------------*/
@@ -847,13 +851,14 @@ bool TTT::next()
 {
   double new_dT;
   double new_Time0;
-  double step_grow_fact =10;
+  double step_grow_fact = 3;
 
   trace3( "TTT::next()", _sim->_Time0 ,  _Time1, _sim->tt_iteration_number() );
 
   assert(_sim->_Time0 >=0);
 
   if( !_accepted_tt ){
+
     new_dT = 0.9 * ( _sim->_dT0 - _tstop ) + _tstop; // back at least this much.
     if( _time_by_beh < _sim->_Time0 ){
       assert(_time_by_beh >= 0);
@@ -866,21 +871,21 @@ bool TTT::next()
 
     assert(new_dT == new_dT );
     trace1( "TTT::next after reject: ", _Time1 );
-//    _Tstep = fmin( _dT_by_adp, _dT_by_beh );
-    if ( OPT::printrejected)
-      std::cout << "* retry " << new_dT << " ( " << _dT_by_adp << " )\n";
+
+    if ( OPT::tracett) 
+      _out << "* retry step " << new_dT << " ( " << _dT_by_adp << " " << _sim->_dT1  << " " << _sim->_dT0   << " )\n";
    
   } else { // accepted step. calculating new_dT
 
     _Time1 = _sim->_Time0;       // FIXME
 
     assert ( _Time1 == _sim->_Time0 ); // advance ...
-    new_dT = min( (double) _dT_by_adp, (_sim->_dT1 + _Tstep)/2 ) ; 
-    new_dT = min( (double) new_dT, _sim->_dT1 * step_grow_fact) ; 
+    new_dT = min( (double) _dT_by_adp, (_sim->_dT0 + _Tstep)/2 ) ; 
+    new_dT = min( (double) new_dT, _sim->_dT0 * step_grow_fact) ; 
     new_dT = max( new_dT,  (double) _tstop ) ; // fmin( get_new_dT(), _Tstep );
 
-    if ( OPT::printrejected) // fixme. tracesteps.
-      _out << "* newstep " << new_dT << " ( " << _dT_by_adp << " " << _sim->_dT1   << " )\n";
+    if ( OPT::tracett) 
+      _out << "* new step " << new_dT << " ( just accepted: " << _sim->_dT0   << " )\n";
 
 
     if(new_dT < _dTmin){
@@ -891,7 +896,7 @@ bool TTT::next()
     // last step handler.
     new_dT = min(new_dT, _Tstop - _Time1 - _tstop );
     if (_sim->_dT1 > 0)
-    assert( new_dT < (step_grow_fact+1) * _sim->_dT1 );
+      assert( new_dT < (step_grow_fact+1) * _sim->_dT0 );
 
 
     trace3( "TTT::next Time1: ", _Time1 , new_dT, _dTmin );
@@ -925,13 +930,10 @@ bool TTT::next()
 
 
   if (another_step && _accepted_tt){
-    //changes all _dTi. sets Time1=_Time0
     trace0("TTT::next tt_advance");
     tt_advance();
     CARD_LIST::card_list.do_forall( &CARD::tt_next );
   }
-
-
 
   // new_dT = max(0.0,new_dT);
 
@@ -944,7 +946,11 @@ bool TTT::next()
 
   time1 = 0.;
 
+  if ( OPT::tracett) 
+    _out << "* exiting next, next at " << _sim->_Time0 << 
+      "( steps " << _sim->_dT0  << " " <<  _sim->_dT1 << " " <<  _sim->_dT2 << "\n";
   trace6( "TTT::next: exiting next: " , _sim->tt_iteration_number(), _sim->_Time0, _Time1, _sim->_dT0, _sim->_dT1 , _sim->_dT2 );
+
   assert( _sim->_Time0 < 1+ _Time1 + _sim->_dT0 );
   assert( _sim->_Time0 >= _sim->_dT0 );
   assert( _sim->_Time0 > 0 );
@@ -1231,7 +1237,7 @@ void TTT::outdata(double x)
   // SIM::alarm();
   _sim->_mode=s_TRAN;
   if ( OPT::printrejected ) { //FIXME
-    TRANSIENT::print_results(x);
+//    TRANSIENT::print_results(x);
   }
   store_results(x);
   _sim->_mode=s_TTT;

@@ -104,6 +104,7 @@ public:
   static double adpabstol;	    // adp ?
   static bool behave;	    // use behaviour...
   static bool printrejected;	    // adp ?
+  static bool printguess;	    // adp ?
   static double trtol;	    // transient error overestimation factor
   static double chgtol;	    // charge tolerance
   static double pivtol;	    // minimum acceptable pivot
@@ -147,6 +148,7 @@ public:
   static bool fbbypass;	    // bypass fwd & back sub when last iter converged
   static bool traceload;    // load only elements that need it, using queue
   static bool tracewdtt;    // trace wanted dT
+  static bool tracett;    // trace tt step control
   static int itermin;	    // forced min iteration count.
   static double vmax;	    // + voltage limit for nonlinear calculations
   static double vmin;	    // - voltage limit for nonlinear calculations
