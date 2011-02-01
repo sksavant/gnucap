@@ -626,6 +626,7 @@ bool TRANSIENT::review()
 /*--------------------------------------------------------------------------*/
 void TRANSIENT::accept()
 {
+  trace0("TRANSIENT::accept");
   _sim->_dt0 = _sim->_time0 - time1; // ungefaehrlich
   if(_sim->_dt0 <=0) assert (_sim->_stepno == 0);
   ::status.accept.start();

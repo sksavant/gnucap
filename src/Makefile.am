@@ -92,7 +92,7 @@ e_homebrew.cc \
 e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc e_adplist.cc\
 bm_value.cc bm.cc \
 c__cmd.cc c_attach.cc c_file.cc c_genrat.cc \
-findbr.cc plot.cc main.cc globals.cc u_adp.cc
+findbr.cc plot.cc main.cc globals.cc e_adp.cc
 #------------------------------------------------------------------------
 RAW_HDRS = \
 md.h ap.h mode.h constant.h declare.h patchlev.h \
@@ -103,7 +103,7 @@ m_base.h m_expression.h m_phase.h \
 io_.h io_error.h io_trace.h \
 u_cardst.h u_function.h u_lang.h u_limit.h u_nodemap.h u_opt.h u_parameter.h \
 u_prblst.h u_probe.h u_sim_data.h u_sdp.h u_status.h u_time_pair.h u_xprobe.h \
-s__.h s_tr.h u_adp.h \
+s__.h s_tr.h e_adp.h \
 e_base.h e_card.h e_node.h e_aux.h e_model.h e_compon.h e_subckt.h \
 e_homebrew.h \
 e_elemnt.h e_ccsrc.h e_storag.h e_cardlist.h \

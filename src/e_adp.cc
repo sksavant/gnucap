@@ -20,7 +20,7 @@
  * 02110-1301, USA.
  */
 
-#include "u_adp.h"
+#include "e_adp.h"
 #include <gsl/gsl_fit.h>
 #define DEBUG_ADP
 
@@ -252,7 +252,7 @@ void ADP_NODE::tt_accept()
   
   trace4(("ADP_NODE::tt_accept() " + _c->long_label()).c_str(),
       tr_value, tt_value, _c->_sim->tt_iteration_number(), _c->_sim->get_tt_order());
-  assert( _delta[0] == _delta[0] );
+  assert( is_number(tr_value) );
   assert( _c->_sim->_last_time >0 );
 
 
@@ -288,13 +288,19 @@ void ADP_NODE::tt_accept()
 //    tr_value = _delta[0];
     assert(_delta[0]<0.1);
     tt_value = (this->*_integrator)(_delta[0]);
+    assert( !_positive || tt_value > E_min );
+
+    if( tt_value > 1 ){ 
+      error(bDANGER, "ADP_NODE::tt_accept overshoot? %f\n", label().c_str(), tt_value );
+      tt_value=1;
+    }
   } else {
     untested();
   }
 
+  assert(tt_value <=1 );
+
   // std::cout << "acc after int " << label() << tr_value << "\n";
-
-
 
   assert( tt_value == tt_value );
 
@@ -337,13 +343,15 @@ void ADP_NODE::tt_accept_first( )
 {
   tt_value = _val_bef[0] + tr_value;
   assert(_val_bef[0] >=0 || !_positive);
+  assert (_val_bef[0]<=1);
 
-  assert(order()==0);
   trace3(("ADP_NODE::tt_accept_first" + _c->short_label()).c_str(),
       tr_value,_c->_sim->tt_iteration_number(), tt_value );
   assert( tr_value == tr_value );
-
+  assert(order()==0);
   assert( _c->_sim->get_tt_order() == 0 );
+  assert( _c->_sim->tt_iteration_number() == 0 );
+
 
   // assert(0  == _c->_sim->_dT0);
   _val_bef[2] = _val_bef[1];
@@ -372,6 +380,9 @@ void ADP_NODE::tt_accept_first( )
 ADP_NODE::ADP_NODE( const COMPONENT* c ) : dbg(0), tr_noise(0)
       { init(); _c = c; name += c->short_label(); }
 /*----------------------------------------------------------------------------*/
+ADP_NODE_UDC::ADP_NODE_UDC( const COMPONENT* c ) : ADP_NODE(c)
+   { name+=" (dc)"; }
+/*----------------------------------------------------------------------------*/
 ADP_NODE_RCD::ADP_NODE_RCD( const COMPONENT* c ) : ADP_NODE(c), udc(.2)
    { name+=" (rcd)"; }
 /*----------------------------------------------------------------------------*/
@@ -387,7 +398,7 @@ void ADP_NODE::tt_advance(){
   _delta[2] = _delta[1];
   _delta[1] = _delta[0];
 
-  _delta[0] = -888; // invalidate
+  _delta[0] = NAN; // invalidate
 
   _val_bef[2] = _val_bef[1];
   _val_bef[1] = _val_bef[0];
@@ -409,8 +420,8 @@ void ADP_NODE::tt_advance(){
     assert(fabs(_val_bef[1] - _val_bef[2] - _delta[1]) < 1e-15);
   }
 
-  tr_value = -9988;  //invalidate
-  _val_bef[0] = -12345; //invalidate
+  tr_value = NAN;  //invalidate
+  _val_bef[0] = NAN; //invalidate
 }
 /*---------------------------------*/
 hp_float_t ADP_NODE::get_total() const{
@@ -860,7 +871,8 @@ double ADP_NODE::tt_integrate_1_const( double tr_){
   
   long double ret = get_aft_1() + delta; // RET
 
-  trace5(("ADP_NODE::tt_integrate_1_const" + label()).c_str(), _val_bef[1], delta , tr_, ret, dT0() / tr_duration());
+  trace5(("ADP_NODE::tt_integrate_1_const" + label()).c_str(), _val_bef[1],
+      delta , tr_, ret, dT0() / tr_duration());
   trace1(("ADP_NODE::tt_integrate_1_const" + label()).c_str(),tr_noise);
   // trace1("ADP_NODE::tt_integrate_1_const", _val_bef[0]);
 
@@ -881,7 +893,6 @@ double ADP_NODE::tt_integrate_1_const( double tr_){
 
   _integrator = &ADP_NODE::tt_integrate_1_const;
   assert (!_positive || ret >=0);
-  assert(ret<2); // RCD?
   return(ret);
 }
 /*---------------------------------*/
@@ -890,7 +901,6 @@ double ADP_NODE::tr_correct_1_const(){
   return  (_delta_expect + tr_value)/2;
 }
 /*---------------------------------*/
-
 double ADP_NODE::tt_integrate_( double ){
 // take order and tr_value
 // integrate things. write to tt_value.
@@ -920,7 +930,8 @@ void ADP_NODE::tt_commit( )
   if (order()==0)
     tt_commit_first();
 
-  trace1(( "ADP_NODE::tt_commit "+_c->short_label()).c_str(), tt_value );
+  trace3(( "ADP_NODE::tt_commit "+_c->short_label()).c_str(), tt_value, _delta[0],
+     _c->_sim->tt_iteration_number() );
   trace6(("ADP_NODE::tt_commit " + _c->short_label()).c_str(),
       dT0(), dT1(),
       _c->_sim->get_tt_order(),
@@ -929,6 +940,7 @@ void ADP_NODE::tt_commit( )
       );
 
   // sets _delta_expect and tt_expect
+  assert(is_number( _delta[1]) || _c->_sim->tt_iteration_number()<2 );
   tr_expect_();
 
   assert(_delta_expect != HUGE_VAL );
@@ -937,7 +949,6 @@ void ADP_NODE::tt_commit( )
   // this is before sweep....
   assert( tt_expect == tt_expect );
   assert( _c->_sim->_last_time >0 );
-
 //  std::cout << " commit expect " << tr_value << " <= " << _delta_expect <<"\n";
 
   tr_value = _delta_expect; // FIXME only accd values into _delta[0]
@@ -1192,7 +1203,7 @@ double ADP_NODE::tr_correct_1_exp(){
   new_delta = (double)( a*P  );
 
   trace6(("ADP_NODE::tr_correct_1_exp, " + label()).c_str(), \
-      a, c, P, dT0(), B, gain );
+      a, tr_value, P, dT0(), B, gain );
   trace6(("ADP_NODE::tr_correct_1_exp, " + label()).c_str(), tt_expect,
       _val_bef[1], tt_value, _delta[1], tr_value, new_delta);
   trace4( "ADP_NODE::tr_correct_1_exp " , _c->_sim->tt_iteration_number(), d_b, a_c, 
@@ -1279,6 +1290,10 @@ ADP_CARD::ADP_CARD() {unreachable();}
 ADP_CARD::ADP_CARD(const ADP_CARD&) {unreachable();} 
 /*----------------------------------------------------------------------*/
 
+TIME_PAIR ADP_NODE_UDC::tt_review( ) {
+  return ADP_NODE::tt_review();
+}
+/*----------------------------------------------------------------------*/
 TIME_PAIR ADP_NODE_RCD::tt_review( ) {
   double h = tr_duration();
   double delta_model;
@@ -1312,14 +1327,19 @@ TIME_PAIR ADP_NODE_RCD::tt_review( ) {
     _abs_tr_err = fabs(delta_model - tr_value);
   }
 
+  assert (tr_noise >=0);
   _abs_tr_err = fabs (tr_value - delta_model);
+  _abs_tr_err = max ( fabs (tr_value - delta_model) - tr_noise ,0.0 );
+//  _abs_tr_err = fabs (tr_value - delta_model) / tr_noise ;
 
   if (_abs_tr_err < 1e-40 ) { 
     _rel_tr_err = 0;
     _abs_tr_err = 0;
   } else {
-    _rel_tr_err = _abs_tr_err / max( fabs(tr_value) , fabs(delta_model));
-  //  _rel_tr_err = fabs( tr_value-delta_model )/ fabs(tr_noise ) ;
+    _rel_tr_err = _abs_tr_err; //  / max( fabs(tr_value) , fabs(delta_model));
+
+    // use noise for predictor only?
+    // _rel_tr_err = fabs( tr_value-delta_model )/ fabs(tr_noise ) ;
   }
   _rel_tt_err = fabs (tt_value - tt_expect) / (fabs(tt_value) + fabs(tt_expect));
 
@@ -1336,7 +1356,9 @@ TIME_PAIR ADP_NODE_RCD::tt_review( ) {
 
 // FIXME: _order.
 // 
-  _wdT =  log( 1+ myreltol / _rel_tr_err )  + h;
+  _wdT = dT0() * sqrt( myreltol / _rel_tr_err )  + h;
+  _wdT = dT0() * log( 1+ myreltol / _rel_tr_err )  + h;
+
   // std::cout << myreltol << " " <<  tr_noise << " " << _rel_tr_err << " " << _abs_tr_err << " " << _wdT << "\n";
 
   if (_rel_tr_err >= 1 ){
@@ -1367,3 +1389,11 @@ TIME_PAIR ADP_NODE_RCD::tt_review( ) {
 
   return( TIME_PAIR(0, _wdT));
 }
+
+void ADP_NODE_RCD::tr_expect_1(){ return tr_expect_1_exp();}
+void ADP_NODE_RCD::tr_expect_2(){ return tr_expect_2_exp();}
+void ADP_NODE_RCD::tr_expect_3(){ return tr_expect_3_exp();}
+
+void ADP_NODE_UDC::tr_expect_1(){ return tr_expect_1_const();}
+void ADP_NODE_UDC::tr_expect_2(){ return tr_expect_2_linear();}
+void ADP_NODE_UDC::tr_expect_3(){ return tr_expect_3_quadratic();}

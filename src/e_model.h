@@ -26,7 +26,7 @@
 #define E_MODEL_H
 #include "u_parameter.h"
 #include "e_card.h"
-#include "u_adp.h"
+#include "e_adp.h"
 /*--------------------------------------------------------------------------*/
 // external
 class COMPONENT;

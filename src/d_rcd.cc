@@ -9,7 +9,7 @@
  */
 
 #include "e_aux.h"
-#include "u_adp.h"
+#include "e_adp.h"
 #include "e_storag.h"
 #include "globals.h"
 #include "e_elemnt.h"
@@ -713,7 +713,8 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD()
    _Re(0),
    _Rc(0),
    _GRc(0),
-   _Ccgfill(0)
+   _Ccgfill(0),
+   _Udc(0)
 {
   _n = _nodes;
   attach_common(&Default_BUILT_IN_RCD);
@@ -733,7 +734,8 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p)
    _Re(0),
    _Rc(0),
    _GRc(0),
-   _Ccgfill(0)
+   _Ccgfill(0),
+   _Udc(0)
 {
   untested();
   _n = _nodes;
@@ -745,7 +747,8 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p)
 }
 /*--------------------------------------------------------------------------*/
 ADP_NODE_RCD* MODEL_BUILT_IN_RCD::new_adp_node(const COMPONENT* c) const{
-  return(new ADP_NODE_RCD(c));
+  unreachable();
+  return NULL;
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::expand()
@@ -770,15 +773,14 @@ void DEV_BUILT_IN_RCD::expand()
     new_subckt();
   }else{
   }
-  trace4(("DEV_BUILT_IN_RCD::expand()" + short_label()).c_str(), c->Recommon, c->Rccommon0, m->Re, m->Rc );
-  _Ccgfill = m->new_adp_node(this);
-  ADP_NODE_LIST::adp_node_list.push_back( _Ccgfill );
+  // TT_NODE?
+  _Ccgfill = new ADP_NODE((const COMPONENT*) common());
+//  ADP_NODE_LIST::adp_node_list.push_back( _Ccgfill );
+//
+  _Udc = new ADP_NODE_UDC((const COMPONENT*) common()); //, _Ccgfill);
+  ADP_NODE_LIST::adp_node_list.push_back( _Udc );
 
-  if(m->use_net()){
-    expand_net();
-  }else{
-    expand_net(); // sic.
-  }
+  expand_net();
 
   //precalc();
   subckt()->expand();
@@ -991,7 +993,7 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
     assert(_Ccgfill);
     return  ( _Ccgfill->get_tr_noise() );
   }else if (Umatch(x, "udc ")) {
-    return  ( _Ccgfill->get_udc() );
+    return  ( _Udc->get_tt() );
   }else if (Umatch(x, "trr ")) {
     return  ( _Ccgfill->tr_rel_err() );
   }else if (Umatch(x, "te ")) {
@@ -1258,7 +1260,7 @@ void DEV_BUILT_IN_RCD::tr_stress_last() const
     trace3("DEV_BUILT_IN_RCD::tr_stress_last s ", _Ccgfill->get_tt(), _Ccgfill->get_tr(), _Ccgfill->get_total() );
     fill=_Ccgfill->get_total();
     // m->do_tr_stress_last(fill,c);
-    m->do_tr_stress_last(_Ccgfill,c);
+    m->do_tr_stress_last(_Ccgfill, _Udc, c);
 
   }
 
@@ -1307,7 +1309,4 @@ bool DEV_BUILT_IN_RCD::do_tr()
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-void ADP_NODE_RCD::tr_expect_1(){ return tr_expect_1_exp();}
-void ADP_NODE_RCD::tr_expect_2(){ return tr_expect_2_exp();}
-void ADP_NODE_RCD::tr_expect_3(){ return tr_expect_3_exp();}
 /*--------------------------------------------------------------------------*/

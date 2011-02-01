@@ -7,14 +7,16 @@
 #include "io_trace.h"
 
 typedef int adp_region_t;
+#define E_max 1.0001
+#define E_min -0.0001
 
 /*--------------------------------------------------------------------------*/
 class ADP_NODE_LIST;
 class ADP_LIST;
 class ADP_CARD;
 /*--------------------------------------------------------------------------*/
-// collects transient (stress) data and extrapolates.
-class ADP_NODE : CKT_BASE { // better? : NODE
+// collects transient (stress) data, sometimes extrapolates.
+class ADP_NODE : CKT_BASE {
   public:
     explicit ADP_NODE( const COMPONENT* );
     explicit ADP_NODE( const COMPONENT* , std::string name_in2 );//
@@ -179,6 +181,24 @@ class ADP_NODE : CKT_BASE { // better? : NODE
 /*--------------------------------------------------------------------------*/
 class BTI_ADP : public ADP_NODE {
         // nonsense   ?
+};
+/*--------------------------------------------------------------------------*/
+class ADP_NODE_UDC : public ADP_NODE {
+  public:
+    explicit ADP_NODE_UDC( const COMPONENT* c);
+    ADP_NODE_UDC( const ADP_NODE_UDC& );
+    ADP_NODE_UDC( const ADP_NODE& );
+
+    double get_udc() const {return udc;}
+    void set_udc(double x) {udc=x;}
+
+   void tr_expect_1();
+   void tr_expect_2();
+   void tr_expect_3();
+   virtual std::string type() const {return "rcd";};
+   virtual TIME_PAIR tt_review( );
+  private:
+    double udc;
 };
 /*--------------------------------------------------------------------------*/
 class ADP_NODE_RCD : public ADP_NODE {

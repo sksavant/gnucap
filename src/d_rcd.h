@@ -13,7 +13,7 @@
 #define D_RCD_H_INCLUDED
 
 #include "d_diode.h"
-#include "u_adp.h"
+#include "e_adp.h"
 #include "e_aux.h"
 #include "d_rcd.h"
 #include "d_bti.h"
@@ -96,7 +96,7 @@ public: // probes
   virtual double __Ge(double uin, const COMMON_COMPONENT* )const;
   virtual double __Re(double uin, const COMMON_COMPONENT* cc)const ;
   virtual double __Rc(double uin, const COMMON_COMPONENT* cc)const ;
-  virtual void do_tr_stress_last( ADP_NODE*, const COMMON_COMPONENT* cc ) const 
+  virtual void do_tr_stress_last( ADP_NODE* cap, ADP_NODE* eff, const COMMON_COMPONENT* cc ) const 
   {unreachable();}
 };
 /*--------------------------------------------------------------------------*/
@@ -209,7 +209,10 @@ public:
   explicit DEV_BUILT_IN_RCD();
   ~DEV_BUILT_IN_RCD() {
     --_count;
-    if( _Ccgfill ) 
+    if( _Ccgfill ) {
+    //  ADP_NODE_LIST::adp_node_list.erase( _Ccgfill );
+    }
+    if( _Udc ) 
       ADP_NODE_LIST::adp_node_list.erase( _Ccgfill );
   }
 protected: // override virtual
@@ -274,7 +277,8 @@ public: // netlist
   COMPONENT* _Re;
   COMPONENT* _Rc;
   COMPONENT* _GRc;
-  ADP_NODE_RCD* _Ccgfill;
+  ADP_NODE* _Ccgfill;
+  ADP_NODE_UDC* _Udc;
 protected: // node list
   enum {n_u, n_b, n_ic};
   node_t _nodes[3];
@@ -299,7 +303,6 @@ class DEV_BUILT_IN_RCD_NET : public DEV_BUILT_IN_RCD{
 /*--------------------------------------------------------------------------*/
 // h_direct
 
-// dashier funktioniert (aus e_subckt.h) 
 //   void tr_queue_eval() {assert(subckt()); subckt()->tr_queue_eval();}
 class ADP_BUILT_IN_RCD
   :public ADP_CARD{
@@ -313,7 +316,6 @@ public:
   ADP_NODE* igd_stress;
 public:
 
-  // hier steckt die 'effektive gleichspannung' drin
   ADP_NODE* bti_stress; // FIXME, BTI_?
   double tr_probe_num(const std::string& x)const;
   double tt_probe_num(const std::string& x)const;

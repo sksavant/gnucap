@@ -41,7 +41,7 @@
 #include "e_elemnt.h"
 #include "d_mos8.h"
 #include "d_bti.h"
-#include "u_adp.h"
+#include "e_adp.h"
 #include "e_adplist.h"
 
 /*--------------------------------------------------------------------------*/

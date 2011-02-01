@@ -28,7 +28,7 @@
 #include "u_nodemap.h"
 #include "e_model.h"
 #include "e_adplist.h"
-#include "u_adp.h"
+#include "e_adp.h"
 #include "u_opt.h"
 #include "u_time_pair.h"
 #include "omp.h"

@@ -29,7 +29,7 @@
   enum gate_t {gtSAME = -1, gtMETAL = 0, gtOPP = 1};
   const double NI = 1.45e16;	/* intrinsic carrier concentration */
 #include "u_sdp.h"
-#include "u_adp.h"
+#include "e_adp.h"
 #include "e_node.h"
 #include "e_subckt.h"
 #include "e_model.h"

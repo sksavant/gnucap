@@ -73,6 +73,7 @@ private: // override virtual
 /*--------------------------------------------------------------------------*/
 void DEV_VS::precalc_last()
 {
+  trace0("DEV_VS::precalc_last()");
   ELEMENT::precalc_last();
   set_constant(!has_tr_eval());
   set_converged(!has_tr_eval());

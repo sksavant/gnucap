@@ -27,7 +27,7 @@
 
 #include "d_mos.h"
 #include "u_sdp.h"
-#include "u_adp.h"
+#include "e_adp.h"
 #include "e_node.h"
 #include "e_subckt.h"
 #include "e_model.h"

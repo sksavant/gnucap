@@ -35,7 +35,7 @@
 #include "io_trace.h"
 #include "e_storag.h"
 #include "d_mos_base.h"
-#include "u_adp.h"
+#include "e_adp.h"
 #include "e_adplist.h"
 #include "globals.h"
 #include "e_elemnt.h"

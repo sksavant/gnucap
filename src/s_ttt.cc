@@ -885,7 +885,8 @@ bool TTT::next()
     new_dT = max( new_dT,  (double) _tstop ) ; // fmin( get_new_dT(), _Tstep );
 
     if ( OPT::tracett) 
-      _out << "* new step " << new_dT << " ( just accepted: " << _sim->_dT0   << " )\n";
+      _out << "* new step " << new_dT << " ( just accepted: " << _sim->_dT0   << 
+        ", adp "<< _dT_by_adp <<" )\n";
 
 
     if(new_dT < _dTmin){

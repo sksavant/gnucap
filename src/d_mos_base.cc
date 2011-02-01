@@ -29,7 +29,7 @@
 #include "e_elemnt.h"
 #include "d_mos_base.h"
 #include "d_bti.h"
-#include "u_adp.h"
+#include "e_adp.h"
 #include "e_adplist.h"
 /*--------------------------------------------------------------------------*/
 const double NA(NOT_INPUT);

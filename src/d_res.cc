@@ -25,7 +25,7 @@
  */
 //testing=script,complete 2006.07.17
 #include "e_elemnt.h"
-#include "u_adp.h"
+#include "e_adp.h"
 #include "e_adplist.h"
 /*--------------------------------------------------------------------------*/
 namespace {

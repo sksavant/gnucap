@@ -65,6 +65,13 @@ std::string to_string(int n)
   return s;
 }
 /*--------------------------------------------------------------------------*/
+std::string to_string(long int n)
+{
+  char s[100];
+  sprintf(s, "%li", n);
+  return s;
+}
+/*--------------------------------------------------------------------------*/
 std::string to_string(double n)
 {
   return ftos((double)n, 0, 7, 0);
