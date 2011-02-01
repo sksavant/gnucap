@@ -1,0 +1,222 @@
+#
+#    This source code is free software; you can redistribute it
+#    and/or modify it in source code form under the terms of the GNU
+#    Library General Public License as published by the Free Software
+#    Foundation; either version 2 of the License, or (at your option)
+#    any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Library General Public License for more details.
+#
+#    You should have received a copy of the GNU Library General Public
+#    License along with this program; if not, write to the Free
+#    Software Foundation, Inc.,
+#    59 Temple Place - Suite 330
+#    Boston, MA 02111-1307, USA
+#
+SHELL = /bin/sh
+
+VERSION = 0.9.devel
+
+suffix = @install_suffix@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+srcdir = @srcdir@
+datarootdir = @datarootdir@
+
+VPATH = $(srcdir)
+
+bindir = @bindir@
+libdir = @libdir@
+mandir = @mandir@
+includedir = @includedir@
+
+CC = @CC@
+HOSTCC = @CC@
+CXX = @CXX@
+INSTALL = @INSTALL@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+RANLIB = @RANLIB@
+LEX = @LEX@
+YACC = @YACC@
+MAN = @MAN@
+PS2PDF = @PS2PDF@
+
+CPPFLAGS = -I. -I.. -I $(srcdir) -I$(srcdir)/.. -DVERSION='"$(VERSION)"' @CPPFLAGS@ @DEFS@
+CFLAGS = -Wall @CXXFLAGS@ $(CSHRDFLAGS)
+CXXFLAGS = $(CFLAGS)
+LDFLAGS_SO = @rdynamic@ -shared
+LDFLAGS = @rdynamic@ @LDFLAGS@
+LIBS = @LIBS@ @EXTRALIBS@
+
+dllib=@DLLIB@
+
+MDIR1 = -DMODULE_DIR1=\"$(libdir)/ivl/@vpidir1@\"
+ifneq (x@vpidir2@,x)
+MDIR2 = -DMODULE_DIR2=\"$(libdir)/ivl/@vpidir2@\"
+endif
+
+ifdef VVP_SHARED
+#removed all
+else
+
+ENTRY_OBJ=main.o
+SPICE_OBJ=spice.o
+EXES=$(bindir)/vvp@EXEEXT@ 
+ENTRY_OBJ_SHARED=main-shrd.o
+SPICE_OBJ_SHARED=spice-shrd.o
+all: dep vvp@EXEEXT@ libvpi.a libvvp.so
+SHARED_LIBS=$(libdir)/libvvp.so
+CSHRDFLAGS=-fPIC
+
+endif
+
+clean:
+	rm -f *.o *~ parse.cc parse.cc.output parse.h lexor.cc tables.cc
+	rm -rf dep vvp@EXEEXT@ libvpi.a bin32 parse.output vvp.pdf vvp.exp
+
+distclean: clean
+	rm -f Makefile config.log config.h
+
+check: all
+	./vvp -M../vpi $(srcdir)/examples/hello.vvp | grep 'Hello, World.'
+
+V = vpi_modules.o vpi_callback.o vpi_const.o vpi_event.o vpi_iter.o vpi_mcd.o \
+vpi_priv.o vpi_scope.o vpi_real.o vpi_signal.o vpi_tasks.o vpi_time.o \
+vpi_vthr_vector.o vpip_bin.o vpip_hex.o vpip_oct.o \
+vpip_to_dec.o vpip_format.o vvp_vpi.o
+
+O = $(ENTRY_OBJ) parse.o parse_misc.o lexor.o arith.o array.o bufif.o compile.o \
+concat.o \
+dff.o extend.o npmos.o part.o reduce.o resolv.o sfunc.o stop.o symbols.o \
+ufunc.o codes.o \
+vthread.o schedule.o statistics.o tables.o udp.o vvp_island.o vvp_net.o \
+event.o logic.o delay.o words.o $(SPICE_OBJ) island_tran.o $V
+
+O_SHARED = $(ENTRY_OBJ_SHARED) parse.o parse_misc.o lexor.o arith.o array.o bufif.o compile.o \
+concat.o \
+dff.o extend.o npmos.o part.o reduce.o resolv.o sfunc.o stop.o symbols.o \
+ufunc.o codes.o \
+vthread.o schedule.o statistics.o tables.o udp.o vvp_island.o vvp_net.o \
+event.o logic.o delay.o words.o $(SPICE_OBJ_SHARED) island_tran.o $V
+
+ifeq (@WIN32@,yes)
+# Under Windows (mingw) I need to make the ivl.exe in two steps.
+# The first step makes an ivl.exe that dlltool can use to make an
+# export and import library, and the last link makes a, ivl.exe
+# that really exports the things that the import library imports.
+vvp@EXEEXT@ libvpi.a: $O $(srcdir)/vvp.def
+	$(CXX) -o vvp@EXEEXT@ $(LDFLAGS) $O $(dllib) $(LIBS)
+	dlltool --dllname vvp@EXEEXT@ --def $(srcdir)/vvp.def \
+		--output-lib libvpi.a --output-exp vvp.exp
+	$(CXX) $(LDFLAGS) -o vvp@EXEEXT@ vvp.exp $(LDFLAGS) $O $(dllib) $(LIBS)
+else
+libvpi.a: libvpi.c
+	$(CC) -c $(srcdir)/libvpi.c
+	rm -f libvpi.a
+	ar cqv libvpi.a libvpi.o
+	$(RANLIB) libvpi.a
+
+vvp@EXEEXT@: $O
+	$(CXX) $(LDFLAGS) -o vvp@EXEEXT@ $O $(LIBS) $(dllib)
+
+libvvp.so: $(O_SHARED)
+	$(CXX) $(LDFLAGS_SO) -o $@ $(O_SHARED) $(LIBS) $(dllib)
+
+$(libdir)/%.so: %.so
+
+endif
+
+dep:
+	mkdir dep
+
+%.o: %.cc
+	$(CXX) $(CPPFLAGS) $(MDIR1) $(MDIR2) $(CXXFLAGS) -MD -c $< -o $*.o
+	mv $*.d dep/$*.d
+
+%-shrd.o: %.cc
+	$(CXX) $(CPPFLAGS) $(MDIR1) $(MDIR2) $(CXXFLAGS) -DVVP_SHARED -MD -c $< -o $@
+	mv $*-shrd.d dep/$*-shrd.d
+
+%.o: %.c
+	$(CC) $(CPPFLAGS) $(MDIR1) $(MDIR2) $(CFLAGS) -MD -c $< -o $*.o
+	mv $*.d dep/$*.d
+
+tables.cc: $(srcdir)/draw_tt.c
+	$(HOSTCC) -o draw_tt $(srcdir)/draw_tt.c
+	./draw_tt > tables.cc
+	rm draw_tt@EXEEXT@
+
+lexor.o: lexor.cc parse.h
+
+parse.o: parse.cc
+
+tables.o: tables.cc
+
+parse.cc: $(srcdir)/parse.y
+	$(YACC) --verbose -t -d -o parse.cc $(srcdir)/parse.y
+
+parse.h: parse.cc
+	mv parse.cc.h parse.h 2>/dev/null || mv parse.hh parse.h
+
+lexor.cc: $(srcdir)/lexor.lex
+	$(LEX) -s -olexor.cc $(srcdir)/lexor.lex
+
+vvp.pdf: $(srcdir)/vvp.man
+	$(MAN) -t $(srcdir)/vvp.man | $(PS2PDF) - vvp.pdf
+
+ifeq (@MINGW32@,yes)
+ifeq ($(MAN),none)
+INSTALL_DOC = $(mandir)/man1/vvp$(suffix).1
+else
+ifeq ($(PS2PDF),none)
+INSTALL_DOC = $(mandir)/man1/vvp$(suffix).1
+else
+INSTALL_DOC = $(prefix)/vvp$(suffix).pdf $(mandir)/man1/vvp$(suffix).1
+all: vvp.pdf
+endif
+endif
+INSTALL_DOCDIR = $(mandir)/man1
+else
+INSTALL_DOC = $(mandir)/man1/vvp$(suffix).1
+INSTALL_DOCDIR = $(mandir)/man1
+endif
+
+Makefile: $(srcdir)/Makefile.in ../config.status
+	../config.status --file=$@
+
+config.h: $(srcdir)/config.h.in ../config.status
+	../config.status --header=$@
+
+install: all installdirs $(bindir)/vvp$(suffix) $(libdir)/libvpi$(suffix).a $(INSTALL_DOC) $(libdir)/libvvp.so
+
+$(bindir)/vvp$(suffix)@EXEEXT@: ./vvp@EXEEXT@
+	$(INSTALL_PROGRAM) ./vvp@EXEEXT@ $(DESTDIR)$(bindir)/vvp$(suffix)@EXEEXT@
+
+$(libdir)/libvpi$(suffix).a : ./libvpi.a
+	$(INSTALL_DATA) libvpi.a $(DESTDIR)$(libdir)/libvpi$(suffix).a
+
+$(mandir)/man1/vvp$(suffix).1: $(srcdir)/vvp.man
+	$(INSTALL_DATA) $(srcdir)/vvp.man $(DESTDIR)$(mandir)/man1/vvp$(suffix).1
+
+$(prefix)/vvp$(suffix).pdf: vvp.pdf
+	$(INSTALL_DATA) vvp.pdf $(DESTDIR)$(prefix)/vvp$(suffix).pdf
+
+installdirs: $(srcdir)/mkinstalldirs
+	$(srcdir)/mkinstalldirs $(DESTDIR)$(bindir) $(DESTDIR)$(libdir) $(DESTDIR)$(INSTALL_DOCDIR)
+
+$(libdir)/libvvp.so : ./libvvp.so
+	$(INSTALL_PROGRAM) libvvp.so $(DESTDIR)$(libdir)/libvvp.so
+
+uninstall: $(UNINSTALL32)
+	rm -f $(DESTDIR)$(bindir)/vvp$(suffix)@EXEEXT@
+	rm -f $(DESTDIR)$(libdir)/libvpi$(suffix).a
+	rm -f $(DESTDIR)$(mandir)/man1/vvp$(suffix).1 $(DESTDIR)$(prefix)/vvp$(suffix).pdf
+	rm -f $(DESTDIR)$(libdir)/libvvp.so
+
+-include $(patsubst %.o, dep/%.d, $O)

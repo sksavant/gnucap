@@ -1,0 +1,169 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(netlist.h)
+AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADER(_pli_types.h)
+AC_CONFIG_HEADER(vvp/config.h)
+AC_CONFIG_HEADER(vpi/vpi_config.h)
+AC_CONFIG_HEADER(libveriuser/config.h)
+AC_CONFIG_HEADER(tgt-vvp/vvp_config.h)
+AC_CONFIG_HEADER(tgt-vhdl/vhdl_config.h)
+
+AC_CANONICAL_HOST
+dnl Checks for programs.
+AC_PROG_CC
+AC_PROG_CXX
+AC_PROG_RANLIB
+AC_CHECK_TOOL(STRIP, strip, true)
+AC_CHECK_PROGS(XGPERF,gperf,none)
+AC_CHECK_PROGS(MAN,man,none)
+AC_CHECK_PROGS(PS2PDF,ps2pdf,none)
+AC_CHECK_PROGS(GIT,git,none)
+if test "$XGPERF" = "none"
+then
+	echo ""
+        echo "*** Warning: No suitable gperf found. ***"
+	echo "    The gperf package is essential for building ivl from"
+	echo "    CVS sources, or modifying the parse engine of ivl itself."
+	echo "    You can get away without it when simply building from"
+	echo "    snapshots or major releases."
+	echo ""
+fi
+
+AC_CHECK_PROGS(LEX,flex,none)
+if test "$LEX" = "none"
+then
+	echo "*** Error: No suitable flex found. ***"
+        echo "    Please install the 'flex' package."
+        exit 1
+fi
+
+AC_CHECK_PROGS(YACC,bison,none)
+if test "$YACC" = "none"
+then
+	echo "*** Error: No suitable bison found. ***"
+        echo "    Please install the 'bison' package."
+        exit 1
+fi
+
+AC_EXEEXT
+AC_SUBST(EXEEXT)
+
+# Combined check for Microsoft-related bogosities; sets WIN32 if found
+AX_WIN32
+
+AC_LANG_CPLUSPLUS
+
+AC_CHECK_HEADERS(getopt.h malloc.h inttypes.h libiberty.h iosfwd sys/wait.h)
+
+AC_CHECK_SIZEOF(unsigned long long)
+AC_CHECK_SIZEOF(unsigned long)
+AC_CHECK_SIZEOF(unsigned)
+
+# vvp uses these...
+AC_CHECK_LIB(termcap, tputs)
+AC_CHECK_LIB(readline, readline)
+AC_CHECK_LIB(history, add_history)
+AC_CHECK_HEADERS(readline/readline.h readline/history.h sys/resource.h)
+case "${host}" in *linux*) AC_DEFINE([LINUX], [1], [Host operating system is Linux.]) ;; esac
+
+# vpi uses these
+AC_CHECK_LIB(z, gzwrite)
+AC_CHECK_LIB(z, gzwrite, HAVE_LIBZ=yes, HAVE_LIBZ=no)
+AC_SUBST(HAVE_LIBZ)
+if test "$WIN32" = "yes"; then
+AC_CHECK_LIB(bz2, main)
+AC_CHECK_LIB(bz2, main, HAVE_LIBBZ2=yes, HAVE_LIBBZ2=no)
+else
+AC_CHECK_LIB(bz2, BZ2_bzdopen)
+AC_CHECK_LIB(bz2, BZ2_bzdopen, HAVE_LIBBZ2=yes, HAVE_LIBBZ2=no)
+fi
+AC_SUBST(HAVE_LIBBZ2)
+
+AC_MSG_CHECKING(for sys/times)
+AC_TRY_LINK(
+#include <unistd.h>
+#include <sys/times.h>
+,{clock_t a = times(0)/sysconf(_SC_CLK_TCK);},
+do_times=yes
+AC_DEFINE([HAVE_TIMES], [1], [The times system call is available in the host operating system.]),
+do_times=no
+)
+AC_MSG_RESULT($do_times)
+
+# --
+# Look for a dl library to use. First look for the standard dlopen
+# functions, and failing that look for the HP specific shl_load function.
+
+AC_CHECK_HEADERS(dlfcn.h dl.h, break)
+
+DLLIB=''
+AC_CHECK_LIB(dl,dlopen,[DLLIB=-ldl])
+if test -z "$DLLIB" ; then
+AC_CHECK_LIB(dld,shl_load,[DLLIB=-ldld])
+fi
+AC_SUBST(DLLIB)
+
+AC_PROG_INSTALL
+
+AC_LANG_C
+AC_C_BIGENDIAN
+
+# $host
+
+AX_ENABLE_SUFFIX
+
+AX_LD_EXTRALIBS
+
+# Compiler option for position independent code, needed when making shared objects.
+# CFLAGS inherited by cadpli/Makefile?
+AX_C_PICFLAG
+
+# may modify CPPFLAGS and CFLAGS
+AX_CPP_PRECOMP
+
+# Processor specific compile flags
+case "${host}" in
+    alpha*-*-linux*)
+	CPPFLAGS="-mieee $CPPFLAGS"
+	CFLAGS="-mieee $CFLAGS"
+	;;
+esac
+
+# Do some more operating system specific setup. We put the file64_support
+# define in a substitution instead of simply a define because there
+# are source files (namely lxt support files) that don't include any
+# config.h header file.
+file64_support=''
+case "${host}" in
+    *-*-linux*)
+	AC_DEFINE([_LARGEFILE_SOURCE], [1], [Indicates LFS (i.e. the ability to create files larger than 2 GiB on 32-bit operating systems).])
+	file64_support='-D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64'
+	;;
+esac
+AC_SUBST(file64_support)
+
+# Check that these functions exist. They are mostly C99
+# functions that older compilers may not yet support.
+AC_CHECK_FUNCS(lround nan fmin fmax fopen64)
+
+# Linker option used when compiling the target
+AX_LD_RDYNAMIC
+
+# linker options when building a shared library
+AX_LD_SHAREDLIB_OPTS
+
+#######################
+## test for underscores. The vpi module loader needs to know this
+## in order to know the name of the start symbol for the .vpi module.
+#######################
+
+AX_C_UNDERSCORES_LEADING
+AX_C_UNDERSCORES_TRAILING
+
+#######################
+## end of test for underscores
+#######################
+
+# XXX disable tgt-fpga for the moment
+
+AC_OUTPUT(Makefile ivlpp/Makefile vvp/Makefile vpi/Makefile driver/Makefile driver-vpi/Makefile cadpli/Makefile libveriuser/Makefile tgt-null/Makefile tgt-stub/Makefile tgt-vvp/Makefile tgt-vhdl/Makefile tgt-fpga/Makefile tgt-verilog/Makefile tgt-pal/Makefile)

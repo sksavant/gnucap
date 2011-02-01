@@ -43,7 +43,7 @@ public:
 
 void EXT_TRANSIENT::first(){
   TRANSIENT::first();
-  trace0("calling ExtStartSim");
+  trace0("EXT_TRANSIENT::first calling ExtStartSim");
   ExtStartSim("TRAN"); 
 }
     

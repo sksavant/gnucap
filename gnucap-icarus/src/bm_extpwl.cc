@@ -40,6 +40,7 @@ namespace fussel {
 /*--------------------------------------------------------------------------*/
 const double _default_delta (NOT_INPUT);
 const int    _default_smooth(0);
+static int E=0;
 /*--------------------------------------------------------------------------*/
 class EVAL_BM_EXTPWL : public EVAL_BM_ACTION_BASE {
 private:
@@ -164,7 +165,10 @@ void EVAL_BM_EXTPWL::precalc_last(const CARD_LIST* Scope)
     last = p->first;
   }
 
-  ExtStartSim("TRAN");
+  trace1("EVAL_BM_EXTPWL::precalc_last->ExtStartSim?",E);
+       
+  //if (E==20)  ExtStartSim("TRAN");
+  E++;
 }
 /*--------------------------------------------------------------------------*/
 /*

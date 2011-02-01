@@ -1,0 +1,131 @@
+#
+#    This source code is free software; you can redistribute it
+#    and/or modify it in source code form under the terms of the GNU
+#    Library General Public License as published by the Free Software
+#    Foundation; either version 2 of the License, or (at your option)
+#    any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Library General Public License for more details.
+#
+#    You should have received a copy of the GNU Library General Public
+#    License along with this program; if not, write to the Free
+#    Software Foundation, Inc.,
+#    59 Temple Place - Suite 330
+#    Boston, MA 02111-1307, USA
+#
+SHELL = /bin/sh
+
+VERSION = 0.9.devel
+
+suffix = @install_suffix@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+srcdir = @srcdir@
+datarootdir = @datarootdir@
+
+VPATH = $(srcdir)
+
+bindir = $(exec_prefix)/bin
+libdir = $(exec_prefix)/lib
+includedir = $(prefix)/include
+mandir = @mandir@
+
+dllib=@DLLIB@
+
+CC = @CC@
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+MAN = @MAN@
+PS2PDF = @PS2PDF@
+
+CPPFLAGS = -I. -I.. -I$(srcdir)/.. -I$(srcdir) -DVERSION='"$(VERSION)"' @CPPFLAGS@ @DEFS@
+CFLAGS = -Wall @CFLAGS@
+LDFLAGS = @LDFLAGS@
+
+all: dep iverilog@EXEEXT@
+
+check: all
+
+clean:
+	rm -f *.o lexor.c parse.c parse.h parse.output
+	rm -f cflexor.c cfparse.c cfparse.h cfparse.output
+	rm -f iverilog@EXEEXT@ iverilog.pdf iverilog.ps
+	rm -rf dep
+
+distclean: clean
+	rm -f Makefile config.log
+
+Makefile: $(srcdir)/Makefile.in ../config.status
+	../config.status --file=$@
+
+O = main.o substit.o cflexor.o cfparse.o
+
+iverilog@EXEEXT@: $O
+	$(CC) $(LDFLAGS) $O -o iverilog@EXEEXT@ @EXTRALIBS@
+
+cflexor.c: cflexor.lex
+	flex -s -Pcf -ocflexor.c $(srcdir)/cflexor.lex
+
+cfparse.h cfparse.c: cfparse.y
+	bison --verbose -t -d -o cfparse.c --name-prefix=cf $(srcdir)/cfparse.y
+
+dep:
+	mkdir dep
+
+%.o: %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MD -c $< -o $*.o
+	mv $*.d dep
+
+main.o: main.c globals.h ../version.h Makefile
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MD -c -DIVL_ROOT='"@libdir@/ivl$(suffix)"'  -DIVL_INC='"@includedir@"' -DIVL_LIB='"@libdir@"' -DDLLIB='"@DLLIB@"' $(srcdir)/main.c
+	mv $*.d dep
+
+cflexor.o: cflexor.c cfparse.h
+
+iverilog.ps: $(srcdir)/iverilog.man
+	$(MAN) -t $(srcdir)/iverilog.man > iverilog.ps
+
+iverilog.pdf: iverilog.ps
+	$(PS2PDF) iverilog.ps iverilog.pdf
+
+ifeq (@MINGW32@,yes)
+ifeq ($(MAN),none)
+INSTALL_DOC = $(mandir)/man1/iverilog$(suffix).1
+else
+ifeq ($(PS2PDF),none)
+INSTALL_DOC = $(mandir)/man1/iverilog$(suffix).1
+else
+INSTALL_DOC = $(prefix)/iverilog$(suffix).pdf $(mandir)/man1/iverilog$(suffix).1
+all: iverilog.pdf
+endif
+endif
+INSTALL_DOCDIR = $(mandir)/man1
+else
+INSTALL_DOC = $(mandir)/man1/iverilog$(suffix).1
+INSTALL_DOCDIR = $(mandir)/man1
+endif
+
+install: all installdirs $(bindir)/iverilog$(suffix)@EXEEXT@ $(INSTALL_DOC)
+
+$(bindir)/iverilog$(suffix)@EXEEXT@: ./iverilog@EXEEXT@
+	$(INSTALL_PROGRAM) ./iverilog@EXEEXT@ $(DESTDIR)$(bindir)/iverilog$(suffix)@EXEEXT@
+
+$(mandir)/man1/iverilog$(suffix).1: $(srcdir)/iverilog.man
+	$(INSTALL_DATA) $(srcdir)/iverilog.man $(DESTDIR)$(mandir)/man1/iverilog$(suffix).1
+
+$(prefix)/iverilog$(suffix).pdf: iverilog.pdf
+	$(INSTALL_DATA) iverilog.pdf $(prefix)/iverilog$(suffix).pdf
+
+installdirs: ../mkinstalldirs
+	$(srcdir)/../mkinstalldirs $(DESTDIR)$(bindir) $(DESTDIR)$(INSTALL_DOCDIR)
+
+uninstall:
+	rm -f $(DESTDIR)$(bindir)/iverilog$(suffix)@EXEEXT@
+	rm -f $(DESTDIR)$(mandir)/man1/iverilog$(suffix).1 $(DESTDIR)$(prefix)/iverilog$(suffix).pdf
+
+-include $(patsubst %.o, dep/%.d, $O)
