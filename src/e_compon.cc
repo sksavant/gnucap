@@ -562,6 +562,7 @@ void COMPONENT::precalc_last()
 {
   CARD::precalc_last();
   if (has_common()) {
+    trace0(("COMPONENT::precalc_last " + long_label()).c_str());
     try {
       mutable_common()->precalc_last(scope());
     }catch (Exception_Precalc& e) {

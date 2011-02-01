@@ -15,8 +15,9 @@
 
 #include "globals.h"
 #include "e_elemnt.h"
-#include "u_adp.h"
+#include "e_adp.h"
 #include "d_rcd_sym_v3.h"
+
 
 inline double square(double x){
   return pow(x,2);
@@ -30,7 +31,6 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_stress_apply( COMPONENT*  ) const
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD_SYM_V3::tr_stress() const
 {
-
   unreachable(); // obsolet....
 
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
@@ -133,13 +133,13 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress( const COMPONENT* brh) const
 
   trace2("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress ", fill, uin );
   trace1("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress ", c->involts() );
-  assert (fill>=-1e-9);
-  if (fill > 1.000001 ){
+  assert (fill>=E_min);
+  if (fill >= 1 ){
     error(bDANGER, " RCD_V3 %s fill %f too big\n", brh->long_label().c_str(), fill );
     fill = 1;
   }
 
-  if( m->positive) {
+  if( m->positive ) {
     if ( c->_Ccgfill->get_total() < 0 ){
       trace1(("DEV_BUILT_IN_RCD_SYM_V3::tr_stress fill is negative: " +
             short_label()).c_str() ,  c->_Ccgfill->get_total() );
@@ -197,23 +197,25 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress( const COMPONENT* brh) const
   assert(is_number(uend));
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( ADP_NODE* a, const COMMON_COMPONENT* cc ) const
+void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( ADP_NODE* cap, ADP_NODE* u, const COMMON_COMPONENT* cc ) const
 {
-  ADP_NODE_RCD* ar= dynamic_cast<ADP_NODE_RCD*>(a);
-  double old=ar->get_tt();
-  double E=ar->get_total();
-  long double uin_eff=ar->get_udc();
+  ADP_NODE_UDC* udc= dynamic_cast<ADP_NODE_UDC*>(u);
+  // ADP_NODE_UDC* udc= dynamic_cast<ADP_NODE_UDC*>(a);
+  assert(udc);
+  double E_old = cap->get_tt();
+  double E = cap->get_total();
+  long double uin_eff=udc->get_udc();
 
-  trace1(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last " + a->label()).c_str(), old);
-  assert(old<1.1);
-  assert(E<=1.0001);
+  trace1(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last " + a->label()).c_str(), E_old);
+  assert(E_old<E_max);
+  assert(E<=E_max);
 
   if (E>1) {
     trace0("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last aligned E");
     E=1;
   }
 
-  uin_eff=__uin_iter(uin_eff, old, E, cc);
+  uin_eff=__uin_iter(uin_eff, E_old, E, cc);
   assert(uin_eff < 1e100);
   assert(uin_eff > -10);
 
@@ -230,16 +232,18 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( ADP_NODE* a, const COMMON_COM
     assert (uin_low <= uin_eff );
     assert (uin_eff <= uin_high);
 
-    E_high = __E( uin_high, old, cc);
-    E_low  = __E( uin_low, old, cc); 
+    E_high = __E( uin_high, E_old, cc);
+    E_low  = __E( uin_low, E_old, cc); 
     trace6(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + a->label()).c_str(),
         uin_eff,  E-E_low, E_low, E, E_high, E_high-E );
     assert (E_low <= E || E==1 );
     assert (E <= E_high || E==1);
   }
 
-  ar->set_tr_noise (E_high-E_low);
-  ar->set_udc (uin_eff);
+  assert (E_high>=E_low);
+
+  udc->set_tr_noise (E_high-E_low);
+  udc->set_udc (uin_eff);
 }
 /*--------------------------------------------------------------------------*/
 // precalc doesnt know device!!
@@ -345,9 +349,9 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__Edu(double uin, long double cur, const 
 }
 /*--------------------------------------------------------------------------*/
 // solve E(uin)-E==0
-long double MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter(long double& uin, double old, double E, const COMMON_COMPONENT* c ) const
+long double MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter(long double& uin, double E_old, double E, const COMMON_COMPONENT* c ) const
 {
-  trace4("MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter", uin, old, E, E-old);
+  trace4("MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter", uin, E_old, E, E-E_old);
   assert (E<1.00001);
   if (E>1) {
     trace0("MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter aligned E");
@@ -367,10 +371,10 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter(long double& uin, double old, 
   long double Edu=0;
   long double Q=1;
 
-  Euin = __E( uin, old, c );
+  Euin = __E( uin, E_old, c );
   if(!is_number(Euin)) {
     error( bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter cannot evaluate E "
-        "at uin=%LE (old=%E)\n", uin, old);
+        "at uin=%LE (E_old=%E)\n", uin, E_old);
   }
 
   bool A=true;
@@ -388,7 +392,7 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter(long double& uin, double old, 
       assert(false);
       return( inf );
     }
-    Edu = __Edu(uin, old, c);
+    Edu = __Edu(uin, E_old, c);
     if(!is_number(Edu) || !is_number(1.0/Edu)){
       error( bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter Edu wrong at %LE Euin=%LE diff "
           "%LE looking for %E\n", uin, Euin, Edu, E  );
@@ -405,17 +409,17 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter(long double& uin, double old, 
     uin -= res;
     assert(is_number(uin));
     assert(uin>=-0.0001);
-    Euin = __E( uin, old, c );
+    Euin = __E( uin, E_old, c );
     if(!is_number(Euin)) {
       error( bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter cannot evaluate E "
-          "at uin=%LE (old=%E)\n", uin, old);
+          "at uin=%LE (E_old=%E)\n", uin, E_old);
       assert(is_number(Euin)); break;
     }
     B = Q > square(OPT::reltol);
     A = ( fabs(res) > square(OPT::abstol)  );
   }
 
-  trace6("MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter done", (double)uin, (double)res, Edu, E, i, old);
+  trace6("MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter done", (double)uin, (double)res, Edu, E, i, E_old);
   trace1("MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter done", E-Euin );
   assert(uin>=-0.001);
   return uin;
