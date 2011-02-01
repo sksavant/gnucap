@@ -11,14 +11,26 @@ links:
 	ln -sf  ../icarus/verilog/vpi/va_math.vpi va_math.vpi 
 	ln -sf  ../icarus/verilog/vpi/system.vpi system.vpi 
        
-netlist-dkc.vvp: netlist-dkc.v
+%.vvp: %.v
 	$(IVERILOG) -I/usr/include/iverilog -o $@ $<
 
 bindsigs.vpi: bindsigs.cc
 	$(IVERILOG_VPI) -I../icarus/verilog/vvp $<
 
-run: bindsigs.vpi
+run: bindsigs.vpi netlist-dkc.vvp
 	../../src/gnucap -c verilog netlist-dkc.sp </dev/null
+
+kreuz: bindsigs.vpi kreuz.vvp
+	../../src/gnucap -c verilog kreuz.sp </dev/null
+
+#netlist-dkc.vvp: netlist-dkc.v
+#	$(IVERILOG) -I/usr/include/iverilog -o $@ $<
+
+#bindsigs.vpi: bindsigs.cc
+#	$(IVERILOG_VPI) -I../icarus/verilog/vvp $<
+
+#run: bindsigs.vpi
+#	../../src/gnucap -c verilog netlist-dkc.sp </dev/null
 
 clean:
 	rm -f *.o

@@ -1,4 +1,4 @@
-`timescale 10ps/1ps
+`timescale 100ps/1ps
 
 module inv__a (out,in);
    input in;
@@ -18,7 +18,7 @@ module inv__d (out,in);
    parameter vss         = 0.0;
 
    initial begin
-      $bindsigs(in,out);
+      $bindsigs(in,out); 
    end
 
    always @(out) begin
@@ -27,7 +27,7 @@ module inv__d (out,in);
    end
  
    always @(in) begin
-      $display($realtime," IN ->",in); 
+      $display($realtime," IN44 ->",in); 
       out <= #10 !in;
    end
    
