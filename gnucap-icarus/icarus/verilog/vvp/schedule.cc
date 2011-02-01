@@ -1,4 +1,5 @@
 /*
+ * vim:ts=8:
  * Copyright (c) 2001-2008 Stephen Williams (steve@icarus.com)
  *
  *    This source code is free software; you can redistribute it
@@ -750,17 +751,17 @@ static SpcIvlCB *reattach(SpcIvlCB **nodes,vvp_net_t *primary,
   vvp_net_t     *cur;
   vvp_net_ptr_t  next;
 
-  for (; cur = ptr.ptr(); ptr = next) {
+  for (; (cur = ptr.ptr()); ptr = next) {
     int port = ptr.port();
     next     = cur->port[port];
     SpcIvlCB  *scn_n;
     for (int l = BL_NET; l <= BL_REG ; l++) {
       SpcIvlCB **scn_p  = &nodes[l];
-      for (; scn_n = *scn_p ; scn_p = &scn_n->next) {
+      for (; (scn_n = *scn_p) ; scn_p = &scn_n->next) {
 	if (scn_n->sig->node == cur) {
 	  SpcIvlCB  *sub    = new SpcIvlCB,
                     *others = scn_n->others;
-          if (sub->others = others) { // starting ring
+          if ((sub->others = others)) { // starting ring
 	    others->others = sub;
 	  } else {
 	    scn_n->others = sub->others = sub;
@@ -775,7 +776,7 @@ static SpcIvlCB *reattach(SpcIvlCB **nodes,vvp_net_t *primary,
 	}
       }
     }
-    if (scn_n = reattach(nodes,primary,ptr.ptr()->out)) {
+    if ((scn_n = reattach(nodes,primary,ptr.ptr()->out))) {
       return scn_n;
     }
   }
@@ -803,7 +804,7 @@ static void doExtPwl(struct event_s *nbas,struct event_time_s *et)
       vvp_fun_signal_base *sig_fun = dynamic_cast<vvp_fun_signal_base*>(node->fun);
       __vpiCallback       *cb      = sig_fun->has_vpi_callback(extMarker);
       if (cb) {
-	if (scn_n = (SpcIvlCB *)cb->cb_data.user_data) goto propagate;
+	if ((scn_n = (SpcIvlCB *)cb->cb_data.user_data)) goto propagate;
         goto next_nba;
       }
       for (scn_n = nodes[2]; scn_n ; scn_n = scn_n->next) {
@@ -920,7 +921,7 @@ static void doExtPwl(struct event_s *nbas,struct event_time_s *et)
 		off = -2;
 		goto tail;
 	      }
-            knee:
+            //knee:
 	      scn_n->coeffs[3+off] = lv;
             tail:
 	      scn_n->fillEoT(6+off,gv);
@@ -943,7 +944,7 @@ static void doExtPwl(struct event_s *nbas,struct event_time_s *et)
           goto next_nba;
 	}
       }
-      if (scn_n = reattach(nodes,node,v4->ptr)) {
+      if ((scn_n = reattach(nodes,node,v4->ptr))) {
 	goto setup;
       }
       cb                     = new_vpi_callback();
@@ -970,9 +971,12 @@ inline static sim_mode schedule_simulate_m(sim_mode mode)
       double               d_dly;
 
       switch (mode) {
-      case SIM_CONT0: if (ctim = sched_list) goto sim_cont0;
+      case SIM_CONT0: if ((ctim = sched_list)) goto sim_cont0;
 	              goto done;
       case SIM_CONT1: goto sim_cont1;
+		default:
+							 fprintf(stderr,"default??\n");
+
       }
 
       schedule_time = 0;
@@ -1026,6 +1030,9 @@ inline static sim_mode schedule_simulate_m(sim_mode mode)
 				   }
  				   SimTimeD  = SimTimeDlast + dly;
 			         }
+									 break;
+				 default:
+									 fprintf(stderr,"deffault?\n");
 	          }
 
 		  if (!schedule_runnable) break;
@@ -1068,6 +1075,8 @@ inline static sim_mode schedule_simulate_m(sim_mode mode)
                                   // SimTimeD += ???;
 				  goto cycle_done;
 				}
+				 default:
+									 fprintf(stderr,"default 2\n");
 			      }
 			      delete ctim;
 			      goto cycle_done;

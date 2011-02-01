@@ -77,7 +77,7 @@ CSHRDFLAGS=-fPIC
 endif
 
 clean:
-	rm -f *.o *~ parse.cc parse.cc.output parse.h lexor.cc tables.cc
+	rm -f *.o *~ parse.cc parse.cc.output parse.h lexor.cc tables.cc *.so
 	rm -rf dep vvp@EXEEXT@ libvpi.a bin32 parse.output vvp.pdf vvp.exp
 
 distclean: clean
@@ -133,7 +133,7 @@ $(libdir)/%.so: %.so
 endif
 
 dep:
-	mkdir dep
+	-mkdir dep
 
 %.o: %.cc
 	$(CXX) $(CPPFLAGS) $(MDIR1) $(MDIR2) $(CXXFLAGS) -MD -c $< -o $*.o

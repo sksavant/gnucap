@@ -50,7 +50,7 @@ all: dep system.vpi va_math.vpi v2005_math.vpi $(ALL32)
 check: all
 
 dep:
-	mkdir dep
+	-mkdir dep
 
 %.o: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -MD -c $< -o $*.o

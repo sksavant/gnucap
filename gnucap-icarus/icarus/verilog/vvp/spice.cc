@@ -69,8 +69,9 @@ double *EvalVPI(SpcIvlCB *cb,double sim_time,eCBmode mode,
         argval.format = vpiIntVal;
         vpi_get_value(&cb->sig->base,&argval);
 
-        int l,i   = (*fn)(handle,xtra,data), 
+        int l,
             leave = cb->set;
+		  (*fn)(handle,xtra,data); 
 
         switch (cb->mode) {
         case 1: 
@@ -135,6 +136,9 @@ double *EvalVPI(SpcIvlCB *cb,double sim_time,eCBmode mode,
             (*cb->set_active)(cb->dll_ref,cb,sim_time);
             cb->set       = 1;
             cb->fillEoT(2,cb->coeffs[0]);
+				break;
+			 default:
+				fprintf(stderr,"some ERROR?\n");
           }
         } 
 
@@ -197,7 +201,7 @@ extern "C" void *bindnet(char *spec, char T, int *slots, void *dll_ref,
 
 #ifdef VVP_SHARED
     if (!VvpLoaded()) {
-      char *argv[] = {"libvvp.so","-M.","-mbindsigs",*des ? des : 0, 0};
+      char *argv[] = {(char*)"libvvp.so",(char*)"-M.",(char*)"-mbindsigs",*des ? des : 0, 0};
       sts = so_main(*des ? 4 : 3, argv);
     }
 #endif

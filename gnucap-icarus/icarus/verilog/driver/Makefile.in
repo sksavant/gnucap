@@ -75,7 +75,7 @@ cfparse.h cfparse.c: cfparse.y
 	bison --verbose -t -d -o cfparse.c --name-prefix=cf $(srcdir)/cfparse.y
 
 dep:
-	mkdir dep
+	-mkdir dep
 
 %.o: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -MD -c $< -o $*.o

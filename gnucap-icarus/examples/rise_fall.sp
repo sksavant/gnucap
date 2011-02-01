@@ -25,21 +25,15 @@ endmodule
 
 
 inv__d x5 (0,ndd,nout1,nin);
-c1 nout1 0 1p
 inv__a x6 (0,ndd,nout2,nin);
 
 vsource #(.dc(3)) Vv1 (.p(ndd), .n(0))
 
 spice
-vpulse nin 0 pulse(iv=0,pv=3,delay=5n,rise=1n)
-*r1 nin ninin 20
-*c1 nin 0 1p
-*inv__d x5 (0,ndd,n1,n5);
-*.print tran v(nodes)
+vpulse nin 0 pulse(iv=3,pv=0,delay=5n,rise=5n, width=1n, fall=5n)
 
 
-.transientt 0 5n 50p  > /dev/null
 .print tran v(nin) v(nout*) hidden(0) 
-.transientt 10n
+.transientt 15n 100p
 *TRACE alltime
 .end

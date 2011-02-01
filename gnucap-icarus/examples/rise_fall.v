@@ -12,14 +12,13 @@ module inv__d (out,in);
 
    parameter mode        = 0;
    parameter gate_delay  = 0;
-   parameter init_v      = 0.0;
+   parameter init_v      = 1;
+   parameter fall        = 1.1111e-9;
    parameter rise        = 1e-9;
-   parameter fall        = 1e-9;
    parameter vdd         = 3.0;
    parameter vss         = 0.0;
 
    initial begin
-		// out <= 1
       $bindsigs(in,out); 
    end
 

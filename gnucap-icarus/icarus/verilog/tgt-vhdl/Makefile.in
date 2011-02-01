@@ -45,7 +45,7 @@ LDFLAGS = @LDFLAGS@
 all: dep vhdl.tgt vhdl.conf vhdl-s.conf
 
 dep:
-	mkdir dep
+	-mkdir dep
 
 %.o: %.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MD -c $< -o $*.o

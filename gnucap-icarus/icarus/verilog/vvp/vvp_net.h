@@ -684,7 +684,7 @@ class vvp_scalar_t {
 
 inline vvp_scalar_t::vvp_scalar_t()
 {
-      value_ = 0;
+      value_ = 0x00;
 }
 
 inline vvp_scalar_t::vvp_scalar_t(vvp_bit4_t val, unsigned str0, unsigned str1)

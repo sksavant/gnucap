@@ -187,7 +187,7 @@ iverilog-vpi: iverilog-vpi.sh Makefile
 endif
 
 dep:
-	mkdir dep
+	-mkdir dep
 
 %.o: %.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MD -c $< -o $*.o

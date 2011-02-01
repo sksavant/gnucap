@@ -124,9 +124,10 @@ static PLI_INT32 bindsigs_calltf(PLI_BYTE8 *user_data)
 
   SpcIvlCB **lists = (*get_lists)();
   
-  vpiHandle systfref, args_iter, argh, scope;
+  vpiHandle systfref, args_iter, argh; // , scope;
   struct t_vpi_value argval;
-  char *value,*pwr[2];
+ // char *value,
+  char *pwr[2];
 
   pwr[0] = pwr[1] = 0;
   
@@ -205,7 +206,7 @@ static PLI_INT32 bindsigs_calltf(PLI_BYTE8 *user_data)
     __vpiScope *scp = rfp->within.scope;
     vpiHandle prmh, prm_iter = vpi_iterate(vpiParameter, &scp->base);
     if (prm_iter) {
-      struct __vpiRealVar *parm;
+      //struct __vpiRealVar *parm;
       int    nml  = strlen(rfp->id.name),
              i,p  = sizeof(ub->parm_nm)/sizeof(*ub->parm_nm),
              pi,
@@ -290,7 +291,7 @@ static PLI_INT32 bindsigs_calltf(PLI_BYTE8 *user_data)
         } 
       }
     }
-   next_arg:;
+   //next_arg:;
   }
 
   free(pwr[0]);
@@ -318,7 +319,7 @@ static PLI_INT32 sync_out_calltf(PLI_BYTE8 *user_data)
 
   vpiHandle systfref, args_iter, argh;
   struct t_vpi_value argval;
-  char *value;
+  //char *value;
   
   // Obtain a handle to the argument list
   systfref  = vpi_handle(vpiSysTfCall, NULL);
@@ -344,12 +345,12 @@ static PLI_INT32 sync_out_calltf(PLI_BYTE8 *user_data)
   char     *fmt;
   for (; scan; scan = scan->next) {
     if (scan->sig == rfp) {
-      fmt = "Syncing net %s=%d\n"; goto found;
+      fmt = (char*) "Syncing net %s=%d\n"; goto found;
     }
   }
   for (scan = get_lists()[BL_REG]; scan; scan = scan->next) {
     if (scan->sig == rfp) {
-      fmt = "Syncing reg %s=%d\n"; goto found;
+      fmt = (char*) "Syncing reg %s=%d\n"; goto found;
     }
   }
 
@@ -375,7 +376,7 @@ static PLI_INT32 sync_out_calltf(PLI_BYTE8 *user_data)
       if ((slew > 0) != argval.value.integer) {
         scan->go2        = argval.value.integer;
         scan->last_error = scan->last_time;
-        if (scan->reported = (bs_debug > 0)) {
+        if ((scan->reported = (bs_debug > 0))) {
           fprintf(stderr,"Warning: PWL/logic mismatch on ");
           PrintInst(stderr,rfp->within.scope);
           fprintf(stderr,".%s (->%d @ %g)\n",
@@ -443,8 +444,8 @@ static PLI_INT32 sync_in_calltf(PLI_BYTE8 *user_data)
   if (!get_lists) return 0;
 
   vpiHandle systfref, args_iter, argh;
-  struct t_vpi_value argval;
-  char *value;
+  //struct t_vpi_value argval;
+  // char *value;
   
   // Obtain a handle to the argument list
   systfref  = vpi_handle(vpiSysTfCall, NULL);
