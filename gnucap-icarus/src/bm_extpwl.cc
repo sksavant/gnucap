@@ -150,7 +150,7 @@ void EVAL_BM_EXTPWL::precalc_last(const CARD_LIST* Scope)
 {
   assert(Scope);
   EVAL_BM_ACTION_BASE::precalc_last(Scope);
-  trace0("EVAL_BM_EXTPWL::precalc_last");
+  trace0("EVAL_BM_EXTPWL::precalc_last -- why so often??");
 
   double last = -BIGBIG;
   for (std::vector<std::pair<PARAMETER<double>,PARAMETER<double> > >::iterator
@@ -165,30 +165,11 @@ void EVAL_BM_EXTPWL::precalc_last(const CARD_LIST* Scope)
     last = p->first;
   }
 
-  trace1("EVAL_BM_EXTPWL::precalc_last->ExtStartSim?",E);
-       
+  // trace1("EVAL_BM_EXTPWL::precalc_last->ExtStartSim?",E);
   //if (E==20)  ExtStartSim("TRAN");
   E++;
 }
 /*--------------------------------------------------------------------------*/
-/*
-THis function has to be deleted, do not use it your code
-To find related places use code "ICARCOSIMVOLT"
-
-double EVAL_BM_EXTPWL::voltage(ELEMENT *d)const
-{
-  const node_t *np=d->node(0),*nn=d->node(1);
-  double vp=np->v0(),vn=nn->v0();
-//
-// evaluate via tr_outvolts
-  double volts=d->tr_outvolts();
-  double diff =volts-vp+vn; 
-   int re = abs(diff)<1.e-18?0:1; 
-  fprintf(stdout, "voltage= %e volts= %e   diff= %e  value= %d \n", vp - vn, volts, diff, re);
-//
-  return vp - vn;
-}
-*/
 /*--------------------------------------------------------------------------*/
 void EVAL_BM_EXTPWL::tr_eval(ELEMENT* d)const
 {
