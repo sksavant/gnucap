@@ -10,7 +10,7 @@
 
 #include "globals.h"
 #include "e_elemnt.h"
-#include "u_adp.h"
+#include "e_adp.h"
 #include "d_rcd_sym.h"
 
 /*--------------------------------------------------------------------------*/
