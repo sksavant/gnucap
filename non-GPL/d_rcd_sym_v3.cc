@@ -246,6 +246,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   a->set_tr_noise (E_high-E_low);
   a->set_tr(uin_eff);
   //assert ( uin_eff == a->get_tr());
+  //
 }
 /*--------------------------------------------------------------------------*/
 // precalc doesnt know device!!

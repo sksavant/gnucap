@@ -1216,6 +1216,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(c->sdp());
   assert(s);
 
+  double Time1=_sim->_Time0 - _sim->_dT0;
 
   trace4("DEV_BUILT_IN_RCD::stress_apply ", _sim->_Time0, _sim->_dT0,
       tt_iteration_number(), _sim->_Time0);
@@ -1223,15 +1224,26 @@ void DEV_BUILT_IN_RCD::stress_apply()
   _Ccgfill->tr() , _Ccgfill->tr(_sim->_Time0 ), _Ccgfill->order());
 
   assert ( is_almost( _Ccgfill->tr() , _Ccgfill->tr(_sim->_Time0) ));
+  assert ( is_almost( _Ccgfill->tr1() , _Ccgfill->tr(Time1) ));
   long double E_old = _Ccgfill->tt1();
   long double eff = _Ccgfill->tr();
 
   assert (is_number(eff));
   assert (is_number(E_old));
 
-  long double
-  fill_new = c->__step( eff , E_old, _sim->_dT0 );
-    std::cout << "sa" << E_old << _sim->_dT0 << "\n";
+  long double fill_new   = E_old;
+  long double fill_new2 = E_old;
+  double ex_time=_sim->_dT0-_sim->_last_time;
+  
+  fill_new = c->__step( eff , fill_new, ex_time );
+
+
+  fill_new2 = c->__step( _Ccgfill->tr( Time1+ex_time/3.0 )  , fill_new2, ex_time/2.0 );
+  fill_new2 = c->__step( _Ccgfill->tr( Time1+ex_time*2.0/3.0 )  , fill_new2, ex_time/2.0 );
+
+  std::cout << "*** " << fill_new - fill_new2 << "\n";
+
+  fill_new=fill_new2;
 
   trace4("DEV_BUILT_IN_RCD::stress_apply ", fill_new, E_old, eff, fill_new-_tr_fill );
 
@@ -1419,6 +1431,8 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
 
     assert(is_number(_tr_fill));
   }
+
+  _Ccgfill->set_tt(_tr_fill);
   
 //   _tr_fill=_->get_total();
 }

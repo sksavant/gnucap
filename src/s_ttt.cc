@@ -429,9 +429,9 @@ void TTT::sweep_tt()
   }
 
   _sim->_Time0=_sim->_Time0+_tstop;
-  advance_Time();
+  //advance_Time();
   ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_last );
-  CARD_LIST::card_list.do_forall( &CARD::tt_stress_last );
+  //CARD_LIST::card_list.do_forall( &CARD::tt_stress_last );
 }
 /*--------------------------------------------------------------------------*/
 void TTT::sweep() // tr sweep wrapper.
