@@ -147,7 +147,7 @@ void DEV_RESISTANCE::stress_apply()
         breite=breite;
 
         assert(_value_new == _value_new);
-	double gesamtstress = ((ADP_RESISTANCE*)adp())->i_stress->get();
+	double gesamtstress = 0 ; // ((ADP_RESISTANCE*)adp())->i_stress->tt();
         assert (gesamtstress == gesamtstress);
 	R_aktuell = R_anfang ; // * exp(gesamtstress/watt_jahre  * breite * R_anfang);
 	
@@ -280,22 +280,24 @@ void ADP_RESISTANCE::init(const COMPONENT* c)
 double DEV_RESISTANCE::tt_probe_num(const std::string& x)const
 {
   ADP_RESISTANCE* a= (ADP_RESISTANCE*) adp();
+  a=a;
   if (Umatch(x, "dummy ")) {
     return 18;
   }else if (Umatch(x, "stress ")) {
-    return a->i_stress->get();
- } 
+    return NAN; // a->i_stress->get();
+  } 
 
-    return ELEMENT::tt_probe_num(x);
+  return ELEMENT::tt_probe_num(x);
 }
 /*--------------------------------------------------------------------------*/
 double DEV_RESISTANCE::tr_probe_num(const std::string& x)const
 {
   ADP_RESISTANCE* a= (ADP_RESISTANCE*) adp();
+  a=a;
   if (Umatch(x, "dummy ")) {
     return 18;
   }else if (Umatch(x, "stress ")) {
-    return a->i_stress->tr_get();
+    return NAN; // a->i_stress->tr_get();
  } 
 
     return ELEMENT::tr_probe_num(x);

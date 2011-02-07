@@ -203,6 +203,7 @@ public:
 class DEV_BUILT_IN_RCD : public BASE_SUBCKT {
 private:
   explicit DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p);
+  double lasts;
 public:
   explicit DEV_BUILT_IN_RCD();
   ~DEV_BUILT_IN_RCD() {

@@ -207,7 +207,8 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   double E_old = cap->tt();
   long double uin_eff=a->tr(); // 0 == current estimate
 
-  trace2(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last " + cap->label()).c_str(), E_old, tt_iteration_number());
+  trace2(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last " +
+        cap->label()).c_str(), E_old, tt_iteration_number());
   assert(E_old<E_max);
   assert(E<=E_max);
 
@@ -384,9 +385,9 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter(long double& uin, double E_old
   bool B=true;
   while( ( A || B ) ) { // && fabs(Euin-E)>1e-40 ) {
     trace6("MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter loop", (double)uin, (double)res, Edu, E, i, E_old);
-    if( i> 50){
+    if( i> 100){
       error( bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter no converge uin= \
-          %LE, E=%E, lres=%Lf, Q=%Lf s=%i%i\n", uin, E, log(fabs(res)), Q,A,B);
+          %LE, E=%E, res=%Lf, Q=%Lf s=%i%i\n", uin, E, log(fabs(res)), Q,A,B);
       assert(i<100000);
       break;
     }
@@ -423,7 +424,7 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter(long double& uin, double E_old
       assert(is_number(Euin)); break;
     }
     B = Q > square(OPT::reltol);
-    A = ( fabs(res) > pow(OPT::abstol,2)  );
+    A = ( fabs(res) > pow(OPT::abstol,1)  );
   }
 
   trace6("MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter done", (double)uin, (double)res, Edu, E, i, E_old);

@@ -1334,8 +1334,10 @@ void TTT::advance_Time(void)
       
     if (OPT::tracett)
       _out << "* advance_Time to " << _sim->_Time0 << "\n";
+      notstd::copy_n(_sim->_tr2, _sim->_adp_nodes, _sim->_tr3);
       notstd::copy_n(_sim->_tr1, _sim->_adp_nodes, _sim->_tr2);
       notstd::copy_n(_sim->_tr, _sim->_adp_nodes, _sim->_tr1);
+
       notstd::copy_n(_sim->_tt, _sim->_adp_nodes, _sim->_tt1);
 
       std::fill_n(_sim->_tr, _sim->_adp_nodes, NAN);

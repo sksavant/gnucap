@@ -31,10 +31,10 @@ namespace MODEL_BUILT_IN_RCD_DISPATCHER {
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::tr_accept() {
-  trace0("DEV_BUILT_IN_RCD::tr_accept (stress_)");
+  trace0(("DEV_BUILT_IN_RCD::tr_accept (stress) " + long_label()).c_str());
   // assert(subckt()); subckt()->tr_accept();
   assert(is_number(_tr_fill));
-  tr_stress_();
+  tr_stress();
   assert(is_number(_tr_fill));
 }
 /*--------------------------------------------------------------------------*/
@@ -399,7 +399,6 @@ bool COMMON_BUILT_IN_RCD::operator==(const COMMON_COMPONENT& x)const
     && Rccommon1 == p->Rccommon1
     && Uref == p->Uref
     && mu == p->mu
-    && 0 // FIXME
     && lambda == p->lambda
     && dummy_capture == p->dummy_capture
     && dummy_emit == p->dummy_emit
@@ -718,6 +717,7 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD()
   :BASE_SUBCKT(),
    // input parameters,
    // calculated parameters,
+   lasts(0),
    _region(UNKNOWN),
    // netlist,
    _Ccg(0),
@@ -781,10 +781,7 @@ void DEV_BUILT_IN_RCD::expand()
     new_subckt();
   }else{
   }
-  // TT_NODE?
-  _Ccgfill = new ADP_NODE((const COMPONENT*) common());
-
-
+  _Ccgfill = new ADP_NODE((const COMPONENT*) this);
 
 // idee: _Ccgfill:: tr_value <= udc
 //                  tt_value <= E
@@ -1224,22 +1221,26 @@ void DEV_BUILT_IN_RCD::stress_apply()
   _Ccgfill->tr() , _Ccgfill->tr(_sim->_Time0 ), _Ccgfill->order());
 
   assert ( is_almost( _Ccgfill->tr() , _Ccgfill->tr(_sim->_Time0) ));
-  assert ( is_almost( _Ccgfill->tr1() , _Ccgfill->tr(Time1) ));
+  if (! ( is_almost( _Ccgfill->tr1() , _Ccgfill->tr(Time1) )))
+  {
+      error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress !almost tr1 %E tr(T1) %E \n",
+          _Ccgfill->tr1() , _Ccgfill->tr(Time1) );
+
+  }
   long double E_old = _Ccgfill->tt1();
   long double eff = _Ccgfill->tr();
 
   assert (is_number(eff));
   assert (is_number(E_old));
 
-  long double fill_new   = E_old;
+  long double fill_new  = E_old;
   long double fill_new2 = E_old;
   double ex_time=_sim->_dT0-_sim->_last_time;
   
   fill_new = c->__step( eff , fill_new, ex_time );
 
-
-  fill_new2 = c->__step( _Ccgfill->tr( Time1+ex_time/3.0 )  , fill_new2, ex_time/2.0 );
-  fill_new2 = c->__step( _Ccgfill->tr( Time1+ex_time*2.0/3.0 )  , fill_new2, ex_time/2.0 );
+  fill_new2 = c->__step( _Ccgfill->tr( Time1+ex_time/3.0 )    , fill_new2, ex_time/2.0 );
+  fill_new2 = c->__step( _Ccgfill->tr( Time1+ex_time*2.0/3.0 ), fill_new2, ex_time/2.0 );
 
   std::cout << "*** " << fill_new - fill_new2 << "\n";
 
@@ -1282,13 +1283,8 @@ void MODEL_BUILT_IN_RCD_NET::do_stress_apply( COMPONENT*  ) const
 {
 }
 ///*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_RCD::tr_stress_() {
-  tr_stress();
-}
-///*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::tr_stress() // called from accept
 {
-  static double last;
   const DEV_BUILT_IN_RCD* rcd = this;
   double h = _sim->_dt0;
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
@@ -1299,8 +1295,8 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   assert(c->sdp());
 
 
-  if( _sim->_time0 > last || _sim->_time0==0 ){
-    last=_sim->_time0;
+  if( _sim->_time0 > lasts || _sim->_time0==0 ){
+    lasts=_sim->_time0;
     trace1("DEV_BUILT_IN_RCD::tr_stress at", _sim->_time0 );
   }else {
     trace1("DEV_BUILT_IN_RCD::tr_stress again?? bug??", _sim->_time0 );
