@@ -189,7 +189,6 @@ PROBE* PROBELIST::add_list(CS& cmd)
 
   } else if( ( paren = cmd.skip1b('(')) ) {
     trace1( ( "PROBELIST::add_list "), paren );
-
     if (cmd.umatch("nodes ")) {
       // all nodes
       add_all_nodes(what);
@@ -281,6 +280,9 @@ void PROBELIST::merge_probe( PROBE* m )
 PROBE* PROBELIST::push_new_probe(const std::string& param,const CKT_BASE* object)
 {
   trace0("PROBELIST::push_new_probe");
+  if (param=="V?") {
+    cerr << "warning V? not supported" << std::endl;
+  }
   PROBE* p = new PROBE(param, object);
   bag.push_back(p);
   return p;
@@ -293,12 +295,19 @@ void PROBELIST::add_all_nodes(const std::string& what)
        i = CARD_LIST::card_list.nodes()->begin();
        i != CARD_LIST::card_list.nodes()->end();
        ++i) {
-    if ((i->first != "0") && (i->first.find('.') == std::string::npos)) {
+    if ((i->first != "0") ) {
       NODE* node = i->second;
       assert (node);
+      //      cerr << "Allnodes adding " << what << " i " << i->second << std::endl;
       push_new_probe(what, node);
     }else{
     }
+//     if ((i->first != "0") && (i->first.find('.') == std::string::npos)) {
+//       NODE* node = i->second;
+//       assert (node);
+//       push_new_probe(what, node);
+//     }else{
+//     }
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -360,8 +369,8 @@ PROBE* PROBELIST::add_expr(const std::string& ,
  * 	all matching a label with wildcards
  */
 PROBE* PROBELIST::add_branches(const std::string&device, 
-			     const std::string&param,
-			     const CARD_LIST* scope)
+                               const std::string&param,
+                               const CARD_LIST* scope)
 {
   trace0( "PROBELIST::add_branches " + device + "->" + param + " \n");
   assert(scope);
@@ -374,14 +383,14 @@ PROBE* PROBELIST::add_branches(const std::string&device,
       std::string dev = device.substr(dotplace+1, std::string::npos);
       std::string container = device.substr(0, dotplace);
       for (CARD_LIST::const_iterator
-	     i = scope->begin();  i != scope->end();  ++i) {
-	CARD* card = *i;
-	if (card->is_device()
-	    && card->subckt()
-	    && wmatch(card->short_label(), container)) {
-	  found_something = add_branches(dev, param, card->subckt());
-	}else{
-	}
+             i = scope->begin();  i != scope->end();  ++i) {
+        CARD* card = *i;
+        if (card->is_device()
+            && card->subckt()
+            && wmatch(card->short_label(), container)) {
+          found_something = add_branches(dev, param, card->subckt());
+        }else{
+        }
       }
     }
     { // reverse (ACS style)
@@ -389,14 +398,15 @@ PROBE* PROBELIST::add_branches(const std::string&device,
       std::string container = device.substr(dotplace+1, std::string::npos);
       std::string dev = device.substr(0, dotplace);
       for (CARD_LIST::const_iterator
-	     i = scope->begin();  i != scope->end();  ++i) {
-	CARD* card = *i;
-	if (card->is_device()
-	    && card->subckt()
-	    && wmatch(card->short_label(), container)) {
-	  found_something = add_branches(dev, param, card->subckt());
-	}else{
-	}
+             i = scope->begin();  i != scope->end();  ++i) {
+        CARD* card = *i;
+        //        cerr << " Card Match " << container << " dev "<< dev << " param " << param << std::endl;
+        if (card->is_device()
+            && card->subckt()
+            && wmatch(card->short_label(), container)) {
+          found_something = add_branches(dev, param, card->subckt());
+        }else{
+        }
       }
     }
   }else{
@@ -404,50 +414,82 @@ PROBE* PROBELIST::add_branches(const std::string&device,
     if (device.find_first_of("*?") != std::string::npos) {
       // there's a wild card.  do linear search for all
       { // nodes
-	for (NODE_MAP::const_iterator 
-	     i = scope->nodes()->begin();
-	     i != scope->nodes()->end();
-	     ++i) {
-	  if (i->first != "0") {
-	    NODE* node = i->second;
-	    assert (node);
-	    if (wmatch(node->short_label(), device)) {
-	      found_something = push_new_probe(param, node);
-	    }else{
-	    }
-	  }else{
-	  }
-	}
+        for (NODE_MAP::const_iterator 
+               i = scope->nodes()->begin();
+             i != scope->nodes()->end();
+             ++i) {
+          if (i->first != "0") {
+            NODE* node = i->second;
+            assert (node);
+             
+            string paramn(param);
+            if (param=="V?") {
+              paramn="V";
+            }
+              
+            if (wmatch(node->short_label(), device)) {
+              //              cerr << " Node match "<< node << " paramn " << paramn << std::endl;
+              found_something = push_new_probe(paramn, node);
+            }else{
+            }
+          }else{
+          }
+        }
       }
       {// components
-	for (CARD_LIST::const_iterator 
-	     i = scope->begin();  i != scope->end();  ++i) {
-	  CARD* card = *i;
-	  if (wmatch(card->short_label(), device)) {
-	    found_something =     push_new_probe(param, card);
-	  }else{
-	  }
-	}
+        for (CARD_LIST::const_iterator 
+               i = scope->begin();  i != scope->end();  ++i) {
+          CARD* card = *i;
+          if (wmatch(card->short_label(), device)) {
+            //            cerr << " Components dev "<< card << " param " << param << std::endl;
+            if (param=="V?")
+            { 
+              for(int ip=1;ip<=card->net_nodes();ip++) {
+                char str[10];
+                sprintf(str,"V%1d",ip);
+                string paramipn(str);
+                //                cerr << "               paramn " << paramipn << std::endl;
+                found_something =     push_new_probe(paramipn, card);
+              }
+            }else {
+              found_something =     push_new_probe(param, card);
+            }
+          }else{
+          }
+        }
       }
     }else{
       // no wild card.  do fast search for one
       { // nodes
-	NODE* node = (*scope->nodes())[device];
-	if (node) {
-	  found_something =   push_new_probe(param, node);
-	}else{
-	}
+        NODE* node = (*scope->nodes())[device];
+        if (node) {
+          //          cerr << " Node dev "<< node << " param " << param << std::endl;
+          found_something =   push_new_probe(param, node);
+        }else{
+        }
       }
       { //components
-	CARD_LIST::const_iterator i = scope->find_(device);
-	if (i != scope->end()) {
-	  found_something = 	  push_new_probe(param, *i);
-	}else{
-	}
+        CARD_LIST::const_iterator i = scope->find_(device);
+        if (i != scope->end()) {
+          //          cerr << " Card List dev "<< *i << " param " << param << std::endl;
+          if (param=="V?")
+          { 
+            for(int ip=1;ip<=(*i)->net_nodes();ip++) {
+              char str[10];
+              sprintf(str,"V%1d",ip);
+              string paramipn(str);
+              //                cerr << "               paramn " << paramipn << std::endl;
+              found_something =     push_new_probe(paramipn, *i);
+            }
+          }else {
+              found_something =     push_new_probe(param, *i);
+          }
+          // found_something = 	  push_new_probe(param, *i);
+        }else{
+        }
       }
     }
   }
-
   return found_something;
 }
 /*--------------------------------------------------------------------------*/
