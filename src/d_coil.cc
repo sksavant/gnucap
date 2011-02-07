@@ -281,9 +281,9 @@ void DEV_INDUCTANCE::tr_iwant_matrix()
   }else{
     assert(matrix_nodes() == 3);
     
-    assert(_n[OUT1].m_() != INVALID_NODE);
-    assert(_n[OUT2].m_() != INVALID_NODE);
-    assert(_n[IN1].m_() != INVALID_NODE);
+    assert(_n[OUT1].m_() != (uint_t) INVALID_NODE);
+    assert(_n[OUT2].m_() != (uint_t) INVALID_NODE);
+    assert(_n[IN1].m_() != (uint_t) INVALID_NODE);
     
     _sim->_aa.iwant(_n[OUT1].m_(),_n[IN1].m_());
     _sim->_aa.iwant(_n[OUT2].m_(),_n[IN1].m_());

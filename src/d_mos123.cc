@@ -407,13 +407,14 @@ void MODEL_BUILT_IN_MOS123::do_tr_stress( const COMPONENT* c ) const
 
   const COMMON_COMPONENT* cc = c->common();
   const MODEL_BUILT_IN_MOS123* m = prechecked_cast<const MODEL_BUILT_IN_MOS123*>(cc->model());
-  const DEV_BUILT_IN_MOS* d = (const DEV_BUILT_IN_MOS*)c;
+  //const DEV_BUILT_IN_MOS* d = (const DEV_BUILT_IN_MOS*)c;
   assert(m == this);
-  ADP_BUILT_IN_MOS123* a = (ADP_BUILT_IN_MOS123*) c->adp();
+  //ADP_BUILT_IN_MOS123* a = (ADP_BUILT_IN_MOS123*) c->adp();
 
-  a->ids_stress->tr_add(d->ids * d->ids*( _sim->_dt0 ) );
+  incomplete();
+ //  a->ids_stress->tr_add(d->ids * d->ids*( _sim->_dt0 ) );
 
 //  std::cerr << "DEV_BUILT_IN_MOS::tr_stress of "<<  short_label()  << ": ids: " << ids <<  "\n";
 //  std::cerr << "DEV_BUILT_IN_MOS::tr_stress of "<<  short_label()  << ": gds: " << gds <<  "\n";
-  std::cerr << "MODEL_BUILT_IN_MOS123::tr_stress of "<<  short_label()  << ": ids_stress: " << a->ids_stress->tr_get() <<  "\n";
+ // std::cerr << "MODEL_BUILT_IN_MOS123::tr_stress of "<<  short_label()  << ": ids_stress: " << a->ids_stress->tr_get() <<  "\n";
 }

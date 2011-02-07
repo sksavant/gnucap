@@ -1,6 +1,5 @@
 
 load ../gnucap-icarus.so
-//* /home/jp/arails/arails0809/demo/g65/simulation/testLib/ringosc/20090526122839/hspice/netlist.sp
 spice
 vgnd 0 0 dc=0
 
@@ -31,6 +30,6 @@ inv__d x5 (0,ndd,n1,n5);
 vsource #(.dc(3)) Vv1 (.p(ndd), .n(0))
 
 spice
-.print tran v(nodes)
+.print tran v(n5) v(n1)
 .transientt 0.0 1n 10p
 .end

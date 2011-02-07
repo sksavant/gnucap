@@ -231,6 +231,7 @@ public:	// state, aux data
   void	q_load()		 { trace0(("q_load: "+ short_label()).c_str() );
                                    _sim->_loadq.push_back(this);}
   void	q_accept()		 {_sim->_acceptq.push_back(this);}
+  void	q_tt_accept()		 {_sim->_tt_acceptq.push_back(this);}
   //--------------------------------------------------------------------
   // model
   const MODEL_CARD* find_model(const std::string& name)const;
@@ -319,6 +320,7 @@ protected:
 
   void tt_behaviour_update();
   void tr_behaviour(){ tt_behaviour_update(); }
+  virtual void tt_begin() {  }
   virtual void tt_next() {  }
 
   virtual void tt_init_i(){
@@ -349,10 +351,10 @@ private:
   ADP_CARD* _adp;
 public:
   virtual void stress_apply() { }
-  virtual void  tr_stress()  const  {
+  virtual void  tr_stress()  {
     trace0 ( ( "COMP device " + short_label() + ": no stress" ).c_str() );
   } // calcul
-  virtual void  tr_stress_last()  const  { trace0("COMPONENT::tr_stress_last");}
+  virtual void  tr_stress_last()    { trace0("COMPONENT::tr_stress_last");}
   virtual double tr_amps_diff()const {return 0.;}
   virtual double tr_amps_diff_cur()const {return 0.;}
   virtual bool	has_stress()const	{untested(); return false;}

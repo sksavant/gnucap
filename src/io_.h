@@ -78,6 +78,7 @@ public:
 		 return (*this)<<ftos(x,_fltwid,_fltdig,_format);}
   OMSTREAM& operator<<(bool x)		{return form("%d", x);}
   OMSTREAM& operator<<(int x)		{return form("%d", x);}
+  OMSTREAM& operator<<(long int x)	{return form("%li", x);}
   OMSTREAM& operator<<(unsigned x)	{return form("%u", x);}
   OMSTREAM& operator<<(const std::string& s) {return operator<<(s.c_str());}
 };

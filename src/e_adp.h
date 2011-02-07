@@ -16,7 +16,7 @@ class ADP_LIST;
 class ADP_CARD;
 /*--------------------------------------------------------------------------*/
 // collects transient (stress) data, sometimes extrapolates.
-class ADP_NODE : CKT_BASE {
+class ADP_NODE: public CKT_BASE {
   public:
     explicit ADP_NODE( const COMPONENT* );
     explicit ADP_NODE( const COMPONENT* , std::string name_in2 );//
@@ -27,10 +27,47 @@ class ADP_NODE : CKT_BASE {
     ~ADP_NODE( );
     ADP_NODE( const ADP_NODE& );
     virtual void init();
-    std::string short_label() const  {return name;}
-    std::string label() const;//  {return name;} // fixme
+  private:
+    int	_number;
+  public:
+    std::string label() const  {return long_label();}
     int order() const; 
-    const COMPONENT* c(){return _c;}
+
+    uint_t	m_()const		{return _number;}
+
+    hp_float_t tr(double time)const;
+    hp_float_t& tr()const	{
+      assert(m_() >= 0);
+      assert(m_() <= _sim->_adp_nodes);
+      return _sim->_tr[m_()];
+    }
+    hp_float_t tr1( )const	{
+      assert(m_() >= 0);
+      assert(m_() <= _sim->_adp_nodes);
+      return _sim->_tr1[m_()];
+    }
+    hp_float_t tr2( )const	{
+      assert(m_() >= 0);
+      assert(m_() <= _sim->_adp_nodes);
+      return _sim->_tr2[m_()];
+    }
+    hp_float_t tr3( )const	{
+      assert(m_() >= 0);
+      assert(m_() <= _sim->_adp_nodes);
+      return _sim->_tr3[m_()];
+    }
+
+    hp_float_t tt1( )const	{
+      assert(m_() >= 0);
+      assert(m_() <= _sim->_adp_nodes);
+      return _sim->_tt1[m_()];
+    }
+    hp_float_t&     tt()const	{
+      assert(m_() >= 0);
+      assert(m_() <= _sim->_adp_nodes);
+      return _sim->_tt[m_()];
+    }
+    double TR2; //depr.
   protected:
     int dbg;
 
@@ -114,8 +151,6 @@ class ADP_NODE : CKT_BASE {
     double tr_correct_1_const( );
     double tr_correct_generic( );
 
-    std::string name;
-    const COMPONENT* _c;
     hp_float_t _debug;
     double (ADP_NODE::*_integrator)( double );
     double (ADP_NODE::*_corrector)( );
@@ -124,30 +159,43 @@ class ADP_NODE : CKT_BASE {
   public:
     void apply(); // ?
     virtual int region() const;
-    virtual std::string type() const {return "basic";};
+    virtual std::string type() const {return "basic";}
 
     hp_float_t get_total() const;
-    hp_float_t get() const {return get_tt();}
-    void tt_set(double);
-    hp_float_t get_tt() const {
-      assert ( is_number(tt_value) );
-      return tt_value; 
-    }
-    hp_float_t get0()const { assert( _val_bef[0] == _val_bef[0] ); return _val_bef[0]; }
-    hp_float_t get1()const { assert( _val_bef[1] == _val_bef[1] ); return _val_bef[1]; }
+
+    hp_float_t get_tr_noise( ) {return tr_noise;}
+
+
+    hp_float_t get_tt( int i ) const {assert(i==1);
+      return( tt1() ); }
+    hp_float_t get_tt() const { return tt(); }
+
     hp_float_t get_aft_1()const;
     hp_float_t tt_get_sum()const  {return _val_bef[0] + _delta[0]; }
-    void tr_add(double x );//{tr_value += x;}
-    void tr_set(double x ); //{tr_value = x;}
+
+    void tr_add( double x ) const { tr() += x;}
+
+    void add_tr( hp_float_t x ) { tr_add(x);}
+    void set_tr( hp_float_t x );
+    void set_tt( hp_float_t x );
+
     void set_tr_noise(double x ) {tr_noise = x;}
-    double get_tr_noise( ) {return tr_noise;}
     virtual TIME_PAIR tt_review( );
     TIME_PAIR tt_preview( );
     void reset();
     void reset_tr();
-    hp_float_t tr_get( ) const; // { return ( tr_value );}
-    hp_float_t get_tr( ) const { return tr_get();}
-    double tr_get_old(){ return (_delta[1]);}
+
+    //aliases
+    hp_float_t get( ) const { return tt();}
+    hp_float_t tr_get( ) const { return tr();}
+    void tt_set(long double x) { set_tt(x);}
+    void tr_set(long double x) { set_tr(x);}
+    double tr_get_old(){ return get_tr(1);}
+    hp_float_t get1()const { return tt1(); }
+    hp_float_t get_tr( int i ) const {assert(i==1); 
+      return( tr1() ); }
+    hp_float_t get_tr( ) const { return tr();}
+
     double tr_abs_err()const{ return _abs_tr_err; }
     double tr_rel_err()const{ return _rel_tr_err; }
     double tt_abs_err()const{ return _abs_tt_err; }
@@ -163,13 +211,15 @@ class ADP_NODE : CKT_BASE {
     void tt_last();
 
     void tt_accept( );
-    void tt_clear( ) { tr_value = _delta[0] = _delta[1] = tr_value2 = 0;
-                       tt_value = _val_bef[0] = _val_bef[1] = _val_bef[2] = 0;
+    void tt_clear( ) {
+      unreachable();
+    //  tr_value = _delta[0] = _delta[1] = tr_value2 = 0;
+     //                  tt_value = _val_bef[0] = _val_bef[1] = _val_bef[2] = 0;
     }
 
     void print()
     {
-      std::cerr << name << ": " << tr_value << "\n";		
+      std::cerr << short_label() << ": " << tr_value << "\n";		
     }
 
   private:

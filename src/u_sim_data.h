@@ -62,10 +62,11 @@ struct INTERFACE SIM_DATA {
   int _tt_accepted;
   int _tt_rejects;
   int _tt_rejects_total;
-  int _user_nodes;
-  int _subckt_nodes;
-  int _model_nodes;
-  int _total_nodes;
+  uint_t _user_nodes;
+  uint_t _subckt_nodes;
+  uint_t _model_nodes;
+  uint_t _total_nodes;
+  uint_t _adp_nodes;
   COMPLEX _jomega;	/* AC frequency to analyze at (radians) */
   bool _limiting;	/* flag: node limiting */
   double _vmax;
@@ -80,14 +81,24 @@ struct INTERFACE SIM_DATA {
   double *_vt1;		/* dc-tran voltage, 1 time ago		*/
 			/*  used to restore after rejected step	*/
   COMPLEX *_ac;		/* ac right side			*/
+  double *_tr;
+  double *_tr1;
+  double *_tr2;
+  double *_tr3;
+
+  double *_tt1;
+  //double (* (_tr))[3];
+  //double (* (_tt))[3];
   LOGIC_NODE* _nstat;	/* digital data				*/
-  double *_vdc;		/* saved dc voltages			*/
+  hp_float_t *_vdc;		/* saved dc voltages			*/
+  hp_float_t *_tt;          /* aging node data */
   BSMATRIX<hp_float_t> _aa;	/* raw matrix for DC & tran */
   BSMATRIX<hp_float_t> _lu;	/* decomposed matrix for DC & tran */
   BSMATRIX<COMPLEX> _acx;/* raw & decomposed matrix for AC */
   std::priority_queue<double, std::vector<double> > _eq; /*event queue*/
   std::vector<CARD*> _loadq;
   std::vector<CARD*> _acceptq;
+  std::vector<CARD*> _tt_acceptq;
   std::deque<CARD*>  _evalq1; /* evaluate queues -- alternate between */
   std::deque<CARD*>  _evalq2; /* build one while other is processed */
   std::deque<CARD*>  _late_evalq; /* eval after everything else */
@@ -123,6 +134,7 @@ struct INTERFACE SIM_DATA {
   }
   int newnode_subckt() {++_subckt_nodes; return ++_total_nodes;}
   int newnode_model()  {++_model_nodes;  return ++_total_nodes;}
+  int newnode_adp()  {return ++_adp_nodes;}
   bool is_inc_mode()	 {return _inc_mode;}
   bool inc_mode_is_no()	 {return _inc_mode == tsNO;}
   bool inc_mode_is_bad() {return _inc_mode == tsBAD;}
@@ -187,8 +199,8 @@ struct INTERFACE SIM_DATA {
   public:
   int _stepno; // number of transient steps accepted.
   void update_tt_order();
-  unsigned int get_tt_order() const;
-  void force_tt_order(unsigned int i){ untested(); _tt_order = i;}
+  uint_t get_tt_order() const;
+  void force_tt_order(uint_t i){ untested(); _tt_order = i;}
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

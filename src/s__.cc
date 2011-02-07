@@ -56,6 +56,8 @@ std::deque<CARD*> SIM::evalq2;
 std::deque<CARD*> SIM::late_evalq;
 std::vector<CARD*> SIM::loadq;
 std::vector<CARD*> SIM::acceptq;
+std::vector<CARD*> SIM::tt_acceptq;
+std::vector<CARD*> SIM::stressq; //?
 std::deque<CARD*>* SIM::evalq    = &SIM::evalq1;
 std::deque<CARD*>* SIM::evalq_uc = &SIM::evalq2;
 #endif

@@ -1,6 +1,10 @@
 INSTALL
 -------
 
+0. changes to gnucap source
+--------
+in s_tr.h muss TRANSIENT::accept und TRANSIENT::first virtuell sein. dann gehts.
+
 1. BUILD
 --------
 to build gnucap-icarus plugin

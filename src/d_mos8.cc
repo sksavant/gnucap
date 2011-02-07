@@ -5216,8 +5216,8 @@ void MODEL_BUILT_IN_MOS8::do_tr_stress( const COMPONENT* c ) const
     }
 
     trace1( "MODEL_BUILT_IN_MOS8::do_tr_stress", hcis );
-    a->hci_stress->tr_add( hcis );
-    assert( ( a->hci_stress->tr_get()  < 1e6 ));
+    a->hci_stress->add_tr( hcis );
+    assert( ( a->hci_stress->tr()  < 1e6 ));
   } // end hci
 }
 /*--------------------------------------------------------------------------*/
@@ -5253,7 +5253,7 @@ void ADP_BUILT_IN_MOS8::init(const COMPONENT* c)
 {
   assert(c);
   ADP_BUILT_IN_MOS::init(c);
-  hci_stress = new ADP_NODE(this,c, "hci" );
+  hci_stress = new ADP_NODE(c, "hci" );
   ADP_NODE_LIST::adp_node_list.push_back( hci_stress );
 
   trace0( "initin vthdelta\n" );
@@ -5302,7 +5302,7 @@ double DEV_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 double ADP_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 {
   if( Umatch("hci ", x) ){
-    return hci_stress->get();
+    return hci_stress->tt();
   } else if( Umatch("dvth_hci ", x) ) {
     return vthdelta_hci;
   }else{
@@ -5315,7 +5315,7 @@ double ADP_BUILT_IN_MOS8::tr_probe_num(const std::string& x)const
 {
   double ret;
   if( Umatch("hci ", x) ){
-    ret= hci_stress->tr_get();
+    ret= hci_stress->tr();
   } else {
     ret= ADP_BUILT_IN_MOS::tr_probe_num(x);
   }
@@ -5347,7 +5347,7 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply(  COMPONENT* brh) const
 
   if(use_hci()){
     a->vthscale_hci = 1; //  exp ( 10000. * a->hci_stress->get() / c->w_in );
-    a->vthdelta_hci = polarity * pow( a->hci_stress->get() , 0.3 );
+    a->vthdelta_hci = polarity * pow( a->hci_stress->tt() , 0.3 );
 
     assert( -10 <  a->vthdelta_hci &&  a->vthdelta_hci <  10 );
 

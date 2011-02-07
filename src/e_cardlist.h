@@ -124,6 +124,7 @@ public:
   CARD_LIST& tt_behaviour_commit();
   CARD_LIST& dc_advance();
   CARD_LIST& tr_advance();
+  CARD_LIST& tt_advance();
   CARD_LIST& tr_regress();
   bool	     tr_needs_eval()const;
   CARD_LIST& tr_queue_eval();

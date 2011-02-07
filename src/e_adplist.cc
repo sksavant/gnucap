@@ -111,15 +111,21 @@ ADP_NODE_LIST& ADP_NODE_LIST::do_forall( void (ADP_NODE::*thing)( )  )
 /*--------------------------------------------------------------------------*/
 TIME_PAIR ADP_NODE_LIST::tt_review()
 {
+
+  incomplete();
+  // put review into DEVICE?
+  //
   TIME_PAIR time_by;
+  return( time_by );
   ADP_NODE* minnode=NULL;
   double event = 0;
   for (iterator ci=begin(); ci!=end(); ++ci) {
-    TIME_PAIR tmp = (*ci)->tt_review();
+
+    TIME_PAIR tmp; // = (*ci)->tt_review();
     if (tmp<time_by){
       minnode = *ci;
       event = tmp._event;
-    trace1(("ADP_NODE_LIST::tt_review min at" +minnode->label()).c_str(), event );
+    trace1(("ADP_NODE_LIST::tt_review min at" +minnode->short_label()).c_str(), event );
     }
 
   time_by.min(tmp);
@@ -128,7 +134,7 @@ TIME_PAIR ADP_NODE_LIST::tt_review()
 
   if(minnode){
     if (OPT::tracewdtt){
-      std::cout << "* wdT min by " << minnode->label() << ": " <<
+      std::cout << "* wdT min by " << minnode->short_label() << ": " <<
         event << " gain " <<   event/CKT_BASE::_sim->_dTmin << "\n";
     }
   }
@@ -140,7 +146,7 @@ TIME_PAIR ADP_NODE_LIST::tt_preview()
 {
   TIME_PAIR time_by;
   for (iterator ci=begin(); ci!=end(); ++ci) {
-    time_by.min((**ci).tt_preview());
+    //time_by.min((**ci).tt_preview());
   }
   return time_by;
 }

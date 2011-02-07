@@ -220,14 +220,8 @@ private: // override virtual
   //void    do_ac();             //BASE_SUBCKT
   //void    ac_load();           //BASE_SUBCKT
   //XPROBE  ac_probe_ext(CS&)const;//CKT_BASE/nothing
-  virtual void	tr_stress() const;
-  virtual void	tr_stress_last() const
-  {
-    trace0("BTI sao");
-    assert(subckt()); 
-    const CARD_LIST* s = subckt();
-    s->do_forall( &CARD::tr_stress_last );
-  }
+  virtual void	tr_stress();
+  virtual void	tr_stress_last();
 public:
   static int  count() {return _count;}
   double vw()const;

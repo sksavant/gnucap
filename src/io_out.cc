@@ -1,4 +1,5 @@
 /*$Id: io_out.cc,v 1.2 2010-07-09 12:14:23 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

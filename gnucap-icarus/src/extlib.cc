@@ -196,9 +196,11 @@ ExtSig *bindExtSigConnect(intptr_t handle,const string &spec,const CARD_LIST* Sc
       break;
     case EXT_REF:
       ExtLib *lib = ref->lib;
-      const CARD *scp  = *Scope->begin();
+      const CARD *scp = *Scope->begin();
       const char *sp = ref->spec.c_str();
-      std::string path,scp_nm(scp->owner()->long_label());
+      std::string path;
+      // HACK?
+      std::string scp_nm(scp->owner()->long_label());
       char ch;
       while ((ch = *sp++)) {
         switch (ch) {

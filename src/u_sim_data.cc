@@ -29,7 +29,7 @@
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::set_limit()
 {
-  for (int ii = 1;  ii <= _total_nodes;  ++ii) {
+  for (uint_t ii = 1;  ii <= _total_nodes;  ++ii) {
     set_limit(_v0[ii]);
   }
 }
@@ -55,7 +55,7 @@ void SIM_DATA::clear_limit()
 void SIM_DATA::keep_voltages()
 {
   if (!_freezetime) {
-    for (int ii = 1;  ii <= _total_nodes;  ++ii) {
+    for (uint_t ii = 1;  ii <= _total_nodes;  ++ii) {
       _vdc[ii] = _v0[ii];
     }
     _last_time = (_time0 > 0.) ? _time0 : 0.;
@@ -65,35 +65,35 @@ void SIM_DATA::keep_voltages()
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::restore_voltages()
 {
-  for (int ii = 1;  ii <= _total_nodes;  ++ii) {
+  for (uint_t ii = 1;  ii <= _total_nodes;  ++ii) {
     _vt1[ii] = _v0[ii] = _vdc[ii];
   }
 }
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::zero_currents()
 {
-  for (int ii = 1;  ii <= _total_nodes;  ++ii) {
+  for (uint_t ii = 1;  ii <= _total_nodes;  ++ii) {
     _i[ii] = 0.;
   }
 }
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::zero_some_voltages()
 {
-  for (int ii = 1;  ii <= _total_nodes;  ++ii) {
+  for (uint_t ii = 1;  ii <= _total_nodes;  ++ii) {
     _vt1[ii] = _v0[ii] = _i[ii] = 0.;
   }
 }
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::zero_dc_voltages()
 {
-  for (int ii = 1;  ii <= _total_nodes;  ++ii) {
+  for (uint_t ii = 1;  ii <= _total_nodes;  ++ii) {
     _vdc[ii] = 0.;
   }
 }
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::zero_voltages()
 {
-  for (int ii = 1;  ii <= _total_nodes;  ++ii) {
+  for (uint_t ii = 1;  ii <= _total_nodes;  ++ii) {
     _vt1[ii] = _v0[ii] = _vdc[ii] = _i[ii] = 0.;
   }
 }
@@ -123,7 +123,7 @@ void SIM_DATA::map__nodes()
 void SIM_DATA::order_reverse()
 {untested();
   _nm[0] = 0;
-  for (int node = 1;  node <= _total_nodes;  ++node) {untested();
+  for (uint_t node = 1;  node <= _total_nodes;  ++node) {untested();
     _nm[node] = _total_nodes - node + 1;
   }
 }
@@ -134,7 +134,7 @@ void SIM_DATA::order_reverse()
 void SIM_DATA::order_forward()
 {untested();
   _nm[0] = 0;
-  for (int node = 1;  node <= _total_nodes;  ++node) {untested();
+  for (uint_t node = 1;  node <= _total_nodes;  ++node) {untested();
     _nm[node] = node;
   }
 }
@@ -145,7 +145,7 @@ void SIM_DATA::order_forward()
 void SIM_DATA::order_auto()
 {
   _nm[0] = 0;
-  for (int node = 1;  node <= _total_nodes;  ++node) {
+  for (uint_t node = 1;  node <= _total_nodes;  ++node) {
     _nm[node] = _total_nodes - node + 1;
   }
 }
@@ -189,16 +189,21 @@ void SIM_DATA::alloc_hold_vectors()
 
   assert(!_nstat);
   _nstat = new LOGIC_NODE[_total_nodes+1];
-  for (int ii=0;  ii <= _total_nodes;  ++ii) {
+  for (uint_t ii=0;  ii <= _total_nodes;  ++ii) {
     _nstat[_nm[ii]].set_user_number(ii);
   }
 
   assert(!_vdc);
   _vdc = new double[_total_nodes+1];
   std::fill_n(_vdc, _total_nodes+1, 0);
+  trace0("SIM_DATA::alloc_hold_vectors ADP_NODE");
+  assert(!_tt);
+  _tt  = new double[_adp_nodes];
+  std::fill_n(_tt, _adp_nodes, 0);
 
   assert(_nstat);
   assert(_vdc);
+  assert(_tt);
 }
 /*--------------------------------------------------------------------------*/
 /* alloc_vectors:
@@ -219,6 +224,16 @@ void SIM_DATA::alloc_vectors()
   _i   = new double[_total_nodes+1];
   _v0  = new double[_total_nodes+1];
   _vt1 = new double[_total_nodes+1];
+	
+  trace0("SIM_DATA::alloc_vectors ADP_NODE");
+  _tr  = new double[_adp_nodes];
+  std::fill_n(_tr, _adp_nodes, 0.111); //HACK
+  _tr1 = new double[_adp_nodes];
+  _tr2 = new double[_adp_nodes];
+  _tr3 = new double[_adp_nodes];
+
+  _tt1 = new double[_adp_nodes];
+
   std::fill_n(_ac, _total_nodes+1, 0);
   std::fill_n(_i,  _total_nodes+1, 0);
   std::fill_n(_v0, _total_nodes+1, 0);
@@ -237,6 +252,14 @@ void SIM_DATA::unalloc_vectors()
   _vt1 = NULL;
   delete [] _ac;
   _ac = NULL;
+  delete [] _tr;
+  delete [] _tr1;
+  delete [] _tr2;
+  delete [] _tr3;
+  delete [] _tt1;
+  _tr=_tr1=_tt1=_tr2=NULL;
+
+
 }
 /*--------------------------------------------------------------------------*/
 /* uninit: undo all the allocation associated with any simulation
@@ -251,6 +274,8 @@ void SIM_DATA::uninit()
     _aa.reinit(0);
     delete [] _vdc;
     _vdc = NULL;
+    delete [] _tt;
+    _tt = NULL;
     delete [] _nstat;
     _nstat = NULL;
     delete [] _nm;
@@ -266,10 +291,10 @@ void SIM_DATA::uninit()
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::update_tt_order()
 {
-  int new_order=3;
-  if(_dT2 == 0 ) new_order=3;
-  if(_dT1 == 0 ) new_order=2;
-  if(_dT0 == 0 ) new_order=1; // ?
+  uint_t new_order=3;
+  if(_dT2 == .0 ) new_order=3;
+  if(_dT1 == .0 ) new_order=2;
+  if(_dT0 == .0 ) new_order=1; // ?
   if( OPT::adporder < new_order ) new_order = OPT::adporder;
 
   if (_tt_order != new_order ) {
@@ -280,6 +305,9 @@ void SIM_DATA::update_tt_order()
   }
 }
 /*--------------------------------------------------------------------------*/
-unsigned int SIM_DATA::get_tt_order() const {return _tt_order;}
+uint_t SIM_DATA::get_tt_order() const {
+	assert (_tt_order <= tt_iteration_number());
+	return _tt_order;
+}
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

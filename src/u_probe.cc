@@ -144,6 +144,8 @@ double PROBE::probe_node(void)const
     return CKT_BASE::_sim->_tt_rejects;
   }else if (Umatch(_what, "dT ") && CKT_BASE::_sim->_mode == s_TTT) {
     return CKT_BASE::_sim->_dT0;
+  }else if (Umatch(_what, "ttorder ")) {untested();
+    return CKT_BASE::_sim->get_tt_order();
   }else if (Umatch(_what, "dtt ")) {untested();
     return CKT_BASE::_sim->_dT0;
   }else if (Umatch(_what, "bypass ")) {untested();

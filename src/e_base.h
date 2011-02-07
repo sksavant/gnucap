@@ -26,12 +26,13 @@
 #ifndef E_BASE_H
 #define E_BASE_H
 #include "md.h"
+#include "u_sim_data.h"
 /*--------------------------------------------------------------------------*/
 // external
 class XPROBE;
 class WAVE;
 class OMSTREAM;
-class SIM_DATA;
+// class SIM_DATA;
 /*--------------------------------------------------------------------------*/
 class INTERFACE CKT_BASE {
 private:
@@ -74,8 +75,11 @@ public:
   static double tt_behaviour_del;
   static double tt_behaviour_rel;
   void tt_prepare();
-  virtual void tr_stress_last() const {}
+  virtual void tr_stress_last() {}
   virtual double      tt_probe_num(const std::string&)const;
+
+  int iteration_number()const   {return _sim->_iter[iSTEP];}
+  int tt_iteration_number()const   {return _sim->_tt_iter;} // accepted steps
 };
 /*--------------------------------------------------------------------------*/
 inline bool exists(const CKT_BASE* c) {return c!=0;}

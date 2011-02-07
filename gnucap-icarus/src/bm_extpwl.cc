@@ -46,7 +46,7 @@ class EVAL_BM_EXTPWL : public EVAL_BM_ACTION_BASE {
 private:
   PARAMETER<double>   _delta;
   PARAMETER<int>      _smooth;
-  PARAMETER<some_int> _ext;
+  PARAMETER<intptr_t> _ext;
   std::vector<std::pair<PARAMETER<double>,PARAMETER<double> > > _raw_table;
   std::vector<DPAIR> _num_table;
   explicit	EVAL_BM_EXTPWL(const EVAL_BM_EXTPWL& p);
@@ -123,7 +123,7 @@ void EVAL_BM_EXTPWL::print_common_obsolete_callback(OMSTREAM& o, LANGUAGE* lang)
   incomplete(); // remove obs cb.
   assert(lang);
   o << name() << '(';
-  o << _ext.string() <<  ')';
+  o << _ext.string() << ',' << (long int)(void*)this <<  ')';
   print_pair(o, lang, "delta", _delta, _delta.has_hard_value());
   print_pair(o, lang, "smooth",_smooth,_smooth.has_hard_value());
   EVAL_BM_ACTION_BASE::print_common_obsolete_callback(o, lang);
@@ -150,7 +150,7 @@ void EVAL_BM_EXTPWL::precalc_last(const CARD_LIST* Scope)
 {
   assert(Scope);
   EVAL_BM_ACTION_BASE::precalc_last(Scope);
-  trace0("EVAL_BM_EXTPWL::precalc_last -- why so often??");
+  trace1("EVAL_BM_EXTPWL::precalc_last -- why so often??", E);
 
   double last = -BIGBIG;
   for (std::vector<std::pair<PARAMETER<double>,PARAMETER<double> > >::iterator
@@ -165,8 +165,9 @@ void EVAL_BM_EXTPWL::precalc_last(const CARD_LIST* Scope)
     last = p->first;
   }
 
-  // trace1("EVAL_BM_EXTPWL::precalc_last->ExtStartSim?",E);
-  //if (E==20)  ExtStartSim("TRAN");
+  trace1("EVAL_BM_EXTPWL::precalc_last->ExtStartSim?",E);
+  //if (E==19) 
+  ExtStartSim("TRAN");
   E++;
 }
 /*--------------------------------------------------------------------------*/

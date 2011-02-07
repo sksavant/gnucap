@@ -219,6 +219,7 @@ void COMMON_COMPONENT::parse_common_obsolete_callback(CS& cmd) //used
 /*--------------------------------------------------------------------------*/
 void COMMON_COMPONENT::print_common_obsolete_callback(OMSTREAM& o, LANGUAGE* lang)const
 {
+  trace0(("COMMON_COMPONENT::print_common_obsolete_callback "+ _modelname).c_str());
   assert(lang);
   print_pair(o, lang, "tnom", _tnom_c,  _tnom_c.has_hard_value());
   print_pair(o, lang, "dtemp",_dtemp,   _dtemp.has_hard_value());
@@ -502,6 +503,7 @@ void COMPONENT::print_args_obsolete_callback(OMSTREAM& o, LANGUAGE* lang)const
 {
   assert(lang);
   assert(has_common());
+  trace0(("COMPONENT::print_args_obsolete_callback "+ short_label()).c_str());
   common()->print_common_obsolete_callback(o, lang);
 }
 /*--------------------------------------------------------------------------*/

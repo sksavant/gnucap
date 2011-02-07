@@ -270,7 +270,7 @@ private: // node list
     return names[i];
   }
 private:
-  virtual void tr_stress( ) const;
+  virtual void tr_stress( );
   virtual void stress_apply();
   virtual void tt_prepare( ); //NOT const
 public:

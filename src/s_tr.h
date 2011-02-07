@@ -55,6 +55,7 @@ public:
     _cont(false),
     _tt_cont(false),
     _inside_tt(false),
+    _power_down(false),
     _trace(tNONE),
     _time_by_iteration_count(0.),
     _time_by_user_request(0.),
@@ -87,7 +88,7 @@ public:
   int stepno(){return _stepno;}		// count of visible (saved) steps
   static int total_outsteps(){return steps_total_out_  ;}		// count of visible (saved) steps
   int	step_cause()const;
-  virtual void	first(); // HACK/
+  void	first(); // HACK/
   bool	next();
   virtual void	accept(); // HACK
   void	reject();
@@ -110,6 +111,7 @@ protected:
   bool _cont;		// flag: continue from previous run
   bool _tt_cont;	// 
   bool _inside_tt;// hack: tell tr_swp to not reinit circuit
+  bool _power_down;
   int _stepno;		// count of visible (saved) steps
   TRACE _trace;		// enum: show extended diagnostics
 private:

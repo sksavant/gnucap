@@ -34,6 +34,9 @@
 // typedef double double; // has to be double
 //typedef long double hp_float_t;
 typedef double hp_float_t;
+// typedef unsigned int uint_t;
+typedef int uint_t;
+
 typedef double fun_t;
 inline double to_fun_t(double x){return x;}
 /*--------------------------------------------------------------------------*/
@@ -228,6 +231,9 @@ namespace std{
 /*--------------------------------------------------------------------------*/
 inline bool is_number(double x){
   return (( x != inf ) && (x != -inf ) && (x == x)) ;
+}
+inline bool is_almost(double x, double y){
+  return ( fabs(x-y) / ( fmax(fabs(x),fabs(y))+1e-20) < 1e-10 );
 }
 
 /*--------------------------------------------------------------------------*/

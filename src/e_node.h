@@ -81,7 +81,7 @@ public:
 /*--------------------------------------------------------------------------*/
 class NODE : public CKT_BASE {
 private:
-  int	_user_number;
+  uint_t	_user_number;
   //int	_flat_number;
   //int	_matrix_number;
 protected:
@@ -94,11 +94,11 @@ public:
   ~NODE() {}
 
 public: // raw data access (rvalues)
-  int	user_number()const	{return _user_number;}
+  uint_t	user_number()const	{return _user_number;}
   //int	flat_number()const	{itested();return _flat_number;}
 public: // simple calculated data access (rvalues)
-  int	matrix_number()const	{return _sim->_nm[_user_number];}
-  int	m_()const		{return matrix_number();}
+  uint_t	matrix_number()const	{return _sim->_nm[_user_number];}
+  uint_t	m_()const		{return matrix_number();}
 public: // maniputation
   NODE&	set_user_number(int n)	{_user_number = n; return *this;}
   //NODE& set_flat_number(int n) {itested();_flat_number = n; return *this;}
@@ -230,18 +230,18 @@ public: // matrix
 /*--------------------------------------------------------------------------*/
 class INTERFACE node_t {
 private:
-  static bool node_is_valid(int i) {
-    if (i == INVALID_NODE) {untested();
+  static bool node_is_valid( uint_t i) {
+    if (i == (uint_t) INVALID_NODE) {untested();
       itested();
     }else if (i < 0) {
       unreachable();
-    }else if (i > NODE::_sim->_total_nodes) {
+    }else if ( i > NODE::_sim->_total_nodes) {
       unreachable();
     }else{
     }
     return i>=0 && i<=NODE::_sim->_total_nodes;
   }
-  static int  to_internal(int n) {
+  static int  to_internal(uint_t n) {
     assert(node_is_valid(n));
     assert(NODE::_sim->_nm);
     return NODE::_sim->_nm[n];
@@ -253,7 +253,7 @@ private:
   int _m;		// mapped, after reordering
 
 public:
-  int	      m_()const	{return _m;}
+  uint_t	      m_()const	{return _m;}
 
   int	      t_()const {
     //assert(_nnn);

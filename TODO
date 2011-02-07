@@ -6,3 +6,5 @@
 - measurements: make measurement object to make preparse possible.
 - Inf-Inf repair (nan)
 - tw powerdown.
+- probe v(SUBCCKT.nodes)
+- aging hold vectors (initial cond?)

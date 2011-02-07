@@ -1523,7 +1523,7 @@ void DEV_BUILT_IN_MOS::stress_apply( )
   m->do_stress_apply(this);
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_MOS::tr_stress( ) const
+void DEV_BUILT_IN_MOS::tr_stress( )
 {
   const COMMON_COMPONENT* cc = common();
   const MODEL_BUILT_IN_MOS_BASE* m = ( const MODEL_BUILT_IN_MOS_BASE*)(cc->model());
@@ -1547,12 +1547,12 @@ void ADP_BUILT_IN_MOS::init(const COMPONENT* c)
   assert(cc);
 
   // std::cerr << "ADP_BUILT_IN_MOS::init( " <<c<< " ) " << c->short_label() << "\n" ;
-  bti_stress = new ADP_NODE(this,c, "bti" );
+  bti_stress = new ADP_NODE( c, "bti" );
   // ADP_NODE_LIST::adp_node_list.push_back( bti_stress );
 
   // only mos>0?
-  ids_stress = new ADP_NODE(this, c, "ids" );
-  igd_stress = new ADP_NODE(this, c, "igs" );
+  ids_stress = new ADP_NODE( c, "ids" );
+  igd_stress = new ADP_NODE( c, "igs" );
 
   vthscale_bti = 1;
   vthdelta_bti = 0;
@@ -1594,8 +1594,8 @@ void ADP_BUILT_IN_MOS::tt_accept()
 void ADP_BUILT_IN_MOS::tt_commit()
 {
   //FIXME: move c to ADP_CARD. merge ADP_card with DEV?
-  const DEV_BUILT_IN_MOS* c = (const DEV_BUILT_IN_MOS*) (bti_stress->c());
-  SIM_DATA* sim = c->_sim;
+  //const DEV_BUILT_IN_MOS* c = (const DEV_BUILT_IN_MOS*) (bti_stress->c());
+  SIM_DATA* sim = CKT_BASE::_sim;
 //  std::cerr << "ADP_BUILT_IN_MOS::tt_commit " << c->long_label() << "\n";
 //  std::cerr << "ADP_BUILT_IN_MOS::tt_commit time " << sim->_Time0 << "\n";
 //  std::cerr << "ADP_BUILT_IN_MOS::tt_commit stress " << bti_stress->get() << "\n";

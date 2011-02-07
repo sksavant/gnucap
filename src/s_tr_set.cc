@@ -178,9 +178,11 @@ void TRANSIENT::options(CS& Cmd)
   bool ploton = IO::plotset  &&  plotlist().size() > 0;
   _sim->_uic = _cold = false;
   _trace = tNONE;
+  _power_down=false;
   unsigned here = Cmd.cursor();
   do{
     ONE_OF
+      || Get(Cmd, "p{owerdown}",   &_power_down)
       || Get(Cmd, "c{old}",	   &_cold)
       || Get(Cmd, "dte{mp}",	   &_sim->_temp_c,  mOFFSET, OPT::temp_c)
       || Get(Cmd, "dtma{x}",	   &_dtmax_in)

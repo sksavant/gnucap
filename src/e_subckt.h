@@ -62,9 +62,9 @@ protected: // override virtual
   //void  precalc_last()	{assert(subckt()); subckt()->precalc();}
   //void  map_nodes();
   void	  tr_begin()	{assert(subckt()); subckt()->tr_begin();}
-  void	tr_stress() const
+  void	tr_stress()
          { assert(subckt()); subckt()->do_forall( &CARD::tr_stress ); }
-  virtual void	tr_stress_last() const
+  virtual void	tr_stress_last()
          { assert(subckt()); subckt()->do_forall( &CARD::tr_stress_last ); }
   // not const?
   virtual void	stress_apply()
@@ -102,6 +102,8 @@ protected: // override virtual
   //                  why   ^^^^^^^^^^^^^^ ? ( .subctk ) !
   void	  tt_next()         
          { assert(subckt()); subckt()->do_forall( &CARD::tt_next );}
+
+  virtual void	tt_begin() {}
   virtual void	tt_commit() const
          { assert(subckt()); subckt()->do_forall( &CARD::tt_commit );}
   virtual void	tt_accept() // !const (beh)

@@ -96,7 +96,7 @@ public: // probes
   virtual double __Ge(double uin, const COMMON_COMPONENT* )const;
   virtual double __Re(double uin, const COMMON_COMPONENT* cc)const ;
   virtual double __Rc(double uin, const COMMON_COMPONENT* cc)const ;
-  virtual void do_tr_stress_last( ADP_NODE* cap, ADP_NODE* eff, const COMMON_COMPONENT* cc ) const 
+  virtual void do_tr_stress_last( long double tr_fill, ADP_NODE* cap, const COMMON_COMPONENT* cc ) const 
   {unreachable();}
 };
 /*--------------------------------------------------------------------------*/
@@ -165,11 +165,9 @@ public: // functions...
   //double _Ueff( double ug);
   double __Re(double ueff)const;
   double __Rc(double ueff)const;
-  double __tau_up ( double ueff ) const; /*{
-    double  rr = __Rc(ueff);
-    double  rh = __Re(ueff)  ;
-    return float( rr / ( 1+rr/rh )  ) ;
-    } */ 
+  double __tau ( double ueff ) const; 
+  double __tau_up ( double ueff ) const;
+  long double __step(double uin, long double cur,  double deltat ) const;
 
 public: // attached commons
 };
@@ -228,12 +226,14 @@ protected: // override virtual
   CARD*     clone()const         {return new DEV_BUILT_IN_RCD(*this);}
   void      precalc_first() {COMPONENT::precalc_first(); if(subckt()) subckt()->precalc_first();}
   virtual   void      expand(); // virtual??
-  void      precalc_last()  {COMPONENT::precalc_last(); assert(subckt()); subckt()->precalc_last();}
+  void      precalc_last();
   //void    map_nodes();         //BASE_SUBCKT
   //void    tr_begin();          //BASE_SUBCKT
-  virtual void    tr_stress() const;        
+  virtual void    tr_stress();
+  void    tr_stress_();
   //void    tr_restore();        //BASE_SUBCKT
   void    stress_apply(); 
+  void	 tt_begin();
   void      tt_commit() const;   
   void      tt_prepare();         //BASE_SUBCKT
   void      dc_advance() {set_not_converged(); BASE_SUBCKT::dc_advance();}
@@ -248,7 +248,7 @@ protected: // override virtual
     assert(subckt());
     return BASE_SUBCKT::tr_review();
   }
-  //void    tr_accept();         //BASE_SUBCKT
+  void	  tr_accept(); // 	{assert(subckt()); subckt()->tr_accept();}
   //void    tr_unload();         //BASE_SUBCKT
   double    tr_probe_num(const std::string&)const;
   double    tt_probe_num(const std::string&)const;
@@ -279,6 +279,7 @@ public: // netlist
   COMPONENT* _GRc;
   ADP_NODE* _Ccgfill;
   ADP_NODE_UDC* _Udc;
+  long double _tr_fill;
 protected: // node list
   enum {n_u, n_b, n_ic};
   node_t _nodes[3];
@@ -291,7 +292,7 @@ protected: // node list
   public:
   virtual region_t region() const ;
   virtual int tt_region() const ;
-  virtual void tr_stress_last() const;
+  virtual void tr_stress_last();
 };
 /*--------------------------------------------------------------------------*/
 class DEV_BUILT_IN_RCD_NET : public DEV_BUILT_IN_RCD{

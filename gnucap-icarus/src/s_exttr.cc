@@ -44,7 +44,7 @@ public:
 void EXT_TRANSIENT::first(){
   TRANSIENT::first();
   trace0("EXT_TRANSIENT::first calling ExtStartSim");
-  ExtStartSim("TRAN"); 
+  // ExtStartSim("TRAN"); 
 }
     
 void EXT_TRANSIENT::accept(){

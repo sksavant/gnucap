@@ -63,7 +63,7 @@ public: // override virtual
   }
 #endif
   TIME_PAIR tr_review();
-  virtual void  tr_stress() const    {
+  virtual void  tr_stress() {
 	  trace0( "ELEMENT device " + short_label() + ": no stress" );
   } // calcul
   virtual void  tr_stress_at_once() const    {}

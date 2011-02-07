@@ -30,6 +30,14 @@ namespace MODEL_BUILT_IN_RCD_DISPATCHER {
     d1(&model_dispatcher, "rcdnet|rcdmodel", &p1);
 }
 /*--------------------------------------------------------------------------*/
+void DEV_BUILT_IN_RCD::tr_accept() {
+  trace0("DEV_BUILT_IN_RCD::tr_accept (stress_)");
+  // assert(subckt()); subckt()->tr_accept();
+  assert(is_number(_tr_fill));
+  tr_stress_();
+  assert(is_number(_tr_fill));
+}
+/*--------------------------------------------------------------------------*/
 void SDP_BUILT_IN_RCD::init(const COMMON_COMPONENT* cc)
 {
   assert(cc);
@@ -82,9 +90,11 @@ MODEL_BUILT_IN_RCD::MODEL_BUILT_IN_RCD(const MODEL_BUILT_IN_RCD& p)
 }
 /*--------------------------------------------------------------------------*/
 double MODEL_BUILT_IN_RCD::dvth(const COMPONENT* brh) const{
-  const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
-  const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
-  return c->_Ccgfill->get_tt() * cc->_weight * cc->_wcorr;
+  //const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
+  //const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
+  // return _Ccgfill->get_tt() * cc->_weight * cc->_wcorr;
+  unreachable();
+  return ( NAN ); //c->_Ccgfill->get()+ _tr_fill ) * cc->_weight * cc->_wcorr;
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -176,12 +186,14 @@ SDP_CARD* MODEL_BUILT_IN_RCD::new_sdp(COMMON_COMPONENT* c)const
   if (COMMON_BUILT_IN_RCD* cc = dynamic_cast<COMMON_BUILT_IN_RCD*>(c)) {
     if (cc->_sdp) {
       cc->_sdp->init(cc);
+      assert(cc->_sdp);
       return cc->_sdp;
     }else{
       delete cc->_sdp;
       return new SDP_BUILT_IN_RCD(c);
     }
   }else{
+    trace0("MODEL_BUILT_IN_RCD::new_sdp, MODEL_CARD");
     return MODEL_CARD::new_sdp(c);
   }
 }
@@ -714,7 +726,7 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD()
    _Rc(0),
    _GRc(0),
    _Ccgfill(0),
-   _Udc(0)
+   _tr_fill(0)
 {
   _n = _nodes;
   attach_common(&Default_BUILT_IN_RCD);
@@ -735,7 +747,7 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p)
    _Rc(0),
    _GRc(0),
    _Ccgfill(0),
-   _Udc(0)
+   _tr_fill(p._tr_fill)
 {
   untested();
   _n = _nodes;
@@ -765,20 +777,21 @@ void DEV_BUILT_IN_RCD::expand()
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(c->sdp());
   assert(s);
 
-  // doesnt work, expand is private
-  // m->do_expand();
-  // return;
-
   if (!subckt()) {
     new_subckt();
   }else{
   }
   // TT_NODE?
   _Ccgfill = new ADP_NODE((const COMPONENT*) common());
-//  ADP_NODE_LIST::adp_node_list.push_back( _Ccgfill );
+
+
+
+// idee: _Ccgfill:: tr_value <= udc
+//                  tt_value <= E
+  ADP_NODE_LIST::adp_node_list.push_back( _Ccgfill );
 //
-  _Udc = new ADP_NODE_UDC((const COMPONENT*) common()); //, _Ccgfill);
-  ADP_NODE_LIST::adp_node_list.push_back( _Udc );
+ // _Udc = new ADP_NODE_UDC((const COMPONENT*) common()); //, _Ccgfill);
+ // ADP_NODE_LIST::adp_node_list.push_back( _Udc );
 
   expand_net();
 
@@ -791,9 +804,13 @@ void DEV_BUILT_IN_RCD::expand()
   }else{
     untested(); // rebuild circuit??
   }
+
   if (m->v2()){
-    _Ccgfill->tt_set( -c->_wcorr );
+    incomplete();
+    // do_tt?
+    // _Ccgfill->tt_set( -c->_wcorr );
   }
+  // _tr_fill=_Ccgfill->get();
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -984,6 +1001,7 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
   assert(m);
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(c->sdp());
   assert(s);
+  assert(_Ccgfill);
 
   if (Umatch(x, "region ")) {
     return  static_cast<double>(region());
@@ -991,19 +1009,15 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
     return  ( _Ccgfill->tr_abs_err() );
   }else if (Umatch(x, "noise ")) {
     assert(_Ccgfill);
-    return  ( _Ccgfill->get_tr_noise() );
+    return 0; // ( _Ccgfill->get_tr_noise() );
   }else if (Umatch(x, "udc ")) {
-    return  ( _Udc->get_tt() );
+    return  ( NAN );
   }else if (Umatch(x, "trr ")) {
     return  ( _Ccgfill->tr_rel_err() );
   }else if (Umatch(x, "te ")) {
       return  ( c->__tau_up(c->Uref) );
   }else if (Umatch(x, "tc ")) {
       return  ( m->__Rc(0, c) );
-#ifdef DO_TRACE
-  }else if (Umatch(x, "adpdebug ")) {
-    return  ( _Ccgfill->debug() );
-#endif
   }else if (Umatch(x, "re ")) {
       return  ( m->__Re(c->Uref, c) );
   }else if (Umatch(x, "rc ")) {
@@ -1016,8 +1030,6 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
     return  ( _Ccgfill->tr_abs_err() );
   }else if (Umatch(x, "uref ")) {
     return  ( c->Uref );
-  }else if (Umatch(x, "tr ")) {
-    return  ( _Ccgfill->tr_get() );
   }else if (Umatch(x, "dvth |vth ")) {
     return  ( m->dvth(this) );
   }else if (Umatch(x, "vw{v} ")) {
@@ -1032,7 +1044,7 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
     if (m->use_net())
       return _n[n_ic].v0() - _n[n_b].v0();
     else
-      return _Ccgfill->get_total();
+      return _tr_fill;
   }else if (Umatch(x, "wt ")) {
     return  c->_weight;
   }else if (Umatch(x, "vin ")) {
@@ -1071,6 +1083,7 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   }
   else if (Umatch(x, "net "   )) { return( (double ) m->use_net()); }
   else if (Umatch(x, "tr "    )) { return( _Ccgfill->tr_get() ); }
+  else if (Umatch(x, "tt "    )) { return( _Ccgfill->get_tt() ); }
   else if (Umatch(x, "RE "    )) { return( c->_Re0 );}
   else if (Umatch(x, "ttr "   )) { return( _Ccgfill->tt_rel_err() ); }
   else if (Umatch(x, "trr "   )) { return( _Ccgfill->tr_rel_err() ); }
@@ -1078,11 +1091,11 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   else if (Umatch(x, "order " )) { return( _Ccgfill->order() ); }
   else if (Umatch(x, "Rc "    )) { return( c->_Rc0 ); }
   else if (Umatch(x, "wdt "   )) { return( _Ccgfill->wdT() ); }
-  else if (Umatch(x, "tr1 "   )) { return( _Ccgfill->tr_get_old() ); }
   else if (Umatch(x, "region ")) { return( m->tt_region( this ) ); }
   else if (Umatch(x, "uref "  )) { return( c->Uref ); }
+  else if (Umatch(x, "trf "   )) { return( _tr_fill ); }
+  else if (Umatch(x, "udc "))    { return( _Ccgfill->tr() ); }
 
-  // FIXME:
   else if (Umatch(x, "uend "  )) { return( c->Uref / (c->__Re(c->Uref) / c->__Rc(c->Uref) +1) * c->_wcorr ) * c->_weight; }
   else if (Umatch(x, "tc "    )) { return( c->__Rc(0) ); }
   else if (Umatch(x, "te ")) {
@@ -1091,7 +1104,6 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
     else
     return  ( c->__tau_up( c->Uref ) );
   }
-  else if (Umatch(x, "adpdebug ")) { return  ( _Ccgfill->debug() ); }
   else if (Umatch(x, "vwtr ")) {
     return  ( _Ccgfill->tr_get() * c->_weight );
   }else {
@@ -1155,6 +1167,29 @@ bool DEV_BUILT_IN_RCD::tr_needs_eval()const  // not defined...
   return true;
 
 }
+
+///*--------------------------------------------------------------------------*/
+long double COMMON_BUILT_IN_RCD::__step(double uin, long double cur,  double deltat ) const 
+{
+  const COMMON_BUILT_IN_RCD* cc = this;
+  assert(cc);
+  
+  long double Rc0=cc->_Rc0;
+  long double Re0=cc->_Re0;
+  long double Rc1=cc->_Rc1;
+  long double t=deltat;
+
+  long double uend=1.0/(1.0 + exp(-Rc1*uin) * Re0/uin/Rc0 );
+  return ( (cur-uend)) 
+       * exp( -(Rc0*uin*exp(Rc1*uin)/Re0 + 1)*t*exp(-Rc1*uin)/Rc0 )
+       +uend;
+
+// sage output:
+  return ( -(Rc0*exp(Rc1*uin)/(Rc0*exp(Rc1*uin) + Re0/uin)
+        - cur)*exp(-(Rc0*uin*exp(Rc1*uin)/Re0 + 1)*t*exp(-Rc1*uin)/Rc0) +
+      Rc0*exp(Rc1*uin)/(Rc0*exp(Rc1*uin) + Re0/uin));
+
+}
 ///*--------------------------------------------------------------------------*/
 //bool DEV_BUILT_IN_RCD::tr_needs_eval()const
 //{
@@ -1170,7 +1205,6 @@ bool DEV_BUILT_IN_RCD::tr_needs_eval()const  // not defined...
 //
 void DEV_BUILT_IN_RCD::stress_apply()
 {
-
   assert(_n);
   assert(common());
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
@@ -1182,23 +1216,48 @@ void DEV_BUILT_IN_RCD::stress_apply()
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(c->sdp());
   assert(s);
 
-  m->do_stress_apply(this);
 
-  double fill = _Ccgfill->get_tt();
-  trace2("(stress_apply)", fill, _sim->tt_iteration_number() );
+  trace4("DEV_BUILT_IN_RCD::stress_apply ", _sim->_Time0, _sim->_dT0,
+      tt_iteration_number(), _sim->_Time0);
+  trace3("DEV_BUILT_IN_RCD::stress_apply ", 
+  _Ccgfill->tr() , _Ccgfill->tr(_sim->_Time0 ), _Ccgfill->order());
 
-  hp_float_t fv = fill;
+  assert ( is_almost( _Ccgfill->tr() , _Ccgfill->tr(_sim->_Time0) ));
+  long double E_old = _Ccgfill->tt1();
+  long double eff = _Ccgfill->tr();
+
+  assert (is_number(eff));
+  assert (is_number(E_old));
+
+  long double
+  fill_new = c->__step( eff , E_old, _sim->_dT0 );
+    std::cout << "sa" << E_old << _sim->_dT0 << "\n";
+
+  trace4("DEV_BUILT_IN_RCD::stress_apply ", fill_new, E_old, eff, fill_new-_tr_fill );
+
+  assert(is_number(_tr_fill));
+  assert(is_number(fill_new));
+  assert(is_number(_tr_fill));
+
+  trace3("DEV_BUILT_IN_RCD::stress_apply", eff, _tr_fill, _sim->tt_iteration_number() );
+
+  hp_float_t fv = _tr_fill;
 
   if( m->use_net() && _sim->analysis_is_tt() )
   {
     _sim->_v0[_n[n_ic]->m_()] = fv + _sim->_v0[_n[n_b]->m_()];
     _sim->_vt1[_n[n_ic]->m_()] = fv + _sim->_vt1[_n[n_b]->m_()];
     _sim->_vdc[_n[n_ic]->m_()] = fv + _sim->_vdc[_n[n_b]->m_()];
-    ((STORAGE*) (_Ccg))->tr_init(fill);
+    ((STORAGE*) (_Ccg))->tr_init(_tr_fill);
 
     trace2("DEV_BUILT_IN_RCD::stress_apply n", _Ccgfill->get_tr(), _Ccgfill->get_tt());
   } else {
-    trace2("DEV_BUILT_IN_RCD::stress_apply s", _Ccgfill->get_tr(), _Ccgfill->get_tt());
+
+    assert(is_number(fill_new));
+    _Ccgfill->tt() = fill_new;
+    _tr_fill=fill_new;
+    trace2("DEV_BUILT_IN_RCD::stress_apply done ", fill_new, _tr_fill );
+
   }
 
 }
@@ -1211,8 +1270,15 @@ void MODEL_BUILT_IN_RCD_NET::do_stress_apply( COMPONENT*  ) const
 {
 }
 ///*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_RCD::tr_stress() const
+void DEV_BUILT_IN_RCD::tr_stress_() {
+  tr_stress();
+}
+///*--------------------------------------------------------------------------*/
+void DEV_BUILT_IN_RCD::tr_stress() // called from accept
 {
+  static double last;
+  const DEV_BUILT_IN_RCD* rcd = this;
+  double h = _sim->_dt0;
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
   assert(c);
   assert(c->model());
@@ -1220,9 +1286,26 @@ void DEV_BUILT_IN_RCD::tr_stress() const
   assert(m);
   assert(c->sdp());
 
+
+  if( _sim->_time0 > last || _sim->_time0==0 ){
+    last=_sim->_time0;
+    trace1("DEV_BUILT_IN_RCD::tr_stress at", _sim->_time0 );
+  }else {
+    trace1("DEV_BUILT_IN_RCD::tr_stress again?? bug??", _sim->_time0 );
+    return;
+  }
+
+  if (!h) {
+    trace1("not h\n", _tr_fill);
+    return;
+  }
+  trace2("DEV_BUILT_IN_RCD::tr_stress ", _tr_fill, h );
+
+
   if( m->positive) {
     if ( _Ccgfill->get_total() < 0 ){
-      trace1(("DEV_BUILT_IN_RCD::tr_stress fill is negative: " + short_label()).c_str() ,  _Ccgfill->get_total() );
+      trace1(("DEV_BUILT_IN_RCD::tr_stress fill is negative: " +
+            short_label()).c_str() ,  _Ccgfill->get_total() );
     }
     if (  involts() < -2e-1 ){ // overshoot!
       error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress input %s is negative: %f\n", long_label().c_str(), involts() );
@@ -1231,7 +1314,77 @@ void DEV_BUILT_IN_RCD::tr_stress() const
   }
 
   if( m->use_net()) { incomplete(); return; }
-  m->do_tr_stress(this);
+  // m->do_tr_stress(this);
+  /*----------------------------------------------------------------------------*/
+
+  long double fill=_tr_fill;
+  double uin = rcd->involts();
+
+  trace2("DEV_BUILT_IN_RCD::tr_stress ", fill, uin );
+  trace2("DEV_BUILT_IN_RCD::tr_stress ", rcd->involts(), iteration_number() );
+  assert (fill>=E_min);
+  if (fill >= 1 ){
+    error(bDANGER, " RCD_V3 %s fill %f too big\n", long_label().c_str(), fill );
+    fill = 1;
+  }
+
+  if( m->positive ) {
+    if ( rcd->_Ccgfill->get_total() < 0 ){
+      trace1(("DEV_BUILT_IN_RCD::tr_stress fill is negative: " +
+            short_label()).c_str() ,  rcd->_Ccgfill->get_total() );
+    }
+
+    // FIXME: eine ebene hoeher ?
+    if (  rcd->involts() < -2e-1 ){
+      error( bDANGER, "DEV_BUILT_IN_RCD::tr_stress input %s is negative: ",
+          short_label().c_str(), rcd->involts() );
+      assert (false );
+    }
+  }
+  assert(!m->use_net());
+
+  //double  fill = _n[n_ic].v0();
+  assert (fill==fill);
+  assert (uin==uin);
+
+
+  double tau_e_here = m->__Re( uin, c);
+  double tau_c_here = m->__Rc( uin, c);
+
+  double uend = tau_c_here / ( tau_e_here + tau_c_here );
+  double tau = c->__tau(uin);
+
+  double newfill;
+  switch(_sim->_stepno){ incomplete();
+    case 0:
+    case 1:
+    default:
+      // newfill = (fill - uend) * exp(-h/tau) + uend;
+      newfill = c->__step(uin, fill,  h);
+
+  }
+  // std::cout << "uend"<<uend<< "newfill"<<newfill<<"\n";
+  if( newfill <= 0 ){
+    untested();
+    newfill = 0;
+  }
+
+  if(newfill > 1.000001){
+    error(bDANGER, ("* RCD_V3 %f too big\n" + long_label() ).c_str() , newfill );
+    newfill=1;
+  }
+  assert(newfill==newfill);
+  assert(is_number(tau));
+  assert(is_number(uend));
+
+  _tr_fill=newfill;
+  trace6("DEV_BUILT_IN_RCD::tr_stress ", fill, h, tau, (newfill-fill)/h, _tr_fill, h );
+
+  assert(is_number(_tr_fill));
+  assert(h > 0);
+  /*----------------------------------------------------------------------------*/
+
+  // _Ccgfill->set_tt(_tr_fill);
 }
 /*----------------------------------------------------------------------------*/
 double DEV_BUILT_IN_RCD::involts() const {
@@ -1240,30 +1393,48 @@ double DEV_BUILT_IN_RCD::involts() const {
 /*----------------------------------------------------------------------------*/
 // FIXME: move pred/corr to here.
 /*----------------------------------------------------------------------------*/
-void DEV_BUILT_IN_RCD::tr_stress_last() const
+void DEV_BUILT_IN_RCD::tr_stress_last()
 {
+  trace2(("tr_stress_last " + short_label()).c_str(), _tr_fill, _sim->tt_iteration_number()  );
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
   assert(c);
   assert(c->model());
   const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
   assert(m);
   assert(c->sdp());
-  double fill;
   if(m->use_net()){
-    fill = ((ELEMENT*)_Ccg)->tr_involts();
-    _Ccgfill->tr_stress_last(fill);
+    assert(false);
+    incomplete();
+    _tr_fill = ((ELEMENT*)_Ccg)->tr_involts();
 
-    trace2(("tr_stress_last " + short_label()).c_str(), fill, _sim->tt_iteration_number()  );
 
-    trace3("DEV_BUILT_IN_RCD::tr_stress_last n ", _Ccgfill->get_tt(), _Ccgfill->get_tr(), _Ccgfill->get_total() );
+    trace3("DEV_BUILT_IN_RCD::tr_stress_last n ", _Ccgfill->get_tt(),
+        _Ccgfill->get_tr(), _Ccgfill->get_total() );
   }else{
-    trace3("DEV_BUILT_IN_RCD::tr_stress_last s ", _Ccgfill->get_tt(), _Ccgfill->get_tr(), _Ccgfill->get_total() );
-    fill=_Ccgfill->get_total();
-    // m->do_tr_stress_last(fill,c);
-    m->do_tr_stress_last(_Ccgfill, _Udc, c);
+    trace3("DEV_BUILT_IN_RCD::tr_stress_last s ", _Ccgfill->get_tt(),
+        _Ccgfill->get_tr(), _Ccgfill->get_total() );
+    // fixme. move to common.
+    assert(is_number(_tr_fill));
+    m->do_tr_stress_last(_tr_fill,_Ccgfill, c);
 
+    assert(is_number(_tr_fill));
   }
-
+  
+//   _tr_fill=_->get_total();
+}
+///*--------------------------------------------------------------------------*/
+double COMMON_BUILT_IN_RCD::__tau(double uin)const
+{
+  const COMMON_COMPONENT* cc=this;
+  const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(cc->model());
+  assert(m);
+  double tau_e = m->__Re( uin, cc );
+  double tau_c = m->__Rc( uin, cc );
+  if (tau_c < tau_e){
+    return tau_c  / ( tau_c/tau_e + 1 );
+  } else{
+    return tau_e  / ( tau_e/tau_c + 1 );
+  }
 }
 ///*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::tt_commit() const
@@ -1292,6 +1463,7 @@ bool DEV_BUILT_IN_RCD::do_tr()
   const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
   assert(m);
   assert(c->sdp());
+  q_accept(); // multiple times??
   if(m->use_net()){
   // so funktioniert das wohl.
   bool     s = true;
@@ -1308,5 +1480,14 @@ bool DEV_BUILT_IN_RCD::do_tr()
 //
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+void DEV_BUILT_IN_RCD::precalc_last()  {
+  trace0("DEV_BUILT_IN_RCD::precalc_last");
+  COMPONENT::precalc_last(); assert(subckt()); subckt()->precalc_last();
+}
 /*--------------------------------------------------------------------------*/
+void DEV_BUILT_IN_RCD::tt_begin()  {
+  trace0("DEV_BUILT_IN_RCD::tt_begin");
+ _Ccgfill->set_tt(0);
+ _Ccgfill->set_tr(0.223);
+}
 /*--------------------------------------------------------------------------*/

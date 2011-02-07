@@ -630,7 +630,7 @@ void TRANSIENT::accept()
   _sim->_dt0 = _sim->_time0 - time1; // ungefaehrlich
   if(_sim->_dt0 <=0) assert (_sim->_stepno == 0);
   ::status.accept.start();
-  _sim->set_limit();
+  _sim->set_limit(); // verstehe/brauch ich nicht.
   if (OPT::traceload) {
     while (!_sim->_acceptq.empty()) {
       _sim->_acceptq.back()->tr_accept();
@@ -642,7 +642,8 @@ void TRANSIENT::accept()
   }
   ++steps_accepted_;
   if( _sim->analysis_is_tt() || OPT::trage ) {
-    if ( _sim->_dt0>0) CARD_LIST::card_list.do_forall( &CARD::tr_stress );
+    // put into tr_accept (good idea?)
+//    if ( _sim->_dt0>0) CARD_LIST::card_list.do_forall( &CARD::tr_stress );
     trace0( "TRANSIENT::accept: done stressing cardlist");
     if ( OPT::trage ) {
       untested();

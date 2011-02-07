@@ -63,7 +63,7 @@ public: // override virtual
   }
 #endif
   TIME_PAIR tr_review();
-  virtual void  tr_stress() const    {
+  virtual void  tr_stress()     {
 	  trace0( "HOMEBREW device " + short_label() );
   }
 

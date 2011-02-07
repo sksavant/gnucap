@@ -439,9 +439,9 @@ void MODEL_BUILT_IN_MOS3::do_stress_apply(COMPONENT* brh) const
   const MODEL_BUILT_IN_MOS3* m = this;
 
 
-  std::cerr << "MODEL_BUILT_IN_MOS123::stress_apply ids_stress now: " << a->ids_stress->get() << "\n";
+  std::cerr << "MODEL_BUILT_IN_MOS123::stress_apply ids_stress now: " << a->ids_stress->tt() << "\n";
 
-  a->vto = m->vto * exp ( 10000. * a->ids_stress->get() / c->w_in );
+  a->vto = m->vto * exp ( 10000. * a->ids_stress->tt() / c->w_in );
 
   std::cerr << "MODEL_BUILT_IN_MOS123::stress_apply: " <<  d->short_label() << " vto now: " << a->vto << "\n";
 

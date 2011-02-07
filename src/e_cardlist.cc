@@ -312,6 +312,15 @@ CARD_LIST& CARD_LIST::tr_advance()
   return *this;
 }
 /*--------------------------------------------------------------------------*/
+CARD_LIST& CARD_LIST::tt_advance()
+{
+  for (iterator ci=begin(); ci!=end(); ++ci) {
+    trace_func_comp();
+    (**ci).tr_advance();
+  }
+  return *this;
+}
+/*--------------------------------------------------------------------------*/
 /* tr_regress: throw away the last result and try again, first pass on redo
  */
 CARD_LIST& CARD_LIST::tr_regress()

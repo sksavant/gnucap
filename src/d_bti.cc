@@ -1011,7 +1011,15 @@ double DEV_BUILT_IN_BTI::tt_probe_num(const std::string& x)const
   }
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_BTI::tr_stress() const {
+void DEV_BUILT_IN_BTI::tr_stress_last()
+{
+  trace0("BTI sao");
+  assert(subckt()); 
+  CARD_LIST* s = subckt();
+  s->do_forall( &CARD::tr_stress_last );
+}
+/*--------------------------------------------------------------------------*/
+void DEV_BUILT_IN_BTI::tr_stress() {
   trace0("DEV_BUILT_IN_BTI::tr_stress()");
   subckt()->do_forall( &CARD::tr_stress );
 }

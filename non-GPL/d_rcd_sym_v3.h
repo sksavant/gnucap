@@ -38,7 +38,7 @@ class MODEL_BUILT_IN_RCD_SYM_V3 : public MODEL_BUILT_IN_RCD_SYM {
     double __Rc(double uin, const COMMON_COMPONENT* cc)const;
     double __Ge(double uin, const COMMON_COMPONENT* cc)const;
     double __tau(double uin, const COMMON_COMPONENT* cc)const;
-    virtual void do_tr_stress_last( ADP_NODE*,ADP_NODE* , const COMMON_COMPONENT* cc ) const;
+    virtual void do_tr_stress_last(long double fill, ADP_NODE* , const COMMON_COMPONENT* cc ) const;
   private:
     double __uin_iter(double& uin, double E, const COMMON_COMPONENT* cc)const;
     double __E(double uin, const COMMON_COMPONENT* cc)const;
