@@ -1,15 +1,15 @@
 * sweep over several voltages
 .include non-GPL.inc
 
-.option adpabstol 1
-.option adpreltol 1e-3
+*.option adpabstol 1
+*.option adpreltol 1e-3
+.option tracett
 
-.model my_rcdmodel rcdsym re=10 rc=10
+.model my_rcdmodel rcdsym_v3 re=10 rc=10
 .model my_btimodel bti_single rcd_model_name="my_rcdmodel"
 
 .model my_btimodel bti_single ( rcd_number=1 rcd_model_name=my_rcdmodel uref=1)
 .param rcd_model_string=my_rcdmodel
-
 
 B1 nin 0 my_btimodel
 V1 nin 0 pulse ( iv=0 pv=amplitude delay=3m rise=1n fall=fall width=width period=period )
@@ -24,10 +24,11 @@ V1 nin 0 pulse ( iv=0 pv=amplitude delay=3m rise=1n fall=fall width=width period
 .param width=0
 
 .param amplitude 0
-.print tw amplitude vw(b1) vc(b1.rcd0)
+.print tw amplitude vw(b1) vc(b1.rcd0) udc(b1.rcd0)
+*.print tran vw(b1) vc(b1.rcd0) 
 
 .param ttend=10
 
 .param amplitude=1
-.tw 10u 6m {1/10} {ttend}
+.tw 10u 6m {1/10} {ttend} basic
 

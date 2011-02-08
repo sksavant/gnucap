@@ -29,12 +29,12 @@ V1 nin 0 pulse ( iv=0 pv=amplitude delay=3m rise=1n fall=fall width=width period
 .param width=0
 
 .param amplitude 0
-.print tw amplitude vw(b1) vw(b2)
+.print tw amplitude vw(b1) vw(b2) basic
 
 .param ttend=1
 ***************************
 .sweep 5 a 0.75 1.5
 .param amplitude=a
-.tw 10u 6m {ttend/10} {ttend}
+.tw 10u 6m {ttend/10} {ttend} basic
 go
 

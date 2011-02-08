@@ -103,7 +103,8 @@ protected: // override virtual
   void	  tt_next()         
          { assert(subckt()); subckt()->do_forall( &CARD::tt_next );}
 
-  virtual void	tt_begin() {}
+  virtual void	tt_begin()  // FIXME do_tt? 
+         { assert(subckt()); subckt()->do_forall( &CARD::tt_begin );}
   virtual void	tt_commit() const
          { assert(subckt()); subckt()->do_forall( &CARD::tt_commit );}
   virtual void	tt_accept() // !const (beh)

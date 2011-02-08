@@ -24,12 +24,12 @@ B2 nin 0 my_btimodel_slow
 .param width=0
 V1 nin 0 pulse ( iv=0 pv=amplitude delay=0 rise=1n fall=fall width=width period=period )
 
-.print tw vw(B*.RCD*) wt(B*.RCD*) te(B*.RCD*) tc(B*.RCD*) wt(B*.RCD*) vin(B*.RCD*)
+.print tw vw(B*.RCD*) wt(B*.RCD*) te(B*.RCD*) tc(B*.RCD*) wt(B*.RCD*) vin(B*.RCD*) basic
 + value(B*.UBTI)
 
 .param amplitude = my_uref
-.tw 10u 6m 1 2
+.tw 10u 6m 1 2 basic
 .echo runter
 
 .param amplitude = 0
-.tw 5
+.tw 5 basic

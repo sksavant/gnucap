@@ -29,23 +29,23 @@ V1 nin 0 pulse ( iv=0 pv=amplitude delay=delay rise=1n fall=1n width=width perio
 .print tw amplitude vc(z1) tr(z1) trr(z1) tra(z1) wdt(z1) tr(z1) dtt(0) order(z1) region(z1)
 
 .param amplitude=1.0
-.tw 10u 6m 6m 24m
+.tw 10u 6m 6m 24m basic
 .param amplitude=0
-.tw 12m
+.tw 12m basic
 .param amplitude=1
-.tw 24m
+.tw 24m basic
 .param amplitude=0
-.tw 48m
+.tw 48m basic
 .param amplitude=1.0
-.tw 72m
+.tw 72m basic
 .param amplitude=0
-.tw 96m
+.tw 96m basic
 .param amplitude=1.0
-.tw 108m
+.tw 108m basic
 .param amplitude=0
-.tw 120m
+.tw 120m basic
 .param amplitude=0
-.tw 132m
+.tw 132m basic
 .param amplitude=1
-.tw 156m
+.tw 156m basic
 

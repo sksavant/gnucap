@@ -4,7 +4,7 @@
 .options adpreltol 0.01
 *.options printrejected=yes
 
-.model my_rcd rcdsym RE=1000 RC=my_RC uref=1
+.model my_rcd rcdsym_v3 RE=1000 RC=my_RC uref=1
 .param my_rC=1
 
 * common par!
@@ -18,13 +18,13 @@ V1 nin 0 pulse ( iv=0 pv=amplitude delay=delay rise=1n fall=1n width=width perio
 .param width=0
 .param delay=1n
 
-.print tw vw(z1) tr(z1)  amplitude order(z1) region(z1) adpdebug(z1)
+.print tw vw(z1) tr(z1)  my_RC amplitude tt(z1) ttorder(0)
 
 .sweep 5 a 0 10
 .param amplitude = 1
 .param my_RC = {10**a / 100}
-.tw 1 10 100 1000
+.tw 1 10 100 1000 basic
 .param amplitude=0
-.tw 16000
+*.tw 16000 basic
 
 go

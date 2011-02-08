@@ -34,7 +34,7 @@ compare: mos_level1_tw.1.2-3.ps  \
 	touch $@
 
 %.out: %.sim %.ckt
-	$(GNUCAP) -b $< | ./gc2gp > $@
+	$(GNUCAP) -b $<  > $@
 
 %.gc.out: %.ckt %.sim Makefile
 	$(GNUCAP) -b $< | perl -wnl -e '$$_=~s/u/e-6/g; $$_=~s/f/e-15/g; $$_=~s/n/e-9/g; $$_=~s/p/e-12/g;   print $$_ unless /^[0-9a-zA-Z\#\*\.]/' |grep -v parameter >  $@
@@ -295,9 +295,9 @@ clean:
 	rm -f *.ps
 
 %.tr: %.sim %.ckt
-	echo "plot '<gnucap  -b $< 2>/dev/null | ./gc2gp ' using 1:3 with lines; pause 10" | gnuplot
+	echo "plot '<gnucap  -b $< 2>/dev/null  ' using 1:3 with lines; pause 10" | gnuplot
 %.tw: %.sim %.ckt
-	echo "splot '< gnucap  -b $< 2>/dev/null | ./gc2gp ' using 2:1:4 with lines; pause 10" | gnuplot
+	echo "splot '< gnucap  -b $< 2>/dev/null ' using 2:1:4 with lines; pause 10" | gnuplot
 
 %.tol: %.sim
 	echo "#!/bin/bash" > $@
@@ -308,7 +308,7 @@ clean:
 	echo -n "plot " >>$@
 	for i in `seq 8`; do \
 		echo ".options adpreltol $$i" > batch; \
-		gnucap -b $< 2>/dev/null  | ./gc2gp > $*out$$i & \
+		gnucap -b $< 2>/dev/null   > $*out$$i & \
 		sleep 0.1; \
 		echo -n "'$*out$$i' using 1:\$$1 with \$$line," >> $@; \
 	done 

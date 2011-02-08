@@ -134,7 +134,7 @@ struct INTERFACE SIM_DATA {
   }
   int newnode_subckt() {++_subckt_nodes; return ++_total_nodes;}
   int newnode_model()  {++_model_nodes;  return ++_total_nodes;}
-  int newnode_adp()  {return ++_adp_nodes;}
+  int newnode_adp()  {return _adp_nodes++;}
   bool is_inc_mode()	 {return _inc_mode;}
   bool inc_mode_is_no()	 {return _inc_mode == tsNO;}
   bool inc_mode_is_bad() {return _inc_mode == tsBAD;}

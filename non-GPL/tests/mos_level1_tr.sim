@@ -9,4 +9,4 @@
 + wt(MP1.BTI) dvth(MP1.BTI) v(nout)
 + vin(MP1.bti.rcd0) vc(MP1.bti.rcd0)
 
-.tr 1u 10
+.tr 1u 10 basic

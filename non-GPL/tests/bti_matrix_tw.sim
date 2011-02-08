@@ -33,10 +33,10 @@ V1 nin 0 pulse ( iv=0 pv=amplitude delay=3m rise=1n fall=fall width=width period
 .param width=0
 
 .param amplitude 0
-.print tw amplitude vw(b1)
+.print tw amplitude vw(b1) basic
 
 .param ttend=10
 
 .param amplitude=1
-.tw 10u 6m {1/10} {ttend}
+.tw 10u 6m {1/10} {ttend} basic
 

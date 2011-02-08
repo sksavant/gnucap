@@ -209,7 +209,7 @@ private: // override virtual
   //void    tr_regress();        //BASE_SUBCKT
   //bool    tr_needs_eval()const;//BASE_SUBCKT
   //void    tr_queue_eval();     //BASE_SUBCKT
-  //bool    do_tr();             //BASE_SUBCKT
+  bool    do_tr();
   //void    tr_load();           //BASE_SUBCKT
   //double  tr_review();         //BASE_SUBCKT
   //void    tr_accept();         //BASE_SUBCKT

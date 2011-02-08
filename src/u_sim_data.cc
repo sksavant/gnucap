@@ -174,6 +174,10 @@ void SIM_DATA::init()
     CARD_LIST::card_list.precalc_first();
     CARD_LIST::card_list.precalc_last();
   }
+  _tt_iter=0;
+  _dT0=0;
+  _dT1=0;
+  _dT2=0;
 }
 /*--------------------------------------------------------------------------*/
 /* alloc_hold_vectors:
@@ -231,8 +235,15 @@ void SIM_DATA::alloc_vectors()
   _tr1 = new double[_adp_nodes];
   _tr2 = new double[_adp_nodes];
   _tr3 = new double[_adp_nodes];
-
   _tt1 = new double[_adp_nodes];
+
+#ifdef DO_TRACE
+  std::fill_n(_tr1, _adp_nodes, NAN); //HACK
+  std::fill_n(_tr2, _adp_nodes, NAN); //HACK
+  std::fill_n(_tr3, _adp_nodes, NAN); //HACK
+  std::fill_n(_tt1, _adp_nodes, NAN); //HACK
+
+#endif
 
   std::fill_n(_ac, _total_nodes+1, 0);
   std::fill_n(_i,  _total_nodes+1, 0);
@@ -257,7 +268,7 @@ void SIM_DATA::unalloc_vectors()
   delete [] _tr2;
   delete [] _tr3;
   delete [] _tt1;
-  _tr=_tr1=_tt1=_tr2=NULL;
+  _tr=_tr1=_tt1=_tr2=_tr3=NULL;
 
 
 }
@@ -292,9 +303,9 @@ void SIM_DATA::uninit()
 void SIM_DATA::update_tt_order()
 {
   uint_t new_order=3;
-  if(_dT2 == .0 ) new_order=3;
-  if(_dT1 == .0 ) new_order=2;
-  if(_dT0 == .0 ) new_order=1; // ?
+  if(_dT2 == .0 ) new_order=1;
+  if(_dT1 == .0 ) new_order=1;
+  if(_dT0 == .0 ) new_order=0; // ?
   if( OPT::adporder < new_order ) new_order = OPT::adporder;
 
   if (_tt_order != new_order ) {

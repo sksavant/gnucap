@@ -739,6 +739,7 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p)
   :BASE_SUBCKT(p),
    // input parameters,
    // calculated parameters,
+   lasts(0),
    _region(p._region),
    // netlist,
    _Ccg(0),
@@ -781,7 +782,10 @@ void DEV_BUILT_IN_RCD::expand()
     new_subckt();
   }else{
   }
-  _Ccgfill = new ADP_NODE((const COMPONENT*) this);
+  if (_sim->is_first_expand()) {
+    assert (!_Ccgfill);
+    _Ccgfill = new ADP_NODE((const COMPONENT*) this);
+  }
 
 // idee: _Ccgfill:: tr_value <= udc
 //                  tt_value <= E
@@ -1294,10 +1298,10 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   assert(m);
   assert(c->sdp());
 
+  trace1("DEV_BUILT_IN_RCD::tr_stress at", _sim->_time0 );
 
   if( _sim->_time0 > lasts || _sim->_time0==0 ){
     lasts=_sim->_time0;
-    trace1("DEV_BUILT_IN_RCD::tr_stress at", _sim->_time0 );
   }else {
     trace1("DEV_BUILT_IN_RCD::tr_stress again?? bug??", _sim->_time0 );
     return;
@@ -1429,6 +1433,8 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
   }
 
   _Ccgfill->set_tt(_tr_fill);
+
+  assert (_tr_fill == _Ccgfill->tt());
   
 //   _tr_fill=_->get_total();
 }
@@ -1459,6 +1465,8 @@ void DEV_BUILT_IN_RCD::tt_prepare()
   assert(c->model());
   const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
   assert(m);
+
+  _tr_fill = _Ccgfill->tt();
 
   untested();
   trace0(("DEV_BUILT_IN_RCD::tt_prepare " + short_label()).c_str());

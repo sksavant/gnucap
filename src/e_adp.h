@@ -39,11 +39,13 @@ class ADP_NODE: public CKT_BASE {
     hp_float_t& tr()const	{
       assert(m_() >= 0);
       assert(m_() <= _sim->_adp_nodes);
+      assert (_sim->_tr);
       return _sim->_tr[m_()];
     }
     hp_float_t tr1( )const	{
       assert(m_() >= 0);
       assert(m_() <= _sim->_adp_nodes);
+      assert (_sim->_tr1);
       return _sim->_tr1[m_()];
     }
     hp_float_t tr2( )const	{
@@ -65,6 +67,7 @@ class ADP_NODE: public CKT_BASE {
     hp_float_t&     tt()const	{
       assert(m_() >= 0);
       assert(m_() <= _sim->_adp_nodes);
+      assert (_sim->_tt);
       return _sim->_tt[m_()];
     }
     double TR2; //depr.

@@ -47,7 +47,7 @@ namespace MODEL_BUILT_IN_RCD_DISPATCHER
   static DEV_BUILT_IN_RCD_SYM_V3 p4d;
   static MODEL_BUILT_IN_RCD_SYM_V3 p4(&p4d);
   static DISPATCHER<MODEL_CARD>::INSTALL
-    d3(&model_dispatcher, "rcdsym_v3", &p4);
+    d3(&model_dispatcher, "rcdsym_v3|rcdsym", &p4);
 }
 ///*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_RCD_SYM_V3::do_expand(  COMPONENT* c) const
@@ -205,7 +205,11 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   // ADP_NODE_UDC* udc= dynamic_cast<ADP_NODE_UDC*>(a);
   ADP_NODE* a=cap;
   double E_old = cap->tt();
+
+
+
   long double uin_eff=a->tr(); // 0 == current estimate
+  cout << uin_eff << endl;
 
   trace2(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last " +
         cap->label()).c_str(), E_old, tt_iteration_number());
@@ -375,6 +379,8 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter(long double& uin, double E_old
   long double Edu=0;
   long double Q=1;
 
+  double ustart = uin;
+
   Euin = ((COMMON_BUILT_IN_RCD*)c)->__step( uin, E_old, _sim->_last_time   );
   if(!is_number(Euin)) {
     error( bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter cannot evaluate E "
@@ -400,7 +406,7 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter(long double& uin, double E_old
     Edu = __Edu(uin, E_old, c);
     if(!is_number(Edu) || !is_number(1.0/Edu)){
       error( bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter Edu wrong at %LE Euin=%LE diff "
-          "%LE looking for %E\n", uin, Euin, Edu, E  );
+          "%LE looking for %E, start %E\n", uin, Euin, Edu, E, ustart  );
       // assert(false);
       break;
     }

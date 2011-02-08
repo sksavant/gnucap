@@ -795,6 +795,11 @@ DEV_BUILT_IN_BTI::DEV_BUILT_IN_BTI(const DEV_BUILT_IN_BTI& p)
   // overrides
 }
 /*--------------------------------------------------------------------------*/
+bool DEV_BUILT_IN_BTI::do_tr() { // untested0(long_label().c_str());
+  assert(subckt());set_converged(subckt()->do_tr());return converged();
+  q_accept();
+}
+/*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_BTI::expand()
 {
   BASE_SUBCKT::expand(); // calls common->expand, attaches model
@@ -1013,10 +1018,9 @@ double DEV_BUILT_IN_BTI::tt_probe_num(const std::string& x)const
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_BTI::tr_stress_last()
 {
-  trace0("BTI sao");
+  trace0("DEV_BUILT_IN_BTI::tr_stress_last");
   assert(subckt()); 
-  CARD_LIST* s = subckt();
-  s->do_forall( &CARD::tr_stress_last );
+  subckt()->do_forall( &CARD::tr_stress_last );
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_BTI::tr_stress() {

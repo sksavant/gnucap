@@ -91,7 +91,6 @@ class TTT : public TRANSIENT {
     void	sweep_tt();
     double get_new_dT();
     void	accept_tt();
-    void	tt_advance();
     void	print_head_tr();
     void	head(double,double,const std::string&);
     void	head_tt(double,double,const std::string&);
@@ -231,7 +230,7 @@ void TTT::first()
 
   trace0("TTT::first no prepare...");
   // CARD_LIST::card_list.do_forall( &CARD::tt_prepare );
-  tt_advance();
+  advance_Time();
 
   _sim->set_command_tt();
 
@@ -308,7 +307,7 @@ void TTT::sweep_tt()
 // FIXME  if no first then recycle data
   trace6( "TTT::sweep_tt() begin ", _Time1, _sim->_Time0, _Tstart, _Tstop, _Tstep, _sim->tt_iteration_number());
   if (OPT::tracett)
-    _out << "* TTT::sweep_tt " << _sim->tt_iteration_number() << " "<<  _sim->_Time0 << "\n";
+    _out << "* TTT::sweep_tt iteration:" << _sim->tt_iteration_number() << " "<<  _sim->_Time0 << "\n";
 //  sanitycheck();
   _sim->_tt_iter = 0;
   _sim->_tt_done = 0;
@@ -320,6 +319,8 @@ void TTT::sweep_tt()
   assert(_sim->_Time0 >= 0 );
 
   if (_power_down){
+    if (OPT::tracett)
+      _out << "* TTT::sweep_tt after int power down\n";
 
     print_results_tt( _sim->_Time0 );
     _sim->zero_some_voltages();
@@ -336,14 +337,13 @@ void TTT::sweep_tt()
     return;
     
   //something.
-
-
   }else if( _Tstop == _Tstart ){
      trace0("TTT::sweep_tt just printing...");
      outdata_b4(_sim->_Time0); // first output tt data
      return;
   }else if ( !_tt_cont  ){
-    trace0("TTT::sweep_tt from the beginning...");
+    if (OPT::tracett)
+      _out << "* TTT::sweep_tt from 0\n";
     _sim->_dT0 = 0;
     _sim->_dT1 = 0;
     _sim->_dT2 = 0;
@@ -381,6 +381,7 @@ void TTT::sweep_tt()
     ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_commit );
     CARD_LIST::card_list.do_forall( &CARD::tt_commit ); // ?
     
+    trace1( "TTT::sweep adp stuff ", _sim->_Time0 );
     ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_commit );
     CARD_LIST::card_list.do_forall( &CARD::stress_apply );
 
@@ -565,6 +566,8 @@ void TTT::do_it(CS& Cmd, CARD_LIST* Scope)
     _sim->_lu.set_min_pivot(OPT::pivtol);
 
     setup(Cmd);
+    if(OPT::tracett)
+      _out << "* done setup\n";
   }catch (Exception& e) {itested();
     error(bDANGER, e.message() + '\n');
     return;
@@ -588,6 +591,9 @@ void TTT::do_it(CS& Cmd, CARD_LIST* Scope)
   } catch (Exception& e) {itested();
     error(bDANGER, e.message() + '\n');
   }
+
+  if(OPT::tracett)
+    _out << "* unallocating\n";
 
   _sim->unalloc_vectors();
   _sim->_lu.unallocate();
@@ -646,6 +652,7 @@ void TTT::setup(CS& Cmd)
   _tstep.e_val(NOT_INPUT, _scope);
   _Tstop.e_val(NOT_INPUT, _scope);
   _Tstep.e_val(NOT_INPUT, _scope);
+  
 
   // nonsense
   // TRANSIENT::setup( Cmd);
@@ -1001,7 +1008,7 @@ bool TTT::next()
   assert( _sim->_Time0 >= _sim->_dT0 );
   assert( _sim->_Time0 > 0 );
 
-  tt_advance();
+  //advance_Time();
   _sim->restore_voltages();
   if (another_step && _accepted_tt){
     CARD_LIST::card_list.do_forall( &CARD::tt_next ); // fixme: merge to tt_adv.
@@ -1327,13 +1334,22 @@ void TTT::store_results(double x)
 void TTT::advance_Time(void)
 {
   static double last_iter_time;
-  trace2("SIM::advance_Time()", _sim->_Time0, last_iter_time);
+  trace2("TTT::advance_Time()", _sim->_Time0, last_iter_time);
   ::status.tt_advance.start();
   if (_sim->_Time0 > 0) {
     if (_sim->_Time0 > last_iter_time) {	/* moving forward */
-      
-    if (OPT::tracett)
-      _out << "* advance_Time to " << _sim->_Time0 << "\n";
+      _sim->_tt_iter++;
+      _sim->_tt_rejects=0;
+      _sim->update_tt_order();
+
+      if (OPT::tracett)
+        _out << "* advance_Time to " << _sim->_Time0 << 
+          " iteration number " << _sim->tt_iteration_number() << 
+          " have "<<  _sim->_adp_nodes << " nodes " << "\n";
+
+      trace2("TTT::advance_Time ", _sim->_tr[0], _sim->_tt[0]);
+      trace2("TTT::advance_Time ", _sim->_tr1[0], _sim->_tt1[0]);
+
       notstd::copy_n(_sim->_tr2, _sim->_adp_nodes, _sim->_tr3);
       notstd::copy_n(_sim->_tr1, _sim->_adp_nodes, _sim->_tr2);
       notstd::copy_n(_sim->_tr, _sim->_adp_nodes, _sim->_tr1);
@@ -1343,6 +1359,11 @@ void TTT::advance_Time(void)
       std::fill_n(_sim->_tr, _sim->_adp_nodes, NAN);
       std::fill_n(_sim->_tt, _sim->_adp_nodes, NAN);
 
+      //ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_advance ); // HACK!
+      //CARD_LIST::card_list.tt_advance(); //necessary??
+      trace2("TTT::advance_Time ", _sim->_tr[0], _sim->_tt[0]);
+      trace2("TTT::advance_Time ", _sim->_tr1[0], _sim->_tt1[0]);
+
     }else{				/* moving backward */
       /* don't save voltages.  They're wrong! */
       /* instead, restore a clean start for iteration */
@@ -1350,42 +1371,14 @@ void TTT::advance_Time(void)
       // CARD_LIST::card_list.tr_regress();
     }
   }else{
-    // CARD_LIST::card_list.dc_advance();
-  }
-  last_iter_time = _sim->_Time0;
-  ::status.tt_advance.stop();
-}
-/*--------------------------------------------------------------------------*/
-void TTT::tt_advance()
-{
-  static double last_iter_time;
-  if (OPT::tracett) _out << "* advancing, last iter time " << last_iter_time << "\n" ;
-  trace2("SIM::advance_time()", _sim->_time0, last_iter_time);
-  ::status.tt_advance.start();
-  if (_sim->_Time0 > 0) {
-    if (_sim->_Time0 > last_iter_time) {	/* moving forward */
-//  FIXME      notstd::copy_n(_sim->_v0, _sim->_total_nodes+1, _sim->_vt1);
-      if (OPT::tracett) _out << "* advancing to " << _sim->_Time0 << "\n" ;
-      trace2("TTT::tt_advance", _sim->_Time0, _Time1);
-      _sim->_tt_iter++;
-      _sim->_tt_rejects=0;
-      ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_advance ); // HACK!
-      CARD_LIST::card_list.tt_advance(); //necessary??
-      _sim->update_tt_order();
-    }else{				/* moving backward */
-      /* don't save voltages.  They're wrong! */
-      /* instead, restore a clean start for iteration */
-//  FIXME      notstd::copy_n(_sim->_vt1, _sim->_total_nodes+1, _sim->_v0);
-      // CARD_LIST::card_list.tt_regress();
-      if (OPT::tracett) _out << "* NOT advancing from " << _sim->_Time0 << "\n" ;
-    }
-  }else{
     if (OPT::tracett) _out << "* advancing from " << _sim->_Time0 << "\n" ;
     CARD_LIST::card_list.do_forall( &CARD::tt_prepare );
   }
   last_iter_time = _sim->_Time0;
   ::status.tt_advance.stop();
+  trace0("TTT::advance_Time done\n");
 }
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
 } // namespace

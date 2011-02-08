@@ -10,4 +10,4 @@
 + vin(MP1.bti.rcd0) vc(MP1.bti.rcd0) I(MP1.CG*)
 *+ dvth(B1) 
 
-.tr 1u 1
+.tr 1u 1 basic

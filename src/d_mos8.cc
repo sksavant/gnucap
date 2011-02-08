@@ -5249,16 +5249,28 @@ double DEV_BUILT_IN_MOS8::tr_probe_num(const std::string& x)const
   }
 }
 /*--------------------------------------------------------------------------*/
-void ADP_BUILT_IN_MOS8::init(const COMPONENT* c)
+void ADP_BUILT_IN_MOS8::init(const COMPONENT* d)
 {
+  const COMMON_BUILT_IN_MOS* c = prechecked_cast<const COMMON_BUILT_IN_MOS*>(d->common());
   assert(c);
-  ADP_BUILT_IN_MOS::init(c);
-  hci_stress = new ADP_NODE(c, "hci" );
-  ADP_NODE_LIST::adp_node_list.push_back( hci_stress );
+  const MODEL_BUILT_IN_MOS8* m = prechecked_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
+  assert(m);
 
-  trace0( "initin vthdelta\n" );
-  vthdelta_hci=0;
-  vthscale_hci=1;
+  assert(c);
+  ADP_BUILT_IN_MOS::init(d);
+
+  if ( m->use_hci()){
+    hci_stress = new ADP_NODE(d, "hci" );
+    ADP_NODE_LIST::adp_node_list.push_back( hci_stress );
+
+    trace0( "initin vthdelta\n" );
+    vthdelta_hci=0;
+    vthscale_hci=1;
+
+  }else{
+    vthdelta_hci=
+    vthscale_hci=NAN;
+  }
 	//  vto=m->vto;
 	//
   // vthdelta=0; delta_vth
@@ -5302,7 +5314,8 @@ double DEV_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 double ADP_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 {
   if( Umatch("hci ", x) ){
-    return hci_stress->tt();
+    if(hci_stress)    return hci_stress->tt();
+    return NAN;
   } else if( Umatch("dvth_hci ", x) ) {
     return vthdelta_hci;
   }else{

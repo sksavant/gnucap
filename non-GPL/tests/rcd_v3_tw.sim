@@ -23,8 +23,8 @@ V1 nin 0 pulse ( iv=0 pv=amplitude delay=delay rise=1n fall=1n width=width perio
 .sweep 15 a 1 15
 .param amplitude = 1
 .param my_RC = {2**a * 2 }
-.tw 1 10 4000 4000
+.tw 1 10 4000 4000 basic
 .param amplitude=0
-.tw 16000
+.tw 16000 basic
 
 go

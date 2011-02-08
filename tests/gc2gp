@@ -2,5 +2,6 @@
 # a hack.
 # FIXME: change gnucap output.
 #
-perl -wnl -e '$|++; if( /^\*/ ) { print } else { $_=~s/u/e-6/g; $_=~s/f/e-15/g; $_=~s/n/e-9/g;  $_=~s/p/e-12/g;  $_=~s/K/e3/g; $_=~s/Meg/e6/g; $_=~s/G/e9/g; print $_; }'
+cat 
+#perl -wnl -e '$|++; if( /^\*/ ) { print } else { $_=~s/u/e-6/g; $_=~s/f/e-15/g; $_=~s/n/e-9/g;  $_=~s/p/e-12/g;  $_=~s/K/e3/g; $_=~s/Meg/e6/g; $_=~s/G/e9/g; print $_; }'
 #unless /^[\@a-zA-Z\#\.]/'
