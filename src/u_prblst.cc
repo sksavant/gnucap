@@ -427,8 +427,8 @@ PROBE* PROBELIST::add_branches(const std::string&device,
               paramn="V";
             }
               
+            trace0(( "Node match " +  node->short_label()).c_str() );
             if (wmatch(node->short_label(), device)) {
-              //              cerr << " Node match "<< node << " paramn " << paramn << std::endl;
               found_something = push_new_probe(paramn, node);
             }else{
             }
