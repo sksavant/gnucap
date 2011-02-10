@@ -113,22 +113,23 @@ TIME_PAIR ADP_NODE_LIST::tt_review()
 {
 
   incomplete();
+  trace0(("ADP_NODE_LIST::tt_review\n"));
   // put review into DEVICE?
   //
   TIME_PAIR time_by;
-  return( time_by );
   ADP_NODE* minnode=NULL;
   double event = 0;
   for (iterator ci=begin(); ci!=end(); ++ci) {
 
-    TIME_PAIR tmp; // = (*ci)->tt_review();
+    TIME_PAIR tmp  = (*ci)->tt_review();
+    trace1(("ADP_NODE_LIST::tt_review at " + (*ci)->short_label()).c_str(), tmp._event );
     if (tmp<time_by){
       minnode = *ci;
       event = tmp._event;
-    trace1(("ADP_NODE_LIST::tt_review min at" +minnode->short_label()).c_str(), event );
+      trace1(("ADP_NODE_LIST::tt_review min at" +minnode->short_label()).c_str(), tmp._event );
     }
 
-  time_by.min(tmp);
+    time_by.min(tmp);
         
   }
 

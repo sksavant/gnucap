@@ -96,6 +96,8 @@ public: // probes
   virtual double __Ge(double uin, const COMMON_COMPONENT* )const;
   virtual double __Re(double uin, const COMMON_COMPONENT* cc)const ;
   virtual double __Rc(double uin, const COMMON_COMPONENT* cc)const ;
+  virtual double __Edu(long double uin, const COMMON_COMPONENT* cc)const { unreachable(); return 0.0;}
+  virtual long double __Edu(double uin, long double cur, const COMMON_COMPONENT* cc)const {return 0;}
   virtual void do_tr_stress_last( long double tr_fill, ADP_NODE* cap, const COMMON_COMPONENT* cc ) const 
   {unreachable();}
 };
@@ -168,6 +170,7 @@ public: // functions...
   double __tau ( double ueff ) const; 
   double __tau_up ( double ueff ) const;
   long double __step(double uin, long double cur,  double deltat ) const;
+  long double __uin_iter(long double& uin, double, double)const;
 
 public: // attached commons
 };

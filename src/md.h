@@ -235,6 +235,7 @@ inline bool is_number(double x){
 inline bool is_almost(double x, double y){
   return ( fabs(x-y) / ( fmax(fabs(x),fabs(y))+1e-20) < 1e-10 );
 }
-
+inline double square(double x){return x*x;}
+inline  long double square(long double x){return x*x;}
 /*--------------------------------------------------------------------------*/
 #endif

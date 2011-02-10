@@ -9,6 +9,8 @@
 typedef int adp_region_t;
 #define E_max 1.0001
 #define E_min -0.0001
+#define U_min -0.0001
+#define U_max 1e5
 
 /*--------------------------------------------------------------------------*/
 class ADP_NODE_LIST;
@@ -109,6 +111,8 @@ class ADP_NODE: public CKT_BASE {
     double Time_delta_old()const { return CKT_BASE::_sim->_dT1 ;}
 
     inline double Time0()const { return ( CKT_BASE::_sim->_Time0 ); }
+    inline double Time1()const { return ( CKT_BASE::_sim->_Time0-dT0() ); }
+    inline double Time2()const { return ( CKT_BASE::_sim->_Time0-dT0()-dT1() ); }
     inline double dT0()const { return ( CKT_BASE::_sim->_dT0 ); }
     inline double dT1()const { return ( CKT_BASE::_sim->_dT1 ); }
     inline double dT2()const { return ( CKT_BASE::_sim->_dT2 ); }

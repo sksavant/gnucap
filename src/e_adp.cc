@@ -70,7 +70,7 @@ ADP_NODE::ADP_NODE( const COMPONENT* c ) :
 {
   init();
   assert(c);
-  set_label( c->short_label() + ".."  );
+  set_label( c->long_label() + ".."  );
 }
 /*----------------------------------------------------------------------------*/
 ADP_NODE_UDC::ADP_NODE_UDC( const COMPONENT* c ) : ADP_NODE(c, "udc") { }
@@ -136,7 +136,7 @@ hp_float_t ADP_NODE::get_aft_1() const { return tt1() + _delta[1] ; }
 double ADP_NODE::tr_duration()const{ return CKT_BASE::_sim->_last_time; }
 /*----------------------------------------------------------------------------*/
 // called right after tr
-TIME_PAIR ADP_NODE::tt_review( ) {
+TIME_PAIR ADP_NODE_RCD::tt_review( ) {
   double h = tr_duration();
   double delta_model;
   if (_corrector){
@@ -515,7 +515,6 @@ void ADP_NODE::tr_expect_3_linear(){
   }
 }
 /*---------------------------------*/
-inline double square(double x){return x*x;}
 /*---------------------------------*/
 
 void ADP_NODE::tr_expect_2_square(){
@@ -934,22 +933,20 @@ void ADP_NODE::tr_expect_( ){
   _order = CKT_BASE::_sim->get_tt_order();
 
   trace2("ADP_NODE::tr_expect_", _order, CKT_BASE::_sim->tt_iteration_number());
+  trace4("ADP_NODE::tr_expect_ ", _sim->_Time0, tr(_sim->_Time0), tr1(), tr2() );
   assert(_order <= CKT_BASE::_sim->tt_iteration_number());
+  assert ( isnan(tr()) );
 
   switch(_order){
     case 0:
       assert(false);
       break;
-    case 1:
-      tr()=tr(_sim->_Time0);
-      // tr_expect_1();
-      break;
     case 2:
-      //tr_expect_2();
+      trace3(("ADP_NODE::tr_expect_ extradebug" + long_label()).c_str(), tr2(), tr1(), tr(Time0()) );
+      assert(is_almost(tr2(), tr(Time2())));
+    case 1:
+      assert(is_almost(tr1(), tr(Time1())));
       tr()=tr(_sim->_Time0);
-      if ( tr1()<0 && tr2()<0 ){
-        trace3( "ADP_NODE::tr_expect_ order 2", tr2(), tr1(), _delta_expect );
-      }
 
       break;
     case 3:
@@ -1239,23 +1236,25 @@ TIME_PAIR ADP_NODE_UDC::tt_review( ) {
   return ADP_NODE::tt_review();
 }
 /*----------------------------------------------------------------------*/
-TIME_PAIR ADP_NODE_RCD::tt_review( ) {
-  double h = tr_duration();
-  double delta_model;
-  if (_corrector){
-    assert(order()>0);
-    trace1(("ADP_NODE::tt_review: correction " + label()).c_str(), _delta_expect);
-    delta_model = (this->*_corrector)(); // value predicted by model.
-  } else {
-    delta_model = _delta_expect;
-    trace1(("ADP_NODE::tt_review: no corrector " + label()).c_str(), delta_model );
-  }
-  assert( is_number (delta_model ) );
-
-  trace1("ADP_NODE::tt_review", CKT_BASE::_sim->tt_iteration_number());
-  assert(delta_model == delta_model);
+TIME_PAIR ADP_NODE::tt_review( ) {
   hp_float_t myreltol = OPT::adpreltol;
   hp_float_t myabstol = OPT::adpabstol;
+  double h = tr_duration();
+  double delta_model;
+  //fixme: where corrector?
+  //if (_corrector){
+  //  assert(order()>0);
+  //  trace1(("ADP_NODE::tt_review: correction " + label()).c_str(), _delta_expect);
+  //  delta_model = (this->*_corrector)(); // value predicted by model.
+  //} else {
+  delta_model = 0;
+  //  trace1(("ADP_NODE::tt_review: no corrector " + label()).c_str(), delta_model );
+  //}
+
+  trace3("ADP_NODE::tt_review", CKT_BASE::_sim->tt_iteration_number(), myabstol, myreltol);
+  assert(delta_model == delta_model);
+  if( myreltol == 0 ) {_wdT=0; return TIME_PAIR(0,0); }
+  if( myabstol == 0 ) {_wdT=0; return TIME_PAIR(0,0); }
 
   if ( ( tr_value * delta_model ) < 0 ) {
     trace2(("ADP_NODE::tt_review: oops, sign has changed "+ label()).c_str(), tr_value,delta_model);
@@ -1297,7 +1296,6 @@ TIME_PAIR ADP_NODE_RCD::tt_review( ) {
   }
   if( myreltol == inf && myabstol == inf ) { _wdT = inf; return TIME_PAIR();}
   if( myreltol == 0 && myabstol == 0 ) {_wdT=0; return TIME_PAIR(0,0);}
-  if( myreltol == 0 ) {_wdT=0; return TIME_PAIR(0,0); }
 
 // FIXME: _order.
 // 

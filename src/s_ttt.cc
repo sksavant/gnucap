@@ -511,7 +511,10 @@ bool TTT::review_tt()
 {
   bool tmp=true;
   trace2 ( "TTT::review_tt " , _sim->_Time0, _sim->_dT0 );
+  if (OPT::tracett)
+    _out << "review_tt " << _sim->_Time0 << "\n";
   sanitycheck();
+
   assert(_sim->_Time0 >= _sim->_dT0);
   assert(_sim->_Time0 - _sim->_dT0 >=0 );
 
@@ -541,6 +544,8 @@ bool TTT::review_tt()
 //    _out << "* tt reject (adp) timestep " << _sim->_dT0 << " want dT " << _dT_by_adp << " \n";
     trace3( "TTT::review_tt: reject adptime", _sim->_Time0, _dT_by_adp , _sim->_dT0 );
   }
+  if(OPT::tracett)
+    _out << "review_tt done "<< tmp <<" "<< _time_by_adp << " " << _dT_by_adp <<"\n";
   return tmp;
 }
 /*--------------------------------------------------------------------------*/
@@ -907,7 +912,7 @@ bool TTT::next()
 {
   double new_dT;
   double new_Time0;
-  double step_grow_fact = 3;
+  double step_grow_fact = 1.5;
 
   trace3( "TTT::next()", _sim->_Time0 ,  _Time1, _sim->tt_iteration_number() );
 
