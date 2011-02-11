@@ -1041,12 +1041,17 @@ void TTT::head_tt(double start, double stop, const std::string& col1)
     char format[20];
     //sprintf(format, "%%c%%-%u.%us", width, width);
     sprintf(format, "%%c%%-%us", width);
-
+    cout.flush(); // Absoluter ober Hack (Lars)  wenn man das nicht macht
+                  // kommt die Ausgabe ei umleitung in ein File in der Kopfzeile
+    // bei z.B. udc(MP1.BTI.R_2_9) durcheinander 
+    // cerr << "S_TTT::head_tt: output label" << format << "w" << width << std::endl;
     _out.form(format, '*', col1.c_str());
 
     for (PROBELIST::const_iterator
         p=printlist().begin();  p!=printlist().end();  ++p) {
       _out.form(format, ' ', (*p)->label().c_str());
+      //  _out.flush();
+      // cerr << "S_TTT::head_tt: output label"  << (*p)->label().c_str() << std::endl; 
     }
     _out << '\n';
   }else{
