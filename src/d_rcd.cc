@@ -1521,13 +1521,15 @@ void DEV_BUILT_IN_RCD::tt_begin()  {
  _Ccgfill->set_tr(0.223);
 }
 /*--------------------------------------------------------------------------*/
-long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, double E ) const
+long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, double E_in ) const
 {
+  long double E=(long double) E_in;
   const COMMON_BUILT_IN_RCD* c = this;
   const COMMON_BUILT_IN_RCD* cc = this;
   const MODEL_BUILT_IN_RCD* m = dynamic_cast<const MODEL_BUILT_IN_RCD*>(c->model());
   trace5("COMMON_BUILT_IN_RCD::__uin_iter", uin, E_old, E, E-E_old,  CKT_BASE::_sim->_last_time );
-  assert (E<1.00001);
+  assert (E<1.000001);
+  
   if (E>1) {
     trace0("COMMON_BUILT_IN_RCD::__uin_iter aligned E");
     E=1;
@@ -1537,13 +1539,18 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
   if (uin==0) uin=0.221;
 
   long double Euin =0;
-  E = max(E,0.0);
+  long double Euin_alt =0;
+  if (E < 0.0) { E=0.0;}
+  //  E = max(E,0.0);
   //if(E<1e-12) return 0;
 
   assert(( -1 < E ) && (E < 2) ) ;
 
-  long double res=1;
+  long double res=1;   // dx
+  long double fres =1; // df 
+  long double df_fres =1; // df 
   long double cres; // cut res
+  long double dx_res=1;
   int i=0;
   int hhack=0;
   long double Edu=0;
@@ -1556,15 +1563,18 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter pl cannot evaluate E "
         "at uin=%LE (E_old=%E) %i\n", uin, E_old, CKT_BASE::_sim->tt_iteration_number());
   }
-
+  trace2("COMMON_BUILT_IN_RCD::__uin_iter rel_tol", OPT::reltol, OPT::abstol);
   bool A=true;
   bool B=true;
-  while( ( A || B ) ) { // && fabs(Euin-E)>1e-40 ) 
+  bool C=true;
+  bool D=true;
+  while( ( A || ( B && C && D ) ) ) { // && fabs(Euin-E)>1e-40 ) 
     i++;
-    trace6("COMMON_BUILT_IN_RCD::__uin_iter loop", (double)uin, (double)res, Edu, E, i, E_old);
-    if( i> 2000){
+    trace7("COMMON_BUILT_IN _RCD::__uin_iter loop", (double)uin, (double)res, (double)fres, Edu, E, i,Euin);
+    trace3(" ",dx_res,Q,df_fres);
+    if( i> 200){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge uin="
-          "%LE, E=%E, lres=%Lf, Q=%Lf s=%i%i\n", uin, E, log(fabs(res)), Q,A,B);
+          "%LE, E=%E, lres=%Lg, Q=%Lg s=%i%i\n", uin, E, log(fabs(res)), Q,A,B);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter LQ=%Lf>%Lf. h%i\n", 
           log(Q), log(OPT::reltol), hhack);
       assert(false); // <- dashier kann man auskommentieren macht aer nur aerger (langfristig)
@@ -1582,9 +1592,20 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
           "%LE looking for %E, start %E res %LE\n", CKT_BASE::_sim->tt_iteration_number(),i,
           uin, Euin, 1-Euin, Edu, E, ustart, res  );
       // assert(false);
-      res /= 2.0;
-      uin += res;
-      hhack++;
+      if (i==1) // first iteration no reliale res
+      {
+        trace2("Guessing the nan reason",Euin,uin);
+        if ( Euin >= 0.5 )
+        {
+          uin=uin/2; // Guess: uin probably much too large  
+        } else {
+          uin=uin*2; // 
+        }
+      } else {  // next iterations, try half step size 
+        res /= 2.0;
+        uin += res;
+        hhack++;
+      }
       continue;
     }
     if((Edu==0) ){
@@ -1596,32 +1617,53 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     }
     assert (is_number (Euin));
     assert (is_number (Edu));
-    res  = (Euin-E)/Edu;
+    fres =(Euin-E);           // df, Das ist die  Differenz am  Ende, (f(x) -fsoll) 
+                              // die auf 10-12 genau sein sollte 
+    res  = fres/Edu;       // dx, Das ist die Differenz in x also: delta x 
+//     if ( i > 150) 
+//       res=res/10;
+    // numerische ok? wieso auf abstol=10-12 genau?
+    // Edu ist in diesem Fall 10^-10 und damit ist res viel zu gross. 
     Q= fabs( res / uin );
 
     assert(is_number(res));
     cres= fmin(1.0,res);
     cres= fmax(-1.0,res);
 
+    dx_res=uin;
+    //fprintf(stderr," uin alt %.50Lg E %.50Lg  \n ",uin,E);
     uin -= cres;
+    dx_res-=uin; // Effektives dx da es durch Numerik kaputt gehen kann
+    //fprintf(stderr," uin neu %.50Lg Euin %.50Lg  \n ",uin,Euin);
+
     assert(is_number(uin));
     if( (uin<-0.0001) && m->positive ) {
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter neg uin %LE ", uin );
       uin=.01;
     }
     Euin = cc->__step( uin, E_old, BASE_SUBCKT::_sim->_last_time   );
+    df_fres=Euin-Euin_alt; // Effektive Veraenderung im f Bereich. 
+    Euin_alt=Euin;
+
     if(!is_number(Euin)) {
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter cannot evaluate E "
           "at uin=%LE (E_old=%E) %i:%i\n", uin, E_old, CKT_BASE::_sim->tt_iteration_number(), i);
       assert(is_number(Euin)); break;
     }
-    B = Q > pow(OPT::reltol,1.0);
-    A = ( fabs(res) > OPT::abstol / 2.0  );
+    A = Q > pow(OPT::reltol,1.0);
+    B = ( fabs(dx_res) > OPT::abstol / 2.0 );   // dx failed
+    C = ( fabs(fres) > OPT::abstol / 2.0 ); // df zu Zielwert failed
+    D = ( fabs(df_fres) > OPT::abstol / 2.0 ); // df zu Altwert  failed
+    trace5(" Ende Loop ",A,B,C,D,i);
+    
   }
 
-  trace6("COMMON_BUILT_IN_RCD::__uin_iter done", (double)uin, (double)res, Edu, E, i, E_old);
-  trace4("COMMON_BUILT_IN_RCD::__uin_iter done", E-Euin, A, B, ustart );
-
+  trace6("COMMON_BUILT_IN_RCD::__uin_iter done", (double)uin, (double)res, (double)fres, Edu, E, E_old);
+  trace5("COMMON_BUILT_IN_RCD::__uin_iter done", E-Euin, A, B, ustart,i );
+  if ( A ) {
+    fprintf(stderr,"COMMON_BUILT_IN_RCD::__uin_iter dx > abstol %g , df = %g, Euin = %g  , i %d  \n ",
+            (double)res, (double)fres, (double)uin, i);
+  }
   assert(uin>=-0.001);
   return uin;
 }

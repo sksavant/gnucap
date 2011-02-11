@@ -32,6 +32,7 @@
 #undef trace4
 #undef trace5
 #undef trace6
+#undef trace7
 #undef untested
 #undef untested0
 #undef unreachable
@@ -54,8 +55,12 @@
 	#y, (double)(y), #z, (double)(z)))
 #define trace6(s,u,v,w,x,y,z)\
 	(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g\n",\
-	s, #u, (double)(u),#v, (double)(v), #w, (double)(w), #x, (double)(x),\
+    s, #u, (double)(u),#v, (double)(v), #w, (double)(w), #x, (double)(x),\
 	#y, (double)(y), #z, (double)(z)))
+#define trace7(s,t,u,v,w,x,y,z)                                         \
+	(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g %s=%g\n",\
+    s, #t, (double)(t), #u, (double)(u),#v, (double)(v), #w, (double)(w),\
+    #x, (double)(x), #y, (double)(y), #z, (double)(z)))
 #else
 #define trace_line()
 #define trace0(s)
@@ -65,6 +70,7 @@
 #define trace4(s,w,x,y,z)
 #define trace5(s,v,w,x,y,z)
 #define trace6(s,u,v,w,x,y,z)
+#define trace7(s,t,u,v,w,x,y,z)
 #endif
 
 #define unreachable() (fprintf(stderr, "@@#\n@@@unreachable:%s:%u:%s\n", \
