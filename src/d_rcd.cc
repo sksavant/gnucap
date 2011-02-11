@@ -1610,7 +1610,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
       }
       continue;
     }
-    if((Edu==0) ){
+    if((Edu==0 || fabs(Edu) < 1E-150 ) ){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter step %i:%i Edu 0 at %LE Euin=%LE C=%LE diff "
           "%LE looking for %LE, start %E res %LE\n", CKT_BASE::_sim->tt_iteration_number(),i,
           uin, Euin, 1-Euin, Edu, E, ustart, res  );
@@ -1623,13 +1623,21 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     fres =(Euin-E);           // df, Das ist die  Differenz am  Ende, (f(x) -fsoll) 
                               // die auf 10-12 genau sein sollte 
     res  = fres/Edu;       // dx, Das ist die Differenz in x also: delta x 
+
+    if(!is_number(res) && fabs(Edu) < 1E-150 ) {
+      putres=true;     // falls Edu sehr klein aber nicht 0 ist kann es 
+                       // auch zu Fehlern  kommen 
+      Edu=Edu*1E100;
+      res  = fres/Edu; 
+    }
+
+    assert(is_number(res));
 //     if ( i > 150) 
 //       res=res/10;
     // numerische ok? wieso auf abstol=10-12 genau?
     // Edu ist in diesem Fall 10^-10 und damit ist res viel zu gross. 
     Q= fabs( res / uin );
 
-    assert(is_number(res));
     cres= fmin(1.0,res);
     cres= fmax(-1.0,res);
 
@@ -1640,6 +1648,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     //fprintf(stderr," uin neu %.50Lg Euin %.50Lg  \n ",uin,Euin);
 
     assert(is_number(uin));
+
     if( (uin<-0.0001) && m->positive ) {
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter neg uin %LE ", uin );
       putres=true;
