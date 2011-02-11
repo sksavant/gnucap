@@ -1555,6 +1555,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
   int hhack=0;
   long double Edu=0;
   long double Q=1;
+  bool putres=false;
 
   double ustart = uin;
 
@@ -1590,7 +1591,8 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     if(!is_number(Edu) ){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter step %i:%i Edu nan at %LE Euin=%LE C=%LE diff "
           "%LE looking for %E, start %E res %LE\n", CKT_BASE::_sim->tt_iteration_number(),i,
-          uin, Euin, 1-Euin, Edu, E, ustart, res  );
+             uin, Euin, 1-Euin, Edu, E, ustart, res  );
+      putres=true;
       // assert(false);
       if (i==1) // first iteration no reliale res
       {
@@ -1610,9 +1612,10 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     }
     if((Edu==0) ){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter step %i:%i Edu 0 at %LE Euin=%LE C=%LE diff "
-          "%LE looking for %E, start %E res %LE\n", CKT_BASE::_sim->tt_iteration_number(),i,
+          "%LE looking for %LE, start %E res %LE\n", CKT_BASE::_sim->tt_iteration_number(),i,
           uin, Euin, 1-Euin, Edu, E, ustart, res  );
-      // assert(false);
+      putres=true;
+// assert(false);
       Edu=1;
     }
     assert (is_number (Euin));
@@ -1639,6 +1642,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     assert(is_number(uin));
     if( (uin<-0.0001) && m->positive ) {
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter neg uin %LE ", uin );
+      putres=true;
       uin=.01;
     }
     Euin = cc->__step( uin, E_old, BASE_SUBCKT::_sim->_last_time   );
@@ -1654,16 +1658,27 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     B = ( fabs(dx_res) > OPT::abstol / 2.0 );   // dx failed
     C = ( fabs(fres) > OPT::abstol / 2.0 ); // df zu Zielwert failed
     D = ( fabs(df_fres) > OPT::abstol / 2.0 ); // df zu Altwert  failed
+// hab ein paar numerische Hacks eingebaut, die es jetzt durchlaufen lassen...
+// 1. der reine dx Fehelr wird irgendwann , besonders wenn Edu klein wird nicht mehr kleiner. => 
+//    df Fehler als zusaetliches Kriterium (C) 
+// 2. Irgendwann wird auch der df Fehler nicht mehr kleiner, da die Ableitung (wahrscheinlich numerisch falsch)
+//    so ausgerechnet wird, dass man nur noch um kleine dx voranschreitet und sich effektiv am Funktionswert
+//    gar nichts mehr tut (Kriterium D) 
+// Bei einer anderen Implementierung kann man da auch so Kombis mit
+// der Haelfte von abstol machen, das hab ich mir mal verkniffen, koennte bei weiterem Fehlschlagen 
+// noch eingebaut werden.
+// 3. Uebler Hack, der nur bei monoton steigenden Funktionen geht: Wenn er bei der ersten Iteration
+//     mit uin= 3681 anfaengt kann er gar kein Edu ausrechnen dann halbier ich nicht res  sondern uin.
+
     trace5(" Ende Loop ",A,B,C,D,i);
     
   }
-
-  trace6("COMMON_BUILT_IN_RCD::__uin_iter done", (double)uin, (double)res, (double)fres, Edu, E, E_old);
-  trace5("COMMON_BUILT_IN_RCD::__uin_iter done", E-Euin, A, B, ustart,i );
-  if ( A ) {
-    fprintf(stderr,"COMMON_BUILT_IN_RCD::__uin_iter dx > abstol %g , df = %g, Euin = %g  , i %d  \n ",
-            (double)res, (double)fres, (double)uin, i);
+  trace7("COMMON_BUILT_IN_RCD::__uin_iter done", (double)uin, (double)res, (double)fres, df_fres, (double)Edu, (double)E, E_old);
+  if (putres) {
+    fprintf(stderr,"COMMON_BUILT_IN_RCD::__uin_iter done uin %g res %g fres %g df_res %g Edu %g E %Lg Euin %Lg \n",
+            (double)uin, (double)res, (double)fres, (double)df_fres, (double)Edu, E, Euin);
   }
+  trace5("COMMON_BUILT_IN_RCD::__uin_iter done", (double)(E-Euin), A, B, ustart,i );
   assert(uin>=-0.001);
   return uin;
 }
