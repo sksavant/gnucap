@@ -100,7 +100,7 @@ void MODEL_BUILT_IN_BTI_INF::precalc_first()
   trace1("MODEL_BUILT_IN_BTI::precalc_first", matrix_number);
 
 
-  std::cout << "* " <<  matrix_number << "\n";
+  // std::cout << "* " <<  matrix_number << "\n";
   switch(matrix_number){
     case 0:
       rcd_number = COUNT_ALL;

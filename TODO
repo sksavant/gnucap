@@ -8,3 +8,4 @@
 - tw powerdown.
 - probe v(SUBCCKT.nodes)
 - aging hold vectors (initial cond?)
+- V(U1.1)

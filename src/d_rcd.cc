@@ -1611,9 +1611,10 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
       continue;
     }
     if((Edu==0 || fabs(Edu) < 1E-150 ) ){
-      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter step %i:%i Edu 0 at %LE Euin=%LE C=%LE diff "
-          "%LE looking for %LE, start %E res %LE\n", CKT_BASE::_sim->tt_iteration_number(),i,
-          uin, Euin, 1-Euin, Edu, E, ustart, res  );
+     // error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter step %i:%i Edu 0 at %LE Euin=%LE C=%LE diff "
+     //     "%LE looking for %LE, start %E res %LE\n", CKT_BASE::_sim->tt_iteration_number(),i,
+     //     uin, Euin, 1-Euin, Edu, E, ustart, res  );
+      trace0("COMMON_BUILT_IN_RCD::__uin_iter Edu 0");
       putres=true;
 // assert(false);
       Edu=1;
@@ -1625,6 +1626,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     res  = fres/Edu;       // dx, Das ist die Differenz in x also: delta x 
 
     if(!is_number(res) && fabs(Edu) < 1E-150 ) {
+      trace2("COMMON_BUILT_IN_RCD::__uin_iter",res, Edu);
       putres=true;     // falls Edu sehr klein aber nicht 0 ist kann es 
                        // auch zu Fehlern  kommen 
       Edu=Edu*1E100;
@@ -1650,7 +1652,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     assert(is_number(uin));
 
     if( (uin<-0.0001) && m->positive ) {
-      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter neg uin %LE ", uin );
+      trace1( "COMMON_BUILT_IN_RCD::__uin_iter neg uin ", uin );
       putres=true;
       uin=.01;
     }
@@ -1676,18 +1678,15 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
 // Bei einer anderen Implementierung kann man da auch so Kombis mit
 // der Haelfte von abstol machen, das hab ich mir mal verkniffen, koennte bei weiterem Fehlschlagen 
 // noch eingebaut werden.
-// 3. Uebler Hack, der nur bei monoton steigenden Funktionen geht: Wenn er bei der ersten Iteration
+// 3. kein Hack, der nur bei monoton steigenden Funktionen geht: Wenn er bei der ersten Iteration
 //     mit uin= 3681 anfaengt kann er gar kein Edu ausrechnen dann halbier ich nicht res  sondern uin.
 
     trace5(" Ende Loop ",A,B,C,D,i);
     
   }
-  trace7("COMMON_BUILT_IN_RCD::__uin_iter done", (double)uin, (double)res, (double)fres, df_fres, (double)Edu, (double)E, E_old);
-  if (putres) {
-    fprintf(stderr,"COMMON_BUILT_IN_RCD::__uin_iter done uin %g res %g fres %g df_res %g Edu %g E %Lg Euin %Lg \n",
-            (double)uin, (double)res, (double)fres, (double)df_fres, (double)Edu, E, Euin);
-  }
-  trace5("COMMON_BUILT_IN_RCD::__uin_iter done", (double)(E-Euin), A, B, ustart,i );
+  trace7("COMMON_BUILT_IN_RCD::__uin_iter done", (double)uin, (double)res,
+      (double)fres, df_fres, (double)Edu, (double)E, E_old);
+  trace6("COMMON_BUILT_IN_RCD::__uin_iter done", (double)(E-Euin), A, B, ustart,i, putres );
   assert(uin>=-0.001);
   return uin;
 }

@@ -195,7 +195,8 @@ void TTT::first()
   trace0("TTT::first()");
   _sim->force_tt_order(0);
   _sim->zero_voltages();
-  ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_clear ); 
+
+ // ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_clear ); 
 
   _Time1 = 0;
   _sim->_dT0 = 0;
@@ -236,7 +237,8 @@ void TTT::first()
 
   trace1("TTT::first", _sim->_Time0);
 
-  outdata_b4(_sim->_Time0); // first output tt data
+  // if (OPT::printguess) 
+  outdata_b4(_sim->_Time0);
   ::status.tran.reset().start();
 
   CARD_LIST::card_list.tr_begin();
@@ -424,14 +426,15 @@ void TTT::sweep_tt()
     // 
     // if OPT::printbefore
     //
-    print_stored_results_tt(_sim->_Time0);
+    //
+    if (OPT::printguess) print_stored_results_tt(_sim->_Time0);
     outdata_tt(_sim->_Time0); // first output tt data
 
   }
 
   _sim->_Time0=_sim->_Time0+_tstop;
   //advance_Time();
-  ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_last );
+  // ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_last );
   //CARD_LIST::card_list.do_forall( &CARD::tt_stress_last );
 }
 /*--------------------------------------------------------------------------*/

@@ -38,10 +38,6 @@
 #undef unreachable
 #undef incomplete
 /*--------------------------------------------------------------------------*/
-
-
-
-
 #ifdef DO_TRACE
 #define trace_line() (fprintf(stderr, "@@#\n@#@:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))
@@ -61,15 +57,10 @@
 	(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g\n",\
     s, #u, (double)(u),#v, (double)(v), #w, (double)(w), #x, (double)(x),\
 	#y, (double)(y), #z, (double)(z)))
-#define trace7(s,t,u,v,w,x,y,z)                                         \
+#define trace7(s,t,u,v,w,x,y,z)\
 	(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g %s=%g\n",\
     s, #t, (double)(t), #u, (double)(u),#v, (double)(v), #w, (double)(w),\
     #x, (double)(x), #y, (double)(y), #z, (double)(z)))
-#define unreachable() (fprintf(stderr, "@@#\n@@@unreachable:%s:%u:%s\n", \
-			   __FILE__, __LINE__, __func__))
-
-#define incomplete() (fprintf(stderr, "@@#\n@@@incomplete:%s:%u:%s\n", \
-			   __FILE__, __LINE__, __func__))
 #else
 #define trace_line()
 #define trace0(s)
@@ -80,11 +71,13 @@
 #define trace5(s,v,w,x,y,z)
 #define trace6(s,u,v,w,x,y,z)
 #define trace7(s,t,u,v,w,x,y,z)
-#define unreachable() 
-#define incomplete() 
 #endif
 
+#define unreachable() (fprintf(stderr, "@@#\n@@@unreachable:%s:%u:%s\n", \
+			   __FILE__, __LINE__, __func__))
 
+#define incomplete() (fprintf(stderr, "@@#\n@@@incomplete:%s:%u:%s\n", \
+			   __FILE__, __LINE__, __func__))
 
 #ifdef TRACE_UNTESTED
 #define untested() (fprintf(stderr, "@@#\n@@@:%s:%u:%s\n", \
