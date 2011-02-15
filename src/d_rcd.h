@@ -169,7 +169,7 @@ public: // functions...
   double __Rc(double ueff)const;
   double __tau ( double ueff ) const; 
   double __tau_up ( double ueff ) const;
-  long double __step(double uin, long double cur,  double deltat ) const;
+  long double __step(long double uin, long double cur,  double deltat ) const;
   long double __uin_iter(long double& uin, double, double)const;
 
 public: // attached commons

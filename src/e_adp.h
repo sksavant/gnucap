@@ -234,6 +234,7 @@ class ADP_NODE: public CKT_BASE {
     ADP_CARD* a;
   public:
     virtual double debug();
+    void set_order(uint_t x) {_order=x ;}
 };
 /*--------------------------------------------------------------------------*/
 class BTI_ADP : public ADP_NODE {

@@ -915,7 +915,7 @@ bool TTT::next()
 {
   double new_dT;
   double new_Time0;
-  double step_grow_fact = 1.5;
+  double step_grow_fact = 1.2;
 
   trace3( "TTT::next()", _sim->_Time0 ,  _Time1, _sim->tt_iteration_number() );
 

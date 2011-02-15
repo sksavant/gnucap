@@ -86,10 +86,13 @@
 			   __FILE__, __LINE__, __func__, s))
 #define untested1(s,x) (fprintf(stderr, "@@#\n@@@:%s:%u:%s: %s  %s=%g\n", \
 			   __FILE__, __LINE__, __func__, s, #x, (double)(x)))
+#define untested2(s,x,y) (fprintf(stderr, "@@#\n@@@:%s:%u:%s: %s  %s=%g\n", \
+			   __FILE__, __LINE__, __func__, s, #x, #y, (double)(x),(double)(y) ))
 #else
 #define untested()
 #define untested0(s)
 #define untested1(s,x)
+#define untested2(s,x,y)
 #endif
 
 #ifdef TRACE_ITESTED

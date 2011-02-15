@@ -1170,7 +1170,7 @@ bool DEV_BUILT_IN_RCD::tr_needs_eval()const  // not defined...
 }
 
 ///*--------------------------------------------------------------------------*/
-long double COMMON_BUILT_IN_RCD::__step(double uin, long double cur,  double deltat ) const 
+long double COMMON_BUILT_IN_RCD::__step(long double uin, long double cur,  double deltat ) const 
 {
   const COMMON_BUILT_IN_RCD* cc = this;
   assert(cc);
@@ -1182,10 +1182,11 @@ long double COMMON_BUILT_IN_RCD::__step(double uin, long double cur,  double del
   long double Rc1=cc->_Rc1;
   long double t=deltat;
 
-  long double uend=1.0/(1.0 + exp(-Rc1*uin) * Re0/uin/Rc0 );
-  long double ret= ( (cur-uend)) 
-     //* exp( -(Rc0*uin*exp(Rc1*uin)/Re0 +          1   )*t*exp(-Rc1*uin)/Rc0 )
-       * exp( -(Rc0*uin             /Re0 + exp(-Rc1*uin))*t              /Rc0 )
+  long double uend = (long double) 1.0/((long double)1.0 + expl(-Rc1*uin) * Re0/uin/Rc0 );
+
+  long double ret =  (cur-uend) 
+      // * expl( -(Rc0*uin             /Re0 + expl(-Rc1*uin))*t              /Rc0 )
+       * expl( -(uin /Re0 + expl(-Rc1*uin)/Rc0)*t    )
        +uend;
 
   if (!is_number(ret)){
@@ -1569,10 +1570,6 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
         "at uin=%LE (E_old=%E) %i\n", uin, E_old, CKT_BASE::_sim->tt_iteration_number());
     assert(false);
   }
-
-
-  
-
 
   trace2("COMMON_BUILT_IN_RCD::__uin_iter rel_tol", OPT::reltol, OPT::abstol);
   while( ( A || ( B && C && D ) ) ) { // && fabs(Euin-E)>1e-40 ) 
