@@ -1558,17 +1558,23 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
   bool putres=false;
 
   double ustart = uin;
+  bool A=true;
+  bool B=true;
+  bool C=true;
+  bool D=true;
 
   Euin = ((COMMON_BUILT_IN_RCD*)c)->__step( uin, E_old, CKT_BASE::_sim->_last_time   );
   if(!is_number(Euin)) {
     error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter pl cannot evaluate E "
         "at uin=%LE (E_old=%E) %i\n", uin, E_old, CKT_BASE::_sim->tt_iteration_number());
+    assert(false);
   }
+
+
+  
+
+
   trace2("COMMON_BUILT_IN_RCD::__uin_iter rel_tol", OPT::reltol, OPT::abstol);
-  bool A=true;
-  bool B=true;
-  bool C=true;
-  bool D=true;
   while( ( A || ( B && C && D ) ) ) { // && fabs(Euin-E)>1e-40 ) 
     i++;
     trace7("COMMON_BUILT_IN _RCD::__uin_iter loop", (double)uin, (double)res, (double)fres, Edu, E, i,Euin);

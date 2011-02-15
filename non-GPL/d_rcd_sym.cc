@@ -167,7 +167,6 @@ void DEV_BUILT_IN_RCD_SYM::expand() {
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_RCD_SYM::do_tr_stress( const COMPONENT* brh) const {
-
   const DEV_BUILT_IN_RCD* c = (const DEV_BUILT_IN_RCD*) brh;
   const COMMON_BUILT_IN_RCD* cc = static_cast<const COMMON_BUILT_IN_RCD*>(c->common());
   //double  fill = _n[n_ic].v0();
