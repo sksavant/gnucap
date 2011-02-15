@@ -1182,16 +1182,26 @@ long double COMMON_BUILT_IN_RCD::__step(long double uin, long double cur,  doubl
   long double Rc1=cc->_Rc1;
   long double t=deltat;
 
-  long double uend = (long double) 1.0/((long double)1.0 + expl(-Rc1*uin) * Re0/uin/Rc0 );
+  long double Eend = (long double) 1.0/((long double)1.0 + expl(-Rc1*uin) * Re0/uin/Rc0 );
 
-  long double ret =  (cur-uend) 
+  long double ret =  (cur-Eend) 
       // * expl( -(Rc0*uin             /Re0 + expl(-Rc1*uin))*t              /Rc0 )
        * expl( -(uin /Re0 + expl(-Rc1*uin)/Rc0)*t    )
-       +uend;
+       +Eend;
 
-  if (!is_number(ret)){
-    trace6("COMMON_BUILT_IN_RCD::__step ", uend, deltat, uin, Rc0, Rc1, Re0 );
-    trace6("COMMON_BUILT_IN_RCD::__step ", cur-uend, deltat, uin, Rc0, Rc1, Re0 );
+  long double sgn=1;
+  if( (cur-Eend) < 1) sgn=-1;
+
+  long double factor =  expl( -(uin /Re0 + expl(-Rc1*uin)/Rc0)*t    );
+  long double retalt =  cur *factor    +Eend * (1-factor);
+
+  trace7("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, uin, Rc0, ret, retalt, logl(fabsl(cur-Eend ) ) );
+  //assert(is_almost(retalt ,ret));
+
+  if (!is_number(ret) || ret < -0.1){
+    trace7("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, uin, Rc0, Rc1, Re0, logl(fabsl(cur-Eend ) ) );
+    trace7("COMMON_BUILT_IN_RCD::__step ", cur-Eend, deltat, uin, Rc0, Rc1, Re0, fabsl(cur-Eend )  );
+    trace7("COMMON_BUILT_IN_RCD::__step ", cur, deltat, uin, Rc0, Rc1, Re0, sgn  );
     assert(false);
   }
   return(ret);
@@ -1532,7 +1542,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
   assert (E<1.000001);
   
   if (E>1) {
-    trace0("COMMON_BUILT_IN_RCD::__uin_iter aligned E");
+    untested0("COMMON_BUILT_IN_RCD::__uin_iter aligned E");
     E=1;
   }
 
@@ -1643,7 +1653,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     // Edu ist in diesem Fall 10^-10 und damit ist res viel zu gross. 
     Q= fabs( res / uin );
 
-    cres= fmin(1.0,res);
+    cres= fmin( 1.0,res);
     cres= fmax(-1.0,res);
 
     dx_res=uin;
@@ -1660,18 +1670,19 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
       uin=.01;
     }
     Euin = cc->__step( uin, E_old, BASE_SUBCKT::_sim->_last_time   );
-    df_fres=Euin-Euin_alt; // Effektive Veraenderung im f Bereich. 
-    Euin_alt=Euin;
+    df_fres = Euin-Euin_alt; // Effektive Veraenderung im f Bereich. 
+    Euin_alt = Euin;
 
     if(!is_number(Euin)) {
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter cannot evaluate E "
           "at uin=%LE (E_old=%E) %i:%i\n", uin, E_old, CKT_BASE::_sim->tt_iteration_number(), i);
       assert(is_number(Euin)); break;
     }
-    A = Q > pow(OPT::reltol,1.0);
-    B = ( fabs(dx_res) > OPT::abstol / 2.0 );   // dx failed
-    C = ( fabs(fres) > OPT::abstol / 2.0 ); // df zu Zielwert failed
-    D = ( fabs(df_fres) > OPT::abstol / 2.0 ); // df zu Altwert  failed
+    A = Q > pow(OPT::reltol,2);
+    B = ( fabs(dx_res) > 1e-30 );   // dx failed
+    C = ( fabs(fres) > OPT::abstol / 10. ); // df zu Zielwert failed
+    D = ( fabs(df_fres) > 1e-125); // df zu Altwert  failed <= hack.
+
 // hab ein paar numerische Hacks eingebaut, die es jetzt durchlaufen lassen...
 // 1. der reine dx Fehelr wird irgendwann , besonders wenn Edu klein wird nicht mehr kleiner. => 
 //    df Fehler als zusaetliches Kriterium (C) 
@@ -1687,9 +1698,28 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     trace5(" Ende Loop ",A,B,C,D,i);
     
   }
-  trace7("COMMON_BUILT_IN_RCD::__uin_iter done", (double)uin, (double)res,
-      (double)fres, df_fres, (double)Edu, (double)E, E_old);
-  trace6("COMMON_BUILT_IN_RCD::__uin_iter done", (double)(E-Euin), A, B, ustart,i, putres );
+  trace7("COMMON_BUILT_IN_RCD::__uin_iter done", uin, res,
+      fres, df_fres, Edu, E, E_old);
+  trace4("COMMON_BUILT_IN_RCD::__uin_iter done", (E-Euin), ustart,i, putres );
+
+#ifndef DNDEBUG
+  //sanitycheck
+  long double u_oben  = max ( uin + OPT::abstol, uin * (1+OPT::reltol) );
+  long double u_unten = min ( uin - OPT::abstol, uin * (1-OPT::reltol) );
+  long double E_hier  = cc->__step( uin , E_old, BASE_SUBCKT::_sim->_last_time );
+  long double E_oben  = cc->__step( u_oben , E_old, BASE_SUBCKT::_sim->_last_time );
+  long double E_unten = cc->__step( u_unten, E_old, BASE_SUBCKT::_sim->_last_time );
+  trace4("COMMON_BUILT_IN_RCD::__uin_iter sanitycheck", E - 1, E_oben - E,E- E_unten, E_oben );
+
+  assert(E_oben >= E_hier);
+  assert(E_unten <= E_hier);
+  assert(E_oben >= E_unten);
+  assert(double(E_oben) >= E);
+  // assert(E_unten <= E);
+
+#endif
+
+
   assert(uin>=-0.001);
   return uin;
 }
