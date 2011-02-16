@@ -158,7 +158,7 @@ public:	// tt
   virtual void  tt_prepare() {  } // save unstressed parameters
   virtual void  tt_init_i() {  } // save unstressed parameters
   virtual void	 tr_stress()	{    } // calculate stress during tr
-  virtual void	 tr_stress_last() 	{  untested();  } // calculate stress during tr
+  virtual void	 tr_stress_last() {   } // calculate stress during tr
   virtual void	 stress_apply(); // not const (element)
   // virtual void   stress_apply(COMPONENT* )const{ unreachable();}
   virtual void	 tr_save_amps( int ){ } // behaviouir??

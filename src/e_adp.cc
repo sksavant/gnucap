@@ -902,9 +902,6 @@ void ADP_NODE::tt_commit( )
     error(bDANGER, "* ADP_NODE::tt_commit neg error step %i, order %i, tt_expect=%e\n", \
         CKT_BASE::_sim->tt_iteration_number(), _order,tt_expect);
   }
-
-
-
 }
 /*---------------------------------*/
 hp_float_t ADP_NODE::tr( double time ) const{
@@ -916,10 +913,6 @@ hp_float_t ADP_NODE::tr( double time ) const{
     case 2:
       return tr1() + ( (tr1()) - (tr2())) * ((now_rel )/dT1());
     case 3:
-     //   double delta_expect = -(((_delta[2] - tr_value3)/dT2() - (_delta[1] -
-       //         _delta[2])/dT1())*(dT0() + dT1())/(dT1() + dT2()) - (_delta[2]
-         //       - tr_value3)/dT2())*(dT0() + dT1() + dT2()) + tr_value3;
-
       return  -(((tr2() - tr3())/dT2() - (tr1() - tr2())/dT1())*(now_rel + dT1())/(dT1() + dT2()) -
         (tr2() - tr3())/dT2())*(now_rel + dT1() + dT2()) + tr3();
     default:
