@@ -259,7 +259,7 @@ inline void HOMEBREW::ac_load_shunt()
 /*--------------------------------------------------------------------------*/
 inline void HOMEBREW::tr_load_source()
 {
-  untested();
+  trace0(("HOMEBREW::tr_load_source " + long_label()).c_str());
 #if !defined(NDEBUG)
   assert(_loaditer != _sim->iteration_tag()); // double load
   _loaditer = _sim->iteration_tag();

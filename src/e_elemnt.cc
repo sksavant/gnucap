@@ -110,7 +110,7 @@ void ELEMENT::tr_begin()
 void ELEMENT::tt_next()
 {
   // das tut das hier?
-  untested0(("tt_next for " + short_label()).c_str());
+  // untested0(("tt_next for " + short_label()).c_str());
   if (_time[0] > _sim->_time0) {itested();
     for (int i=0  ; i<OPT::_keep_time_steps-1; ++i) {itested();
       _time[i] = _time[i+1];
@@ -119,7 +119,9 @@ void ELEMENT::tt_next()
     _time[OPT::_keep_time_steps-1] = 0.;
     _y[OPT::_keep_time_steps-1]    = FPOLY1(0., 0., 0.);
   }else if (_time[0] == _sim->_time0) {
-  }else{untested();
+
+  }else{
+
   }
 
   //assert(_time[0] == _sim->_time0);
