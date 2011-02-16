@@ -67,7 +67,9 @@ void SIM_DATA::restore_voltages()
 {
   for (uint_t ii = 1;  ii <= _total_nodes;  ++ii) {
     _vt1[ii] = _v0[ii] = _vdc[ii];
+    //_nstat[_nm[ii]].set_last_change_time(0);
   }
+
 }
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::zero_currents()

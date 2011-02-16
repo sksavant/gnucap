@@ -116,7 +116,6 @@ FILE *xopen(CS& cmd, const char *ext, const char *how)
   }else{itested();
     error(bWARNING, "can't open %s, %s\n", fname, strerror(errno));
   }
-  std::cout << "*" << fname <<" " <<code << " " <<  static_cast<int>(fileno(code))<<  "\n";
   return code;
 }
 /*--------------------------------------------------------------------------*/

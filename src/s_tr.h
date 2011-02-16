@@ -55,7 +55,6 @@ public:
     _cont(false),
     _tt_cont(false),
     _inside_tt(false),
-    _power_down(false),
     _trace(tNONE),
     _time_by_iteration_count(0.),
     _time_by_user_request(0.),
@@ -111,17 +110,15 @@ protected:
   bool _cont;		// flag: continue from previous run
   bool _tt_cont;	// 
   bool _inside_tt;// hack: tell tr_swp to not reinit circuit
-  bool _power_down;
   int _stepno;		// count of visible (saved) steps
-  TRACE _trace;		// enum: show extended diagnostics
 private:
+  TRACE _trace;		// enum: show extended diagnostics
   double _time_by_iteration_count;
   double _time_by_user_request;
   double _time_by_error_estimate;
   double _time_by_ambiguous_event;
 protected:
   bool _converged;
-
   bool _accepted;
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 private:

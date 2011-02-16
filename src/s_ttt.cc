@@ -79,8 +79,9 @@ class TTT : public TRANSIENT {
       _Tstop(0.),
       _Tstep(0.),
       _timesteps(0),
-      _fdata_tt(NULL)
-    {unreachable(); incomplete();}
+      _fdata_tt(NULL),
+      _trace(tNONE)
+    {incomplete();}
     void	setup(CS&);	/* s_fo_set.cc */
     void	allocate();
     void  rescale_behaviour();
@@ -107,6 +108,7 @@ class TTT : public TRANSIENT {
     void	print_stored_results_tt(double); 
   private:
     TRACE _trace;		// enum: show extended diagnostics
+    bool _power_down;
     PARAMETER<double> _Tstart;	// unused?
     PARAMETER<double> _Tstop;	/* user stop Time */
     PARAMETER<double> _Tstep;	/* user Tstep */
@@ -382,6 +384,9 @@ void TTT::sweep_tt()
   while(next())
   {
     trace5( "TTT::sweep_tt loop start ", _sim->_Time0, _Time1, _sim->_dT0, _accepted, _accepted_tt ); 
+    if (_trace > 2)
+      _ttout << "loop start _Time0 = " << _sim->_Time0 
+        << " step " << _sim->_dT0 << " last " << _Time1 <<"\n";
     sanitycheck();
 
  // FIXME   tt_eval_q
@@ -403,7 +408,8 @@ void TTT::sweep_tt()
 
     if(!_accepted) 
     {
-      std::cerr << "TTT::sweep: sweep complains\n";
+      if ( _trace>0 ) 
+        _ttout << "transient problem " << _sim->_Time0 << _sim->_dT0 <<  _dT_by_adp  << "\n";
       set_step_tt_cause(scREJECT);
       continue;
     }
@@ -411,7 +417,9 @@ void TTT::sweep_tt()
     _accepted_tt = review_tt();
 
     if(! _accepted_tt ){
-      trace3( "TTT::sweep_tt (loop) NOT accepted ", _sim->_Time0, _sim->_dT0, _dT_by_adp );
+      if ( _trace>0 ) 
+        _ttout << "TTT::sweep_tt (loop) NOT accepted " << _sim->_Time0 << _sim->_dT0 <<  _dT_by_adp << "\n" ;
+
       // step_cause_tt = trfail;
       _sim->_tt_rejects++;
       _sim->_tt_rejects_total++;
@@ -440,6 +448,7 @@ void TTT::sweep_tt()
   }
 
   _sim->_Time0=_sim->_Time0+_tstop;
+  _sim->_last_Time=_sim->_Time0+_tstop;
   //advance_Time();
   // ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_last );
   //CARD_LIST::card_list.do_forall( &CARD::tt_stress_last );
@@ -471,11 +480,12 @@ void TTT::sweep() // tr sweep wrapper.
   // if (_tt_cont) _inside_tt = true;
   try{
     TRANSIENT::sweep();
+    assert(_accepted);
     if (_trace>0 ) _ttout<< "done sweep \n";
     CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
   }catch (Exception& e) {
     untested();
-    std::cerr << "* " << e.message() <<  "\n";
+    std::cout << "* " << e.message() <<  "\n";
     error(bDANGER, e.message() + '\n');
     _accepted=_accepted_tt=false;
     ::status.review.stop();
@@ -931,6 +941,7 @@ double behaviour_timestep()
 /*--------------------------------------------------------------------------*/
 bool TTT::next()
 {
+  double _last_Time = _sim->_last_Time;
   double new_dT;
   double new_Time0;
 
@@ -939,6 +950,7 @@ bool TTT::next()
   assert(_sim->_Time0 >=0);
 
   if( !_accepted_tt ){
+    if ( _trace>5 ) _ttout << "NOT accepted " << _sim->_Time0 << "\n";
 
     new_dT = 0.9 * ( _sim->_dT0 - _tstop ) + _tstop; // back at least this much.
     if( _time_by_beh < _sim->_Time0 ){
@@ -953,20 +965,18 @@ bool TTT::next()
     assert(new_dT == new_dT );
     trace1( "TTT::next after reject: ", _Time1 );
 
-    if ( _trace>0 ) 
+    if ( _trace>5 ) 
       _ttout << "* retry step " << new_dT << " ( " << _dT_by_adp << " " <<
         _sim->_dT1  << " " << _sim->_dT0   << " )\n";
    
   } else { // accepted step. calculating new_dT
+    _last_Time = _sim->_Time0;       // FIXME
 
-    _Time1 = _sim->_Time0;       // FIXME
-
-    assert ( _Time1 == _sim->_Time0 ); // advance ...
     new_dT = min( (double) _dT_by_adp, (_sim->_dT0 + _Tstep)/2 ) ; 
     new_dT = min( (double) new_dT, _sim->_dT0 * OPT::ttstepgrow) ; 
     new_dT = max( new_dT,  (double) _tstop ) ; // fmin( get_new_dT(), _Tstep );
 
-    if ( _trace>0 ) 
+    if ( _trace > 0 ) 
       _ttout << "* new step " << new_dT << " ( just accepted: " << _sim->_dT0   << 
         ", adp "<< _dT_by_adp <<" )\n";
 
@@ -977,13 +987,10 @@ bool TTT::next()
     }
 
     // last step handler.
-    new_dT = min(new_dT, _Tstop - _Time1 - _tstop );
+    new_dT = min(new_dT, _Tstop - _sim->_Time0 - _tstop );
     if (_sim->_dT1 > 0)
       assert( new_dT < (OPT::ttstepgrow+1) * _sim->_dT0 );
 
-
-    trace3( "TTT::next Time1: ", _Time1 , new_dT, _dTmin );
-//    trace0 << "TTT::next @" << _sim->_Time0 << " step " <<_Tstep << " not too small: " << _dTmin <<"\n";
     ::status.review.start();
     ++::status.hidden_steps_tt;
     ++steps_total_tt;
@@ -993,11 +1000,11 @@ bool TTT::next()
 
   new_dT = max (new_dT, (double) _tstop );
   trace1("TTT::next ", new_dT);
-  new_Time0 = _Time1 + new_dT;
+  new_Time0 = _sim->_Time0 + new_dT;
 
 
   bool another_step=( ( new_dT >= _dTmin  )
-                 && ( _Tstop - _Time1 >= _dTmin ) 
+                 && ( _Tstop - _last_Time >= _dTmin ) 
                  && (  new_Time0 <= _Tstop - _tstop   ));
 
   if(!another_step) {
@@ -1152,13 +1159,13 @@ void TTT::print_head_tr()
   {
     itested();
     _sim->_mode=oldmode;
-    _out << "* no trprint\n";
+    TRANSIENT::_out << "* no trprint\n";
     return;
   }
 
   std::string foo="* TTime-----";
 
-  _out << foo;
+  TRANSIENT::_out << foo;
   {
     // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     int width = std::min(OPT::numdgt+5, BIGBUFLEN-10);
@@ -1166,12 +1173,12 @@ void TTT::print_head_tr()
     //sprintf(format, "%%c%%-%u.%us", width, width);
     sprintf(format, "%%c%%-%us", width);
 //    _out.form(format, "", "tiime");
-    _out << "time      ";
+    TRANSIENT::_out << "time      ";
     for (PROBELIST::const_iterator
         p=printlist().begin();  p!=printlist().end();  ++p) {
-      _out.form(format, ' ', (*p)->label().c_str());
+      TRANSIENT::_out.form(format, ' ', (*p)->label().c_str());
     }
-    _out << '\n';
+    TRANSIENT::_out << '\n';
   }
   _sim->_mode=oldmode;
 }
@@ -1214,7 +1221,7 @@ void TTT::print_results(double )
   }
 
   if (!IO::plotout.any()) {
-    _out.setfloatwidth(OPT::numdgt, OPT::numdgt+6);
+    TRANSIENT::_out.setfloatwidth(OPT::numdgt, OPT::numdgt+6);
 
     w=&(_sim->_waves[0]);
 
@@ -1230,21 +1237,21 @@ void TTT::print_results(double )
       ii++;
     }
     for (WAVE::const_iterator i = w->begin(); i < w->end(); i++ ) {
-      _out << _sim->_Time0;
-      _out << i->first;
+      TRANSIENT::_out << _sim->_Time0;
+      TRANSIENT::_out << i->first;
 
       ii=0;
       for (PROBELIST::const_iterator
           p=printlist().begin();  p!=printlist().end();  ++p) {
 
-        _out << myiterators[ii]->second;
+        TRANSIENT::_out << myiterators[ii]->second;
         myiterators[ii]++;
         ii++;
       }
 
-        _out << "\n";
+      TRANSIENT::_out << "\n";
     }
-    _out << '\n';
+    TRANSIENT::_out << '\n';
   }else{
   }
   _sim->set_command_tt(); // FIXME

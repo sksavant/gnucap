@@ -84,6 +84,8 @@ private: // override virtuals
   void	   ac_iwant_matrix();
   void	   ac_begin();
   void	   do_ac()	{untested();  assert(subckt());  subckt()->do_ac();}
+  void	   tt_next()	{untested();  assert(subckt());  subckt()->tt_next();
+	  ELEMENT::tt_next();}
   void	   ac_load()	{untested();  assert(subckt());  subckt()->ac_load();}
   COMPLEX  ac_involts()const		{unreachable(); return 0.;}
   COMPLEX  ac_amps()const		{unreachable(); return 0.;}

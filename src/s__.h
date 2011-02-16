@@ -43,7 +43,8 @@ protected:
     tALLTIME   = 2,	/* show every time step, including hidden 	*/
     tREJECTED  = 3,	/* show rejected time steps			*/
     tITERATION = 4,	/* show every iteration, including nonconverged	*/
-    tVERBOSE   = 5	/* show extended diagnostics			*/
+    tVERBOSE   = 5,	/* show extended diagnostics			*/
+    tDEBUG     = 6
   };
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   CARD_LIST* _scope;

@@ -111,6 +111,7 @@ void ELEMENT::tt_next()
 {
   // das tut das hier?
   // untested0(("tt_next for " + short_label()).c_str());
+  trace2(("ELEMENT::tt_next for " + short_label()).c_str(), _sim->_time0, _sim->_dt0);
   if (_time[0] > _sim->_time0) {itested();
     for (int i=0  ; i<OPT::_keep_time_steps-1; ++i) {itested();
       _time[i] = _time[i+1];
@@ -183,13 +184,10 @@ void ELEMENT::tr_restore()
 /*--------------------------------------------------------------------------*/
 void ELEMENT::dc_advance()
 {
-  trace2(("ELEMENT::dc_advance for " + short_label()).c_str(), _sim->_time0, _sim->_dt0);
   assert(_sim->_time0 == 0.); // DC
 
   for (int i=OPT::_keep_time_steps-1; i>=0; --i) {
-    trace2(("ELEMENT::dc_advance " + short_label()).c_str(), i, _time[i]);
-  }
-  for (int i=OPT::_keep_time_steps-1; i>=0; --i) {
+    trace2(( "ELEMENT::dc_advance " + long_label()).c_str(), i, _time[i]);
     assert(_time[i] == 0.);
   }
 

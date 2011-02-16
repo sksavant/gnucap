@@ -1,4 +1,5 @@
 /*$Id: e_node.cc,v 1.6 2010-08-26 09:07:18 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -289,8 +290,8 @@ void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
     }
     double dt = _sim->_time0 - last_change_time();
     if (dt < 0.) {untested();
-      error(bPICKY, "time moving backwards.  was %g, now %g\n",
-	    last_change_time(), _sim->_time0);
+      error(bPICKY, "time moving backwards.  was %g, now %g, %g\n",
+	    last_change_time(), _sim->_time0, _sim->_Time0);
       dt = _sim->_time0 - old_last_change_time();
       if (dt <= 0.) {untested();
 	throw Exception("internal error: time moving backwards, can't recover");

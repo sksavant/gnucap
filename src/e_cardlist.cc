@@ -181,6 +181,15 @@ CARD_LIST& CARD_LIST::precalc_first()
   return *this;
 }
 /*--------------------------------------------------------------------------*/
+CARD_LIST& CARD_LIST::tt_next()
+{
+  for (iterator ci=begin(); ci!=end(); ++ci) {
+    trace_func_comp();
+    (**ci).tt_next();
+  }
+  return *this;
+}
+/*--------------------------------------------------------------------------*/
 CARD_LIST& CARD_LIST::precalc_last()
 {
   for (iterator ci=begin(); ci!=end(); ++ci) {

@@ -66,7 +66,6 @@ void TRANSIENT::setup(CS& Cmd)
 	_tstart = arg1;			    /* _tstart _tstop _tstep */
 	_tstop  = arg2;				
 	_tstep  = arg3;
-        trace0( "*  _tstart _tstop _tstep \n" );
         std::cout << "\n"; // gnuplot. no newline command yet.
       }else if (arg1 > arg3) {untested();   /* eca (logical) order: */
 	_tstart = arg1;			    /* _tstart _tstop _tstep */
@@ -100,7 +99,6 @@ void TRANSIENT::setup(CS& Cmd)
       if (arg1 > _sim->_last_time) {untested();	    /* 1 arg: _tstop */
 	_tstart = _sim->_last_time;
 	_tstop  = arg1;
-        trace2(  "TRANSIENT::setup *1arg, " , _tstart , _tstop );
 	/* _tstep unchanged */
       }else if (arg1 == 0.) {itested();	    /* 1 arg: _tstart */
 	double oldrange = _tstop - _tstart;
@@ -133,7 +131,6 @@ void TRANSIENT::setup(CS& Cmd)
   if  (_cold || _tstart < _sim->_last_time  ||  _sim->_last_time <= 0.) {
     _cont = false;
     time1 = _sim->_time0 = 0.;
-//    std::cout << "cold "<< _cold << " " <<  _tstart << " " << _sim->_last_time << "\n";
   }else{
     _cont = true;
     time1 = _sim->_time0 = _sim->_last_time;
@@ -163,30 +160,22 @@ void TRANSIENT::setup(CS& Cmd)
     // use larger of soft values
     _sim->_dtmin = std::max(double(_dtmin_in), _dtmax/_dtratio_in);
   }
-
-
-
 }
 /*--------------------------------------------------------------------------*/
 /* tr_options: set options common to transient and fourier analysis
  */
 void TRANSIENT::options(CS& Cmd)
 {
-  trace0(( "TRANSIENT::options rest ||| " +Cmd.tail() ).c_str());
   _out = IO::mstdout;
   _out.reset(); //BUG// don't know why this is needed
-
-  _out << "setup _out " << _out.mask() << "\n";
 
   _sim->_temp_c = OPT::temp_c;
   bool ploton = IO::plotset  &&  plotlist().size() > 0;
   _sim->_uic = _cold = false;
   _trace = tNONE;
-  _power_down=false;
   unsigned here = Cmd.cursor();
   do{
     ONE_OF
-      || Get(Cmd, "p{owerdown}",   &_power_down)
       || Get(Cmd, "c{old}",	   &_cold)
       || Get(Cmd, "dte{mp}",	   &_sim->_temp_c,  mOFFSET, OPT::temp_c)
       || Get(Cmd, "dtma{x}",	   &_dtmax_in)
@@ -217,13 +206,11 @@ void TRANSIENT::options(CS& Cmd)
   IO::plotout = (ploton) ? IO::mstdout : OMSTREAM();
   initio(_out);
 
-  trace0(( "TRANSIENT::options rest ||| " +Cmd.tail() ).c_str());
   _dtmax_in.e_val(BIGBIG, _scope);
   _dtmin_in.e_val(OPT::dtmin, _scope);
   _dtratio_in.e_val(OPT::dtratio, _scope);
   _skip_in.e_val(1, _scope);
 
-  //assert(false);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
