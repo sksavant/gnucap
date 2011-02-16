@@ -172,8 +172,12 @@ void TRANSIENT::setup(CS& Cmd)
  */
 void TRANSIENT::options(CS& Cmd)
 {
+  trace0(( "TRANSIENT::options rest ||| " +Cmd.tail() ).c_str());
   _out = IO::mstdout;
   _out.reset(); //BUG// don't know why this is needed
+
+  _out << "setup _out " << _out.mask() << "\n";
+
   _sim->_temp_c = OPT::temp_c;
   bool ploton = IO::plotset  &&  plotlist().size() > 0;
   _sim->_uic = _cold = false;
@@ -205,7 +209,7 @@ void TRANSIENT::options(CS& Cmd)
 		       "rejected, iterations, verbose")
 	   )
 	  )
-      || outset(Cmd,&_out)
+      || _out.outset(Cmd)
       ;
   }while (Cmd.more() && !Cmd.stuck(&here));
   Cmd.check(bWARNING, "what's this?");
@@ -213,10 +217,13 @@ void TRANSIENT::options(CS& Cmd)
   IO::plotout = (ploton) ? IO::mstdout : OMSTREAM();
   initio(_out);
 
+  trace0(( "TRANSIENT::options rest ||| " +Cmd.tail() ).c_str());
   _dtmax_in.e_val(BIGBIG, _scope);
   _dtmin_in.e_val(OPT::dtmin, _scope);
   _dtratio_in.e_val(OPT::dtratio, _scope);
   _skip_in.e_val(1, _scope);
+
+  //assert(false);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

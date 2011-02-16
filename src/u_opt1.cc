@@ -89,7 +89,6 @@ bool	OPT::lubypass = true;
 bool	OPT::fbbypass = true;
 bool	OPT::traceload = true;
 bool	OPT::tracewdtt = false;
-bool	OPT::tracett = false;
 int	OPT::itermin = 1;
 int	OPT::threads = 1;
 int	OPT::adporder = 2;

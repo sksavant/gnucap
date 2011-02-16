@@ -271,10 +271,12 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   long double E_test=cc->__step( uin_eff, E_old, CKT_BASE::_sim->_last_time );
   long double E_vorher=cc->__step( a->tr(), E_old, CKT_BASE::_sim->_last_time );
   if (fabs(E_test - E) < fabs(E_vorher-E)){
-    trace5("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last uin_eff better ", uin_eff, a->tr(), E_test - E, E_vorher-E,1-E );
-    trace5("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last                ", uin_eff, a->tr(), E_test - E, E_vorher-E,1-E );
+    trace6("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last new uin better ",
+        uin_eff, a->tr(), E_test - E, E_vorher-E,1-E , linear_inversion);
+    trace5("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last                ",
+        uin_eff, a->tr(), E_test - E, E_vorher-E,1-E );
   }else{
-    trace2("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last uin_eff not better ", uin_eff, a->tr());
+    trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last new uin not better ", uin_eff, a->tr(), linear_inversion);
     untested();
     uin_eff=a->tr();
   }
@@ -298,9 +300,10 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   if (uin_eff == inf){
     E_low=E;
     E_high=E;
+    assert(false);
   }else{
     uin_high = max ( uin_eff + OPT::abstol, uin_eff * (1 + OPT::reltol) );
-    uin_low = min ( uin_eff - OPT::abstol, uin_eff * (1-OPT::reltol) );
+    uin_low  = min ( uin_eff - OPT::abstol, uin_eff * (1-OPT::reltol) );
     trace3(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + cap->label()).c_str(),
         uin_low, uin_eff, uin_high);
 
@@ -314,6 +317,10 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
     assert (E_high>=E_low);
     assert (E_low <= E || double(E)==1.0 || double(E_high)==1.0 || !linear_inversion);
     assert (E <= E_high || E==1);
+
+    if( ( E_old < E_high ) && ( E_low <= E_old ))
+       a->set_order(0);
+
   }
 
   assert (E_high>=E_low);

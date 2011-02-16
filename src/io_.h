@@ -40,6 +40,8 @@ private:
   static unsigned _cpos[MAXHANDLE+1];/* character counter */
   bool _cipher;			/* flag: encrypt output file */
   bool _pack;			/* flag: convert whitespace to tabs on out */
+  FILE* fn;
+  FILE* to_pipe;
 
   OMSTREAM(int m)
     :_mask(m),_fltdig(7),_fltwid(0),_format(0),_cipher(false),_pack(false) {}
@@ -47,6 +49,8 @@ public:
   explicit OMSTREAM(FILE* f = 0)
     :_mask(0),_fltdig(7),_fltwid(0),_format(0),_cipher(false), _pack(false)
     {_mask = (f) ? 1<<fileno(f) : 0;}
+  OMSTREAM* outset(CS& cmd);
+  void outreset();
   OMSTREAM& operator=(const OMSTREAM& x)  {_mask = x._mask; return *this;}
   OMSTREAM& attach(const OMSTREAM& x)	{itested();_mask |= x._mask; return *this;}
   OMSTREAM& attach(FILE* f)		{itested();return attach(OMSTREAM(f));}
@@ -58,6 +62,7 @@ public:
 
   //OMSTREAM& operator<<=(const OMSTREAM& x) {untested();_mask <<= x._mask; return *this;}
   bool	    any()const			{return _mask != 0;}
+  int	    mask()const			{return _mask;}
   bool	    cipher()const		{return _cipher;}
   bool	    pack()const			{return _pack;}
   int	    format()const		{return _format;}

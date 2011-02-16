@@ -100,7 +100,7 @@ void CMD::cmdproc(CS& cmd, CARD_LIST* scope)
   }else{
   }
   plclose();
-  outreset();
+  IO::mstdout.outreset();
 
   if (get_timer_was_running) {
     ::status.get.start();

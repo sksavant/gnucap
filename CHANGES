@@ -19,3 +19,4 @@
 - powerof from gnucap-a merged
 - fixed measurements to return double (not string)
    ( if strings are needed, templates should be used )
+- fixed OMSTREAM to support multiple files. (used in tt)

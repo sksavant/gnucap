@@ -3028,7 +3028,7 @@ void MODEL_BUILT_IN_MOS8::tr_eval(COMPONENT* brh)const
 	  T2 = s->dvt2;
 	  trace4("", T0, T1, T2, T3);
 	}else{
-	  untested();
+	  //untested();
 	  /* Added to avoid any discontinuity problems caused by dvt2 */ 
 	  double T4 = 1.0 / (3.0 + 8.0 * T0);
 	  T1 = (1.0 + 3.0 * T0) * T4; 

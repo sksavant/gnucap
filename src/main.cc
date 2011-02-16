@@ -130,7 +130,7 @@ static void setup_traps(void)
 static void finish(void)
 {
   plclose();
-  outreset();
+  IO::mstdout.outreset();
 }
 /*--------------------------------------------------------------------------*/
 static void process_cmd_line(int argc, const char *argv[])
