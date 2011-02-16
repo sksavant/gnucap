@@ -101,6 +101,7 @@ double	OPT::dtratio = 1e9;
 bool	OPT::rstray = true;
 bool	OPT::cstray = true;
 int	OPT::harmonics = 9;
+double	OPT::ttstepgrow = 1.1;
 double	OPT::trstepgrow = 1e99;
 double	OPT::trstephold = 1e99;
 double	OPT::trstepshrink = 2.;		/* spice is fixed at 8 */

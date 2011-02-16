@@ -154,6 +154,7 @@ bool OPT::set_values(CS& cmd)
       || (Get(cmd, "rstray",	   &rstray) && (big_change = true))
       || (Get(cmd, "cstray",	   &cstray) && (big_change = true))
       || Get(cmd, "harmonics",	   &harmonics)
+      || Get(cmd, "ttstepgrow",    &ttstepgrow,  mPOSITIVE)
       || Get(cmd, "trstepgrow",    &trstepgrow,  mPOSITIVE)
       || Get(cmd, "trstephold",    &trstephold,  mPOSITIVE)
       || Get(cmd, "trstepshrink",  &trstepshrink,mPOSITIVE)
@@ -288,6 +289,7 @@ void OPT::print(OMSTREAM& o)
   o << ".options";
   o << "  dtmin="  << dtmin;
   o << "  dtratio="<< dtratio;
+  o << "  ttstepgrow="  << ttstepgrow;
   o << "  trstepgrow="  << trstepgrow;
   o << "  trstephold="  << trstephold;
   o << "  trstepshrink="<< trstepshrink;

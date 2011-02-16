@@ -1,4 +1,5 @@
 /*$Id: u_opt.h,v 1.8 2010-09-17 12:26:02 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -131,7 +132,7 @@ public:
   static double dampmin;    // Newton-Raphson damping coefficient min
   static int dampstrategy;  // bit flags, damping strategy options
   static double roundofftol;// rel tolerance for zeroing after subtraction
-  static double temp_c;    // ambient temperature
+  static double temp_c;     // ambient temperature
   static double shortckt;   // short resistance
   static int picky;	    // error picky-ness
   static unsigned outwidth; // width of output devices
@@ -148,7 +149,6 @@ public:
   static bool fbbypass;	    // bypass fwd & back sub when last iter converged
   static bool traceload;    // load only elements that need it, using queue
   static bool tracewdtt;    // trace wanted dT
-  static bool tracett;    // trace tt step control
   static int itermin;	    // forced min iteration count.
   static double vmax;	    // + voltage limit for nonlinear calculations
   static double vmin;	    // - voltage limit for nonlinear calculations
@@ -158,6 +158,7 @@ public:
   static bool rstray;	    // include stray resistors in models
   static bool cstray;	    // include stray capacitors in models
   static int harmonics;	    // number of harmonics in fourier analysis
+  static double ttstepgrow; // limit of step size growth in transient analysis
   static double trstepgrow; // limit of step size growth in transient analysis
   static double trstephold; // hold step size growth, converges slowly
   static double trstepshrink;// amt to shrink step size on convergence failure
