@@ -146,9 +146,9 @@ private: // override virtual
   void      precalc_first(); // {COMPONENT::precalc_first(); if(subckt()) subckt()->precalc_first();}
   void      expand();
   void      precalc_last();//  {COMPONENT::precalc_last(); assert(subckt()); subckt()->precalc_last();}
-  //void    map_nodes();         //BASE_SUBCKT
-  //void    tr_begin();          //BASE_SUBCKT
-  //void    tr_restore();        //BASE_SUBCKT
+  void    map_nodes();         //BASE_SUBCKT
+  void    tr_begin();          //BASE_SUBCKT
+  void    tr_restore();        //BASE_SUBCKT
   void      dc_advance();// {set_not_converged(); BASE_SUBCKT::dc_advance();}
   void      tr_advance();// {set_not_converged(); BASE_SUBCKT::tr_advance();}
   void      tr_regress();// {set_not_converged(); BASE_SUBCKT::tr_regress();}
@@ -158,16 +158,17 @@ private: // override virtual
 
   
 
-  //void    tr_load();           //BASE_SUBCKT
-  //double  tr_review();         //BASE_SUBCKT
-  //void    tr_accept();         //BASE_SUBCKT
-  //void    tr_unload();         //BASE_SUBCKT
+  void    tr_load();           
+  TIME_PAIR  tr_review();         
+  void    tr_accept();         
+  void    tr_unload();         
 protected:
   virtual double    tr_probe_num(const std::string&)const;
   virtual double    tt_probe_num(const std::string&)const;
-  //void    ac_begin();          //BASE_SUBCKT
-  //void    do_ac();             //BASE_SUBCKT
-  //void    ac_load();           //BASE_SUBCKT
+
+ void    ac_begin(){assert(false);}          //BASE_SUBCKT
+  void    do_ac(){assert( false);}             //BASE_SUBCKT
+  void    ac_load(){assert(false);}           //BASE_SUBCKT
   //XPROBE  ac_probe_ext(CS&)const;//CKT_BASE/nothing
 public:
   static int  count() {return _count;}

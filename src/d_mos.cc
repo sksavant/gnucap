@@ -44,6 +44,7 @@
 
 // doesnt work without yet.
 #define BTI_IN_SUBCKT
+#define BTI_LATE_EVAL
 /*--------------------------------------------------------------------------*/
 const double NA(NOT_INPUT);
 const double INF(BIGBIG);
@@ -890,12 +891,8 @@ void DEV_BUILT_IN_MOS::expand()
       }
     }
 
-    assert( (m->bti_model_name.value() != std::string("")) == m->use_bti() );
-    if( m->bti_model_name.value() == std::string("") )
-    {
-      trace2("DEV_BUILT_IN_MOS::expand no bti expand", m->polarity, m->use_bti());
-    }else{
-      trace2("DEV_BUILT_IN_MOS::expand", m->polarity, m->use_bti());
+    trace2("DEV_BUILT_IN_MOS::expand bti expand?", m->polarity, m->use_bti());
+    if( m->use_bti() ) {
       if (!_BTI) {
         const CARD* p = device_dispatcher["bti"];
         assert(p);
@@ -976,20 +973,16 @@ void DEV_BUILT_IN_MOS::expand()
     //precalc();
   }
   //precalc();
+  assert(!is_constant());
+  subckt()->set_slave();
   subckt()->expand();
 
 #ifndef BTI_IN_SUBCKT
-  trace0("DEV_BUILT_IN_MOS::expand bti not in subckt");
-  assert( (m->bti_model_name.value() != std::string("")) == m->use_bti() );
   if( m->use_bti() ){
-    trace1("DEV_BUILT_IN_MOS::expanding bti", polarity);
     _BTI->expand();
-    // _BTI->set_slave();
+    _BTI->set_slave();
   }
 #endif
-  // subckt()->precalc();
-  assert(!is_constant());
-  subckt()->set_slave();
 
 
   trace0("DEV_BUILT_IN_MOS::expand, ADP things");
@@ -1467,30 +1460,30 @@ bool DEV_BUILT_IN_MOS::do_tr()
   assert(subckt());
 
 #ifdef BTI_LATE_EVAL
-  std::list<CARD*>::iterator ci;
-
+  // ~ SUBCKT
   bool isconverged = true;
-  for (ci=subckt()->begin(); ci!=subckt()->end(); ++ci) {
-    if ((**ci).tr_needs_eval() || !OPT::bypass ) {
-
-      if (*ci != _BTI){
-        isconverged &= (**ci).do_tr();
+  if (OPT::bypass) {
+    for (std::list<CARD*>::iterator ci=subckt()->begin(); ci!=subckt()->end(); ++ci) {
+      if ((**ci).tr_needs_eval()) {
+	if (*ci !=_BTI ) isconverged &= (**ci).do_tr();
       }else{
       }
     }
-  }
-
-  set_converged( isconverged );
-
-  if( m->use_bti() ){
-    if(  converged() ){
-      std::cout << "* btieval " << _sim->iteration_number() << " \n";
-      set_converged(_BTI->do_tr());
-    } else {
-      std::cout << "* not btieval " << _sim->iteration_number() << " \n";
+  }else{
+    for (std::list<CARD*>::iterator ci=subckt()->begin(); ci!=subckt()->end(); ++ci) {
+      if (*ci !=_BTI )isconverged &= (**ci).do_tr();
     }
   }
-
+//=============
+  if( m->use_bti() ){
+    if(  isconverged ){
+      //std::cout << "* btieval " << _sim->iteration_number() << " \n";
+      _BTI->do_tr();
+    } else {
+      //std::cout << "* not btieval " << _sim->iteration_number() << " \n";
+    }
+  }
+  set_converged(isconverged);
 #else
   set_converged(subckt()->do_tr());
 #endif
@@ -1780,5 +1773,96 @@ void      DEV_BUILT_IN_MOS::precalc_first() {
   //MODEL_BUILT_IN_MOS_BASE* m = ( MODEL_BUILT_IN_MOS_BASE*)(cc->model());
   //if(m->use_bti())
   //  _BTI->precalc_first();
+#endif
+}
+void    DEV_BUILT_IN_MOS::map_nodes(){
+  BASE_SUBCKT::map_nodes();
+#ifndef BTI_IN_SUBCKT
+  const COMMON_BUILT_IN_MOS* c = static_cast<const COMMON_BUILT_IN_MOS*>(common());
+  assert(c);
+  assert(c->model());
+  const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
+  assert(m);
+  if(m->use_bti()){
+    _BTI->map_nodes();
+  }
+#endif
+}
+void    DEV_BUILT_IN_MOS::tr_begin(){
+  BASE_SUBCKT::tr_begin();
+#ifndef BTI_IN_SUBCKT
+  const COMMON_BUILT_IN_MOS* c = static_cast<const COMMON_BUILT_IN_MOS*>(common());
+  assert(c);
+  assert(c->model());
+  const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
+  assert(m);
+  if(m->use_bti()){
+    _BTI->tr_begin();
+  }
+#endif
+}
+void    DEV_BUILT_IN_MOS::tr_restore(){
+  BASE_SUBCKT::tr_restore();
+#ifndef BTI_IN_SUBCKT
+  const COMMON_BUILT_IN_MOS* c = static_cast<const COMMON_BUILT_IN_MOS*>(common());
+  assert(c);
+  assert(c->model());
+  const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
+  assert(m);
+  if(m->use_bti()){
+    _BTI->tr_restore();
+  }
+#endif
+}
+void    DEV_BUILT_IN_MOS::tr_load(){
+  BASE_SUBCKT::tr_load();
+#ifndef BTI_IN_SUBCKT
+  const COMMON_BUILT_IN_MOS* c = static_cast<const COMMON_BUILT_IN_MOS*>(common());
+  assert(c);
+  assert(c->model());
+  const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
+  assert(m);
+  if(m->use_bti()){
+    _BTI->tr_load();
+  }
+#endif
+}
+TIME_PAIR  DEV_BUILT_IN_MOS::tr_review(){
+return  BASE_SUBCKT::tr_review();
+#ifndef BTI_IN_SUBCKT
+  const COMMON_BUILT_IN_MOS* c = static_cast<const COMMON_BUILT_IN_MOS*>(common());
+  assert(c);
+  assert(c->model());
+  const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
+  assert(m);
+  if(m->use_bti()){
+    _BTI->tr_review();
+  }
+#endif
+}
+void    DEV_BUILT_IN_MOS::tr_accept(){
+  BASE_SUBCKT::tr_review();
+#ifndef BTI_IN_SUBCKT
+  const COMMON_BUILT_IN_MOS* c = static_cast<const COMMON_BUILT_IN_MOS*>(common());
+  assert(c);
+  assert(c->model());
+  const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
+  assert(m);
+  if(m->use_bti()){
+    _BTI->tr_accept();
+  }
+#endif
+}  
+void    DEV_BUILT_IN_MOS::tr_unload(){
+  BASE_SUBCKT::tr_unload();
+#ifndef BTI_IN_SUBCKT
+  const COMMON_BUILT_IN_MOS* c = static_cast<const COMMON_BUILT_IN_MOS*>(common());
+  assert(c);
+  assert(c->model());
+  const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
+  assert(m);
+  if(m->use_bti()){
+    _BTI->tr_unload();
+  }
 #endif
 }

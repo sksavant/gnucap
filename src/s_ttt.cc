@@ -1343,6 +1343,7 @@ void TTT::outdata(double x)
 
   if(_sim->tt_iteration_number()==0)
   {
+    TRANSIENT::_out << 0.0;
     TRANSIENT::print_results(x);
     // store_transtore
   } else {
