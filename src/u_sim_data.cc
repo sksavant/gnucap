@@ -1,4 +1,5 @@
 /*$Id: u_sim_data.cc,v 1.8 2010-09-07 07:46:27 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -68,6 +69,8 @@ void SIM_DATA::restore_voltages()
   for (uint_t ii = 1;  ii <= _total_nodes;  ++ii) {
     _vt1[ii] = _v0[ii] = _vdc[ii];
     //_nstat[_nm[ii]].set_last_change_time(0);
+    //_nstat[_nm[ii]].store_old_last_change_time();
+    //_nstat[_nm[ii]].set_final_time(0);
   }
 
 }

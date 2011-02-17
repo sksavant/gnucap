@@ -49,7 +49,7 @@ private: // override virtual
   void     tr_begin();
   bool	   do_tr();
   void	   tr_load()		{tr_load_passive();}
-  void	   tr_unload()		{untested();tr_unload_passive();}
+  void	   tr_unload()		{untested1( "unload?", _sim->_time0 );tr_unload_passive();}
   double   tr_involts()const	{return tr_outvolts();}
   double   tr_input()const	{untested(); return _m0.c0 + _m0.c1 * tr_involts();}
   double   tr_involts_limited()const {return tr_outvolts_limited();}

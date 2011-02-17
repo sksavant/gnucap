@@ -1,4 +1,5 @@
 /*$Id: d_logic.cc,v 1.2 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -246,7 +247,7 @@ bool DEV_LOGIC::tr_needs_eval()const
     }
     return (_sim->analysis_is_static() || _sim->analysis_is_restore());
   case moANALOG:
-    untested();
+    //untested();
     assert(!is_q_for_eval());
     assert(subckt());
     return subckt()->tr_needs_eval();
@@ -297,6 +298,7 @@ bool DEV_LOGIC::tr_eval_digital()
 /*--------------------------------------------------------------------------*/
 bool DEV_LOGIC::do_tr()
 {  
+  trace0("DEV_LOGIC::do_tr");
   switch (_gatemode) {
   case moUNKNOWN: unreachable(); break;
   case moMIXED:   unreachable(); break;
@@ -304,6 +306,13 @@ bool DEV_LOGIC::do_tr()
   case moANALOG:  assert(subckt()); set_converged(subckt()->do_tr()); break;
   }
   return converged();
+}
+/*--------------------------------------------------------------------------*/
+void DEV_LOGIC::tt_next()
+{
+  assert(subckt());
+  subckt()->tt_next();
+  ELEMENT::tt_next();
 }
 /*--------------------------------------------------------------------------*/
 void DEV_LOGIC::tr_load()

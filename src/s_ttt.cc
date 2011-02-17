@@ -490,7 +490,6 @@ void TTT::sweep() // tr sweep wrapper.
     _accepted=_accepted_tt=false;
     ::status.review.stop();
 
-  //  _sim->restore_voltages();
   }
 
   trace1("TTT done TRANSIENT::sweep", _sim->_last_time);
@@ -905,6 +904,7 @@ void TTT::options(CS& Cmd)
 	   || Set(Cmd, "r{ejected}",  &_trace, tREJECTED)
 	   || Set(Cmd, "i{terations}",&_trace, tITERATION)
 	   || Set(Cmd, "v{erbose}",   &_trace, tVERBOSE)
+	   || Set(Cmd, "d{ebug}",   &_trace, tDEBUG)
 	   || Cmd.warn(bWARNING, "need none, off, warnings, alltime, "
 		       "rejected, iterations, verbose")
 	   )
@@ -1040,8 +1040,14 @@ bool TTT::next()
   assert( _sim->_Time0 >= _sim->_dT0 );
   assert( _sim->_Time0 > 0 );
 
-  //advance_Time();
   _sim->restore_voltages();
+
+  for (uint_t ii = 1;  ii <= _sim->_total_nodes;  ++ii) {
+    _sim->_nstat[_sim->_nm[ii]].set_last_change_time(0);
+    _sim->_nstat[_sim->_nm[ii]].store_old_last_change_time();
+    _sim->_nstat[_sim->_nm[ii]].set_final_time(0);
+  }
+
   if (another_step && _accepted_tt){
     CARD_LIST::card_list.do_forall( &CARD::tt_next ); // fixme: merge to tt_adv.
   }
@@ -1220,11 +1226,9 @@ void TTT::print_results(double )
     return;
   }
 
-  if (!IO::plotout.any()) {
+  if (!IO::plotout.any() && _sim->tt_iteration_number() > 0 ) {
     TRANSIENT::_out.setfloatwidth(OPT::numdgt, OPT::numdgt+6);
-
     w=&(_sim->_waves[0]);
-
     print_head_tr();
 
     int ii=0;
@@ -1329,7 +1333,6 @@ void TTT::outdata(double x)
 {
   assert( _sim->_mode  == s_TTT );
   ::status.output.start();
- // plottr(x, plotlist());
   assert( _sim->_mode  == s_TTT );
 
   // SIM::alarm();
@@ -1337,10 +1340,19 @@ void TTT::outdata(double x)
   if ( OPT::printrejected ) { //FIXME
 //    TRANSIENT::print_results(x);
   }
-  store_results(x);
-  _sim->_mode=s_TTT;
-  
 
+  if(_sim->tt_iteration_number()==0)
+  {
+    TRANSIENT::print_results(x);
+    // store_transtore
+  } else {
+    // store_results(x);
+  }
+
+  // FIXME (only > 0)
+  store_results(x);
+
+  _sim->_mode=s_TTT;
   _sim->reset_iteration_counter(iPRINTSTEP);
   ::status.hidden_steps = 0;
   ::status.output.stop();

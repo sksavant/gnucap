@@ -208,23 +208,23 @@ void DEV_VCVS2::tr_eval()
 
   bool bla = conv_check();
   if (!bla) {
-    trace1("DEV_VCVS2::tr_eval no convx",_sim->_time0);
+    trace1(("DEV_VCVS2::tr_eval not converged " + long_label()).c_str(),_sim->_time0);
   }
   else
   {
-    trace1("DEV_VCVS2::tr_eval convx",_sim->_time0);
+//    trace1("DEV_VCVS2::tr_eval convx",_sim->_time0);
   }
   set_converged(bla);
 }
 /*--------------------------------------------------------------------------*/
 bool DEV_VCVS2::conv_check()const
 {
-  trace6("DEV_VCVS2::convx_check ", _y1.f1, _y[0].f1 , _y1.f0, _y[0].f0 , _y1.x,  _y[0].x );
-  trace4("DEV_VCVS2::convx_check ",
-      myconchk(_y1.f1, _y[0].f1),
-      myconchk(_y1.f0, _y[0].f0),
-      myconchk(_y1.x,  _y[0].x, OPT::vntol),
-      OPT::vntol );
+//  trace6("DEV_VCVS2::convx_check ", _y1.f1, _y[0].f1 , _y1.f0, _y[0].f0 , _y1.x,  _y[0].x );
+//  trace4("DEV_VCVS2::convx_check ",
+//      myconchk(_y1.f1, _y[0].f1),
+//      myconchk(_y1.f0, _y[0].f0),
+//      myconchk(_y1.x,  _y[0].x, OPT::vntol),
+//      OPT::vntol );
 
 
   return myconchk(_y1.f1, _y[0].f1)
@@ -263,7 +263,7 @@ void DEV_VCVS2::tr_begin()
   _m0.c1 = -_loss0 * _y[0].f1;
   _m0.c0 = 0.;
   _m1 = _m0;
-  set_converged(true);
+//  set_converged(true);
 }
 /*--------------------------------------------------------------------------*/
 bool DEV_VCVS2::do_tr()
@@ -277,7 +277,10 @@ bool DEV_VCVS2::do_tr()
   _m0 = CPOLY1(_y[0]);
   _m0 *= -_loss0;
 
-  return converged();
+  bool c = converged();
+
+//  if (!c) cout << "???\n";
+  return c;
 }
 /*--------------------------------------------------------------------------*/
 void DEV_VCVS2::tt_next()

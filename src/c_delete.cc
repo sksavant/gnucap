@@ -111,7 +111,7 @@ private:
 	unsigned mark = cmd.cursor();
 	bool didit = delete_one_name(cmd.ctos(), Scope);
 	if (!didit) {
-	  cmd.warn(bWARNING, mark, "no match");
+	  cmd.warn(bWARNING, mark, "delete: no match");
 	}
       }
     }

@@ -84,8 +84,7 @@ private: // override virtuals
   void	   ac_iwant_matrix();
   void	   ac_begin();
   void	   do_ac()	{untested();  assert(subckt());  subckt()->do_ac();}
-  void	   tt_next()	{untested();  assert(subckt());  subckt()->tt_next();
-	  ELEMENT::tt_next();}
+  void	   tt_next();
   void	   ac_load()	{untested();  assert(subckt());  subckt()->ac_load();}
   COMPLEX  ac_involts()const		{unreachable(); return 0.;}
   COMPLEX  ac_amps()const		{unreachable(); return 0.;}
@@ -185,9 +184,9 @@ private:
   COMMON_COMPONENT* clone()const {return new LOGIC_NAND(*this);}
 public:
   explicit LOGIC_NAND(int c=0)		  :COMMON_LOGIC(c) {}
-  LOGICVAL logic_eval(const node_t* n)const {untested();
+  LOGICVAL logic_eval(const node_t* n)const {itested();
     LOGICVAL out(n[0]->lv());
-    for (int ii=1; ii<incount; ++ii) {untested();
+    for (int ii=1; ii<incount; ++ii) {itested();
       out &= n[ii]->lv();
     }
     return ~out;
@@ -197,13 +196,13 @@ public:
 /*--------------------------------------------------------------------------*/
 class LOGIC_OR : public COMMON_LOGIC {
 private:
-  explicit LOGIC_OR(const LOGIC_OR& p)	 :COMMON_LOGIC(p){untested();++_count;}
-  COMMON_COMPONENT* clone()const {untested(); return new LOGIC_OR(*this);}
+  explicit LOGIC_OR(const LOGIC_OR& p)	 :COMMON_LOGIC(p){itested();++_count;}
+  COMMON_COMPONENT* clone()const {itested(); return new LOGIC_OR(*this);}
 public:
-  explicit LOGIC_OR(int c=0)		  :COMMON_LOGIC(c) {untested();}
-  LOGICVAL logic_eval(const node_t* n)const {untested();
+  explicit LOGIC_OR(int c=0)		  :COMMON_LOGIC(c) {itested();}
+  LOGICVAL logic_eval(const node_t* n)const {itested();
     LOGICVAL out(n[0]->lv());
-    for (int ii=1; ii<incount; ++ii) {untested();
+    for (int ii=1; ii<incount; ++ii) {itested();
       out |= n[ii]->lv();
     }
     return out;

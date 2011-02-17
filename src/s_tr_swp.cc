@@ -506,7 +506,7 @@ bool TRANSIENT::next()
     assert(!_accepted);
     assert(step_cause() < scREJECT);
     assert(step_cause() >= 0);
-    error(bDANGER,"non-recoverable " + TR::step_cause[step_cause()] + "\n");
+    error(bDANGER,"non-recoverable: " + TR::step_cause[step_cause()] + "\n");
     error(bDANGER, "newtime=%e  rejectedtime=%e  oldtime=%e  using=%e\n",
 	  newtime, _sim->_time0, time1, time1 + _sim->_dtmin);
     newtime = time1 + _sim->_dtmin;

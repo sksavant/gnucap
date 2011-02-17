@@ -110,7 +110,7 @@ void LANGUAGE::new__instance(CS& cmd, MODEL_SUBCKT* owner, CARD_LIST* Scope)
       }else{
       }
     }else{
-      cmd.warn(bDANGER, type + ": no match");
+      cmd.warn(bDANGER, "new instance, " + type + ": no match");
     }
   }
 }

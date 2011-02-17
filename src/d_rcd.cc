@@ -1399,9 +1399,9 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
 
   }
   // std::cout << "uend"<<uend<< "newfill"<<newfill<<"\n";
+  assert( newfill > -0.01 || !m->positive);
   if( newfill <= 0 ){
-    untested();
-    newfill = 0;
+    newfill = 0.0;
   }
 
   if(newfill > 1.000001){
