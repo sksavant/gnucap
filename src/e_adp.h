@@ -235,6 +235,10 @@ class ADP_NODE: public CKT_BASE {
   public:
     virtual double debug();
     void set_order(uint_t x) {_order=x ;}
+
+  public: // temporary hacks
+    double tr_hi;
+    double tr_lo;
 };
 /*--------------------------------------------------------------------------*/
 class BTI_ADP : public ADP_NODE {

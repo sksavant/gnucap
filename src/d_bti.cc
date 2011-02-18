@@ -91,7 +91,6 @@ void MODEL_BUILT_IN_BTI_SINGLE::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
   assert(rcd_number==1);
   COMMON_BUILT_IN_RCD* RCD1 = new COMMON_BUILT_IN_RCD;
   RCD1->set_modelname( rcd_model_name ); // <= !
-  std::cout << "* uref single " << uref << "\n";
   RCD1->Uref = uref ;
   trace0(("MODEL_BUILT_IN_BTI_SINGLE::attach_rcds set_modelname " + (std::string) rcd_model_name).c_str());
   RCD1->attach(this); // ?
@@ -666,8 +665,6 @@ void COMMON_BUILT_IN_BTI::expand(const COMPONENT* d)
   trace0("COMMON_BUILT_IN_BTI::expand attached rcds");
 
   weight=m->weight;
-
-  assert ( _RCD[1] != _RCD[0] );
   assert(c == this);
 }
 /*--------------------------------------------------------------------------*/
@@ -796,8 +793,10 @@ DEV_BUILT_IN_BTI::DEV_BUILT_IN_BTI(const DEV_BUILT_IN_BTI& p)
 }
 /*--------------------------------------------------------------------------*/
 bool DEV_BUILT_IN_BTI::do_tr() { // untested0(long_label().c_str());
-  assert(subckt());set_converged(subckt()->do_tr());return converged();
+  assert(subckt());set_converged(subckt()->do_tr());
+  
   q_accept();
+  return converged();
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_BTI::expand()
@@ -911,6 +910,7 @@ void DEV_BUILT_IN_BTI::expand()
   }else{
   }
   assert(adp());
+  assert(subckt()->size() == m->rcd_number +1);
 }
 /*--------------------------------------------------------------------------*/
 // resultung dvth.

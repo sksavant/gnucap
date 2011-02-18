@@ -906,12 +906,12 @@ void ADP_NODE::tt_commit( )
 /*---------------------------------*/
 hp_float_t ADP_NODE::tr( double time ) const{
   double Time1 = Time0() - dT0();
-  double now_rel = time-(Time1);
+  long double now_rel = time-(Time1); // dT0, oder?
   switch(_order){
     case 1:
       return tr1();
     case 2:
-      return tr1() + ( (tr1()) - (tr2())) * ((now_rel )/dT1());
+      return tr1() + ( tr1() - tr2()) * ((now_rel )/(long double) dT1());
     case 3:
       return  -(((tr2() - tr3())/dT2() - (tr1() - tr2())/dT1())*(now_rel + dT1())/(dT1() + dT2()) -
         (tr2() - tr3())/dT2())*(now_rel + dT1() + dT2()) + tr3();
@@ -936,7 +936,16 @@ void ADP_NODE::tr_expect_( ){
       break;
     case 2:
       trace3(("ADP_NODE::tr_expect_ extradebug" + long_label()).c_str(), tr2(), tr1(), tr(Time0()) );
-      assert(is_almost(tr2(), tr(Time2())));
+      if ( fabs(tr2()-tr(Time2())) > 1e-20  && !(is_almost(tr2(), tr(Time2())))){
+        error( bDANGER, "ADP_NODE::tr_expect_ mismatch, T0: %E, %E, %E\n", Time0(), Time1(), Time2());
+        error( bDANGER, "ADP_NODE::tr_expect_ mismatch, tr1:   %E, tr2: %E d %E  \n", tr1(), tr2(), tr1()-tr2() );
+        error( bDANGER, "ADP_NODE::tr_expect_ mismatch, tr2():tr(Time2()=%E))= %E : %E\n", Time2(), tr2(), tr(Time2()) );
+        error( bDANGER, "ADP_NODE::tr_expect_ mismatch in %s\n", long_label().c_str() );
+        error( bDANGER, "ADP_NODE::tr_expect_ mismatch dT1() %E\n", dT1() );
+
+        throw(Exception(" mismatch "));
+        assert( false);
+      }
     case 1:
       assert(is_almost(tr1(), tr(Time1())));
       tr()=tr(_sim->_Time0);

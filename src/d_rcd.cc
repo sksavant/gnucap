@@ -1006,6 +1006,10 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
 
   if (Umatch(x, "region ")) {
     return  static_cast<double>(region());
+  }else if (Umatch(x, "u_lo ")) {
+    return  ( _Ccgfill->tr_lo );
+  }else if (Umatch(x, "u_hi ")) {
+    return  ( _Ccgfill->tr_hi );
   }else if (Umatch(x, "tra ")) {
     return  ( _Ccgfill->tr_abs_err() );
   }else if (Umatch(x, "noise ")) {
@@ -1041,6 +1045,11 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
       return  ( _n[n_ic].v0() - _n[n_b].v0() ) * c->_weight * c->_wcorr;
     } else
       return _Ccgfill->get_total() * c->_weight * c->_wcorr;
+  }else if (Umatch(x, "fill ")) {
+    if (m->use_net())
+      return _n[n_ic].v0() - _n[n_b].v0();
+    else
+      return _tr_fill;
   }else if (Umatch(x, "v{c} ")) {
     if (m->use_net())
       return _n[n_ic].v0() - _n[n_b].v0();
@@ -1049,7 +1058,9 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "wt ")) {
     return  c->_weight;
   }else if (Umatch(x, "vin ")) {
-    return  _n[n_u].v0() - _n[n_b].v0();
+    assert (involts() <= _Ccgfill->tr_hi || _sim->_time0==0);
+    assert (involts() >= _Ccgfill->tr_lo || _sim->_time0==0);
+    return  involts();
   }else if (Umatch(x, "status ")) {
     return  static_cast<double>(converged() * 2);
   }else if (Umatch(x, "_region ")) {
@@ -1182,7 +1193,7 @@ long double COMMON_BUILT_IN_RCD::__step(long double uin, long double cur,  doubl
   long double Rc1=cc->_Rc1;
   long double t=deltat;
 
-  long double Eend = (long double) 1.0/((long double)1.0 + expl(-Rc1*uin) * Re0/uin/Rc0 );
+  long double Eend = 1.0L/(1.0L + expl(-Rc1*uin) * Re0/uin/Rc0 );
 
   long double ret =  (cur-Eend) 
       // * expl( -(Rc0*uin             /Re0 + expl(-Rc1*uin))*t              /Rc0 )
@@ -1193,7 +1204,7 @@ long double COMMON_BUILT_IN_RCD::__step(long double uin, long double cur,  doubl
   if( (cur-Eend) < 1) sgn=-1;
 
   long double factor =  expl( -(uin /Re0 + expl(-Rc1*uin)/Rc0)*t    );
-  long double retalt =  cur *factor    +Eend * (1-factor);
+  long double retalt =  cur *factor    +Eend * (1.0L-factor);
 
   trace7("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, uin, Rc0, ret, retalt, logl(fabsl(cur-Eend ) ) );
   //assert(is_almost(retalt ,ret));
@@ -1270,7 +1281,6 @@ void DEV_BUILT_IN_RCD::stress_apply()
   fill_new2 = c->__step( _Ccgfill->tr( Time1+ex_time*2.0/3.0 ), fill_new2, ex_time/2.0 );
   assert(is_number(fill_new2));
 
-//  std::cout << "* filldelta " << fill_new - fill_new2 << "\n";
 
   fill_new=fill_new2;
 
@@ -1324,12 +1334,24 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
 
   trace1("DEV_BUILT_IN_RCD::tr_stress at", _sim->_time0 );
 
+
+  if( _sim->_time0==0 ){
+    _Ccgfill->tr_lo=involts();
+    _Ccgfill->tr_hi=involts();
+
+  }  else {
+    _Ccgfill->tr_lo=min(involts(), _Ccgfill->tr_lo);
+    _Ccgfill->tr_hi=max(involts(), _Ccgfill->tr_hi);
+  }
+
   if( _sim->_time0 > lasts || _sim->_time0==0 ){
     lasts=_sim->_time0;
   }else {
     trace1("DEV_BUILT_IN_RCD::tr_stress again?? bug??", _sim->_time0 );
+    assert(_sim->_time0 == lasts);
     return;
   }
+
 
   if (!h) {
     trace1("not h\n", _tr_fill);
@@ -1386,7 +1408,6 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   double tau_e_here = m->__Re( uin, c);
   double tau_c_here = m->__Rc( uin, c);
 
-  double uend = tau_c_here / ( tau_e_here + tau_c_here );
   double tau = c->__tau(uin);
 
   double newfill;
@@ -1394,11 +1415,9 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
     case 0:
     case 1:
     default:
-      // newfill = (fill - uend) * exp(-h/tau) + uend;
       newfill = c->__step(uin, fill,  h);
 
   }
-  // std::cout << "uend"<<uend<< "newfill"<<newfill<<"\n";
   assert( newfill > -0.01 || !m->positive);
   if( newfill <= 0 ){
     newfill = 0.0;
@@ -1410,7 +1429,6 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   }
   assert(newfill==newfill);
   assert(is_number(tau));
-  assert(is_number(uend));
 
   _tr_fill=newfill;
   trace6("DEV_BUILT_IN_RCD::tr_stress ", fill, h, tau, (newfill-fill)/h, _tr_fill, h );
@@ -1457,9 +1475,8 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
 
   _Ccgfill->set_tt(_tr_fill);
 
-  assert (_tr_fill == _Ccgfill->tt());
+
   
-//   _tr_fill=_->get_total();
 }
 ///*--------------------------------------------------------------------------*/
 double COMMON_BUILT_IN_RCD::__tau(double uin)const
@@ -1505,17 +1522,16 @@ bool DEV_BUILT_IN_RCD::do_tr()
   assert(m);
   assert(c->sdp());
   q_accept(); // multiple times??
-  if(m->use_net()){
-  // so funktioniert das wohl.
-  bool     s = true;
-  s = s && _Ye->do_tr();
-  s = s && _GRc->do_tr();
-  s = s && _Ccg->do_tr();
-  set_converged(s);
-  trace1("do_tr",s);
-  return converged();
-  }
 
+  if(m->use_net()){
+    bool     s = true;
+    s = s && _Ye->do_tr();
+    s = s && _GRc->do_tr();
+    s = s && _Ccg->do_tr();
+    set_converged(s);
+    trace1("do_tr",s);
+    return converged();
+  }
   return true;
 }
 //
@@ -1580,17 +1596,20 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
         "at uin=%LE (E_old=%E) %i\n", uin, E_old, CKT_BASE::_sim->tt_iteration_number());
     assert(false);
   }
+  double reltol=pow(OPT::reltol,1.4);
 
-  trace2("COMMON_BUILT_IN_RCD::__uin_iter rel_tol", OPT::reltol, OPT::abstol);
+  trace2("COMMON_BUILT_IN_RCD::__uin_iter rel_tol", reltol, OPT::abstol);
   while( ( A || ( B && C && D ) ) ) { // && fabs(Euin-E)>1e-40 ) 
     i++;
     trace7("COMMON_BUILT_IN _RCD::__uin_iter loop", (double)uin, (double)res, (double)fres, Edu, E, i,Euin);
     trace3(" ",dx_res,Q,df_fres);
-    if( i> 200){
+    if( i> 400){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge uin="
-          "%LE, E=%E, lres=%Lg, Q=%Lg s=%i%i\n", uin, E, log(fabs(res)), Q,A,B);
+          "%LE, E=%LE, lres=%Lg, Q=%Lg s=%i%i\n", uin, E, log(fabs(res)), Q,A,B);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter LQ=%Lf>%Lf. h%i\n", 
-          log(Q), log(OPT::reltol), hhack);
+          log(Q), logl(reltol), hhack);
+      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter s=%i%i%i%i\n",
+          A,B,C,D);
       assert(false); // <- dashier kann man auskommentieren macht aer nur aerger (langfristig)
       break;
     }
@@ -1678,7 +1697,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
           "at uin=%LE (E_old=%E) %i:%i\n", uin, E_old, CKT_BASE::_sim->tt_iteration_number(), i);
       assert(is_number(Euin)); break;
     }
-    A = Q > pow(OPT::reltol,2);
+    A = Q > reltol;
     B = ( fabs(dx_res) > 1e-30 );   // dx failed
     C = ( fabs(fres) > OPT::abstol / 10. ); // df zu Zielwert failed
     D = ( fabs(df_fres) > 1e-125); // df zu Altwert  failed <= hack.

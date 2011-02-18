@@ -62,6 +62,7 @@ void TRANSIENT::sweep()
  
   if ( _inside_tt ) {
     trace0("TRANSIENT::sweep _inside_tt");
+    CARD_LIST::card_list.do_tr();
 
   } else if ( _cont ) {  // use the data from last time
     _sim->_phase = p_RESTORE;
@@ -534,7 +535,8 @@ bool TRANSIENT::next()
     /* Keep the most recent step, but creep along. */
     assert(newtime > _sim->_time0 - _sim->_dtmin);
     error(bDANGER, "zero time step\n");
-    error(bDANGER, "newtime=%e  rejectedtime=%e  time1=%e requested=%e\n", newtime, _sim->_time0, time1, _time_by_user_request);
+    error(bDANGER, "newtime=%e  rejectedtime=%e  time1=%e requested=%e\n",
+        newtime, _sim->_time0, time1, _time_by_user_request);
     if (_accepted) {untested();
       time1 = _sim->_time0;
     }else{untested();

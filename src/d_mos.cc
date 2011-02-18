@@ -1509,10 +1509,12 @@ bool DEV_BUILT_IN_MOS::do_tr()
     #endif
   }else{
   }
+
 #ifdef BTI_IN_SUBCKT
   return converged();
 #else
   return (converged() && _BTI->converged());
+  _BTI->q_accept();
 #endif
 }
 /*--------------------------------------------------------------------------*/
@@ -1841,7 +1843,7 @@ return  BASE_SUBCKT::tr_review();
 #endif
 }
 void    DEV_BUILT_IN_MOS::tr_accept(){
-  BASE_SUBCKT::tr_review();
+  BASE_SUBCKT::tr_accept();
 #ifndef BTI_IN_SUBCKT
   const COMMON_BUILT_IN_MOS* c = static_cast<const COMMON_BUILT_IN_MOS*>(common());
   assert(c);

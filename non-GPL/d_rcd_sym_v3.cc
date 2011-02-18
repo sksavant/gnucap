@@ -172,7 +172,6 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress( const COMPONENT* brh) const
     default:
       newfill = (fill - uend) * exp(-h/tau) + uend;
   }
-  // std::cout << "uend"<<uend<< "newfill"<<newfill<<"\n";
   if( newfill <= 0 ){
     untested();
     newfill = 0;
@@ -207,7 +206,6 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   double E_old = cap->tt();
 
   long double uin_eff=a->tr(); // 0 == current estimate
-  // cout << "*uineff " <<  uin_eff << endl;
   //
 
   trace3(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last " +
@@ -224,11 +222,12 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   if (uin_eff < U_min && positive){
     error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last %s tr() %E"
        " bad\n", cap->long_label().c_str(), a->tr() );
-    trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last history ",a->tr(), a->tr1(), a->tr2());
+    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last history %E %E %E\n",a->tr(), a->tr1(), a->tr2());
+    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last time %E %E\n",_sim->_time0, _sim->_Time0);
+    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last step %i %i\n",_sim->iteration_number(), _sim->tt_iteration_number());
+    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last order %i\n", a->order());
 
     assert(false);// doesnt make sense to go on
-
-    //uin_eff=0;
   }
 
   long double E_high; 
@@ -324,21 +323,29 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   }
 
   assert (E_high>=E_low);
-  a->set_tr_noise (E_high-E_low);
-  a->set_tr(uin_eff);
 
   if (linear_inversion)  a->set_order(0);
   assert(uin_eff > U_min);
   //assert ( uin_eff == a->get_tr());
   //
+  if ((cap->tr_lo >  uin_eff) || (uin_eff > cap->tr_hi  ) ){
+    error(bDANGER, "tr order broken, should be %E < %E < %E, is %i%i\n",
+        cap->tr_lo, uin_eff, cap->tr_hi, (cap->tr_lo > uin_eff) , (cap->tr_hi < uin_eff) );
+    // untested();
+    uin_eff= a->tr(); // set back to estimate (hack!)
+    uin_eff= ( cap->tr_lo + cap->tr_hi )/2 ;
+    a->set_order(0);
+  }
+  //
+  //
+  a->set_tr_noise (E_high-E_low);
+  a->set_tr(uin_eff);
 }
 /*--------------------------------------------------------------------------*/
 // precalc doesnt know device!!
 //void MODEL_BUILT_IN_RCD_SYM_V3::do_tt_prepare( COMPONENT* brh) const{
 //  const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
 //  const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
-//  //std::cout << "* " << cc->_wcorr << "\n";
-//  c->_Ccgfill->tt_set( -cc->_wcorr );
 //
 //  trace1( ( "MODEL_BUILT_IN_RCD_SYM_V3::do_tt_prepare" + brh->short_label()).c_str(),  -cc->_wcorr );
 //}
