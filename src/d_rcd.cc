@@ -1617,7 +1617,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     trace3(" ",dx_res,Q,df_fres);
     if( i> 400){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge uin="
-          "%LE, E=%LE, lres=%Lg, Q=%Lg s=%i%i\n", uin, E, log(fabs(res)), Q,A,B);
+          "%LE, E=%LE, lres=%Lg, Q=%Lg\n", uin, E, log(fabs(res)), Q);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter LQ=%Lf>%Lf. h%i\n", 
           log(Q), logl(reltol), hhack);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter start=%E\n", ustart);
@@ -1638,7 +1638,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter step %i:%i Edu nan at %LE Euin=%LE C=%LE diff "
           "%LE looking for %E, start %E res %LE\n", CKT_BASE::_sim->tt_iteration_number(),i,
              uin, Euin, 1-Euin, Edu, E, ustart, res  );
-      putres=true;
+      putres = true;
       // assert(false);
       if (i==1) // first iteration no reliale res
       {
@@ -1716,9 +1716,9 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
       assert(is_number(Euin)); break;
     }
 
-    delta_u  = .5* max ( OPT::abstol, double( fabs(uin) * (OPT::reltol) ) );
-    U = ( delta_u * Edu < fabs(( E - Euin)) );
+    delta_u = .5 * max ( OPT::abstol, double( fabs(uin) * (OPT::reltol) ) );
 
+    U = ( delta_u * Edu < fabs(( E - Euin)) );
     A = Q > reltol;
     B = ( fabs(dx_res) > 1e-30 );   // dx failed
     C = ( fabs(fres) > abstol ); // df zu Zielwert failed

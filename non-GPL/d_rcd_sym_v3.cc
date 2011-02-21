@@ -294,11 +294,13 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   }
 
   assert(uin_eff < U_max);
-  if (uin_eff < U_min && positive){
+  if (uin_eff <= 0.0 && positive){
     error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last %s tr() %LE bad, l%i\n", cap->long_label().c_str(), uin_eff, linear_inversion );
     trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last history ",a->tr(), a->tr1(), a->tr2());
 
-    //uin_eff=0;
+    a->set_order(0);
+    uin_eff=0;
+
   }
 
   if (uin_eff == inf){
@@ -330,7 +332,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   assert (E_high>=E_low);
 
   if (linear_inversion)  a->set_order(0);
-  assert(uin_eff > U_min);
+  assert(uin_eff >= 0.0 || !positive );
   //assert ( uin_eff == a->get_tr());
   //
   if ((cap->tr_lo >  uin_eff) || (uin_eff > cap->tr_hi  ) ){
@@ -431,27 +433,28 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__Edu(double uin, long double cur, const 
 //sage simplified
 
   // sage raw (?)
-  return (-(Rc0*exp(Rc1*uin)/(Rc0*exp(Rc1*uin) +
-      Re0/uin) - cur)*((Rc0*uin*exp(Rc1*uin)/Re0 + 1)*Rc1*t*exp(-Rc1*uin)/Rc0 -
+  return (- (Rc0*uin / (Rc0*uin + Re0/exp(Rc1*uin) ) - cur)
+          *((Rc0*uin*exp(Rc1*uin)/Re0 + 1)*Rc1*t*exp(-Rc1*uin)/Rc0 -
+      (Rc0*Rc1*uin*exp(Rc1*uin)/Re0 +
+       Rc0*exp(Rc1*uin)/Re0)*t*exp(-Rc1*uin)/Rc0)*exp(-(Rc0*uin*exp(Rc1*uin)/Re0 +
+       1)*t*exp(-Rc1*uin)/Rc0) +  Rc0*Rc1*exp(Rc1*uin)*uin/(Rc0*exp(Rc1*uin)*uin + Re0)
+                               - (Rc0*Rc1*exp(Rc1*uin)*uin /(Rc0*exp(Rc1*uin)*uin + Re0) -
+      (Rc0*Rc1*exp(Rc1*uin)*uin*uin - Re0)*Rc0*exp(Rc1*uin) /
+      square(Rc0*exp(Rc1*uin)*uin + Re0) )*exp(-(Rc0*uin*exp(Rc1*uin)/Re0 + 1)*t*exp(-Rc1*uin)/Rc0) -
+  (Rc0*Rc1*exp(Rc1*uin)*uin*uin - Re0)*Rc0*exp(Rc1*uin)/
+  square(Rc0*exp(Rc1*uin)*uin + Re0));
+
+  return (- (Rc0*exp(Rc1*uin)/(Rc0*exp(Rc1*uin) + Re0/uin) - cur)
+          *((Rc0*uin*exp(Rc1*uin)/Re0 + 1)*Rc1*t*exp(-Rc1*uin)/Rc0 -
       (Rc0*Rc1*uin*exp(Rc1*uin)/Re0 +
        Rc0*exp(Rc1*uin)/Re0)*t*exp(-Rc1*uin)/Rc0)*exp(-(Rc0*uin*exp(Rc1*uin)/Re0 +
        1)*t*exp(-Rc1*uin)/Rc0) +  Rc0*Rc1*exp(Rc1*uin)/(Rc0*exp(Rc1*uin) + Re0/uin)
                                - (Rc0*Rc1*exp(Rc1*uin)/(Rc0*exp(Rc1*uin) + Re0/uin) -
       (Rc0*Rc1*exp(Rc1*uin) - Re0/uin/uin)*Rc0*exp(Rc1*uin)/square(Rc0*exp(Rc1*uin) +
         Re0/uin))*exp(-(Rc0*uin*exp(Rc1*uin)/Re0 + 1)*t*exp(-Rc1*uin)/Rc0) -
-  (Rc0*Rc1*exp(Rc1*uin) - Re0/uin/uin)*Rc0*exp(Rc1*uin)/square(Rc0*exp(Rc1*uin) +
-      Re0/uin));
-  //sage output
-  return (-(Rc0*exp(Rc1*uin)/(Rc0*exp(Rc1*uin) +
-      Re0/uin) - cur)*((Rc0*uin*exp(Rc1*uin)/Re0 + 1)*Rc1*t*exp(-Rc1*uin)/Rc0 -
-      (Rc0*Rc1*uin*exp(Rc1*uin)/Re0 +
-       Rc0*exp(Rc1*uin)/Re0)*t*exp(-Rc1*uin)/Rc0)*exp(-(Rc0*uin*exp(Rc1*uin)/Re0 +
-       1)*t*exp(-Rc1*uin)/Rc0) + Rc0*Rc1*exp(Rc1*uin)/(Rc0*exp(Rc1*uin) + Re0/uin)
-                               - (Rc0*Rc1*exp(Rc1*uin)/(Rc0*exp(Rc1*uin) + Re0/uin) -
-      (Rc0*Rc1*exp(Rc1*uin) - Re0/uin/uin)*Rc0*exp(Rc1*uin)/square(Rc0*exp(Rc1*uin) +
-        Re0/uin))*exp(-(Rc0*uin*exp(Rc1*uin)/Re0 + 1)*t*exp(-Rc1*uin)/Rc0) -
-  (Rc0*Rc1*exp(Rc1*uin) - Re0/uin/uin)*Rc0*exp(Rc1*uin)/square(Rc0*exp(Rc1*uin) +
-      Re0/uin));
+  (Rc0*Rc1*exp(Rc1*uin) - Re0/uin/uin)*Rc0*exp(Rc1*uin)/
+  square(Rc0*exp(Rc1*uin) + Re0/uin));
+
 }
 /*--------------------------------------------------------------------------*/
 // solve E(uin)-E==0
