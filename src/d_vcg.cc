@@ -61,7 +61,7 @@ private: // override virtual
   void	    ac_begin()		{_ev = _y[0].f0;  _acg = _m0.c1;}
   void	    do_ac();
   void	    ac_load()		{ac_load_shunt(); ac_load_active();}
-  COMPLEX   ac_involts()const	{return _n[IN1]->vac() - _n[IN2]->vac();}
+  COMPLEX   ac_involts()const	{return _n[IN1].vac() - _n[IN2].vac();}
 
   std::string port_name(int i)const {untested();
     assert(i >= 0);

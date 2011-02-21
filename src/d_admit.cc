@@ -95,7 +95,7 @@ protected: // override virtual
   hp_float_t   tr_involts_limited()const {return volts_limited(_n[IN1],_n[IN2]);}
   void	   ac_iwant_matrix()	{ac_iwant_matrix_active();}
   void	   ac_load()		{ac_load_active();}
-  COMPLEX  ac_involts()const	{untested();return _n[IN1]->vac() - _n[IN2]->vac();}
+  COMPLEX  ac_involts()const	{untested();return _n[IN1].vac() - _n[IN2].vac();}
 
   std::string port_name(int i)const {
     assert(i >= 0);

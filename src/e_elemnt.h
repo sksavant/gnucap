@@ -147,7 +147,7 @@ public:
 
   double   tr_outvolts()const	{return dn_diff(_n[OUT1].v0(), _n[OUT2].v0());}
   double   tr_outvolts_limited()const{return volts_limited(_n[OUT1],_n[OUT2]);}
-  COMPLEX  ac_outvolts()const	{return _n[OUT1]->vac() - _n[OUT2]->vac();}
+  COMPLEX  ac_outvolts()const	{return _n[OUT1].vac() - _n[OUT2].vac();}
 
   virtual  hp_float_t  tr_involts()const		= 0;
   virtual  hp_float_t  tr_input()const		{return tr_involts();}
@@ -286,11 +286,11 @@ inline void ELEMENT::tr_unload_source()
 inline void ELEMENT::ac_load_source()
 {
   if (_n[OUT2].m_() != 0) {
-    _n[OUT2]->iac() += mfactor() * _acg;
+    _n[OUT2].iac() += mfactor() * _acg;
   }else{
   }
   if (_n[OUT1].m_() != 0) {
-    _n[OUT1]->iac() -= mfactor() * _acg;
+    _n[OUT1].iac() -= mfactor() * _acg;
   }else{itested();
   }
 }
@@ -411,7 +411,7 @@ inline void ELEMENT::tr_load_source_point(node_t& no1,
 inline void ELEMENT::ac_load_source_point(node_t& no1, COMPLEX new_value)
 {itested();
   if (no1.m_() != 0) {itested();
-    no1->iac() += mfactor() * new_value;
+    no1.iac() += mfactor() * new_value;
   }else{itested();
   }
 }

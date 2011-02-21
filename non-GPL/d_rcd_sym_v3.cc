@@ -222,12 +222,16 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   if (uin_eff < U_min && positive){
     error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last %s tr() %E"
        " bad\n", cap->long_label().c_str(), a->tr() );
-    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last history %E %E %E\n",a->tr(), a->tr1(), a->tr2());
+    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last history tr %E tr1 %E tr2 %E\n",
+        a->tr(), a->tr1(), a->tr2());
     error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last time %E %E\n",_sim->_time0, _sim->_Time0);
-    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last step %i %i\n",_sim->iteration_number(), _sim->tt_iteration_number());
+    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last step %i "
+       "%i\n",_sim->iteration_number(), _sim->tt_iteration_number());
     error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last order %i\n", a->order());
 
-    assert(false);// doesnt make sense to go on
+    //assert(false);// doesnt make sense to go on
+    a->set_order(0);
+    uin_eff=(uin_eff + a->tr1())/2;
   }
 
   long double E_high; 
@@ -238,8 +242,9 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   E_high = cc->__step( uin_high, E_old, CKT_BASE::_sim->_last_time );
   E_low  = cc->__step( uin_low,  E_old, CKT_BASE::_sim->_last_time ); 
 
-  if(!(E_high >= E_low)){
-    trace5("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last ", E_low, E, E_high, uin_high, uin_low );
+  if(!((double)E_high >= (double)E_low)){
+    trace6("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last ", E_low, E, E_high,
+        uin_high, uin_low, E_high - E_low );
     assert(false);
   }
 
@@ -329,7 +334,9 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   //assert ( uin_eff == a->get_tr());
   //
   if ((cap->tr_lo >  uin_eff) || (uin_eff > cap->tr_hi  ) ){
-    error(bDANGER, "tr order broken, should be %E < %E < %E, is %i%i\n",
+    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last Time %E \n    "
+                " order broken, should be %E < %LE < %E, is %i%i\n",
+                _sim->_Time0,
         cap->tr_lo, uin_eff, cap->tr_hi, (cap->tr_lo > uin_eff) , (cap->tr_hi < uin_eff) );
     // untested();
     uin_eff= a->tr(); // set back to estimate (hack!)

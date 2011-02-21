@@ -75,8 +75,8 @@ public:
   static double tt_behaviour_del;
   static double tt_behaviour_rel;
   void tt_prepare();
-  virtual void tr_stress_last() {}
-  virtual double      tt_probe_num(const std::string&)const;
+  virtual void   tr_stress_last() {}
+  virtual double tt_probe_num(const std::string&)const;
 
   int iteration_number()const   {return _sim->_iter[iSTEP];}
   int tt_iteration_number()const   {return _sim->_tt_iter;} // accepted steps

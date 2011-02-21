@@ -69,7 +69,7 @@ private: // override virtual
   void	   ac_begin();
   void	   do_ac();
   void	   ac_load()		{ac_load_shunt(); ac_load_active();}
-  COMPLEX  ac_involts()const	{return _n[IN1]->vac() - _n[IN2]->vac();}
+  COMPLEX  ac_involts()const	{return _n[IN1].vac() - _n[IN2].vac();}
 
   std::string port_name(int i)const {
     assert(i >= 0);
@@ -177,6 +177,7 @@ void DEV_VCVS2::tr_eval()
 
  //       value = uref...
   f0 = value() * (exp( x / value() ) - 1 ) / ( exp(1) -1 ) ; // _c[0] +    x * _c[1] + x * x * _c[2] ;
+  f0 = x;
   f1 = 0; // exp(x); //_c[1] + 2 *x * _c[2];
   //f1 = exp(x); //_c[1] + 2 *x * _c[2];
   //

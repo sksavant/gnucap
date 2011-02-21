@@ -58,7 +58,7 @@ private: // override virtual
   void	   ac_begin();
   void	   do_ac();
   void	   ac_load()		{ac_load_shunt(); ac_load_active();}
-  COMPLEX  ac_involts()const  {untested();return _n[IN1]->vac()-_n[IN2]->vac();}
+  COMPLEX  ac_involts()const  {untested();return _n[IN1].vac()-_n[IN2].vac();}
   COMPLEX  ac_amps()const     {untested(); return ELEMENT::ac_amps();}
   //XPROBE ac_probe_ext(const std::string&)const;//ELEMENT
 

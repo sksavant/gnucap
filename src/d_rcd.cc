@@ -1187,6 +1187,11 @@ long double COMMON_BUILT_IN_RCD::__step(long double uin, long double cur,  doubl
   assert(cc);
   assert(is_number(uin));
   assert(is_number(cur));
+
+  if(uin<0){
+    untested();
+    uin=0;
+  }
   
   long double Rc0=cc->_Rc0;
   long double Re0=cc->_Re0;
@@ -1296,9 +1301,9 @@ void DEV_BUILT_IN_RCD::stress_apply()
 
   if( m->use_net() && _sim->analysis_is_tt() )
   {
-    _sim->_v0[_n[n_ic]->m_()] = fv + _sim->_v0[_n[n_b]->m_()];
-    _sim->_vt1[_n[n_ic]->m_()] = fv + _sim->_vt1[_n[n_b]->m_()];
-    _sim->_vdc[_n[n_ic]->m_()] = fv + _sim->_vdc[_n[n_b]->m_()];
+    _sim->_v0[_n[n_ic].m_()] = fv + _sim->_v0[_n[n_b].m_()];
+    _sim->_vt1[_n[n_ic].m_()] = fv + _sim->_vt1[_n[n_b].m_()];
+    _sim->_vdc[_n[n_ic].m_()] = fv + _sim->_vdc[_n[n_b].m_()];
     ((STORAGE*) (_Ccg))->tr_init(_tr_fill);
 
     trace2("DEV_BUILT_IN_RCD::stress_apply n", _Ccgfill->get_tr(), _Ccgfill->get_tt());
@@ -1342,6 +1347,9 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   }  else {
     _Ccgfill->tr_lo=min(involts(), _Ccgfill->tr_lo);
     _Ccgfill->tr_hi=max(involts(), _Ccgfill->tr_hi);
+
+    assert( -5<  _Ccgfill->tr_hi &&  _Ccgfill->tr_hi < 100 );
+    assert( -5<  _Ccgfill->tr_lo &&  _Ccgfill->tr_lo < 100 );
   }
 
   if( _sim->_time0 > lasts || _sim->_time0==0 ){
@@ -1585,10 +1593,12 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
   bool putres=false;
 
   double ustart = uin;
+  long double delta_u=0;
   bool A=true;
   bool B=true;
   bool C=true;
   bool D=true;
+  bool U=true;
 
   Euin = ((COMMON_BUILT_IN_RCD*)c)->__step( uin, E_old, CKT_BASE::_sim->_last_time   );
   if(!is_number(Euin)) {
@@ -1596,10 +1606,12 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
         "at uin=%LE (E_old=%E) %i\n", uin, E_old, CKT_BASE::_sim->tt_iteration_number());
     assert(false);
   }
-  double reltol=pow(OPT::reltol,1.4);
+  double reltol = pow(OPT::reltol,1.2);
+  double abstol = OPT::abstol/1000.0;
 
   trace2("COMMON_BUILT_IN_RCD::__uin_iter rel_tol", reltol, OPT::abstol);
-  while( ( A || ( B && C && D ) ) ) { // && fabs(Euin-E)>1e-40 ) 
+  //while( ( A || ( B && C && D ) ) ) { // && fabs(Euin-E)>1e-40 ) 
+  while( U || (( A && C ) || ( B && C && D ) ) ) { // && fabs(Euin-E)>1e-40 ) 
     i++;
     trace7("COMMON_BUILT_IN _RCD::__uin_iter loop", (double)uin, (double)res, (double)fres, Edu, E, i,Euin);
     trace3(" ",dx_res,Q,df_fres);
@@ -1608,8 +1620,9 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
           "%LE, E=%LE, lres=%Lg, Q=%Lg s=%i%i\n", uin, E, log(fabs(res)), Q,A,B);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter LQ=%Lf>%Lf. h%i\n", 
           log(Q), logl(reltol), hhack);
-      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter s=%i%i%i%i\n",
-          A,B,C,D);
+      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter start=%E\n", ustart);
+      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter s=%i%i%i%i%i\n",
+          A,B,C,D,U);
       assert(false); // <- dashier kann man auskommentieren macht aer nur aerger (langfristig)
       break;
     }
@@ -1621,6 +1634,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     }
     Edu = m->__Edu(uin, E_old, c);
     if(!is_number(Edu) ){
+      untested();
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter step %i:%i Edu nan at %LE Euin=%LE C=%LE diff "
           "%LE looking for %E, start %E res %LE\n", CKT_BASE::_sim->tt_iteration_number(),i,
              uin, Euin, 1-Euin, Edu, E, ustart, res  );
@@ -1638,6 +1652,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
       } else {  // next iterations, try half step size 
         res /= 2.0;
         uin += res;
+        uin=max(uin,0.0L);
         hhack++;
       }
       continue;
@@ -1653,8 +1668,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     }
     assert (is_number (Euin));
     assert (is_number (Edu));
-    fres =(Euin-E);           // df, Das ist die  Differenz am  Ende, (f(x) -fsoll) 
-                              // die auf 10-12 genau sein sollte 
+    fres =(Euin-E);
     res  = fres/Edu;       // dx, Das ist die Differenz in x also: delta x 
 
     if(!is_number(res) && fabs(Edu) < 1E-150 ) {
@@ -1670,24 +1684,28 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
 //       res=res/10;
     // numerische ok? wieso auf abstol=10-12 genau?
     // Edu ist in diesem Fall 10^-10 und damit ist res viel zu gross. 
-    Q= fabs( res / uin );
+    Q = fabs( res / uin );
+
+
+
 
     cres= fmin( 1.0,res);
     cres= fmax(-1.0,res);
 
     dx_res=uin;
-    //fprintf(stderr," uin alt %.50Lg E %.50Lg  \n ",uin,E);
     uin -= cres;
-    dx_res-=uin; // Effektives dx da es durch Numerik kaputt gehen kann
-    //fprintf(stderr," uin neu %.50Lg Euin %.50Lg  \n ",uin,Euin);
 
     assert(is_number(uin));
 
-    if( (uin<-0.0001) && m->positive ) {
+    if( (uin<-0.0000) && m->positive ) {
       trace1( "COMMON_BUILT_IN_RCD::__uin_iter neg uin ", uin );
       putres=true;
-      uin=.01;
+      cres = uin;
+      uin = .00;
     }
+    dx_res-=uin; // Effektives dx da es durch Numerik kaputt gehen kann
+
+
     Euin = cc->__step( uin, E_old, BASE_SUBCKT::_sim->_last_time   );
     df_fres = Euin-Euin_alt; // Effektive Veraenderung im f Bereich. 
     Euin_alt = Euin;
@@ -1697,9 +1715,13 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
           "at uin=%LE (E_old=%E) %i:%i\n", uin, E_old, CKT_BASE::_sim->tt_iteration_number(), i);
       assert(is_number(Euin)); break;
     }
+
+    delta_u  = .5* max ( OPT::abstol, double( fabs(uin) * (OPT::reltol) ) );
+    U = ( delta_u * Edu < fabs(( E - Euin)) );
+
     A = Q > reltol;
     B = ( fabs(dx_res) > 1e-30 );   // dx failed
-    C = ( fabs(fres) > OPT::abstol / 10. ); // df zu Zielwert failed
+    C = ( fabs(fres) > abstol ); // df zu Zielwert failed
     D = ( fabs(df_fres) > 1e-125); // df zu Altwert  failed <= hack.
 
 // hab ein paar numerische Hacks eingebaut, die es jetzt durchlaufen lassen...
@@ -1714,12 +1736,12 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
 // 3. kein Hack, der nur bei monoton steigenden Funktionen geht: Wenn er bei der ersten Iteration
 //     mit uin= 3681 anfaengt kann er gar kein Edu ausrechnen dann halbier ich nicht res  sondern uin.
 
-    trace5(" Ende Loop ",A,B,C,D,i);
+    trace6(" Ende Loop ",A,B,C,D,U,i);
     
   }
   trace7("COMMON_BUILT_IN_RCD::__uin_iter done", uin, res,
       fres, df_fres, Edu, E, E_old);
-  trace4("COMMON_BUILT_IN_RCD::__uin_iter done", (E-Euin), ustart,i, putres );
+  trace5("COMMON_BUILT_IN_RCD::__uin_iter done", (E-Euin), ustart,i, putres, delta_u );
 
 #ifndef DNDEBUG
   //sanitycheck
@@ -1728,11 +1750,15 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
   long double E_hier  = cc->__step( uin , E_old, BASE_SUBCKT::_sim->_last_time );
   long double E_oben  = cc->__step( u_oben , E_old, BASE_SUBCKT::_sim->_last_time );
   long double E_unten = cc->__step( u_unten, E_old, BASE_SUBCKT::_sim->_last_time );
-  trace4("COMMON_BUILT_IN_RCD::__uin_iter sanitycheck", E - 1, E_oben - E,E- E_unten, E_oben );
+
+  trace3("COMMON_BUILT_IN_RCD::__uin_iter sanitycheck", uin, u_oben ,u_unten );
+  trace6("COMMON_BUILT_IN_RCD::__uin_iter sanitycheck", E,E_hier, E - 1, E_oben - E,E- E_unten, E_oben );
+  trace4("COMMON_BUILT_IN_RCD::__uin_iter sanitycheck", E,E_hier, E_oben,E_unten );
 
   assert(E_oben >= E_hier);
   assert(E_unten <= E_hier);
   assert(E_oben >= E_unten);
+
   assert(double(E_oben) >= E);
   // assert(E_unten <= E);
 

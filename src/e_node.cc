@@ -89,21 +89,28 @@ LOGIC_NODE::LOGIC_NODE()
 /*--------------------------------------------------------------------------*/
 /* default constructor : unconnected, don't use
  */
-NODE::NODE()
-  :CKT_BASE(),
+NODE_BASE::NODE_BASE() 
+  : CKT_BASE(),
    _user_number(INVALID_NODE)
-   //_flat_number(INVALID_NODE)
-   //_matrix_number(INVALID_NODE)
+{
+}
+NODE::NODE()
+  :NODE_BASE()
 {
 }
 /*--------------------------------------------------------------------------*/
 /* copy constructor : user data only
  */
-NODE::NODE(const NODE& p)
+NODE_BASE::NODE_BASE(const NODE_BASE& p)
   :CKT_BASE(p),
    _user_number(p._user_number)
    //_flat_number(p._flat_number)
    //_matrix_number(INVALID_NODE)
+{
+  unreachable();
+}
+NODE::NODE(const NODE& p)
+  :NODE_BASE(p)
 {
   unreachable();
 }
@@ -112,10 +119,7 @@ NODE::NODE(const NODE& p)
  * supposedly not used, but used by a required function that is also not used
  */
 NODE::NODE(const NODE* p)
-  :CKT_BASE(*p),
-   _user_number(p->_user_number)
-   //_flat_number(p->_flat_number)
-   //_matrix_number(INVALID_NODE)
+  :NODE_BASE(*p)
 {
   unreachable();
 }
@@ -123,6 +127,11 @@ NODE::NODE(const NODE* p)
 /* usual initializing constructor : name and index
  */
 NODE::NODE(const std::string& s, int n)
+  :NODE_BASE(s,n)
+{
+}
+/*--------------------------------------------------------------------------*/
+NODE_BASE::NODE_BASE(const std::string& s, int n)
   :CKT_BASE(s),
    _user_number(n)
    //_flat_number(n)
@@ -223,7 +232,7 @@ double LOGIC_NODE::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "ai{ter} ")) {untested();
     return static_cast<double>(_a_iter);
   }else{
-    return NODE::tr_probe_num(x);
+    return NODE_BASE::tr_probe_num(x);
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -304,6 +313,7 @@ void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
       store_old_lv();			/* save to see if it changes */
     }
     
+    // MIXED_NODE?
     double sv = v0() / process()->range;	/* new scaled voltage */
     if (sv >= process()->th1) {		/* logic 1 */
       switch (lv()) {
@@ -545,4 +555,7 @@ void node_t::map_subckt_node(int* m, const CARD* d)
   assert(node_is_valid(_ttt));
 }
 /*--------------------------------------------------------------------------*/
+     double	NODE_BASE::tr_probe_num(const std::string&)const{}
+     double	NODE_BASE::tt_probe_num(const std::string& x)const{return tr_probe_num(x);}
+    XPROBE	NODE_BASE::ac_probe_ext(const std::string&)const{}
 /*--------------------------------------------------------------------------*/

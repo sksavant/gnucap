@@ -1,4 +1,5 @@
 /*$Id: e_node.h,v 1.5 2010-09-20 08:21:54 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -79,11 +80,28 @@ public:
   LOGICVAL& set_in_transition(LOGICVAL newval);
 };
 /*--------------------------------------------------------------------------*/
-class NODE : public CKT_BASE {
-private:
-  uint_t	_user_number;
-  //int	_flat_number;
-  //int	_matrix_number;
+// necessary?
+class NODE_BASE : public CKT_BASE {
+  protected:
+    explicit NODE_BASE();
+    explicit NODE_BASE(const NODE_BASE& p);
+  protected:
+    uint_t	_user_number;
+    //int	_flat_number;
+    //int	_matrix_number;
+  public:
+    explicit NODE_BASE(const NODE_BASE* p);
+    explicit NODE_BASE(const std::string& s, int n);
+    virtual ~NODE_BASE() {}
+    NODE_BASE&	set_user_number(int n)	{_user_number = n; return *this;}
+  public: // virtuals
+    virtual double	tr_probe_num(const std::string&)const;
+    virtual double	tt_probe_num(const std::string&)const;
+    virtual XPROBE	ac_probe_ext(const std::string&)const;
+
+};
+/*--------------------------------------------------------------------------*/
+class NODE : public NODE_BASE {
 protected:
   explicit NODE();
 private: // inhibited
@@ -100,7 +118,6 @@ public: // simple calculated data access (rvalues)
   uint_t	matrix_number()const	{return _sim->_nm[_user_number];}
   uint_t	m_()const		{return matrix_number();}
 public: // maniputation
-  NODE&	set_user_number(int n)	{_user_number = n; return *this;}
   //NODE& set_flat_number(int n) {itested();_flat_number = n; return *this;}
   //NODE& set_matrix_number(int n){untested();_matrix_number = n;return *this;}
 public: // virtuals
@@ -131,7 +148,7 @@ public: // virtuals
     assert(m_() <= _sim->_total_nodes);
     return _sim->_ac[m_()];
   }
-};
+}; //NODE
 extern NODE ground_node;
 /*--------------------------------------------------------------------------*/
 class INTERFACE LOGIC_NODE : public NODE {
@@ -339,15 +356,15 @@ public:
     assert(m_() <= NODE::_sim->_total_nodes);
     return NODE::_sim->_i[m_()];
   }
-#if 0
+
+  // ??
   COMPLEX&    iac() {untested();
     assert(n_());
     assert(n_()->m_() == m_());
-    assert(n_()->iac() == NODE::_ac[m_()]);
+    // assert(n_()->iac() == NODE::_ac[m_()]);
     //return n_()->iac();
     return NODE::_sim->_ac[m_()];
   }
-#endif
 };
 /*--------------------------------------------------------------------------*/
 INTERFACE double volts_limited(const node_t& n1, const node_t& n2);
