@@ -63,6 +63,7 @@ void TRANSIENT::sweep()
   if ( _inside_tt ) {
     trace0("TRANSIENT::sweep _inside_tt");
     CARD_LIST::card_list.do_tr();
+    // CARD_LIST::card_list.tr_accept();
 
   } else if ( _cont ) {  // use the data from last time
     _sim->_phase = p_RESTORE;

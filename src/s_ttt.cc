@@ -338,7 +338,6 @@ void TTT::sweep_tt()
     _sim->_dt0 = _Tstop;
     _sim->_dT0 = 0;
 
- //    ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_commit );
     CARD_LIST::card_list.do_forall( &CARD::tr_stress );
     CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
 
@@ -609,11 +608,11 @@ void TTT::do_it(CS& Cmd, CARD_LIST* Scope)
       case rPRESET:	untested(); /*nothing*/ break;
     }
 
-    unallocate();
 
   } catch (Exception& e) {itested();
     error(bDANGER, e.message() + '\n');
   }
+  unallocate();
 
   if(_trace>0 )
     _out << "* unallocating\n";

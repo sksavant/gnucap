@@ -1029,7 +1029,7 @@ void DEV_BUILT_IN_BTI::tr_stress() {
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_BTI::tt_commit() const {
-  untested();
+  itested();
   //FIXME, subckt default
   //        RCD reicht!
   subckt()->do_forall( &CARD::tt_commit ); // sort of tt_prepare?
@@ -1044,7 +1044,7 @@ void DEV_BUILT_IN_BTI::tt_prepare() {
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_BTI::stress_apply() {
-  untested();
+  itested();
   //FIXME, subckt default
   //        RCD reicht!
   subckt()->stress_apply();

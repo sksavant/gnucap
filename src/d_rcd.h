@@ -232,8 +232,9 @@ protected: // override virtual
   virtual   void      expand(); // virtual??
   void      precalc_last();
   //void    map_nodes();         //BASE_SUBCKT
-  //void    tr_begin();          //BASE_SUBCKT
-  virtual void    tr_stress();
+ //  void    tr_begin();    // BASE_SUBCKT
+  void tt_next(){ lasts=0; } // HACK
+  void    tr_stress(); //BASE_SUBCKT
   void    tr_stress_();
   //void    tr_restore();        //BASE_SUBCKT
   void    stress_apply(); 

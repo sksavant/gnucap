@@ -1365,8 +1365,8 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
     trace1("DEV_BUILT_IN_RCD::tr_stress again?? bug??", _sim->_time0 );
     if (! (_sim->_time0 == lasts) ){
 
-    error(bDANGER,"DEV_BUILT_IN_RCD::tr_stress unequal %E %E\n", _sim->_time0, lasts );
-      throw(Exception("?"));
+      error(bDANGER,"DEV_BUILT_IN_RCD::tr_stress unequal now: %E lasts: %E at %E\n", _sim->_time0, lasts, _sim->_Time0 );
+      throw(Exception("time mismatch in " + long_label()));
     }
   }
 
@@ -1397,7 +1397,7 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   double uin = rcd->involts();
   if (m->positive){
     uin=max(uin,0.0);
-    untested();
+    itested();
   }
 
   trace2("DEV_BUILT_IN_RCD::tr_stress ", fill, uin );
@@ -1534,10 +1534,12 @@ void DEV_BUILT_IN_RCD::tt_prepare()
   assert(m);
 
   _tr_fill = _Ccgfill->tt();
+  assert(_sim->_time0 == 0 );
 
-  untested();
   trace0(("DEV_BUILT_IN_RCD::tt_prepare " + short_label()).c_str());
   m->do_tt_prepare(this);
+
+  lasts=0;
 }
 ///*--------------------------------------------------------------------------*/
 bool DEV_BUILT_IN_RCD::do_tr()
