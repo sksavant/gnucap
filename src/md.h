@@ -229,6 +229,12 @@ namespace std{
 	//double min(long double x, double y) {return min((double) x, y);}
 }
 /*--------------------------------------------------------------------------*/
+inline double fmin(double x, double y, double z){
+  return ( fmin(fmin(x,y),z));
+}
+inline double fmax(double x, double y, double z){
+  return ( fmax(fmax(x,y),z));
+}
 inline bool is_number(double x){
   return (( x != inf ) && (x != -inf ) && (x == x)) ;
 }
@@ -236,6 +242,6 @@ inline bool is_almost(double x, double y){
   return ( fabs(x-y) / ( fmax(fabs(x),fabs(y))+1e-20) < 1e-10 );
 }
 inline double square(double x){return x*x;}
-inline  long double square(long double x){return x*x;}
+inline long double square(long double x){return x*x;}
 /*--------------------------------------------------------------------------*/
 #endif

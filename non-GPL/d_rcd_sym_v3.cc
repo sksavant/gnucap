@@ -219,7 +219,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
     untested();
     E=1;
   }
-  if (uin_eff < U_min && positive){
+  if (uin_eff < 0.0 && positive){
     error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last %s tr() %E"
        " bad\n", cap->long_label().c_str(), a->tr() );
     error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last history tr %E tr1 %E tr2 %E\n",
@@ -231,13 +231,14 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
 
     //assert(false);// doesnt make sense to go on
     a->set_order(0);
-    uin_eff=(uin_eff + a->tr1())/2;
+    uin_eff=max( (uin_eff + a->tr1())/2 , 0.0L);
   }
 
   long double E_high; 
   long double E_low; 
   long double uin_high = max ( uin_eff + OPT::abstol, uin_eff * (1+OPT::reltol) );
   long double uin_low  = min ( uin_eff - OPT::abstol, uin_eff * (1-OPT::reltol) );
+  if( positive ) uin_low = max(uin_low,0.0L);
 
   E_high = cc->__step( uin_high, E_old, CKT_BASE::_sim->_last_time );
   E_low  = cc->__step( uin_low,  E_old, CKT_BASE::_sim->_last_time ); 
@@ -267,13 +268,20 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   }
 
   if (!linear_inversion){
-    uin_eff = cc->__uin_iter(uin_eff, E_old, E );
+    try{
+      uin_eff = cc->__uin_iter(uin_eff, E_old, E );
+    } catch (Exception &e) {
+      error(bDANGER, "%s\n", long_label().c_str());
+      throw(e);
+    }
     trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last iteration -> ", E_old, E, uin_eff);
   }
 
   // sanitycheck (monotonicity)
   long double E_test=cc->__step( uin_eff, E_old, CKT_BASE::_sim->_last_time );
-  long double E_vorher=cc->__step( a->tr(), E_old, CKT_BASE::_sim->_last_time );
+  double trvorher= a->tr();
+  if(positive) trvorher=max(0.0,trvorher);
+  long double E_vorher=cc->__step( trvorher , E_old, CKT_BASE::_sim->_last_time );
   if (fabs(E_test - E) < fabs(E_vorher-E)){
     trace6("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last new uin better ",
         uin_eff, a->tr(), E_test - E, E_vorher-E,1-E , linear_inversion);
@@ -295,7 +303,8 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
 
   assert(uin_eff < U_max);
   if (uin_eff <= 0.0 && positive){
-    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last %s tr() %LE bad, l%i\n", cap->long_label().c_str(), uin_eff, linear_inversion );
+    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last %s tr() %LE bad, l%i\n",
+        cap->long_label().c_str(), uin_eff, linear_inversion );
     trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last history ",a->tr(), a->tr1(), a->tr2());
 
     a->set_order(0);
@@ -312,6 +321,8 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
     uin_low  = min ( uin_eff - OPT::abstol, uin_eff * (1-OPT::reltol) );
     trace3(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + cap->label()).c_str(),
         uin_low, uin_eff, uin_high);
+    if (m->positive)
+      uin_low = max(0.0L, uin_low);
 
     E_high = cc->__step( uin_high, E_old, CKT_BASE::_sim->_last_time  );
     E_low  = cc->__step( uin_low,  E_old, CKT_BASE::_sim->_last_time  ); 
@@ -429,31 +440,65 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__Edu(double uin, long double cur, const 
 //                Rc0*Rc0*Rc1*Re0*Re0)*uin)*exp(2*Rc1*uin))*exp(-t*exp(-Rc1*uin)/Rc0 -
 //              t*uin/Re0)/(Rc0*Rc0*Rc0*Re0*uin*uin*exp(3*Rc1*uin) +
 //                2*Rc0*Rc0*Re0*Re0*uin*exp(2*Rc1*uin) + Rc0*Re0*Re0*Re0*exp(Rc1*uin)));
-//
-//sage simplified
 
-  // sage raw (?)
-  return (- (Rc0*uin / (Rc0*uin + Re0/exp(Rc1*uin) ) - cur)
-          *((Rc0*uin*exp(Rc1*uin)/Re0 + 1)*Rc1*t*exp(-Rc1*uin)/Rc0 -
-      (Rc0*Rc1*uin*exp(Rc1*uin)/Re0 +
-       Rc0*exp(Rc1*uin)/Re0)*t*exp(-Rc1*uin)/Rc0)*exp(-(Rc0*uin*exp(Rc1*uin)/Re0 +
-       1)*t*exp(-Rc1*uin)/Rc0) +  Rc0*Rc1*exp(Rc1*uin)*uin/(Rc0*exp(Rc1*uin)*uin + Re0)
-                               - (Rc0*Rc1*exp(Rc1*uin)*uin /(Rc0*exp(Rc1*uin)*uin + Re0) -
-      (Rc0*Rc1*exp(Rc1*uin)*uin*uin - Re0)*Rc0*exp(Rc1*uin) /
-      square(Rc0*exp(Rc1*uin)*uin + Re0) )*exp(-(Rc0*uin*exp(Rc1*uin)/Re0 + 1)*t*exp(-Rc1*uin)/Rc0) -
-  (Rc0*Rc1*exp(Rc1*uin)*uin*uin - Re0)*Rc0*exp(Rc1*uin)/
-  square(Rc0*exp(Rc1*uin)*uin + Re0));
+  return  -((cur - 1.0L)*Rc0*Rc0*Rc0*t*uin*uin*expl(3.0L*Rc1*uin) -
+  Rc1*Re0*Re0*Re0*cur*t - (Rc0*Rc0*Rc1*Re0*Re0*uin + Rc0*Rc0*Re0*Re0)*expl(2.0L*Rc1*uin +
+  t*expl(-Rc1*uin)/Rc0 + t*uin/Re0) - ((2.0L*cur - 1.0L)*Rc0*Rc1*Re0*Re0*t*uin -
+  Rc0*Re0*Re0*cur*t)*expl(Rc1*uin) - ((cur - 1.0L)*Rc0*Rc0*Rc1*Re0*t*uin*uin -
+  Rc0*Rc0*Re0*Re0 - ((2.0L*cur - 1.0L)*Rc0*Rc0*Re0*t +
+  Rc0*Rc0*Rc1*Re0*Re0)*uin)*expl(2.0L*Rc1*uin))*expl(-t*expl(-Rc1*uin)/Rc0 -
+  t*uin/Re0)/(Rc0*Rc0*Rc0*Re0*uin*uin*expl(3.0L*Rc1*uin) +
+  2.0L*Rc0*Rc0*Re0*Re0*uin*expl(2.0L*Rc1*uin) + Rc0*Re0*Re0*Re0*expl(Rc1*uin));
+  
 
+  // hacked/ broken?
+  return (- (exp(Rc1*uin)*uin/(uin*exp(Rc1*uin) + Re0/Rc0) - cur)
+          *((uin*expl(Rc1*uin)/Re0 + 1.0L/Rc0)*Rc1*t*expl(-Rc1*uin) -
+      Rc0/Re0*(Rc1*uin + 1.0L ) * expl(Rc1*uin)
+        *t*expl(-Rc1*uin)/Rc0)
+          *expl(-(Rc0*uin*expl(Rc1*uin)/Re0 + 1.0L)
+     *t*expl(-Rc1*uin)/Rc0) + Rc1*expl(Rc1*uin)*uin/(expl(Rc1*uin)*uin + Re0/Rc0)
+                               - (Rc1*expl(Rc1*uin)*uin /(expl(Rc1*uin)*uin + Re0/Rc0) -
+      (Rc1*expl(Rc1*uin)*uin*uin - Re0/Rc0)*expl(Rc1*uin) /
+      square(expl(Rc1*uin)*uin + Re0) )*expl(-(Rc0*uin*expl(Rc1*uin)/Re0 + 1.0L)*t*expl(-Rc1*uin)/Rc0) -
+  (Rc1*expl(Rc1*uin)*uin*uin - Re0/Rc0)*expl(Rc1*uin)/
+  square(expl(Rc1*uin)*uin + Re0));
+
+  //sage
   return (- (Rc0*exp(Rc1*uin)/(Rc0*exp(Rc1*uin) + Re0/uin) - cur)
           *((Rc0*uin*exp(Rc1*uin)/Re0 + 1)*Rc1*t*exp(-Rc1*uin)/Rc0 -
       (Rc0*Rc1*uin*exp(Rc1*uin)/Re0 +
-       Rc0*exp(Rc1*uin)/Re0)*t*exp(-Rc1*uin)/Rc0)*exp(-(Rc0*uin*exp(Rc1*uin)/Re0 +
+       Rc0*exp(Rc1*uin)/Re0)*t*exp(-Rc1*uin)/Rc0)
+          *exp(-(Rc0*uin*exp(Rc1*uin)/Re0 +
        1)*t*exp(-Rc1*uin)/Rc0) +  Rc0*Rc1*exp(Rc1*uin)/(Rc0*exp(Rc1*uin) + Re0/uin)
                                - (Rc0*Rc1*exp(Rc1*uin)/(Rc0*exp(Rc1*uin) + Re0/uin) -
       (Rc0*Rc1*exp(Rc1*uin) - Re0/uin/uin)*Rc0*exp(Rc1*uin)/square(Rc0*exp(Rc1*uin) +
         Re0/uin))*exp(-(Rc0*uin*exp(Rc1*uin)/Re0 + 1)*t*exp(-Rc1*uin)/Rc0) -
   (Rc0*Rc1*exp(Rc1*uin) - Re0/uin/uin)*Rc0*exp(Rc1*uin)/
   square(Rc0*exp(Rc1*uin) + Re0/uin));
+
+  //    -(Rc0*e^(Rc1*uin)/(Rc0*e^(Rc1*uin) + Re0/uin) - cur)
+  //*((Rc0*uin*e^(Rc1*uin)/Re0 + 1)*Rc1*t*e^(-Rc1*uin)/Rc0 -
+  //        (Rc0*Rc1*uin*e^(Rc1*uin)/Re0 +
+  //      Rc0*e^(Rc1*uin)/Re0)*t*e^(-Rc1*uin)/Rc0)
+  //   *e^(-(Rc0*uin*e^(Rc1*uin)/Re0 +
+  //1)*t*e^(-Rc1*uin)/Rc0) + Rc0*Rc1*e^(Rc1*uin)/(Rc0*e^(Rc1*uin) + Re0/uin)
+  //- (Rc0*Rc1*e^(Rc1*uin)/(Rc0*e^(Rc1*uin) + Re0/uin) -
+  //(Rc0*Rc1*e^(Rc1*uin) - Re0/uin^2)*Rc0*e^(Rc1*uin)/(Rc0*e^(Rc1*uin) +
+  //Re0/uin)^2)*e^(-(Rc0*uin*e^(Rc1*uin)/Re0 + 1)*t*e^(-Rc1*uin)/Rc0) -
+  //(Rc0*Rc1*e^(Rc1*uin) - Re0/uin^2)*Rc0*e^(Rc1*uin)/(Rc0*e^(Rc1*uin) +
+  //Re0/uin)^2
+  //
+  //
+  //Edu : (t, cur, uin) |--> -((cur - 1)*Rc0^3*t*uin^2*e^(3*Rc1*uin) -
+  //Rc1*Re0^3*cur*t - (Rc0^2*Rc1*Re0^2*uin + Rc0^2*Re0^2)*e^(2*Rc1*uin +
+  //t*e^(-Rc1*uin)/Rc0 + t*uin/Re0) - ((2*cur - 1)*Rc0*Rc1*Re0^2*t*uin -
+  //Rc0*Re0^2*cur*t)*e^(Rc1*uin) - ((cur - 1)*Rc0^2*Rc1*Re0*t*uin^2 -
+  //Rc0^2*Re0^2 - ((2*cur - 1)*Rc0^2*Re0*t +
+  //Rc0^2*Rc1*Re0^2)*uin)*e^(2*Rc1*uin))*e^(-t*e^(-Rc1*uin)/Rc0 -
+  //t*uin/Re0)/(Rc0^3*Re0*uin^2*e^(3*Rc1*uin) +
+  //2*Rc0^2*Re0^2*uin*e^(2*Rc1*uin) + Rc0*Re0^3*e^(Rc1*uin))
+  //
 
 }
 /*--------------------------------------------------------------------------*/

@@ -1187,11 +1187,10 @@ long double COMMON_BUILT_IN_RCD::__step(long double uin, long double cur,  doubl
   assert(cc);
   assert(is_number(uin));
   assert(is_number(cur));
+  const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(cc->model());
+  assert(m);
 
-  if(uin<0){
-    untested();
-    uin=0;
-  }
+  assert (uin >= 0 || !m->positive);
   
   long double Rc0=cc->_Rc0;
   long double Re0=cc->_Re0;
@@ -1220,6 +1219,7 @@ long double COMMON_BUILT_IN_RCD::__step(long double uin, long double cur,  doubl
     trace7("COMMON_BUILT_IN_RCD::__step ", cur, deltat, uin, Rc0, Rc1, Re0, sgn  );
     assert(false);
   }
+
   return(ret);
 
 
@@ -1271,19 +1271,26 @@ void DEV_BUILT_IN_RCD::stress_apply()
   }
   long double E_old = _Ccgfill->tt1();
   long double eff = _Ccgfill->tr();
+  if(m->positive) eff= max(eff,0.0L);
 
   assert (is_number(eff));
   assert (is_number(E_old));
 
   long double fill_new  = E_old;
   long double fill_new2 = E_old;
+
   double ex_time=_sim->_dT0-_sim->_last_time;
   
   fill_new = c->__step( eff , fill_new, ex_time );
 
-  fill_new2 = c->__step( _Ccgfill->tr( Time1+ex_time/3.0 )    , fill_new2, ex_time/2.0 );
+  long double eff1=_Ccgfill->tr( Time1+ex_time/3.0 );
+  long double eff2=_Ccgfill->tr( Time1+ex_time*2.0/3.0 );
+  if(m->positive) eff1= max(eff1,0.0L);
+  if(m->positive) eff2= max(eff2,0.0L);
+
+  fill_new2 = c->__step( eff1, fill_new2, ex_time/2.0 );
   assert(is_number(fill_new2));
-  fill_new2 = c->__step( _Ccgfill->tr( Time1+ex_time*2.0/3.0 ), fill_new2, ex_time/2.0 );
+  fill_new2 = c->__step( eff2, fill_new2, ex_time/2.0 );
   assert(is_number(fill_new2));
 
 
@@ -1356,8 +1363,11 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
     lasts=_sim->_time0;
   }else {
     trace1("DEV_BUILT_IN_RCD::tr_stress again?? bug??", _sim->_time0 );
-    assert(_sim->_time0 == lasts);
-    return;
+    if (! (_sim->_time0 == lasts) ){
+
+    error(bDANGER,"DEV_BUILT_IN_RCD::tr_stress unequal %E %E\n", _sim->_time0, lasts );
+      throw(Exception("?"));
+    }
   }
 
 
@@ -1385,6 +1395,10 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
 
   long double fill=_tr_fill;
   double uin = rcd->involts();
+  if (m->positive){
+    uin=max(uin,0.0);
+    untested();
+  }
 
   trace2("DEV_BUILT_IN_RCD::tr_stress ", fill, uin );
   trace2("DEV_BUILT_IN_RCD::tr_stress ", rcd->involts(), iteration_number() );
@@ -1476,7 +1490,12 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
         _Ccgfill->get_tr(), _Ccgfill->get_total() );
     // fixme. move to common.
     assert(is_number(_tr_fill));
-    m->do_tr_stress_last(_tr_fill,_Ccgfill, c);
+    try{
+      m->do_tr_stress_last(_tr_fill,_Ccgfill, c);
+    }catch( Exception &e) {
+      error(bDANGER, "%s\n", long_label().c_str());
+      throw(e);
+    }
 
     assert(is_number(_tr_fill));
   }
@@ -1571,7 +1590,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
   }
 
   if (uin==inf) uin=0.222;
-  if (uin==0) uin=0.221;
+  // if (uin==0) uin=0.221;
 
   long double Euin =0;
   long double Euin_alt =0;
@@ -1615,15 +1634,17 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     i++;
     trace7("COMMON_BUILT_IN _RCD::__uin_iter loop", (double)uin, (double)res, (double)fres, Edu, E, i,Euin);
     trace3(" ",dx_res,Q,df_fres);
-    if( i> 400){
+    if( i> 399){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge uin="
-          "%LE, E=%LE, lres=%Lg, Q=%Lg\n", uin, E, log(fabs(res)), Q);
-      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter LQ=%Lf>%Lf. h%i\n", 
-          log(Q), logl(reltol), hhack);
+          "%LE, E=%LE, res=%LE, lres=%Lg, Q=%Lg\n", uin, E, res, log(fabs(res)), Q);
+      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter LQ=%Lf>%Lf. h%i fres=%LE\n", 
+          log(Q), logl(reltol), hhack, fres);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter start=%E\n", ustart);
+      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter Edu=%LE Euin=%LE E=%LE delta_u=%LE\n",
+          Edu, Euin, E, delta_u);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter s=%i%i%i%i%i\n",
           A,B,C,D,U);
-      assert(false); // <- dashier kann man auskommentieren macht aer nur aerger (langfristig)
+      throw(Exception("?"));
       break;
     }
     if(!is_number(uin)){
@@ -1686,9 +1707,6 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     // Edu ist in diesem Fall 10^-10 und damit ist res viel zu gross. 
     Q = fabs( res / uin );
 
-
-
-
     cres= fmin( 1.0,res);
     cres= fmax(-1.0,res);
 
@@ -1698,6 +1716,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     assert(is_number(uin));
 
     if( (uin<-0.0000) && m->positive ) {
+      untested();
       trace1( "COMMON_BUILT_IN_RCD::__uin_iter neg uin ", uin );
       putres=true;
       cres = uin;
@@ -1710,10 +1729,16 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     df_fres = Euin-Euin_alt; // Effektive Veraenderung im f Bereich. 
     Euin_alt = Euin;
 
+
     if(!is_number(Euin)) {
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter cannot evaluate E "
           "at uin=%LE (E_old=%E) %i:%i\n", uin, E_old, CKT_BASE::_sim->tt_iteration_number(), i);
       assert(is_number(Euin)); break;
+    }
+
+    if (Euin > E && uin==0){
+      untested();
+      break;
     }
 
     delta_u = .5 * max ( OPT::abstol, double( fabs(uin) * (OPT::reltol) ) );
@@ -1735,7 +1760,6 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
 // noch eingebaut werden.
 // 3. kein Hack, der nur bei monoton steigenden Funktionen geht: Wenn er bei der ersten Iteration
 //     mit uin= 3681 anfaengt kann er gar kein Edu ausrechnen dann halbier ich nicht res  sondern uin.
-
     trace6(" Ende Loop ",A,B,C,D,U,i);
     
   }
@@ -1747,6 +1771,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
   //sanitycheck
   long double u_oben  = max ( uin + OPT::abstol, uin * (1+OPT::reltol) );
   long double u_unten = min ( uin - OPT::abstol, uin * (1-OPT::reltol) );
+  if(m->positive) u_unten=max(u_unten,0.0L);
   long double E_hier  = cc->__step( uin , E_old, BASE_SUBCKT::_sim->_last_time );
   long double E_oben  = cc->__step( u_oben , E_old, BASE_SUBCKT::_sim->_last_time );
   long double E_unten = cc->__step( u_unten, E_old, BASE_SUBCKT::_sim->_last_time );

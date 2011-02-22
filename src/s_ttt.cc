@@ -485,11 +485,10 @@ void TTT::sweep() // tr sweep wrapper.
     CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
   }catch (Exception& e) {
     untested();
-    std::cout << "* " << e.message() <<  "\n";
-    error(bDANGER, e.message() + '\n');
+    error(bDANGER, "%s at %E\n", e.message().c_str(), _sim->_Time0);
     _accepted=_accepted_tt=false;
     ::status.review.stop();
-
+    throw(Exception("sweep failed"));
   }
 
   trace1("TTT done TRANSIENT::sweep", _sim->_last_time);
