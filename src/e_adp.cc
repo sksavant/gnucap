@@ -112,10 +112,6 @@ void ADP_NODE::init(){
 }
 /*----------------------------------------------------------------------------*/
 ADP_NODE::~ADP_NODE(){
-  delete [] _delta;
-  delete [] _der_aft;
-  delete [] _val_bef;
-  delete [] _val_aft;
 }
 /*----------------------------------------------------------------------------*/
 void ADP_NODE::set_tr( hp_float_t x ){
@@ -908,6 +904,9 @@ hp_float_t ADP_NODE::tr( double time ) const{
   double Time1 = Time0() - dT0();
   long double now_rel = time-(Time1); // dT0, oder?
   switch(_order){
+    case 0: // transient sim
+      assert( _sim->analysis_is_tran() );
+      return tr();
     case 1:
       return tr1();
     case 2:
@@ -936,14 +935,14 @@ void ADP_NODE::tr_expect_( ){
       break;
     case 2:
       trace3(("ADP_NODE::tr_expect_ extradebug" + long_label()).c_str(), tr2(), tr1(), tr(Time0()) );
-      if ( fabs(tr2()-tr(Time2())) > 1e-20  && !(is_almost(tr2(), tr(Time2())))){
+      if ( fabs(tr2()-tr(Time2())) > 1e-15  && !(is_almost(tr2(), tr(Time2())))){
         error( bDANGER, "ADP_NODE::tr_expect_ mismatch, T0: %E, %E, %E\n", Time0(), Time1(), Time2());
         error( bDANGER, "ADP_NODE::tr_expect_ mismatch, tr1:   %E, tr2: %E d %E  \n", tr1(), tr2(), tr1()-tr2() );
         error( bDANGER, "ADP_NODE::tr_expect_ mismatch, tr2():tr(Time2()=%E))= %E : %E\n", Time2(), tr2(), tr(Time2()) );
         error( bDANGER, "ADP_NODE::tr_expect_ mismatch in %s\n", long_label().c_str() );
         error( bDANGER, "ADP_NODE::tr_expect_ mismatch dT1() %E\n", dT1() );
 
-        throw(Exception(" mismatch "));
+        throw(Exception(" mismatch " + long_label()));
         assert( false);
       }
     case 1:
@@ -1273,7 +1272,9 @@ TIME_PAIR ADP_NODE::tt_review( ) {
     _abs_tr_err = fabs(delta_model - tr_value);
   }
 
+  trace1("ADP_NODE::tt_review", tr_noise);
   assert (tr_noise >=0);
+
   _abs_tr_err = fabs (tr_value - delta_model);
   _abs_tr_err = max ( fabs (tr_value - delta_model) - tr_noise ,0.0 );
 //  _abs_tr_err = fabs (tr_value - delta_model) / tr_noise ;

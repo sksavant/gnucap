@@ -140,10 +140,10 @@ char* ftos(double num, int fieldwidth, int len, int fmt)
     strncpy(str,"-Over", 5);
   }else if (num == std::numeric_limits<double>::quiet_NaN()) {
     untested();
-    strncpy(str," NaN", 4);
+    strncpy(str," nan", 4);
   }else if (num == std::numeric_limits<double>::signaling_NaN()) {
     untested();
-    strncpy(str," NaN", 4);
+    strncpy(str," nan", 4);
   }else
 #endif
 	  trace1("ftos ", num );
@@ -156,7 +156,7 @@ char* ftos(double num, int fieldwidth, int len, int fmt)
   }else if (num <= -BIGBIG) {
     strncpy(str,"-Inf", 4);
   }else if (num != num) {
-    strncpy(str," NaN", 4);
+    strncpy(str," nan", 4);
   }else{
     if (std::abs(num) < ftos_floor) {	/* hide noise */
       num = 0.;

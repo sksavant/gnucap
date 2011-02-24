@@ -52,7 +52,7 @@ bm_sin.cc bm_tanh.cc bmm_table.cc bmm_semi.cc
 # utility commands, usually one file per command
 # some have multiple commands in a file
 C_SRCS = \
-c_clear.cc c_comand.cc c_delete.cc c_exp.cc c_list.cc \
+c_clear.cc c_comand.cc c_delete.cc c_exp.cc c_list.cc c_save.cc \
 c_measure.cc c_modify.cc c_param.cc c_prbcmd.cc c_status.cc \
 c_sweep.cc c_sim.cc c_system.cc
 

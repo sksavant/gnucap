@@ -1255,22 +1255,28 @@ void DEV_BUILT_IN_RCD::stress_apply()
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(c->sdp());
   assert(s);
 
+  assert(_sim->_time0 == 0);
+  
+  if(_sim->_dT0==0){
+    trace2("DEV_BUILT_IN_RCD::stress_apply ",  _sim->_dT0, _Ccgfill->tt() );
+    _tr_fill=_Ccgfill->tt();
+    return;
+  }
   double Time1=_sim->_Time0 - _sim->_dT0;
 
   trace4("DEV_BUILT_IN_RCD::stress_apply ", _sim->_Time0, _sim->_dT0,
       tt_iteration_number(), _sim->_Time0);
-  trace3("DEV_BUILT_IN_RCD::stress_apply ", 
-  _Ccgfill->tr() , _Ccgfill->tr(_sim->_Time0 ), _Ccgfill->order());
+  trace4("DEV_BUILT_IN_RCD::stress_apply ", 
+      _Ccgfill->tr() , _Ccgfill->tr(_sim->_Time0 ), _Ccgfill->order(), _sim->_time0);
 
-  assert ( is_almost( _Ccgfill->tr() , _Ccgfill->tr(_sim->_Time0) ));
+  assert ( is_almost( _Ccgfill->tr() , _Ccgfill->tr(_sim->_Time0 + _sim->_time0) ));
   if (! ( is_almost( _Ccgfill->tr1() , _Ccgfill->tr(Time1) )))
   {
       error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress !almost tr1 %E tr(T1) %E \n",
           _Ccgfill->tr1() , _Ccgfill->tr(Time1) );
-
-  }
+  } 
   long double E_old = _Ccgfill->tt1();
-  long double eff = _Ccgfill->tr();
+  long double eff   = _Ccgfill->tr();
   if(m->positive) eff= max(eff,0.0L);
 
   assert (is_number(eff));
@@ -1315,14 +1321,11 @@ void DEV_BUILT_IN_RCD::stress_apply()
 
     trace2("DEV_BUILT_IN_RCD::stress_apply n", _Ccgfill->get_tr(), _Ccgfill->get_tt());
   } else {
-
     assert(is_number(fill_new));
     _Ccgfill->tt() = fill_new;
     _tr_fill=fill_new;
     trace2("DEV_BUILT_IN_RCD::stress_apply done ", fill_new, _tr_fill );
-
   }
-
 }
 ///*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_RCD_NET::do_expand(const  COMPONENT* ) const
@@ -1491,19 +1494,17 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
     // fixme. move to common.
     assert(is_number(_tr_fill));
     try{
+      // calculate udc
       m->do_tr_stress_last(_tr_fill,_Ccgfill, c);
     }catch( Exception &e) {
       error(bDANGER, "%s\n", long_label().c_str());
       throw(e);
     }
-
     assert(is_number(_tr_fill));
   }
 
+  // wird bei rollback nicht gebraucht, da nur guess!
   _Ccgfill->set_tt(_tr_fill);
-
-
-  
 }
 ///*--------------------------------------------------------------------------*/
 double COMMON_BUILT_IN_RCD::__tau(double uin)const

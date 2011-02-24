@@ -111,7 +111,7 @@ namespace MODEL_BUILT_IN_RCD_DISPATCHER {
   static DEV_BUILT_IN_RCD_SYM p2d;
   static MODEL_BUILT_IN_RCD_SYM p2(&p2d);
   static DISPATCHER<MODEL_CARD>::INSTALL
-    d2(&model_dispatcher, "rcdsym", &p2);
+    d2(&model_dispatcher, "rcdsym_base", &p2);
 }
 ///*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_RCD_SYM::do_expand( COMPONENT* ) const

@@ -186,7 +186,7 @@ class ADP_NODE: public CKT_BASE {
     void set_tr( hp_float_t x );
     void set_tt( hp_float_t x );
 
-    void set_tr_noise(double x ) {tr_noise = x;}
+    void set_tr_noise(double x ) {assert(is_number(x)); tr_noise = x;}
     virtual TIME_PAIR tt_review( );
     TIME_PAIR tt_preview( );
     void reset();

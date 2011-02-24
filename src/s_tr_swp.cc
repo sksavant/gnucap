@@ -61,8 +61,9 @@ void TRANSIENT::sweep()
   _sim->set_inc_mode_bad();
  
   if ( _inside_tt ) {
-    trace0("TRANSIENT::sweep _inside_tt");
+    _sim->restore_voltages();
     CARD_LIST::card_list.do_tr();
+    // CARD_LIST::card_list.tr_restore();
     // CARD_LIST::card_list.tr_accept();
 
   } else if ( _cont ) {  // use the data from last time

@@ -203,10 +203,10 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   const MODEL_BUILT_IN_RCD* m =   static_cast<const MODEL_BUILT_IN_RCD*>(this);
   assert(m);
   ADP_NODE* a=cap;
+  assert(is_number(cap->tt()));
   double E_old = cap->tt();
 
   long double uin_eff=a->tr(); // 0 == current estimate
-  //
 
   trace3(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last " +
         cap->label()).c_str(), E_old, tt_iteration_number(), uin_eff);
@@ -358,8 +358,10 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   }
   //
   //
+  assert(is_number(E_high-E_low));
   a->set_tr_noise (E_high-E_low);
   a->set_tr(uin_eff);
+  trace1("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last done", a->get_tr_noise());
 }
 /*--------------------------------------------------------------------------*/
 // precalc doesnt know device!!

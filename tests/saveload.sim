@@ -1,0 +1,21 @@
+
+
+.param vdd=1
+.model somercd rcdnet Re=1
+R1 0 1 1
+R1 2 1 2
+V1 0 2 pulse iv=0 pv=vdd delay=1p
+Z1 0 1 somercd
+.list
+
+.print tran v(nodes) v(Z1)
+.tran 1m 10m
+
+.vdump > test
+
+.param vdd=2
+.tran 20m
+
+.param vdd=0
+.vload test
+.tran 0 10m 1m

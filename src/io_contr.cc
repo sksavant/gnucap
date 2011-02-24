@@ -140,6 +140,7 @@ OMSTREAM* OMSTREAM::outset(CS& cmd)
       }else{untested();
       }
     }else if (cmd.umatch(">")) {itested();
+      trace1("outset, redirect\n", (intptr_t) fn);
       // open a file for write or append
       const char *rwaflag;
       rwaflag = (cmd.umatch(">")) ? "a" : "w";

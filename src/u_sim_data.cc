@@ -203,11 +203,12 @@ void SIM_DATA::alloc_hold_vectors()
   }
 
   assert(!_vdc);
-  _vdc = new double[_total_nodes+1];
+  _vdc = new double[_total_nodes+1+_adp_nodes];
   std::fill_n(_vdc, _total_nodes+1, 0);
   trace0("SIM_DATA::alloc_hold_vectors ADP_NODE");
   assert(!_tt);
-  _tt  = new double[_adp_nodes];
+
+  _tt = _vdc + _total_nodes+1;
   std::fill_n(_tt, _adp_nodes, 0);
 
   assert(_nstat);
@@ -290,7 +291,6 @@ void SIM_DATA::uninit()
     _aa.reinit(0);
     delete [] _vdc;
     _vdc = NULL;
-    delete [] _tt;
     _tt = NULL;
     delete [] _nstat;
     _nstat = NULL;
