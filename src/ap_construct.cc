@@ -28,6 +28,10 @@
 #include <ios>
 #include <iostream>
 #include <fstream>
+#include <vector>
+#include <string>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 #ifdef HAVE_LIBREADLINE
   #include <readline/readline.h>
@@ -72,10 +76,32 @@ CS::~CS()
   if (is_file()) {fclose(_file);}
 
 }
-/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------
+  bool search_file( std::string &name ){
+    const char* h ="HOME";
+    const char* home= getenv(h);
+
+    if (name[0] == '/') return true; // fixme
+
+    std::string pathlist[4] = { OPT::libpath , "./",  LIBDIR,
+      std::string(home) + std::string("/.gnucap/lib/") };
+
+    // FIXME. use libpath 
+
+    for(int i=1; i<4 ; i++) {
+      if ( FILE* tmp = fopen( (pathlist[i] + "/" + name).c_str(), "r" ) ) {
+        fclose(tmp);
+        name = pathlist[i]+"/"+name;
+        return true;
+      }
+      trace0( (" not found " + pathlist[i] + "/" + name).c_str());
+    }
+    return false;
+
+  }
+--------------------------------------------------------------------------*/
 CS::CS(CS::INC_FILE, const std::string& name)
-  :_file(fopen(name.c_str(), "r")),
-   _name(name),
+  :_name(name),
    _cmd(),
    _cnt(0),
    _length(0),
@@ -84,6 +110,23 @@ CS::CS(CS::INC_FILE, const std::string& name)
    _ok(true),
    _line_number(0)
 {
+
+  if(name[0]=='/' || name[0]=='~'){
+    _file = fopen(name.c_str(), "r");
+  }else{
+
+    const char* h ="HOME";
+    const char* home= getenv(h);
+    std::vector< std::string > pathlist;
+    std::string includepath=OPT::includepath;
+    boost::algorithm::split(pathlist, includepath, boost::is_any_of(":"));
+    for(std::vector< std::string >::iterator i=pathlist.begin(); i!=pathlist.end() ; ++i) {
+      if ( _file = fopen( (*i + "/" + name).c_str(), "r" ) ) 
+        break;
+    }
+  }
+
+
   if (!_file) {itested();
     throw Exception_File_Open(name + ':' + strerror(errno));
   }else{

@@ -537,7 +537,7 @@ MODEL_CARD* LANG_SPICE_BASE::parse_paramset(CS& cmd, MODEL_CARD* x)
   parse_label(cmd, x);
   parse_type(cmd, x);
   parse_args(cmd, x);
-  cmd.check(bWARNING, "what's this?");
+  cmd.check(bWARNING, "parse:paramset: what's this?");
   return x;
 }
 /*--------------------------------------------------------------------------*/

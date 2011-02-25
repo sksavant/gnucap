@@ -32,19 +32,18 @@
 #include "declare.h"	/* plclose */
 // #define COMMENT_CHAR "*"
 /*--------------------------------------------------------------------------*/
-bool quiet=true;
-/*--------------------------------------------------------------------------*/
 struct JMP_BUF{
   sigjmp_buf p;
 } env;
 /*--------------------------------------------------------------------------*/
 static void sign_on(void)
 {
-  if (quiet) return;
+  if (OPT::quiet) return;
   IO::mstdout <<
-    COMMENT_CHAR " Gnucap "  PATCHLEVEL  "\n"
-    COMMENT_CHAR " The Gnu Circuit Analysis Package\n"
-    COMMENT_CHAR " Never trust any version less than 1.0\n"
+    COMMENT_CHAR " Fucap "  PATCHLEVEL  "\n"
+    COMMENT_CHAR " Copyright 2009-2011 Felix Salfelder\n"
+    COMMENT_CHAR " derived from\n"
+    COMMENT_CHAR " Gucap\n"
     COMMENT_CHAR " Copyright 1982-2009, Albert Davis\n"
     COMMENT_CHAR " Gnucap comes with ABSOLUTELY NO WARRANTY\n"
     COMMENT_CHAR " This is free software, and you are welcome\n"
@@ -60,10 +59,15 @@ static void read_startup_files(void)
     CMD::command("get " + name, &CARD_LIST::card_list);
   }else{
   }
-  name = findfile(USERSTARTFILE, USERSTARTPATH, R_OK);
+  name = findfile(USERSTARTFILE, PWD, R_OK);
   if (name != "") {untested();
     CMD::command("get " + name, &CARD_LIST::card_list);
   }else{
+    name = findfile(USERSTARTFILE, USERSTARTPATH, R_OK);
+    if (name != "") {untested();
+      CMD::command("get " + name, &CARD_LIST::card_list);
+    }else{
+    }
   }
   CMD::command("clear", &CARD_LIST::card_list);
   if (!OPT::language) {
@@ -141,7 +145,6 @@ static void process_cmd_line(int argc, const char *argv[])
         ++ii;
         if (ii < argc) {itested();
           fprintf( stderr, "quiet mode" );
-          quiet=true;
 
         }else{untested();
         }
@@ -194,6 +197,8 @@ static void process_cmd_line(int argc, const char *argv[])
 /*--------------------------------------------------------------------------*/
 int main(int argc, const char *argv[])
 {
+  // sigsetjmp unneeded here (isnt it?)
+  read_startup_files();
   sign_on();
 
   {
@@ -201,7 +206,7 @@ int main(int argc, const char *argv[])
     trace0("batch mode");
     if (!sigsetjmp(env.p, true)) {
       try {
-	read_startup_files();
+        trace0("... \n");
 	setup_traps();
         trace0("done traps");
 	process_cmd_line(argc,argv);

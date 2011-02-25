@@ -82,6 +82,7 @@ public:
 	WCASE=7, TRACE=8, ITL_COUNT=9};
   enum {_keep_time_steps = 5};
 public:
+  static bool quiet;	    // flag: no advertisments
   static bool acct;	    // flag: print accounting info
   static bool listing;	    // flag: print listing
   static bool mod;	    // flag: print models
@@ -98,6 +99,7 @@ public:
   static int adporder;	    // adp extrapolation order
   static int threads;	    // number of threads, 0=#cpus
   static std::string libpath;	 // sharedobject searchpath
+  static std::string includepath;	 // searchpath for .include command
   static double adpreltol;	    // adp allowed relative aging misprediction
   static double behreltol;	    // beh allowed relative
   static double adpkorr;	    // adp correction

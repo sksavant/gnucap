@@ -64,6 +64,10 @@ double	OPT::defad = 0.;
 double	OPT::defas = 0.;
 std::string	OPT::libpath = ""; // PREFIX/?
 
+const char* h ="HOME";
+const char* home= getenv(h);
+std::string	OPT::includepath = std::string(".:")+home+std::string("/.gnucap/include");
+bool	OPT::quiet = false; 
 bool	OPT::clobber = true;
 bool	OPT::keys_between_nodes = true;
 double	OPT::dampmax = 1.0;

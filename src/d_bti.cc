@@ -1037,7 +1037,6 @@ void DEV_BUILT_IN_BTI::tt_commit() const {
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_BTI::tt_prepare() {
   trace0("DEV_BUILT_IN_BTI::tt_prepare");
-  untested();
   //FIXME, subckt default
   //        RCD reicht!
   subckt()->do_forall( &CARD::tt_prepare ); // sort of tt_prepare?

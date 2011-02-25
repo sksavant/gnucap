@@ -35,6 +35,7 @@ bool myconchk(double o, double n,
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
+  // no longer needed device.
 class DEV_VCVS2 : public HOMEBREW {
 private:
   explicit DEV_VCVS2(const DEV_VCVS2& p) :HOMEBREW(p) {}

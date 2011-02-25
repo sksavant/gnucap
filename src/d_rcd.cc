@@ -1382,13 +1382,13 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
 
 
   if( m->positive) {
-    if ( _Ccgfill->get_total() < 0 ){
+    if ( _tr_fill < 0 ){
       trace1(("DEV_BUILT_IN_RCD::tr_stress fill is negative: " +
             short_label()).c_str() ,  _Ccgfill->get_total() );
     }
     if (  involts() < -2e-1 ){ // overshoot!
-      error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress input %s is negative: %f\n", long_label().c_str(), involts() );
-      assert(false);
+      error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress input %s is negative: %f."
+          " overshoot?\n", long_label().c_str(), involts() );
     }
   }
 
@@ -1410,19 +1410,6 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
     fill = 1;
   }
 
-  if( m->positive ) {
-    if ( rcd->_Ccgfill->get_total() < 0 ){
-      trace1(("DEV_BUILT_IN_RCD::tr_stress fill is negative: " +
-            short_label()).c_str() ,  rcd->_Ccgfill->get_total() );
-    }
-
-    // FIXME: eine ebene hoeher ?
-    if (  rcd->involts() < -2e-1 ){
-      error( bDANGER, "DEV_BUILT_IN_RCD::tr_stress input %s is negative: ",
-          short_label().c_str(), rcd->involts() );
-      assert (false );
-    }
-  }
   assert(!m->use_net());
 
   //double  fill = _n[n_ic].v0();

@@ -157,7 +157,6 @@ public:
   virtual  COMPLEX ac_involts()const		= 0;
   virtual  COMPLEX ac_amps()const;
   virtual void tt_prepare(){
-	  std::cerr << "HOMEBREW::tt_prep() " << short_label()<< "\n";
 	  COMPONENT::tt_prepare();
 
   }

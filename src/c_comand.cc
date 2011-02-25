@@ -126,13 +126,22 @@ public:
 DISPATCHER<CMD>::INSTALL d4(&command_dispatcher, "title", &p4);
 /*--------------------------------------------------------------------------*/
 class CMD_ECHO : public CMD {
-public:
-  void do_it(CS& cmd, CARD_LIST*) {untested();
-    //BUG// buffer problem
-    //BUG// redirection problem
-	  std::string what=cmd.tail();
-    IO::mstdout << "* " << what << "\n";
-  }
+	public:
+		void do_it(CS& cmd, CARD_LIST*) {untested();
+			//BUG// buffer problem
+			std::string what=cmd.tail();
+			string str;
+			OMSTREAM out = IO::mstdout;
+			while(cmd.ns_more()){
+				char c = cmd.peek();
+				if(c=='>'){
+					out.outset(cmd);
+				   break;
+				}
+				str += cmd.ctoc();
+			}
+			out << "* " <<str << "\n";
+		}
 } p6;
 DISPATCHER<CMD>::INSTALL d6(&command_dispatcher, "echo", &p6);
 /*--------------------------------------------------------------------------*/

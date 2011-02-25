@@ -186,7 +186,6 @@ void MODEL_BUILT_IN_MOS_BASE::set_dev_type(const std::string& new_type)
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_MOS_BASE::precalc_first()
 {
-  untested();
     const CARD_LIST* par_scope = scope();
     assert(par_scope);
     MODEL_CARD::precalc_first();

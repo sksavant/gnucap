@@ -43,6 +43,9 @@ bool OPT::set_values(CS& cmd)
   unsigned here = cmd.cursor();
   do{
     ONE_OF
+      || Get(cmd, "includepath",	&includepath)
+      || Get(cmd, "libpath",	&libpath)
+      || Get(cmd, "quiet",	&quiet)
       || Get(cmd, "acct",	&acct)
       || Get(cmd, "list",	&listing)
       || Get(cmd, "mod",	&mod)
@@ -219,6 +222,8 @@ void OPT::print(OMSTREAM& o)
 
   o << "* i/o\n";
   o << ".options";
+  o << "  includepath="   << includepath;
+  o << "  libpath="   << libpath;
   o << ((acct)   ?"  acct" :"  noacct");
   o << ((listing)?"  list" :"  nolist");
   o << ((clobber) ? "  clobber" : "  noclobber");
@@ -243,6 +248,7 @@ void OPT::print(OMSTREAM& o)
 
   o << "* accuracy, tolerances\n";
   o << ".options";
+  o << "  short="  << shortckt;
   o << "  gmin="   << gmin;
   o << "  short="  << shortckt;
   o << "  reltol=" << reltol;

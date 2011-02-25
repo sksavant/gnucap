@@ -1,4 +1,5 @@
 /*$Id: md.h,v 1.7 2010-09-17 12:25:59 felix Exp $ -*- C++ -*-
+ *  vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -89,7 +90,7 @@ enum {
 #define SYSTEMSTARTFILE	"gnucap.rc"
 #define SYSTEMSTARTPATH	OS::getenv("PATH")
 #define USERSTARTFILE	"gnucap.rc"
-#define	USERSTARTPATH	OS::getenv("HOME")
+#define USERSTARTPATH	OS::getenv("HOME")
 #define STEPFILE   	"/tmp/SXXXXXX"
 #define SHELL		OS::getenv("COMSPEC")
 /*--------------------------------------------------------------------------*/
@@ -99,10 +100,12 @@ enum {
 #define SYSTEMSTARTFILE	"gnucap.rc"
 #define SYSTEMSTARTPATH	OS::getenv("PATH")
 #define USERSTARTFILE	".gnucaprc"
-#define	USERSTARTPATH	OS::getenv("HOME")
+#define USERSTARTPATH	OS::getenv("HOME")
 #define STEPFILE   	"/tmp/SXXXXXX"
 #define SHELL		OS::getenv("SHELL")
 #endif
+/*--------------------------------------------------------------------------*/
+#define	PWD	"."
 /*--------------------------------------------------------------------------*/
 /* machine and compiler patches */
 #if defined(__MINGW32__)

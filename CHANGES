@@ -5,6 +5,7 @@
 - changed PROBElist to (*PROBE)-list
 - added "math probes" (preliminary, stupid)
 - allow inf as double value (hack), breaks i.* as variable name
+   FIXME: use constant parameters (?)
 - added ADP_CARD. not of any use.
 - added sim commmand, time-as-parameter (hack?)
 - added command history (incomplete)
@@ -15,8 +16,12 @@
 - make output easier to parse for gnuplot (^* for non-data-lines)
 - added options:
   - printrejected simplifies figuring out rejects.
-  - some tolarance values
+  - some tolarance values (tt)
 - powerof from gnucap-a merged
 - fixed measurements to return double (not string)
    ( if strings are needed, templates should be used )
 - fixed OMSTREAM to support multiple files. (used in tt)
+- .echo command with redirect
+- read ./.gnucaprc on startup
+- new option includepath (colon separated)
+- rudimentary .vdump .vload support

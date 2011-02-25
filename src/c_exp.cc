@@ -31,6 +31,7 @@ class CMD_ : public CMD {
 public:
   void do_it(CS& cmd, CARD_LIST* Scope)
   {
+
     Expression e(cmd);
     cmd.check(bDANGER, "syntax error parsing expression");
     Expression r(e, Scope);

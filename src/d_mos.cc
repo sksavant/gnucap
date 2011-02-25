@@ -278,7 +278,6 @@ void COMMON_BUILT_IN_MOS::precalc_first(const CARD_LIST* par_scope)
 /*--------------------------------------------------------------------------*/
 void COMMON_BUILT_IN_MOS::precalc_last(const CARD_LIST* par_scope)
 {
-  untested0("prec mos");
   assert(par_scope);
   COMMON_COMPONENT::precalc_last(par_scope);
   COMMON_BUILT_IN_MOS* c = this;

@@ -46,10 +46,12 @@ void volts_load( fstream *in, CARD_LIST* scope)
   trace1("volts_load", Last);
   CKT_BASE::_sim->_last_Time = Last;
   while ( ! (in->eof() ) ){
+    assert( i< CKT_BASE::_sim->_total_nodes +2 + CKT_BASE::_sim->_adp_nodes );
     *in >> skipws;
 
 
-    if( '\n' ==  in->peek() ){
+    if( '\n' ==  in->peek()
+       ||' ' ==  in->peek() ){
       in->get();
     } else if( 'n' ==  in->peek() ){
       *in >> inss >> skipws;
@@ -65,7 +67,8 @@ void volts_load( fstream *in, CARD_LIST* scope)
       ++i;
     } else {
       //*in >> skipws >> inss;
-      trace0((" garbage ->" + inss + "<- ").c_str());
+      inss=in->get();
+      trace1((" garbage ->" + inss + "<- ").c_str(), (int)inss[0]);
     }
   }
 }
@@ -129,9 +132,10 @@ public:
     out.setfloatwidth(30);
     out.outset(cmd);
     volts_save(cmd, out, Scope);
+    out.outreset();
   }
 } p2;
-DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "vdump", &p2);
+DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "vdump|vsave", &p2);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/

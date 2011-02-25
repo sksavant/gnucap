@@ -346,7 +346,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   assert(uin_eff >= 0.0 || !positive );
   //assert ( uin_eff == a->get_tr());
   //
-  if ((cap->tr_lo >  uin_eff) || (uin_eff > cap->tr_hi  ) ){
+  if ((cap->tr_lo >  uin_eff) || (uin_eff > cap->tr_hi && ! positive ) ){
     error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last Time %E \n    "
                 " order broken, should be %E < %LE < %E, is %i%i\n",
                 _sim->_Time0,

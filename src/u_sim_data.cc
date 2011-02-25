@@ -175,6 +175,7 @@ void SIM_DATA::init()
     CARD_LIST::card_list.tr_iwant_matrix();
     CARD_LIST::card_list.ac_iwant_matrix();
     _last_time = 0;
+    _last_Time = 0;
   }else{
     CARD_LIST::card_list.precalc_first();
     CARD_LIST::card_list.precalc_last();
