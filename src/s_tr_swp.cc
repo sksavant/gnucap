@@ -110,7 +110,9 @@ void TRANSIENT::sweep()
     bool printnow = (_sim->_time0 == _tstart || _trace >= tALLTIME);
     if (printnow) {
       _sim->keep_voltages();
+      trace0("outdata");
       outdata(_sim->_time0);
+      trace0("done outdata");
       if( _sim->_mode  == s_TTT && OPT::behave ){
         CARD_LIST::card_list.do_forall( &CARD::tr_save_amps, _sim->_stepno );
         trace0("TRANSIENT::saved amps");

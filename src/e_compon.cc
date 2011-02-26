@@ -395,6 +395,7 @@ COMPONENT::COMPONENT()
    _amps_new(0),
    _adp(0)
 {
+  trace0("COMPONENT::COMPONENT uninit");
   _sim->uninit();
 }
 /*--------------------------------------------------------------------------*/
@@ -411,6 +412,7 @@ COMPONENT::COMPONENT(const COMPONENT& p)
    _amps_new(0),
    _adp(0)
 {
+  trace0("COMPONENT::COMPONENT uninit");
   _sim->uninit();
   attach_common(p._common);
   assert(_common == p._common);
@@ -421,6 +423,7 @@ COMPONENT::~COMPONENT()
   if (_amps)     free (_amps);
   if (_amps_new) free (_amps_new);
   detach_common();
+  trace0("COMPONENT::~COMPONENT uninit");
   _sim->uninit();
 }
 /*--------------------------------------------------------------------------*/
@@ -845,9 +848,9 @@ double COMPONENT::tr_probe_num(const std::string& x)const
       : _time_by._event;
   }else if (Umatch(x, "event{time} ")) {
     return (_time_by._event < BIGBIG) ? _time_by._event : 0;
-  }else{
-    return CARD::tr_probe_num(x);
   }
+
+  return CARD::tr_probe_num(x);
 }
 /*--------------------------------------------------------------------------*/
 void COMPONENT::tr_save_amps(int n)

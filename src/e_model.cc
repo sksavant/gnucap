@@ -30,6 +30,7 @@ MODEL_CARD::MODEL_CARD(const COMPONENT* p)
    _component_proto(p),
    _tnom_c(NOT_INPUT)
 {
+  trace0("MODEL_CARD::MODEL_CARD uninit");
   _sim->uninit();
 }
 /*--------------------------------------------------------------------------*/
@@ -38,11 +39,13 @@ MODEL_CARD::MODEL_CARD(const MODEL_CARD& p)
    _component_proto(p._component_proto),
    _tnom_c(p._tnom_c)
 {
+  trace0("MODEL_CARD::MODEL_CARD uninit");
   _sim->uninit();
 }
 /*--------------------------------------------------------------------------*/
 MODEL_CARD::~MODEL_CARD()
 {
+  trace0("MODEL_CARD::~MODEL_CARD uninit");
   _sim->uninit(); // disconnect models from devices
 }
 /*--------------------------------------------------------------------------*/

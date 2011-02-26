@@ -44,11 +44,11 @@ void volts_load( fstream *in, CARD_LIST* scope)
   double Last;
   *in >> Last;
   trace1("volts_load", Last);
+  assert(CKT_BASE::_sim->_vdc);
   CKT_BASE::_sim->_last_Time = Last;
   while ( ! (in->eof() ) ){
     assert( i< CKT_BASE::_sim->_total_nodes +2 + CKT_BASE::_sim->_adp_nodes );
     *in >> skipws;
-
 
     if( '\n' ==  in->peek()
        ||' ' ==  in->peek() ){
@@ -67,7 +67,7 @@ void volts_load( fstream *in, CARD_LIST* scope)
       ++i;
     } else {
       //*in >> skipws >> inss;
-      inss=in->get();
+      inss = in->get();
       trace1((" garbage ->" + inss + "<- ").c_str(), (int)inss[0]);
     }
   }

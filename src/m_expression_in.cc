@@ -1,4 +1,5 @@
 /*$Id: m_expression_in.cc,v 1.1 2009-10-23 12:01:45 felix Exp $ -*- C++ -*-
+ * vim:sw=2:ts=8:et
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -100,6 +101,7 @@ void Expression::leaf(CS& File)
     arglist(File);
     push_back(new Token_SYMBOL(name, ""));
   }else{itested();
+    trace0(("Expression::leaf, problem with " + std::string(File)).c_str());
     throw Exception_CS("what's this? (leaf)", File);
   }
 }
@@ -230,6 +232,7 @@ void Expression::expression(CS& File)
 /*--------------------------------------------------------------------------*/
 void Expression::parse(CS& File)
 {
+  trace0("Expression::parse(CS& File)");
   expression(File);
 }
 /*--------------------------------------------------------------------------*/

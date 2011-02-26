@@ -77,7 +77,7 @@ namespace TT {
 				trace0("TTT::setup have 2");
 				_Tstart = _sim->_last_Time;
 				if ((double)_Tstart == 0){
-					// there was no previous run.
+					trace0("TTT::first run");
 					_tstep = arg1;
 					_tstop = arg2;
 					_Tstop = 0;
@@ -99,7 +99,7 @@ namespace TT {
 
 
 			} else if (arg1.has_hard_value() ) {
-				trace0("TTT::setup have 1");
+				trace1("TTT::setup have 1", _sim->_last_Time);
 				_Tstart = _sim->_last_Time;
 				_Tstop  = arg1; // as tran
 
@@ -177,6 +177,7 @@ namespace TT {
 
 		if  ( _Tstart < _sim->_last_Time  ||  _sim->_last_Time <= 0.) {
 			//    _out << "* last_Time " << _sim->_last_Time << "\n";
+			trace2("TTT::setup no cont ", _Tstart, _sim->_last_Time );
 			_tt_cont = false;
 			_Time1 = _sim->_Time0 = 0.;
 		}else{
@@ -230,7 +231,7 @@ namespace TT {
 
 		steps_total_out_ = (int) (1 + ceil( ( (_tstop - _tstart ) / _tstep ) ));
 		steps_total_out_ = steps_total_out_ ;
-		trace4( "TTT::setup ",  steps_total_out_ , _tstep , _tstop ,_tstart );
+		trace5( "TTT::setup ",  steps_total_out_ , _tstep , _tstop ,_tstart, _cont );
 
 	}
 	/*--------------------------------------------------------------------------*/

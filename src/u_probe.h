@@ -146,6 +146,7 @@ class EVAL_PROBE: public PROBE {
     virtual PROBE* clone()const { return new EVAL_PROBE(*this);}
     EVAL_PROBE&    operator=(const EVAL_PROBE& p);
   private:
+    // FIXME carry expression. not _cmd and _scope
     std::string _cmd;
     Expression _exp;
     const CARD_LIST* _scope;

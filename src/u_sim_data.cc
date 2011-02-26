@@ -162,6 +162,7 @@ void SIM_DATA::order_auto()
 void SIM_DATA::init()
 {
   if (is_first_expand()) {
+    trace0("SIM_DATA::init uninit");
     uninit();
     init_node_count(CARD_LIST::card_list.nodes()->how_many(), 0, 0);
     CARD_LIST::card_list.expand();
@@ -286,6 +287,7 @@ void SIM_DATA::unalloc_vectors()
  */
 void SIM_DATA::uninit()
 {
+  trace0("SIM_DATA::uninit");
   if (_vdc) {
     _acx.reinit(0);
     _lu.reinit(0);

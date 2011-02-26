@@ -297,7 +297,8 @@ void DEV_VCVS2::tt_next()
     _time[OPT::_keep_time_steps-1] = 0.;
     _y[OPT::_keep_time_steps-1]    = FPOLY1(0., 0., 0.);
   }else if (_time[0] == _sim->_time0) {
-  }else{untested();
+  }else{
+    trace0("DEV_VCVS2::tt_next problem");
   }
 
   //assert(_time[0] == _sim->_time0);

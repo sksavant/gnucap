@@ -927,12 +927,12 @@ void ADP_NODE::tr_expect_( ){
   trace2("ADP_NODE::tr_expect_", _order, CKT_BASE::_sim->tt_iteration_number());
   trace4("ADP_NODE::tr_expect_ ", _sim->_Time0, tr(_sim->_Time0), tr1(), tr2() );
   assert(_order <= CKT_BASE::_sim->tt_iteration_number());
-  assert ( isnan(tr()) );
+  assert ( isnan(tr()) || _order==0 );
 
   switch(_order){
     case 0:
-      assert(false);
-      break;
+      trace0("ADP_NODE::tr_expect_, not doing anything");
+      return;
     case 2:
       trace3(("ADP_NODE::tr_expect_ extradebug" + long_label()).c_str(), tr2(), tr1(), tr(Time0()) );
       if ( fabs(tr2()-tr(Time2())) > 1e-15  && !(is_almost(tr2(), tr(Time2())))){

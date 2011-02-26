@@ -1209,9 +1209,10 @@ long double COMMON_BUILT_IN_RCD::__step(long double uin, long double cur,  doubl
 
   long double factor =  expl( -(uin /Re0 + expl(-Rc1*uin)/Rc0)*t    );
   long double retalt =  cur *factor    +Eend * (1.0L-factor);
+  retalt=retalt;
 
   trace7("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, uin, Rc0, ret, retalt, logl(fabsl(cur-Eend ) ) );
-  //assert(is_almost(retalt ,ret));
+//  assert(is_almost(retalt ,ret));
 
   if (!is_number(ret) || ret < -0.1){
     trace7("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, uin, Rc0, Rc1, Re0, logl(fabsl(cur-Eend ) ) );
@@ -1256,9 +1257,9 @@ void DEV_BUILT_IN_RCD::stress_apply()
   assert(s);
 
   assert(_sim->_time0 == 0);
+  trace2("DEV_BUILT_IN_RCD::stress_apply ",  _sim->_dT0, _Ccgfill->tt() );
   
   if(_sim->_dT0==0){
-    trace2("DEV_BUILT_IN_RCD::stress_apply ",  _sim->_dT0, _Ccgfill->tt() );
     _tr_fill=_Ccgfill->tt();
     return;
   }
@@ -1417,8 +1418,6 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   assert (uin==uin);
 
 
-  double tau_e_here = m->__Re( uin, c);
-  double tau_c_here = m->__Rc( uin, c);
 
   double tau = c->__tau(uin);
 
@@ -1460,6 +1459,7 @@ double DEV_BUILT_IN_RCD::involts() const {
 /*----------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::tr_stress_last()
 {
+  ADP_NODE* cap=_Ccgfill;
   trace2(("tr_stress_last " + short_label()).c_str(), _tr_fill, _sim->tt_iteration_number()  );
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
   assert(c);
@@ -1489,6 +1489,21 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
     }
     assert(is_number(_tr_fill));
   }
+
+
+  double uin_eff= cap->tr(); 
+
+  if ((cap->tr_lo >  uin_eff) || (uin_eff > cap->tr_hi && ! m->positive ) ){
+    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last Time %E \n    "
+                " %s order broken, should be %E < %LE < %E, is %i%i\n",
+                _sim->_Time0,
+                long_label().c_str(),
+        cap->tr_lo, uin_eff, cap->tr_hi, (cap->tr_lo > uin_eff) , (cap->tr_hi < uin_eff) );
+    // untested();
+    uin_eff= ( cap->tr_lo + cap->tr_hi )/2 ;
+    cap->set_order(0);
+  }
+
 
   // wird bei rollback nicht gebraucht, da nur guess!
   _Ccgfill->set_tt(_tr_fill);

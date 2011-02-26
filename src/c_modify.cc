@@ -90,6 +90,7 @@ double sweep_fix(CS& cmd, const CARD *brh)
 /*--------------------------------------------------------------------------*/
 void modify_fault(CS& cmd, WHATTODO command, CARD_LIST* scope)
 {
+  trace0("modify_fault");
   CKT_BASE::_sim->uninit();
   while (cmd.is_alpha()) {
     unsigned mark = cmd.cursor();
@@ -164,6 +165,7 @@ public:
       faultstack.back().restore();
       faultstack.pop_back();
     }
+    trace0("CMD_UNFAULT");
     _sim->uninit();
   }
 } p4;

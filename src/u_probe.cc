@@ -115,7 +115,7 @@ const std::string PROBE::label(void)const
 /*--------------------------------------------------------------------------*/
 double PROBE::value(void)const
 {
-  // trace0(("PROBE::value()"+_what).c_str());
+  trace0(("PROBE::value()"+_what).c_str());
 
   if (_brh) {
     return _brh->probe_num(_what);
@@ -184,6 +184,7 @@ MATH_PROBE::MATH_PROBE(const MATH_PROBE& p) : PROBE(p) {  _type = p._type ; }
 /*--------------------------------------------------------------------------*/
 double MATH_PROBE::value(void)const
 {
+  trace0(("MATH_PROBE::value()"+_what).c_str());
   untested();
   if( ( _type & MATH_OP_MASK ) == MATH_OP_CONST)
   {
@@ -238,6 +239,7 @@ MEAS_PROBE::MEAS_PROBE(const std::string& cmd, const CARD_LIST* scope )
 /*--------------------------------------------------------------------------*/
 double MEAS_PROBE::value(void)const
 { 
+  trace0(("MEAS_PROBE::value()"+_what).c_str());
   CS Cmd(CS::_STRING, _cmd);
   std::string function;
 
@@ -289,24 +291,34 @@ MATH_PROBE& MATH_PROBE::operator=(const MATH_PROBE& p)
   return *this;
 }
 /*--------------------------------------------------------------------------*/
-EVAL_PROBE::EVAL_PROBE(const EVAL_PROBE& p) : PROBE(p) {  untested(); }
+EVAL_PROBE::EVAL_PROBE(const EVAL_PROBE& p) :
+  PROBE(p),
+  _cmd(p._cmd),
+  _scope(p._scope)
+{  untested(); }
 /*--------------------------------------------------------------------------*/
 EVAL_PROBE& EVAL_PROBE::operator=(const EVAL_PROBE& p)
 {
   PROBE::operator=(p);
+  assert(_scope);
   _cmd = p._cmd;
   return *this;
 }
 /*--------------------------------------------------------------------------*/
 double EVAL_PROBE::value(void)const
 { 
+  assert(_scope);
+  trace0(("EVAL_PROBE::value()"+_what).c_str());
+  trace0(("EVAL_PROBE::value()"+(std::string)_cmd).c_str());
+
   CS cmd(CS::_STRING, _cmd);
-  std::string name;
 
   Expression e(cmd);
   cmd.check(bDANGER, "syntax error");
+  trace0(("EVAL_PROBE::value()"+(std::string)cmd).c_str());
   Expression r(e, _scope);
 
+  trace0("EVAL_PROBE::value");
   return r.eval();
 }
 /*--------------------------------------------------------------------------*/
@@ -314,6 +326,7 @@ EVAL_PROBE::EVAL_PROBE(const std::string& cmd, const CARD_LIST* scope)
 { 
   _what = cmd; 
   _cmd = cmd;
+  assert(scope);
   _scope = scope;
 } 
 /*--------------------------------------------------------------------------*/

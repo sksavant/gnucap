@@ -44,7 +44,8 @@
 /*--------------------------------------------------------------------------*/
 #define sanitycheck()  assert ( 0.99 * _sim->_Time0 <= _Time1 + _sim->_dT0 );\
                        assert ( 1.01 * _sim->_Time0 >= _Time1 + _sim->_dT0 );\
-                       assert ( _sim->_Time0 > _Time1 || _sim->_Time0==0 );
+                       assert ( _sim->_Time0 > _Time1 || _sim->tt_iteration_number()==0 );\
+                       assert ( _sim->_dT0 == 0 || _sim->tt_iteration_number()!=0 );
 /*--------------------------------------------------------------------------*/
 
 namespace TT {
@@ -166,8 +167,7 @@ void TTT::first()
   ::status.tran.reset().start();
 
   CARD_LIST::card_list.tr_begin();
-
-// dashier nach TTT::first()?
+  trace0("TTT::first sweep");
   TTT::sweep();
   trace0("TTT::first sweep done");
 
@@ -237,6 +237,8 @@ void TTT::first_after_interruption(){
     _accepted_tt = true;
     accept_tt(); 
     outdata_tt(_sim->_Time0); // first.
+    _sim->_last_Time=_sim->_Time0+_tstop;
+    trace0("TTT::first_after_interruption done");
 }
 /*--------------------------------------------------------------------------*/
 // do a 2nd tt to check aging impact.
@@ -280,13 +282,15 @@ void TTT::sweep_tt()
     
   //something.
   }else if( _Tstop == _Tstart ){
+    trace0("TTT::sweep_tt just printing");
     if (_trace>0 )
       _out << "* TTT::sweep_tt just printing " << _Tstart << "\n";
 
     outdata_b4(_sim->_Time0); // first output tt data
     return;
   }else if ( !_tt_cont  ){
-    if (_trace>0 )
+    trace0("TTT::sweep_tt from 0");
+    if (_trace>5 )
       _out << "* TTT::sweep_tt from 0\n";
     _sim->_dT0 = 0;
     _sim->_dT1 = 0;
@@ -311,19 +315,20 @@ void TTT::sweep_tt()
 
   while(next())
   {
-    trace5( "TTT::sweep_tt loop start ", _sim->_Time0, _Time1, _sim->_dT0, _accepted, _accepted_tt ); 
     if (_trace > 2)
       _out << "* loop start _Time0 = " << _sim->_Time0 << " _Time1 " << _Time1 
         << " step " << _sim->_dT0 << " last " << _Time1 <<"\n";
+
+    trace6( "TTT::sweep_tt loop start ", _sim->_Time0, _Time1, _sim->_dT0,
+        _accepted, _accepted_tt, tt_iteration_number() ); 
     sanitycheck();
-
-
-    advance_Time();
     ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_commit );
     CARD_LIST::card_list.do_forall( &CARD::tt_commit ); // ?
     
     trace1( "TTT::sweep adp stuff ", _sim->_Time0 );
     ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_commit );
+    
+    trace0("TTT::sweep CARD::stress_apply");
     CARD_LIST::card_list.do_forall( &CARD::stress_apply );
 
     trace2( "TTT::sweep calling TTT::sweep", _cont, _sim->_Time0 );
@@ -389,7 +394,9 @@ void TTT::sweep_tt()
   // CARD_LIST::card_list.do_forall( &CARD::tt_commit ); // ?
   //CARD_LIST::card_list.do_forall( &CARD::stress_apply );
   //
- // keep_damage();
+/// invalidate history
+  std::fill_n(_sim->_tr1, _sim->_adp_nodes, NAN);
+  std::fill_n(_sim->_tt1, _sim->_adp_nodes, NAN);
 }
 /*--------------------------------------------------------------------------*/
 void TTT::sweep() // tr sweep wrapper.
@@ -417,16 +424,18 @@ void TTT::sweep() // tr sweep wrapper.
 
   // if (_tt_cont) _inside_tt = true;
   try{
+    trace3("calling sweep", _sim->_time0, _sim->_last_time, _tstep);
     TRANSIENT::sweep();
     assert(_accepted);
     if (_trace>0 ) _out<< "* done sweep "<<tt_iteration_number()<<  "\n";
+    trace0("done sweep, tr_stress_last");
     CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
   }catch (Exception& e) {
     untested();
-    error(bDANGER, "%s at %E\n", e.message().c_str(), _sim->_Time0);
+    error(bDANGER, "Exception %s at %E\n", e.message().c_str(), _sim->_Time0);
     _accepted=_accepted_tt=false;
     ::status.review.stop();
-    throw(Exception("sweep failed"));
+    throw(e);
   }
 
   trace1("TTT done TRANSIENT::sweep", _sim->_last_time);
@@ -445,7 +454,8 @@ void TTT::sweep() // tr sweep wrapper.
 void TTT::accept_tt()
 {
   if (_trace>0 )
-    _out << "* aceppting step " <<_sim->_tt_accepted << " at " <<  _sim->_Time0  << " - " << " _sim->_Time0 + _sim->_last_time " <<"\n";
+    _out << "* accepting step " <<_sim->tt_iteration_number()
+      << " at " <<  _sim->_Time0  << " - " << " _sim->_Time0 + _sim->_last_time " <<"\n";
   //_sim->keep_voltages(); // bloss nicht. wegen last_time
  // CARD_LIST::card_list.do_forall( &CARD::tt_accept ); //?
   ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_accept ); // schiebt tt_valuei weiter.
@@ -551,14 +561,10 @@ void TTT::do_it(CS& Cmd, CARD_LIST* Scope)
   } catch (Exception& e) {itested();
     error(bDANGER, e.message() + '\n');
   }
-  unallocate();
-
   if(_trace>0 )
     _out << "* unallocating\n";
+  unallocate();
 
-  _sim->unalloc_vectors();
-  _sim->_lu.unallocate();
-  _sim->_aa.unallocate();
   ::status.four.stop();
   ::status.total.stop();
 }
@@ -598,6 +604,10 @@ void TTT::unallocate()
 //    _fdata_tt = NULL;
 //  }else{itested();
 //  }
+//  TRANSIENT::unallocate?
+  _sim->unalloc_vectors();
+  _sim->_lu.unallocate();
+  _sim->_aa.unallocate();
 }
 /*--------------------------------------------------------------------------*/
 static TTT p10;
@@ -614,7 +624,6 @@ void TTT::options(CS& Cmd)
   bool tr=false;
 
   _sim->_temp_c = OPT::temp_c;
-  bool ploton = IO::plotset  &&  plotlist().size() > 0;
   _trace = tNONE;
   _power_down = false;
   unsigned here = Cmd.cursor();
@@ -670,7 +679,7 @@ bool TTT::next()
 
   if ( _trace>5 ) 
     _out << "* entering next() "<<tt_iteration_number() << "  _Time0" << _sim->_Time0 << "Time1" << _Time1<<
-     " last: " << _sim->_last_Time << "\n";
+     " last_Time: " << _sim->_last_Time << "\n";
 
   assert(_sim->_Time0 >=0 || tt_iteration_number() == 0);
 
@@ -680,14 +689,14 @@ bool TTT::next()
     new_dT = 0.9 * ( _sim->_dT0 - _tstop ) + _tstop; // back at least this much.
     if( _time_by_beh < _sim->_Time0 ){
       assert(_time_by_beh >= 0);
-      new_dT= fmin(new_dT,_dT_by_beh);
+      new_dT = fmin(new_dT,_dT_by_beh);
     }
     if ( _time_by_adp < _sim->_Time0 ){
       assert(_time_by_adp >= 0);
       new_dT = fmin(new_dT, _dT_by_adp);
     } 
 
-    assert(new_dT == new_dT );
+    assert( new_dT == new_dT );
     trace1( "TTT::next after reject: ", _Time1 );
 
     if ( _trace>5 ) 
@@ -700,11 +709,11 @@ bool TTT::next()
 
     new_dT = min( (double) _dT_by_adp, (_sim->_dT0 + _Tstep)/2 ) ; 
     new_dT = min( (double) new_dT, _sim->_dT0 * OPT::ttstepgrow) ; 
-    new_dT = max( new_dT,  (double) _tstop ) ; // fmin( get_new_dT(), _Tstep );
+    new_dT = max( new_dT, (double) _tstop ) ; // fmin( get_new_dT(), _Tstep );
 
     if ( _trace > 0 ) 
       _out << "* new step " << new_dT << " ( just accepted: " << _sim->_dT0   << 
-        ", adp "<< _dT_by_adp <<" )\n";
+        ", adp "<< _dT_by_adp <<" last_Time" << _sim->_last_Time << " )\n";
 
 
     if(new_dT < _dTmin){
@@ -712,23 +721,26 @@ bool TTT::next()
       return false;
     }
 
+    if ( _trace > 5 ) 
+      _out << "* last step handler? Tstop " << (double)_Tstop << " tstop " << _tstop <<
+       " last_Time" << _sim->_last_Time << " )\n";
     // last step handler, snap to edge
-    if ( _Tstop - _sim->_last_Time < 2* _tstop 
-      && _Tstop - _sim->_last_Time >    _tstop   ){
+    if ( ( (double)_Tstop - _sim->_last_Time < 2* _tstop 
+          || new_dT +  _sim->_last_Time > _Tstop )
+        && (double)_Tstop - _sim->_last_Time >    _tstop   ) {
+      trace4("TTT::next last step", _Tstop, _sim->_last_Time, _tstop,_Tstart);
       if ( _trace > 0 ) 
         _out << "* last step handler..." <<  _sim->_last_Time << "\n";
       untested();
       new_dT=_Tstop - _sim->_Time0 - _tstop ;
+    } else {
+      // make sure there is enough time for another step!
     }
 
-    if (_sim->_dT1 > 0)
-      assert( new_dT < (OPT::ttstepgrow+1) * _sim->_dT0 );
+    assert( new_dT < (OPT::ttstepgrow+1) * _sim->_dT0 || _sim->_dT1<=0 );
 
-    ::status.review.start();
     ++::status.hidden_steps_tt;
     ++steps_total_tt;
-    ::status.review.stop();
-
   } // accepted
 
   if (_sim->_dT1) new_dT = max (new_dT, (double) _tstop );
@@ -740,7 +752,7 @@ bool TTT::next()
                  && ( new_dT != 0 || !_sim->_dT0  );
 
   if ( _trace>5 ) 
-    _out << "* next, next at " << _sim->_Time0 << 
+    _out << "* next, next at " << _sim->_Time0+new_dT << 
       "( _dT0 " << _sim->_dT0  << " _dT1 " <<  _sim->_dT1 << " " <<  _sim->_dT2 << " new_dT: " << new_dT<< 
      "another " << another_step <<  "\n";
 
@@ -764,13 +776,7 @@ bool TTT::next()
   _sim->_dT2 = _sim->_dT1;
   _sim->_dT1 = _sim->_dT0;
   _sim->_dT0 = new_dT;
-
-//  _new_dT = new_dT;
-
-
   time1 = 0.;
-
-  trace6( "TTT::next: exiting next: " , _sim->tt_iteration_number(), _sim->_Time0, _Time1, _sim->_dT0, _sim->_dT1 , _sim->_dT2 );
 
   assert( _sim->_Time0 < 1+ _Time1 + _sim->_dT0 );
   assert( _sim->_Time0 >= _sim->_dT0 );
@@ -786,13 +792,15 @@ bool TTT::next()
 
   if (another_step && _accepted_tt){
     CARD_LIST::card_list.do_forall( &CARD::tt_next ); // fixme: merge to tt_adv.
+    advance_Time();
   }
 
   if ( _trace>0 ) 
     _out << "* committing for " << _sim->_Time0 << "(step "  << tt_iteration_number() <<  ")\n";
   
-
   if ( _trace>0 ) _out << "* exiting next " << another_step << "\n";
+  trace6( "TTT::next: exiting next: " , _sim->tt_iteration_number(),
+      _sim->_Time0, _Time1, _sim->_dT0, _sim->_dT1 , _sim->_dT2 );
   return another_step;
 }
 /*--------------------------------------------------------------------------*/
@@ -822,7 +830,6 @@ void TTT::head_tt(double start, double stop, const std::string& col1)
   }else{
   }
   _sim->_mode=s_TRAN;
-
 
   // TODO clear store but append probes from measurments
   PROBELIST oldstore;
@@ -855,9 +862,7 @@ void TTT::head_tt(double start, double stop, const std::string& col1)
   //
 
   trace3("TTT::tt_head probe TRAN", printlist().size(), storelist().size(), oldstore.size());
-
   _sim->_waves = new WAVE[storelist().size()];
-
   _sim->_mode=oldmode;
 
 }
@@ -1069,6 +1074,7 @@ void TTT::print_results_tt(double x)
 // save things during TR
 void TTT::outdata(double x)
 {
+  trace1("TTT::outdata", _sim->tt_iteration_number());
   assert( _sim->_mode  == s_TTT );
   ::status.output.start();
   assert( _sim->_mode  == s_TTT );
@@ -1082,7 +1088,7 @@ void TTT::outdata(double x)
   _sim->set_command_tran();
   if(_sim->tt_iteration_number()==0 && printlist().size() != 0 )
   {
-    TRANSIENT::_out << _sim->_Time0;
+    TRANSIENT::_out << (double)_sim->_Time0;
     TRANSIENT::print_results(x);
   } else {
     // store_results(x);
@@ -1090,13 +1096,16 @@ void TTT::outdata(double x)
   _sim->set_command_tt();
 
   // FIXME (only > 0)
+  trace0("TTT::outdata store");
   store_results(x);
+  trace0("TTT::outdata store done");
 
   _sim->_mode=s_TTT;
   _sim->reset_iteration_counter(iPRINTSTEP);
   ::status.hidden_steps = 0;
   ::status.output.stop();
   assert( _sim->_mode  == s_TTT );
+  trace0("TTT::outdata done");
 }
 /*--------------------------------------------------------------------------*/
 std::string TTT::status()const
@@ -1111,13 +1120,17 @@ std::string TTT::status()const
  */
 void TTT::store_results(double x)
 {
-  // trace0("TTT::store_results()");
+  trace0("TTT::store_results()");
   _sim->_mode=s_TRAN;
   int ii = 0;
   for (PROBELIST::const_iterator
 	 p=storelist().begin();  p!=storelist().end();  ++p) {
+    trace0("TTT::store_results()");
+    trace0(("TTT::store_results()"+ (*p)->label()).c_str());
+    trace1("TTT::store_results()", (*p)->value());
     _sim->_waves[ii++].push(x, (*p)->value());
   }
+  trace0("TTT::store_results done");
 }
 /*--------------------------------------------------------------------------*/
 void TTT::advance_Time(void)
