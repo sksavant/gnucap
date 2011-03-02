@@ -112,17 +112,23 @@ CS::CS(CS::INC_FILE, const std::string& name)
 {
 
   if(name[0]=='/' || name[0]=='~'){
+    trace0(("CS::CS(inc, absulute " +  name).c_str());
     _file = fopen(name.c_str(), "r");
   }else{
 
-    const char* h ="HOME";
-    const char* home= getenv(h);
     std::vector< std::string > pathlist;
     std::string includepath=OPT::includepath;
     boost::algorithm::split(pathlist, includepath, boost::is_any_of(":"));
     for(std::vector< std::string >::iterator i=pathlist.begin(); i!=pathlist.end() ; ++i) {
-      if ( _file = fopen( (*i + "/" + name).c_str(), "r" ) ) 
+      std::string fn=(*i + "/" + name);
+
+      trace0(("CS::CS(inc, trying " + fn).c_str());
+
+      if (( _file = fopen( fn.c_str(), "r" ) ) ) {
         break;
+      }else{
+        trace0("no file");
+      }
     }
   }
 

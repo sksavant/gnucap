@@ -896,6 +896,7 @@ static void getmerge(CS& cmd, Skip_Header skip_header, CARD_LIST* Scope)
   }
   cmd.check(bWARNING, "need section, echo, list, or quiet");
 
+  trace0(("getmerge opening " + file_name).c_str());
   CS file(CS::_INC_FILE, file_name);
 
   if (skip_header) { // get and store the header line
@@ -962,6 +963,7 @@ class CMD_INCLUDE : public CMD {
 public:
   void do_it(CS& cmd, CARD_LIST* Scope)
   {
+    trace0("CMD_INCLUDE::do_it, spice");
     getmerge(cmd, NO_HEADER, Scope);
   }
 } p3;
