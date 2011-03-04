@@ -181,8 +181,8 @@ struct INTERFACE SIM_DATA {
   void count_iterations(int i)	{assert(up_order(0,i,iCOUNT-1)); ++_iter[i];}
   int iteration_tag()const      {return _iter[iTOTAL];}
   int iteration_number()const   {return _iter[iSTEP];}
-  int tt_iteration_number()const   {return _tt_iter;} // accepted steps
-  int tt_iteration_tries()const   {return _tt_done;} // accepted steps
+  uint_t tt_iteration_number()const   {return _tt_iter;} // accepted steps
+  uint_t tt_iteration_tries()const   {return _tt_done;} // accepted steps
   bool is_initial_step()	{return (_iter[_mode] <= 1  && analysis_is_static());}
   bool is_advance_iteration()const   {return (_iter[iSTEP] == 0);}
   bool is_advance_or_first_iteration()const {assert(_iter[iSTEP]>=0); return (_iter[iSTEP]<=1);}
@@ -193,8 +193,8 @@ struct INTERFACE SIM_DATA {
   bool uic_now() {return _uic && analysis_is_static() && _time0==0.;}
 
   private:
-  int _tt_order;
-  int last_order_tt;
+  uint_t _tt_order;
+  uint_t last_order_tt;
 
   public:
   int _stepno; // number of transient steps accepted.

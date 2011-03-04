@@ -88,7 +88,7 @@ void MODEL_BUILT_IN_BTI_SINGLE::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
 {
   trace0("MODEL_BUILT_IN_BTI_SINGLE::attach_rcds()");
   int i=0;
-  assert(rcd_number==1);
+  assert((int)rcd_number==1);
   COMMON_BUILT_IN_RCD* RCD1 = new COMMON_BUILT_IN_RCD;
   RCD1->set_modelname( rcd_model_name ); // <= !
   RCD1->Uref = uref ;
@@ -173,7 +173,7 @@ void MODEL_BUILT_IN_BTI::precalc_first()
     e_val(&(this->gparallel), 0.0, par_scope);
     e_val(&(this->flags), int(USE_OPT), par_scope);
     e_val(&(this->mos_level), 0, par_scope);
-    e_val(&(this->rcd_number), 1, par_scope);
+    rcd_number.e_val( 1, par_scope);
     e_val(&(this->anneal), true, par_scope);
     // final adjust: code_pre
     // final adjust: override
@@ -181,7 +181,7 @@ void MODEL_BUILT_IN_BTI::precalc_first()
     e_val(&(this->gparallel), 0.0, par_scope);
     e_val(&(this->flags), int(USE_OPT), par_scope);
     e_val(&(this->mos_level), 0, par_scope);
-    e_val(&(this->rcd_number), 1, par_scope);
+    rcd_number.e_val(1, par_scope);
     e_val(&(this->anneal), true, par_scope);
     e_val(&(this->rcd_model_name), std::string("rcd_model_hc"), par_scope);
     e_val(&(this->weight), 0.123, par_scope);
@@ -212,8 +212,8 @@ void MODEL_BUILT_IN_BTI_MATRIX::precalc_first()
   trace0(("MODEL_BUILT_IN_BTI_MATRIX::precalc_first" + rcd_model_name.string()).c_str());
   const CARD_LIST* par_scope = scope();
   assert(par_scope);
-  e_val(&(this->rows), 2, par_scope);
-  e_val(&(this->cols), 3, par_scope);
+  rows.e_val( 2, par_scope);
+  cols.e_val( 3, par_scope);
   e_val(&(this->base), 11.0, par_scope);
   MODEL_BUILT_IN_BTI::precalc_first();
 
@@ -327,8 +327,8 @@ void MODEL_BUILT_IN_BTI_MATRIX::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
 {
   trace0("MODEL_BUILT_IN_BTI_MATRIX::attach_rcds()");
   trace0(rcd_model_name.string().c_str());
-  int row, col , k;
-  assert (rcd_number==rows*cols);
+  uint_t row, col , k;
+  assert ((uint_t)rcd_number==(rows*cols));
   trace3("attaching", rows, cols, rcd_number);
 
   long double up = 1;
@@ -644,8 +644,8 @@ void COMMON_BUILT_IN_BTI::expand(const COMPONENT* d)
     trace1("alloc", m->rcd_number);
     assert(!_RCD);
     _RCD = new COMMON_COMPONENT*[m->rcd_number];
-    int i;
-    for(i=0; i<m->rcd_number; i++ ) _RCD[i]=NULL;
+    uint_t i;
+    for(i=0; i<(uint_t)m->rcd_number; i++ ) _RCD[i]=NULL;
   }else{
     trace1("allocd", m->rcd_number);
   }
@@ -671,7 +671,7 @@ void COMMON_BUILT_IN_BTI::expand(const COMPONENT* d)
 void MODEL_BUILT_IN_BTI::attach_rcds(COMMON_BUILT_IN_RCD** _RCDc) const
 {
   trace1("MODEL_BUILT_IN_BTI::attach_rcds()", (long int)_RCDc[0]);
-  int i;
+  uint_t i;
   trace1(("attach_rcds "+ std::string(rcd_model_name)).c_str() , rcd_number);
   for(i=0; i < rcd_number; i++ ){
     COMMON_BUILT_IN_RCD* RCD1 = new COMMON_BUILT_IN_RCD;
@@ -817,7 +817,7 @@ void DEV_BUILT_IN_BTI::expand()
   if (!_RCD) {
     trace1("alloc COMP", m->rcd_number);
     _RCD = new COMPONENT*[m->rcd_number];
-    int i;
+    uint_t i;
     for(i=0; i<m->rcd_number; i++ ) _RCD[i]=NULL;
   }else{
     trace1("allocd", m->rcd_number);
@@ -878,7 +878,7 @@ void DEV_BUILT_IN_BTI::expand()
       }
     }
 
-    int i;
+    uint_t i;
 //    assert(m->rcd_number == 1);
     for(i=0; i<m->rcd_number; i++ ) {
       trace0(".");
@@ -991,7 +991,7 @@ double DEV_BUILT_IN_BTI::tt_probe_num(const std::string& x)const
   const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(c->sdp());
   assert(s);
   const ADP_BUILT_IN_BTI* a = prechecked_cast<const ADP_BUILT_IN_BTI*>(adp());
-  if(!a)untested0("no a");
+  if(!a)untested0(("no a"+long_label()).c_str());
 
   if (Umatch(x, "vc{v} |fill ")) {
     double buf = 0;
@@ -1028,7 +1028,7 @@ void DEV_BUILT_IN_BTI::tr_stress() {
   subckt()->do_forall( &CARD::tr_stress );
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_BTI::tt_commit() const {
+void DEV_BUILT_IN_BTI::tt_commit() {
   itested();
   //FIXME, subckt default
   //        RCD reicht!

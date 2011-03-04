@@ -83,13 +83,13 @@ AUTOMAKE = ${SHELL} /home/felix/extern/fucap/trunk/missing --run automake-1.11
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O2
+CFLAGS = -g -O2 -DTRACE_UNTESTED -Wall -W -Wno-sign-compare -Wpointer-arith -Wcast-qual -Wwrite-strings -Wconversion -Woverloaded-virtual -Wlong-long -Wsign-compare -Wcast-align
 CPP = gcc -E
-CPPFLAGS =  -DNDEBUG
+CPPFLAGS =  -DTRACE_UNTESTED
 CXX = g++
 CXXCPP = g++ -E
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -g -O2
+CXXFLAGS = -g -O2 -DTRACE_UNTESTED -Wall -W -Wno-sign-compare -Wpointer-arith -Wcast-qual -Wwrite-strings -Wconversion -Woverloaded-virtual -Wlong-long -Wsign-compare -Wcast-align
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps

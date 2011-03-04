@@ -195,8 +195,8 @@ class ADP_NODE: public CKT_BASE {
     //aliases
     hp_float_t get( ) const { return tt();}
     hp_float_t tr_get( ) const { return tr();}
-    void tt_set(long double x) { set_tt(x);}
-    void tr_set(long double x) { set_tr(x);}
+    void tt_set( double x) { set_tt(x);}
+    void tr_set( double x) { set_tr(x);}
     double tr_get_old(){ return get_tr(1);}
     hp_float_t get1()const { return tt1(); }
     hp_float_t get_tr( int i ) const {assert(i==1); 
@@ -210,7 +210,7 @@ class ADP_NODE: public CKT_BASE {
     double tr_duration()const; //{ return _c->_sim->_last_time; }
     double wdT()const{ return _wdT; }
     void tt_commit();
-    void tr_stress_last( double );
+    void tr_stress_last( );
     void tt_reset();
     void tt_commit_first();
     void tt_accept_first();
@@ -230,7 +230,7 @@ class ADP_NODE: public CKT_BASE {
     }
 
   private:
-    int _order; // order used for extrapolation.
+    uint_t _order; // order used for extrapolation.
     ADP_CARD* a;
   public:
     virtual double debug();

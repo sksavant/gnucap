@@ -74,7 +74,7 @@ public: // input parameters
   PARAMETER<double> gparallel;	// parallel conductance
   PARAMETER<int> flags;	// 
   PARAMETER<int> mos_level;	// 
-  PARAMETER<int> rcd_number;	//  ??
+  PARAMETER<size_t> rcd_number;	//  ??
   PARAMETER<int> bti_type;	// 
   PARAMETER<double> bti_base;	// 
   PARAMETER<bool> anneal;	// 
@@ -109,8 +109,8 @@ public: // override virtual
 public: // not virtual
   static int count() {return _count;}
 public: // input parameters
-  PARAMETER<int> cols;
-  PARAMETER<int> rows;
+  PARAMETER<uint_t> cols;
+  PARAMETER<uint_t> rows;
   PARAMETER<double> base;
 //  PARAMETER<MODEL_BUILT_IN_RCD> rcd_model;	// 
 public: // calculated parameters
@@ -202,7 +202,7 @@ private: // override virtual
   //void    tr_restore();        //BASE_SUBCKT
   //void    tt_commit();         //BASE_SUBCKT
   void      stress_apply(); 
-  void      tt_commit( ) const;   
+  void      tt_commit( );   
   void      tt_prepare();         //BASE_SUBCKT
   //void    dc_advance();        //BASE_SUBCKT
   //void    tr_advance();        //BASE_SUBCKT

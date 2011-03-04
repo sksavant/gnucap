@@ -36,7 +36,7 @@ enum {
   IN1 = 2,
   IN2 = 3,
   NODES_PER_BRANCH = 4,
-  INVALID_NODE = -1
+  INVALID_NODE = 65500
 };
 #define	qBAD	 (0)
 #define qGOOD	 (OPT::transits)

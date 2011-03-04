@@ -33,9 +33,9 @@ namespace MODEL_BUILT_IN_RCD_DISPATCHER {
 void DEV_BUILT_IN_RCD::tr_accept() {
   trace0(("DEV_BUILT_IN_RCD::tr_accept (stress) " + long_label()).c_str());
   // assert(subckt()); subckt()->tr_accept();
-  assert(is_number(_tr_fill));
+  assert(is_number((double)_tr_fill));
   tr_stress();
-  assert(is_number(_tr_fill));
+  assert(is_number((double)_tr_fill));
 }
 /*--------------------------------------------------------------------------*/
 void SDP_BUILT_IN_RCD::init(const COMMON_COMPONENT* cc)
@@ -89,7 +89,7 @@ MODEL_BUILT_IN_RCD::MODEL_BUILT_IN_RCD(const MODEL_BUILT_IN_RCD& p)
   }
 }
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD::dvth(const COMPONENT* brh) const{
+double MODEL_BUILT_IN_RCD::dvth(const COMPONENT* ) const{
   //const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
   //const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
   // return _Ccgfill->get_tt() * cc->_weight * cc->_wcorr;
@@ -124,14 +124,15 @@ double MODEL_BUILT_IN_RCD::__Rc(double uin, const COMMON_COMPONENT* ccmp)const {
   return ret;
 }
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD::__Re(double uin, const COMMON_COMPONENT* cc)const {
+double MODEL_BUILT_IN_RCD::__Re(double , const COMMON_COMPONENT* cc)const {
   const COMMON_BUILT_IN_RCD* c = prechecked_cast<const COMMON_BUILT_IN_RCD*>(cc);
+
   return c->_Re0;
 //  return c->__Re(uin);
 }
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD::__Ge(double uin, const COMMON_COMPONENT* )const {
-  return 16;
+double MODEL_BUILT_IN_RCD::__Ge(double, const COMMON_COMPONENT* )const {
+  return NAN;
 }
 /*--------------------------------------------------------------------------*/
 std::string MODEL_BUILT_IN_RCD_NET::dev_type()const
@@ -286,7 +287,7 @@ std::string MODEL_BUILT_IN_RCD::param_value(int i)const
   }
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD::do_precalc_last(COMMON_COMPONENT* ccmp, const CARD_LIST* par_scope)const
+void MODEL_BUILT_IN_RCD::do_precalc_last(COMMON_COMPONENT* ccmp, const CARD_LIST* )const
 {
   COMMON_BUILT_IN_RCD* cc = dynamic_cast<COMMON_BUILT_IN_RCD*>(ccmp);
   assert(cc);
@@ -1006,9 +1007,9 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
 
   if (Umatch(x, "region ")) {
     return  static_cast<double>(region());
-  }else if (Umatch(x, "u_lo ")) {
+  }else if (Umatch(x, "ulo |vlo ")) {
     return  ( _Ccgfill->tr_lo );
-  }else if (Umatch(x, "u_hi ")) {
+  }else if (Umatch(x, "uhi |vhi ")) {
     return  ( _Ccgfill->tr_hi );
   }else if (Umatch(x, "tra ")) {
     return  ( _Ccgfill->tr_abs_err() );
@@ -1050,7 +1051,7 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
       return _n[n_ic].v0() - _n[n_b].v0();
     else
       return _tr_fill;
-  }else if (Umatch(x, "v{c} ")) {
+  }else if (Umatch(x, "v{c} |E ")) {
     if (m->use_net())
       return _n[n_ic].v0() - _n[n_b].v0();
     else
@@ -1329,10 +1330,6 @@ void DEV_BUILT_IN_RCD::stress_apply()
   }
 }
 ///*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_NET::do_expand(const  COMPONENT* ) const
-{
-}
-///*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_RCD_NET::do_stress_apply( COMPONENT*  ) const
 {
 }
@@ -1493,19 +1490,33 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
 
   double uin_eff= cap->tr(); 
 
-  if ((cap->tr_lo >  uin_eff) || (uin_eff > cap->tr_hi && ! m->positive ) ){
+  if ((cap->tr_lo >  uin_eff) || (uin_eff > cap->tr_hi ) ){
     error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last Time %E \n    "
                 " %s order broken, should be %E < %LE < %E, is %i%i\n",
                 _sim->_Time0,
                 long_label().c_str(),
         cap->tr_lo, uin_eff, cap->tr_hi, (cap->tr_lo > uin_eff) , (cap->tr_hi < uin_eff) );
-    // untested();
-    uin_eff= ( cap->tr_lo + cap->tr_hi )/2 ;
-    cap->set_order(0);
+
   }
 
+  assert( cap->tr_lo <= cap->tr_hi );
 
-  // wird bei rollback nicht gebraucht, da nur guess!
+  if (cap->tr_lo >  cap->tr() ) {
+    untested();
+    cap->tr() = cap->tr_lo ;
+    cap->set_order(0);
+   
+  }else if ( cap->tr() > cap->tr_hi ) {
+    untested();
+    cap->set_order(0);
+    cap->tr() = cap->tr_hi ;
+  }
+
+  trace3("DEV_BUILT_IN_RCD::tr_stress_last done",  cap->tr_lo ,  cap->tr(), cap->tr_hi ) ;
+  assert( cap->tr_hi > cap->tr() || fabs( cap->tr() - cap->tr_hi ) < OPT::abstol || fabs((cap->tr() - cap->tr_hi)/ cap->tr_hi  ) < OPT::reltol );
+  assert( cap->tr_lo < cap->tr() || fabs( cap->tr() - cap->tr_lo ) < OPT::abstol || fabs((cap->tr() - cap->tr_lo)/ cap->tr()  ) < OPT::reltol );
+
+  // tt_value not needed for rollback.
   _Ccgfill->set_tt(_tr_fill);
 }
 ///*--------------------------------------------------------------------------*/
@@ -1523,8 +1534,9 @@ double COMMON_BUILT_IN_RCD::__tau(double uin)const
   }
 }
 ///*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_RCD::tt_commit() const
+void DEV_BUILT_IN_RCD::tt_commit()
 {
+  untested();
   return;
 }
 ///*--------------------------------------------------------------------------*/
@@ -1768,7 +1780,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     trace6(" Ende Loop ",A,B,C,D,U,i);
     
   }
-  trace7("COMMON_BUILT_IN_RCD::__uin_iter done", uin, res,
+  trace7("COMMON_BUILT_IN_RCD::__uin_iter done loop", uin, res,
       fres, df_fres, Edu, E, E_old);
   trace5("COMMON_BUILT_IN_RCD::__uin_iter done", (E-Euin), ustart,i, putres, delta_u );
 
@@ -1795,6 +1807,6 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
 #endif
 
 
-  assert(uin>=-0.001);
+  assert(uin>=-0.001 || !m->positive);
   return uin;
 }

@@ -20,10 +20,15 @@ V1 nin 0 pulse ( iv=0 pv=amplitude delay=delay rise=1n fall=1n width=width perio
 
 .print tw vw(z1) tr(z1)  my_RC amplitude tt(z1) ttorder(0)
 
+.print tran vin(z1) v(z1)
+.tw 1 10000 10000 100000 > rcd_tw_pre.out tran > rcd_tw_pre.tr.out
+.print tran clear
+
+
 .sweep 5 a 0 10
 .param amplitude = 1
 .param my_RC = {10**a / 100}
-.tw 1 10 100 1000 basic
+.tw 1 10 100 1000 basic 
 .param amplitude=0
 *.tw 16000 basic
 

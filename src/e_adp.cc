@@ -239,7 +239,7 @@ void ADP_NODE::tt_accept()
   assert( CKT_BASE::_sim->_last_time >0 );
 
 
-  int order=CKT_BASE::_sim->get_tt_order();
+  uint_t order=CKT_BASE::_sim->get_tt_order();
 
   if (order != _order){
     trace2("ADP_NODE::tt_accept order mismatch", order, _order);
@@ -375,7 +375,9 @@ void ADP_NODE::tt_advance(){
 hp_float_t ADP_NODE::get_total() const{
   return( NAN );
 }
-/*---------------------------------*/
+void ADP_NODE::tr_stress_last( ) { unreachable(); }
+/*---------------------------------
+
 void ADP_NODE::tr_stress_last( double val ) {
 
   tr_value = val - get();
@@ -389,7 +391,7 @@ void ADP_NODE::tr_stress_last( double val ) {
  //
  //
 }
-/*---------------------------------*/
+---------------------------------*/
 /*---------------------------------*/
 void ADP_NODE::tr_expect_2_avg(){
   assert(_order==2);

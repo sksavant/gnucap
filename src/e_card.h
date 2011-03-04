@@ -152,7 +152,7 @@ public:	// obsolete -- do not use in new code
 public:	// tt
   virtual void	 tt_begin()		{}
   virtual void   tt_next()  {} // set times back to 0, leaving state alone
-  virtual void   tt_commit()   const {}
+  virtual void   tt_commit()  {}
   virtual void   tt_accept()    {}
 //  virtual void   tt_prepare()           {}
   virtual void  tt_prepare() {  } // save unstressed parameters

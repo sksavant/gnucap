@@ -96,7 +96,7 @@ public:
   static double abstol;	    // absolute current error tolerance
   static double vntol;	    // absolute voltage error tolerance
   static double tttol;	    // transient error overestimation factor
-  static int adporder;	    // adp extrapolation order
+  static uint_t adporder;   // adp extrapolation order
   static int threads;	    // number of threads, 0=#cpus
   static std::string libpath;	 // sharedobject searchpath
   static std::string includepath;	 // searchpath for .include command

@@ -102,7 +102,7 @@ void volts_save(CS& cmd, OMSTREAM out, CARD_LIST* scope)
   
   out <<  CKT_BASE::_sim->_last_Time << "\n";
 
-  for ( int i = 1;  CKT_BASE::_sim->_total_nodes + 1 + CKT_BASE::_sim->_adp_nodes > i ; ++i){
+  for ( uint_t i = 1;  CKT_BASE::_sim->_total_nodes + 1 + CKT_BASE::_sim->_adp_nodes > i ; ++i){
     out <<  CKT_BASE::_sim->_vdc[i] << "\n";
   }
 }

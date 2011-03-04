@@ -23,14 +23,14 @@
  * data structures and defaults for logic model.
  */
 //testing=script,sparse 2006.07.17
-#ifndef D_LOGIC_H
-#define D_LOGIC_H
+#ifndef D_DIGITAL_H
+#define D_DIGITAL_H
 #include "e_model.h"
 #include "e_elemnt.h"
 /*--------------------------------------------------------------------------*/
 enum {PORTS_PER_GATE = 10};
 /*--------------------------------------------------------------------------*/
-class DEV_LOGIC : public ELEMENT {
+class DEV_DIGITAL : public ELEMENT {
 public:
   enum {OUTNODE=0,GND_NODE=1,PWR_NODE=2,ENABLE=3,BEGIN_IN=4}; //node labels
 private:
@@ -42,9 +42,9 @@ private:
   static int	_count;
   node_t	nodes[PORTS_PER_GATE];	/* PORTS_PER_GATE <= PORTSPERSUBCKT */
 public:
-  explicit	DEV_LOGIC();
-  explicit	DEV_LOGIC(const DEV_LOGIC& p);
-		~DEV_LOGIC()		{--_count;}
+  explicit	DEV_DIGITAL();
+  explicit	DEV_DIGITAL(const DEV_DIGITAL& p);
+		~DEV_DIGITAL()		{--_count;}
 private: // override virtuals
   char	   id_letter()const	{return 'U';}
   std::string value_name()const	{return "#";}
@@ -56,7 +56,7 @@ private: // override virtuals
   int	   min_nodes()const	{return BEGIN_IN+1;}
   virtual int matrix_nodes()const	{return 2;}
   int	   net_nodes()const	{return _net_nodes;}
-  CARD*	   clone()const		{return new DEV_LOGIC(*this);}
+  CARD*	   clone()const		{return new DEV_DIGITAL(*this);}
   void	   precalc_first() {ELEMENT::precalc_first(); if (subckt()) {subckt()->precalc_first();}}
   void	   expand();
   void	   precalc_last() {ELEMENT::precalc_last(); if (subckt()) {subckt()->precalc_last();}}
@@ -103,15 +103,15 @@ private:
   bool	   want_digital()const;
 };
 /*--------------------------------------------------------------------------*/
-class MODEL_LOGIC : public MODEL_CARD {
+class MODEL_DIGITAL : public MODEL_CARD {
 private:
-  explicit	MODEL_LOGIC(const MODEL_LOGIC& p);
+  explicit	MODEL_DIGITAL(const MODEL_DIGITAL& p);
 public:
-  explicit MODEL_LOGIC(const DEV_LOGIC*);
-	   ~MODEL_LOGIC()		{--_count;}
+  explicit MODEL_DIGITAL(const DEV_DIGITAL*);
+	   ~MODEL_DIGITAL()		{--_count;}
 private: // override virtuals
   std::string	dev_type()const		{return "logic";}
-  CARD*		clone()const		{return new MODEL_LOGIC(*this);}
+  CARD*		clone()const		{return new MODEL_DIGITAL(*this);}
   void		precalc_first();
   void		set_param_by_index(int, std::string&, int);
   bool		param_is_printable(int)const;
@@ -146,14 +146,14 @@ private:
   static int _count;
 };
 /*--------------------------------------------------------------------------*/
-class INTERFACE COMMON_LOGIC : public COMMON_COMPONENT {
+class INTERFACE COMMON_DIGITAL : public COMMON_COMPONENT {
 protected:
-  explicit	COMMON_LOGIC(int c=0)
+  explicit	COMMON_DIGITAL(int c=0)
     :COMMON_COMPONENT(c), incount(0) {++_count;}
-  explicit	COMMON_LOGIC(const COMMON_LOGIC& p)
+  explicit	COMMON_DIGITAL(const COMMON_DIGITAL& p)
     :COMMON_COMPONENT(p), incount(p.incount) {++_count;}
 public:
-		~COMMON_LOGIC()			{--_count;}
+		~COMMON_DIGITAL()			{--_count;}
   bool operator==(const COMMON_COMPONENT&)const;
   static  int	count()				{return _count;}
   virtual LOGICVAL logic_eval(const node_t*)const	= 0;
@@ -163,102 +163,7 @@ protected:
   static int	_count;
 };
 /*--------------------------------------------------------------------------*/
-class LOGIC_AND : public COMMON_LOGIC {
-private:
-  explicit LOGIC_AND(const LOGIC_AND& p) :COMMON_LOGIC(p){untested();++_count;}
-  COMMON_COMPONENT* clone()const {untested(); return new LOGIC_AND(*this);}
-public:
-  explicit LOGIC_AND(int c=0)		  :COMMON_LOGIC(c) {untested();}
-  LOGICVAL logic_eval(const node_t* n)const {untested();
-    LOGICVAL out(n[0]->lv());
-    for (int ii=1; ii<incount; ++ii) {untested();
-      out &= n[ii]->lv();
-    }
-    return out;
-  }
-  virtual std::string name()const	  {itested();return "and";}
-};
-/*--------------------------------------------------------------------------*/
-class LOGIC_NAND : public COMMON_LOGIC {
-private:
-  explicit LOGIC_NAND(const LOGIC_NAND&p):COMMON_LOGIC(p){++_count;}
-  COMMON_COMPONENT* clone()const {return new LOGIC_NAND(*this);}
-public:
-  explicit LOGIC_NAND(int c=0)		  :COMMON_LOGIC(c) {}
-  LOGICVAL logic_eval(const node_t* n)const {itested();
-    LOGICVAL out(n[0]->lv());
-    for (int ii=1; ii<incount; ++ii) {itested();
-      out &= n[ii]->lv();
-    }
-    return ~out;
-  }
-  virtual std::string name()const	  {itested();return "nand";}
-};
-/*--------------------------------------------------------------------------*/
-class LOGIC_OR : public COMMON_LOGIC {
-private:
-  explicit LOGIC_OR(const LOGIC_OR& p)	 :COMMON_LOGIC(p){itested();++_count;}
-  COMMON_COMPONENT* clone()const {itested(); return new LOGIC_OR(*this);}
-public:
-  explicit LOGIC_OR(int c=0)		  :COMMON_LOGIC(c) {itested();}
-  LOGICVAL logic_eval(const node_t* n)const {itested();
-    LOGICVAL out(n[0]->lv());
-    for (int ii=1; ii<incount; ++ii) {itested();
-      out |= n[ii]->lv();
-    }
-    return out;
-  }
-  virtual std::string name()const	  {itested();return "or";}
-};
-/*--------------------------------------------------------------------------*/
-class LOGIC_NOR : public COMMON_LOGIC {
-private:
-  explicit LOGIC_NOR(const LOGIC_NOR& p) :COMMON_LOGIC(p) {++_count;}
-  COMMON_COMPONENT* clone()const {return new LOGIC_NOR(*this);}
-public:
-  explicit LOGIC_NOR(int c=0)		  :COMMON_LOGIC(c) {}
-  LOGICVAL logic_eval(const node_t* n)const {
-    LOGICVAL out(n[0]->lv());
-    for (int ii=1; ii<incount; ++ii) {
-      out |= n[ii]->lv();
-    }
-    return ~out;
-  }
-  virtual std::string name()const	  {return "nor";}
-};
-/*--------------------------------------------------------------------------*/
-class LOGIC_XOR : public COMMON_LOGIC {
-private:
-  explicit LOGIC_XOR(const LOGIC_XOR& p) :COMMON_LOGIC(p){untested();++_count;}
-  COMMON_COMPONENT* clone()const {untested(); return new LOGIC_XOR(*this);}
-public:
-  explicit LOGIC_XOR(int c=0)		  :COMMON_LOGIC(c) {untested();}
-  LOGICVAL logic_eval(const node_t* n)const {untested();
-    LOGICVAL out(n[0]->lv());
-    for (int ii=1; ii<incount; ++ii) {untested();
-      out ^= n[ii]->lv();
-    }
-    return out;
-  }
-  virtual std::string name()const	  {itested();return "xor";}
-};
-/*--------------------------------------------------------------------------*/
-class LOGIC_XNOR : public COMMON_LOGIC {
-private:
-  explicit LOGIC_XNOR(const LOGIC_XNOR&p):COMMON_LOGIC(p){untested();++_count;}
-  COMMON_COMPONENT* clone()const {untested(); return new LOGIC_XNOR(*this);}
-public:
-  explicit LOGIC_XNOR(int c=0)		  :COMMON_LOGIC(c) {untested();}
-  LOGICVAL logic_eval(const node_t* n)const {untested();
-    LOGICVAL out(n[0]->lv());
-    for (int ii=1; ii<incount; ++ii) {untested();
-      out ^= n[ii]->lv();
-    }
-    return ~out;
-  }
-  virtual std::string name()const	  {itested();return "xnor";}
-};
-/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------
 class LOGIC_INV : public COMMON_LOGIC {
 private:
   explicit LOGIC_INV(const LOGIC_INV& p) :COMMON_LOGIC(p){++_count;}
@@ -270,18 +175,5 @@ public:
   }
   virtual std::string name()const	  {return "inv";}
 };
-/*--------------------------------------------------------------------------*/
-class LOGIC_NONE : public COMMON_LOGIC {
-private:
-  explicit LOGIC_NONE(const LOGIC_NONE&p):COMMON_LOGIC(p){itested();++_count;}
-  COMMON_COMPONENT* clone()const {itested(); return new LOGIC_NONE(*this);}
-public:
-  explicit LOGIC_NONE(int c=0)		  :COMMON_LOGIC(c) {}
-  LOGICVAL logic_eval(const node_t*)const {untested();
-    return lvUNKNOWN;
-  }
-  virtual std::string name()const	  {untested();return "error";}
-};
-/*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
+--------------------------------------------------------------------------*/
 #endif

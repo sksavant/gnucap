@@ -30,20 +30,20 @@
 #include "u_xprobe.h"
 #include "d_logic.h"
 /*--------------------------------------------------------------------------*/
-int DEV_LOGIC::_count = -1;
-int COMMON_LOGIC::_count = -1;
-int MODEL_LOGIC::_count = -1; // there is one in e_node.cc, and the dispatcher
-static LOGIC_NONE Default_LOGIC(CC_STATIC);
+int DEV_DIGITAL::_count = -1;
+int COMMON_DIGITAL::_count = -1;
+int MODEL_DIGITAL::_count = -1; // there is one in e_node.cc, and the dispatcher
+static LOGIC_NONE Default_DIGITAL(CC_STATIC);
 /*--------------------------------------------------------------------------*/
-static DEV_LOGIC p1;
+static DEV_DIGITAL p1;
 static DISPATCHER<CARD>::INSTALL
 d1(&device_dispatcher, "U|logic", &p1);
 /*--------------------------------------------------------------------------*/
-static MODEL_LOGIC p2(&p1);
+static MODEL_DIGITAL p2(&p1);
 static DISPATCHER<MODEL_CARD>::INSTALL
 d2(&model_dispatcher, "logic", &p2);
 /*--------------------------------------------------------------------------*/
-DEV_LOGIC::DEV_LOGIC()
+DEV_DIGITAL::DEV_DIGITAL()
   :ELEMENT(),
    _lastchangenode(0),
    _quality(qGOOD),
@@ -51,12 +51,12 @@ DEV_LOGIC::DEV_LOGIC()
    _oldgatemode(moUNKNOWN),
    _gatemode(moUNKNOWN)   
 {
-  attach_common(&Default_LOGIC);
+  attach_common(&Default_DIGITAL);
   _n = nodes;
   ++_count;
 }
 /*--------------------------------------------------------------------------*/
-DEV_LOGIC::DEV_LOGIC(const DEV_LOGIC& p)
+DEV_DIGITAL::DEV_DIGITAL(const DEV_DIGITAL& p)
   :ELEMENT(p),
    _lastchangenode(0),
    _quality(qGOOD),
@@ -72,17 +72,17 @@ DEV_LOGIC::DEV_LOGIC(const DEV_LOGIC& p)
   ++_count;
 }
 /*--------------------------------------------------------------------------*/
-void DEV_LOGIC::expand()
+void DEV_DIGITAL::expand()
 {
   ELEMENT::expand();
-  const COMMON_LOGIC* c = prechecked_cast<const COMMON_LOGIC*>(common());
+  const COMMON_DIGITAL* c = prechecked_cast<const COMMON_DIGITAL*>(common());
   assert(c);
   
   attach_model();
 
-  const MODEL_LOGIC* m = dynamic_cast<const MODEL_LOGIC*>(c->model());
+  const MODEL_DIGITAL* m = dynamic_cast<const MODEL_DIGITAL*>(c->model());
   if (!m) {
-    throw Exception_Model_Type_Mismatch(long_label(), c->modelname(), "logic family (LOGIC)");
+    throw Exception_Model_Type_Mismatch(long_label(), c->modelname(), "logic family (DIGITAL)");
   }else{
   }
 
@@ -106,7 +106,7 @@ void DEV_LOGIC::expand()
   assert(!is_constant()); /* is a BUG */
 }
 /*--------------------------------------------------------------------------*/
-void DEV_LOGIC::tr_iwant_matrix()
+void DEV_DIGITAL::tr_iwant_matrix()
 {
   if (subckt()) {
     subckt()->tr_iwant_matrix();
@@ -115,7 +115,7 @@ void DEV_LOGIC::tr_iwant_matrix()
   tr_iwant_matrix_passive();
 }
 /*--------------------------------------------------------------------------*/
-void DEV_LOGIC::tr_begin()
+void DEV_DIGITAL::tr_begin()
 {
   ELEMENT::tr_begin();
   if (!subckt()) {
@@ -130,7 +130,7 @@ void DEV_LOGIC::tr_begin()
   }
 }
 /*--------------------------------------------------------------------------*/
-void DEV_LOGIC::tr_restore()
+void DEV_DIGITAL::tr_restore()
 {untested();
   ELEMENT::tr_restore();
   if (!subckt()) {untested();
@@ -141,7 +141,7 @@ void DEV_LOGIC::tr_restore()
   }
 }
 /*--------------------------------------------------------------------------*/
-void DEV_LOGIC::dc_advance()
+void DEV_DIGITAL::dc_advance()
 {
   ELEMENT::dc_advance();
 
@@ -171,7 +171,7 @@ void DEV_LOGIC::dc_advance()
 /* tr_advance: the first to run on a new time step.
  * It sets up preconditions for the new time.
  */
-void DEV_LOGIC::tr_advance()
+void DEV_DIGITAL::tr_advance()
 {
   ELEMENT::tr_advance();
 
@@ -200,7 +200,7 @@ void DEV_LOGIC::tr_advance()
     break;
   }
 }
-void DEV_LOGIC::tr_regress()
+void DEV_DIGITAL::tr_regress()
 {itested();
   ELEMENT::tr_regress();
 
@@ -234,7 +234,7 @@ void DEV_LOGIC::tr_regress()
  * in digital mode ... DC always returns true, to queue it.
  * tran always returns false, already queued by tr_advance if needed
  */
-bool DEV_LOGIC::tr_needs_eval()const
+bool DEV_DIGITAL::tr_needs_eval()const
 {
   switch (_gatemode) {
   case moUNKNOWN: unreachable(); break;
@@ -256,7 +256,7 @@ bool DEV_LOGIC::tr_needs_eval()const
   return false;
 }
 /*--------------------------------------------------------------------------*/
-void DEV_LOGIC::tr_queue_eval()
+void DEV_DIGITAL::tr_queue_eval()
 {
   switch (_gatemode) {
   case moUNKNOWN: unreachable(); break;
@@ -266,7 +266,7 @@ void DEV_LOGIC::tr_queue_eval()
   }
 }
 /*--------------------------------------------------------------------------*/
-bool DEV_LOGIC::tr_eval_digital()
+bool DEV_DIGITAL::tr_eval_digital()
 {
   assert(_gatemode == moDIGITAL);
   if (_sim->analysis_is_restore()) {untested();
@@ -279,9 +279,9 @@ bool DEV_LOGIC::tr_eval_digital()
     assert(_sim->analysis_is_tran_dynamic());
   }
   
-  const COMMON_LOGIC* c = prechecked_cast<const COMMON_LOGIC*>(common());
+  const COMMON_DIGITAL* c = prechecked_cast<const COMMON_DIGITAL*>(common());
   assert(c);
-  const MODEL_LOGIC* m = prechecked_cast<const MODEL_LOGIC*>(c->model());
+  const MODEL_DIGITAL* m = prechecked_cast<const MODEL_DIGITAL*>(c->model());
   assert(m);
   _y[0].x = 0.;
   _y[0].f1 = _n[OUTNODE]->to_analog(m);
@@ -296,9 +296,9 @@ bool DEV_LOGIC::tr_eval_digital()
   return converged();
 }
 /*--------------------------------------------------------------------------*/
-bool DEV_LOGIC::do_tr()
+bool DEV_DIGITAL::do_tr()
 {  
-  trace0("DEV_LOGIC::do_tr");
+  trace0("DEV_DIGITAL::do_tr");
   switch (_gatemode) {
   case moUNKNOWN: unreachable(); break;
   case moMIXED:   unreachable(); break;
@@ -308,14 +308,14 @@ bool DEV_LOGIC::do_tr()
   return converged();
 }
 /*--------------------------------------------------------------------------*/
-void DEV_LOGIC::tt_next()
+void DEV_DIGITAL::tt_next()
 {
   assert(subckt());
   subckt()->tt_next();
   ELEMENT::tt_next();
 }
 /*--------------------------------------------------------------------------*/
-void DEV_LOGIC::tr_load()
+void DEV_DIGITAL::tr_load()
 {
   switch (_gatemode) {
   case moUNKNOWN: unreachable(); break;
@@ -325,7 +325,7 @@ void DEV_LOGIC::tr_load()
   }
 }
 /*--------------------------------------------------------------------------*/
-TIME_PAIR DEV_LOGIC::tr_review()
+TIME_PAIR DEV_DIGITAL::tr_review()
 {
   // not calling ELEMENT::tr_review();
 
@@ -344,12 +344,12 @@ TIME_PAIR DEV_LOGIC::tr_review()
 /* tr_accept: This runs after everything has passed "review".
  * It sets up and queues transitions, and sometimes determines logic states.
  */
-void DEV_LOGIC::tr_accept()
+void DEV_DIGITAL::tr_accept()
 {
   assert(_gatemode == moDIGITAL || _gatemode == moANALOG);
-  const COMMON_LOGIC* c = prechecked_cast<const COMMON_LOGIC*>(common());
+  const COMMON_DIGITAL* c = prechecked_cast<const COMMON_DIGITAL*>(common());
   assert(c);
-  const MODEL_LOGIC* m = prechecked_cast<const MODEL_LOGIC*>(c->model());
+  const MODEL_DIGITAL* m = prechecked_cast<const MODEL_DIGITAL*>(c->model());
   assert(m);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /* Check quality and get node info to local array. */
@@ -458,7 +458,7 @@ void DEV_LOGIC::tr_accept()
   }
 }
 /*--------------------------------------------------------------------------*/
-void DEV_LOGIC::tr_unload()
+void DEV_DIGITAL::tr_unload()
 {
   if (subckt()) {
     subckt()->tr_unload();
@@ -467,7 +467,7 @@ void DEV_LOGIC::tr_unload()
   tr_unload_passive();
 }
 /*--------------------------------------------------------------------------*/
-void DEV_LOGIC::ac_iwant_matrix()
+void DEV_DIGITAL::ac_iwant_matrix()
 {
   if (subckt()) {
     subckt()->ac_iwant_matrix();
@@ -475,7 +475,7 @@ void DEV_LOGIC::ac_iwant_matrix()
   }
 }
 /*--------------------------------------------------------------------------*/
-void DEV_LOGIC::ac_begin()
+void DEV_DIGITAL::ac_begin()
 {untested();
   if (subckt()) {untested();
     subckt()->ac_begin();
@@ -484,31 +484,31 @@ void DEV_LOGIC::ac_begin()
   }
 }
 /*--------------------------------------------------------------------------*/
-double DEV_LOGIC::tr_probe_num(const std::string& what)const
+double DEV_DIGITAL::tr_probe_num(const std::string& what)const
 {
   return _n[OUTNODE]->tr_probe_num(what);
 }
 /*--------------------------------------------------------------------------*/
-XPROBE DEV_LOGIC::ac_probe_ext(const std::string& what)const
+XPROBE DEV_DIGITAL::ac_probe_ext(const std::string& what)const
 {untested();
   return _n[OUTNODE]->ac_probe_ext(what);
 }
 /*--------------------------------------------------------------------------*/
-bool DEV_LOGIC::want_analog()const
+bool DEV_DIGITAL::want_analog()const
 {
   return subckt() &&
     ((OPT::mode == moANALOG) || (OPT::mode == moMIXED && _quality != qGOOD));
 }
 /*--------------------------------------------------------------------------*/
-bool DEV_LOGIC::want_digital()const
+bool DEV_DIGITAL::want_digital()const
 {
   return !subckt() ||
     ((OPT::mode == moDIGITAL) || (OPT::mode == moMIXED && _quality == qGOOD));
 }
 /*--------------------------------------------------------------------------*/
-bool COMMON_LOGIC::operator==(const COMMON_COMPONENT& x)const
+bool COMMON_DIGITAL::operator==(const COMMON_COMPONENT& x)const
 {
-  const COMMON_LOGIC* p = dynamic_cast<const COMMON_LOGIC*>(&x);
+  const COMMON_DIGITAL* p = dynamic_cast<const COMMON_DIGITAL*>(&x);
   bool rv = p
     && incount == p->incount
     && COMMON_COMPONENT::operator==(x);

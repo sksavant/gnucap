@@ -76,7 +76,7 @@ public:
 
   // status queries
   bool is_empty()const			{return _cl.empty();}
-  uint_t size()const			{return _cl.size();}
+  size_t size()const			{return _cl.size();}
   const CARD_LIST* parent()const	{return _parent;}
   const LANGUAGE* language()const	{untested(); return _language;}
 

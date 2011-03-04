@@ -216,7 +216,7 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
   // double lambda=1;
   double base=10;
   //double mu=1;
-  int k=0;
+  uint_t k=0;
   trace1("MODEL_BUILT_IN_BTI_INF::attach_rcds",_w_matrix[1][4]); 
   // k
   // 1 2 3
@@ -259,7 +259,7 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
   }
   
   trace2(" done attaching rcds ", rcd_number, k );
-  assert( rcd_number == k );
+  assert( (uint_t) rcd_number == k );
 
 }
 /*--------------------------------------------------------------------------*/

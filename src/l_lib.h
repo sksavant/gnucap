@@ -31,6 +31,7 @@ INTERFACE bool		wmatch(const std::string& s1,const std::string& s2);
 //template doesnt work?
 INTERFACE std::string to_string(std::string);
 INTERFACE std::string to_string(int);
+INTERFACE std::string to_string(size_t);
 INTERFACE std::string to_string(long int);
 INTERFACE std::string to_string(unsigned);
 INTERFACE std::string to_string(double);

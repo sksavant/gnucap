@@ -48,7 +48,7 @@ protected:
 public:
   explicit MODEL_BUILT_IN_RCD(const BASE_SUBCKT*);
   ~MODEL_BUILT_IN_RCD() {--_count;}
-  virtual void     do_expand( COMPONENT*)const {}; // doesnt work, not in use
+  /// virtual void     do_expand( COMPONENT*)const {}; // doesnt work, not in use
   virtual void     do_precalc_last(COMMON_COMPONENT*, const
       CARD_LIST*)const;
   virtual void     do_tt_prepare(COMPONENT*)const;
@@ -96,9 +96,9 @@ public: // probes
   virtual double __Ge(double uin, const COMMON_COMPONENT* )const;
   virtual double __Re(double uin, const COMMON_COMPONENT* cc)const ;
   virtual double __Rc(double uin, const COMMON_COMPONENT* cc)const ;
-  virtual double __Edu(long double uin, const COMMON_COMPONENT* cc)const { unreachable(); return 0.0;}
-  virtual long double __Edu(double uin, long double cur, const COMMON_COMPONENT* cc)const {return 0;}
-  virtual void do_tr_stress_last( long double tr_fill, ADP_NODE* cap, const COMMON_COMPONENT* cc ) const 
+  virtual double __Edu(long double, const COMMON_COMPONENT*)const { return 0; }
+  virtual long double __Edu(double , long double , const COMMON_COMPONENT*)const {return 0;}
+  virtual void do_tr_stress_last( long double , ADP_NODE* , const COMMON_COMPONENT*  ) const 
   {unreachable();}
 };
 /*--------------------------------------------------------------------------*/
@@ -112,7 +112,7 @@ class MODEL_BUILT_IN_RCD_NET : public MODEL_BUILT_IN_RCD {
     virtual  void do_stress_apply( COMPONENT* ) const ;
     std::string dev_type()const;
     CARD*     clone()const {return new MODEL_BUILT_IN_RCD_NET(*this);}
-    void     do_expand(const COMPONENT*) const;
+    // void     do_expand(const COMPONENT*) const;
     double dvth(const COMPONENT* )const;
 };
 /*--------------------------------------------------------------------------*/
@@ -239,7 +239,7 @@ protected: // override virtual
   //void    tr_restore();        //BASE_SUBCKT
   void    stress_apply(); 
   void	 tt_begin();
-  void      tt_commit() const;   
+  void      tt_commit(); 
   void      tt_prepare();         //BASE_SUBCKT
   void      dc_advance() {set_not_converged(); BASE_SUBCKT::dc_advance();}
   void      tr_advance() {set_not_converged(); BASE_SUBCKT::tr_advance();}
