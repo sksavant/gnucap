@@ -16,8 +16,6 @@
 #include "e_adp.h"
 #include "d_rcd_sym_v3.h"
 
-
-
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_RCD_SYM_V3::do_stress_apply( COMPONENT*  ) const
 {
@@ -63,7 +61,7 @@ std::string MODEL_BUILT_IN_RCD_SYM_V3::dev_type()const
 MODEL_BUILT_IN_RCD_SYM_V3::MODEL_BUILT_IN_RCD_SYM_V3(const BASE_SUBCKT* p) 
   : MODEL_BUILT_IN_RCD_SYM(p)
 { 
-  uref=1; 
+  // uref=1; 
 }
 /*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_RCD_SYM_V3::MODEL_BUILT_IN_RCD_SYM_V3(const MODEL_BUILT_IN_RCD_SYM_V3& p)  
@@ -208,6 +206,9 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
 
   long double uin_eff=a->tr(); // 0 == current estimate
 
+  if (uin_eff==-inf) uin_eff=( cap->tr_lo+cap->tr_hi)/2.0;
+  if (!is_number(uin_eff)) uin_eff=(cap->tr_lo+cap->tr_hi)/2.0;
+
   trace3(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last " +
         cap->label()).c_str(), E_old, tt_iteration_number(), uin_eff);
 
@@ -267,7 +268,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
     }
   }
 
-  if (!linear_inversion){
+//  if (!linear_inversion){
     try{
       uin_eff = cc->__uin_iter(uin_eff, E_old, E );
     } catch (Exception &e) {
@@ -275,7 +276,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
       throw(e);
     }
     trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last iteration -> ", E_old, E, uin_eff);
-  }
+//  }
 
   // sanitycheck (monotonicity)
   long double E_test=cc->__step( uin_eff, E_old, CKT_BASE::_sim->_last_time );
@@ -316,31 +317,32 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
     E_low=E;
     E_high=E;
     assert(false);
-  }else{
-    uin_high = max ( uin_eff + OPT::abstol, uin_eff * (1 + OPT::reltol) );
-    uin_low  = min ( uin_eff - OPT::abstol, uin_eff * (1-OPT::reltol) );
-    trace3(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + cap->label()).c_str(),
-        uin_low, uin_eff, uin_high);
-    if (m->positive)
-      uin_low = max(0.0L, uin_low);
-
-    E_high = cc->__step( uin_high, E_old, CKT_BASE::_sim->_last_time  );
-    E_low  = cc->__step( uin_low,  E_old, CKT_BASE::_sim->_last_time  ); 
-    trace6(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + cap->label()).c_str(),
-        uin_eff,  E-E_low, E_high - E_low, E, 1-E, E_high-E );
-    trace3(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + cap->label()).c_str(), 
-       E-E_low , E_high-E, linear_inversion  );
-
-    assert (E_high>=E_low);
-    assert (E_low <= E || double(E)==1.0 || double(E_high)==1.0 || !linear_inversion);
-    assert (E <= E_high || E==1);
-
-    if( ( E_old < E_high ) && ( E_low <= E_old ))
-       a->set_order(0);
-
   }
 
-  assert (E_high>=E_low);
+  uin_high = max ( uin_eff + OPT::abstol, uin_eff * (1 + OPT::reltol) );
+  uin_low  = min ( uin_eff - OPT::abstol, uin_eff * (1-OPT::reltol) );
+  trace3(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + cap->label()).c_str(),
+      uin_low, uin_eff, uin_high);
+  if (m->positive)
+    uin_low = max(0.0L, uin_low);
+
+  E_high = cc->__step( uin_high, E_old, CKT_BASE::_sim->_last_time  );
+  E_low  = cc->__step( uin_low,  E_old, CKT_BASE::_sim->_last_time  ); 
+  trace6(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + cap->label()).c_str(),
+      uin_eff,  E-E_low, E_high - E_low, E, 1-E, E_high-E );
+  trace3(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + cap->label()).c_str(), 
+      E-E_low , E_high-E, linear_inversion  );
+
+
+  if( ( E_old < E_high ) && ( E_low <= E_old ))
+    a->set_order(0);
+
+
+  if ((double)E_high<(double)E_low){
+    error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter sanitycheck ( %LE < %LE )", E_high, E_low);
+    assert(false);
+
+  }
 
   if (linear_inversion)  a->set_order(0);
   assert(uin_eff >= 0.0 || !positive );
@@ -349,10 +351,53 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   //
   //
   assert(is_number(E_high-E_low));
-  a->set_tr_noise (E_high-E_low);
+  assert( (double) E_high-(double) E_low >= 0);
+  assert((double) E_high>= (double) E_low);
+  assert(E_low <= E || double(E)==1.0 || double(E_high)==1.0 || !linear_inversion);
+  assert(E <= E_high || E==1);
+
+  a->set_tr_noise ((double)E_high-(double)E_low);
   a->set_tr(uin_eff);
+  
+  if ( CKT_BASE::_sim->tt_iteration_number()>1 ){
+    if((a->tr()-a->tr1())*(a->tr1()-a->tr2())<=0 ){
+      // cout << a->tr() << " " <<  a->tr1() << " " << a->tr2() << "\n";
+      a->set_order(0);
+    }
+  }
+
   trace1("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last done", a->get_tr_noise());
+
+#ifdef DNFALSE
+  //old sanitycheck
+  long double u_oben  = max ( uin + OPT::abstol, uin * (1+OPT::reltol) );
+  long double u_unten = min ( uin - OPT::abstol, uin * (1-OPT::reltol) );
+  if(m->positive) u_unten=max(u_unten,0.0L);
+  long double E_hier  = cc->__step( uin , E_old, BASE_SUBCKT::_sim->_last_time );
+  long double E_oben  = cc->__step( u_oben , E_old, BASE_SUBCKT::_sim->_last_time );
+  long double E_unten = cc->__step( u_unten, E_old, BASE_SUBCKT::_sim->_last_time );
+
+  trace3("COMMON_BUILT_IN_RCD::__uin_iter sanitycheck", uin, u_oben ,u_unten );
+  trace6("COMMON_BUILT_IN_RCD::__uin_iter sanitycheck", E,E_hier, E - 1, E_oben - E,E- E_unten, E_oben );
+  trace4("COMMON_BUILT_IN_RCD::__uin_iter sanitycheck", E,E_hier, E_oben,E_unten );
+
+  if (E_oben < E_hier){
+    error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter sanitycheck ( %LE < %LE )", E_oben, E_hier);
+    assert((double) E_oben <= (double) E_hier);
+  }
+  assert(E_unten <= E_hier);
+
+  assert((double)E_oben >= (double)E_unten);
+
+  assert(double(E_oben) >= E);
+  // assert(E_unten <= E);
+
+#endif
+
+
 }
+
+
 /*--------------------------------------------------------------------------*/
 // precalc doesnt know device!!
 //void MODEL_BUILT_IN_RCD_SYM_V3::do_tt_prepare( COMPONENT* brh) const{
@@ -433,7 +478,7 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__Edu(double uin, long double cur, const 
 //              t*uin/Re0)/(Rc0*Rc0*Rc0*Re0*uin*uin*exp(3*Rc1*uin) +
 //                2*Rc0*Rc0*Re0*Re0*uin*exp(2*Rc1*uin) + Rc0*Re0*Re0*Re0*exp(Rc1*uin)));
 
-  return  -((cur - 1.0L)*Rc0*Rc0*Rc0*t*uin*uin*expl(3.0L*Rc1*uin) -
+  long double ret =  -((cur - 1.0L)*Rc0*Rc0*Rc0*t*uin*uin*expl(3.0L*Rc1*uin) -
   Rc1*Re0*Re0*Re0*cur*t - (Rc0*Rc0*Rc1*Re0*Re0*uin + Rc0*Rc0*Re0*Re0)*expl(2.0L*Rc1*uin +
   t*expl(-Rc1*uin)/Rc0 + t*uin/Re0) - ((2.0L*cur - 1.0L)*Rc0*Rc1*Re0*Re0*t*uin -
   Rc0*Re0*Re0*cur*t)*expl(Rc1*uin) - ((cur - 1.0L)*Rc0*Rc0*Rc1*Re0*t*uin*uin -
@@ -442,21 +487,25 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__Edu(double uin, long double cur, const 
   t*uin/Re0)/(Rc0*Rc0*Rc0*Re0*uin*uin*expl(3.0L*Rc1*uin) +
   2.0L*Rc0*Rc0*Re0*Re0*uin*expl(2.0L*Rc1*uin) + Rc0*Re0*Re0*Re0*expl(Rc1*uin));
   
+  assert(ret>=0);
+  return(ret);
 
-  // hacked/ broken?
-  return (- (exp(Rc1*uin)*uin/(uin*exp(Rc1*uin) + Re0/Rc0) - cur)
-          *((uin*expl(Rc1*uin)/Re0 + 1.0L/Rc0)*Rc1*t*expl(-Rc1*uin) -
-      Rc0/Re0*(Rc1*uin + 1.0L ) * expl(Rc1*uin)
-        *t*expl(-Rc1*uin)/Rc0)
-          *expl(-(Rc0*uin*expl(Rc1*uin)/Re0 + 1.0L)
-     *t*expl(-Rc1*uin)/Rc0) + Rc1*expl(Rc1*uin)*uin/(expl(Rc1*uin)*uin + Re0/Rc0)
-                               - (Rc1*expl(Rc1*uin)*uin /(expl(Rc1*uin)*uin + Re0/Rc0) -
-      (Rc1*expl(Rc1*uin)*uin*uin - Re0/Rc0)*expl(Rc1*uin) /
-      square(expl(Rc1*uin)*uin + Re0) )*expl(-(Rc0*uin*expl(Rc1*uin)/Re0 + 1.0L)*t*expl(-Rc1*uin)/Rc0) -
-  (Rc1*expl(Rc1*uin)*uin*uin - Re0/Rc0)*expl(Rc1*uin)/
-  square(expl(Rc1*uin)*uin + Re0));
+  ret= (- (Rc0*expl(Rc1*uin)/(Rc0*expl(Rc1*uin) + Re0/uin) - cur)
+          *((Rc0*uin*expl(Rc1*uin)/Re0 + 1.0L)*Rc1*t*expl(-Rc1*uin)/Rc0 -
+      (Rc0*Rc1*uin*expl(Rc1*uin)/Re0 +
+       Rc0*expl(Rc1*uin)/Re0)*t*expl(-Rc1*uin)/Rc0)
+          *expl(-(Rc0*uin*expl(Rc1*uin)/Re0 +
+       1.0L)*t*expl(-Rc1*uin)/Rc0) +  Rc0*Rc1*expl(Rc1*uin)/(Rc0*expl(Rc1*uin) + Re0/uin)
+                               - (Rc0*Rc1*expl(Rc1*uin)/(Rc0*expl(Rc1*uin) + Re0/uin) -
+      (Rc0*Rc1*expl(Rc1*uin) - Re0/uin/uin)*Rc0*expl(Rc1*uin)/square(Rc0*expl(Rc1*uin) +
+        Re0/uin))*expl(-(Rc0*uin*expl(Rc1*uin)/Re0 + 1.0L)*t*expl(-Rc1*uin)/Rc0) -
+  (Rc0*Rc1*expl(Rc1*uin) - Re0/uin/uin)*Rc0*expl(Rc1*uin)/
+  square(Rc0*expl(Rc1*uin) + Re0/uin));
 
-  //sage
+  assert(ret>=0);
+  return(ret);
+
+  //sage orig. Cified.
   return (- (Rc0*exp(Rc1*uin)/(Rc0*exp(Rc1*uin) + Re0/uin) - cur)
           *((Rc0*uin*exp(Rc1*uin)/Re0 + 1)*Rc1*t*exp(-Rc1*uin)/Rc0 -
       (Rc0*Rc1*uin*exp(Rc1*uin)/Re0 +
@@ -469,28 +518,6 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__Edu(double uin, long double cur, const 
   (Rc0*Rc1*exp(Rc1*uin) - Re0/uin/uin)*Rc0*exp(Rc1*uin)/
   square(Rc0*exp(Rc1*uin) + Re0/uin));
 
-  //    -(Rc0*e^(Rc1*uin)/(Rc0*e^(Rc1*uin) + Re0/uin) - cur)
-  //*((Rc0*uin*e^(Rc1*uin)/Re0 + 1)*Rc1*t*e^(-Rc1*uin)/Rc0 -
-  //        (Rc0*Rc1*uin*e^(Rc1*uin)/Re0 +
-  //      Rc0*e^(Rc1*uin)/Re0)*t*e^(-Rc1*uin)/Rc0)
-  //   *e^(-(Rc0*uin*e^(Rc1*uin)/Re0 +
-  //1)*t*e^(-Rc1*uin)/Rc0) + Rc0*Rc1*e^(Rc1*uin)/(Rc0*e^(Rc1*uin) + Re0/uin)
-  //- (Rc0*Rc1*e^(Rc1*uin)/(Rc0*e^(Rc1*uin) + Re0/uin) -
-  //(Rc0*Rc1*e^(Rc1*uin) - Re0/uin^2)*Rc0*e^(Rc1*uin)/(Rc0*e^(Rc1*uin) +
-  //Re0/uin)^2)*e^(-(Rc0*uin*e^(Rc1*uin)/Re0 + 1)*t*e^(-Rc1*uin)/Rc0) -
-  //(Rc0*Rc1*e^(Rc1*uin) - Re0/uin^2)*Rc0*e^(Rc1*uin)/(Rc0*e^(Rc1*uin) +
-  //Re0/uin)^2
-  //
-  //
-  //Edu : (t, cur, uin) |--> -((cur - 1)*Rc0^3*t*uin^2*e^(3*Rc1*uin) -
-  //Rc1*Re0^3*cur*t - (Rc0^2*Rc1*Re0^2*uin + Rc0^2*Re0^2)*e^(2*Rc1*uin +
-  //t*e^(-Rc1*uin)/Rc0 + t*uin/Re0) - ((2*cur - 1)*Rc0*Rc1*Re0^2*t*uin -
-  //Rc0*Re0^2*cur*t)*e^(Rc1*uin) - ((cur - 1)*Rc0^2*Rc1*Re0*t*uin^2 -
-  //Rc0^2*Re0^2 - ((2*cur - 1)*Rc0^2*Re0*t +
-  //Rc0^2*Rc1*Re0^2)*uin)*e^(2*Rc1*uin))*e^(-t*e^(-Rc1*uin)/Rc0 -
-  //t*uin/Re0)/(Rc0^3*Re0*uin^2*e^(3*Rc1*uin) +
-  //2*Rc0^2*Re0^2*uin*e^(2*Rc1*uin) + Rc0*Re0^3*e^(Rc1*uin))
-  //
 
 }
 /*--------------------------------------------------------------------------*/
@@ -526,22 +553,37 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_precalc_last(COMMON_COMPONENT* ccmp, const CA
   double up   =  cc->Recommon;
   double down =  cc->Rccommon0;
 
-  cc->_Re0 = (down  + up ) * up / down;
+  // RE = cc->_Re0/uin;
+  cc->_Re0 = cc->Uref* (down  + up ) * up / down;
+
+  // RC = cc->_Rc0 * exp( cc->_Rc1 * uin );
   cc->_Rc0 = down;
-  cc->_Rc1 = log(up/down+1);
+  cc->_Rc1 = log(up/down+1)/cc->Uref;
 
-  double uend_bad = (cc->Uref / (cc->__Re(cc->Uref) / cc->__Rc(cc->Uref) +1));
+  double Eend_bad = (cc->Uref / (cc->__Re(cc->Uref) / cc->__Rc(cc->Uref) +1));
 
-  cc->_wcorr = double ( cc->Uref / uend_bad );
+  cc->_wcorr = double ( cc->Uref / Eend_bad );
   cc->_weight = cc->weight;
+
   // sanity check.
   trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->__tau_up(cc->Uref), cc->Recommon, cc->Rccommon0);
   trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->_Rc1, cc->_Re0, cc->_Rc0);
   trace2("MODEL_BUILT_IN_RCD::do_precalc_last", m->__tau(0,cc), down);
 
+  if ( abs( m->__tau(cc->Uref,cc) - cc->Recommon)/cc->Recommon > 1e-2 ){
+    error(bDANGER, ("MODEL_BUILT_IN_RCD::do_precalc_last %s cc->Uref=%E Rec=%E mtau=%E rc0=%E\n"),
+        (  long_label() ).c_str(),
+        (double) cc->Uref,
+        (double) cc->Recommon, 
+        m->__tau(cc->Uref,cc),
+        (double)cc->Rccommon0  );
+
+    assert(false);
+  }
+
+
   assert( cc->weight != 0 );
   assert( cc->_weight != 0 );
-  assert( abs( m->__tau(cc->Uref,cc) - cc->Recommon)/cc->Recommon <1e-6 );
   assert( abs( m->__tau(0,cc) - down)/down <1e-6 );
   assert( is_number( cc->_Rc1 ) );
   assert( is_number( cc->_Rc0 ) );

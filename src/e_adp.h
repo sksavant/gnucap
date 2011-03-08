@@ -33,7 +33,7 @@ class ADP_NODE: public CKT_BASE {
     int	_number;
   public:
     std::string label() const  {return long_label();}
-    int order() const; 
+    uint_t order() const; 
 
     uint_t	m_()const		{return _number;}
 

@@ -86,8 +86,8 @@
 			   __FILE__, __LINE__, __func__, s))
 #define untested1(s,x) (fprintf(stderr, "@@#\n@@@:%s:%u:%s: %s  %s=%g\n", \
 			   __FILE__, __LINE__, __func__, s, #x, (double)(x)))
-#define untested2(s,x,y) (fprintf(stderr, "@@#\n@@@:%s:%u:%s: %s  %s=%g\n", \
-			   __FILE__, __LINE__, __func__, s, #x, #y, (double)(x),(double)(y) ))
+#define untested2(s,x,y) (fprintf(stderr, "@@#\n@@@:%s:%u:%s: %s  %s=%g, %s=%g\n", \
+			   __FILE__, __LINE__, __func__, s, #x, (double)(x), #y, (double)(y) ))
 #else
 #define untested()
 #define untested0(s)

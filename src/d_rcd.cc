@@ -315,9 +315,9 @@ void MODEL_BUILT_IN_RCD::do_precalc_last(COMMON_COMPONENT* ccmp, const CARD_LIST
   // double _rr = _rr_.subs(runter=runter, u_gate_=uref)
 
   // double _rh = _rh_.subs(runter=runter, u_gate_=uref)  
-  double uend_bad = (cc->Uref / (cc->__Re(cc->Uref) / cc->__Rc(cc->Uref) +1));
+  double Eend_bad = (cc->Uref / (cc->__Re(cc->Uref) / cc->__Rc(cc->Uref) +1));
 
-  cc->_wcorr = double ( cc->Uref / uend_bad );
+  cc->_wcorr = double ( cc->Uref / Eend_bad );
   cc->_weight = cc->weight;
   // sanity check.
   trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->__tau_up(cc->Uref), cc->Recommon, cc->Rccommon0);
@@ -420,7 +420,7 @@ void COMMON_BUILT_IN_RCD::set_param_by_index(int I, std::string& Value, int Offs
            break;
   case 6:  mu = Value; break;
   case 7:  lambda = Value; break;
-  case 8:  dummy_capture = Value; break;
+  case 8:  Uref = Value; break;
   case 9:  dummy_emit = Value; break;
   default: COMMON_COMPONENT::set_param_by_index(I, Value, Offset);
   }
@@ -453,7 +453,7 @@ std::string COMMON_BUILT_IN_RCD::param_name(int i)const
   case 5:  return "mu";
   case 6:  return "lam";
   case 7:  return "rcdummy";
-  case 8:  return "redummy";
+  case 8:  return "uref";
   //case 10:  return "norm_uin";
   default: return COMMON_COMPONENT::param_name(i);
   }
@@ -492,7 +492,7 @@ std::string COMMON_BUILT_IN_RCD::param_value(int i)const
   case 5:  return Uref.string();
   case 6:  return mu.string();
   case 7:  return lambda.string();
-  case 8:  return dummy_capture.string();
+  case 8:  return Uref.string();
   case 9:  return dummy_emit.string();
   default: return COMMON_COMPONENT::param_value(i);
   }
@@ -559,6 +559,7 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
   e_val(&(this->Recommon), m->Re, par_scope);
   e_val(&(this->Rccommon0), m->Rc, par_scope);
   e_val(&(this->Rccommon1), m->Re, par_scope);
+  e_val(&(this->Uref), m->uref, par_scope);
   
   trace4("uref...",  m->uref, NOT_INPUT, Uref , double (Uref));
   Uref.e_val( (double)m->uref, par_scope);
@@ -1103,6 +1104,7 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   else if (Umatch(x, "tra "   )) { return( _Ccgfill->tr_abs_err() ); }
   else if (Umatch(x, "order " )) { return( _Ccgfill->order() ); }
   else if (Umatch(x, "Rc "    )) { return( c->_Rc0 ); }
+  else if (Umatch(x, "wt "    )) { return( c->_weight ); }
   else if (Umatch(x, "wdt "   )) { return( _Ccgfill->wdT() ); }
   else if (Umatch(x, "region ")) { return( m->tt_region( this ) ); }
   else if (Umatch(x, "uref "  )) { return( c->Uref ); }
@@ -1201,24 +1203,16 @@ long double COMMON_BUILT_IN_RCD::__step(long double uin, long double cur,  doubl
   long double Eend = 1.0L/(1.0L + expl(-Rc1*uin) * Re0/uin/Rc0 );
 
   long double ret =  (cur-Eend) 
-      // * expl( -(Rc0*uin             /Re0 + expl(-Rc1*uin))*t              /Rc0 )
-       * expl( -(uin /Re0 + expl(-Rc1*uin)/Rc0)*t    )
-       +Eend;
+       * expl( -(uin /Re0 + expl(-Rc1*uin)/Rc0)*t )
+       + Eend;
 
-  long double sgn=1;
-  if( (cur-Eend) < 1) sgn=-1;
-
-  long double factor =  expl( -(uin /Re0 + expl(-Rc1*uin)/Rc0)*t    );
-  long double retalt =  cur *factor    +Eend * (1.0L-factor);
-  retalt=retalt;
-
-  trace7("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, uin, Rc0, ret, retalt, logl(fabsl(cur-Eend ) ) );
+  trace6("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, uin, Rc0, ret,  logl(fabsl(cur-Eend ) ) );
 //  assert(is_almost(retalt ,ret));
 
   if (!is_number(ret) || ret < -0.1){
     trace7("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, uin, Rc0, Rc1, Re0, logl(fabsl(cur-Eend ) ) );
     trace7("COMMON_BUILT_IN_RCD::__step ", cur-Eend, deltat, uin, Rc0, Rc1, Re0, fabsl(cur-Eend )  );
-    trace7("COMMON_BUILT_IN_RCD::__step ", cur, deltat, uin, Rc0, Rc1, Re0, sgn  );
+    trace6("COMMON_BUILT_IN_RCD::__step ", cur, deltat, uin, Rc0, Rc1, Re0  );
     assert(false);
   }
 
@@ -1369,6 +1363,7 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
       error(bDANGER,"DEV_BUILT_IN_RCD::tr_stress unequal now: %E lasts: %E at %E\n", _sim->_time0, lasts, _sim->_Time0 );
       throw(Exception("time mismatch in " + long_label()));
     }
+    return;
   }
 
 
@@ -1414,10 +1409,6 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   assert (fill==fill);
   assert (uin==uin);
 
-
-
-  double tau = c->__tau(uin);
-
   double newfill;
   switch(_sim->_stepno){ incomplete();
     case 0:
@@ -1436,10 +1427,9 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
     newfill=1;
   }
   assert(newfill==newfill);
-  assert(is_number(tau));
 
   _tr_fill=newfill;
-  trace6("DEV_BUILT_IN_RCD::tr_stress ", fill, h, tau, (newfill-fill)/h, _tr_fill, h );
+  trace5("DEV_BUILT_IN_RCD::tr_stress ", fill, h, (newfill-fill)/h, _tr_fill, h );
 
   assert(is_number(_tr_fill));
   assert(h > 0);
@@ -1496,7 +1486,6 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
                 _sim->_Time0,
                 long_label().c_str(),
         cap->tr_lo, uin_eff, cap->tr_hi, (cap->tr_lo > uin_eff) , (cap->tr_hi < uin_eff) );
-
   }
 
   assert( cap->tr_lo <= cap->tr_hi );
@@ -1509,12 +1498,12 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
   }else if ( cap->tr() > cap->tr_hi ) {
     untested();
     cap->set_order(0);
-    cap->tr() = cap->tr_hi ;
+//    cap->tr() = cap->tr_hi ;
   }
 
   trace3("DEV_BUILT_IN_RCD::tr_stress_last done",  cap->tr_lo ,  cap->tr(), cap->tr_hi ) ;
-  assert( cap->tr_hi > cap->tr() || fabs( cap->tr() - cap->tr_hi ) < OPT::abstol || fabs((cap->tr() - cap->tr_hi)/ cap->tr_hi  ) < OPT::reltol );
-  assert( cap->tr_lo < cap->tr() || fabs( cap->tr() - cap->tr_lo ) < OPT::abstol || fabs((cap->tr() - cap->tr_lo)/ cap->tr()  ) < OPT::reltol );
+  // assert( cap->tr_hi > cap->tr() || fabs( cap->tr() - cap->tr_hi ) < OPT::abstol || fabs((cap->tr() - cap->tr_hi)/ cap->tr_hi  ) < OPT::reltol );
+  // assert( cap->tr_lo < cap->tr() || fabs( cap->tr() - cap->tr_lo ) < OPT::abstol || fabs((cap->tr() - cap->tr_lo)/ cap->tr()  ) < OPT::reltol );
 
   // tt_value not needed for rollback.
   _Ccgfill->set_tt(_tr_fill);
@@ -1589,25 +1578,24 @@ void DEV_BUILT_IN_RCD::precalc_last()  {
 void DEV_BUILT_IN_RCD::tt_begin()  {
   trace0("DEV_BUILT_IN_RCD::tt_begin");
  _Ccgfill->set_tt(0);
- _Ccgfill->set_tr(0.223);
+ _Ccgfill->set_tr(-inf);
 }
 /*--------------------------------------------------------------------------*/
+/* Newton iterator. finding effective DC value */
 long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, double E_in ) const
 {
   long double E=(long double) E_in;
   const COMMON_BUILT_IN_RCD* c = this;
   const COMMON_BUILT_IN_RCD* cc = this;
   const MODEL_BUILT_IN_RCD* m = dynamic_cast<const MODEL_BUILT_IN_RCD*>(c->model());
-  trace5("COMMON_BUILT_IN_RCD::__uin_iter", uin, E_old, E, E-E_old,  CKT_BASE::_sim->_last_time );
+  trace5("COMMON_BUILT_IN_RCD::__uin_iter: ", uin, E_old, E, E-E_old,  CKT_BASE::_sim->_last_time );
   assert (E<1.000001);
   
   if (E>1) {
     untested0("COMMON_BUILT_IN_RCD::__uin_iter aligned E");
     E=1;
   }
-
-  if (uin==inf) uin=0.222;
-  // if (uin==0) uin=0.221;
+  double h = BASE_SUBCKT::_sim->_last_time;
 
   long double Euin =0;
   long double Euin_alt =0;
@@ -1636,7 +1624,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
   bool D=true;
   bool U=true;
 
-  Euin = ((COMMON_BUILT_IN_RCD*)c)->__step( uin, E_old, CKT_BASE::_sim->_last_time   );
+  Euin = ((COMMON_BUILT_IN_RCD*)c)->__step( uin, E_old, h  );
   if(!is_number(Euin)) {
     error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter pl cannot evaluate E "
         "at uin=%LE (E_old=%E) %i\n", uin, E_old, CKT_BASE::_sim->tt_iteration_number());
@@ -1651,7 +1639,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     i++;
     trace7("COMMON_BUILT_IN _RCD::__uin_iter loop", (double)uin, (double)res, (double)fres, Edu, E, i,Euin);
     trace3(" ",dx_res,Q,df_fres);
-    if( i> 399){
+    if( i> 50){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge uin="
           "%LE, E=%LE, res=%LE, lres=%Lg, Q=%Lg\n", uin, E, res, log(fabs(res)), Q);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter LQ=%Lf>%Lf. h%i fres=%LE\n", 
@@ -1713,7 +1701,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
       trace2("COMMON_BUILT_IN_RCD::__uin_iter",res, Edu);
       putres=true;     // falls Edu sehr klein aber nicht 0 ist kann es 
                        // auch zu Fehlern  kommen 
-      Edu=Edu*1E100;
+      Edu=Edu*1E10;
       res  = fres/Edu; 
     }
 
@@ -1742,7 +1730,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     dx_res-=uin; // Effektives dx da es durch Numerik kaputt gehen kann
 
 
-    Euin = cc->__step( uin, E_old, BASE_SUBCKT::_sim->_last_time   );
+    Euin = cc->__step( uin, E_old, h  );
     df_fres = Euin-Euin_alt; // Effektive Veraenderung im f Bereich. 
     Euin_alt = Euin;
 
@@ -1784,27 +1772,6 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
       fres, df_fres, Edu, E, E_old);
   trace5("COMMON_BUILT_IN_RCD::__uin_iter done", (E-Euin), ustart,i, putres, delta_u );
 
-#ifndef DNDEBUG
-  //sanitycheck
-  long double u_oben  = max ( uin + OPT::abstol, uin * (1+OPT::reltol) );
-  long double u_unten = min ( uin - OPT::abstol, uin * (1-OPT::reltol) );
-  if(m->positive) u_unten=max(u_unten,0.0L);
-  long double E_hier  = cc->__step( uin , E_old, BASE_SUBCKT::_sim->_last_time );
-  long double E_oben  = cc->__step( u_oben , E_old, BASE_SUBCKT::_sim->_last_time );
-  long double E_unten = cc->__step( u_unten, E_old, BASE_SUBCKT::_sim->_last_time );
-
-  trace3("COMMON_BUILT_IN_RCD::__uin_iter sanitycheck", uin, u_oben ,u_unten );
-  trace6("COMMON_BUILT_IN_RCD::__uin_iter sanitycheck", E,E_hier, E - 1, E_oben - E,E- E_unten, E_oben );
-  trace4("COMMON_BUILT_IN_RCD::__uin_iter sanitycheck", E,E_hier, E_oben,E_unten );
-
-  assert(E_oben >= E_hier);
-  assert(E_unten <= E_hier);
-  assert(E_oben >= E_unten);
-
-  assert(double(E_oben) >= E);
-  // assert(E_unten <= E);
-
-#endif
 
 
   assert(uin>=-0.001 || !m->positive);

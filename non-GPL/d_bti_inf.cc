@@ -75,6 +75,23 @@ static double MATRIX_FEW[WS_ROWS][WS_COLS] =
 static int COUNT_FEW=7;
 
 
+static double MATRIX_TEST[WS_ROWS][WS_COLS] =
+// wrong order   ^^       ^^ due to C++
+{ { 0.0 ,0.1 ,0.2 ,0.3 ,0.4 ,0.5 ,0.6 ,0.7 ,0.8  ,0.9,0.99 },  //<= langsam
+  { 1.0 ,1.1 ,1.2 ,1.3 ,1.4 ,1.5 ,1.6 ,1.7 ,1.8  ,1.9,1.99 },
+  { 2.0 ,2.1 ,2.2 ,2.3 ,2.4 ,2.5 ,2.6 ,2.7 ,2.8  ,2.9,2.99 },
+  { 3.0 ,3.1 ,3.2 ,3.3 ,3.4 ,3.5 ,3.6 ,3.7 ,3.8  ,3.9,3.99 },
+  { 4.0 ,4.1 ,4.2 ,4.3 ,4.4 ,4.5 ,4.6 ,4.7 ,4.8  ,4.9,4.99 },
+  { 5.0 ,5.1 ,5.2 ,5.3 ,5.4 ,5.5 ,5.6 ,5.7 ,5.8  ,5.9,5.99 },
+  { 6.0 ,6.1 ,6.2 ,6.3 ,6.4 ,6.5 ,6.6 ,6.7 ,6.8  ,6.9,6.99 },
+  { 7.0 ,7.1 ,7.2 ,7.3 ,7.4 ,7.5 ,7.6 ,7.7 ,7.8  ,7.9,7.99 },
+  { 8.0 ,8.1 ,8.2 ,8.3 ,8.4 ,8.5 ,8.6 ,8.7 ,8.8  ,8.9,8.99 },
+  { 9.0 ,9.1 ,9.2 ,9.3 ,9.4 ,9.5 ,9.6 ,9.7 ,9.8  ,9.9,9.99 } };  //<=schnell
+//  ^^schnell                                 langsam ^^
+
+static int COUNT_TEST=109;
+
+
 /*--------------------------------------------------------------------------*/
 
 /*--------------------------------------------------------------------------*/
@@ -117,6 +134,10 @@ void MODEL_BUILT_IN_BTI_INF::precalc_first()
     case 3:
       rcd_number = COUNT_FEW;
       _w_matrix = MATRIX_FEW;
+      break;
+    case 4:
+      rcd_number = COUNT_TEST;
+      _w_matrix = MATRIX_TEST;
       break;
   }
 
@@ -175,29 +196,25 @@ std::string MODEL_BUILT_IN_BTI_INF::RCD_name(int i) const{
   int pos=0;
   int find=0;
 
-  while( true  ){
+  while( true ){
     row = pos/WS_COLS;
     col = pos%WS_COLS;
     if(_w_matrix[row][col]==.0){
       pos++;
       continue;
-
     }else{
       if(find == i) break;
       find++;
     }
     pos++;
-
   }
   row = pos/WS_COLS;
   col = pos%WS_COLS;
-
   trace4("MODEL_BUILT_IN_BTI_INF::RCD_name()", i, row, col, _w_matrix[row][col]);
 
   stringstream a;
   a << "R_" << row << "_" << col ;
   return a.str();
-
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
@@ -208,12 +225,11 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
   int cols = WS_COLS;
   int rows = 10;
 
-
   assert(_w_matrix);
 
   long double up = pow(10, -7.5);
-  long double uref = 1;
-  // double lambda=1;
+//  long double uref = 1;
+//  double lambda=1;
   double base=10;
   //double mu=1;
   uint_t k=0;
