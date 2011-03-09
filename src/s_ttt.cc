@@ -226,6 +226,12 @@ void TTT::first_after_interruption(){
     CARD_LIST::card_list.do_forall( &CARD::tt_prepare ); // lasts==0 hack
     // CARD_LIST::card_list.do_forall( &CARD::stress_apply );
 
+    for (uint_t ii = 1;  ii <= _sim->_total_nodes;  ++ii) {
+      _sim->_nstat[_sim->_nm[ii]].set_last_change_time(0);
+      _sim->_nstat[_sim->_nm[ii]].store_old_last_change_time();
+      _sim->_nstat[_sim->_nm[ii]].set_final_time(0);
+    }
+
     _inside_tt=true;
     TTT::sweep();
     _inside_tt=false;
@@ -283,8 +289,8 @@ void TTT::sweep_tt()
   //something.
   }else if( _Tstop == _Tstart ){
     trace0("TTT::sweep_tt just printing");
-    if (_trace>0 )
-      _out << "* TTT::sweep_tt just printing " << _Tstart << "\n";
+    if (_trace > 0 )
+      _out << "* TTT::sweep_tt just printing " << _Tstart << " " << _sim->_Time0 << "\n";
 
     outdata_b4(_sim->_Time0); // first output tt data
     return;

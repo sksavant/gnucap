@@ -209,7 +209,7 @@ void TRANSIENT::sweep()
   if (_sim->_loadq.size()){
     untested();
     trace0("loadq nonempty -- clearing");
-   // _sim->_loadq.clear() ; why??
+    _sim->_loadq.clear() ; // why??
   }
 }
 /*--------------------------------------------------------------------------*/

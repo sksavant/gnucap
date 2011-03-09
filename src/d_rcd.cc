@@ -1188,7 +1188,11 @@ long double COMMON_BUILT_IN_RCD::__step(long double uin, long double cur,  doubl
 {
   const COMMON_BUILT_IN_RCD* cc = this;
   assert(cc);
-  assert(is_number(uin));
+  if (!is_number(uin)){
+    error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress no number", uin);
+    throw(Exception("no number in __step"));
+  }
+
   assert(is_number(cur));
   const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(cc->model());
   assert(m);
@@ -1498,7 +1502,7 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
   }else if ( cap->tr() > cap->tr_hi ) {
     untested();
     cap->set_order(0);
-//    cap->tr() = cap->tr_hi ;
+    cap->tr() = cap->tr_hi ;
   }
 
   trace3("DEV_BUILT_IN_RCD::tr_stress_last done",  cap->tr_lo ,  cap->tr(), cap->tr_hi ) ;
@@ -1525,7 +1529,7 @@ double COMMON_BUILT_IN_RCD::__tau(double uin)const
 ///*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::tt_commit()
 {
-  untested();
+  // untested();
   return;
 }
 ///*--------------------------------------------------------------------------*/
@@ -1639,7 +1643,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     i++;
     trace7("COMMON_BUILT_IN _RCD::__uin_iter loop", (double)uin, (double)res, (double)fres, Edu, E, i,Euin);
     trace3(" ",dx_res,Q,df_fres);
-    if( i> 50){
+    if( i> 150){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge uin="
           "%LE, E=%LE, res=%LE, lres=%Lg, Q=%Lg\n", uin, E, res, log(fabs(res)), Q);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter LQ=%Lf>%Lf. h%i fres=%LE\n", 
@@ -1647,9 +1651,9 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter start=%E\n", ustart);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter Edu=%LE Euin=%LE E=%LE delta_u=%LE\n",
           Edu, Euin, E, delta_u);
-      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter s=%i%i%i%i%i\n",
-          A,B,C,D,U);
-      throw(Exception("?"));
+      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter s=%i%i%i%i%i putres=%i\n",
+          A,B,C,D,U,putres);
+      throw(Exception("does not converge"));
       break;
     }
     if(!is_number(uin)){

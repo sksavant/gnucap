@@ -760,7 +760,6 @@ const MODEL_CARD* COMPONENT::find_model(const std::string& modelname)const
 {
   trace0(("COMPONENT::find_model" + short_label() + " " + modelname).c_str());
   const char* tmp = modelname.c_str(); tmp=tmp;
-  untested0(tmp);
   if (modelname == "") {
     throw Exception(long_label() + ": missing args -- need model name");
     unreachable();

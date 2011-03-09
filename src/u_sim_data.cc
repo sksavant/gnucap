@@ -239,17 +239,17 @@ void SIM_DATA::alloc_vectors()
 	
   trace0("SIM_DATA::alloc_vectors ADP_NODE");
   _tr  = new double[_adp_nodes];
-  std::fill_n(_tr, _adp_nodes, 0.111); //HACK
+  std::fill_n(_tr, _adp_nodes, NAN); //invalidate...
   _tr1 = new double[_adp_nodes];
   _tr2 = new double[_adp_nodes];
   _tr3 = new double[_adp_nodes];
   _tt1 = new double[_adp_nodes];
 
 #ifdef DO_TRACE
-  std::fill_n(_tr1, _adp_nodes, NAN); //HACK
-  std::fill_n(_tr2, _adp_nodes, NAN); //HACK
-  std::fill_n(_tr3, _adp_nodes, NAN); //HACK
-  std::fill_n(_tt1, _adp_nodes, NAN); //HACK
+  std::fill_n(_tr1, _adp_nodes, NAN); 
+  std::fill_n(_tr2, _adp_nodes, NAN); 
+  std::fill_n(_tr3, _adp_nodes, NAN); 
+  std::fill_n(_tt1, _adp_nodes, NAN); 
 
 #endif
 

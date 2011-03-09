@@ -304,19 +304,13 @@ void DEV_VCVS2::tt_next()
   //assert(_time[0] == _sim->_time0);
   if (_time[0] != _sim->_time0) {itested();
     trace1("timedelta ", _time[0] - _sim->_time0 );
-    // error(bDANGER, "//BUG// restore time mismatch.  last=%g, using=%g\n",
-	//  _time[0], _sim->_time0);
-    std::cerr << "HACK? " << short_label() << ": ELEMENT::tr_next, time mismatch, setting back to 0 " << _sim->_time0 << "\n";
-    //BUG// happens when continuing after a ^c,
-    // when the last step was not printed
-    // _time[0] is the non-printed time.  _sim->_time0 is the printed time.
+    trace2( ( "HACK? " + short_label() + ": DEV_VCVS2::tt_next, time mismatch, setting back to 0 " ).c_str(),
+        _sim->_time0, _time[0] );
   }else{
   }
 
   for (int i=OPT::_keep_time_steps-1; i>=0; --i) {
-        // FIXME: copy all timesteps to 0
     _time[i]=0.0;
-        //    assert(_time[i] < _time[i-1] || _time[i] == 0.);
   }
 }
 /*--------------------------------------------------------------------------*/

@@ -211,9 +211,9 @@ PROBE* PROBELIST::add_list(CS& cmd)
     }else if (cmd.is_alnum() || cmd.match1("*?")) {
       // branches or named nodes
       unsigned here1 = cmd.cursor();
-      untested0("add_list found_something1 adding brancges");
+      trace0("add_list found_something1 adding brancges");
       found_something = add_branches(cmd.ctos(),what,&CARD_LIST::card_list);
-      untested0("add_list found_something1 returned from brancges");
+      trace0("add_list found_something1 returned from brancges");
       if (!found_something) {
         cmd.warn(bWARNING, here1, "No match");
       }else{
@@ -225,7 +225,7 @@ PROBE* PROBELIST::add_list(CS& cmd)
         }else{
         }
         unsigned here2 = cmd.cursor();
-        untested0("add_list found_something2");
+        trace0("add_list found_something2");
         found_something = add_branches(cmd.ctos(),what,&CARD_LIST::card_list);
         if (!found_something) {itested();
           cmd.reset(here2);

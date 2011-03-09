@@ -303,7 +303,7 @@ void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
 	    last_change_time(), _sim->_time0, _sim->_Time0);
       dt = _sim->_time0 - old_last_change_time();
       if (dt <= 0.) {untested();
-	throw Exception("internal error: time moving backwards, can't recover");
+	throw Exception("internal error: time moving backwards, can't recover " + long_label());
       }else{untested();
       }
       assert(dt > 0.);

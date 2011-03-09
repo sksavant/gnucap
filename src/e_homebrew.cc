@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  *------------------------------------------------------------------
- * Base class for homebrew of a circuit
+ * Base class for homebrew device experimenting (obsolete.)
  */
 //testing=script 2006.07.12
 #include "m_divdiff.h"

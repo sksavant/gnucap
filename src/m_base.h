@@ -196,7 +196,7 @@ public:
   Base* r_subtract(const Base* X)const	{untested();return ((X) ? (X->subtract(this))  : (NULL));}
   Base* divide(const Base* X)const	{return ((X) ? (X->r_divide(this))  : (NULL));}
   Base* r_divide(const Base* X)const	{untested();return ((X) ? (X->divide(this))    : (NULL));}
-  Base* powerof(const Base* X)const	{untested();return ((X) ? (X->powerof(this))    : (NULL));}
+  Base* powerof(const Base* X)const	{return ((X) ? (X->powerof(this))    : (NULL));}
 
   Base* less(const String*)const	{untested();return NULL;}
   Base* greater(const String*)const	{untested();return NULL;}

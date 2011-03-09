@@ -128,13 +128,8 @@ void ELEMENT::tt_next()
   //assert(_time[0] == _sim->_time0);
   if (_time[0] != _sim->_time0) {itested();
     trace1("ELEMENT::tt_next timedelta ", _time[0] - _sim->_time0 );
-    // error(bDANGER, "//BUG// restore time mismatch.  last=%g, using=%g\n",
-	//  _time[0], _sim->_time0);
     trace2( ( "HACK? " + short_label() + ": ELEMENT::tt_next, time mismatch, setting back to 0 " ).c_str(),
         _sim->_time0, _time[0] );
-    //BUG// happens when continuing after a ^c,
-    // when the last step was not printed
-    // _time[0] is the non-printed time.  _sim->_time0 is the printed time.
   }else{
     trace2(("tt_next for " + short_label()).c_str(), _time[0], _sim->_time0);
   }
