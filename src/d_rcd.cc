@@ -752,7 +752,6 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p)
    _Ccgfill(0),
    _tr_fill(p._tr_fill)
 {
-  untested();
   _n = _nodes;
   for (int ii = 0; ii < max_nodes() + int_nodes(); ++ii) {
     _n[ii] = p._n[ii];
@@ -1170,7 +1169,7 @@ void MODEL_BUILT_IN_RCD::do_tt_prepare(COMPONENT* c)const
 ///*--------------------------------------------------------------------------*/
 ADP_CARD* MODEL_BUILT_IN_RCD::new_adp(const COMPONENT* c)const
 {
-  untested0("MODEL_BUILT_IN_RCD::new_adp");
+  trace0("MODEL_BUILT_IN_RCD::new_adp");
   assert(c);
   return MODEL_CARD::new_adp(c);
 }
@@ -1189,7 +1188,7 @@ long double COMMON_BUILT_IN_RCD::__step(long double uin, long double cur,  doubl
   const COMMON_BUILT_IN_RCD* cc = this;
   assert(cc);
   if (!is_number(uin)){
-    error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress no number", uin);
+    error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress no number %E ", uin);
     throw(Exception("no number in __step"));
   }
 
@@ -1451,6 +1450,7 @@ double DEV_BUILT_IN_RCD::involts() const {
 void DEV_BUILT_IN_RCD::tr_stress_last()
 {
   ADP_NODE* cap=_Ccgfill;
+  ADP_NODE* _c=_Ccgfill;
   trace2(("tr_stress_last " + short_label()).c_str(), _tr_fill, _sim->tt_iteration_number()  );
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
   assert(c);
@@ -1458,6 +1458,12 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
   const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
   assert(m);
   assert(c->sdp());
+
+  if(m->positive){
+        _c->tr_lo = max(.0,_c->tr_lo);
+        _c->tr_hi = max(.0,_c->tr_hi);
+  } 
+  assert( _c->tr_lo <= _c->tr_hi );
   if(m->use_net()){
     assert(false);
     incomplete();
@@ -1586,7 +1592,7 @@ void DEV_BUILT_IN_RCD::tt_begin()  {
 }
 /*--------------------------------------------------------------------------*/
 /* Newton iterator. finding effective DC value */
-long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, double E_in ) const
+long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, double E_in, double bound_lo, double bound_hi ) const
 {
   long double E=(long double) E_in;
   const COMMON_BUILT_IN_RCD* c = this;
@@ -1622,6 +1628,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
 
   double ustart = uin;
   long double delta_u=0;
+  bool edge=false;
   bool A=true;
   bool B=true;
   bool C=true;
@@ -1641,11 +1648,15 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
   //while( ( A || ( B && C && D ) ) ) { // && fabs(Euin-E)>1e-40 ) 
   while( U || (( A && C ) || ( B && C && D ) ) ) { // && fabs(Euin-E)>1e-40 ) 
     i++;
+    edge = false;
     trace7("COMMON_BUILT_IN _RCD::__uin_iter loop", (double)uin, (double)res, (double)fres, Edu, E, i,Euin);
     trace3(" ",dx_res,Q,df_fres);
     if( i> 150){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge uin="
           "%LE, E=%LE, res=%LE, lres=%Lg, Q=%Lg\n", uin, E, res, log(fabs(res)), Q);
+      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge bounds %E, %E\n",
+          bound_lo, bound_hi);
+
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter LQ=%Lf>%Lf. h%i fres=%LE\n", 
           log(Q), logl(reltol), hhack, fres);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter start=%E\n", ustart);
@@ -1710,17 +1721,21 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     }
 
     assert(is_number(res));
-//     if ( i > 150) 
-//       res=res/10;
-    // numerische ok? wieso auf abstol=10-12 genau?
-    // Edu ist in diesem Fall 10^-10 und damit ist res viel zu gross. 
-    Q = fabs( res / uin );
 
     cres= fmin( 1.0,res);
     cres= fmax(-1.0,res);
 
     dx_res=uin;
     uin -= cres;
+    if(( uin> (long double) bound_hi )){
+      edge=true;
+      uin=bound_hi;
+    }else if(( uin < (long double) bound_lo )){
+      edge=true;
+      uin=bound_lo;
+    }
+
+
 
     assert(is_number(uin));
 
@@ -1731,8 +1746,10 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
       cres = uin;
       uin = .00;
     }
+
     dx_res-=uin; // Effektives dx da es durch Numerik kaputt gehen kann
 
+    Q = fabs( dx_res / uin );
 
     Euin = cc->__step( uin, E_old, h  );
     df_fres = Euin-Euin_alt; // Effektive Veraenderung im f Bereich. 
@@ -1752,7 +1769,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
 
     delta_u = .5 * max ( OPT::abstol, double( fabs(uin) * (OPT::reltol) ) );
 
-    U = ( delta_u * Edu < fabs(( E - Euin)) );
+    U = ( delta_u * Edu < fabs(( E - Euin)) ) && !edge;
     A = Q > reltol;
     B = ( fabs(dx_res) > 1e-30 );   // dx failed
     C = ( fabs(fres) > abstol ); // df zu Zielwert failed

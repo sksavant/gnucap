@@ -25,3 +25,4 @@
 - read ./.gnucaprc on startup
 - new option includepath (colon separated)
 - rudimentary .vdump .vload support
+- propagate error ( return from main )

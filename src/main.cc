@@ -173,6 +173,7 @@ static void process_cmd_line(int argc, const char *argv[])
 	  }
 	}catch (Exception& e) {
 	  error(bDANGER, e.message() + '\n');
+          throw(Exception("error"));
 	  finish();
 	}
 	if (ii >= argc) {
@@ -190,6 +191,7 @@ static void process_cmd_line(int argc, const char *argv[])
       }
     }catch (Exception& e) {itested();
       error(bDANGER, e.message() + '\n');
+      throw(Exception("error"));
       finish();
     }
   }
@@ -197,6 +199,7 @@ static void process_cmd_line(int argc, const char *argv[])
 /*--------------------------------------------------------------------------*/
 int main(int argc, const char *argv[])
 {
+  ENV::error = 0;
   // sigsetjmp unneeded here (isnt it?)
   read_startup_files();
   sign_on();
@@ -212,11 +215,12 @@ int main(int argc, const char *argv[])
 	process_cmd_line(argc,argv);
         trace0("done cmdline  mode");
       }catch (Exception& e) {untested();
+        ENV::error++;
 	error(bDANGER, e.message() + '\n');
 	finish();		/* error clean up (from longjmp()) */
 	CMD::command("quit", &CARD_LIST::card_list);
 	unreachable();
-	exit(0);
+	exit(1);
       }
     }else{
       trace0("finish batch");
@@ -244,6 +248,7 @@ int main(int argc, const char *argv[])
 	  exit(0);
 	}catch (Exception& e) {itested();
 	  error(bDANGER, e.message() + '\n');
+          ENV::error++;
 	  finish();
 	}
       }else{itested();
@@ -252,7 +257,7 @@ int main(int argc, const char *argv[])
     }
   }
   unreachable();
-  return 0;
+  return 1;
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

@@ -901,8 +901,8 @@ void ADP_NODE::tt_commit( )
 }
 /*---------------------------------*/
 hp_float_t ADP_NODE::tr( double time ) const{
-  double Time1 = Time0() - dT0();
-  long double now_rel = time-(Time1); // dT0, oder?
+  long double Time1 = Time0() - dT0();
+  long double now_rel = time - Time1; // dT0, oder?
 
   switch(order()){
     case 0: // transient sim
@@ -911,6 +911,7 @@ hp_float_t ADP_NODE::tr( double time ) const{
     case 1:
       return tr1();
     case 2:
+      trace1("ADP_NODE::tr 2", now_rel/ dT1());
       return tr1() + ( tr1() - tr2()) * ((now_rel )/(long double) dT1());
     case 3:
       return  -(((tr2() - tr3())/dT2() - (tr1() - tr2())/dT1())*(now_rel + dT1())/(dT1() + dT2()) -
@@ -936,12 +937,14 @@ void ADP_NODE::tr_expect_( ){
       return;
     case 2:
       trace3(("ADP_NODE::tr_expect_ extradebug" + long_label()).c_str(), tr2(), tr1(), tr(Time0()) );
-      if ( fabs(tr2()-tr(Time2())) > 1e-15  && !(is_almost(tr2(), tr(Time2())))){
-        error( bDANGER, "ADP_NODE::tr_expect_ mismatch, T0: %E, %E, %E\n", Time0(), Time1(), Time2());
+      if ( fabs(tr2()-tr(Time2())) > 1e-6   && !(is_almost(tr2(), tr(Time2())))){
+        error( bDANGER, "ADP_NODE::tr_expect_ tt_iteration_number %i\n", tt_iteration_number());
+        error( bDANGER, "ADP_NODE::tr_expect_ mismatch, T0: %.20E, %.20E, %E\n", Time0(), Time1(), Time2());
+        error( bDANGER, "ADP_NODE::tr_expect_ mismatch dT1() %E dT0() %E\n", dT1(), dT0() );
         error( bDANGER, "ADP_NODE::tr_expect_ mismatch, tr1:   %E, tr2: %E d %E  \n", tr1(), tr2(), tr1()-tr2() );
         error( bDANGER, "ADP_NODE::tr_expect_ mismatch, tr2():tr(Time2()=%E))= %E : %E\n", Time2(), tr2(), tr(Time2()) );
+        error( bDANGER, "ADP_NODE::tr_expect_ delta, tr2()-tr(Time2()))= %E\n", tr2()- tr(Time2()) );
         error( bDANGER, "ADP_NODE::tr_expect_ mismatch in %s\n", long_label().c_str() );
-        error( bDANGER, "ADP_NODE::tr_expect_ mismatch dT1() %E\n", dT1() );
 
         throw(Exception(" mismatch " + long_label()));
         assert( false);

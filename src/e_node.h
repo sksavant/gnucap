@@ -126,17 +126,17 @@ public: // virtuals
   XPROBE	ac_probe_ext(const std::string&)const;
 
   hp_float_t      v0()const	{
-    assert(m_() >= 0);
+    assert(m_() != INVALID_NODE );
     assert(m_() <= _sim->_total_nodes);
     return _sim->_v0 [m_()];
   }
   hp_float_t      vt1()const {
-    assert(m_() >= 0);
+    assert(m_() != INVALID_NODE );
     assert(m_() <= _sim->_total_nodes);
     return _sim->_vt1[m_()];
   }
   COMPLEX     vac()const {
-    assert(m_() >= 0);
+    assert(m_() != INVALID_NODE );
     assert(m_() <= _sim->_total_nodes);
     return _sim->_ac [m_()];
   }
@@ -144,7 +144,7 @@ public: // virtuals
 
   //double&     i()	{untested();return SIM::i[m_()];}  /* lvalues */
   COMPLEX&    iac() {
-    assert(m_() >= 0);
+    assert(m_() != INVALID_NODE);
     assert(m_() <= _sim->_total_nodes);
     return _sim->_ac[m_()];
   }
@@ -250,13 +250,11 @@ private:
   static bool node_is_valid( uint_t i) {
     if (i == (uint_t) INVALID_NODE) {untested();
       itested();
-    }else if (i < 0) {
-      unreachable();
     }else if ( i > NODE::_sim->_total_nodes) {
       unreachable();
     }else{
     }
-    return i>=0 && i<=NODE::_sim->_total_nodes;
+    return i!=INVALID_NODE && i<=NODE::_sim->_total_nodes;
   }
   static int  to_internal(uint_t n) {
     assert(node_is_valid(n));
@@ -279,9 +277,9 @@ public:
   }	// e_cardlist.cc:CARD_LIST::map_subckt_nodes:436 and
 	// e_node.h:node_t::map:263,265 only
 
-  int	      e_()const {
+  uint_t	      e_()const {
     assert(_nnn);
-    return ((_nnn) ? _nnn->user_number() : INVALID_NODE);
+    return ((_nnn) ? _nnn->user_number() : (uint_t) INVALID_NODE);
   }
   const NODE* n_()const {return _nnn;}
   NODE*	      n_()	{return _nnn;}
@@ -325,7 +323,7 @@ public:
 public:
   double      v0()const {
     //assert(m_() >= 0);
-    if (m_() >= 0) {
+    if (m_() != INVALID_NODE ) {
       assert(m_() <= NODE::_sim->_total_nodes);
       assert(n_());
       //assert(n_()->m_() == m_());
@@ -339,7 +337,7 @@ public:
 
   COMPLEX     vac()const {
     //assert(m_() >= 0);
-    if (m_() >= 0) {
+    if (m_() != INVALID_NODE ) {
       assert(m_() <= NODE::_sim->_total_nodes);
       assert(n_());
       //assert(n_()->m_() == m_());
@@ -352,7 +350,7 @@ public:
   }
 
   double&     i() {
-    assert(m_() >= 0);
+    assert(m_() != INVALID_NODE);
     assert(m_() <= NODE::_sim->_total_nodes);
     return NODE::_sim->_i[m_()];
   }

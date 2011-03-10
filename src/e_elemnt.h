@@ -255,7 +255,8 @@ inline void ELEMENT::ac_load_shunt()
 inline void ELEMENT::tr_load_source()
 {
 #if !defined(NDEBUG)
-  trace1("_loaditer", _loaditer);
+  trace2(("ELEMENT::tr_load_source " + long_label()).c_str(), _loaditer,
+      _sim->iteration_tag() );
   assert(_loaditer != _sim->iteration_tag()); // double load
   _loaditer = _sim->iteration_tag();
 #endif

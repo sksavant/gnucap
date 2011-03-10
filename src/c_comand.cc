@@ -91,7 +91,7 @@ public:
     case rPRE_MAIN:	unreachable(); break;
     case rINTERACTIVE:	itested();
     case rSCRIPT:
-    case rBATCH:	command("clear", Scope); exit(0); break;
+	 case rBATCH:	command("clear", Scope); exit(ENV::error); break;
     case rPRESET:	untested(); /*nothing*/ break;
     }
   }

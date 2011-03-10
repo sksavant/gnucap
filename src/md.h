@@ -217,6 +217,7 @@ enum RUN_MODE {
 class INTERFACE ENV {
 public:
   static RUN_MODE run_mode; // variations on handling of dot commands
+  static int error; // error return code
 };
 /*--------------------------------------------------------------------------*/
 /* my standard collection of includes */

@@ -23,7 +23,14 @@
 ##  Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 ##  02110-1301, USA.
 
+
 bin_PROGRAMS= gnucap
+
+## gnucap as a shared library
+lib_LTLIBRARIES = libgnucap.la
+libgnucap_la_SOURCES = ${SRCS1} ${MODELSRCS} ${SRCS2}
+libgnucap_includedir = $(includedir)/gnucap
+libgnucap_include_HEADERS = ${RAW_HDRS}
 
 #------------------------------------------------------------------------
 #------------------------------------------------------------------------
@@ -93,7 +100,7 @@ e_homebrew.cc \
 e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc e_adplist.cc\
 bm_value.cc bm.cc \
 c__cmd.cc c_attach.cc c_file.cc c_genrat.cc \
-findbr.cc plot.cc main.cc globals.cc e_adp.cc
+findbr.cc plot.cc globals.cc e_adp.cc # main.cc removed
 #------------------------------------------------------------------------
 RAW_HDRS = \
 md.h ap.h mode.h constant.h declare.h patchlev.h \
@@ -114,9 +121,19 @@ c_comand.h globals.h
 #------------------------------------------------------------------------
 ## The modelgen generated files
 MODELSRCS= ${MODELS:.model=.cc} ${MODELS:.model=.h}
+
+# henjo:
+MODELCODE= ${MODELS:.model=.cc}
+MODELHDR= ${MODELS:.model=.h}
+
 MODELOBJS= ${MODELS:.model=.${OBJEXT}}
 
-nodist_gnucap_SOURCES= ${SRCS1} ${MODELSRCS} ${SRCS2}
+# nodist_gnucap_SOURCES= ${SRCS1} ${MODELSRCS} ${SRCS2}
+# henjo:
+nodist_gnucap_SOURCES= main.cc
+gnucap_LDADD = libgnucap.la
+
+
 
 SRCS1= 
 SRCS2= ${RAW_SRCS} ${RAW_HDRS}

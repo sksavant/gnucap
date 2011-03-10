@@ -92,7 +92,7 @@ void DEV_VCVS2::tr_iwant_matrix() // extended aus ELEMENT
   assert(ext_nodes() + int_nodes() == matrix_nodes());
 
   for (int ii = 0;  ii < matrix_nodes();  ++ii) {
-    if (_n[ii].m_() >= 0) {
+    if (_n[ii].m_() != INVALID_NODE ) {
       for (int jj = 0;  jj < ii ;  ++jj) {
 	_sim->_aa.iwant(_n[ii].m_(),_n[jj].m_());
 	_sim->_lu.iwant(_n[ii].m_(),_n[jj].m_());

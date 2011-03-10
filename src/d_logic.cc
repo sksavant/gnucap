@@ -146,6 +146,7 @@ void DEV_LOGIC::dc_advance()
   ELEMENT::dc_advance();
 
   if (_gatemode != _oldgatemode) {untested();
+    trace2("DEV_LOGIC::dc_advance", _gatemode, _oldgatemode );
     tr_unload();
     _n[OUTNODE]->set_mode(_gatemode);
     _oldgatemode = _gatemode;

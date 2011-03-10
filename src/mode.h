@@ -28,11 +28,11 @@
 #include "io_.h"
 /*--------------------------------------------------------------------------*/
 enum smode_t   {moUNKNOWN=0, moANALOG=1, moDIGITAL, moMIXED};
+const std::string smode_t_names[] = {"unknown", "analog", "digital", "mixed"};
 inline OMSTREAM& operator<<(OMSTREAM& o, smode_t t) {
-  const std::string s[] = {"unknown", "analog", "digital", "mixed"};
   assert(t >= int(moUNKNOWN));
   assert(t <= int(moMIXED));
-  return (o << s[t]);
+  return (o << smode_t_names[t]);
 }
 
 enum SIM_MODE { // simulation types

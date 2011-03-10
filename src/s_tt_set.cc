@@ -77,13 +77,13 @@ namespace TT {
 				trace0("TTT::setup have 2");
 				_Tstart = _sim->_last_Time;
 				if ((double)_Tstart == 0){
-					trace0("TTT::first run");
+					trace0("TTT::setup latching tr times");
 					_tstep = arg1;
 					_tstop = arg2;
 					_Tstop = 0;
 
 				}else{
-					// there was a run already
+					trace1("TTT::setup ran already", (double)_Tstart );
 
 					if(arg1<arg2){
 						_Tstop  = arg2; 

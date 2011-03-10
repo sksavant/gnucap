@@ -190,6 +190,7 @@ public:
 			    // 6=source stepping iteration limit
 			    // 7=worst case iteration limit
 			    // 8=trace nonconvergence start iteration
+  static int err;
 };
 /*--------------------------------------------------------------------------*/
 class SET_RUN_MODE {

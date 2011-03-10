@@ -3,6 +3,7 @@
 #define U_ADP_H
 #include "s__.h"
 #include "e_compon.h"
+#include "e_node.h"
 #include "u_time_pair.h"
 #include "io_trace.h"
 
@@ -39,35 +40,35 @@ class ADP_NODE: public CKT_BASE {
 
     hp_float_t tr(double time)const;
     hp_float_t& tr()const	{
-      assert(m_() >= 0);
+      assert(m_() != INVALID_NODE);
       assert(m_() <= _sim->_adp_nodes);
       assert (_sim->_tr);
       return _sim->_tr[m_()];
     }
     hp_float_t tr1( )const	{
-      assert(m_() >= 0);
+      assert(m_() != INVALID_NODE);
       assert(m_() <= _sim->_adp_nodes);
       assert (_sim->_tr1);
       return _sim->_tr1[m_()];
     }
     hp_float_t tr2( )const	{
-      assert(m_() >= 0);
+      assert(m_() != INVALID_NODE);
       assert(m_() <= _sim->_adp_nodes);
       return _sim->_tr2[m_()];
     }
     hp_float_t tr3( )const	{
-      assert(m_() >= 0);
+      assert(m_() != INVALID_NODE);
       assert(m_() <= _sim->_adp_nodes);
       return _sim->_tr3[m_()];
     }
 
     hp_float_t tt1( )const	{
-      assert(m_() >= 0);
+      assert(m_() != INVALID_NODE);
       assert(m_() <= _sim->_adp_nodes);
       return _sim->_tt1[m_()];
     }
     hp_float_t&     tt()const	{
-      assert(m_() >= 0);
+      assert(m_() != INVALID_NODE);
       assert(m_() <= _sim->_adp_nodes);
       assert (_sim->_tt);
       return _sim->_tt[m_()];

@@ -33,6 +33,7 @@
 // dispatchers must be constructed before any static objects they contain
 // and destructed after.
 RUN_MODE ENV::run_mode = rPRE_MAIN;
+int ENV::error = 0;
 DISPATCHER<CMD> command_dispatcher;
 DISPATCHER<COMMON_COMPONENT> bm_dispatcher;
 DISPATCHER<MODEL_CARD> model_dispatcher;

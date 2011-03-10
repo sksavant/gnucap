@@ -250,7 +250,6 @@ void SIM_DATA::alloc_vectors()
   std::fill_n(_tr2, _adp_nodes, NAN); 
   std::fill_n(_tr3, _adp_nodes, NAN); 
   std::fill_n(_tt1, _adp_nodes, NAN); 
-
 #endif
 
   std::fill_n(_ac, _total_nodes+1, 0);
