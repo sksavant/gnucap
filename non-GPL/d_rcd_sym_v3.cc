@@ -200,14 +200,15 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   const COMMON_BUILT_IN_RCD* cc = static_cast<const COMMON_BUILT_IN_RCD*>(ccmp);
   const MODEL_BUILT_IN_RCD* m =   static_cast<const MODEL_BUILT_IN_RCD*>(this);
   assert(m);
-  ADP_NODE* a=cap;
+  ADP_NODE* _c=cap;
   assert(is_number(cap->tt()));
   double E_old = cap->tt();
 
-  long double uin_eff=a->tr(); // 0 == current estimate
 
-  if (uin_eff==-inf) uin_eff=( cap->tr_lo+cap->tr_hi)/2.0;
-  if (!is_number(uin_eff)) uin_eff=(cap->tr_lo+cap->tr_hi)/2.0;
+  if (_c->tr()==-inf) _c->tr() = ( _c->tr_lo+_c->tr_hi)/2.0;
+  if (!is_number(_c->tr())) _c->tr() = (_c->tr_lo+_c->tr_hi)/2.0;
+
+  long double uin_eff=_c->tr(); // 0 == current estimate
 
   trace3(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last " +
         cap->label()).c_str(), E_old, tt_iteration_number(), uin_eff);
@@ -220,19 +221,23 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
     untested();
     E=1;
   }
-  if (uin_eff < 0.0 && positive){
-    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last %s tr() %E"
-       " bad\n", cap->long_label().c_str(), a->tr() );
+  if (uin_eff < U_min && positive){
+    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last %s tr() %LE"
+       " bad\n", cap->long_label().c_str(), uin_eff );
+    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last lo %E hi %E"
+       " bad\n", _c->tr_lo , _c->tr_hi );
     error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last history tr %E tr1 %E tr2 %E\n",
-        a->tr(), a->tr1(), a->tr2());
+        cap->tr(), cap->tr1(), cap->tr2());
     error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last time %E %E\n",_sim->_time0, _sim->_Time0);
-    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last step %i "
+    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last trstep %i ttstep "
        "%i\n",_sim->iteration_number(), _sim->tt_iteration_number());
-    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last order %i\n", a->order());
+    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last order %i\n", cap->order());
+  }
+  if (uin_eff < 0.0 && positive){
 
     //assert(false);// doesnt make sense to go on
-    a->set_order(0);
-    uin_eff=max( (uin_eff + a->tr1())/2 , 0.0L);
+    cap->set_order(0);
+    uin_eff=max( (uin_eff + cap->tr1())/2 , 0.0L);
   }
 
   long double E_high; 
@@ -268,30 +273,30 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
     }
   }
 
-//  if (!linear_inversion){
+  if (!linear_inversion){
     try{
-      uin_eff = cc->__uin_iter(uin_eff, E_old, E );
+      uin_eff = cc->__uin_iter(uin_eff, E_old, E, cap->tr_lo, cap->tr_hi );
     } catch (Exception &e) {
-      error(bDANGER, "%s\n", long_label().c_str());
+      error(bDANGER, "Exception in %s\n", long_label().c_str());
       throw(e);
     }
     trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last iteration -> ", E_old, E, uin_eff);
-//  }
+  }
 
   // sanitycheck (monotonicity)
   long double E_test=cc->__step( uin_eff, E_old, CKT_BASE::_sim->_last_time );
-  double trvorher= a->tr();
+  double trvorher= _c->tr();
   if(positive) trvorher=max(0.0,trvorher);
   long double E_vorher=cc->__step( trvorher , E_old, CKT_BASE::_sim->_last_time );
   if (fabs(E_test - E) < fabs(E_vorher-E)){
     trace6("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last new uin better ",
-        uin_eff, a->tr(), E_test - E, E_vorher-E,1-E , linear_inversion);
+        uin_eff, _c->tr(), E_test - E, E_vorher-E,1-E , linear_inversion);
     trace5("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last                ",
-        uin_eff, a->tr(), E_test - E, E_vorher-E,1-E );
+        uin_eff, _c->tr(), E_test - E, E_vorher-E,1-E );
   }else{
-    trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last new uin not better ", uin_eff, a->tr(), linear_inversion);
+    trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last new uin not better ", uin_eff, _c->tr(), linear_inversion);
     untested();
-    uin_eff=a->tr();
+    uin_eff=_c->tr();
   }
 
 
@@ -302,13 +307,13 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
     assert( E_test <= E_high && E_low <= E_test); 
   }
 
-  assert(uin_eff < U_max);
+  assert(uin_eff < U_max || positive);
   if (uin_eff <= 0.0 && positive){
-    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last %s tr() %LE bad, l%i\n",
-        cap->long_label().c_str(), uin_eff, linear_inversion );
-    trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last history ",a->tr(), a->tr1(), a->tr2());
+//    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last %s tr() %LE bad, l%i\n",
+//        cap->long_label().c_str(), uin_eff, linear_inversion );
+    trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last history ",_c->tr(), _c->tr1(), _c->tr2());
 
-    a->set_order(0);
+    _c->set_order(0);
     uin_eff=0;
 
   }
@@ -335,18 +340,18 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
 
 
   if( ( E_old < E_high ) && ( E_low <= E_old ))
-    a->set_order(0);
+    _c->set_order(0);
 
 
   if ((double)E_high<(double)E_low){
-    error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter sanitycheck ( %LE < %LE )", E_high, E_low);
+    error( bDANGER, "COMMON_BUILT_IN_RCD:: sanitycheck ( %LE < %LE )", E_high, E_low);
     assert(false);
 
   }
 
-  if (linear_inversion)  a->set_order(0);
+  if (linear_inversion)  _c->set_order(0);
   assert(uin_eff >= 0.0 || !positive );
-  //assert ( uin_eff == a->get_tr());
+  //assert ( uin_eff == _c->get_tr());
   //
   //
   //
@@ -354,19 +359,23 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   assert( (double) E_high-(double) E_low >= 0);
   assert((double) E_high>= (double) E_low);
   assert(E_low <= E || double(E)==1.0 || double(E_high)==1.0 || !linear_inversion);
-  assert(E <= E_high || E==1);
 
-  a->set_tr_noise ((double)E_high-(double)E_low);
-  a->set_tr(uin_eff);
+
+  if(E > E_high && E!=1){
+    untested();
+    error( bDANGER, "COMMON_BUILT_IN_RCD:: sanitycheck ( %LE =E >  E_high=%LE ) del %LE\n", E_high, E, E_high-E);
+  }
+
+  _c->set_tr_noise ((double)E_high-(double)E_low);
+  _c->set_tr(uin_eff);
   
   if ( CKT_BASE::_sim->tt_iteration_number()>1 ){
-    if((a->tr()-a->tr1())*(a->tr1()-a->tr2())<=0 ){
-      // cout << a->tr() << " " <<  a->tr1() << " " << a->tr2() << "\n";
-      a->set_order(0);
+    if((_c->tr()-_c->tr1())*(_c->tr1()-_c->tr2())<=0 ){
+      _c->set_order(0);
     }
   }
 
-  trace1("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last done", a->get_tr_noise());
+  trace1("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last done", _c->get_tr_noise());
 
 #ifdef DNFALSE
   //old sanitycheck
@@ -377,12 +386,12 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   long double E_oben  = cc->__step( u_oben , E_old, BASE_SUBCKT::_sim->_last_time );
   long double E_unten = cc->__step( u_unten, E_old, BASE_SUBCKT::_sim->_last_time );
 
-  trace3("COMMON_BUILT_IN_RCD::__uin_iter sanitycheck", uin, u_oben ,u_unten );
-  trace6("COMMON_BUILT_IN_RCD::__uin_iter sanitycheck", E,E_hier, E - 1, E_oben - E,E- E_unten, E_oben );
-  trace4("COMMON_BUILT_IN_RCD::__uin_iter sanitycheck", E,E_hier, E_oben,E_unten );
+  trace3("COMMON_BUILT_IN_RCD:: sanitycheck", uin, u_oben ,u_unten );
+  trace6("COMMON_BUILT_IN_RCD:: sanitycheck", E,E_hier, E - 1, E_oben - E,E- E_unten, E_oben );
+  trace4("COMMON_BUILT_IN_RCD:: sanitycheck", E,E_hier, E_oben,E_unten );
 
   if (E_oben < E_hier){
-    error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter sanitycheck ( %LE < %LE )", E_oben, E_hier);
+    error( bDANGER, "COMMON_BUILT_IN_RCD: sanitycheck ( %LE < %LE )", E_oben, E_hier);
     assert((double) E_oben <= (double) E_hier);
   }
   assert(E_unten <= E_hier);
@@ -525,7 +534,8 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__Edu(double uin, long double cur, const 
 long double MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter(long double& uin, double
     E_old, double E, const COMMON_COMPONENT* ccmp ) const { const
   COMMON_BUILT_IN_RCD* c = dynamic_cast<const COMMON_BUILT_IN_RCD*>(ccmp);
-  return c->__uin_iter( uin, E_old ,E ); }
+  assert(false);
+  return c->__uin_iter( uin, E_old ,E,0,0 ); }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 // old.
