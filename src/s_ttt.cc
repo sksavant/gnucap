@@ -437,7 +437,6 @@ void TTT::sweep() // tr sweep wrapper.
     trace0("done sweep, tr_stress_last");
     CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
   }catch (Exception& e) {
-    untested();
     error(bDANGER, "Exception %s at %E\n", e.message().c_str(), _sim->_Time0);
     _out << "sweep failed\n";
     _accepted=_accepted_tt=false;

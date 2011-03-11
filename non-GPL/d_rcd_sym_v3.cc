@@ -245,14 +245,18 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   long double uin_high = max ( uin_eff + OPT::abstol, uin_eff * (1+OPT::reltol) );
   long double uin_low  = min ( uin_eff - OPT::abstol, uin_eff * (1-OPT::reltol) );
   if( positive ) uin_low = max(uin_low,0.0L);
+  assert( !positive || uin_high >= 0 );
+  assert (uin_high>=uin_low);
 
   E_high = cc->__step( uin_high, E_old, CKT_BASE::_sim->_last_time );
   E_low  = cc->__step( uin_low,  E_old, CKT_BASE::_sim->_last_time ); 
 
+  assert (E_low>=0);
+
   if(!((double)E_high >= (double)E_low)){
-    trace6("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last ", E_low, E, E_high,
-        uin_high, uin_low, E_high - E_low );
-    assert(false);
+    error(bDANGER,"MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last uin_high=%LE uin_low=%LE deltaE= %LE; %LE>%LE\n",
+        uin_high, uin_low, E_high - E_low, E_high, E_low );
+    throw(Exception("false"));
   }
 
   bool linear_inversion=false;

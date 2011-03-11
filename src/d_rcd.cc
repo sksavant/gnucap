@@ -760,7 +760,7 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p)
   // overrides
 }
 /*--------------------------------------------------------------------------*/
-ADP_NODE_RCD* MODEL_BUILT_IN_RCD::new_adp_node(const COMPONENT* c) const{
+ADP_NODE_RCD* MODEL_BUILT_IN_RCD::new_adp_node(const COMPONENT*) const{
   unreachable();
   return NULL;
 }
@@ -1050,12 +1050,12 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
     if (m->use_net())
       return _n[n_ic].v0() - _n[n_b].v0();
     else
-      return _tr_fill;
+      return (double)_tr_fill;
   }else if (Umatch(x, "v{c} |E ")) {
     if (m->use_net())
       return _n[n_ic].v0() - _n[n_b].v0();
     else
-      return _tr_fill;
+      return (double)_tr_fill;
   }else if (Umatch(x, "wt ")) {
     return  c->_weight;
   }else if (Umatch(x, "vin ")) {
@@ -1107,7 +1107,7 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   else if (Umatch(x, "wdt "   )) { return( _Ccgfill->wdT() ); }
   else if (Umatch(x, "region ")) { return( m->tt_region( this ) ); }
   else if (Umatch(x, "uref "  )) { return( c->Uref ); }
-  else if (Umatch(x, "trf "   )) { return( _tr_fill ); }
+  else if (Umatch(x, "trf "   )) { return( (double)_tr_fill ); }
   else if (Umatch(x, "udc "))    { return( _Ccgfill->tr() ); }
 
   else if (Umatch(x, "uend "  )) { return( c->Uref / (c->__Re(c->Uref) / c->__Rc(c->Uref) +1) * c->_wcorr ) * c->_weight; }
@@ -1203,7 +1203,8 @@ long double COMMON_BUILT_IN_RCD::__step(long double uin, long double cur,  doubl
   long double Rc1=cc->_Rc1;
   long double t=deltat;
 
-  long double Eend = 1.0L/(1.0L + expl(-Rc1*uin) * Re0/uin/Rc0 );
+  // long double Eend = 1.0L/(1.0L + expl(-Rc1*uin)/uin/Rc0*Re0 );
+  long double Eend = uin /( uin  + expl(-Rc1*uin)/Rc0*Re0 );
 
   long double ret =  (cur-Eend) 
        * expl( -(uin /Re0 + expl(-Rc1*uin)/Rc0)*t )
@@ -1220,7 +1221,6 @@ long double COMMON_BUILT_IN_RCD::__step(long double uin, long double cur,  doubl
   }
 
   return(ret);
-
 
 // old  sage output
   return ( -(Rc0*exp(Rc1*uin)/(Rc0*exp(Rc1*uin) + Re0/uin)
@@ -1616,7 +1616,9 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
   assert(( -1 < E ) && (E < 2) ) ;
 
   long double res=1;   // dx
-  long double fres =1; // df 
+  long double deltaE =1; // df 
+  long double damp=1;
+  long double fu =1; // function we try to find zero of, at u
   long double df_fres =1; // df 
   long double cres; // cut res
   long double dx_res=1;
@@ -1627,7 +1629,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
   bool putres=false;
 
   double ustart = uin;
-  long double delta_u=0;
+  long double delta_u=.0L;
   bool edge=false;
   bool A=true;
   bool B=true;
@@ -1649,23 +1651,26 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
   while( U || (( A && C ) || ( B && C && D ) ) ) { // && fabs(Euin-E)>1e-40 ) 
     i++;
     edge = false;
-    trace7("COMMON_BUILT_IN _RCD::__uin_iter loop", (double)uin, (double)res, (double)fres, Edu, E, i,Euin);
+    trace7("COMMON_BUILT_IN _RCD::__uin_iter loop", (double)uin, (double)res, (double)deltaE, Edu, E, i,Euin);
     trace3(" ",dx_res,Q,df_fres);
-    if( i> 150){
+    if( i> 500){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge uin="
           "%LE, E=%LE, res=%LE, lres=%Lg, Q=%Lg\n", uin, E, res, log(fabs(res)), Q);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge bounds %E, %E\n",
           bound_lo, bound_hi);
 
-      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter LQ=%Lf>%Lf. h%i fres=%LE\n", 
-          log(Q), logl(reltol), hhack, fres);
+      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter LQ=%Lf>%Lf. h%i deltaE=%LE\n", 
+          log(Q), logl(reltol), hhack, deltaE);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter start=%E\n", ustart);
-      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter Edu=%LE Euin=%LE E=%LE delta_u=%LE\n",
-          Edu, Euin, E, delta_u);
+      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter Edu=%LE Euin=%LE E=%LE, fu= %LE, delta_u=%LE\n",
+          Edu, Euin, E, fu, delta_u);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter s=%i%i%i%i%i putres=%i\n",
           A,B,C,D,U,putres);
       throw(Exception("does not converge"));
       break;
+    }
+    if (i>100 ) {
+      damp=.5;
     }
     if(!is_number(uin)){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter uin wrong %E diff "
@@ -1709,15 +1714,15 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     }
     assert (is_number (Euin));
     assert (is_number (Edu));
-    fres =(Euin-E);
-    res  = fres/Edu;       // dx, Das ist die Differenz in x also: delta x 
+    fu =(Euin-E);
+    res  = damp*fu/Edu;       // dx, Das ist die Differenz in x also: delta x 
 
     if(!is_number(res) && fabs(Edu) < 1E-150 ) {
       trace2("COMMON_BUILT_IN_RCD::__uin_iter",res, Edu);
       putres=true;     // falls Edu sehr klein aber nicht 0 ist kann es 
                        // auch zu Fehlern  kommen 
       Edu=Edu*1E10;
-      res  = fres/Edu; 
+      res  = fu/Edu; 
     }
 
     assert(is_number(res));
@@ -1735,10 +1740,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
       uin=bound_lo;
     }
 
-
-
     assert(is_number(uin));
-
     if( (uin<-0.0000) && m->positive ) {
       untested();
       trace1( "COMMON_BUILT_IN_RCD::__uin_iter neg uin ", uin );
@@ -1746,24 +1748,23 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
       cres = uin;
       uin = .00;
     }
-
     dx_res-=uin; // Effektives dx da es durch Numerik kaputt gehen kann
 
     Q = fabs( dx_res / uin );
 
     Euin = cc->__step( uin, E_old, h  );
-    df_fres = Euin-Euin_alt; // Effektive Veraenderung im f Bereich. 
+    deltaE = Euin - Euin_alt; // Effektive Veraenderung
     Euin_alt = Euin;
 
 
-    if(!is_number(Euin)) {
+    if( !is_number( Euin ) ){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter cannot evaluate E "
           "at uin=%LE (E_old=%E) %i:%i\n", uin, E_old, CKT_BASE::_sim->tt_iteration_number(), i);
       assert(is_number(Euin)); break;
     }
 
-    if (Euin > E && uin==0){
-      untested();
+    // FIXME: use bounds to zero step and break.
+    if (Euin > E && uin==0 && m->positive ){
       break;
     }
 
@@ -1772,7 +1773,8 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     U = ( delta_u * Edu < fabs(( E - Euin)) ) && !edge;
     A = Q > reltol;
     B = ( fabs(dx_res) > 1e-30 );   // dx failed
-    C = ( fabs(fres) > abstol ); // df zu Zielwert failed
+    C = ( fabs(deltaE) > abstol ); // df zu Zielwert failed
+    C = false;  // was soll C bringen?
     D = ( fabs(df_fres) > 1e-125); // df zu Altwert  failed <= hack.
 
 // hab ein paar numerische Hacks eingebaut, die es jetzt durchlaufen lassen...
@@ -1790,7 +1792,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     
   }
   trace7("COMMON_BUILT_IN_RCD::__uin_iter done loop", uin, res,
-      fres, df_fres, Edu, E, E_old);
+      deltaE, df_fres, Edu, E, E_old);
   trace5("COMMON_BUILT_IN_RCD::__uin_iter done", (E-Euin), ustart,i, putres, delta_u );
 
 
