@@ -42,10 +42,10 @@ public: // override virtual
   bool		print_type_in_spice()const {unreachable(); return false;}
   std::string   value_name()const	{incomplete(); return "";}
   std::string   dev_type()const		{untested(); return "";}
-  int		max_nodes()const	{return PORTS_PER_SUBCKT;}
-  int		min_nodes()const	{return 0;}
-  int		matrix_nodes()const	{untested();return 0;}
-  int		net_nodes()const	{return _net_nodes;}
+  uint_t		max_nodes()const	{return PORTS_PER_SUBCKT;}
+  uint_t		min_nodes()const	{return 0;}
+  uint_t		matrix_nodes()const	{untested();return 0;}
+  uint_t		net_nodes()const	{return _net_nodes;}
   CARD*		clone()const		{return new MODEL_SUBCKT(*this);}
   bool		is_device()const	{return false;}
   void		precalc_first()		{}
@@ -78,10 +78,10 @@ private: // override virtual
   char		id_letter()const	{return 'X';}
   bool		print_type_in_spice()const {return true;}
   std::string   value_name()const	{return "#";}
-  int		max_nodes()const	{return PORTS_PER_SUBCKT;}
-  int		min_nodes()const	{return 0;}
-  int		matrix_nodes()const	{return 0;}
-  int		net_nodes()const	{return _net_nodes;}
+  uint_t		max_nodes()const	{return PORTS_PER_SUBCKT;}
+  uint_t		min_nodes()const	{return 0;}
+  uint_t		matrix_nodes()const	{return 0;}
+  uint_t		net_nodes()const	{return _net_nodes;}
   CARD*		clone()const		{return new DEV_SUBCKT(*this);}
   void		precalc_first();
   void		expand();

@@ -51,11 +51,11 @@ private: // override virtuals
   bool	      print_type_in_spice()const {return true;}
   std::string dev_type()const {assert(has_common());
     return (common()->modelname() + " " + common()->name()).c_str();}
-  int	   tail_size()const	{return 2;}
-  int	   max_nodes()const	{return PORTS_PER_GATE;}
-  int	   min_nodes()const	{return BEGIN_IN+1;}
-  virtual int matrix_nodes()const	{return 2;}
-  int	   net_nodes()const	{return _net_nodes;}
+  uint_t	   tail_size()const	{return 2;}
+  uint_t	   max_nodes()const	{return PORTS_PER_GATE;}
+  uint_t	   min_nodes()const	{return BEGIN_IN+1;}
+  virtual uint_t matrix_nodes()const	{return 2;}
+  uint_t	   net_nodes()const	{return _net_nodes;}
   CARD*	   clone()const		{return new DEV_LOGIC(*this);}
   void	   precalc_first() {ELEMENT::precalc_first(); if (subckt()) {subckt()->precalc_first();}}
   void	   expand();

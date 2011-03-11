@@ -39,10 +39,10 @@ private: // override virtual
   char	   id_letter()const	{itested();return '\0';}
   std::string value_name()const {itested(); return "r";}
   std::string dev_type()const	{return "vcr";}
-  int	   max_nodes()const	{return 4;}
-  int	   min_nodes()const	{return 4;}
-  int	   matrix_nodes()const	{return 4;}
-  int	   net_nodes()const	{return 4;}
+  uint_t	   max_nodes()const	{return 4;}
+  uint_t	   min_nodes()const	{return 4;}
+  uint_t	   matrix_nodes()const	{return 4;}
+  uint_t	   net_nodes()const	{return 4;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_VCR(*this);}
   void     precalc_last();

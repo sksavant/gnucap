@@ -44,10 +44,10 @@ protected: // override virtual
   char	   id_letter()const	{return 'C';}
   std::string value_name()const {return "c";}
   std::string dev_type()const	{return "capacitor";}
-  int	   max_nodes()const	{return 2;}
-  int	   min_nodes()const	{return 2;}
-  int	   matrix_nodes()const	{return 2;}
-  int	   net_nodes()const	{return 2;}
+  uint_t	   max_nodes()const	{return 2;}
+  uint_t	   min_nodes()const	{return 2;}
+  uint_t	   matrix_nodes()const	{return 2;}
+  uint_t	   net_nodes()const	{return 2;}
   bool	   has_iv_probe()const  {return true;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_CAPACITANCE(*this);}
@@ -84,10 +84,10 @@ private: // override virtual
   char     id_letter()const	{untested();return '\0';}
   std::string value_name()const {untested(); return "c";}
   std::string dev_type()const	{return "tcap";}
-  int	   max_nodes()const	{return 4;}
-  int	   min_nodes()const	{return 4;}
-  int	   matrix_nodes()const	{return 4;}
-  int	   net_nodes()const	{return 4;}
+  uint_t	   max_nodes()const	{return 4;}
+  uint_t	   min_nodes()const	{return 4;}
+  uint_t	   matrix_nodes()const	{return 4;}
+  uint_t	   net_nodes()const	{return 4;}
   bool	   has_iv_probe()const  {untested(); return false;}
   bool	   f_is_value()const	{untested();return true;}
   CARD*	   clone()const		{return new DEV_TRANSCAP(*this);}
@@ -116,10 +116,10 @@ private: // override virtual
   char     id_letter()const	{untested();return '\0';}
   std::string value_name()const {untested(); return "c";}
   std::string dev_type()const	{return "vccap";}
-  int	   max_nodes()const	{return 4;}
-  int	   min_nodes()const	{return 4;}
-  int	   matrix_nodes()const	{return 4;}
-  int	   net_nodes()const	{return 4;}
+  uint_t	   max_nodes()const	{return 4;}
+  uint_t	   min_nodes()const	{return 4;}
+  uint_t	   matrix_nodes()const	{return 4;}
+  uint_t	   net_nodes()const	{return 4;}
   bool	   has_iv_probe()const  {untested(); return false;}
   bool	   f_is_value()const	{untested();return true;}
   CARD*	   clone()const		{return new DEV_VCCAP(*this);}

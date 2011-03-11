@@ -37,10 +37,10 @@ private: // override virtual
   char	   id_letter()const	{return 'R';}
   std::string value_name()const {return "r";}
   std::string dev_type()const	{return "resistor";}
-  int	   max_nodes()const	{return 2;}
-  int	   min_nodes()const	{return 2;}
-  int	   matrix_nodes()const	{return 2;}
-  int	   net_nodes()const	{return 2;}
+  uint_t	   max_nodes()const	{return 2;}
+  uint_t	   min_nodes()const	{return 2;}
+  uint_t	   matrix_nodes()const	{return 2;}
+  uint_t	   net_nodes()const	{return 2;}
   bool	   has_iv_probe()const  {return true;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_RESISTANCE(*this);}

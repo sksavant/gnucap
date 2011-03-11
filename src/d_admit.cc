@@ -44,10 +44,10 @@ protected: // override virtual
   char	   id_letter()const	{return 'Y';}
   std::string value_name()const {return "g";}
   std::string dev_type()const	{return "admittance";}
-  int	   max_nodes()const	{return 2;}
-  int	   min_nodes()const	{return 2;}
-  int	   matrix_nodes()const	{return 2;}
-  int	   net_nodes()const	{return 2;}
+  uint_t	   max_nodes()const	{return 2;}
+  uint_t	   min_nodes()const	{return 2;}
+  uint_t	   matrix_nodes()const	{return 2;}
+  uint_t	   net_nodes()const	{return 2;}
   bool	   has_iv_probe()const  {return true;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_ADMITTANCE(*this);}
@@ -82,10 +82,10 @@ protected: // override virtual
   char	   id_letter()const	{return 'G';}
   std::string value_name()const {return "gm";}
   std::string dev_type()const	{return "vccs";}
-  int	   max_nodes()const	{return 4;}
-  int	   min_nodes()const	{return 4;}
-  int	   matrix_nodes()const	{return 4;}
-  int	   net_nodes()const	{return 4;}
+  uint_t	   max_nodes()const	{return 4;}
+  uint_t	   min_nodes()const	{return 4;}
+  uint_t	   matrix_nodes()const	{return 4;}
+  uint_t	   net_nodes()const	{return 4;}
   bool	   has_iv_probe()const  {return false;}
   CARD*	   clone()const		{return new DEV_VCCS(*this);}
   void	   tr_iwant_matrix()	{tr_iwant_matrix_active();}

@@ -50,12 +50,12 @@ protected: // override virtual
 
   //char  id_letter()const		//CARD/null
   std::string dev_type()const {assert(common()); return common()->modelname();}
-  int	  tail_size()const		{return 1;}
+  uint_t	  tail_size()const		{return 1;}
   //int	  max_nodes()const		//COMPONENT/null
   //int	  num_nodes()const		//COMPONENT/null
   //int	  min_nodes()const		//COMPONENT/null
-  int     matrix_nodes()const		{return 0;}
-  int     net_nodes()const		{return _net_nodes;}
+  uint_t     matrix_nodes()const		{return 0;}
+  uint_t     net_nodes()const		{return _net_nodes;}
   //CARD* clone()const			//CARD/null
   //void  precalc_first()	{assert(subckt()); subckt()->precalc();}
   //void  expand()			//COMPONENT

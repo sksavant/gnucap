@@ -65,7 +65,7 @@ DEV_LOGIC::DEV_LOGIC(const DEV_LOGIC& p)
    _gatemode(moUNKNOWN)   
 {
   assert(max_nodes() == PORTS_PER_GATE);
-  for (int ii = 0;  ii < max_nodes();  ++ii) {
+  for (uint_t ii = 0;  ii < max_nodes();  ++ii) {
     nodes[ii] = p.nodes[ii];
   }
   _n = nodes;
@@ -365,7 +365,7 @@ void DEV_LOGIC::tr_accept()
     trace0(long_label().c_str());
     trace2(_n[OUTNODE]->failure_mode().c_str(), OUTNODE, _n[OUTNODE]->quality());
     
-    for (int ii = BEGIN_IN;  ii < net_nodes();  ++ii) {
+    for (uint_t ii = BEGIN_IN;  ii < net_nodes();  ++ii) {
       _n[ii]->to_logic(m);
       if (_n[ii]->quality() < _quality) {
 	_quality = _n[ii]->quality();

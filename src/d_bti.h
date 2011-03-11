@@ -188,11 +188,11 @@ private: // override virtual
   bool      print_type_in_spice()const {return true;}
   std::string value_name()const  {return "area";}
   //std::string dev_type()const;   //BASE_SUBCKT
-  int       max_nodes()const     {return 2;}
-  int       min_nodes()const     {return 2;}
+  uint_t       max_nodes()const     {return 2;}
+  uint_t       min_nodes()const     {return 2;}
   //int     matrix_nodes()const; //BASE_SUBCKT
-  int       net_nodes()const     {return 2;}
-  int       int_nodes()const     {return 1;}
+  uint_t       net_nodes()const     {return 2;}
+  uint_t       int_nodes()const     {return 1;}
   CARD*     clone()const         {return new DEV_BUILT_IN_BTI(*this);}
   void      precalc_first() {COMPONENT::precalc_first(); if(subckt()) subckt()->precalc_first();}
   void      expand();

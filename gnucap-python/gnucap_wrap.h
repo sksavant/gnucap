@@ -22,11 +22,6 @@ public:
     SwigDirector_CKT_BASE(PyObject *self, std::string const &s);
     SwigDirector_CKT_BASE(PyObject *self, CKT_BASE const &p);
     virtual ~SwigDirector_CKT_BASE();
-    using CKT_BASE::set_command_ac;
-    using CKT_BASE::set_command_dc;
-    using CKT_BASE::set_command_op;
-    using CKT_BASE::set_command_tran;
-    using CKT_BASE::set_command_fourier;
 
 
 /* Internal Director utilities */
@@ -231,8 +226,6 @@ public:
     using SIMWrapper::head;
     using SIMWrapper::print_results;
     using SIMWrapper::alarm;
-    using SIMWrapper::alloc_vectors;
-    using SIMWrapper::unalloc_vectors;
 
 
 /* Internal Director utilities */

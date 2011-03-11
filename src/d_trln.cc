@@ -83,10 +83,10 @@ private: // override virtual
   char		id_letter()const	{return 'T';}
   std::string   value_name()const	{return "#";}
   std::string	dev_type()const		{itested(); return "tline";}
-  int		max_nodes()const	{return 4;}
-  int		min_nodes()const	{return 4;}
-  int		matrix_nodes()const	{return 4;}
-  int		net_nodes()const	{return 4;}
+  uint_t		max_nodes()const	{return 4;}
+  uint_t		min_nodes()const	{return 4;}
+  uint_t		matrix_nodes()const	{return 4;}
+  uint_t		net_nodes()const	{return 4;}
   CARD*		clone()const		{return new DEV_TRANSLINE(*this);}
   void		precalc_last();
   void		tr_iwant_matrix();

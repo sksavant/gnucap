@@ -252,24 +252,24 @@ public:	// ports
   virtual std::string port_name(int)const = 0;
   virtual void set_port_by_name(std::string& name, std::string& value);
   virtual void set_port_by_index(int index, std::string& value);
-  bool port_exists(int i)const {return i < net_nodes();}
+  bool port_exists(uint_t i)const {return i < net_nodes();}
   const std::string port_value(int i)const;
   void	set_port_to_ground(int index);
 
   virtual std::string current_port_name(int)const {return "";}
   virtual const std::string current_port_value(int)const;
   virtual void set_current_port_by_index(int, const std::string&) {unreachable();}    
-  bool current_port_exists(int i)const	{return i < num_current_ports();}
+  bool current_port_exists(uint_t i)const	{return i < num_current_ports();}
 
-  virtual int	max_nodes()const	{unreachable(); return 0;}
-  virtual int	min_nodes()const	{unreachable(); return 0;}
-  virtual int	num_current_ports()const {return 0;}
-  virtual int	tail_size()const	{return 0;}
+  virtual uint_t	max_nodes()const	{unreachable(); return 0;}
+  virtual uint_t	min_nodes()const	{unreachable(); return 0;}
+  virtual uint_t	num_current_ports()const {return 0;}
+  virtual uint_t	tail_size()const	{return 0;}
 
-  virtual int	net_nodes()const	{untested();return 0;} //override
-  virtual int	ext_nodes()const	{return max_nodes();}
-  virtual int	int_nodes()const	{return 0;}
-  virtual int	matrix_nodes()const	{return 0;}
+  virtual uint_t	net_nodes()const	{untested();return 0;} //override
+  virtual uint_t	ext_nodes()const	{return max_nodes();}
+  virtual uint_t	int_nodes()const	{return 0;}
+  virtual uint_t	matrix_nodes()const	{return 0;}
 
   virtual bool	has_inode()const	{return false;}
   virtual bool	has_iv_probe()const	{return false;}

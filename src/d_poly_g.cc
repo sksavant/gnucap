@@ -49,10 +49,10 @@ protected: // override virtual
   char	   id_letter()const	{unreachable(); return '\0';}
   std::string value_name()const	{incomplete(); return "";}
   std::string dev_type()const	{unreachable(); return "cpoly_g";}
-  int	   max_nodes()const	{return net_nodes();}
-  int	   min_nodes()const	{return net_nodes();}
-  int	   matrix_nodes()const	{return _n_ports*2;}
-  int	   net_nodes()const	{return _n_ports*2;}
+  uint_t	   max_nodes()const	{return net_nodes();}
+  uint_t	   min_nodes()const	{return net_nodes();}
+  uint_t	   matrix_nodes()const	{return _n_ports*2;}
+  uint_t	   net_nodes()const	{return _n_ports*2;}
   CARD*	   clone()const		{return new DEV_CPOLY_G(*this);}
   void	   tr_iwant_matrix()	{tr_iwant_matrix_extended();}
   bool	   do_tr();

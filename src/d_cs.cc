@@ -36,10 +36,10 @@ private: // override virtual
   char	   id_letter()const	{return 'I';}
   std::string value_name()const {itested(); return "dc";}
   std::string dev_type()const	{return "isource";}
-  int	   max_nodes()const	{return 2;}
-  int	   min_nodes()const	{return 2;}
-  int	   matrix_nodes()const	{return 2;}
-  int	   net_nodes()const	{return 2;}
+  uint_t	   max_nodes()const	{return 2;}
+  uint_t	   min_nodes()const	{return 2;}
+  uint_t	   matrix_nodes()const	{return 2;}
+  uint_t	   net_nodes()const	{return 2;}
   bool	   is_source()const	{return true;}
   bool	   f_is_value()const	{return true;}
   bool	   has_iv_probe()const  {return true;}

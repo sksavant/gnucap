@@ -43,10 +43,10 @@ private: // override virtual
   char	   id_letter()const	{untested();return '\0';}
   std::string value_name()const {untested(); return "g";}
   std::string dev_type()const	{return "vcg";}
-  int	   max_nodes()const	{return 4;}
-  int	   min_nodes()const	{return 4;}
-  int	   matrix_nodes()const	{return 4;}
-  int	   net_nodes()const	{return 4;}
+  uint_t	   max_nodes()const	{return 4;}
+  uint_t	   min_nodes()const	{return 4;}
+  uint_t	   matrix_nodes()const	{return 4;}
+  uint_t	   net_nodes()const	{return 4;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_VCG(*this);}
   void	   tr_iwant_matrix()	{tr_iwant_matrix_extended();}

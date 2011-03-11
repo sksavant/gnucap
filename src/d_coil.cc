@@ -43,11 +43,11 @@ public: // override virtual
   char	   id_letter()const	{return 'L';}
   std::string value_name()const {return "l";}
   std::string dev_type()const	{return "inductor";}
-  int	   max_nodes()const	{return 2;}
-  int	   min_nodes()const	{return 2;}
-  int	   net_nodes()const	{return 2;}
-  int	   int_nodes()const     {return (!_c_model) ? 0 : 1;}
-  int	   matrix_nodes()const	{return net_nodes() + int_nodes();}
+  uint_t	   max_nodes()const	{return 2;}
+  uint_t	   min_nodes()const	{return 2;}
+  uint_t	   net_nodes()const	{return 2;}
+  uint_t	   int_nodes()const     {return (!_c_model) ? 0 : 1;}
+  uint_t	   matrix_nodes()const	{return net_nodes() + int_nodes();}
 
   bool	   has_inode()const	{return _c_model;}
   bool	   has_iv_probe()const  {return true;}
@@ -108,11 +108,11 @@ private: // override virtual
   bool	   print_type_in_spice()const {return false;}
   std::string value_name()const {return "k";}
   std::string dev_type()const	{untested(); return "mutual_inductor";}
-  int	   max_nodes()const	{return 2;}
-  int	   min_nodes()const	{return 2;}
-  int	   matrix_nodes()const	{return 2;}
-  int	   net_nodes()const	{return 0;}
-  int	   num_current_ports()const {return 2;}
+  uint_t	   max_nodes()const	{return 2;}
+  uint_t	   min_nodes()const	{return 2;}
+  uint_t	   matrix_nodes()const	{return 2;}
+  uint_t	   net_nodes()const	{return 0;}
+  uint_t	   num_current_ports()const {return 2;}
   bool	   has_iv_probe()const  {untested(); return false;}
   bool	   use_obsolete_callback_parse()const {return false;}
   CARD*	   clone()const		{return new DEV_MUTUAL_L(*this);}

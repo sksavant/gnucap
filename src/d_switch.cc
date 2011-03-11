@@ -64,11 +64,11 @@ protected: // override virtual
   std::string value_name()const	{return "";}
   std::string dev_type()const {assert(common()); return common()->modelname().c_str();}
   bool	   print_type_in_spice()const {return true;}
-  int	   tail_size()const	{return 1;}
-  int	   max_nodes()const	= 0;
-  int	   min_nodes()const	= 0;
-  int	   matrix_nodes()const	{return 2;}
-  int	   net_nodes()const	= 0;
+  uint_t	   tail_size()const	{return 1;}
+  uint_t	   max_nodes()const	= 0;
+  uint_t	   min_nodes()const	= 0;
+  uint_t	   matrix_nodes()const	{return 2;}
+  uint_t	   net_nodes()const	= 0;
   CARD*	   clone()const		= 0;
   void     expand();
   void     precalc_last();
@@ -102,9 +102,9 @@ private:
 public:
   explicit  DEV_VSWITCH()	:SWITCH_BASE() {}
 private: // override virtual
-  int	    max_nodes()const	{return 4;}
-  int	    min_nodes()const	{return 4;}
-  int	    net_nodes()const	{return 4;}
+  uint_t	    max_nodes()const	{return 4;}
+  uint_t	    min_nodes()const	{return 4;}
+  uint_t	    net_nodes()const	{return 4;}
   CARD*	    clone()const	{return new DEV_VSWITCH(*this);}
   char	    id_letter()const	{return 'S';}
 
@@ -123,11 +123,11 @@ private:
 public:
   explicit  DEV_CSWITCH()	:SWITCH_BASE(), _input_label() {}
 private: // override virtual
-  int	    max_nodes()const	{return 3;}
-  int	    ext_nodes()const	{return 2;}
-  int	    min_nodes()const	{return 3;}
-  int	    net_nodes()const	{return 2;}
-  int	    num_current_ports()const {return 1;}
+  uint_t	    max_nodes()const	{return 3;}
+  uint_t	    ext_nodes()const	{return 2;}
+  uint_t	    min_nodes()const	{return 3;}
+  uint_t	    net_nodes()const	{return 2;}
+  uint_t	    num_current_ports()const {return 1;}
   const std::string current_port_value(int)const {return _input_label;};
   CARD*	    clone()const	{return new DEV_CSWITCH(*this);}
   void	    expand();

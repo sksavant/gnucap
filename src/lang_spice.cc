@@ -304,7 +304,7 @@ void LANG_SPICE_BASE::parse_element_using_obsolete_callback(CS& cmd, COMPONENT* 
     parse_ports(cmd, x, 0,  0,		num_nodes, false);
     //			min already_got
   }
-  int gotnodes = x->_net_nodes;
+  uint_t gotnodes = x->_net_nodes;
   COMMON_COMPONENT* c = NULL;
 
   if (gotnodes < x->min_nodes()) {

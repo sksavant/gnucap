@@ -47,7 +47,7 @@ private:
 protected:
   node_t*	_n;
 public:
-  int		_net_nodes;	// actual number of "nodes" in the netlist
+  uint_t 	_net_nodes;	// actual number of "nodes" in the netlist
   //--------------------------------------------------------------------
 public:   				// traversal functions
   CARD* find_in_my_scope(const std::string& name);
@@ -96,7 +96,7 @@ public:	// ac
   //--------------------------------------------------------------------
 public:	// state, aux data
   virtual char id_letter()const	{unreachable(); return '\0';}
-  virtual int  net_nodes()const	{untested();return 0;}
+  virtual uint_t  net_nodes()const	{untested();return 0;}
   virtual bool is_device()const	{return false;}
   virtual void set_slave()	{untested(); assert(!subckt());}
 	  bool evaluated()const;
