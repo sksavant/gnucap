@@ -691,7 +691,7 @@ DEV_BUILT_IN_DIODE2::DEV_BUILT_IN_DIODE2(const DEV_BUILT_IN_DIODE2& p)
    _Yj(0)
 {
   _n = _nodes;
-  for (int ii = 0; ii < max_nodes() + int_nodes(); ++ii) {
+  for (uint_t ii = 0; ii < max_nodes() + int_nodes(); ++ii) {
     _n[ii] = p._n[ii];
   }
   ++_count;

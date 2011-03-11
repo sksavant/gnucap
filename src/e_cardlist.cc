@@ -555,8 +555,8 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
   trace0(model->long_label().c_str());
   trace0(owner->long_label().c_str());
 
-  int num_nodes_in_subckt = model->subckt()->nodes()->how_many();
-  int* map = new int[num_nodes_in_subckt+1];
+  uint_t num_nodes_in_subckt = model->subckt()->nodes()->how_many();
+  uint_t* map = new uint_t[num_nodes_in_subckt+1];
   {
     map[0] = 0;
     // self test: verify that port node numbering is correct
@@ -568,7 +568,7 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
     {
       // take care of the "port" nodes (external connections)
       // map them to what the calling circuit wants
-      int i=0;
+      uint_t i=0;
       for (i=1; i <= model->net_nodes(); ++i) {
 	map[i] = owner->n_(i-1).t_();
 	trace3("ports", i, map[i], owner->n_(i-1).t_());
@@ -593,7 +593,7 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
   for (CARD_LIST::iterator ci = begin(); ci != end(); ++ci) {
     // for each card in card_list
     if ((**ci).is_device()) {
-      for (int ii = 0;  ii < (**ci).net_nodes();  ++ii) {
+      for (uint_t ii = 0;  ii < (**ci).net_nodes();  ++ii) {
 	// for each connection node in card
 	(**ci).n_(ii).map_subckt_node(map, owner);
       }

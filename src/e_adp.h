@@ -39,6 +39,8 @@ class ADP_NODE: public CKT_BASE {
     uint_t	m_()const		{return _number;}
 
     hp_float_t tr(double time)const;
+    hp_float_t tr_rel(double time)const;
+
     hp_float_t& tr()const	{
       assert(m_() != INVALID_NODE);
       assert(m_() <= _sim->_adp_nodes);

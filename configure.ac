@@ -51,7 +51,7 @@ AC_DEFINE_UNQUOTED([LIBDIR], "${libdir}", "shared object path")
 
 AC_MSG_CHECKING([if nongpl code should be compiled in])
 AC_ARG_ENABLE([nongpl],
-[  --enable-nongpl            Enable building of debug code. [[default: disabled]]],
+[  --enable-nongpl            Enable building of non-GPL code. [[default: disabled]]],
 [
 if test "X$enable_nongpl" = "Xno" ; then
 	AC_MSG_RESULT([no])
@@ -199,19 +199,23 @@ AC_OUTPUT([
 	doc/Makefile
 	examples/Makefile
 	modelgen/Makefile
-	src/Makefile
-	non-GPL/Makefile
-	])
+	src/Makefile])
+
+if test "$enable_nongpl" = yes; then
+	AC_OUTPUT([ non-GPL/Makefile ])
+fi
 
 AC_MSG_RESULT([
 ** Configuration summary for $PACKAGE $VERSION:
 
-   prefix:                   $prefix
-   CPPFLAGS:                 $CPPFLAGS
-   CFLAGS:                   $CFLAGS
-   CXXFLAGS:                 $CXXFLAGS
-   LDFLAGS:                  $LDFLAGS
-   LIBS:                     $LIBS
+   prefix:     $prefix
+   CPPFLAGS:   $CPPFLAGS
+   CFLAGS:     $CFLAGS
+   CXXFLAGS:   $CXXFLAGS
+   LDFLAGS:    $LDFLAGS
+   LIBS:       $LIBS
+   debug:      $enable_debug
+   non-GPL:    $enable_nongpl
 
 ])
 

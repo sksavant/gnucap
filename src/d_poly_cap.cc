@@ -39,7 +39,7 @@ protected:
   hp_float_t*  _vy1; // vector form of _y1 _old_values;
   hp_float_t*  _vi0; // vector form of _i0; current, difference conductance
   hp_float_t*  _vi1; // vector form of _i1
-  int	   _n_ports;
+  uint_t	   _n_ports;
   hp_float_t   _load_time;
   const hp_float_t** _inputs;
 protected:
@@ -78,8 +78,8 @@ protected: // override virtual
 public:
   void set_parameters(const std::string& Label, CARD* Parent,
 		      COMMON_COMPONENT* Common, double Value,
-		      int state_count, hp_float_t state[],
-		      int node_count, const node_t nodes[]);
+		      uint_t state_count, hp_float_t state[],
+		      uint_t node_count, const node_t nodes[]);
   //		      const double* inputs[]=0);
 protected:
   bool do_tr_con_chk_and_q();
@@ -152,7 +152,7 @@ bool DEV_CPOLY_CAP::do_tr_con_chk_and_q()
   assert(_vy1);
   set_converged(conchk(_load_time, _sim->_time0));
   _load_time = _sim->_time0;
-  for (int i=0; converged() && i<=_n_ports; ++i) {
+  for (uint_t i=0; converged() && i<=_n_ports; ++i) {
     set_converged(conchk(_vy1[i], _vy0[i]));
   }
   set_converged();
@@ -180,19 +180,19 @@ bool DEV_FPOLY_CAP::do_tr()
   assert(_vi0[0] == _vi0[0]);
   
   if (_inputs) {untested();
-    for (int i=1; i<=_n_ports; ++i) {untested();
+    for (uint_t i=1; i<=_n_ports; ++i) {untested();
       _vi0[i] = tr_c_to_g(_vy0[i], _vi0[i]);
       _vi0[0] -= *(_inputs[i]) * _vi0[i];
     }
   }else{
-    for (int i=1; i<=_n_ports; ++i) {
+    for (uint_t i=1; i<=_n_ports; ++i) {
       _vi0[i] = tr_c_to_g(_vy0[i], _vi0[i]);
       _vi0[0] -= volts_limited(_n[2*i-2],_n[2*i-1]) * _vi0[i];
       assert(_vi0[i] == _vi0[i]);
       assert(_vi0[0] == _vi0[0]);
     }
   }
-  for (int i=0; i<=_n_ports; ++i) {
+  for (uint_t i=0; i<=_n_ports; ++i) {
     assert(_vi0[i] == _vi0[i]);
   }
   
@@ -202,13 +202,13 @@ bool DEV_FPOLY_CAP::do_tr()
 /*--------------------------------------------------------------------------*/
 void DEV_CPOLY_CAP::tr_load()
 {
-  for (int i=0; i<=_n_ports; ++i) {
+  for (uint_t i=0; i<=_n_ports; ++i) {
     assert(_vi0[i] == _vi0[i]);
   }
   tr_load_passive();
   _vi1[0] = _vi0[0];
   _vi1[1] = _vi0[1];
-  for (int i=2; i<=_n_ports; ++i) {
+  for (uint_t i=2; i<=_n_ports; ++i) {
     tr_load_extended(_n[OUT1], _n[OUT2], _n[2*i-2], _n[2*i-1], &(_vi0[i]), &(_vi1[i]));
   }
 }
@@ -224,7 +224,7 @@ void DEV_CPOLY_CAP::tr_unload()
 hp_float_t DEV_CPOLY_CAP::tr_amps()const
 {untested();
   hp_float_t amps = _m0.c0;
-  for (int i=1; i<=_n_ports; ++i) {untested();
+  for (uint_t i=1; i<=_n_ports; ++i) {untested();
     amps += dn_diff(_n[2*i-2].v0(),_n[2*i-1].v0()) * _vi0[i];
   }
   return amps;
@@ -234,7 +234,7 @@ void DEV_CPOLY_CAP::ac_load()
 {
   _acg = (double)_vy0[1] * _sim->_jomega;
   ac_load_passive();
-  for (int i=2; i<=_n_ports; ++i) {
+  for (uint_t i=2; i<=_n_ports; ++i) {
     ac_load_extended(_n[OUT1], _n[OUT2], _n[2*i-2], _n[2*i-1], (double)_vy0[i] * _sim->_jomega);
   }
 }
@@ -243,8 +243,8 @@ void DEV_CPOLY_CAP::ac_load()
  */
 void DEV_CPOLY_CAP::set_parameters(const std::string& Label, CARD *Owner,
 				   COMMON_COMPONENT *Common, double Value,
-				   int n_states, hp_float_t states[],
-				   int n_nodes, const node_t nodes[])
+				   uint_t n_states, hp_float_t states[],
+				   uint_t n_nodes, const node_t nodes[])
   //				   const double* inputs[])
 {
   bool first_time = (net_nodes() == 0);
@@ -256,7 +256,7 @@ void DEV_CPOLY_CAP::set_parameters(const std::string& Label, CARD *Owner,
 
   if (first_time) {
     _n_ports = n_nodes/2; // sets num_nodes() = _n_ports*2
-    assert(_n_ports == n_states-1);
+    assert(_n_ports+1 == n_states);
 
     assert(!_vy1);
     assert(!_vi0);

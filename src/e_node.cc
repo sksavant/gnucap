@@ -542,7 +542,7 @@ void node_t::new_model_node(const std::string& node_name, CARD* d)
   //assert(_ttt == _nnn->flat_number());
 }
 /*--------------------------------------------------------------------------*/
-void node_t::map_subckt_node(int* m, const CARD* d)
+void node_t::map_subckt_node(uint_t* m, const CARD* d)
 {
   assert(m);
   assert(e_() >= 0);

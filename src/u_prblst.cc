@@ -444,7 +444,7 @@ PROBE* PROBELIST::add_branches(const std::string&device,
             //            cerr << " Components dev "<< card << " param " << param << std::endl;
             if (param=="V?")
             { 
-              for(int ip=1;ip<=card->net_nodes();ip++) {
+              for(uint_t ip=1;ip<=card->net_nodes();ip++) {
                 char str[10];
                 sprintf(str,"V%1d",ip);
                 string paramipn(str);
@@ -474,7 +474,7 @@ PROBE* PROBELIST::add_branches(const std::string&device,
           //          cerr << " Card List dev "<< *i << " param " << param << std::endl;
           if (param=="V?")
           { 
-            for(int ip=1;ip<=(*i)->net_nodes();ip++) {
+            for(uint_t ip=1;ip<=(*i)->net_nodes();ip++) {
               char str[10];
               sprintf(str,"V%1d",ip);
               string paramipn(str);

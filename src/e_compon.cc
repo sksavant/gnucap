@@ -427,18 +427,18 @@ COMPONENT::~COMPONENT()
   _sim->uninit();
 }
 /*--------------------------------------------------------------------------*/
-bool COMPONENT::node_is_grounded(int i)const 
+bool COMPONENT::node_is_grounded(uint_t i)const 
 {
   assert(_n);
-  assert(i >= 0);
+  assert(i != INVALID_NODE);
   assert(i < net_nodes());
   return _n[i].is_grounded();
 }
 /*--------------------------------------------------------------------------*/
-bool COMPONENT::node_is_connected(int i)const 
+bool COMPONENT::node_is_connected(uint_t i)const 
 {
   assert(_n);
-  assert(i >= 0);
+  assert(i != INVALID_NODE);
   if (i >= net_nodes()) {
     std::cerr << "i < net_nodes() failed: "<<i<< "< "<<net_nodes()<<"\n";
     exit(4);
@@ -448,7 +448,7 @@ bool COMPONENT::node_is_connected(int i)const
 /*--------------------------------------------------------------------------*/
 void COMPONENT::set_port_by_name(std::string& int_name, std::string& ext_name)
 {itested();
-  for (int i=0; i<max_nodes(); ++i) {itested();
+  for (uint_t i=0; i<max_nodes(); ++i) {itested();
     if (int_name == port_name(i)) {itested();
       set_port_by_index(i, ext_name);
       return;
@@ -459,7 +459,7 @@ void COMPONENT::set_port_by_name(std::string& int_name, std::string& ext_name)
   throw Exception_No_Match(int_name);
 }
 /*--------------------------------------------------------------------------*/
-void COMPONENT::set_port_by_index(int num, std::string& ext_name)
+void COMPONENT::set_port_by_index(uint_t num, std::string& ext_name)
 {
   if (num <= max_nodes()) {
     _n[num].new_node(ext_name, this);
@@ -474,7 +474,7 @@ void COMPONENT::set_port_by_index(int num, std::string& ext_name)
   }
 }
 /*--------------------------------------------------------------------------*/
-void COMPONENT::set_port_to_ground(int num)
+void COMPONENT::set_port_to_ground(uint_t num)
 {untested();
   if (num <= max_nodes()) {untested();
     _n[num].set_to_ground(this);
@@ -585,7 +585,7 @@ void COMPONENT::map_nodes()
   assert(net_nodes() <= max_nodes());
   //assert(ext_nodes() + int_nodes() == matrix_nodes());
 
-  for (int ii = 0; ii < ext_nodes()+int_nodes(); ++ii) {
+  for (uint_t ii = 0; ii < ext_nodes()+int_nodes(); ++ii) {
     _n[ii].map();
   }
 
@@ -623,8 +623,8 @@ void COMPONENT::ac_iwant_matrix()
  */
 void COMPONENT::set_parameters(const std::string& Label, CARD *Owner,
 			       COMMON_COMPONENT *Common, double Value,
-			       int , hp_float_t [],
-			       int node_count, const node_t Nodes[])
+			       uint_t , hp_float_t [],
+			       uint_t node_count, const node_t Nodes[])
 {
   set_label(Label);
   set_owner(Owner);
@@ -741,7 +741,7 @@ std::string COMPONENT::param_value(int i)const
   }
 }
 /*--------------------------------------------------------------------------*/
-const std::string COMPONENT::port_value(int i)const 
+const std::string COMPONENT::port_value(uint_t i)const 
 {
   assert(_n);
   assert(i >= 0);
@@ -825,7 +825,7 @@ double COMPONENT::tr_probe_num(const std::string& x)const
   CS cmd(CS::_STRING, x);
   ADP_CARD* a=adp();
   if (cmd.umatch("v")) {
-    int nn = cmd.ctoi();
+    uint_t nn = cmd.ctoi();
     return (nn > 0 && nn <= net_nodes()) ? _n[nn-1].v0() : NOT_VALID;
   }else if (Umatch(x, "amps |amps0 ")) {
          return ( 17  );

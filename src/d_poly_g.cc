@@ -37,7 +37,7 @@ class DEV_CPOLY_G : public ELEMENT {
 protected:
   hp_float_t*  _values;
   hp_float_t*  _old_values;
-  int	   _n_ports;
+  uint_t	   _n_ports;
   double   _time;
   const hp_float_t** _inputs;
 protected:
@@ -74,8 +74,8 @@ protected: // override virtual
 public:
   void set_parameters(const std::string& Label, CARD* Parent,
 		      COMMON_COMPONENT* Common, double Value,
-		      int state_count, hp_float_t state[],
-		      int node_count, const node_t nodes[]);
+		      uint_t state_count, hp_float_t state[],
+		      uint_t node_count, const node_t nodes[]);
   //		      const double* inputs[]=0);
 protected:
   bool do_tr_con_chk_and_q();
@@ -142,7 +142,7 @@ bool DEV_CPOLY_G::do_tr_con_chk_and_q()
   assert(_old_values);
   set_converged(conchk(_time, _sim->_time0));
   _time = _sim->_time0;
-  for (int i=0; converged() && i<=_n_ports; ++i) {
+  for (uint_t i=0; converged() && i<=_n_ports; ++i) {
     set_converged(conchk(_old_values[i], _values[i]));
   }
   return converged();
@@ -185,7 +185,7 @@ void DEV_CPOLY_G::tr_load()
   tr_load_passive();
   _old_values[0] = _values[0];
   _old_values[1] = _values[1];
-  for (int i=2; i<=_n_ports; ++i) {
+  for (uint_t i=2; i<=_n_ports; ++i) {
     tr_load_extended(_n[OUT1], _n[OUT2], _n[2*i-2], _n[2*i-1], &(_values[i]), &(_old_values[i]));
   }
 }
@@ -201,7 +201,7 @@ void DEV_CPOLY_G::tr_unload()
 hp_float_t DEV_CPOLY_G::tr_amps()const
 {
   hp_float_t amps = _m0.c0;
-  for (int i=1; i<=_n_ports; ++i) {
+  for (uint_t i=1; i<=_n_ports; ++i) {
     amps += dn_diff(_n[2*i-2].v0(),_n[2*i-1].v0()) * _values[i];
   }
   return amps;
@@ -211,7 +211,7 @@ void DEV_CPOLY_G::ac_load()
 {
   _acg = _values[1];
   ac_load_passive();
-  for (int i=2; i<=_n_ports; ++i) {
+  for (uint_t i=2; i<=_n_ports; ++i) {
     ac_load_extended(_n[OUT1], _n[OUT2], _n[2*i-2], _n[2*i-1], _values[i]);
   }
 }
@@ -220,8 +220,8 @@ void DEV_CPOLY_G::ac_load()
  */
 void DEV_CPOLY_G::set_parameters(const std::string& Label, CARD *Owner,
 				 COMMON_COMPONENT *Common, double Value,
-				 int n_states, hp_float_t states[],
-				 int n_nodes, const node_t nodes[])
+				 uint_t n_states, hp_float_t states[],
+				 uint_t n_nodes, const node_t nodes[])
   //				 const double* inputs[])
 {
   bool first_time = (net_nodes() == 0);
@@ -233,7 +233,7 @@ void DEV_CPOLY_G::set_parameters(const std::string& Label, CARD *Owner,
 
   if (first_time) {
     _n_ports = n_nodes/2; // sets num_nodes() = _n_ports*2
-    assert(_n_ports == n_states-1);
+    assert(_n_ports+1 == n_states);
 
     assert(!_old_values);
     _old_values = new hp_float_t[n_states];

@@ -753,7 +753,7 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p)
    _tr_fill(p._tr_fill)
 {
   _n = _nodes;
-  for (int ii = 0; ii < max_nodes() + int_nodes(); ++ii) {
+  for (uint_t ii = 0; ii < max_nodes() + int_nodes(); ++ii) {
     _n[ii] = p._n[ii];
   }
   ++_count;
@@ -1268,7 +1268,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
   trace4("DEV_BUILT_IN_RCD::stress_apply ", 
       _Ccgfill->tr() , _Ccgfill->tr(_sim->_Time0 ), _Ccgfill->order(), _sim->_time0);
 
-  assert ( is_almost( _Ccgfill->tr() , _Ccgfill->tr(_sim->_Time0 + _sim->_time0) ));
+  assert ( is_almost( _Ccgfill->tr() , _Ccgfill->tr_rel(_sim->_dT0 + _sim->_time0) ));
   if (! ( is_almost( _Ccgfill->tr1() , _Ccgfill->tr(Time1) )))
   {
       error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress !almost tr1 %E tr(T1) %E \n",

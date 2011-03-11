@@ -83,7 +83,7 @@ int CARD::connects_to(const node_t& node)const
   untested();
   int count = 0;
   if (is_device()) {
-    for (int ii = 0;  ii < net_nodes();  ++ii) {
+    for (uint_t ii = 0;  ii < net_nodes();  ++ii) {
       untested();
       if (node.n_() == _n[ii].n_()) {
         ++count;

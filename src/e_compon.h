@@ -251,10 +251,10 @@ public:	// type
 public:	// ports
   virtual std::string port_name(int)const = 0;
   virtual void set_port_by_name(std::string& name, std::string& value);
-  virtual void set_port_by_index(int index, std::string& value);
+  virtual void set_port_by_index(uint_t index, std::string& value);
   bool port_exists(uint_t i)const {return i < net_nodes();}
-  const std::string port_value(int i)const;
-  void	set_port_to_ground(int index);
+  const std::string port_value(uint_t i)const;
+  void	set_port_to_ground(uint_t index);
 
   virtual std::string current_port_name(int)const {return "";}
   virtual const std::string current_port_value(int)const;
@@ -276,8 +276,8 @@ public:	// ports
   virtual bool	is_source()const	{return false;}
   virtual bool	f_is_value()const	{return false;}
 
-  bool		node_is_grounded(int i)const;
-  virtual bool	node_is_connected(int i)const;
+  bool		node_is_grounded(uint_t i)const;
+  virtual bool	node_is_connected(uint_t i)const;
   //--------------------------------------------------------------------
 public: // parameters
   void set_param_by_name(std::string, std::string);
@@ -291,8 +291,8 @@ public: // parameters
 
   virtual void set_parameters(const std::string& Label, CARD* Parent,
 			      COMMON_COMPONENT* Common, double Value,
-			      int state_count, hp_float_t state[],
-			      int node_count, const node_t nodes[]);
+			      uint_t state_count, hp_float_t state[],
+			      uint_t node_count, const node_t nodes[]);
   void	set_value(const PARAMETER<double>& v)	{_value = v;}
   void	set_value(double v)			{_value = v;}
   void  set_value(const std::string& v)		{untested(); _value = v;}

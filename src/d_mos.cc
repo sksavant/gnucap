@@ -680,7 +680,7 @@ DEV_BUILT_IN_MOS::DEV_BUILT_IN_MOS(const DEV_BUILT_IN_MOS& p)
    _Isb(0)
 {
   _n = _nodes;
-  for (int ii = 0; ii < max_nodes() + int_nodes(); ++ii) {
+  for (uint_t ii = 0; ii < max_nodes() + int_nodes(); ++ii) {
     _n[ii] = p._n[ii];
   }
   ++_count;

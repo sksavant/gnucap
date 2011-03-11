@@ -155,7 +155,7 @@ public:
   int		size()const		{return _size;}
   double 	density();
   T 	d(int r, int  )const	{return *(_diaptr[r]);}
-  const T s(int r, int c)const; // for python?
+  const T& s(int r, int c)const; // for python?
 private:
   T 	u(int r, int c)const	{return _colptr[c][r];}
   T 	l(int r, int c)const	{return _rowptr[r][-c];}
@@ -467,7 +467,7 @@ T& BSMATRIX<T>::m(int r, int c)
  */
 #if 1
 template <class T>
-const T BSMATRIX<T>::s(int row, int col)const
+const T& BSMATRIX<T>::s(int row, int col)const
 {
   assert(_lownode);
   assert(0 <= col);
