@@ -201,7 +201,7 @@ AC_OUTPUT([
 	modelgen/Makefile
 	src/Makefile])
 
-if test "$enable_nongpl" = yes; then
+if test "X$enable_nongpl" = "Xyes"; then
 	AC_OUTPUT([ non-GPL/Makefile ])
 fi
 
