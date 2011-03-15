@@ -209,7 +209,7 @@ AC_MSG_RESULT([
 ** Configuration summary for $PACKAGE $VERSION:
 
    prefix:     $prefix
-   exec_prefix:     $exec_prefix
+   exec_prefix:$exec_prefix
    libdir:     $libdir
    CPPFLAGS:   $CPPFLAGS
    CFLAGS:     $CFLAGS
