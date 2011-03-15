@@ -22,7 +22,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_stress_apply( COMPONENT*  ) const
   unreachable();
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_RCD_SYM_V3::tr_stress() const
+void DEV_BUILT_IN_RCD_SYM_V3::tr_stress()
 {
   unreachable(); // obsolet....
 
@@ -277,7 +277,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE* _c,
 
   if (!linear_inversion){
     try{
-      uin_eff = cc->__uin_iter(uin_eff, E_old, E, _c->tr_lo, _c->tr_hi );
+      uin_eff = cc->__uin_iter(uin_eff, E_old, (double)E, _c->tr_lo, _c->tr_hi );
     } catch (Exception &e) {
       error(bDANGER, "Exception in %s\n", long_label().c_str());
       throw(e);
@@ -316,7 +316,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE* _c,
   assert(uin_eff < U_max || positive);
   if (uin_eff <= 0.0 && positive){
 //    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last %s tr() %LE bad, l%i\n",
-//        cap->long_label().c_str(), uin_eff, linear_inversion );
+//        _c->long_label().c_str(), uin_eff, linear_inversion );
     trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last history ",_c->tr(),
         _c->tr1(), _c->tr2());
 
@@ -333,16 +333,16 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE* _c,
 
   uin_high = max ( uin_eff + OPT::abstol, uin_eff * (1 + OPT::reltol) );
   uin_low  = min ( uin_eff - OPT::abstol, uin_eff * (1-OPT::reltol) );
-  trace3(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + cap->label()).c_str(),
+  trace3(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + _c->label()).c_str(),
       uin_low, uin_eff, uin_high);
   if (m->positive)
     uin_low = max(0.0L, uin_low);
 
   E_high = cc->__step( uin_high, E_old, CKT_BASE::_sim->_last_time  );
   E_low  = cc->__step( uin_low,  E_old, CKT_BASE::_sim->_last_time  ); 
-  trace6(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + cap->label()).c_str(),
+  trace6(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + _c->label()).c_str(),
       uin_eff,  E-E_low, E_high - E_low, E, 1-E, E_high-E );
-  trace3(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + cap->label()).c_str(), 
+  trace3(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + _c->label()).c_str(), 
       E-E_low , E_high-E, linear_inversion  );
 
   if( ( E_old < E_high ) && ( E_low <= E_old ))
@@ -370,7 +370,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE* _c,
   }
 
   _c->set_tr_noise ((double)E_high-(double)E_low);
-  _c->set_tr(uin_eff);
+  _c->set_tr((double)uin_eff);
   
   if ( CKT_BASE::_sim->tt_iteration_number()>1 ){
     if((_c->tr()-_c->tr1())*(_c->tr1()-_c->tr2())<=0 ){
@@ -555,7 +555,7 @@ int  MODEL_BUILT_IN_RCD_SYM_V3::tt_region(const COMPONENT* brh) const
   return ( (c->_Ccgfill)->region() );
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_SYM_V3::do_precalc_last(COMMON_COMPONENT* ccmp, const CARD_LIST* par_scope)const
+void MODEL_BUILT_IN_RCD_SYM_V3::do_precalc_last(COMMON_COMPONENT* ccmp, const CARD_LIST*)const
 {
   COMMON_BUILT_IN_RCD* cc = dynamic_cast<COMMON_BUILT_IN_RCD*>(ccmp);
   assert(cc);

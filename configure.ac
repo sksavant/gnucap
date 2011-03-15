@@ -36,17 +36,18 @@ AM_CONFIG_HEADER([config.h])
 
 AM_MAINTAINER_MODE
 
-#AC_PREFIX_DEFAULT("${prefix}")
+AC_PREFIX_DEFAULT("/usr/local")
 
+# libdir_const="${prefix}/lib"
 
 #sysconfdir='/bar/etc'
-#libdir="${prefix}/lib"
+
+#
+
+#AC_SUBST([PREFIX])
+#AC_SUBST([LIBDIR])
 
 
-
-AC_DEFINE_UNQUOTED([PREFIX], "${prefix}", "Prefix")
-AC_DEFINE_UNQUOTED([SODIR], "${sodir}", "shared object path")
-AC_DEFINE_UNQUOTED([LIBDIR], "${libdir}", "shared object path")
 
 
 AC_MSG_CHECKING([if nongpl code should be compiled in])
@@ -180,6 +181,7 @@ fi
 # exports symbols to plugins
 LDFLAGS="$LDFLAGS -rdynamic"
 
+
 #AC_OUTPUT([
 #	Makefile
 #	doc/Makefile
@@ -194,6 +196,20 @@ LDFLAGS="$LDFLAGS -rdynamic"
 #	src/Makefile
 #	])
 
+
+# stupid hack.
+if test "x${prefix}" = "xNONE"; then
+		AC_DEFINE_UNQUOTED( PREFIX, "${ac_default_prefix}", "Prefix")
+		AC_DEFINE_UNQUOTED( LIBDIR, "${ac_default_prefix}/lib", "Libdir")
+		AC_DEFINE_UNQUOTED( SODIR, "${ac_default_prefix}/lib", "Sodir")
+else
+		AC_DEFINE_UNQUOTED( PREFIX, "${prefix}", "Prefix")
+		AC_DEFINE_UNQUOTED( LIBDIR, "${prefix}/lib", "Libdir")
+		AC_DEFINE_UNQUOTED( SODIR, "${prefix}/lib", "Sodir")
+fi
+
+
+
 AC_OUTPUT([
 	Makefile
 	doc/Makefile
@@ -204,6 +220,7 @@ AC_OUTPUT([
 if test "X$enable_nongpl" = "Xyes"; then
 	AC_OUTPUT([ non-GPL/Makefile ])
 fi
+
 
 AC_MSG_RESULT([
 ** Configuration summary for $PACKAGE $VERSION:
@@ -220,4 +237,5 @@ AC_MSG_RESULT([
    non-GPL:    $enable_nongpl
 
 ])
+
 

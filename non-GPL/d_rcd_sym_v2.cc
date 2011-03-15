@@ -22,7 +22,7 @@ void MODEL_BUILT_IN_RCD_SYM_V2::do_stress_apply( COMPONENT*  ) const
 
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_RCD_SYM_V2::tr_stress() const
+void DEV_BUILT_IN_RCD_SYM_V2::tr_stress() 
 {
 
   unreachable(); // obsolet....
@@ -237,7 +237,7 @@ int  MODEL_BUILT_IN_RCD_SYM_V2::tt_region(const COMPONENT* brh) const{
   return ( (c->_Ccgfill)->region() );
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last(COMMON_COMPONENT* ccmp, const CARD_LIST* par_scope)const{
+void MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last(COMMON_COMPONENT* ccmp, const CARD_LIST*)const{
   COMMON_BUILT_IN_RCD* cc = dynamic_cast<COMMON_BUILT_IN_RCD*>(ccmp);
   const MODEL_BUILT_IN_RCD_SYM_V2* m=this;
   assert(cc);

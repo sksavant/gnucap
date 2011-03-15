@@ -32,7 +32,7 @@ void MODEL_BUILT_IN_RCD_SYM::do_stress_apply( COMPONENT*  ) const
   } 
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_RCD_SYM::tr_stress() const
+void DEV_BUILT_IN_RCD_SYM::tr_stress()
 {
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
   assert(c);

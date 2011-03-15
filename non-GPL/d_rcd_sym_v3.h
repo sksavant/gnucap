@@ -55,7 +55,7 @@ class DEV_BUILT_IN_RCD_SYM_V3 : public DEV_BUILT_IN_RCD{
   private:
   TIME_PAIR  tr_review(){ return BASE_SUBCKT::tr_review();}
   void expand();
-  void    tr_stress() const;        
+  void    tr_stress();  
   public:
 };
 /*--------------------------------------------------------------------------*/
