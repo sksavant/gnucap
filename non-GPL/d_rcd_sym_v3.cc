@@ -193,16 +193,15 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress( const COMPONENT* brh) const
   assert(is_number(uend));
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
-    cap, const COMMON_COMPONENT* ccmp ) const
+void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE* _c,
+    const COMMON_COMPONENT* ccmp ) const
 {
   // ADP_NODE_UDC* udc= dynamic_cast<ADP_NODE_UDC*>(a);
   const COMMON_BUILT_IN_RCD* cc = static_cast<const COMMON_BUILT_IN_RCD*>(ccmp);
   const MODEL_BUILT_IN_RCD* m =   static_cast<const MODEL_BUILT_IN_RCD*>(this);
   assert(m);
-  ADP_NODE* _c=cap;
-  assert(is_number(cap->tt()));
-  double E_old = cap->tt();
+  assert(is_number(_c->tt()));
+  double E_old = _c->tt();
 
 
   if (_c->tr()==-inf) _c->tr() = ( _c->tr_lo+_c->tr_hi)/2.0;
@@ -211,7 +210,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   long double uin_eff=_c->tr(); // 0 == current estimate
 
   trace3(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last " +
-        cap->label()).c_str(), E_old, tt_iteration_number(), uin_eff);
+        _c->label()).c_str(), E_old, tt_iteration_number(), uin_eff);
 
   assert(E_old<E_max);
   assert(E<=E_max);
@@ -223,21 +222,20 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   }
   if (uin_eff < U_min && positive){
     error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last %s tr() %LE"
-       " bad\n", cap->long_label().c_str(), uin_eff );
+       " bad\n", _c->long_label().c_str(), uin_eff );
     error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last lo %E hi %E"
        " bad\n", _c->tr_lo , _c->tr_hi );
     error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last history tr %E tr1 %E tr2 %E\n",
-        cap->tr(), cap->tr1(), cap->tr2());
+        _c->tr(), _c->tr1(), _c->tr2());
     error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last time %E %E\n",_sim->_time0, _sim->_Time0);
     error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last trstep %i ttstep "
        "%i\n",_sim->iteration_number(), _sim->tt_iteration_number());
-    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last order %i\n", cap->order());
+    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last order %i\n", _c->order());
   }
   if (uin_eff < 0.0 && positive){
-
     //assert(false);// doesnt make sense to go on
-    cap->set_order(0);
-    uin_eff=max( (uin_eff + cap->tr1())/2 , 0.0L);
+    _c->set_order(0);
+    uin_eff=max( (uin_eff + _c->tr1())/2 , 0.0L);
   }
 
   long double E_high; 
@@ -279,12 +277,13 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
 
   if (!linear_inversion){
     try{
-      uin_eff = cc->__uin_iter(uin_eff, E_old, E, cap->tr_lo, cap->tr_hi );
+      uin_eff = cc->__uin_iter(uin_eff, E_old, E, _c->tr_lo, _c->tr_hi );
     } catch (Exception &e) {
       error(bDANGER, "Exception in %s\n", long_label().c_str());
       throw(e);
     }
-    trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last iteration -> ", E_old, E, uin_eff);
+    trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last iteration -> ", E_old,
+        E, uin_eff);
   }
 
   // sanitycheck (monotonicity)
@@ -298,16 +297,19 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
     trace5("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last                ",
         uin_eff, _c->tr(), E_test - E, E_vorher-E,1-E );
   }else{
-    trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last new uin not better ", uin_eff, _c->tr(), linear_inversion);
+    trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last new uin not better ",
+        uin_eff, _c->tr(), linear_inversion);
     untested();
-    uin_eff=_c->tr();
+    uin_eff = (_c->tr() + uin_eff)/2.0;
+    _c->set_order(0);
   }
 
-
   if ( linear_inversion && ((E_low > E_test) || ( E_test > E_high) )){
-    trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last monotonicity check ",uin_eff-uin_low, uin_high-uin_eff, uin_eff );
+    trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last monotonicity check ",
+        uin_eff-uin_low, uin_high-uin_eff, uin_eff );
     assert( uin_eff<=uin_high && uin_low<=uin_eff);
-    trace5("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last ", 1-E, 1-E_test, E_test-E_low, E_high-E_test, linear_inversion );
+    trace5("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last ", 1-E, 1-E_test,
+        E_test-E_low, E_high-E_test, linear_inversion );
     assert( E_test <= E_high && E_low <= E_test); 
   }
 
@@ -315,7 +317,8 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   if (uin_eff <= 0.0 && positive){
 //    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last %s tr() %LE bad, l%i\n",
 //        cap->long_label().c_str(), uin_eff, linear_inversion );
-    trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last history ",_c->tr(), _c->tr1(), _c->tr2());
+    trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last history ",_c->tr(),
+        _c->tr1(), _c->tr2());
 
     _c->set_order(0);
     uin_eff=0;
@@ -342,15 +345,12 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   trace3(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + cap->label()).c_str(), 
       E-E_low , E_high-E, linear_inversion  );
 
-
   if( ( E_old < E_high ) && ( E_low <= E_old ))
     _c->set_order(0);
-
 
   if ((double)E_high<(double)E_low){
     error( bDANGER, "COMMON_BUILT_IN_RCD:: sanitycheck ( %LE < %LE )", E_high, E_low);
     assert(false);
-
   }
 
   if (linear_inversion)  _c->set_order(0);
@@ -363,7 +363,6 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE*
   assert( (double) E_high-(double) E_low >= 0);
   assert((double) E_high>= (double) E_low);
   assert(E_low <= E || double(E)==1.0 || double(E_high)==1.0 || !linear_inversion);
-
 
   if(E > E_high && E!=1){
     untested();

@@ -69,7 +69,7 @@ void CMD::cmdproc(CS& cmd, CARD_LIST* scope)
   else if (cmd.umatch("st{atus} "))     {            s = "status";}
   else if (cmd.umatch("te{mperature} ")){itested();  s = "temperature";}
   else if (cmd.umatch("tr{ansient} "))  {            s = "transient";}
-  else if (cmd.umatch("tw{otimetran} ")){untested(); s = "twotimetran";}
+  else if (cmd.umatch("tw{otimetran} ")){            s = "twotimetran";}
   else if (cmd.umatch("!"))		{	     s = "system";}
   else if (cmd.umatch("<"))		{untested(); s = "<";}
   else if (cmd.umatch(">"))		{untested(); s = ">";}

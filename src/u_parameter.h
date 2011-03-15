@@ -116,7 +116,7 @@ template <class T>
 inline T PARAMETER<T>::_NOT_INPUT(){ return NOT_INPUT ;}
 /*--------------------------------------------------------------------------*/
 template <>
-inline int PARAMETER<int>::_NOT_INPUT(){ untested(); return 0;}
+inline int PARAMETER<int>::_NOT_INPUT(){ untested(); return 0;} //BUG. magic number?
 /*--------------------------------------------------------------------------*/
 
 template <>

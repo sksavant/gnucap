@@ -1661,7 +1661,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
 
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter LQ=%Lf>%Lf. h%i deltaE=%LE\n", 
           log(Q), logl(reltol), hhack, deltaE);
-      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter start=%E\n", ustart);
+      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter start=%LE\n", ustart);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter Edu=%LE Euin=%LE E=%LE, fu= %LE, delta_u=%LE\n",
           Edu, Euin, E, fu, delta_u);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter s=%i%i%i%i%i putres=%i\n",
