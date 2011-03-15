@@ -40,7 +40,7 @@ AM_MAINTAINER_MODE
 
 
 #sysconfdir='/bar/etc'
-libdir="${prefix}/lib"
+#libdir="${prefix}/lib"
 
 
 
@@ -209,6 +209,8 @@ AC_MSG_RESULT([
 ** Configuration summary for $PACKAGE $VERSION:
 
    prefix:     $prefix
+   exec_prefix:     $exec_prefix
+   libdir:     $libdir
    CPPFLAGS:   $CPPFLAGS
    CFLAGS:     $CFLAGS
    CXXFLAGS:   $CXXFLAGS
