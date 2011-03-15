@@ -835,7 +835,7 @@ double ADP_NODE::tt_integrate_1_const( double tr_){
 
   _integrator = &ADP_NODE::tt_integrate_1_const;
   assert (!_positive || ret >=0);
-  return(ret);
+  return( (double) ret);
 }
 /*---------------------------------*/
 double ADP_NODE::tr_correct_1_const(){
@@ -912,10 +912,10 @@ hp_float_t ADP_NODE::tr_rel( double dT ) const{
       return tr1();
     case 2:
       trace1("ADP_NODE::tr 2", now_rel/ dT1());
-      return tr1() + ( tr1() - tr2()) * ((now_rel )/(long double) dT1());
+      return tr1() + ( tr1() - tr2()) * double ((now_rel )/(long double) dT1());
     case 3:
-      return  -(((tr2() - tr3())/dT2() - (tr1() - tr2())/dT1())*(now_rel + dT1())/(dT1() + dT2()) -
-        (tr2() - tr3())/dT2())*(now_rel + dT1() + dT2()) + tr3();
+      return  -(((tr2() - tr3())/dT2() - (tr1() - tr2())/dT1())*(hp_float_t(now_rel) + dT1())/(dT1() + dT2()) -
+        (tr2() - tr3())/dT2())*(hp_float_t(now_rel) + dT1() + dT2()) + tr3();
     default:
       assert(false);
   }
@@ -933,10 +933,10 @@ hp_float_t ADP_NODE::tr( double time ) const{
       return tr1();
     case 2:
       trace1("ADP_NODE::tr 2", now_rel/ dT1());
-      return tr1() + ( tr1() - tr2()) * ((now_rel )/(long double) dT1());
+      return tr1() + ( tr1() - tr2()) * hp_float_t((now_rel )/(long double) dT1());
     case 3:
-      return  -(((tr2() - tr3())/dT2() - (tr1() - tr2())/dT1())*(now_rel + dT1())/(dT1() + dT2()) -
-        (tr2() - tr3())/dT2())*(now_rel + dT1() + dT2()) + tr3();
+      return  -(((tr2() - tr3())/dT2() - (tr1() - tr2())/dT1())*(hp_float_t(now_rel) + dT1())/(dT1() + dT2()) -
+        (tr2() - tr3())/dT2())*hp_float_t((now_rel) + dT1() + dT2()) + tr3();
     default:
       assert(false);
   }
@@ -1256,7 +1256,7 @@ double ADP_NODE::tt_integrate_2_exp(double tr_) {
 /*----------------------------------------------------------------------*/
 ADP_CARD::ADP_CARD() {unreachable();}
 /*----------------------------------------------------------------------*/
-ADP_CARD::ADP_CARD(const ADP_CARD&) {unreachable();} 
+ADP_CARD::ADP_CARD(const ADP_CARD& p) : CARD(p) {unreachable();} 
 /*----------------------------------------------------------------------*/
 
 TIME_PAIR ADP_NODE_UDC::tt_review( ) {

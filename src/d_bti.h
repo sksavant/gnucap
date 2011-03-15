@@ -74,7 +74,7 @@ public: // input parameters
   PARAMETER<double> gparallel;	// parallel conductance
   PARAMETER<int> flags;	// 
   PARAMETER<int> mos_level;	// 
-  PARAMETER<size_t> rcd_number;	//  ??
+  PARAMETER<uint_t> rcd_number;	//  ??
   PARAMETER<int> bti_type;	// 
   PARAMETER<double> bti_base;	// 
   PARAMETER<bool> anneal;	// 
@@ -241,8 +241,8 @@ public: // netlist
 private: // node list
   enum {n_g, n_b, n_iu};
   node_t _nodes[3];
-  std::string port_name(int i)const {
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {
+    assert(i !=INVALID_NODE);
     assert(i < 2);
     static std::string names[] = {"g", "b", ""};
     return names[i];

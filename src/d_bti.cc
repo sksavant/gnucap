@@ -701,7 +701,7 @@ double MODEL_BUILT_IN_BTI::hoch(int i) const {
 }
 /*--------------------------------------------------------------------------*/
 double MODEL_BUILT_IN_BTI::runter(int i) const{
-  int n = rcd_number;
+  uint_t n = rcd_number;
   //int type = m->bti_type;
   int a = int(sqrt(n));
   // int col=i % a;

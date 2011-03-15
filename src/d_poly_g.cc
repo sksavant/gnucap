@@ -66,7 +66,7 @@ protected: // override virtual
   COMPLEX  ac_involts()const	{itested(); return NOT_VALID;}
   COMPLEX  ac_amps()const	{itested(); return NOT_VALID;}
 
-  std::string port_name(int)const {untested();
+  std::string port_name(uint_t)const {untested();
     incomplete();
     unreachable();
     return "";

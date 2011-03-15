@@ -256,9 +256,9 @@ public:	// ports
   const std::string port_value(uint_t i)const;
   void	set_port_to_ground(uint_t index);
 
-  virtual std::string current_port_name(int)const {return "";}
-  virtual const std::string current_port_value(int)const;
-  virtual void set_current_port_by_index(int, const std::string&) {unreachable();}    
+  virtual std::string current_port_name(uint_t)const {return "";}
+  virtual const std::string current_port_value(uint_t)const;
+  virtual void set_current_port_by_index(uint_t, const std::string&) {unreachable();}    
   bool current_port_exists(uint_t i)const	{return i < num_current_ports();}
 
   virtual uint_t	max_nodes()const	{unreachable(); return 0;}

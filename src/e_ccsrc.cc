@@ -50,7 +50,7 @@ void CCSRC_BASE::expand_last()
   }
 }
 /*--------------------------------------------------------------------------*/
-void CCSRC_BASE::set_port_by_index(int num, std::string& Value)
+void CCSRC_BASE::set_port_by_index(uint_t num, std::string& Value)
 {
   if (num == 2) {
     _input_label = Value;
@@ -59,7 +59,7 @@ void CCSRC_BASE::set_port_by_index(int num, std::string& Value)
   }
 }
 /*--------------------------------------------------------------------------*/
-bool CCSRC_BASE::node_is_connected(int i)const
+bool CCSRC_BASE::node_is_connected(uint_t i)const
 {
   if (i == 2) {
     return _input_label != "";

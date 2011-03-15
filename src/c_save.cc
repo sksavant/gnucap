@@ -35,7 +35,7 @@
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-void volts_load( fstream *in, CARD_LIST* scope)
+void volts_load( fstream *in, CARD_LIST* )
 {
   // fixme. -nan
   std::string inss;
@@ -67,13 +67,13 @@ void volts_load( fstream *in, CARD_LIST* scope)
       ++i;
     } else {
       //*in >> skipws >> inss;
-      inss = in->get();
+      inss = (char) in->get();
       trace1((" garbage ->" + inss + "<- ").c_str(), (int)inss[0]);
     }
   }
 }
 /*--------------------------------------------------------------------------*/
-void volts_save(CS& cmd, OMSTREAM out, CARD_LIST* scope)
+void volts_save(CS&, OMSTREAM out, CARD_LIST*)
 {
   CARD_LIST::card_list.precalc_first();
 

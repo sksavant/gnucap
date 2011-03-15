@@ -1317,7 +1317,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
     _sim->_v0[_n[n_ic].m_()] = fv + _sim->_v0[_n[n_b].m_()];
     _sim->_vt1[_n[n_ic].m_()] = fv + _sim->_vt1[_n[n_b].m_()];
     _sim->_vdc[_n[n_ic].m_()] = fv + _sim->_vdc[_n[n_b].m_()];
-    ((STORAGE*) (_Ccg))->tr_init(_tr_fill);
+    ((STORAGE*) (_Ccg))->tr_init((hp_float_t)_tr_fill);
 
     trace2("DEV_BUILT_IN_RCD::stress_apply n", _Ccgfill->get_tr(), _Ccgfill->get_tt());
   } else {
@@ -1517,7 +1517,7 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
   // assert( cap->tr_lo < cap->tr() || fabs( cap->tr() - cap->tr_lo ) < OPT::abstol || fabs((cap->tr() - cap->tr_lo)/ cap->tr()  ) < OPT::reltol );
 
   // tt_value not needed for rollback.
-  _Ccgfill->set_tt(_tr_fill);
+  _Ccgfill->set_tt(double(_tr_fill));
 }
 ///*--------------------------------------------------------------------------*/
 double COMMON_BUILT_IN_RCD::__tau(double uin)const
@@ -1728,8 +1728,8 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
 
     assert(is_number(res));
 
-    cres= fmin( 1.0,res);
-    cres= fmax(-1.0,res);
+    cres= std::min( 1.L,res);
+    cres= std::max(-1.L,res);
 
     dx_res=uin;
     uin -= cres;

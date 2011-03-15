@@ -62,8 +62,8 @@ private: // override virtual
   COMPLEX  ac_involts()const	{return 0.;}
   COMPLEX  ac_amps()const	{return (_acg + ac_outvolts()* (double)_loss0);}
 
-  std::string port_name(int i)const {
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {
+    assert(i != INVALID_NODE);
     assert(i < 2);
     static std::string names[] = {"p", "n"};
     return names[i];

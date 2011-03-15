@@ -51,14 +51,14 @@ private: // override virtual
   void	   ac_load()		{ac_load_active();}
   COMPLEX  ac_amps()const	{untested(); return ELEMENT::ac_amps();}
 
-  std::string port_name(int i)const {untested();
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {untested();
+    assert(i != INVALID_NODE);
     assert(i < 2);
     static std::string names[] = {"p", "n"};
     return names[i];
   }
-  std::string current_port_name(int i)const {untested();
-    assert(i >= 0);
+  std::string current_port_name(uint_t i)const {untested();
+    assert(i != INVALID_NODE);
     assert(i < 1);
     static std::string names[] = {"in"};
     return names[i];

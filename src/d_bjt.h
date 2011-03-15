@@ -292,8 +292,8 @@ public: // netlist
 private: // node list
   enum {n_c, n_b, n_e, n_s, n_ic, n_ib, n_ie};
   node_t _nodes[7];
-  std::string port_name(int i)const {
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {
+    assert(i != INVALID_NODE);
     assert(i < 4);
     static std::string names[] = {"c", "b", "e", "s", ""};
     return names[i];

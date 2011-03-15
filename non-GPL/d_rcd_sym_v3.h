@@ -45,7 +45,7 @@ class MODEL_BUILT_IN_RCD_SYM_V3 : public MODEL_BUILT_IN_RCD_SYM {
 
     long double __uin_iter(long double& uin,  double cur, double E, const COMMON_COMPONENT* cc)const;
     long double __E(double uin, long double cur, const COMMON_COMPONENT* cc)const;
-    long double __Edu(double uin, long double cur, const COMMON_COMPONENT* cc)const;
+    long double __Edu(long double uin, long double cur, const COMMON_COMPONENT* cc)const;
 };
 /*--------------------------------------------------------------------------*/
 class DEV_BUILT_IN_RCD_SYM_V3 : public DEV_BUILT_IN_RCD{

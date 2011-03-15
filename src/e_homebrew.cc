@@ -212,7 +212,7 @@ void HOMEBREW::tr_iwant_matrix_extended()
   assert(ext_nodes() + int_nodes() == matrix_nodes());
 
   for (uint_t ii = 0;  ii < matrix_nodes();  ++ii) {
-    if (_n[ii].m_() >= 0) {
+    if (_n[ii].m_() != INVALID_NODE ) {
       for (uint_t jj = 0;  jj < ii ;  ++jj) {
 	_sim->_aa.iwant(_n[ii].m_(),_n[jj].m_());
 	_sim->_lu.iwant(_n[ii].m_(),_n[jj].m_());
@@ -246,7 +246,7 @@ void HOMEBREW::ac_iwant_matrix_extended()
   assert(ext_nodes() + int_nodes() == matrix_nodes());
 
   for (uint_t ii = 0;  ii < matrix_nodes();  ++ii) {
-    if (_n[ii].m_() >= 0) {
+    if (_n[ii].m_() != INVALID_NODE) {
       for (uint_t jj = 0;  jj < ii ;  ++jj) {
 	_sim->_acx.iwant(_n[ii].m_(),_n[jj].m_());
       }

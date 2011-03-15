@@ -108,8 +108,8 @@ private: // override virtual
   CARD*	    clone()const	{return new DEV_VSWITCH(*this);}
   char	    id_letter()const	{return 'S';}
 
-  std::string port_name(int i)const {itested();
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {itested();
+    assert(i != INVALID_NODE);
     assert(i < 4);
     static std::string names[] = {"p", "n", "ps", "ns"};
     return names[i];
@@ -128,7 +128,7 @@ private: // override virtual
   uint_t	    min_nodes()const	{return 3;}
   uint_t	    net_nodes()const	{return 2;}
   uint_t	    num_current_ports()const {return 1;}
-  const std::string current_port_value(int)const {return _input_label;};
+  const std::string current_port_value(uint_t)const {return _input_label;};
   CARD*	    clone()const	{return new DEV_CSWITCH(*this);}
   void	    expand();
   char	    id_letter()const	{return 'W';}

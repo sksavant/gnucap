@@ -67,8 +67,8 @@ protected: // override virtual
 
   void set_iv();
 
-  std::string port_name(int i)const {
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {
+    assert(i != INVALID_NODE);
     assert(i < 2);
     static std::string names[] = {"p", "n"};
     return names[i];
@@ -98,8 +98,8 @@ private: // override virtual
   void	    ac_iwant_matrix()	{ac_iwant_matrix_active();}
   void	    ac_load()		{untested(); ac_load_active();}
 
-  std::string port_name(int i)const {untested();
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {untested();
+    assert(i != INVALID_NODE);
     assert(i < 4);
     static std::string names[] = {"p", "n", "ps", "ns"};
     return names[i];
@@ -129,8 +129,8 @@ private: // override virtual
   hp_float_t   tr_involts_limited()const {return volts_limited(_n[IN1],_n[IN2]);}
   void	    ac_iwant_matrix()	{ac_iwant_matrix_extended();}
 
-  std::string port_name(int i)const {untested();
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {untested();
+    assert(i != INVALID_NODE);
     assert(i < 4);
     static std::string names[] = {"p", "n", "ps", "ns"};
     return names[i];

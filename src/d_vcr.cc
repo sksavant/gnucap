@@ -62,8 +62,8 @@ private: // override virtual
   COMPLEX  ac_amps()const     {untested(); return ELEMENT::ac_amps();}
   //XPROBE ac_probe_ext(const std::string&)const;//ELEMENT
 
-  std::string port_name(int i)const {untested();
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {untested();
+    assert(i != INVALID_NODE);
     assert(i < 4);
     static std::string names[] = {"p", "n", "ps", "ns"};
     return names[i];

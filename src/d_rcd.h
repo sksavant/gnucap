@@ -96,8 +96,7 @@ public: // probes
   virtual double __Ge(double uin, const COMMON_COMPONENT* )const;
   virtual double __Re(double uin, const COMMON_COMPONENT* cc)const ;
   virtual double __Rc(double uin, const COMMON_COMPONENT* cc)const ;
-  virtual double __Edu(long double, const COMMON_COMPONENT*)const { return 0; }
-  virtual long double __Edu(double , long double , const COMMON_COMPONENT*)const {return 0;}
+  virtual long double __Edu(long double , long double , const COMMON_COMPONENT*)const {return 0;}
   virtual void do_tr_stress_last( long double , ADP_NODE* , const COMMON_COMPONENT*  ) const 
   {unreachable();}
 };

@@ -580,7 +580,6 @@ void COMPONENT::precalc_last()
 void COMPONENT::map_nodes()
 {
   assert(is_device());
-  assert(0 <= min_nodes());
   //assert(min_nodes() <= net_nodes());
   assert(net_nodes() <= max_nodes());
   //assert(ext_nodes() + int_nodes() == matrix_nodes());
@@ -744,12 +743,12 @@ std::string COMPONENT::param_value(int i)const
 const std::string COMPONENT::port_value(uint_t i)const 
 {
   assert(_n);
-  assert(i >= 0);
+  assert(i !=INVALID_NODE);
   assert(i < net_nodes());
   return _n[i].short_label();
 }
 /*--------------------------------------------------------------------------*/
-const std::string COMPONENT::current_port_value(int)const 
+const std::string COMPONENT::current_port_value(uint_t)const 
 {untested();
   unreachable();
   static std::string s;

@@ -72,8 +72,8 @@ public: // override virtual
   COMPLEX  ac_involts()const	{return ac_outvolts();}
   COMPLEX  ac_amps()const;
 
-  std::string port_name(int i)const {itested();
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {itested();
+    assert(i != INVALID_NODE);
     assert(i < 2);
     static std::string names[] = {"p", "n"};
     return names[i];
@@ -149,23 +149,23 @@ private: // override virtual
     }
   }
 
-  std::string port_name(int)const {untested();
+  std::string port_name(uint_t)const {untested();
     return "";
   }
-  std::string current_port_name(int i)const {untested();
-    assert(i >= 0);
+  std::string current_port_name(uint_t i)const {untested();
+    assert(i != INVALID_NODE);
     assert(i < 2);
     static std::string names[] = {"l1", "l2"};
     return names[i];
   }
-  const std::string current_port_value(int i)const {
+  const std::string current_port_value(uint_t i)const {
     switch (i) {
     case 0:  return _output_label;
     case 1:  return _input_label;
     default: unreachable(); return COMPONENT::current_port_value(i);
     }
   }
-  void set_current_port_by_index(int i, const std::string& s) {
+  void set_current_port_by_index(uint_t i, const std::string& s) {
     switch (i) {
     case 0:  _output_label = s;	break;
     case 1:  _input_label = s;	break;

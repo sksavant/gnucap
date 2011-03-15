@@ -545,7 +545,7 @@ void node_t::new_model_node(const std::string& node_name, CARD* d)
 void node_t::map_subckt_node(uint_t* m, const CARD* d)
 {
   assert(m);
-  assert(e_() >= 0);
+  assert(e_() !=INVALID_NODE);
   if (node_is_valid(m[e_()])) {
     _ttt = m[e_()];
   }else{untested();

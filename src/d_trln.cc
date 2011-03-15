@@ -107,8 +107,8 @@ private: // override virtual
   void		ac_load();
   COMPLEX	ac_involts()const;
 
-  std::string port_name(int i)const {itested();
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {itested();
+    assert(i != INVALID_NODE);
     assert(i < 4);
     static std::string names[] = {"t1", "b1", "t2", "b2"};
     return names[i];

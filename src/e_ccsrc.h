@@ -41,7 +41,7 @@ protected: // override virtual
   uint_t	   matrix_nodes()const	{return 4;}
   uint_t	   net_nodes()const	{return 2;}
   uint_t	   num_current_ports()const {return 1;}
-  const std::string current_port_value(int)const {return _input_label;};
+  const std::string current_port_value(uint_t)const {return _input_label;};
   //void   precalc_first();	//ELEMENT
   void	   expand_last();
   //void   precalc_last();	//ELEMENT
