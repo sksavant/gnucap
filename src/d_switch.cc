@@ -134,17 +134,17 @@ private: // override virtual
   char	    id_letter()const	{return 'W';}
   void	   set_port_by_name(std::string& Name, std::string& Value)
 		{untested(); SWITCH_BASE::set_port_by_name(Name,Value);}
-  void	   set_port_by_index(int, std::string&);
-  bool	   node_is_connected(int)const;
+  void	   set_port_by_index(uint_t, std::string&);
+  bool	   node_is_connected(uint_t)const;
 
-  std::string port_name(int i)const {itested();
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {itested();
+    assert(i != INVALID_NODE);
     assert(i < 2);
     static std::string names[] = {"p", "n"};
     return names[i];
   }
-  std::string current_port_name(int i)const {
-    assert(i >= 0);
+  std::string current_port_name(uint_t i)const {
+    assert(i != INVALID_NODE);
     assert(i < 1);
     static std::string names[] = {"in"};
     return names[i];
@@ -612,7 +612,7 @@ void DEV_CSWITCH::expand()
   }
 }
 /*--------------------------------------------------------------------------*/
-void DEV_CSWITCH::set_port_by_index(int Num, std::string& Value)
+void DEV_CSWITCH::set_port_by_index(uint_t Num, std::string& Value)
 {
   if (Num == 2) {
     _input_label = Value;
@@ -621,7 +621,7 @@ void DEV_CSWITCH::set_port_by_index(int Num, std::string& Value)
   }
 }
 /*--------------------------------------------------------------------------*/
-bool DEV_CSWITCH::node_is_connected(int i)const
+bool DEV_CSWITCH::node_is_connected(uint_t i)const
 {
   if (i == 2) {
     return _input_label != "";

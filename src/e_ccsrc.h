@@ -53,8 +53,8 @@ protected: // override virtual
   hp_float_t   tr_involts_limited()const {return volts_limited(_n[IN1],_n[IN2]);}
   hp_float_t   tr_input_limited()const {return _input->tr_amps();}
   COMPLEX  ac_involts()const	{untested();return _n[IN1].vac()-_n[IN2].vac();}
-  void	   set_port_by_index(int index, std::string& value);
-  bool	   node_is_connected(int i)const;
+  void	   set_port_by_index(uint_t index, std::string& value);
+  bool	   node_is_connected(uint_t i)const;
 public:
   void	set_parameters_cc(const std::string& Label, CARD* Parent,
 		       COMMON_COMPONENT* Common, double Value,

@@ -241,6 +241,9 @@ inline double fmin(double x, double y, double z){
 inline double fmax(double x, double y, double z){
   return ( fmax(fmax(x,y),z));
 }
+inline bool is_number(long double x){
+  return (( x != inf ) && (x != -inf ) && (x == x)) ;
+}
 inline bool is_number(double x){
   return (( x != inf ) && (x != -inf ) && (x == x)) ;
 }

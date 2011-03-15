@@ -249,7 +249,7 @@ public:	// type
   void  set_dev_type(const std::string& new_type);
   //--------------------------------------------------------------------
 public:	// ports
-  virtual std::string port_name(int)const = 0;
+  virtual std::string port_name(uint_t)const = 0;
   virtual void set_port_by_name(std::string& name, std::string& value);
   virtual void set_port_by_index(uint_t index, std::string& value);
   bool port_exists(uint_t i)const {return i < net_nodes();}

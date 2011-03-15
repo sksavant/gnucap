@@ -1165,6 +1165,7 @@ void MODEL_BUILT_IN_RCD::tt_eval(COMPONENT* )const
 void MODEL_BUILT_IN_RCD::do_tt_prepare(COMPONENT* c)const
 {
   trace0(("MODEL_BUILT_IN_RCD::tt_prepare. " + c->short_label()).c_str());
+  c=c;
 }
 ///*--------------------------------------------------------------------------*/
 ADP_CARD* MODEL_BUILT_IN_RCD::new_adp(const COMPONENT* c)const
@@ -1309,7 +1310,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
 
   trace3("DEV_BUILT_IN_RCD::stress_apply", eff, _tr_fill, _sim->tt_iteration_number() );
 
-  hp_float_t fv = _tr_fill;
+  hp_float_t fv = (hp_float_t) _tr_fill;
 
   if( m->use_net() && _sim->analysis_is_tt() )
   {
@@ -1321,7 +1322,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
     trace2("DEV_BUILT_IN_RCD::stress_apply n", _Ccgfill->get_tr(), _Ccgfill->get_tt());
   } else {
     assert(is_number(fill_new));
-    _Ccgfill->tt() = fill_new;
+    _Ccgfill->tt() = (double) fill_new;
     _tr_fill=fill_new;
     trace2("DEV_BUILT_IN_RCD::stress_apply done ", fill_new, _tr_fill );
   }
@@ -1412,7 +1413,7 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   assert (fill==fill);
   assert (uin==uin);
 
-  double newfill;
+  long double newfill;
   switch(_sim->_stepno){ incomplete();
     case 0:
     case 1:
@@ -1628,7 +1629,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
   long double Q=1;
   bool putres=false;
 
-  double ustart = uin;
+  double ustart = (double) uin;
   long double delta_u=.0L;
   bool edge=false;
   bool A=true;
@@ -1637,7 +1638,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
   bool D=true;
   bool U=true;
 
-  Euin = ((COMMON_BUILT_IN_RCD*)c)->__step( uin, E_old, h  );
+  Euin = ((const COMMON_BUILT_IN_RCD*)c)->__step( uin, E_old, h  );
   if(!is_number(Euin)) {
     error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter pl cannot evaluate E "
         "at uin=%LE (E_old=%E) %i\n", uin, E_old, CKT_BASE::_sim->tt_iteration_number());
@@ -1661,7 +1662,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
 
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter LQ=%Lf>%Lf. h%i deltaE=%LE\n", 
           log(Q), logl(reltol), hhack, deltaE);
-      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter start=%LE\n", ustart);
+      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter start=%E\n", ustart);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter Edu=%LE Euin=%LE E=%LE, fu= %LE, delta_u=%LE\n",
           Edu, Euin, E, fu, delta_u);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter s=%i%i%i%i%i putres=%i\n",
@@ -1678,7 +1679,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
       assert(false);
       return( inf );
     }
-    Edu = m->__Edu(uin, E_old, c);
+    Edu = m->__Edu(uin, E_old, c); // ??
     if(!is_number(Edu) ){
       untested();
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter step %i:%i Edu nan at %LE Euin=%LE C=%LE diff "

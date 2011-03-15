@@ -139,9 +139,9 @@ private: // override virtual
 
   void	   set_port_by_name(std::string& Name, std::string& Value)
 		{untested(); COMPONENT::set_port_by_name(Name,Value);}
-  void	   set_port_by_index(int Index, std::string& Value)
+  void	   set_port_by_index(uint_t Index, std::string& Value)
 		{set_current_port_by_index(Index, Value);}
-  bool	   node_is_connected(int i)const {
+  bool	   node_is_connected(uint_t i)const {
     switch (i) {
     case 0:  return _output_label != "";
     case 1:  return _input_label != "";
