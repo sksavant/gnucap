@@ -299,8 +299,10 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE* _c,
   }else{
     trace3("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last new uin not better ",
         uin_eff, _c->tr(), linear_inversion);
-    untested();
-    uin_eff = (_c->tr() + uin_eff)/2.0;
+    if ( (E_test - E) * (E_vorher-E) < 0 ){
+      uin_eff = (_c->tr() + uin_eff)/2.0;
+      untested();
+    }
     _c->set_order(0);
   }
 
@@ -365,7 +367,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE* _c,
   assert(E_low <= E || double(E)==1.0 || double(E_high)==1.0 || !linear_inversion);
 
   if(E > E_high && E!=1){
-    untested();
+    untested1("COMMON_BUILT_IN_RCD::", linear_inversion);
     error( bDANGER, "COMMON_BUILT_IN_RCD:: sanitycheck ( %LE =E >  E_high=%LE ) del %LE\n", E_high, E, E_high-E);
   }
 

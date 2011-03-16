@@ -1618,6 +1618,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
 
   long double res=1;   // dx
   long double deltaE =1; // df 
+  long double deltaE_alt = 0; // dfold
   long double damp=1;
   long double fu =1; // function we try to find zero of, at u
   long double df_fres =1; // df 
@@ -1645,7 +1646,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     assert(false);
   }
   double reltol = pow(OPT::reltol,1.2);
-  double abstol = OPT::abstol/1000.0;
+  double abstol = OPT::abstol/10.0;
 
   trace2("COMMON_BUILT_IN_RCD::__uin_iter rel_tol", reltol, OPT::abstol);
   //while( ( A || ( B && C && D ) ) ) { // && fabs(Euin-E)>1e-40 ) 
@@ -1654,7 +1655,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     edge = false;
     trace7("COMMON_BUILT_IN _RCD::__uin_iter loop", (double)uin, (double)res, (double)deltaE, Edu, E, i,Euin);
     trace3(" ",dx_res,Q,df_fres);
-    if( i> 500){
+    if( i> 200){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge uin="
           "%LE, E=%LE, res=%LE, lres=%Lg, Q=%Lg\n", uin, E, res, log(fabs(res)), Q);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge bounds %E, %E\n",
@@ -1666,12 +1667,12 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter Edu=%LE Euin=%LE E=%LE, fu= %LE, delta_u=%LE\n",
           Edu, Euin, E, fu, delta_u);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter s=%i%i%i%i%i putres=%i\n",
-          A,B,C,D,U,putres);
+          A, B, C, D, U, putres);
       throw(Exception("does not converge"));
       break;
     }
     if (i>100 ) {
-      damp=.5;
+      // damp=.5;
     }
     if(!is_number(uin)){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter uin wrong %E diff "
@@ -1699,7 +1700,8 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
       } else {  // next iterations, try half step size 
         res /= 2.0;
         uin += res;
-        uin=max(uin,0.0L);
+        uin= std::max(uin,0.0L);
+        untested();
         hhack++;
       }
       continue;
@@ -1733,10 +1735,10 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
 
     dx_res=uin;
     uin -= cres;
-    if(( uin> (long double) bound_hi )){
+    if(( (double) uin > bound_hi )){
       edge=true;
       uin=bound_hi;
-    }else if(( uin < (long double) bound_lo )){
+    }else if(( (double) uin < bound_lo )){
       edge=true;
       uin=bound_lo;
     }
@@ -1754,8 +1756,13 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     Q = fabs( dx_res / uin );
 
     Euin = cc->__step( uin, E_old, h  );
+    deltaE_alt = deltaE;
     deltaE = Euin - Euin_alt; // Effektive Veraenderung
     Euin_alt = Euin;
+
+    if(deltaE * deltaE_alt < 0){
+      damp *= 0.8;
+    }
 
 
     if( !is_number( Euin ) ){
