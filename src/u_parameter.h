@@ -118,7 +118,23 @@ inline T PARAMETER<T>::_NOT_INPUT(){ return NOT_INPUT ;}
 template <>
 inline int PARAMETER<int>::_NOT_INPUT(){ untested(); return 0;} //BUG. magic number?
 /*--------------------------------------------------------------------------*/
+template <>
+inline unsigned int PARAMETER<unsigned int>::_NOT_INPUT(){ untested(); return 0;} //BUG. magic number?
+/*--------------------------------------------------------------------------*/
+template <> 
+inline std::vector<double> PARAMETER< std::vector<double> >::_NOT_INPUT(){
+  untested();
+  return std::vector<double>(0);
+}
+/*--------------------------------------------------------------------------*/
+template <> 
+inline std::list<double> PARAMETER< std::list<double> >::_NOT_INPUT(){
+  untested();
+  return std::list<double>(0);
+}
+/*--------------------------------------------------------------------------*/
 
+// ugly hack, probably
 template <>
 class PARAMETER<std::string> {
 private:
@@ -126,22 +142,6 @@ private:
   std::string _s;  //backend string
 private:
   std::string lookup_solve(const std::string& def, const CARD_LIST* scope)const;
-  /* {
-    CS cmd(CS::_STRING, _s);
-
-    trace0(("lookup_solve " + _s).c_str());
-
-    const PARAM_LIST* pl = scope->params();
-
-    
-    return std::string(pl->string_lookup(_s).e_val(def, scope));
-    return "A";
-
-//    if (v != "") {
-//      return v;
-//    }else{
-//      const PARAM_LIST* pl = scope->params();
-  } */
 public:
   explicit PARAMETER() :_v("") {}
   PARAMETER(const PARAMETER<std::string>& p) :_v(p._v), _s(p._s) {}
@@ -151,7 +151,6 @@ public:
   
   bool	has_hard_value()const {return (true);}
   bool	has_good_value()const {return (true);}
-  //bool has_soft_value()const {untested(); return (has_good_value() && !has_hard_value());}
 
   operator std::string()const {
     trace0(("PARAMETER::string " + _s + " -> " + _v ).c_str());
@@ -432,10 +431,56 @@ inline T PARAMETER<T>::lookup_solve(const T& def, const CARD_LIST* scope)const
 /*--------------------------------------------------------------------------*/
 template <>
 inline double PARAMETER<double>::my_infty()const{ return inf; }
+/*--------------------------------------------------------------------------*/
 
 template <class T>
 inline T PARAMETER<T>::my_infty()const{ untested(); return 0; }
+/*--------------------------------------------------------------------------*/
+template <>
+inline std::vector<double> PARAMETER<std::vector<double> >::e_val(const
+    std::vector<double>& , const CARD_LIST* )const
+{
+  trace0(("PARAMETER dl" + _s).c_str());
+  double d;
 
+  CS c(CS::_STRING,_s);
+  std::vector<double>::iterator a;
+  a=_v.begin();
+  _v.erase(_v.begin(),_v.end());
+  // FIXME: accept strings and parse...
+  while ( c.more() ){
+    d=c.ctof();
+    trace1("PARAMETER vector add", d);
+    _v.push_back( d );
+  }
+  return _v;
+}
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+template <>
+inline std::list<double> PARAMETER<std::list<double> >::e_val(const
+    std::list<double>& , const CARD_LIST*)const
+{
+  trace0(("PARAMETER dl" + _s).c_str());
+  double d;
+
+  CS c(CS::_STRING,_s);
+  std::list<double>::iterator a;
+
+  if (_v.size()!=0){
+    a=_v.begin();
+    _v.erase(a);
+  }
+
+  while ( c.more() ){
+    d=c.ctof();
+    trace1("PARAMETER dl", d);
+
+    _v.push_back( d );
+  }
+  return _v;
+}
+/*--------------------------------------------------------------------------*/
 template <class T>
 T PARAMETER<T>::e_val(const T& def, const CARD_LIST* scope)const
 {

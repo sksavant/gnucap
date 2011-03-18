@@ -1,4 +1,5 @@
 /*$Id: l_ftos.cc,v 1.3 2010-08-16 12:23:30 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -45,6 +46,7 @@
 const int POOLSIZE = 100;
 const int MAXLENGTH = 40;
 static double ftos_floor = 1e-99;
+using namespace std;
 /*--------------------------------------------------------------------------*/
 std::string to_string(std::string s)
 {
@@ -58,25 +60,54 @@ std::string to_string(unsigned n)
   return s;
 }
 /*--------------------------------------------------------------------------*/
-std::string to_string(size_t n)
+string to_string(size_t n)
 {
   char s[100];
   sprintf(s, "%d", (int)n);
   return s;
 }
 /*--------------------------------------------------------------------------*/
-std::string to_string(int n)
+string to_string(int n)
 {
   char s[100];
   sprintf(s, "%d", n);
   return s;
 }
 /*--------------------------------------------------------------------------*/
-std::string to_string(long int n)
+string to_string(long int n)
 {
   char s[100];
   sprintf(s, "%li", n);
   return s;
+}
+/*--------------------------------------------------------------------------*/
+string to_string(vector<double> n)
+{
+  string buf("");
+  // FIXME: remove one ,
+  if (n.size()==0){return "( )";}
+
+  vector<double>::iterator i=n.begin();
+  buf += string("(")+ftos((double)*i, 0, 7, 0);
+  ++i;
+
+  while (i!=n.end()){
+    buf += std::string(",") + ftos((double)*i, 0, 7, 0);
+    ++i;
+  }
+  return buf + std::string(" )");;
+}
+/*--------------------------------------------------------------------------*/
+std::string to_string(std::list<double> n)
+{
+  trace1("to_string(list", n.size());
+  std::string buf("");
+  // FIXME: remove one ,
+  for(std::list<double>::iterator i=n.begin();
+      i!=n.end(); ++i){
+    buf += std::string(", ") + ftos((double)*i, 0, 7, 0);
+  }
+  return buf;
 }
 /*--------------------------------------------------------------------------*/
 std::string to_string(double n)

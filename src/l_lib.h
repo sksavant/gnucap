@@ -37,6 +37,10 @@ INTERFACE std::string to_string(unsigned);
 INTERFACE std::string to_string(double);
 INTERFACE std::string to_string(long double);
 
+//FIXME: template?
+INTERFACE std::string to_string(std::vector<double>);
+INTERFACE std::string to_string(std::list<double>);
+
 INTERFACE char*		ftos(double,int,int,int);
 /*--------------------------------------------------------------------------*/
 //ftos stuff

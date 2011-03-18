@@ -74,7 +74,7 @@ public: // input parameters
   PARAMETER<double> gparallel;	// parallel conductance
   PARAMETER<int> flags;	// 
   PARAMETER<int> mos_level;	// 
-  PARAMETER<uint_t> rcd_number;	//  ??
+  PARAMETER<uint_t> rcd_number;	// 
   PARAMETER<int> bti_type;	// 
   PARAMETER<double> bti_base;	// 
   PARAMETER<bool> anneal;	// 
@@ -84,7 +84,7 @@ public: // input parameters
   PARAMETER<bool> v2;	// 
 //  PARAMETER<MODEL_BUILT_IN_RCD> rcd_model;	// 
 public: // calculated parameters
-  virtual std::string RCD_name(int)const;
+  virtual std::string RCD_name(uint_t)const;
 };
 /*--------------------------------------------------------------------------*/
 class MODEL_BUILT_IN_BTI_MATRIX

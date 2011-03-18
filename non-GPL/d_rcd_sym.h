@@ -8,6 +8,7 @@
 #ifndef D_RCD_SYM_H_INCLUDED
 #define D_RCD_SYM_H_INCLUDED
 
+//GPL only
 #include "d_rcd.h"
 
 class DEV_BUILT_IN_RCD;

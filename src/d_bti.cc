@@ -264,7 +264,7 @@ void MODEL_BUILT_IN_BTI::set_param_by_index(int i, std::string& value, int offse
   }
 }
 /*--------------------------------------------------------------------------*/
-std::string MODEL_BUILT_IN_BTI::RCD_name(int i) const
+std::string MODEL_BUILT_IN_BTI::RCD_name(uint_t i) const
 {
   stringstream a;
   a << "RCD" << i;
@@ -452,7 +452,7 @@ namespace MODEL_BUILT_IN_BTI_MATRIX_DISPATCHER {
   static DEV_BUILT_IN_BTI p1d;
   static MODEL_BUILT_IN_BTI_MATRIX p1(&p1d);
   static DISPATCHER<MODEL_CARD>::INSTALL
-    d1(&model_dispatcher, "bti_matrix", &p1);
+    d1(&model_dispatcher, "bti_matrix_old", &p1);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
