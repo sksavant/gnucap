@@ -516,7 +516,8 @@ bool TRANSIENT::next()
     newtime = time1 + _sim->_dtmin;
     set_step_cause(scSMALL);
     //check_consistency2();
-    throw Exception(("tried everything, still doesn't work, giving up at " + to_string(time1)).c_str());
+    throw Exception("tried everything, still doesn't work, giving up at %s step %i",
+        to_string(time1).c_str(), iteration_number());
     //}else if (newtime <= _sim->_time0 - _sim->_dtmin) {
   }else if (newtime < _sim->_time0) {
     /* Reject the most recent step. */

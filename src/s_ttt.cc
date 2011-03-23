@@ -547,7 +547,7 @@ void TTT::do_it(CS& Cmd, CARD_LIST* Scope)
       _out << "* done setup\n";
   }catch (Exception& e) {itested();
     error(bDANGER, e.message() + '\n');
-    throw(Exception("do_it failed\n"));
+    throw(Exception("error TTT::do_it"));
   }
 
   try {
@@ -566,7 +566,7 @@ void TTT::do_it(CS& Cmd, CARD_LIST* Scope)
 
   } catch (Exception& e) {itested();
     error(bDANGER, e.message() + '\n');
-    throw(Exception("error TTT::do_it"));
+    throw(Exception("do_it failed at %E, step %i\n", _sim->_Time0, tt_iteration_number()));
   }
   if(_trace>0 )
     _out << "* unallocating\n";

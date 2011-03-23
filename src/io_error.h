@@ -1,4 +1,5 @@
 /*$Id: io_error.h,v 1.2 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * data for error and exception handling
  *
  * Copyright (C) 2001 Albert Davis
@@ -43,6 +44,14 @@ struct Exception {
   virtual const std::string message()const {return _message;}
   Exception(const std::string& Message)
     :_message(Message) {
+  }
+  Exception(const char* fmt, ...) {
+    char buffer[BIGBUFLEN] = "";
+    va_list arg_ptr;
+    va_start(arg_ptr,fmt);
+    vsprintf(buffer,fmt,arg_ptr);
+    va_end(arg_ptr);
+    _message= std::string( buffer );
   }
   virtual ~Exception() {}
 };
