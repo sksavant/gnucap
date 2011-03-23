@@ -290,16 +290,14 @@ public:
 class ADP_BUILT_IN_MOS
   :public ADP_BUILT_IN_DIODE{
 public:
-  explicit ADP_BUILT_IN_MOS(const COMPONENT* c) : ADP_BUILT_IN_DIODE(c)
-	  {init(c);}
-
+  explicit ADP_BUILT_IN_MOS(const COMPONENT* c, const std::string n);
+protected:
   void init(const COMPONENT*);
 public:
   ADP_NODE* ids_stress;
   ADP_NODE* igd_stress;
 public:
 
-// hier steckt die 'effektive gleichspannung' drin
   ADP_NODE* bti_stress; // FIXME, BTI_?
   double tr_probe_num(const std::string& x)const;
   double tt_probe_num(const std::string& x)const;

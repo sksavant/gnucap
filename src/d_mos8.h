@@ -46,7 +46,10 @@
 class ADP_BUILT_IN_MOS8
   :public ADP_BUILT_IN_MOS{
 public:
-  explicit ADP_BUILT_IN_MOS8(const COMPONENT* c) : ADP_BUILT_IN_MOS(c) {init(c);}
+  explicit ADP_BUILT_IN_MOS8(const COMPONENT* c, const std::string n):
+    ADP_BUILT_IN_MOS(c,n)
+    {init(c);}
+protected:
   void init(const COMPONENT*);
 public:
   hp_float_t vthscale_hci;

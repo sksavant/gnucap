@@ -21,17 +21,18 @@ class ADP_CARD;
 // collects transient (stress) data, sometimes extrapolates.
 class ADP_NODE: public CKT_BASE {
   public:
-    explicit ADP_NODE( const COMPONENT* );
+    // explicit ADP_NODE( const COMPONENT* );
     explicit ADP_NODE( const COMPONENT* , std::string name_in2 );//
-    explicit ADP_NODE( const COMPONENT* , const char name_in[] );
     explicit ADP_NODE( ADP_CARD* ac, const COMPONENT* cin, const char name_in[] );
     //: dbg(0)
     //  { init(); _c=cin;  name=std::string(name_in); a=ac; }
     ~ADP_NODE( );
     ADP_NODE( const ADP_NODE& );
-    virtual void init();
   private:
     int	_number;
+  protected:
+    void init( const COMPONENT* , std::string name_in2 );//
+
   public:
     std::string label() const  {return long_label();}
     uint_t order() const; 
@@ -95,7 +96,7 @@ class ADP_NODE: public CKT_BASE {
     hp_float_t *_der_aft;
     hp_float_t *_delta;
 
-    double tt_value3;
+    // double tt_value3;
     double tt_first_time;
     double tt_first_value;
     double _Time_delta_old;
@@ -286,6 +287,8 @@ class ADP_NODE_RCD : public ADP_NODE {
 };
 /*--------------------------------------------------------------------------*/
 // ADP card is only a stub...
+// and stupid...
+// should be merged into COMPONENT
 class ADP_CARD  : public CARD {
 // manages stress data and stores device parameters.
   private:
@@ -293,11 +296,16 @@ class ADP_CARD  : public CARD {
     static int _tt_order;
     double _wdT;
   public:
-    explicit ADP_CARD(const COMPONENT*) {}
-    explicit ADP_CARD();
+    explicit ADP_CARD(const COMPONENT* c): _c(c) {}
+    explicit ADP_CARD(const COMPONENT* c, const std::string n): _c(c) {
+    set_label(n);}
+    // explicit ADP_CARD();
     virtual ~ADP_CARD() {}
-    virtual void init(const COMPONENT*) {}
+  protected:
+    void init(const COMPONENT*, const std::string) {}
 
+  public:
+    const COMPONENT* _c;
     virtual double tr_probe_num(const std::string& )const { unreachable(); return 888; }
     virtual double tt_probe_num(const std::string& )const { unreachable(); return 888; }
     virtual std::string value_name() const{ return "unknown";}

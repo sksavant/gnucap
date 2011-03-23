@@ -37,8 +37,7 @@
 class ADP_BUILT_IN_MOS123
   :public ADP_BUILT_IN_MOS{
 public:
-  explicit ADP_BUILT_IN_MOS123(const COMPONENT* c) : ADP_BUILT_IN_MOS(c) {init(c);}
-  void init(const COMPONENT*);
+  explicit ADP_BUILT_IN_MOS123(const COMPONENT* c, const std::string n);
 public:
   double vto;  // replace m->vto
 };

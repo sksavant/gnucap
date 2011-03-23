@@ -984,14 +984,10 @@ void DEV_BUILT_IN_MOS::expand()
 #endif
 
 
-  trace0("DEV_BUILT_IN_MOS::expand, ADP things");
-  if ( adp() == NULL ){
-    attach_adp( m->new_adp( (COMPONENT*) this ) );
-        //subckt()->push_front(adp());
-  }else{
-    std::cerr << short_label() << "\n";
-    assert(false);
-  }
+  trace0(("DEV_BUILT_IN_MOS::expand, ADP things " + long_label()).c_str());
+  assert ( adp() == NULL );
+  attach_adp( m->new_adp( (COMPONENT*) this ) );
+  trace0(("DEV_BUILT_IN_MOS::expanded, ADP things " + long_label()).c_str());
 }
 /*--------------------------------------------------------------------------*/
 double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
@@ -1540,22 +1536,32 @@ double ADP_BUILT_IN_MOS::wdT() const{
   return ids_stress->wdT();
 }
 /*--------------------------------------------------------------------------*/
+ADP_BUILT_IN_MOS::ADP_BUILT_IN_MOS(const COMPONENT* c, const std::string n) :
+	  ADP_BUILT_IN_DIODE(c,n),
+	  bti_stress(0)
+	  {init(c);}
 //expand?
+
 void ADP_BUILT_IN_MOS::init(const COMPONENT* c)
 {
-  trace0("ADP_BUILT_IN_MOS::init");
+  trace0(("ADP_BUILT_IN_MOS::init " + c->long_label()).c_str());
   const COMMON_COMPONENT* cc = prechecked_cast<const COMMON_COMPONENT*>(c->common());
   const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
   assert(m);
   assert(cc);
 
-  // std::cerr << "ADP_BUILT_IN_MOS::init( " <<c<< " ) " << c->short_label() << "\n" ;
-  bti_stress = new ADP_NODE( c, "bti" );
+  assert(bti_stress == 0);
+  if( m->use_bti()){
+    bti_stress = new ADP_NODE( c, "bti" );
+  } 
   // ADP_NODE_LIST::adp_node_list.push_back( bti_stress );
 
   // only mos>0?
-  ids_stress = new ADP_NODE( c, "ids" );
-  igd_stress = new ADP_NODE( c, "igs" );
+
+  if( m->use_hci()){
+    ids_stress = new ADP_NODE( c, "ids" );
+    igd_stress = new ADP_NODE( c, "igs" );
+  }
 
   vthscale_bti = 1;
   vthdelta_bti = 0;
@@ -1589,8 +1595,14 @@ void ADP_BUILT_IN_MOS::tt_accept()
 //  std::cerr << "ADP_BUILT_IN_MOS::tt_accept " << c->long_label() << "\n";
 //  std::cerr << "ADP_BUILT_IN_MOS::tt_accept time " << sim->_Time0 << "\n";
 //  std::cerr << "ADP_BUILT_IN_MOS::tt_accept stress " << bti_stress->get() << "\n";
+  const COMMON_COMPONENT* cc = prechecked_cast<const COMMON_COMPONENT*>(_c->common());
+  const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
+  assert(m);
+  assert(cc);
 
-  btistress_taken  = bti_stress->get();
+  if (m->use_bti()){
+    btistress_taken  = bti_stress->get();
+  }
 
 }
 /*--------------------------------------------------------------------------*/
@@ -1604,15 +1616,12 @@ void ADP_BUILT_IN_MOS::tt_commit()
 //  std::cerr << "ADP_BUILT_IN_MOS::tt_commit stress " << bti_stress->get() << "\n";
 //  std::cerr << "ADP_BUILT_IN_MOS::tt_commit deltatime " << sim->_dT0 << "\n";
 
-  double stressdelta = bti_stress->get() - btistress_taken ;
-  bti_eff_voltage = log(stressdelta/sim->_dT0);
-
-//  std::cerr << "ADP_BUILT_IN_MOS::tt_commit stressdelta " << stressdelta << "\n";
-//  std::cerr << "ADP_BUILT_IN_MOS::tt_commit eff_voltage " << bti_eff_voltage << "\n";
-
-  // parameters FIXME. put somewhere else.
-  // ble D_0 = 5.64e-4;  // cm cm / s
-
+  const COMMON_COMPONENT* cc = prechecked_cast<const COMMON_COMPONENT*>(_c->common());
+  const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
+  
+  //??
+//  double stressdelta = bti_stress->get() - btistress_taken ;
+//   bti_eff_voltage = log(stressdelta/sim->_dT0);
 
 }
 /*--------------------------------------------------------------------------*/

@@ -1132,9 +1132,7 @@ void TTT::store_results(double x)
   int ii = 0;
   for (PROBELIST::const_iterator
 	 p=storelist().begin();  p!=storelist().end();  ++p) {
-    trace0("TTT::store_results()");
-    trace0(("TTT::store_results()"+ (*p)->label()).c_str());
-    trace1("TTT::store_results()", (*p)->value());
+    trace1(("TTT::store_results()"+ (*p)->label()).c_str(),  (*p)->value());
     _sim->_waves[ii++].push(x, (*p)->value());
   }
   trace0("TTT::store_results done");
@@ -1155,7 +1153,7 @@ void TTT::advance_Time(void)
       _sim->_tt_rejects=0;
       _sim->update_tt_order();
 
-      if (_trace>0 )
+      if ( _trace > 0 )
         _out << "* advance_Time to " << _sim->_Time0 << 
           " iteration number " << _sim->tt_iteration_number() << 
           " have "<<  _sim->_adp_nodes << " nodes " << "\n";
@@ -1176,6 +1174,7 @@ void TTT::advance_Time(void)
       //CARD_LIST::card_list.tt_advance(); //necessary??
       trace2("TTT::advance_Time ", _sim->_tr[0], _sim->_tt[0]);
       trace2("TTT::advance_Time ", _sim->_tr1[0], _sim->_tt1[0]);
+
       assert(is_number(_sim->_tr1[0]));
       assert(is_number(_sim->_tt1[0]));
 

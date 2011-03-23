@@ -5257,19 +5257,23 @@ void ADP_BUILT_IN_MOS8::init(const COMPONENT* d)
   assert(m);
 
   assert(c);
-  ADP_BUILT_IN_MOS::init(d);
+  trace0( "ADP_BUILT_IN_MOS8::init\n" );
+  
+  // constructor does that. (init is intentionally non-virtual)
+  // ADP_BUILT_IN_MOS::init(d);
 
   if ( m->use_hci()){
     hci_stress = new ADP_NODE(d, "hci" );
     ADP_NODE_LIST::adp_node_list.push_back( hci_stress );
 
     trace0( "initin vthdelta\n" );
-    vthdelta_hci=0;
-    vthscale_hci=1;
+    vthdelta_hci = 0;
+    vthscale_hci = 1;
 
   }else{
     vthdelta_hci=
-    vthscale_hci=NAN;
+    vthscale_hci = NAN;
+    hci_stress = NULL;
   }
 	//  vto=m->vto;
 	//
@@ -5283,7 +5287,7 @@ ADP_CARD* MODEL_BUILT_IN_MOS8::new_adp(const COMPONENT* c)const
   m=m;
   trace0(( "MODEL_BUILT_IN_MOS8::new_adp for " + c->short_label() ).c_str() );
 
-  ADP_BUILT_IN_MOS8* a = new ADP_BUILT_IN_MOS8(c);
+  ADP_BUILT_IN_MOS8* a = new ADP_BUILT_IN_MOS8(c,"c->short_label()");
   assert( c->adp() == NULL );
   assert(a);
   return a;

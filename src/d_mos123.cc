@@ -204,11 +204,9 @@ void MODEL_BUILT_IN_MOS123::precalc_first()
     // final adjust: done
 }
 /*--------------------------------------------------------------------------*/
-void ADP_BUILT_IN_MOS123::init(const COMPONENT* c)
+ADP_BUILT_IN_MOS123::ADP_BUILT_IN_MOS123(const COMPONENT* c, const std::string name_in):
+     ADP_BUILT_IN_MOS(c,name_in)
 {
-  std::cerr << "ADP_BUILT_IN_MOS123::init( " <<c-> long_label()<< " )\n";
-  assert(c);
-  ADP_BUILT_IN_MOS::init(c);
   assert(c);
   const COMMON_BUILT_IN_MOS* cc = prechecked_cast<const COMMON_BUILT_IN_MOS*>(c->common());
   assert(cc);
@@ -236,7 +234,7 @@ ADP_CARD* MODEL_BUILT_IN_MOS123::new_adp(const COMPONENT* c)const
   assert(cc != NULL);
   assert( m == cc->model());
 
-  ADP_BUILT_IN_MOS123* a = new ADP_BUILT_IN_MOS123(c);
+  ADP_BUILT_IN_MOS123* a = new ADP_BUILT_IN_MOS123(c, "noname");
 
   a->vto=m->vto; //?
 

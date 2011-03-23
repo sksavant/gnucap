@@ -785,7 +785,7 @@ void DEV_BUILT_IN_RCD::expand()
   }
   if (_sim->is_first_expand()) {
     assert (!_Ccgfill);
-    _Ccgfill = new ADP_NODE((const COMPONENT*) this);
+    _Ccgfill = new ADP_NODE((const COMPONENT*) this, short_label()+".C");
   }
 
 // idee: _Ccgfill:: tr_value <= udc

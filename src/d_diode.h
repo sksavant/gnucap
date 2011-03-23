@@ -251,9 +251,11 @@ private: // node list
 class ADP_BUILT_IN_DIODE
   :public ADP_CARD{
 public:
-  explicit ADP_BUILT_IN_DIODE(const COMPONENT* c) : ADP_CARD(c) {init(c);}
+  explicit ADP_BUILT_IN_DIODE(const COMPONENT* c, const std::string n) :
+    ADP_CARD(c,n) 
+    {init(c);}
+protected:
   void init(const COMPONENT*);
-public:
 };
 
 /*--------------------------------------------------------------------------*/

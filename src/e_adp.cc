@@ -36,24 +36,6 @@ uint_t ADP_NODE::order() const{
   return( min( (int) _order,(int) CKT_BASE::_sim->get_tt_order() ) );
 } // order used for extrapolation.
 /*----------------------------------------------------------------------------*/
-ADP_NODE::ADP_NODE( const COMPONENT* c, const char name_in[] ) :
-  CKT_BASE(),
-  _number(0)
-{
-  init();
-  assert(c);
-  set_label( c->short_label() + "." +  std::string(name_in) );
-}
-/*----------------------------------------------------------------------------*/
-ADP_NODE::ADP_NODE( const COMPONENT* c, std::string name_in ) :
-  CKT_BASE(),
-  _number(0)
-{
-  init();
-  assert(c);
-  set_label( c->short_label() + "." +  std::string(name_in) );
-}
-/*----------------------------------------------------------------------------*/
 ADP_NODE::ADP_NODE( const ADP_NODE& p ) :
   CKT_BASE(p),
   _number(p._number)
@@ -62,15 +44,15 @@ ADP_NODE::ADP_NODE( const ADP_NODE& p ) :
   std::cout << "copy?? (should not happen)\n";
 }
 /*----------------------------------------------------------------------------*/
-ADP_NODE::ADP_NODE( const COMPONENT* c ) :
+/*----------------------------------------------------------------------------*/
+ADP_NODE::ADP_NODE( const COMPONENT* c, const std::string n ) :
   CKT_BASE(),
   _number(0),
   dbg(0),
   tr_noise(0)
 {
-  init();
+  init(c,n);
   assert(c);
-  set_label( c->long_label() + ".."  );
 }
 /*----------------------------------------------------------------------------*/
 ADP_NODE_UDC::ADP_NODE_UDC( const COMPONENT* c ) : ADP_NODE(c, "udc") { }
@@ -78,8 +60,8 @@ ADP_NODE_UDC::ADP_NODE_UDC( const COMPONENT* c ) : ADP_NODE(c, "udc") { }
 ADP_NODE_RCD::ADP_NODE_RCD( const COMPONENT* c ) : ADP_NODE(c, "rcd"), udc(.2)
 {}
 /*----------------------------------------------------------------------------*/
-void ADP_NODE::init(){
-  trace0(("ADP_NODE::init " + long_label()).c_str() );
+void ADP_NODE::init(const COMPONENT* c, const std::string name_in){
+  set_label( c->short_label() + "." +  name_in );
   tr_value = (0.);
   tr_noise = NAN;
   dbg=0;
@@ -97,14 +79,9 @@ void ADP_NODE::init(){
   dbg++;
 
   _number=_sim->newnode_adp();
+  trace1(("ADP_NODE::init " + long_label()).c_str(), _number );
 
-  //old stuff.
-  // _tt()=0.0;
-
-
-  
-
-  tt_value3=NAN; //FIXME
+  // tt_value3=NAN; //FIXME
   tt_expect=NAN; //FIXME
   tr_value3=NAN; //FIXME
 
@@ -735,7 +712,8 @@ void ADP_NODE::tr_expect_3_exp_fit(){
   }
 
   if (tt_expect < -1e-8 && _positive){
-    error(bDANGER, "* ADP_NODE::tt_expect3_exp neg error step %i, Time0=%f, %s, tt_value = %g, ( %g, %g, %g; %g) tte: %g \n", \
+    error(bDANGER, "* ADP_NODE::tt_expect3_exp neg error step %i, Time0=%f, %s,"
+        " tt_value = %g, ( %g, %g, %g; %g) tte: %g \n", \
         CKT_BASE::_sim->tt_iteration_number(),
          dT0(), short_label().c_str(), tt_value,
          tr_value3, _delta[2], _delta[1], _delta_expect,
@@ -1254,7 +1232,7 @@ double ADP_NODE::tt_integrate_2_exp(double tr_) {
   return double(ret);
 }
 /*----------------------------------------------------------------------*/
-ADP_CARD::ADP_CARD() {unreachable();}
+// ADP_CARD::ADP_CARD() {unreachable();}
 /*----------------------------------------------------------------------*/
 ADP_CARD::ADP_CARD(const ADP_CARD& p) : CARD(p) {unreachable();} 
 /*----------------------------------------------------------------------*/
