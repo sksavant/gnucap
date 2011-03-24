@@ -181,8 +181,6 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
 
 
   long double up = pow(10, -7.5);
-//  long double uref = 1;
-//  double lambda=1;
   double base=10;
   //double mu=1;
   uint_t k=0;
@@ -204,7 +202,7 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
       COMMON_BUILT_IN_RCD* RCD1 = new COMMON_BUILT_IN_RCD;
       RCD1->set_modelname( rcd_model_name ); // <= !
       RCD1->attach(this); // ?
-      RCD1->Uref = double( uref );
+      RCD1->Uref = uref;
       RCD1->Recommon = double (up);
       double wt = mat[ cols * row + col];
 
@@ -212,9 +210,6 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
       RCD1->Rccommon0 = double(down);
       trace6("MODEL_BUILT_IN_BTI_INF::attach_rcds ", row, col, k, up, down, wt); 
       trace1("MODEL_BUILT_IN_BTI_INF::attach_rcds ", rcd_number); 
-
-      //double _rr = _rr_.subs(runter=runter, u_gate_=uref)
-
       assert( rcd_number > k );
 
       //stringstream a;

@@ -52,7 +52,7 @@ CKT_BASE::~CKT_BASE()
 //  trace1("~CKT_BASE", _probes);
   PROBE_LISTS::purge(this);
   if(_probes!=0){
-    trace1( ("CKT_BASE::~CKT_BASE " + long_label()).c_str() , _probes);
+    error(bDANGER ,"CKT_BASE::~CKT_BASE %s %i ", long_label().c_str() , _probes);
   }
   assert(_probes==0);
 }

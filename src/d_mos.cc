@@ -1608,16 +1608,12 @@ void ADP_BUILT_IN_MOS::tt_accept()
 /*--------------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS::tt_commit()
 {
-  //FIXME: move c to ADP_CARD. merge ADP_card with DEV?
-  //const DEV_BUILT_IN_MOS* c = (const DEV_BUILT_IN_MOS*) (bti_stress->c());
-  SIM_DATA* sim = CKT_BASE::_sim;
-//  std::cerr << "ADP_BUILT_IN_MOS::tt_commit " << c->long_label() << "\n";
-//  std::cerr << "ADP_BUILT_IN_MOS::tt_commit time " << sim->_Time0 << "\n";
-//  std::cerr << "ADP_BUILT_IN_MOS::tt_commit stress " << bti_stress->get() << "\n";
-//  std::cerr << "ADP_BUILT_IN_MOS::tt_commit deltatime " << sim->_dT0 << "\n";
 
-  const COMMON_COMPONENT* cc = prechecked_cast<const COMMON_COMPONENT*>(_c->common());
-  const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
+
+  //SIM_DATA* sim = CKT_BASE::_sim;
+
+  //const COMMON_COMPONENT* cc = prechecked_cast<const COMMON_COMPONENT*>(_c->common());
+  //const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
   
   //??
 //  double stressdelta = bti_stress->get() - btistress_taken ;
