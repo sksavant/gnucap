@@ -84,8 +84,10 @@ namespace TT {
 
 				}else{
 					trace1("TTT::setup ran already", (double)_Tstart );
-
-					if(arg1<arg2){
+					if((double)arg1==0){
+						_Tstop  = arg2; 
+						_Tstart =0;
+					}else if(arg1<arg2){
 						_Tstop  = arg2; 
 						_Tstep = arg1;
 					}else{
