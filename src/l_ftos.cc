@@ -60,12 +60,12 @@ std::string to_string(unsigned n)
   return s;
 }
 /*--------------------------------------------------------------------------*/
-string to_string(size_t n)
-{
-  char s[100];
-  sprintf(s, "%d", (int)n);
-  return s;
-}
+ string to_string(unsigned long int n)
+ {
+   char s[100];
+   sprintf(s, "%d", (int)n);
+   return s;
+ }
 /*--------------------------------------------------------------------------*/
 string to_string(int n)
 {
