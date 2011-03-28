@@ -239,23 +239,32 @@ void SIM_DATA::alloc_vectors()
 	
   trace0("SIM_DATA::alloc_vectors ADP_NODE");
   _tr  = new double[_adp_nodes];
-  std::fill_n(_tr, _adp_nodes, NAN); //invalidate...
+
+
   _tr1 = new double[_adp_nodes];
   _tr2 = new double[_adp_nodes];
   _tr3 = new double[_adp_nodes];
   _tt1 = new double[_adp_nodes];
 
+
+  std::fill_n(_ac, _total_nodes+1, 0);
+  std::fill_n(_i,  _total_nodes+1, 0);
+  std::fill_n(_v0, _total_nodes+1, 0);
+  std::fill_n(_vt1,_total_nodes+1, 0);
+
+  invalidate_tt();
+}
+
+/*--------------------------------------------------------------------------*/
+// debugging flow
+void SIM_DATA::invalidate_tt(){
+  std::fill_n(_tr, _adp_nodes, NAN); 
 #ifdef DO_TRACE
   std::fill_n(_tr1, _adp_nodes, NAN); 
   std::fill_n(_tr2, _adp_nodes, NAN); 
   std::fill_n(_tr3, _adp_nodes, NAN); 
   std::fill_n(_tt1, _adp_nodes, NAN); 
 #endif
-
-  std::fill_n(_ac, _total_nodes+1, 0);
-  std::fill_n(_i,  _total_nodes+1, 0);
-  std::fill_n(_v0, _total_nodes+1, 0);
-  std::fill_n(_vt1,_total_nodes+1, 0);
 }
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::unalloc_vectors()

@@ -426,7 +426,7 @@ void TTT::sweep() // tr sweep wrapper.
     //ADP_LIST::adp_list.do_forall( &ADP::tt_commit );
     CARD_LIST::card_list.tt_behaviour_commit( );
   }
-  _sim->_time0=0.0;
+  _sim->_time0 = 0.0;
 
   // if (_tt_cont) _inside_tt = true;
   try{
@@ -441,7 +441,8 @@ void TTT::sweep() // tr sweep wrapper.
     _out << "sweep failed\n";
     _accepted=_accepted_tt=false;
     ::status.review.stop();
-    throw(e);
+    _sim->invalidate_tt();
+    // throw(e); go on with smalller step?
   }
 
   trace1("TTT done TRANSIENT::sweep", _sim->_last_time);
@@ -702,9 +703,11 @@ bool TTT::next()
       assert(_time_by_adp >= 0);
       new_dT = fmin(new_dT, _dT_by_adp);
     } 
+    if (!_accepted){
+      new_dT = _sim->_dT0/2.0;
+    }
 
     assert( new_dT == new_dT );
-    trace1( "TTT::next after reject: ", _Time1 );
 
     if ( _trace>5 ) 
       _out << "* retry step " << new_dT << " at " << _sim->_Time0 << " ( " <<
@@ -1131,7 +1134,7 @@ void TTT::store_results(double x)
   _sim->_mode=s_TRAN;
   int ii = 0;
   for (PROBELIST::const_iterator
-	 p=storelist().begin();  p!=storelist().end();  ++p) {
+      p=storelist().begin();  p!=storelist().end();  ++p) {
     trace1(("TTT::store_results()"+ (*p)->label()).c_str(),  (*p)->value());
     _sim->_waves[ii++].push(x, (*p)->value());
   }

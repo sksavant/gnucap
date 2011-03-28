@@ -200,6 +200,7 @@ struct INTERFACE SIM_DATA {
   int _stepno; // number of transient steps accepted.
   void update_tt_order();
   uint_t get_tt_order() const;
+  void invalidate_tt();
   void force_tt_order(uint_t i){ untested(); _tt_order = i;}
 };
 /*--------------------------------------------------------------------------*/
