@@ -1349,7 +1349,6 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   if( _sim->_time0==0 ){
     _Ccgfill->tr_lo=involts();
     _Ccgfill->tr_hi=involts();
-
   }  else {
     _Ccgfill->tr_lo=min(involts(), _Ccgfill->tr_lo);
     _Ccgfill->tr_hi=max(involts(), _Ccgfill->tr_hi);

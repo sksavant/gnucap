@@ -69,15 +69,10 @@ double sweep_fix(CS&, double start, double last)
   return value;
 }
 /*--------------------------------------------------------------------------*/
-static void setup(CS& cmd)
+static void setup(CS& cmd, CARD_LIST* scope)
 {
   for (;;) {
-    if (cmd.is_digit()) {
-      swp_steps[swp_nest] = cmd.ctoi() ;
-      swp_steps[swp_nest] = (swp_steps[swp_nest]) 
-	? swp_steps[swp_nest]-1
-	: 0;
-    }else if (cmd.umatch("li{near} ")) {
+    if (cmd.umatch("li{near} ")) {
       swp_type[swp_nest] = 0;
     }else if (cmd.umatch("lo{g} ")) {
       swp_type[swp_nest] = 'L';
@@ -85,179 +80,129 @@ static void setup(CS& cmd)
       break;
     }
   }
+  PARAMETER<double> s, l;
+  PARAMETER<uint_t> c;
+  cmd >> c;
   cmd >> para_name;
+  cmd >> s;
+  cmd >> l;
 
-  start = cmd.ctof();
-  last = cmd.ctof();
+  s.e_val(0., scope);
+  l.e_val(1., scope);
+  c.e_val(2, scope);
+
+  start = s;
+  last = l;
+  assert (c>1);
+  swp_steps[swp_nest] = c-1;
 
 
   trace2(("got para name " + para_name).c_str(), start, last );
 }
 /*--------------------------------------------------------------------------*/
-static void buildfile(CS& cmd)
-{
-  static FILE *fptr;
-  
-  setup(cmd);
-  if (fptr) {
-    fclose(fptr);
-  }else{
-  }
-  sprintf(my_tempfile, "%s", tempfile.c_str());
-  int fd = mkstemp(my_tempfile);
-  fptr = fdopen( fd, "w+");
-  if (!fptr) {
-    throw Exception_File_Open("can't open temporary file:" + std::string(my_tempfile));
-  }else{
-  }
-
-  fprintf(fptr, "* %s\n", cmd.fullstring().c_str());
-  
-  for (;;) {
-    char buffer[BUFLEN];
-    std::string sbuffer;
-    trace0("getting things");
-
-    switch (ENV::run_mode) {
-      case rSCRIPT:
-        trace0("in script mode");
-
-        sbuffer = std::string( cmd.get_line("") );
-
-        break;
-      default:
-        trace0("not in script mode");
-        getcmd(">>>", buffer, BUFLEN);
-        sbuffer=buffer;
-    }
-
-    if (Umatch(sbuffer.c_str(),"go ")) {
-      trace0(("got go " + std::string(my_tempfile)).c_str());
-      break;
-    }else{
-    }
-    fprintf(fptr, "%s\n", sbuffer.c_str());
-  }
-  fclose(fptr);
-  trace0(("closed tmp " + std::string( my_tempfile )).c_str());
-  fptr = NULL;
-}
-/*--------------------------------------------------------------------------
-static void doit_old(CARD_LIST* scope)
-{
-  static FILE *fptr;
-  double para_value;
-  
-  for (swp_count[swp_nest]=0; swp_count[swp_nest]<=swp_steps[swp_nest];
-       ++swp_count[swp_nest]) {
-    if (fptr) {
-      fclose(fptr);
-    }else{
-    }
-    fptr = fopen(my_tempfile, "r");
-    if (!fptr) {
-      throw Exception_File_Open("can't open " + tempfile);
-    }else{
-    }
-    char buffer[BUFLEN];
-    fgets(buffer,BUFLEN,fptr);
-    {
-      CS cmd(CS::_STRING, buffer); //fgets from local file, obsolete
-      if (cmd.umatch("sw{eep} ") || cmd.umatch(".sw{eep} ") || (std::string(cmd).c_str())[0] == '*') {
-	setup(cmd);
-        trace0((" sweep doit cmd " + std::string(cmd)).c_str());
-      }else{
-	throw Exception("bad file format: " + std::string(my_tempfile) + " (" + std::string(cmd) + ")" );
-      }
-      unsigned ind = cmd.cursor();
-
-      para_value = sweep_fix( cmd, start, last );
-
-      strncpy(buffer, "* parameter                            ", ind);
-      buffer[ind-1] = ' ';		// make sure there is a delimiter   
-
-      scope->params()->set( para_name, para_value );
-
-    }					// in case the words run together   
-    for (;;) {				// may wipe out one letter of fault 
-      {
-        trace2((" sweep doit " + std::string(buffer)).c_str(), swp_count[swp_nest], para_value);
-	CS cmd(CS::_STRING, buffer); //fgets from local file, obsolete
-	CMD::cmdproc(cmd, scope);
-      }
-      if (!fgets(buffer,BUFLEN,fptr)) {
-	break;
-      }else{
-      }
-      {
-	CS cmd(CS::_STRING, buffer); //fgets from local file, obsolete
-	if (cmd.umatch("sw{eep} ")) {
-	  cmd.warn(bDANGER, "command not allowed in sweep");
-	  buffer[0] = '\'';
-	}else{
-	}
-      }
-      // IO::mstdout << swp_count[swp_nest]+1 << "> " << buffer;
-    }
-  }
-  fclose(fptr);
-  fptr = NULL;
-  swp_count[swp_nest] = 0;
-}
---------------------------------------------------------------------------*/
-static void doit(CARD_LIST* scope)
-{
-  static FILE *fptr;
-  double para_value;
-  
-  for (swp_count[swp_nest]=0; swp_count[swp_nest]<=swp_steps[swp_nest];
-       ++swp_count[swp_nest]) {
-    if (fptr) {
-      fclose(fptr);
-    }else{
-    }
-    fptr = fopen(my_tempfile, "r");
-    if (!fptr) {
-      throw Exception_File_Open("can't open " + tempfile);
-    }else{
-    }
-    char buffer[BUFLEN];
-    fgets(buffer,BUFLEN,fptr);
-
-    CS cmd(CS::_STRING, buffer); //fgets from local file, obsolete
-    if (cmd.umatch("sw{eep} ") || cmd.umatch(".sw{eep} ") || (std::string(cmd).c_str())[0] == '*') {
-       // setup(cmd);
-      trace0((" sweep doit cmd " + std::string(cmd)).c_str());
-    }else{
-      throw Exception("bad file format: " + std::string(my_tempfile) + " (" + std::string(cmd) + ")" );
-    }
-
-    para_value = sweep_fix( cmd, start, last );
-
-    trace1(("setting " + para_name).c_str(), para_value);
-    scope->params()->set( para_name, para_value );
-
-    trace1(("doit excuting " + std::string( my_tempfile )).c_str(), (long int)ENV::run_mode);
-
-    // FIXME? makes interactive mode impossble
-    SET_RUN_MODE xx(rBATCH);
-    CMD::command(std::string("< ") +std::string(my_tempfile) , scope);
-  }
-  fclose(fptr);
-  fptr = NULL;
-  swp_count[swp_nest] = 0;
-}
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 class CMD_SWEEP : public CMD {
 public:
   void do_it(CS& cmd, CARD_LIST* Scope)
   {
     if (cmd.more()) {
-      buildfile(cmd);
+      buildfile(cmd, Scope);
     }else{
     }
     doit(Scope);
-//    command("unfault", Scope);
+  }
+/*--------------------------------------------------------------------------*/
+  void doit(CARD_LIST* scope)
+  {
+    static FILE *fptr;
+    double para_value;
+
+    for (swp_count[swp_nest]=0; swp_count[swp_nest]<=swp_steps[swp_nest];
+        ++swp_count[swp_nest]) {
+      if (fptr) {
+        fclose(fptr);
+      }else{
+      }
+      fptr = fopen(my_tempfile, "r");
+      if (!fptr) {
+        throw Exception_File_Open("can't open " + tempfile);
+      }else{
+      }
+      char buffer[BUFLEN];
+      fgets(buffer,BUFLEN,fptr);
+
+      CS cmd(CS::_STRING, buffer); //fgets from local file, obsolete
+      if (cmd.umatch("sw{eep} ") || cmd.umatch(".sw{eep} ") || (std::string(cmd).c_str())[0] == '*') {
+        // setup(cmd);
+        trace0((" sweep doit cmd " + std::string(cmd)).c_str());
+      }else{
+        throw Exception("bad file format: " + std::string(my_tempfile) + " (" + std::string(cmd) + ")" );
+      }
+
+      para_value = sweep_fix( cmd, start, last );
+
+      trace1(("setting " + para_name).c_str(), para_value);
+      scope->params()->set( para_name, para_value );
+
+      trace1(("doit excuting " + std::string( my_tempfile )).c_str(), (long int)ENV::run_mode);
+
+      // FIXME? makes interactive mode impossble
+      SET_RUN_MODE xx(rBATCH);
+      CMD::command(std::string("< ") +std::string(my_tempfile) , scope);
+    }
+    fclose(fptr);
+    fptr = NULL;
+    swp_count[swp_nest] = 0;
+  }
+/*--------------------------------------------------------------------------*/
+  void buildfile(CS& cmd, CARD_LIST* scope)
+  {
+    static FILE *fptr;
+
+    setup(cmd, scope);
+    if (fptr) {
+      fclose(fptr);
+    }else{
+    }
+    sprintf(my_tempfile, "%s", tempfile.c_str());
+    int fd = mkstemp(my_tempfile);
+    fptr = fdopen( fd, "w+");
+    if (!fptr) {
+      throw Exception_File_Open("can't open temporary file:" + std::string(my_tempfile));
+    }else{
+    }
+
+    fprintf(fptr, "* %s\n", cmd.fullstring().c_str());
+
+    for (;;) {
+      char buffer[BUFLEN];
+      std::string sbuffer;
+      trace0("getting things");
+
+      switch (ENV::run_mode) {
+        case rSCRIPT:
+          trace0("in script mode");
+
+          sbuffer = std::string( cmd.get_line("") );
+
+          break;
+        default:
+          trace0("not in script mode");
+          getcmd(">>>", buffer, BUFLEN);
+          sbuffer=buffer;
+      }
+
+      if (Umatch(sbuffer.c_str(),"go ")) {
+        trace0(("got go " + std::string(my_tempfile)).c_str());
+        break;
+      }else{
+      }
+      fprintf(fptr, "%s\n", sbuffer.c_str());
+    }
+    fclose(fptr);
+    trace0(("closed tmp " + std::string( my_tempfile )).c_str());
+    fptr = NULL;
   }
 } p;
 DISPATCHER<CMD>::INSTALL d(&command_dispatcher, "sweep|for", &p);

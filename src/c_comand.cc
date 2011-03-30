@@ -141,6 +141,7 @@ class CMD_ECHO : public CMD {
 				str += cmd.ctoc();
 			}
 			out << "* " <<str << "\n";
+			out.reset();
 		}
 } p6;
 DISPATCHER<CMD>::INSTALL d6(&command_dispatcher, "echo", &p6);
