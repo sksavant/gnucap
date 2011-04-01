@@ -64,6 +64,7 @@ class TTT : public TRANSIENT {
     void	store_results(double); // override virtual
     void	store_results_tt(double); 
     void	print_stored_results_tt(double); 
+    void	power_down(double ); 
   private:
     TRACE _trace;		// enum: show extended diagnostics
     bool _power_down;

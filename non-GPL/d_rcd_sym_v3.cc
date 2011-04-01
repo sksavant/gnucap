@@ -251,10 +251,11 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE* _c,
 
   assert (E_low>=0);
 
-  if(!((double)E_high >= (double)E_low)){
-    error(bDANGER,"MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last uin_high=%LE uin_low=%LE deltaE= %LE; %LE>%LE\n",
-        uin_high, uin_low, E_high - E_low, E_high, E_low );
-    throw(Exception("false"));
+  if(double(E_high - E_low) < -1e-20 ){
+    error(bDANGER,"MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last uin_high=%LE uin_low=%LE deltaE= %LE; %LE > %LE, diff %LE\n",
+        uin_high, uin_low, E_high - E_low, E_high, E_low, E_high-E_low );
+    untested();
+//        throw(Exception("something wrong with order"));
   }
 
   bool linear_inversion=false;
@@ -350,9 +351,9 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE* _c,
   if( ( E_old < E_high ) && ( E_low <= E_old ))
     _c->set_order(0);
 
-  if ((double)E_high<(double)E_low){
+  if ((double)E_high-(double)E_low < -1e-20){
     error( bDANGER, "COMMON_BUILT_IN_RCD:: sanitycheck ( %LE < %LE )", E_high, E_low);
-    assert(false);
+    untested();
   }
 
   if (linear_inversion)  _c->set_order(0);
@@ -362,8 +363,6 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE* _c,
   //
   //
   assert(is_number(E_high-E_low));
-  assert( (double) E_high-(double) E_low >= 0);
-  assert((double) E_high>= (double) E_low);
   assert(E_low <= E || double(E)==1.0 || double(E_high)==1.0 || !linear_inversion);
 
   if(E > E_high && E!=1){

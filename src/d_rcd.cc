@@ -1491,7 +1491,7 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
   double uin_eff= cap->tr(); 
 
   if ((cap->tr_lo >  uin_eff) || (uin_eff > cap->tr_hi ) ){
-    error(bDANGER, "MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last Time %E \n    "
+    error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress_last Time %E \n    "
                 " %s order broken, should be %E < %LE < %E, is %i%i\n",
                 _sim->_Time0,
                 long_label().c_str(),
