@@ -248,20 +248,18 @@ void TTT::power_down(double time)
     if (_trace>0 )
       _out << "* TTT::sweep_tt after int power down\n";
 
-    _out << "b4 powerdown\n";
-    print_results_tt( _sim->_Time0 );
     _sim->zero_some_voltages();
-    _sim->_dt0 = _Tstop - _Tstart;
+    _sim->_dt0 = time;
     _sim->_dT0 = 0;
 
-    // CARD_LIST::card_list.do_forall( &CARD::stress_apply );
+    // CARD_LIST::card_list.do_forall( &CARD::stress_apply ); // nicht gut.
     CARD_LIST::card_list.do_forall( &CARD::tt_prepare ); // lasts==0 hack
+    print_results_tt( _sim->_Time0 );
 
     CARD_LIST::card_list.do_forall( &CARD::tr_stress );
     CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
     CARD_LIST::card_list.do_forall( &CARD::stress_apply );
 
-    _out << "after powerdown for " << _sim->_dt0 <<"\n";
     print_results_tt( _Tstop );
     _sim->_last_Time = _Tstop;
 

@@ -1490,12 +1490,13 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
 
   double uin_eff= cap->tr(); 
 
-  if ((cap->tr_lo >  uin_eff) || (uin_eff > cap->tr_hi ) ){
+  if ((uin_eff < cap->tr_lo) || (uin_eff > cap->tr_hi ) ){
     error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress_last Time %E \n    "
-                " %s order broken, should be %E < %LE < %E, is %i%i\n",
-                _sim->_Time0,
-                long_label().c_str(),
-        cap->tr_lo, uin_eff, cap->tr_hi, (cap->tr_lo > uin_eff) , (cap->tr_hi < uin_eff) );
+        " %s order broken, should be %E < %LE < %E, is %i%i\n",
+        (double)_sim->_Time0,
+        long_label().c_str(),
+        cap->tr_lo, uin_eff, cap->tr_hi, 
+        (cap->tr_lo < uin_eff), (cap->tr_hi > uin_eff) );
   }
 
   assert( cap->tr_lo <= cap->tr_hi );
@@ -1548,6 +1549,7 @@ void DEV_BUILT_IN_RCD::tt_prepare()
   assert(m);
 
   _tr_fill = _Ccgfill->tt();
+
   assert(_sim->_time0 == 0 );
 
   trace0(("DEV_BUILT_IN_RCD::tt_prepare " + short_label()).c_str());

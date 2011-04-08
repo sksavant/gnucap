@@ -77,6 +77,8 @@ namespace TT {
 			} else if (arg2.has_hard_value() ) {
 				trace0("TTT::setup have 2");
 				_Tstart = _sim->_last_Time;
+				_sim->_time0=0;
+				_sim->_last_time=0;
 				if ((double)_Tstart == 0){
 					trace0("TTT::setup latching tr times");
 					_tstep = arg1;
@@ -105,6 +107,8 @@ namespace TT {
 				trace1("TTT::setup have 1", _sim->_last_Time);
 				_Tstart = _sim->_last_Time;
 				_Tstop  = arg1; // as tran
+				_sim->_time0=0;
+				_sim->_last_time=0;
 
 				// to trigger prints... (hack?)
 				if(double(_Tstop) == 0) _Tstop = double( _Tstart );
