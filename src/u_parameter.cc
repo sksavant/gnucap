@@ -206,4 +206,62 @@ bool Get(CS& cmd, const std::string& key, PARAMETER<int>* val)
   }
 }
 /*--------------------------------------------------------------------------*/
+std::string PARAMETER<std::string>::e_val_normal(const std::string& def, const CARD_LIST* scope)const
+{
+  trace0("PARAMETER<std::string>::e_val_normal " + _s + " default: " + def + " val " + _v);
+  assert(scope);
+
+  static int recursion=0;
+  static const std::string* first_name = NULL;
+  if (recursion == 0) {
+    first_name = &_s;
+  }else{
+  }
+  assert(first_name);
+ 
+  if (_s == "inf") {
+    return my_infty();
+  }
+  ++recursion;
+  if (_s == "") {
+    // blank string means to use default value
+    _v = def;
+    if (recursion > 1) {
+      error(bWARNING, "parameter " + *first_name + " has no value\n");
+    }else{
+    }
+  }else if (_s == "{") {
+    trace0("lookup");
+    // anything else means look up the value
+    if (recursion <= OPT::recursion) {
+      _v = lookup_solve(def, scope);
+      if (_v == "") {untested();itested();
+	error(bDANGER, "parameter " + *first_name + " has no value\n");
+      }else{
+      }
+    }else{untested();
+      _v = def;
+      error(bDANGER, "parameter " + *first_name + " recursion too deep\n");
+    }
+  }else{
+    // start with # means we have a final value
+    _v=_s;
+  }
+  --recursion;
+  trace0("PARAMETER<T>::e_val "+ _v);
+  return _v;
+}
+
+/*--------------------------------------------------------------------------*/
+string PARAMETER<string>::my_infty()const{ return "inf"; }
+/*--------------------------------------------------------------------------*/
+string PARAMETER<string>::value()const {
+    trace0(("PARAMETER::std::string " + _s + " -> " + _v ).c_str());
+    return to_string(_v);
+  }
+/*--------------------------------------------------------------------------*/
+string PARAMETER<string>::string()const {
+    trace0(("PARAMETER::std::string " + _s + " -> " + _v ).c_str());
+    return to_string(_s);
+  }
 /*--------------------------------------------------------------------------*/

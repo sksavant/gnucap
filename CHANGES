@@ -30,3 +30,4 @@
 - read $PWD/.gnucaprc on startup (otherwise read ~/.gnucaprc)
 - rudimentary .vdump .vload support
 - propagate error ( return from main )
+- switched to automake dependencies (good idea? might break modelgen stuff)

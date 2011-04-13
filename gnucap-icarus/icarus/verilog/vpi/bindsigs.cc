@@ -1,5 +1,4 @@
-/*
- * :vim:sw=2:et:
+/* :vim:sw=2:et:
  * Copyright (c) 2008 True Circuits Inc.
  *
  * Author: Kevin Cameron
@@ -27,13 +26,12 @@
 # include  <dlfcn.h>
 # include  <math.h>
 
-# include  "vpi_user.h"
 
-# include  "vpi_priv.h"
 # include  "vpi_user.h"
+# include  "vvp/vpi_priv.h"
 # include  "acc_user.h"
 # define DECL__IVL_PARM_NM
-# include  "extpwl.h"
+# include  "vvp/extpwl.h"
 
 static int bs_debug;
 
@@ -117,7 +115,7 @@ static PLI_INT32 bindsigs_calltf(PLI_BYTE8 *user_data)
   }
 
   if (bs_debug > 0) {
-     fprintf(stderr,"trying to bind  \n");
+     fprintf(stderr,"bindsigs_calltf trying to bind  \n");
    }
   
   
@@ -151,8 +149,9 @@ static PLI_INT32 bindsigs_calltf(PLI_BYTE8 *user_data)
                       *up;
 
     if (bs_debug > 0) {
-      fprintf(stderr,"Binding ");
+      fprintf(stderr,"binding ");
       PrintInst(stderr,scope);
+      fprintf(stderr,"__");
       fprintf(stderr,".%s",rfp->id.name);
     }
 

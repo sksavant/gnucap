@@ -136,6 +136,7 @@ public:
   }
 
   T* operator[](std::string s) {
+    trace0(("Dispatching "+s).c_str());
     assert(_map);
     T* rv = (*_map)[s];
     if (!rv && OPT::case_insensitive) {
@@ -147,6 +148,7 @@ public:
   }
 
   T* operator[](CS& cmd) {
+    trace0(("Dispatching " + (std::string)cmd).c_str());
     unsigned here = cmd.cursor();
     std::string s;
     cmd >> s;
@@ -161,6 +163,7 @@ public:
   }
 
   T* clone(std::string s) {
+    trace0(("Dispatcher, cloning "+s).c_str());
     T* proto = (*this)[s];
     if (proto) {
       return proto->clone();

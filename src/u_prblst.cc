@@ -215,7 +215,7 @@ PROBE* PROBELIST::add_list(CS& cmd)
       found_something = add_branches(cmd.ctos(),what,&CARD_LIST::card_list);
       trace0("add_list found_something1 returned from brancges");
       if (!found_something) {
-        cmd.warn(bWARNING, here1, "No match");
+        cmd.warn(bWARNING, here1, "No match (al)");
       }else{
       }
       for (;;) {
@@ -313,6 +313,7 @@ void PROBELIST::add_all_nodes(const std::string& what)
 /*--------------------------------------------------------------------------*/
 MATH_OP strtotype(std::string s)
 {
+  trace0(( "MATH_OP::strtorype " + s).c_str() );
 
   if(Umatch(s,"sum ")) 
     return op_sum;
@@ -325,14 +326,13 @@ MATH_OP strtotype(std::string s)
   if(Umatch(s,"quot "))
     return op_quot;
   if(Umatch(s,"abs ")){
-    trace0("MATH_OP::strtorype abs == " + s );
+    trace0(( "MATH_OP::strtorype abs == " + s).c_str() );
     return op_abs;
   }
-  trace0("MATH_OP:: !abs " + s );
   if(Umatch(s,"tan "))
     return op_tan;
 
-  trace0("MATH_OP " + s + ": not implemented");
+  trace0(( "MATH_OP " + s + ": not implemented").c_str());
 
   return op_null;
 }
@@ -372,7 +372,7 @@ PROBE* PROBELIST::add_branches(const std::string&device,
                                const std::string&param,
                                const CARD_LIST* scope)
 {
-  trace0( "PROBELIST::add_branches " + device + "->" + param + " \n");
+  trace0( ( "PROBELIST::add_branches " + device + "->" + param + " \n" ).c_str());
   assert(scope);
   PROBE* found_something = NULL;
 

@@ -136,8 +136,9 @@ void EVAL_BM_EXTPWL::precalc_first(const CARD_LIST* Scope)
   _delta.e_val(_default_delta, Scope);
   _smooth.e_val(_default_smooth, Scope);
   if (_ext) {
-      trace1(("EVAL_BM_EXTPWL::precalc_first binding "+_ext.string()).c_str(), (bool) _ext); 
+      trace1(("EVAL_BM_EXTPWL::precalc_first binding "+_ext.string()).c_str(), _ext); 
       _ext = (some_int)bindExtSigConnect(_ext, _ext.string(), Scope, this);
+      trace1(("EVAL_BM_EXTPWL::precalc_first bound"), _ext); 
   }
   for (std::vector<std::pair<PARAMETER<double>,PARAMETER<double> > >::iterator
 	 p = _raw_table.begin();  p != _raw_table.end();  ++p) {
@@ -165,7 +166,7 @@ void EVAL_BM_EXTPWL::precalc_last(const CARD_LIST* Scope)
     last = p->first;
   }
 
-  trace1("EVAL_BM_EXTPWL::precalc_last->ExtStartSim?",E);
+  trace1("EVAL_BM_EXTPWL::precalc_last->ExtStartSim",E);
   //if (E==19) 
   ExtStartSim("TRAN");
   E++;
@@ -174,6 +175,7 @@ void EVAL_BM_EXTPWL::precalc_last(const CARD_LIST* Scope)
 /*--------------------------------------------------------------------------*/
 void EVAL_BM_EXTPWL::tr_eval(ELEMENT* d)const
 {
+  trace0("EVAL_BM_EXTPWL::tr_eval->ExtSigTrEval");
   if (_ext) {
      ExtSigTrEval(_ext,const_cast<std::vector<DPAIR>*>(&_num_table),d);
   }
@@ -216,6 +218,7 @@ bool EVAL_BM_EXTPWL::parse_numlist(CS& cmd)
   unsigned here  = cmd.cursor();
   std::pair<PARAMETER<double>, PARAMETER<double> > p;
   if (0 == _ext) {
+    trace0(("EVAL_BM_EXTPWL::parse_numlist, Init " + (string)cmd).c_str());
     _ext  = (some_int)bindExtSigInit(_ext.string(),cmd.fullstring().c_str());
     p.first  = 0;
     p.second = 0;

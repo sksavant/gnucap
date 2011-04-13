@@ -113,7 +113,7 @@ void COMMON_COMPONENT::detach_common(COMMON_COMPONENT** from)
 void COMMON_COMPONENT::attach_model(const COMPONENT* d)const
 {
   assert(d);
-  trace0("attaching model");
+  trace0(("attaching model to " + d->short_label()).c_str() );
 
   _model = d->find_model(modelname());
   assert(_model);
@@ -122,11 +122,13 @@ void COMMON_COMPONENT::attach_model(const COMPONENT* d)const
 void COMMON_COMPONENT::parse_modelname(CS& cmd)
 {
   set_modelname(cmd.ctos(TOKENTERM));
+  trace0(("COMMON_COMPONENT::parse_modelname " + _modelname).c_str() );
 }
 /*--------------------------------------------------------------------------*/
 // called only by COMMON_COMPONENT::parse_obsolete
 bool COMMON_COMPONENT::parse_param_list(CS& cmd)
 {
+  trace0(("COMMON_COMPONENT::parse_param_list " + cmd.tail()).c_str() );
   unsigned start = cmd.cursor();
   unsigned here = cmd.cursor();
   do{
@@ -137,6 +139,7 @@ bool COMMON_COMPONENT::parse_param_list(CS& cmd)
 /*--------------------------------------------------------------------------*/
 void COMMON_COMPONENT::parse_common_obsolete_callback(CS& cmd) //used
 {
+  trace0(("COMMON_COMPONENT::parse_common_obsolete_callback " + cmd.tail()).c_str() );
   if (cmd.skip1b('(')) {
     // start with a paren
     unsigned start = cmd.cursor();
@@ -450,6 +453,7 @@ void COMPONENT::set_port_by_name(std::string& int_name, std::string& ext_name)
 {itested();
   for (uint_t i=0; i<max_nodes(); ++i) {itested();
     if (int_name == port_name(i)) {itested();
+      trace0(("COMPONENT::set_port_by_name" + int_name).c_str());
       set_port_by_index(i, ext_name);
       return;
     }else{itested();
@@ -529,6 +533,7 @@ void COMPONENT::expand()
   CARD::expand();
   if (has_common()) {
     COMMON_COMPONENT* new_common = common()->clone();
+    trace0("COMPONENT::expand expanding common");
     new_common->expand(this);
     COMMON_COMPONENT* deflated_common = new_common->deflate();
     if (deflated_common != common()) {
@@ -536,6 +541,7 @@ void COMPONENT::expand()
     }else{untested();
     }
   }else{
+    trace0("COMPONENT::expand !common");
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -808,6 +814,7 @@ const MODEL_CARD* COMPONENT::find_model(const std::string& modelname)const
     assert(c);
     const MODEL_CARD* model = dynamic_cast<const MODEL_CARD*>(c);
     if (!model) {untested();
+      trace0("COMPONENT::find_model");
       throw Exception_Type_Mismatch(long_label(), modelname, ".model");
     }else if (!model->is_valid(this)) {itested();
       error(bWARNING, long_label() + ", " + modelname

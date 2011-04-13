@@ -88,6 +88,9 @@ void ExtLib::init(const char *args) {
 ExtRef *bindExtSigInit(const string &so__data__sigpath,const char *src) {
   char buff[so__data__sigpath.size()],*bp = buff,*bp2;
   const char *sp = so__data__sigpath.c_str();
+
+//  +external="../icarus/verilog/vvp/libvvp.so:-M. -mbindsigs -v netlist-dkc.vvp:%m.out"
+
   while ((*bp = *sp++) && *bp != ':') bp++;
   *bp++ = 0; bp2 = bp;
   while ((*bp = *sp++) && *bp != ':') bp++;
@@ -95,12 +98,18 @@ ExtRef *bindExtSigInit(const string &so__data__sigpath,const char *src) {
   ExtLib *lib;
   list<ExtLib*>::iterator scan=Libs.begin();
   for (; scan != Libs.end(); scan++) {
-    if (0 == (lib = *scan)->name.compare(buff)) goto have_it;
+    if (0 == (lib = *scan)->name.compare(buff)){
+      trace0("bindExtSigInit, already have it");
+      goto have_it;
+    }
   }
+  trace0(("bindExtSigInit new "+ (string)buff).c_str());
   lib = new ExtLib(buff,dlopen(buff,RTLD_LAZY|RTLD_GLOBAL));
   scan = Libs.insert(scan,lib);
   lib->init(bp2);
  have_it:
+  trace0(("bindExtSigInit new ExtRef src"+ (string)src).c_str());
+  trace0(("bindExtSigInit new ExtRef sp "+ (string)sp).c_str());
   ExtRef *ref = new ExtRef(lib,sp,toupper(*src));
   return ref;
 }
@@ -175,7 +184,7 @@ void  ExtSigTrEval(intptr_t data,std::vector<DPAIR> *num_table,ELEMENT *d) {
   SpcIvlCB *cbd = xsig->cb_data;
   double time0 = CKT_BASE::_sim->_time0,*dp,nxt;
   xsig->d = d;
-  dp  = (*cbd->eval)(cbd,time0,CB_LOAD,getVoltage,xsig,0),
+  dp  = (*cbd->eval)(cbd,time0,CB_LOAD,getVoltage,xsig,0);
   nxt = FixTable(dp,num_table,time0);
 }
 
@@ -189,9 +198,11 @@ void ExtSig::set_active(double time) {
 
 ExtSig *bindExtSigConnect(intptr_t handle,const string &spec,const CARD_LIST* Scope,COMMON_COMPONENT *cmpnt) {
   ExtRef *ref = (ExtRef*)handle;
+  trace1(("bindExtSigConnect spec:"+(string)spec).c_str(), ref->id());
   ExtSig *sig = 0;
   switch (ref->id()) {
     case EXT_SIG:
+      trace0("bindExtSigConnect EXT_SIG" + spec);
       sig = (ExtSig*)handle;
       break;
     case EXT_REF:
@@ -201,6 +212,7 @@ ExtSig *bindExtSigConnect(intptr_t handle,const string &spec,const CARD_LIST* Sc
       std::string path;
       // HACK?
       std::string scp_nm(scp->owner()->long_label());
+      trace0("bindExtSigConnect scp_nm " + scp_nm);
       char ch;
       while ((ch = *sp++)) {
         switch (ch) {
@@ -210,15 +222,22 @@ ExtSig *bindExtSigConnect(intptr_t handle,const string &spec,const CARD_LIST* Sc
           default:  path += ch; 
         }
       }
+      trace0(("bindExtSigConnect sp:"+(string)sp).c_str());
       list<ExtSig*>::iterator scan=ref->sigs.begin();
       for (; scan != ref->sigs.end(); scan++) {
         sig = *scan;
-        if (0 == path.compare(sig->cb_data->spec)) break;
+        if (0 == path.compare(sig->cb_data->spec)){
+          trace0("have " + string(sig->cb_data->spec) );
+          break;
+        }
       }
       int s;
-      sig = new ExtSig(cmpnt,lib,ref->iv,(*lib->bindnet)(path.c_str(),ref->iv,
-            &s,lib->handle,ExtSig::SetActive));
-      trace2("ExtSig *bindExtSigConnect", (intptr_t)sig, s);
+          
+      SpcIvlCB* foo= (SpcIvlCB*) (*lib->bindnet)(path.c_str(),ref->iv,
+            &s,lib->handle,ExtSig::SetActive);
+      trace2("cb", foo->last_error, foo->last_time);
+      sig = new ExtSig(cmpnt,lib,ref->iv, foo);
+      trace3(("bindExtSigConnect new sig to ref: " + path).c_str(), (intptr_t)sig, s, foo->last_value);
       sig->slots = s;
       ref->sigs.push_back(sig);
   }

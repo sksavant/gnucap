@@ -212,7 +212,7 @@ void MODEL_BUILT_IN_MOS_BASE::precalc_first()
     e_val(&(this->del), 0.0, par_scope);
     e_val(&(this->ld), 0.0, par_scope);
     e_val(&(this->wd), 0.0, par_scope);
-    e_val(&(this->bti_model_name), std::string(""), par_scope);
+    bti_model_name.e_val_strange( std::string(""), par_scope);
     // final adjust: code_pre
     // final adjust: override
     // final adjust: raw

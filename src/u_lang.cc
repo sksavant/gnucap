@@ -93,12 +93,14 @@ const CARD* LANGUAGE::find_proto(const std::string& Name, const CARD* Scope)
 /*--------------------------------------------------------------------------*/
 void LANGUAGE::new__instance(CS& cmd, MODEL_SUBCKT* owner, CARD_LIST* Scope)
 {
-//        std::cerr <<  "LANGUAGE::new__instance: " << cmd.fullstring() << "\n";
+  trace0(("LANGUAGE::new__instance "+ (std::string)cmd).c_str());
 
   if (cmd.is_end()) {
     // nothing
   }else{
     std::string type = find_type_in_string(cmd);
+    trace0(("LANGUAGE::new__instance type "+ (std::string) type).c_str());
+
     if (const CARD* proto = find_proto(type, owner)) {
       CARD* new_instance = proto->clone_instance();
       assert(new_instance);
@@ -107,6 +109,7 @@ void LANGUAGE::new__instance(CS& cmd, MODEL_SUBCKT* owner, CARD_LIST* Scope)
       if (x) {
 	assert(Scope);
 	Scope->push_back(x);
+        trace0(("LANGUAGE::new__instance pushback "));
       }else{
       }
     }else{
@@ -117,6 +120,7 @@ void LANGUAGE::new__instance(CS& cmd, MODEL_SUBCKT* owner, CARD_LIST* Scope)
 /*--------------------------------------------------------------------------*/
 CARD* LANGUAGE::parse_item(CS& cmd, CARD* c)
 {
+  trace0(("LANGUAGE::parse_item "+ (std::string)cmd).c_str());
   // See Stroustrup 15.4.5
   // If you can think of a better way, tell me.
   // It must be in the LANGUAGE class, not CARD.

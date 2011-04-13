@@ -183,7 +183,7 @@ void MODEL_BUILT_IN_BTI::precalc_first()
     e_val(&(this->mos_level), 0, par_scope);
     rcd_number.e_val(1, par_scope);
     e_val(&(this->anneal), true, par_scope);
-    e_val(&(this->rcd_model_name), std::string("rcd_model_hc"), par_scope);
+    rcd_model_name.e_val_strange( std::string("rcd_model_hc"), par_scope);
     e_val(&(this->weight), 0.123, par_scope);
     e_val(&(this->uref), NOT_INPUT, par_scope);
     e_val(&(this->v2), false, par_scope);

@@ -1,4 +1,5 @@
 /*$Id: d_subckt.h,v 1.3 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -63,7 +64,7 @@ public:
   static int	count()			{return _count;}
 
 private:
-  node_t	_nodes[PORTS_PER_SUBCKT];
+  node_t	_nodes[PORTS_PER_SUBCKT]; // hack??
   static int	_count;
 };
 /*--------------------------------------------------------------------------*/

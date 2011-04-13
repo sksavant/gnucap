@@ -64,7 +64,7 @@ public: // override virtual
 #endif
   TIME_PAIR tr_review();
   virtual void  tr_stress() {
-	  trace0( "ELEMENT device " + short_label() + ": no stress" );
+    trace0( ("ELEMENT device " + short_label() + ": no stress").c_str() );
   } // calcul
   virtual void  tr_stress_at_once() const    {}
 
@@ -483,10 +483,9 @@ inline bool ELEMENT::using_ac_eval()const
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::tr_eval()
 {
-  trace0(long_label().c_str());
+  trace1("ELEMENT::tr_eval " + long_label(), has_tr_eval() );
 
   if (has_tr_eval()) {
-//    std::cerr << "ELEMENT::tr_eval has tR_eval";
     common()->tr_eval(this);
   }else{
     // can get here if a simple device has probes

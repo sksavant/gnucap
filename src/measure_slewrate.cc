@@ -43,7 +43,7 @@ public:
     unsigned here = Cmd.cursor();
     Cmd >> probe_name;
 
-    trace0( "MEASURE::eval probe_name: " + probe_name );
+    trace0( ("MEASURE::eval probe_name: " + probe_name ).c_str());
     WAVE* w = find_wave(probe_name);
 
     if (!w) {

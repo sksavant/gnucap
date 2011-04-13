@@ -32,7 +32,8 @@ AC_PROG_MAKE_SET
 AC_CONFIG_SRCDIR([src/main.cc])
 
 AC_CONFIG_MACRO_DIR([m4])
-AM_CONFIG_HEADER([config.h])
+
+AC_CONFIG_HEADERS([config.h])
 
 AM_MAINTAINER_MODE
 
@@ -121,6 +122,8 @@ AC_CHECK_LIB([m], [cos])
 AC_CHECK_LIB([gslcblas], [cblas_dgemm])
 AC_CHECK_LIB([gsl], [gsl_blas_dgemm])
 AC_CHECK_LIB([gsl], [gsl_fit_linear])
+AC_CHECK_FUNCS([sqrt])
+
 AC_ARG_WITH([readline],
 [AS_HELP_STRING([--with-readline],
   [support command line editing @<:@default=yes@:>@])],

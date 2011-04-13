@@ -3,8 +3,10 @@ IVL_HOME=.
 IVERILOG=../icarus/verilog/driver/iverilog
 IVERILOG_VPI=../icarus/verilog/iverilog-vpi
 GNUCAP=../../src/gnucap
+VVP=../icarus/verilog/vvp/vvp
 
-all: links netlist-dkc.vvp bindsigs.vpi
+
+all: links netlist-dkc.vvp bindsigs.vpi bindsigs2.vpi
 
 links:
 	ln -sf  ../icarus/verilog/vpi/bindsigs.cc bindsigs.cc 
@@ -13,10 +15,10 @@ links:
 	ln -sf  ../icarus/verilog/vpi/system.vpi system.vpi 
        
 %.vvp: %.v
-	$(IVERILOG) -I. -o $@ $<
+	$(IVERILOG) -smain -I. -o $@ $<
 
-bindsigs.vpi: bindsigs.cc
-	$(IVERILOG_VPI) -I../icarus/verilog/vvp $<
+%.vpi: %.cc
+	$(IVERILOG_VPI) -I../icarus/verilog $<
 
 run: bindsigs.vpi netlist-dkc.vvp
 	../../src/gnucap -c verilog netlist-dkc.sp </dev/null
@@ -41,3 +43,6 @@ clean:
 	rm -f bindsigs.cc
 	rm -f *.vpi
 	rm -f *.vvp
+
+%.out: %.vvp bindsigs.vpi bindsigs2.vpi
+	$(VVP) -M. -mbindsigs -mbindsigs2 $<

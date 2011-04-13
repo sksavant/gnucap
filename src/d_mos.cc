@@ -205,7 +205,7 @@ std::string COMMON_BUILT_IN_MOS::param_value(int i)const
 /*--------------------------------------------------------------------------*/
 void COMMON_BUILT_IN_MOS::expand(const COMPONENT* d)
 {
-  trace0(("COMMON_BUILT_IN_MOS::expand "+ modelname()).c_str());
+  trace0(("COMMON_BUILT_IN_MOS::expand " + modelname()).c_str());
   COMMON_COMPONENT::expand(d);
   attach_model(d);
   COMMON_BUILT_IN_MOS* c = this;
@@ -1781,6 +1781,7 @@ void      DEV_BUILT_IN_MOS::precalc_first() {
   //  _BTI->precalc_first();
 #endif
 }
+/*--------------------------------------------------------------------------*/
 void    DEV_BUILT_IN_MOS::map_nodes(){
   BASE_SUBCKT::map_nodes();
 #ifndef BTI_IN_SUBCKT
@@ -1794,6 +1795,7 @@ void    DEV_BUILT_IN_MOS::map_nodes(){
   }
 #endif
 }
+/*--------------------------------------------------------------------------*/
 void    DEV_BUILT_IN_MOS::tr_begin(){
   BASE_SUBCKT::tr_begin();
 #ifndef BTI_IN_SUBCKT
@@ -1807,6 +1809,7 @@ void    DEV_BUILT_IN_MOS::tr_begin(){
   }
 #endif
 }
+/*--------------------------------------------------------------------------*/
 void    DEV_BUILT_IN_MOS::tr_restore(){
   BASE_SUBCKT::tr_restore();
 #ifndef BTI_IN_SUBCKT

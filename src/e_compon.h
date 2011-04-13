@@ -112,7 +112,7 @@ public:
   virtual int param_count()const {return 4;}
 public:
   virtual void precalc_first(const CARD_LIST*);
-  virtual void expand(const COMPONENT*)		{}
+  virtual void expand(const COMPONENT*)		{trace0("nothing to expand");}
   virtual COMMON_COMPONENT* deflate()		{return this;}
   virtual void precalc_last(const CARD_LIST*)	{}
 
@@ -142,7 +142,7 @@ public:
     if(!_model) { 
         trace1((" ?? " + _modelname).c_str(), (long int) this );
     }
-    assert(_model);
+    // assert(_model); stupid.
     return _model;}
   bool		      has_model()const	{return _model;}
   const PARAMETER<double>& mfactor()const {return _mfactor;}

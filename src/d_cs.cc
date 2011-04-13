@@ -1,4 +1,5 @@
 /*$Id: d_cs.cc,v 1.5 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
+ * vim:ts=2:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -91,6 +92,7 @@ void DEV_CS::tr_begin()
 /*--------------------------------------------------------------------------*/
 bool DEV_CS::do_tr()
 {
+	trace1("DEV_CS::do_tr " + short_label(), using_tr_eval() );
   assert(_m0.x == 0.);
   if (using_tr_eval()) {
     _y[0].x = _sim->_time0;

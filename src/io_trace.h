@@ -23,6 +23,8 @@
  */
 //testing=trivial 2006.07.17
 /* allow multiple inclusions with different DO_TRACE */
+#include <iostream>
+
 #undef trace_line
 #undef trace
 #undef trace0
@@ -38,15 +40,21 @@
 #undef unreachable
 #undef incomplete
 /*--------------------------------------------------------------------------*/
+// using namespace std;
 #ifdef DO_TRACE
 #define trace_line() (fprintf(stderr, "@@#\n@#@:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))
-#define trace0(s) (std::cerr << "@#@" << s << "\n")
-#define trace1(s,x) (fprintf(stderr, "@#@%s  %s=%g\n", s, #x, (double)(x)))
-#define trace2(s,x,y) (fprintf(stderr, "@#@%s  %s=%g  %s=%g\n",\
-	s, #x, (double)(x), #y, (double)(y)))
-#define trace3(s,x,y,z) (fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g\n",\
-	s, #x, (double)(x), #y, (double)(y), #z, (double)(z)))
+#define trace0(s) ( cerr << "@#@" << s << "\n")   
+// #define trace0(s) (fprintf(stderr, "@#@%s\n", s )) // needs c_str()...
+#define trace1(s,x) ( cerr <<  "@#@" << s << "  " << #x << "=" << (double)(x) << endl )
+// #define trace1(s,x) (fprintf(stderr, "@#@%s  %s=%g\n", s, #x, (double)(x)))
+#define trace2(s,x,y) ( cerr <<  "@#@" << s << "  " << #x << "=" << (double)(x)  \
+		                                      << "  " << #y << "=" << (double)(y)  \
+		                                      << endl )
+#define trace3(s,x,y,z) ( cerr <<  "@#@" << s << "  " << #x << "=" << (double)(x)  \
+		                                      << "  " << #y << "=" << (double)(y)  \
+		                                      << "  " << #z << "=" << (double)(z)  \
+		                                      << endl )
 #define trace4(s,w,x,y,z)(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g\n",\
 	s, #w, (double)(w), #x, (double)(x), #y, (double)(y), #z, (double)(z)))
 #define trace5(s,v,w,x,y,z)\

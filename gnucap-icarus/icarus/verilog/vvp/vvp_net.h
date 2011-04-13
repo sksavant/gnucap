@@ -361,7 +361,7 @@ inline vvp_bit4_t vvp_vector4_t::value(unsigned idx) const
 
       abits >>= off;
       bbits >>= off;
-      int tmp = ((bbits&1) << 1) + (abits&1);
+      unsigned long tmp = ((bbits&1) << 1) + (abits&1);
       static const vvp_bit4_t bits_bit4_map[4] = {
 	    BIT4_0, // bbit==0, abit==0
 	    BIT4_1, // bbit==0, abit==1
@@ -693,19 +693,19 @@ inline vvp_scalar_t::vvp_scalar_t(vvp_bit4_t val, unsigned str0, unsigned str1)
       assert(str1 <= 7);
 
       if (str0 == 0 && str1 == 0) {
-	    value_ = 0x00;
+	    value_ = (unsigned char) 0x00;
       } else switch (val) {
 	  case BIT4_0:
-	    value_ = str0 | (str0<<4);
+	    value_ = (unsigned char) ( str0 | (str0<<4) );
 	    break;
 	  case BIT4_1:
-	    value_ = str1 | (str1<<4) | 0x88;
+	    value_ = (unsigned char) ( str1 | (str1<<4) | 0x88 );
 	    break;
 	  case BIT4_X:
-	    value_ = str0 | (str1<<4) | 0x80;
+	    value_ = (unsigned char) ( str0 | (str1<<4) | 0x80 );
 	    break;
 	  case BIT4_Z:
-	    value_ = 0x00;
+	    value_ = (unsigned char) 0x00 ;
 	    break;
       }
 }

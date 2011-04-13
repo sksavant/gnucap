@@ -240,12 +240,10 @@ void SIM_DATA::alloc_vectors()
   trace0("SIM_DATA::alloc_vectors ADP_NODE");
   _tr  = new double[_adp_nodes];
 
-
   _tr1 = new double[_adp_nodes];
   _tr2 = new double[_adp_nodes];
   _tr3 = new double[_adp_nodes];
   _tt1 = new double[_adp_nodes];
-
 
   std::fill_n(_ac, _total_nodes+1, 0);
   std::fill_n(_i,  _total_nodes+1, 0);

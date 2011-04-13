@@ -161,7 +161,7 @@ node_t::node_t(NODE* n)
 }
 node_t& node_t::operator=(const node_t& p)
 {
-	 trace0(("copy node " + p.short_label()).c_str()); 
+  trace0(("copy node " + p.short_label()).c_str()); 
   if (p._nnn) {
     //assert(p._ttt == p._nnn->flat_number());
   }else{

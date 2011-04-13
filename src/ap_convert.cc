@@ -261,7 +261,7 @@ int CS::ctox()
  */
 double CS::ctof()
 {
-  trace0( "CS::ctof " + std::string(*this));
+  trace0( ( "CS::ctof " + std::string(*this)).c_str());
   double val = 0.0;
   double power = 1.0;
   int    sign = 1;

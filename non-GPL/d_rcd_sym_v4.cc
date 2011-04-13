@@ -63,24 +63,24 @@ void MODEL_BUILT_IN_RCD_SYM_V4::do_stress_apply( COMPONENT*  ) const
   unreachable();
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_RCD_SYM_V4::tr_stress()
-{
-  unreachable(); // obsolet....
-
-  const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
-  assert(c);
-  assert(c->model());
-  const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
-  assert(m);
-  assert(c->sdp());
-
-  assert(false);
-
-}
+//void DEV_BUILT_IN_RCD_SYM_V4::tr_stress()
+//{
+//  unreachable(); // obsolet....
+//
+//  const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
+//  assert(c);
+//  assert(c->model());
+//  const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
+//  assert(m);
+//  assert(c->sdp());
+//
+//  assert(false);
+//
+//}
 ///*--------------------------------------------------------------------------*/
 namespace MODEL_BUILT_IN_RCD_DISPATCHER
 { 
-  static DEV_BUILT_IN_RCD_SYM_V4 p4d;
+  static DEV_BUILT_IN_RCD_SYM p4d;
   static MODEL_BUILT_IN_RCD_SYM_V4 p4(&p4d);
   static DISPATCHER<MODEL_CARD>::INSTALL
     d3(&model_dispatcher, "rcdsym_v4|rcdsym", &p4);
@@ -88,7 +88,7 @@ namespace MODEL_BUILT_IN_RCD_DISPATCHER
 ///*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_RCD_SYM_V4::do_expand(  COMPONENT* c) const
 {
-  DEV_BUILT_IN_RCD_SYM_V4* d = dynamic_cast<DEV_BUILT_IN_RCD_SYM_V4*>(c);
+  DEV_BUILT_IN_RCD_SYM* d = dynamic_cast<DEV_BUILT_IN_RCD_SYM*>(c);
   assert(d);
   // d->expand();
   
@@ -111,39 +111,6 @@ MODEL_BUILT_IN_RCD_SYM_V4::MODEL_BUILT_IN_RCD_SYM_V4(const MODEL_BUILT_IN_RCD_SY
   
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_RCD_SYM_V4::expand()
-{
-  assert(_n);
-  assert(common());
-  const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
-  assert(c);
-  assert(c->model());
-  const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
-  assert(m);
-  assert(c->sdp());
-  const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(c->sdp());
-  assert(s);
-
-  trace0("DEV_BUILT_IN_RCD_SYM_V4::expand()");
-
-  if (_sim->is_first_expand()) {
-    precalc_first();
-    precalc_last();
-    if (!(_n[n_ic].n_())) {
-      if (false) {
-        _n[n_ic] = _n[n_b];
-      }else{
-        _n[n_ic].new_model_node("." + long_label() + ".ic", this);
-      }
-    }else{
-      if (false) {
-        assert(_n[n_ic] == _n[n_b]);
-      }else{
-        //_n[n_ic].new_model_node("ic." + long_label(), this);
-      }
-    }
-  }
-}
 /*--------------------------------------------------------------------------*/
 double MODEL_BUILT_IN_RCD_SYM_V4::__tau(double uin, const COMMON_COMPONENT* cc)const
 {
@@ -420,12 +387,12 @@ long double MODEL_BUILT_IN_RCD_SYM_V4::__Edu(long double uin, long double cur, c
           (2.L*cur - 1.L)*Rc0*Rc0*Re0*Re1)*t*expl(2.L*(Rc1 + Re1)*uin) - (((2.L*cur - 1.L)*Rc0*Rc1*Re0*Re0
                 - Rc0*Re0*Re0*Re1*cur)*t*expl(Rc1*uin) - (Rc0*Rc0*Rc1*Re0*Re0 +
                   Rc0*Rc0*Re0*Re0*Re1)*expl(2.L*Rc1*uin))*expl(Re1*uin) - (Rc0*Rc0*Rc1*Re0*Re0 +
-                  Rc0^2*Re0^2*Re1)*expl(((2*Rc0*Rc1*Re0 + Rc0*Re0*Re1)*uin*expl(Rc1*uin) +
+                  Rc0*Rc0*Re0*Re0*Re1)*expl(((2*Rc0*Rc1*Re0 + Rc0*Re0*Re1)*uin*expl(Rc1*uin) +
                       Rc0*t*expl((Rc1 + Re1)*uin) +
                       Re0*t)*expl(-Rc1*uin)/(Rc0*Re0)))
     *expl(-(Rc0*t*expl((Rc1 + Re1)*uin) + Re0*t)*expl(-Rc1*uin)/(Rc0*Re0))
     /(Rc0*Rc0*Rc0*Re0*expl((3.L*Rc1 + 2.L*Re1)*uin) +
-                      2.L*Rc0*Rc0*Re0*Re0*expl((2.L*Rc1 + Re1)*uin) + Rc0*Re0*Re0*Re0*expl(Rc1*uin))
+                      2.L*Rc0*Rc0*Re0*Re0*expl((2.L*Rc1 + Re1)*uin) + Rc0*Re0*Re0*Re0*expl(Rc1*uin));
 
   
   assert(ret>=0);
@@ -456,11 +423,6 @@ long double MODEL_BUILT_IN_RCD_SYM_V4::__uin_iter(long double& uin, double
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 // old.
-DEV_BUILT_IN_RCD_SYM_V4::DEV_BUILT_IN_RCD_SYM_V4()
-  :DEV_BUILT_IN_RCD()
-{
-}
-/*--------------------------------------------------------------------------*/
 int  MODEL_BUILT_IN_RCD_SYM_V4::tt_region(const COMPONENT* brh) const
 {
   const DEV_BUILT_IN_RCD* c = (const DEV_BUILT_IN_RCD*) brh;

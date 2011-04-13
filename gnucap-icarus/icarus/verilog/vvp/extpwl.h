@@ -19,6 +19,9 @@
  *    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifndef __H__EX_HEADER
+#define __H__EX_HEADER
+
 #include <dlfcn.h>
 
 typedef intptr_t some_int;
@@ -131,7 +134,7 @@ struct SpcIvlCB : SpiceCallback<IVL_PWL_SLOTS> {
     double *set_parms(double *);
 
     SpcIvlCB(double dt0 = EndOfTimeD,double val = 0.0,
-             const char *nan_tag = "")
+             const char * = "")
      : SpiceCallback <IVL_PWL_SLOTS>(val,dt0) {
       next       = 0;
       sig        = 0;
@@ -243,5 +246,7 @@ double *SpcIvlCB::set_parms(double *from)
 #endif
 
 extern "C" SpcIvlCB **spicenets();
+
+#endif
 
 #endif

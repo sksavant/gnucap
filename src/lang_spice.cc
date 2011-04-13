@@ -115,6 +115,7 @@ static void skip_pre_stuff(CS& cmd)
  */
 static int count_ports(CS& cmd, int maxnodes, int minnodes, int leave_tail, int start)
 {
+  trace3("count_ports", leave_tail, start, maxnodes);
   assert(start < maxnodes);
   assert(minnodes <= maxnodes);
 
@@ -178,6 +179,7 @@ static int count_ports(CS& cmd, int maxnodes, int minnodes, int leave_tail, int 
   //BUG// assert fails on current controlled sources with (node node dev) syntax
   // it's ok with (node node) dev syntax or node node dev syntax
   assert(num_nodes <= maxnodes);
+  trace1("count_ports", num_nodes);
   return num_nodes;
 }
 /*--------------------------------------------------------------------------*/
@@ -404,10 +406,12 @@ void LANG_SPICE_BASE::parse_logic_using_obsolete_callback(CS& cmd, COMPONENT* x)
 /*--------------------------------------------------------------------------*/
 void LANG_SPICE_BASE::parse_type(CS& cmd, CARD* x)
 {
+  trace0(("LANG_SPICE_BASE::parse_type " + cmd.tail()).c_str() );
   assert(x);
   std::string new_type;
   cmd >> new_type;
   x->set_dev_type(new_type);
+  trace0(("LANG_SPICE_BASE::parse_type got: "+new_type ).c_str() );
 }
 /*--------------------------------------------------------------------------*/
 void LANG_SPICE_BASE::parse_args(CS& cmd, CARD* x)
@@ -419,7 +423,7 @@ void LANG_SPICE_BASE::parse_args(CS& cmd, CARD* x)
   cmd >> "params:";	// optional, skip it.
 
   if (!x->use_obsolete_callback_parse()) {
-  trace0(("LANG_SPICE_BASE::parse_args ocp") );
+    trace0(("LANG_SPICE_BASE::parse_args !ocp " + (std::string) cmd.tail()).c_str() );
     int paren = cmd.skip1b('(');
     if (xx && cmd.is_float()) {		// simple unnamed value
       std::string value;
@@ -432,6 +436,7 @@ void LANG_SPICE_BASE::parse_args(CS& cmd, CARD* x)
       x->set_param_by_name(xx->value_name(), value);
     }else{				// only name=value pairs
     }
+    trace0(("LANG_SPICE_BASE::parsedone " + (std::string) cmd.tail()).c_str() );
     unsigned here = cmd.cursor();
     for (int i=0; ; ++i) {
       if (paren && cmd.skip1b(')')) {
@@ -490,6 +495,7 @@ void LANG_SPICE_BASE::parse_args(CS& cmd, CARD* x)
 /*--------------------------------------------------------------------------*/
 void LANG_SPICE_BASE::parse_label(CS& cmd, CARD* x)
 {
+  trace0(("LANG_SPICE_BASE::parse_label " + cmd.tail()).c_str() );
   assert(x);
   std::string my_name;
   cmd >> my_name;
@@ -543,6 +549,7 @@ MODEL_CARD* LANG_SPICE_BASE::parse_paramset(CS& cmd, MODEL_CARD* x)
 /*--------------------------------------------------------------------------*/
 MODEL_SUBCKT* LANG_SPICE_BASE::parse_module(CS& cmd, MODEL_SUBCKT* x)
 {
+  trace0(("LANG_SPICE_BASE::parse_module " + cmd.tail()).c_str() );
   assert(x);
 
   // header
@@ -584,6 +591,7 @@ void LANG_SPICE_BASE::parse_module_body(CS& cmd, MODEL_SUBCKT* x, CARD_LIST* Sco
 /*--------------------------------------------------------------------------*/
 COMPONENT* LANG_SPICE_BASE::parse_instance(CS& cmd, COMPONENT* x)
 {
+  trace0(("LANG_SPICE_BASE::parse_instance " + (std::string) cmd.tail()).c_str() );
   try {
     assert(x);
     cmd.reset().umatch(ANTI_COMMENT);
@@ -595,10 +603,13 @@ COMPONENT* LANG_SPICE_BASE::parse_instance(CS& cmd, COMPONENT* x)
     }
     
     parse_label(cmd, x);
+
     
     if (x->use_obsolete_callback_parse()) {
+      trace0(("LANG_SPICE_BASE::parse_instance obs. cb"));
       parse_element_using_obsolete_callback(cmd, x);
     }else if (DEV_LOGIC* xx = dynamic_cast<DEV_LOGIC*>(x)) {
+      trace0(("LANG_SPICE_BASE::parse_logic_instance obs. cb"));
       parse_logic_using_obsolete_callback(cmd, xx);
     }else{
       {
@@ -606,8 +617,10 @@ COMPONENT* LANG_SPICE_BASE::parse_instance(CS& cmd, COMPONENT* x)
 	int num_nodes = count_ports(cmd, x->max_nodes(), x->min_nodes(), x->tail_size(), 0);
 	cmd.reset(here);
 	parse_ports(cmd, x, x->min_nodes(), 0/*start*/, num_nodes, false);
+        trace0(("LANG_SPICE_BASE::parse_instance parsed ports " + (std::string) cmd.tail()).c_str() );
       }
       if (x->print_type_in_spice()) {
+        trace0(("LANG_SPICE_BASE::parse_instance ptis " + (std::string) cmd.tail()).c_str() );
 	parse_type(cmd, x);
       }else{
       }
@@ -621,6 +634,7 @@ COMPONENT* LANG_SPICE_BASE::parse_instance(CS& cmd, COMPONENT* x)
 /*--------------------------------------------------------------------------*/
 std::string LANG_SPICE_BASE::find_type_in_string(CS& cmd)
 {
+  trace0(("LANG_SPICE_BASE::find_type_in_string " + (std::string) cmd.tail()).c_str() );
   cmd.umatch(ANTI_COMMENT); /* skip mark so spice ignores but gnucap reads */
 
   unsigned here = cmd.cursor();
@@ -642,6 +656,7 @@ std::string LANG_SPICE_BASE::find_type_in_string(CS& cmd)
       ++here;
       s = s.substr(1);
     }else{
+      trace0(("found " + string(cmd)).c_str());
     }
     break;
   case 'G':
@@ -658,6 +673,7 @@ std::string LANG_SPICE_BASE::find_type_in_string(CS& cmd)
     break;
   }
   cmd.reset(here);
+  trace0(("returning " + s).c_str());
   return s;
 }
 /*--------------------------------------------------------------------------*/

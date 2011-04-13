@@ -234,6 +234,7 @@ namespace std{
 	//double min(const double x, long double y){ return min((long double) x, (long double) y); }
 	//double min(long double x, double y) {return min((double) x, y);}
 }
+using namespace std;
 /*--------------------------------------------------------------------------*/
 inline double fmin(double x, double y, double z){
   return ( fmin(fmin(x,y),z));

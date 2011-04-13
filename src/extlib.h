@@ -24,11 +24,12 @@
  * Dynamic binding of PWL signal sources to external simulators 
  */
 
-#include "vpi_priv.h"
-#include "extpwl.h"
+#include <vvp/vpi_priv.h>
+#include <vvp/extpwl.h>
 #include "e_compon.h"
 #include "e_elemnt.h" 
 
+# define EXT_BAS 0
 # define EXT_REF 1
 # define EXT_SIG 2
 
@@ -72,7 +73,7 @@ class ExtLib : public ExtAPI , public COMPONENT {
   {
     El=this;
   }
-  void init(const char *);
+  int init(const char *);
 
   static void SetActive(void *dl,void *handle,double time);
   void        set_active(void *handle,double time);
@@ -134,12 +135,15 @@ class ExtRef : public ExtBase {
   }
 };
 
-ExtRef *bindExtSigInit(const string &,const char *);
-ExtSig *bindExtSigConnect(intptr_t,const string &,
-                          const CARD_LIST* Scope,COMMON_COMPONENT *);
-void    ExtSigTrEval(intptr_t,std::vector<DPAIR>*,ELEMENT*);
-double  ExtSigTrCheck(intptr_t,double,std::vector<DPAIR>*,COMPONENT*);
 
-void ExtStartSim(const char *);
-void ExtContSim(const char *,double);
-void ExtEndSim(double);
+class ExtControl{
+  ExtRef *bindExtSigInit(const string &,const char *);
+  ExtSig *bindExtSigConnect(intptr_t,const string &,
+                            const CARD_LIST* Scope,COMMON_COMPONENT *);
+  void    ExtSigTrEval(intptr_t,std::vector<DPAIR>*,ELEMENT*);
+  double  ExtSigTrCheck(intptr_t,double,std::vector<DPAIR>*,COMPONENT*);
+
+  void ExtStartSim(const char *);
+  void ExtContSim(const char *,double);
+  void ExtEndSim(double);
+};

@@ -107,40 +107,6 @@ void ELEMENT::tr_begin()
   _dt = NOT_VALID;
 }
 /*--------------------------------------------------------------------------*/
-void ELEMENT::tt_next()
-{
-  // das tut das hier?
-  // untested0(("tt_next for " + short_label()).c_str());
-  trace2(("ELEMENT::tt_next for " + short_label()).c_str(), _sim->_time0, _sim->_dt0);
-  if (_time[0] > _sim->_time0) {itested();
-    for (int i=0  ; i<OPT::_keep_time_steps-1; ++i) {itested();
-      _time[i] = _time[i+1];
-      _y[i] = _y[i+1];
-    }
-    _time[OPT::_keep_time_steps-1] = 0.;
-    _y[OPT::_keep_time_steps-1]    = FPOLY1(0., 0., 0.);
-  }else if (_time[0] == _sim->_time0) {
-
-  }else{
-
-  }
-
-  //assert(_time[0] == _sim->_time0);
-  if (_time[0] != _sim->_time0) {itested();
-    trace1("ELEMENT::tt_next timedelta ", _time[0] - _sim->_time0 );
-    trace2( ( "HACK? " + short_label() + ": ELEMENT::tt_next, time mismatch, setting back to 0 " ).c_str(),
-        _sim->_time0, _time[0] );
-  }else{
-    trace2(("tt_next for " + short_label()).c_str(), _time[0], _sim->_time0);
-  }
-
-  for (int i=OPT::_keep_time_steps-1; i>=0; --i) {
-        // FIXME: copy all timesteps to 0
-    _time[i]=0.0;
-        //    assert(_time[i] < _time[i-1] || _time[i] == 0.);
-  }
-}
-/*--------------------------------------------------------------------------*/
 void ELEMENT::tr_restore()
 {
   trace0(("ELEMENT::tr_restore for " + short_label()).c_str());
@@ -587,6 +553,40 @@ double ELEMENT::tr_review_check_and_convert(double timestep)
   assert(time_future > 0.);
   assert(time_future > _time[1]);
   return time_future;
+}
+/*--------------------------------------------------------------------------*/
+void ELEMENT::tt_next()
+{
+  // das tut das hier?
+  // untested0(("tt_next for " + short_label()).c_str());
+  trace2(("ELEMENT::tt_next for " + short_label()).c_str(), _sim->_time0, _sim->_dt0);
+  if (_time[0] > _sim->_time0) {itested();
+    for (int i=0  ; i<OPT::_keep_time_steps-1; ++i) {itested();
+      _time[i] = _time[i+1];
+      _y[i] = _y[i+1];
+    }
+    _time[OPT::_keep_time_steps-1] = 0.;
+    _y[OPT::_keep_time_steps-1]    = FPOLY1(0., 0., 0.);
+  }else if (_time[0] == _sim->_time0) {
+
+  }else{
+
+  }
+
+  //assert(_time[0] == _sim->_time0);
+  if (_time[0] != _sim->_time0) {itested();
+    trace1("ELEMENT::tt_next timedelta ", _time[0] - _sim->_time0 );
+    trace2( ( "HACK? " + short_label() + ": ELEMENT::tt_next, time mismatch, setting back to 0 " ).c_str(),
+        _sim->_time0, _time[0] );
+  }else{
+    trace2(("tt_next for " + short_label()).c_str(), _time[0], _sim->_time0);
+  }
+
+  for (int i=OPT::_keep_time_steps-1; i>=0; --i) {
+        // FIXME: copy all timesteps to 0
+    _time[i]=0.0;
+        //    assert(_time[i] < _time[i-1] || _time[i] == 0.);
+  }
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

@@ -104,21 +104,21 @@ private:
 };
 /*--------------------------------------------------------------------------*/
 class MODEL_LOGIC : public MODEL_CARD {
-private:
+protected:
   explicit	MODEL_LOGIC(const MODEL_LOGIC& p);
 public:
-  explicit MODEL_LOGIC(const DEV_LOGIC*);
+  explicit MODEL_LOGIC(const COMPONENT*);
 	   ~MODEL_LOGIC()		{--_count;}
-private: // override virtuals
-  std::string	dev_type()const		{return "logic";}
-  CARD*		clone()const		{return new MODEL_LOGIC(*this);}
-  void		precalc_first();
-  void		set_param_by_index(int, std::string&, int);
-  bool		param_is_printable(int)const;
-  std::string	param_name(int)const;
-  std::string	param_name(int,int)const;
-  std::string	param_value(int)const;
-  int		param_count()const	{return (13 + MODEL_CARD::param_count());}
+protected: // override virtuals
+  virtual std::string	dev_type()const		{return "logic";}
+  virtual CARD*		clone()const		{return new MODEL_LOGIC(*this);}
+  virtual void		precalc_first();
+  virtual void		set_param_by_index(int, std::string&, int);
+  virtual bool		param_is_printable(int)const;
+  virtual std::string	param_name(int)const;
+  virtual std::string	param_name(int,int)const;
+  virtual std::string	param_value(int)const;
+  virtual int		param_count()const	{return (13 + MODEL_CARD::param_count());}
 public:
   static int	count()			{return _count;}
 public:

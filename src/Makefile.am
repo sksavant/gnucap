@@ -48,7 +48,7 @@ D_SRCS = \
 d_admit.cc d_cap.cc d_cccs.cc d_ccvs.cc d_coil.cc \
 d_cs.cc d_poly_g.cc d_poly_cap.cc d_res.cc d_switch.cc \
 d_trln.cc d_vcg.cc d_vcr.cc d_vcvs.cc d_vs.cc d_vcvs2.cc \
-d_rcd.cc d_bti.cc
+d_rcd.cc d_bti.cc d_vvp.cc
 
 # behavioral modeling functions
 BM_SRCS = \
@@ -100,7 +100,7 @@ e_homebrew.cc \
 e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc e_adplist.cc\
 bm_value.cc bm.cc \
 c__cmd.cc c_attach.cc c_file.cc c_genrat.cc \
-findbr.cc plot.cc globals.cc e_adp.cc # main.cc removed
+findbr.cc plot.cc globals.cc e_adp.cc extlib.cc
 #------------------------------------------------------------------------
 RAW_HDRS = \
 md.h ap.h mode.h constant.h declare.h patchlev.h \
@@ -115,12 +115,14 @@ s__.h s_tr.h e_adp.h s_tt.h\
 e_base.h e_card.h e_node.h e_aux.h e_model.h e_compon.h e_subckt.h \
 e_homebrew.h \
 e_elemnt.h e_ccsrc.h e_storag.h e_cardlist.h \
-d_coment.h d_dot.h d_logic.h d_subckt.h \
+d_coment.h d_dot.h d_logic.h d_subckt.h d_vvp.h \ 
 bm.h \
-c_comand.h globals.h
-#------------------------------------------------------------------------
+c_comand.h globals.h extlib.h
+#------------------------------------------------------------------------ 
 ## The modelgen generated files
 MODELSRCS= ${MODELS:.model=.cc} ${MODELS:.model=.h}
+
+# extlib_o_SOURCES = extlib.h 
 
 # henjo:
 MODELCODE= ${MODELS:.model=.cc}
@@ -136,7 +138,8 @@ gnucap_LDADD = libgnucap.la
 
 
 SRCS1= 
-SRCS2= ${RAW_SRCS} ${RAW_HDRS}
+SRCS2= ${RAW_SRCS} 
+#${RAW_HDRS}
 
 # make all of the model object files depend on all of the model sources
 # this is a bit overkill, but for example the bjt model makes use of the
@@ -161,9 +164,20 @@ CLEANFILES= ${MODELSRCS}
 SUFFIXES= .model
 MODELGEN= @MODELGEN@
 
+MAKEDEPEND = gcc -M $(CPPFLAGS) -o $*.d $<
+
+
 %.cc : %.model %.h ${MODELGEN}${EXEEXT}
 	${MODELGEN} -cc $<
 
 %.h : %.model ${MODELGEN}${EXEEXT}
 	${MODELGEN} -h $<
+
+depend:
+	$(CPP) -MM $(CPPFLAGS)  $(RAW_SRCS) > $@
+
+
+# include $(srcdir)/depend
+#
+# %.o: .deps/%.
 

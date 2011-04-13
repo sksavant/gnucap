@@ -140,6 +140,7 @@ class PARAMETER<std::string> {
 private:
   mutable std::string _v; //value
   std::string _s;  //backend string
+  std::string my_infty() const;
 private:
   std::string lookup_solve(const std::string& def, const CARD_LIST* scope)const;
 public:
@@ -156,68 +157,16 @@ public:
     trace0(("PARAMETER::string " + _s + " -> " + _v ).c_str());
     return _v;
   }
-  std::string e_val(const std::string& def, const CARD_LIST* scope)const //{return _v;}
-  {
-    assert(scope);
 
-    static int recursion=0;
-    static const std::string* first_name = NULL;
-    if (recursion == 0) {
-      first_name = &_s;
-    }else{
-    }
-    assert(first_name);
-
-    ++recursion;
-    if (_s == "") {
-      // blank string means to use default value
-      _v = _s; // where does it come from?
-      if (recursion > 1) {
-        error(bWARNING, "PARAMETER::e_val: " + *first_name + " has no value (" +def+")\n");
-      }else{
-      }
-    }else if (_s != "#") {
-      // anything else means look up the value
-      trace0(("looking up value for "+_s).c_str());
-      if (recursion <= OPT::recursion) {
-        _v = lookup_solve(_s, scope);
-        if (_v == "") {untested();itested();
-          error(bDANGER, "parameter " + *first_name + " has no value\n");
-        }else{
-        }
-      }else{untested();
-        _v = _s;
-        error(bDANGER, "parameter " + *first_name + " recursion too deep\n");
-      }
-    }else{
-      // start with # means we have a final value
-    }
-    --recursion;
-
-    // ARGH?
-    // // cleanup needed
-    if (_v=="NA") _v=_s;
-    if (_v=="NA( NA)") _v=_s;
-    
-    if (_v=="empty") _v="";
-    if (_v=="none") _v="";
-
-    trace0(("Evaluated " +_s + " to " + _v).c_str());
-    return _v;
-  }
+  std::string e_val_normal(const std::string& def, const CARD_LIST* scope)const;
+  std::string e_val_strange(const std::string& def, const CARD_LIST* scope)const;
   void	parse(CS& cmd);
 
-  std::string value()const {
-    trace0(("PARAMETER::std::string " + _s + " -> " + _v ).c_str());
-    return to_string(_v);
-  }
-  std::string string()const {
-    trace0(("PARAMETER::std::string " + _s + " -> " + _v ).c_str());
-    return to_string(_s);
-  }
+  std::string value()const;
+  std::string string()const;
   void	print(OMSTREAM& o)const	{o << string();}
   void	set_default(const std::string& v)		{_v = v;}
-  void	operator=(const PARAMETER& p)	{untested(); _v = p._v; }
+  void	operator=(const PARAMETER& p)	{ _v = p._v; }
  // argh
   //void	operator=(const std::string& v)		{_v = v; }
   void	operator=(const std::string& s)	{
@@ -384,7 +333,7 @@ private:
   mutable const_iterator _previous;
 };
 /*--------------------------------------------------------------------------*/
-inline std::string PARAMETER<std::string>::lookup_solve(const std::string& def,
+inline string PARAMETER<string>::lookup_solve(const std::string& def,
     const CARD_LIST* scope)const
 {
   CS cmd(CS::_STRING, _s);
@@ -427,7 +376,6 @@ inline T PARAMETER<T>::lookup_solve(const T& def, const CARD_LIST* scope)const
 }
 #endif
 /*--------------------------------------------------------------------------*/
-
 /*--------------------------------------------------------------------------*/
 template <>
 inline double PARAMETER<double>::my_infty()const{ return inf; }
@@ -559,6 +507,7 @@ inline void PARAMETER<bool>::parse(CS& cmd)
 template <class T>
 inline void PARAMETER<T>::parse(CS& cmd) 
 {
+  trace0(("PARAMETER<T>::parse " + cmd.tail()).c_str());
   T new_val;
   cmd >> new_val;
   if (cmd) {
@@ -583,6 +532,56 @@ inline void PARAMETER<T>::parse(CS& cmd)
   }
 }
 /*--------------------------------------------------------------------------*/
+inline std::string PARAMETER<std::string>::e_val_strange(const std::string& def, const CARD_LIST* scope)const
+{
+  trace0("PARAMETER<std::string>::e_val_strange");
+  assert(scope);
+
+  static int recursion=0;
+  static const std::string* first_name = NULL;
+  if (recursion == 0) {
+    first_name = &_s;
+  }else{
+  }
+  assert(first_name);
+
+  ++recursion;
+  if (_s == "") {
+    // blank string means to use default value
+    _v = _s; // where does it come from?
+    if (recursion > 1) {
+      error(bWARNING, "PARAMETER::e_val_strange: " + *first_name + " has no value (" +def+")\n");
+    }else{
+    }
+  }else if (_s != "#") {
+    // anything else means look up the value
+    trace0(("looking up value for "+_s).c_str());
+    if (recursion <= OPT::recursion) {
+      _v = lookup_solve(_s, scope);
+      if (_v == "") {untested();itested();
+        error(bDANGER, "parameter " + *first_name + " has no value\n");
+      }else{
+      }
+    }else{untested();
+      _v = _s;
+      error(bDANGER, "parameter " + *first_name + " recursion too deep\n");
+    }
+  }else{
+    // start with # means we have a final value
+  }
+  --recursion;
+
+  // ARGH?
+  // // cleanup needed
+  if (_v=="NA") _v=_s;
+  if (_v=="NA( NA)") _v=_s;
+
+  if (_v=="empty") _v="";
+  if (_v=="none") _v="";
+
+  trace0(("Evaluated " +_s + " to " + _v).c_str());
+  return _v;
+}
 /*--------------------------------------------------------------------------*/
 INTERFACE bool Get(CS& cmd, const std::string& key, PARAMETER<bool>* val);
 INTERFACE bool Get(CS& cmd, const std::string& key, PARAMETER<int>* val);
