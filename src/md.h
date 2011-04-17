@@ -108,6 +108,9 @@ enum {
 #endif
 /*--------------------------------------------------------------------------*/
 #define	PWD	"."
+
+// for pointer hashing.
+#define PRIME 2001
 /*--------------------------------------------------------------------------*/
 /* machine and compiler patches */
 #if defined(__MINGW32__)
@@ -154,6 +157,7 @@ const double inf = std::numeric_limits<float>::infinity( );
 
 inline void* dlopen(const char* f, int)
 {
+  trace0("Loadlibrary");
   return LoadLibrary(const_cast<char*>(f));
 }
 

@@ -79,7 +79,11 @@ protected: // override virtual
 		assert(subckt()); return subckt()->tr_needs_eval();}
   void	  tr_queue_eval() {assert(subckt()); subckt()->tr_queue_eval();}
   bool	  do_tr()
-	{ // untested0(long_label().c_str());
+	{ 
+          trace1("do_tr" + short_label(), (intptr_t) common() %1000 );
+
+          
+          // untested0(long_label().c_str());
 		assert(subckt());set_converged(subckt()->do_tr());return converged();}
   void	  tr_load()	{assert(subckt()); subckt()->tr_load();}
   TIME_PAIR tr_review()	{

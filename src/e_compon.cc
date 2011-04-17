@@ -23,6 +23,7 @@
  * Base class for elements of a circuit
  */
 //testing=script,noswitch 2009.07.13
+
 #include "u_lang.h"
 #include "e_model.h"
 #include "e_elemnt.h"
@@ -37,7 +38,8 @@ COMMON_COMPONENT::COMMON_COMPONENT(const COMMON_COMPONENT& p)
    _model(p._model),
    _attach_count(0)
 {
-  trace0(("COMMON_COMPONENT copy -> "+p._modelname).c_str() );
+  trace1(("COMMON_COMPONENT copy, modelname: "+p._modelname),
+      (intptr_t)_model %PRIME );
 }
 /*--------------------------------------------------------------------------*/
 COMMON_COMPONENT::COMMON_COMPONENT(int c)
@@ -58,9 +60,11 @@ COMMON_COMPONENT::~COMMON_COMPONENT()
   assert(_attach_count == 0 || _attach_count == CC_STATIC);
 }
 /*--------------------------------------------------------------------------*/
+  // void	COMPONENT::attach_common(COMMON_COMPONENT*c) {
+  //   COMMON_COMPONENT::attach_common(c,&_common);}
+/*--------------------------------------------------------------------------*/
 void COMMON_COMPONENT::attach_common(COMMON_COMPONENT*c, COMMON_COMPONENT**to)
 {
-  trace0("COMMON_COMPONENT::attach_common");
   assert(to);
   if (c == *to) {
     itested();
@@ -71,21 +75,19 @@ void COMMON_COMPONENT::attach_common(COMMON_COMPONENT*c, COMMON_COMPONENT**to)
   }else if (!*to) {
     // No old one, but have a new one.
     ++(c->_attach_count);
-    // trace1(("++1"+c->modelname()).c_str(), c->_attach_count);
     *to = c;
   }else if (*c != **to) {
     // They are different, usually by edit.
     detach_common(to);
     ++(c->_attach_count);
-    trace1("++2", c->_attach_count);
     *to = c;
   }else if (c->_attach_count == 0) {
     // The new and old are identical.
     // Use the old one.
     // The new one is not used anywhere, so throw it away.
-    trace1("delete", c->_attach_count);    
     delete c;
-  }else{untested();
+  }else{
+    untested();
     // The new and old are identical.
     // Use the old one.
     // The new one is also used somewhere else, so keep it.
@@ -100,10 +102,11 @@ void COMMON_COMPONENT::detach_common(COMMON_COMPONENT** from)
     --((**from)._attach_count);
     trace1(("--" + (*from)->modelname()).c_str(), (**from)._attach_count);
     if ((**from)._attach_count == 0) {
-      trace1("delete", (**from)._attach_count);
       delete *from;
+
     }else{
-      trace1(("nodelete " + (*from)->modelname()).c_str() , (**from)._attach_count);
+      trace1(("nodelete " + (*from)->modelname()).c_str(),
+          (**from)._attach_count);
     }
     *from = NULL;
   }else{
@@ -113,10 +116,12 @@ void COMMON_COMPONENT::detach_common(COMMON_COMPONENT** from)
 void COMMON_COMPONENT::attach_model(const COMPONENT* d)const
 {
   assert(d);
-  trace0(("attaching model to " + d->short_label()).c_str() );
+  trace0(("COMMON_COMPONENT::attach_model to " + d->short_label()).c_str() );
 
   _model = d->find_model(modelname());
   assert(_model);
+  trace2("COMMON_COMPONENT::attach_model attached ", (intptr_t) _model %PRIME,
+      (intptr_t)this%PRIME);
 }
 /*--------------------------------------------------------------------------*/
 void COMMON_COMPONENT::parse_modelname(CS& cmd)
@@ -311,6 +316,9 @@ void COMMON_COMPONENT::ac_eval(ELEMENT*x)const
 /*--------------------------------------------------------------------------*/
 bool COMMON_COMPONENT::operator==(const COMMON_COMPONENT& x)const
 {
+  trace3("COMMON_COMPONENT::operator== model:", _model == x._model,
+      (intptr_t)_model % PRIME, (intptr_t)x._model % PRIME  );
+  trace1("COMMON_COMPONENT::operator== modelname:", _modelname == x._modelname);
   return (_modelname == x._modelname
 	  && _model == x._model
 	  && _tnom_c == x._tnom_c
@@ -368,6 +376,9 @@ void COMMON_COMPONENT::Set_param_by_name(std::string Name, std::string Value)
   throw Exception_No_Match(Name);
 }
 /*--------------------------------------------------------------------------*/
+void COMMON_COMPONENT::expand(const COMPONENT* )
+{ }
+/*--------------------------------------------------------------------------*/
 bool COMMON_COMPONENT::parse_numlist(CS&)
 {
   return false;
@@ -398,7 +409,6 @@ COMPONENT::COMPONENT()
    _amps_new(0),
    _adp(0)
 {
-  trace0("COMPONENT::COMPONENT uninit");
   _sim->uninit();
 }
 /*--------------------------------------------------------------------------*/
@@ -415,7 +425,6 @@ COMPONENT::COMPONENT(const COMPONENT& p)
    _amps_new(0),
    _adp(0)
 {
-  trace0("COMPONENT::COMPONENT uninit");
   _sim->uninit();
   attach_common(p._common);
   assert(_common == p._common);
@@ -517,6 +526,7 @@ void COMPONENT::print_args_obsolete_callback(OMSTREAM& o, LANGUAGE* lang)const
 void COMPONENT::deflate_common()
 {untested();
   unreachable();
+  trace0("COMPONENT::deflate_common");
   if (has_common()) {untested();
     COMMON_COMPONENT* deflated_common = mutable_common()->deflate();
     if (deflated_common != common()) {untested();
@@ -532,17 +542,29 @@ void COMPONENT::expand()
 {
   CARD::expand();
   if (has_common()) {
+    assert(common());
     COMMON_COMPONENT* new_common = common()->clone();
-    trace0("COMPONENT::expand expanding common");
     new_common->expand(this);
+
+
     COMMON_COMPONENT* deflated_common = new_common->deflate();
     if (deflated_common != common()) {
       attach_common(deflated_common);
-    }else{untested();
+    }else if (deflated_common != new_common ) {
+      untested();
+      delete new_common;
+    }else{
+      untested();
     }
   }else{
     trace0("COMPONENT::expand !common");
   }
+}
+/*--------------------------------------------------------------------------*/
+COMMON_COMPONENT* COMMON_COMPONENT::deflate()
+{
+  // should/might return an identical instance that is already attached?
+  return this;
 }
 /*--------------------------------------------------------------------------*/
 void COMPONENT::precalc_first()
@@ -637,7 +659,6 @@ void COMPONENT::set_parameters(const std::string& Label, CARD *Owner,
   attach_common(Common);
 
   if (node_count > net_nodes()) {
-    std::cerr << Label << " " <<  Owner->long_label() << ": assertion node_count <= net_nodes() failed " << node_count << " > " << net_nodes() << "\n";
     exit(2);
   }
   notstd::copy_n(Nodes, node_count, _n);
@@ -763,7 +784,7 @@ const std::string COMPONENT::current_port_value(uint_t)const
 /*--------------------------------------------------------------------------*/
 const MODEL_CARD* COMPONENT::find_model(const std::string& modelname)const
 {
-  trace0(("COMPONENT::find_model" + short_label() + " " + modelname).c_str());
+  trace0("COMPONENT::find_model for " + short_label() + " " + modelname);
   const char* tmp = modelname.c_str(); tmp=tmp;
   if (modelname == "") {
     throw Exception(long_label() + ": missing args -- need model name");
@@ -777,6 +798,7 @@ const MODEL_CARD* COMPONENT::find_model(const std::string& modelname)const
 	// start here, looking out
 	try {
 	  c = Scope->find_in_my_scope(modelname);
+          trace1("COMPONENT::find_model found model in scope", ((intptr_t) c)%PRIME);
 	}catch (Exception_Cant_Find& e1) {
 	  // didn't find plain model.  try binned models
 	  bin_count = 0;
@@ -814,12 +836,11 @@ const MODEL_CARD* COMPONENT::find_model(const std::string& modelname)const
     assert(c);
     const MODEL_CARD* model = dynamic_cast<const MODEL_CARD*>(c);
     if (!model) {untested();
-      trace0("COMPONENT::find_model");
+      trace0("COMPONENT::find_model no model here");
       throw Exception_Type_Mismatch(long_label(), modelname, ".model");
     }else if (!model->is_valid(this)) {itested();
       error(bWARNING, long_label() + ", " + modelname
 	   + "\nmodel and device parameters are incompatible, using anyway\n");
-    }else{
     }
     assert(model);
     return model;
@@ -834,15 +855,15 @@ double COMPONENT::tr_probe_num(const std::string& x)const
     uint_t nn = cmd.ctoi();
     return (nn > 0 && nn <= net_nodes()) ? _n[nn-1].v0() : NOT_VALID;
   }else if (Umatch(x, "amps |amps0 ")) {
-         return ( 17  );
+    return ( 17  );
   }else if (Umatch(x, "stress ") || Umatch(x, "hci ") ) {
-        return(19);
-          a->tr_probe_num(x);
+    return(19);
+    a->tr_probe_num(x);
   }else if (Umatch(x, "brel ")) {
-///    std::cout << "rel\n";
-         return ( tr_behaviour_rel  );
+    ///    std::cout << "rel\n";
+    return ( tr_behaviour_rel  );
   }else if (Umatch(x, "bdel ")) {
-         return ( tr_behaviour_del  );
+    return ( tr_behaviour_del  );
   }else if (Umatch(x, "sv ")) { // some value (debugging)
          return (  tr_amps_diff_cur()  );
   }else if (Umatch(x, "error{time} |next{time} ")) {
@@ -853,6 +874,10 @@ double COMPONENT::tr_probe_num(const std::string& x)const
       : _time_by._event;
   }else if (Umatch(x, "event{time} ")) {
     return (_time_by._event < BIGBIG) ? _time_by._event : 0;
+  }else if (Umatch(x, "_m ")) {
+    return double((intptr_t) ( _common->model() ) % PRIME );
+  }else if (Umatch(x, "_c ")) {
+    return double((intptr_t) (_common) % PRIME );
   }
 
   return CARD::tr_probe_num(x);

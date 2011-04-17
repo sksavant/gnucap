@@ -142,18 +142,18 @@ class ADP_NODE: public CKT_BASE {
 
     double tt_integrate_( double );
 
-    virtual double tt_integrate_1( double a ) { return tt_integrate_1_const( a ); }
+    virtual double tt_integrate_1( double x ) { return tt_integrate_1_const( x ); }
     double tt_integrate_1_const( double );
     double tt_integrate_1_exp( double );
     double tt_integrate_1_linear( double );
 
-    virtual double tt_integrate_2( double a ) { return tt_integrate_2_exp( a ); }
+    virtual double tt_integrate_2( double x ) { return tt_integrate_2_exp( x ); }
     double tt_integrate_2_exp(double);
     double tt_integrate_2_exp_different(double);
     double tt_integrate_2_linear(double);
     double tt_integrate_2_linear2(double);
 
-    virtual double tt_integrate_3( double a ) { return tt_integrate_3_exp( a ); }
+    virtual double tt_integrate_3( double x ) { return tt_integrate_3_exp( x ); }
     double tt_integrate_3_exp(double);
 
     double tr_correct_3_exp( );

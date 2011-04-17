@@ -181,9 +181,10 @@ public:
   }
   //void	operator=(const std::string& s)	{untested();_s = s;}
 
-  bool  operator==(const PARAMETER& p)const {
-    return (_v == p._v );
-  }
+  bool  operator==(const PARAMETER& p)const;
+//  {
+//    return (_v == p._v && _s == p._s );
+//  }
   bool  operator==(const std::string& v)const {
       return _v == v;
   }

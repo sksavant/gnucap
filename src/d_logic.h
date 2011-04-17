@@ -53,8 +53,8 @@ private: // override virtuals
     return (common()->modelname() + " " + common()->name()).c_str();}
   uint_t	   tail_size()const	{return 2;}
   uint_t	   max_nodes()const	{return PORTS_PER_GATE;}
-  uint_t	   min_nodes()const	{return BEGIN_IN+1;}
-  virtual uint_t matrix_nodes()const	{return 2;}
+  uint_t	   min_nodes()const	{return BEGIN_IN;}
+  virtual uint_t matrix_nodes()const	{return 2;} // for OUTPORT...
   uint_t	   net_nodes()const	{return _net_nodes;}
   CARD*	   clone()const		{return new DEV_LOGIC(*this);}
   void	   precalc_first() {ELEMENT::precalc_first(); if (subckt()) {subckt()->precalc_first();}}

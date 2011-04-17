@@ -24,9 +24,6 @@
 
 #include <dlfcn.h>
 
-typedef intptr_t some_int;
-// typedef uint64_t some_int;
-//typedef uint32_t some_int;
 extern "C" int so_main(int,char **);
 
 enum eCBmode { // !!! keep in sync with Spice

@@ -689,7 +689,7 @@ DEV_BUILT_IN_MOS::DEV_BUILT_IN_MOS(const DEV_BUILT_IN_MOS& p)
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::expand()
 {
-  BASE_SUBCKT::expand(); // calls common->expand, attached model
+  BASE_SUBCKT::expand(); // COMPON::expand()
   assert(_n);
   assert(common());
   const COMMON_BUILT_IN_MOS* c = static_cast<const COMMON_BUILT_IN_MOS*>(common());

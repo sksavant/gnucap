@@ -256,12 +256,20 @@ std::string PARAMETER<std::string>::e_val_normal(const std::string& def, const C
 string PARAMETER<string>::my_infty()const{ return "inf"; }
 /*--------------------------------------------------------------------------*/
 string PARAMETER<string>::value()const {
-    trace0(("PARAMETER::std::string " + _s + " -> " + _v ).c_str());
-    return to_string(_v);
-  }
+  trace0(("PARAMETER::std::string " + _s + " -> " + _v ).c_str());
+  return to_string(_v);
+}
 /*--------------------------------------------------------------------------*/
 string PARAMETER<string>::string()const {
-    trace0(("PARAMETER::std::string " + _s + " -> " + _v ).c_str());
-    return to_string(_s);
-  }
+  trace0(("PARAMETER::std::string " + _s + " -> " + _v ).c_str());
+  return to_string(_s);
+}
+/*--------------------------------------------------------------------------*/
+bool PARAMETER<string>::operator==(const PARAMETER& p)const
+{
+  bool ret= (_v == p._v && _s == p._s );
+  trace1("PARAMETER<string>operator== " + _v + " ?= " + p._v 
+                             + " and " + _s  + " ?= " + p._s , ret);
+  return ret;
+}
 /*--------------------------------------------------------------------------*/

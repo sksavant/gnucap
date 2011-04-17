@@ -62,6 +62,7 @@ EVAL_BM_MODEL::EVAL_BM_MODEL(const EVAL_BM_MODEL& p)
    _arglist(p._arglist),
    _func(0)
 {
+  trace0("EVAL_BM_MODEL::EVAL_BM_MODEL attaching...");
   attach_common(p._func, &_func);
 }
 /*--------------------------------------------------------------------------*/

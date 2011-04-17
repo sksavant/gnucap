@@ -112,8 +112,8 @@ public:
   virtual int param_count()const {return 4;}
 public:
   virtual void precalc_first(const CARD_LIST*);
-  virtual void expand(const COMPONENT*)		{trace0("nothing to expand");}
-  virtual COMMON_COMPONENT* deflate()		{return this;}
+  virtual void expand(const COMPONENT* c);
+  virtual COMMON_COMPONENT* deflate(); //		{return this;}
   virtual void precalc_last(const CARD_LIST*)	{}
 
   virtual void	tr_eval(ELEMENT*)const;
@@ -140,7 +140,7 @@ public:
   std::string	      modelname()const	{return _modelname;}
   const MODEL_CARD*   model()const	{
     if(!_model) { 
-        trace1((" ?? " + _modelname).c_str(), (long int) this );
+        trace1((" model name : " + _modelname) + " but no model", (long int) this %1000);
     }
     // assert(_model); stupid.
     return _model;}
@@ -241,8 +241,9 @@ public:	// state, aux data
   COMMON_COMPONENT* mutable_common()	  {return _common;}
   const COMMON_COMPONENT* common()const	  {return _common;}
   bool	has_common()const		  {return _common;}
-  void	attach_common(COMMON_COMPONENT*c) {COMMON_COMPONENT::attach_common(c,&_common);}
-  void	detach_common()			  {COMMON_COMPONENT::detach_common(&_common);}
+  void	attach_common(COMMON_COMPONENT*c) {
+    COMMON_COMPONENT::attach_common(c,&_common);}
+  void	detach_common()	  {COMMON_COMPONENT::detach_common(&_common);}
   void	deflate_common();
   //--------------------------------------------------------------------
 public:	// type

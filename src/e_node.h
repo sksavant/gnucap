@@ -232,8 +232,8 @@ public: // action, used by logic
   void	      set_event(double delay, LOGICVAL v);
   void	      force_initial_value(LOGICVAL v);
   void	      propagate();
-  double      to_analog(const MODEL_LOGIC*f);
-  void	      to_logic(const MODEL_LOGIC*f);
+  double      to_analog(const MODEL_LOGIC*);
+  void	      to_logic(const MODEL_LOGIC*);
 
 private: // inhibited
   explicit LOGIC_NODE(const LOGIC_NODE&):NODE(){incomplete();unreachable();}

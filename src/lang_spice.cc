@@ -393,6 +393,8 @@ void LANG_SPICE_BASE::parse_logic_using_obsolete_callback(CS& cmd, COMPONENT* x)
   else if (cmd.umatch("xor " )) {untested();common = new LOGIC_XOR;}
   else if (cmd.umatch("xnor ")) {untested();common = new LOGIC_XNOR;}
   else if (cmd.umatch("inv " )) {common = new LOGIC_INV;}
+  //else if (cmd.umatch("out " )) {common = new LOGIC_OUT;}
+  //else if (cmd.umatch("in "  )) {common = new LOGIC_IN;}
   else {itested();
     cmd.warn(bWARNING,"need and,nand,or,nor,xor,xnor,inv");
     common=new LOGIC_NONE;

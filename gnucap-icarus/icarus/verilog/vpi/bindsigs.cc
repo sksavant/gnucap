@@ -1,4 +1,4 @@
-/* :vim:sw=2:et:
+/* :vim:sw=2:et:ts=2:
  * Copyright (c) 2008 True Circuits Inc.
  *
  * Author: Kevin Cameron
@@ -440,6 +440,7 @@ static void sync_out_register()
 
 static PLI_INT32 sync_in_calltf(PLI_BYTE8 *user_data)
 {
+  // to gnucap.
   if (!get_lists) return 0;
 
   vpiHandle systfref, args_iter, argh;
@@ -464,9 +465,8 @@ static PLI_INT32 sync_in_calltf(PLI_BYTE8 *user_data)
 
   assert(rfp);
 
-  if (bs_debug > 0) {
+  //trace0("sync_in_calltf " + std::string(rfp->id.name));
     fprintf(stderr,"Syncing %s\n",rfp->id.name);
-  }
   // Cleanup and return
   vpi_free_object(args_iter);
   return 0;

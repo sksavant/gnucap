@@ -24,14 +24,22 @@
  * Dynamic binding of PWL signal sources to external simulators 
  */
 
-#include <vvp/vpi_priv.h>
-#include <vvp/extpwl.h>
+#include "vvp/vpi_priv.h"
+#include "extpwl.h"
 #include "e_compon.h"
 #include "e_elemnt.h" 
+#include <dlfcn.h>
 
 # define EXT_BAS 0
 # define EXT_REF 1
 # define EXT_SIG 2
+
+enum sim_mode {SIM_ALL,
+               SIM_INIT,SIM_CONT0,SIM_CONT1,
+               SIM_PREM,SIM_DONE};
+extern double SimTimeD, // time in digital
+              SimTimeA; // time in analog
+extern void schedule_simulate(void);
 
 class ExtBase {
  public:
@@ -115,6 +123,16 @@ class ExtSig : public ExtBase {
 
  private:
   ExtSig();
+
+ public:
+  LOGICVAL get_logic(){
+
+   //  SpcIvlCB *cbd = cb_data;
+    //double time0 = CKT_BASE::_sim->_time0,*dp,nxt;
+    // assert(lib->d == d);
+//    dp  = (*cbd->eval)(cbd,time0,CB_LOAD,getVoltage,xsig,0);
+    return lvUNKNOWN;
+  }
 
 };
 

@@ -28,7 +28,9 @@ bin_PROGRAMS= gnucap
 
 ## gnucap as a shared library
 lib_LTLIBRARIES = libgnucap.la
+
 libgnucap_la_SOURCES = ${SRCS1} ${MODELSRCS} ${SRCS2}
+# libd_vvp_la_SOURCES = d_vvp.cc extlib.cc
 libgnucap_includedir = $(includedir)/gnucap
 libgnucap_include_HEADERS = ${RAW_HDRS}
 
@@ -48,7 +50,13 @@ D_SRCS = \
 d_admit.cc d_cap.cc d_cccs.cc d_ccvs.cc d_coil.cc \
 d_cs.cc d_poly_g.cc d_poly_cap.cc d_res.cc d_switch.cc \
 d_trln.cc d_vcg.cc d_vcr.cc d_vcvs.cc d_vs.cc d_vcvs2.cc \
-d_rcd.cc d_bti.cc d_vvp.cc
+d_rcd.cc d_bti.cc
+
+
+if IVERILOG
+  D_SRCS += d_vvp.cc extlib.cc
+endif
+
 
 # behavioral modeling functions
 BM_SRCS = \
@@ -100,7 +108,7 @@ e_homebrew.cc \
 e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc e_adplist.cc\
 bm_value.cc bm.cc \
 c__cmd.cc c_attach.cc c_file.cc c_genrat.cc \
-findbr.cc plot.cc globals.cc e_adp.cc extlib.cc
+findbr.cc plot.cc globals.cc e_adp.cc 
 #------------------------------------------------------------------------
 RAW_HDRS = \
 md.h ap.h mode.h constant.h declare.h patchlev.h \
@@ -113,11 +121,17 @@ u_cardst.h u_function.h u_lang.h u_limit.h u_nodemap.h u_opt.h u_parameter.h \
 u_prblst.h u_probe.h u_sim_data.h u_sdp.h u_status.h u_time_pair.h u_xprobe.h \
 s__.h s_tr.h e_adp.h s_tt.h\
 e_base.h e_card.h e_node.h e_aux.h e_model.h e_compon.h e_subckt.h \
-e_homebrew.h \
+e_homebrew.h e_adplist.h \
 e_elemnt.h e_ccsrc.h e_storag.h e_cardlist.h \
-d_coment.h d_dot.h d_logic.h d_subckt.h d_vvp.h \ 
+d_coment.h d_dot.h d_logic.h d_subckt.h \
 bm.h \
 c_comand.h globals.h extlib.h
+
+if IVERILOG
+  RAW_HDRS += d_vvp.h
+# doesnt work (?)
+# dvvp_lo_CFLAGS = -I$(IVERILOG_PATH)/include
+endif
 #------------------------------------------------------------------------ 
 ## The modelgen generated files
 MODELSRCS= ${MODELS:.model=.cc} ${MODELS:.model=.h}
@@ -133,8 +147,17 @@ MODELOBJS= ${MODELS:.model=.${OBJEXT}}
 # nodist_gnucap_SOURCES= ${SRCS1} ${MODELSRCS} ${SRCS2}
 # henjo:
 nodist_gnucap_SOURCES= main.cc
-gnucap_LDADD = libgnucap.la
 
+#gnucap_LDADD = libgnucap.la
+# gnucap_LDADD = -lAAAAAAAAA
+
+gnucap_LDADD = @IVERILOG@ libgnucap.la
+
+
+# gibsnich
+# LDFLAGS += FOOOO
+# tutnix
+# LDADD = FOOOO
 
 
 SRCS1= 
@@ -166,15 +189,16 @@ MODELGEN= @MODELGEN@
 
 MAKEDEPEND = gcc -M $(CPPFLAGS) -o $*.d $<
 
-
 %.cc : %.model %.h ${MODELGEN}${EXEEXT}
 	${MODELGEN} -cc $<
 
 %.h : %.model ${MODELGEN}${EXEEXT}
 	${MODELGEN} -h $<
 
-depend:
-	$(CPP) -MM $(CPPFLAGS)  $(RAW_SRCS) > $@
+## depend:
+##	 $(CPP) -MM $(CPPFLAGS)  $(RAW_SRCS) > $@
+
+d_vvp.lo extlib.lo: CPPFLAGS+= @IVERILOG_INCLUDE@
 
 
 # include $(srcdir)/depend

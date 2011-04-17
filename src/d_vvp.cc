@@ -28,7 +28,6 @@
 #include "d_subckt.h"
 #include "u_xprobe.h"
 // #include "d_vvp.h"
-#include "extlib.h"
 #include "d_logic.h"
 #include "ap.h"
 #include "u_lang.h"
@@ -39,8 +38,9 @@
 #include "io_trace.h"
 /*--------------------------------------------------------------------------*/
 
-/* plan
- */
+#include "extlib.h"
+
+#include "schedule.cc"
 
 namespace {
 #include "d_vvp.h"
@@ -48,7 +48,6 @@ namespace {
 /*--------------------------------------------------------------------------*/
 const double _default_delta (NOT_INPUT);
 const int    _default_smooth(0);
-static int E=0;
 /*--------------------------------------------------------------------------*/
 class MODEL_LOGIC_VVP;
 class COMMON_LOGIC_VVP;
@@ -86,6 +85,40 @@ void ExtContSim(ExtLib* ext, const char *analysis,double accpt_time) {
   lib->contsim(analysis,accpt_time);
 }
 /*--------------------------------------------------------------------------*/
+class LOGIC_IN : public COMMON_LOGIC {
+  // data from icarus
+private:
+  explicit LOGIC_IN(const LOGIC_IN& p) :COMMON_LOGIC(p){++_count;}
+  COMMON_COMPONENT* clone()const	{return new LOGIC_IN(*this);}
+public:
+  ExtSig* _ext;
+  explicit LOGIC_IN(int c=0)		  :COMMON_LOGIC(c) {}
+
+  LOGICVAL logic_eval(const node_t* )const {
+    // called by DEV_LOGIC::tr_accept
+    return _ext->get_logic();
+  }
+  virtual std::string name()const	  {return "in";}
+};
+/*--------------------------------------------------------------------------*/
+static LOGIC_IN Default_in(CC_STATIC);
+/*--------------------------------------------------------------------------*/
+class LOGIC_OUT : public COMMON_LOGIC {
+  // just the outnode. data to icarus
+private:
+  explicit LOGIC_OUT(const LOGIC_OUT& p) :COMMON_LOGIC(p){++_count;}
+  COMMON_COMPONENT* clone()const	{return new LOGIC_OUT(*this);}
+public:
+  explicit LOGIC_OUT(int c=0)		  :COMMON_LOGIC(c) {}
+  LOGICVAL logic_eval(const node_t* )const {
+    trace0("LOGIC_OUT::logic_eval noting to eval");
+    return lvUNKNOWN; 
+  }
+  virtual std::string name()const	  {return "out";}
+};
+/*--------------------------------------------------------------------------*/
+static LOGIC_OUT Default_out(CC_STATIC);
+/*--------------------------------------------------------------------------*/
 static inline double FixTable(double *dp,std::vector<DPAIR> *num_table,
                               double now)
 {
@@ -94,6 +127,7 @@ static inline double FixTable(double *dp,std::vector<DPAIR> *num_table,
   int rsz = 1;
   for (s = 0;; s++) {
     double t2 = *dp++;
+//    trace3("Fix", *dp,s,t2);
     if (t2 <= t) break;
       t = t2;
       if (nxt < now) nxt = t;
@@ -154,6 +188,51 @@ private: // override virtual
   void		skip_type_tail(CS& cmd)const {cmd.umatch("(1)");}
 };
 /*--------------------------------------------------------------------------*/
+COMMON_LOGIC_VVP::COMMON_LOGIC_VVP(int c)
+      :COMMON_COMPONENT(c), 
+      _extlib(0),
+      incount(0),
+      file(""),
+      module(""),
+      status(0)
+{
+  ++_count;
+}
+/*--------------------------------------------------------------------------*/
+COMMON_LOGIC_VVP::COMMON_LOGIC_VVP(const COMMON_LOGIC_VVP& p)
+      :COMMON_COMPONENT(p),
+      _extlib(p._extlib),
+      incount(p.incount),
+      file(p.file),
+      module(p.module),
+      status(p.status)
+{
+  trace0("COMMON_LOGIC_VVP::COMMON_LOGIC_VVP( COMMON_LOGIC_VVP )");
+  ++_count;
+}
+/*--------------------------------------------------------------------------*/
+bool COMMON_LOGIC_VVP::operator==(const COMMON_COMPONENT& x )const{
+  const COMMON_LOGIC_VVP* p = dynamic_cast<const COMMON_LOGIC_VVP*>(&x);
+  bool ret = (file==p->file);
+     //       && (module==p->module); // bad idea...?
+  bool cr = COMMON_COMPONENT::operator==(x);
+
+  trace2("COMMON_LOGIC_VVP::operator==" + string( file ) + " " + string( p->file),ret,cr);
+  return ret && cr;
+}
+/*--------------------------------------------------------------------------*/
+COMMON_COMPONENT* COMMON_LOGIC_VVP::deflate()
+{
+  for( list<const COMMON_COMPONENT*>::iterator i = _commons.begin();
+      i != _commons.end(); ++i ){
+    if (*this == **i){
+      return const_cast<COMMON_COMPONENT*>( *i );
+    }
+    trace0("COMMON_LOGIC_VVP::deflate miss");
+  }
+  _commons.push_back(this);
+  return this;
+}
 /*--------------------------------------------------------------------------*/
 EVAL_BM_EXTPWL::EVAL_BM_EXTPWL(int c)
   :EVAL_BM_ACTION_BASE(c),
@@ -226,7 +305,7 @@ void EVAL_BM_EXTPWL::precalc_last(const CARD_LIST* Scope)
 {
   assert(Scope);
   EVAL_BM_ACTION_BASE::precalc_last(Scope);
-  trace1("EVAL_BM_EXTPWL::precalc_last -- why so often??", E);
+  trace0("EVAL_BM_EXTPWL::precalc_last ");
 
   double last = -BIGBIG;
   for (std::vector<std::pair<PARAMETER<double>,PARAMETER<double> > >::iterator
@@ -241,8 +320,6 @@ void EVAL_BM_EXTPWL::precalc_last(const CARD_LIST* Scope)
     last = p->first;
   }
 
-  trace1("EVAL_BM_EXTPWL::precalc_last->ExtStartSim done?",E);
-  E++;
 }
 /*--------------------------------------------------------------------------*/
 
@@ -253,8 +330,11 @@ void EVAL_BM_EXTPWL::tr_eval(ELEMENT* d)const
   assert (xsig);
   SpcIvlCB *cbd = xsig->cb_data;
   double time0 = CKT_BASE::_sim->_time0,*dp,nxt;
-  xsig->d = d;
+  dp=0;
+  xsig->d= d; // not here.
 
+  // to Ivl
+  //if (d->id_letter()=='V')
   dp  = (*cbd->eval)(cbd,time0,CB_LOAD,getVoltage,xsig,0);
 
   // &_num_table is const? why?
@@ -262,28 +342,26 @@ void EVAL_BM_EXTPWL::tr_eval(ELEMENT* d)const
   nxt = FixTable(dp,num_table,time0);
 
   double ext = (d->is_source()) ? 0. : NOT_INPUT;
-  d->_y[0] = interpolate(_num_table.begin(), _num_table.end(), 
-		       ioffset(d->_y[0].x), ext, ext);
-  tr_final_adjust(&(d->_y[0]), d->f_is_value());
+  assert(ext==0);
+
+  if(d->id_letter()=='V')
+  { // from ivl
+    d->_y[0] = interpolate(_num_table.begin(), _num_table.end(), 
+                         ioffset(d->_y[0].x), ext, ext);
+    tr_final_adjust(&(d->_y[0]), d->f_is_value());
+  }
 }
 /*--------------------------------------------------------------------------*/
 TIME_PAIR EVAL_BM_EXTPWL::tr_review(COMPONENT* comp)
 {
-  trace0("EVAL_BM_EXTPWL::tr_review"+ comp->short_label());
   assert (_ext);
   double dtime = comp->_sim->_dtmin;
   double dt = dtime;
-  // = ExtSigTrCheck(_ext,dt_s,
-  //    const_cast<std::vector<DPAIR>*>(&_num_table),d);
-
-// double ExtSigTrCheck(intptr_t data,double dtime,
-//    std::vector<DPAIR> *num_table,COMPONENT *d) {
-
-  //std::vector<DPAIR>* num_table = const_cast<std::vector<DPAIR>*>(&_num_table);
 
   ExtSig *xsig = _ext;
 
   if ('I' == xsig->iv) {
+    assert(comp->id_letter()=='I');
     SpcIvlCB *cbd = xsig->cb_data;
     double time0 = CKT_BASE::_sim->_time0,accpt_time = time0+dtime,*dp,nxt;
 
@@ -369,7 +447,7 @@ bool EVAL_BM_EXTPWL::parse_numlist(CS& cmd)
   return cmd.gotit(start);
 }
 /*--------------------------------------------------------------------------*/
-bool Getptr(CS& cmd, const std::string& key, PARAMETER<some_int>* val)  // consumes key and optional "="
+bool Getptr(CS& cmd, const std::string& key, PARAMETER<intptr_t>* val)  // consumes key and optional "="
 {  // see for "iu_parameter.h" "Get" functions for example and reference
   std::string str;  
   if (cmd.umatch(key + ' ')) {
@@ -404,119 +482,53 @@ EVAL_BM_EXTPWL pp1(CC_STATIC);
 DISPATCHER<COMMON_COMPONENT>::INSTALL dd1(&bm_dispatcher, "extpwl2", &pp1);
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-enum {PORTS_PER_VVP = 100};
-enum direction_t {pIN=0, pOUT, pBUS};
 
 inline OMSTREAM& operator<<(OMSTREAM& o, direction_t t) {
   const std::string s[] = {"", "input", "output", "bus"};
   return (o << s[t]);
 }
 /*--------------------------------------------------------------------------*/
-struct port_info_t {
-  string name;
-  direction_t direction;
-};
 /*--------------------------------------------------------------------------*/
-class DEV_LOGIC_VVP : public BASE_SUBCKT  {
-  public:
-    explicit	DEV_LOGIC_VVP();
-    explicit	DEV_LOGIC_VVP(const DEV_LOGIC_VVP& p);
-    ~DEV_LOGIC_VVP()		{--_count;}
-  private:
-    static int	_count;
-    node_t	nodes[PORTS_PER_VVP];	/* PORTS_PER_VVP <= PORTSPERSUBCKT */
-    std::vector< ExtRef* > ExtRefList;
-    uint_t status;
-  private: // override virtuals
-    char	   id_letter()const	{return '\0';}
-    std::string value_name()const	{return "#";}
-    bool print_type_in_spice()const {return true;}
-    CARD* clone()const		
-    { trace0("clonging vvp");
-      return new DEV_LOGIC_VVP(*this);
-    }
-    void tr_accept();
-    void precalc_first();
-    void expand();
-    void precalc_last();
-    bool do_tr();
-    bool tr_needs_eval()const{return true;}
-    TIME_PAIR tr_review();
-
-    static int count()			{return _count;}
-    std::vector<port_info_t> _ports;
-    ExtRef* _extref; //initialized Extlib...
-
-
-  public:
-    bool has_common()const {return true;}
-    uint_t       max_nodes()const     {return 10;}
-    uint_t       min_nodes()const     {return 2;}
-    //int     matrix_nodes()const; //BASE_SUBCKT
-    // uint_t       net_nodes()const     {return 10;} //depends...
-    uint_t       int_nodes()const     {return 0;}
-    uint_t       tail_size()const     {return 1;}
-    std::string port_name(uint_t)const ;
-    void tr_begin();
-    //  void set_modelname(const std::string x){_modelname=x;}
-    ExtLib* extlib()const; //{return (((COMMON_LOGIC_VVP*) common())->_extlib);}
-};
 /*--------------------------------------------------------------------------*/
 TIME_PAIR  DEV_LOGIC_VVP::tr_review(){
-  trace0("DEV_LOGIC_VVP::tr_review");
   return  BASE_SUBCKT::tr_review();
 }
 /*--------------------------------------------------------------------------*/
 bool DEV_LOGIC_VVP::do_tr(){
-  trace0("DEV_LOGIC_VVP::do_tr");
   assert(status);
   q_accept();
   return BASE_SUBCKT::do_tr();
 }
 /*--------------------------------------------------------------------------*/
 void DEV_LOGIC_VVP::tr_accept(){
-  trace1("DEV_LOGIC_VVP::tr_accept", _sim->_time0);
+  //trace1("DEV_LOGIC_VVP::tr_accept", _sim->_time0);
   ExtContSim(extlib(),"TRAN",_sim->_time0);     
-
 
   subckt()->tr_accept();
   q_eval();
 }
 /*--------------------------------------------------------------------------*/
-
-class MODEL_LOGIC_VVP : public MODEL_LOGIC {
-private:
-  explicit	MODEL_LOGIC_VVP(const MODEL_LOGIC_VVP& p);
-public:
-  explicit MODEL_LOGIC_VVP(const DEV_LOGIC_VVP* );
-	   ~MODEL_LOGIC_VVP()		{}
-private: // override virtuals
-  std::string	dev_type()const		{return "logic_vvp";}
-  CARD*		clone()const		{return new MODEL_LOGIC_VVP(*this);}
-  void		set_param_by_index(int, std::string&, int);
-  bool		param_is_printable(int)const;
-  std::string	param_name(int)const;
-  std::string	param_name(int,int)const;
-  std::string	param_value(int)const;
-  int		param_count()const	{return (3 + MODEL_LOGIC::param_count());}
-public:
-  // static int	count()			{return _count;}
-  std::string port_name(uint_t)const;
-public:
-  PARAMETER<string> file;
-  PARAMETER<string> input;
-  PARAMETER<string> output;
-};
-/*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
 void COMMON_LOGIC_VVP::precalc_first(const CARD_LIST* par_scope)
 {
   trace0("COMMON_LOGIC_VVP::precalc_first");
   assert(par_scope);
-  COMMON_COMPONENT::precalc_first(par_scope);
 
+  COMMON_COMPONENT::precalc_first(par_scope);
   file.e_val_normal("UNSET" , par_scope);
   module.e_val_normal("UNSET" , par_scope);
+}
+/*--------------------------------------------------------------------------*/
+void COMMON_LOGIC_VVP::expand(const  COMPONENT* d ){
+  trace1("COMMON_LOGIC_VVP::expand" + d->long_label(), (intptr_t) d % PRIME);
+
+  COMMON_COMPONENT::expand(d);
+  attach_model(d);
+  // COMMON_LOGIC_VVP* c = this;
+  const MODEL_LOGIC* m = dynamic_cast<const MODEL_LOGIC*>(model());
+  if (!m) {
+    throw Exception_Model_Type_Mismatch(d->long_label(), modelname(), name());
+  }
+
 }
 /*--------------------------------------------------------------------------*/
 void COMMON_LOGIC_VVP::precalc_last(const CARD_LIST* par_scope)
@@ -524,22 +536,27 @@ void COMMON_LOGIC_VVP::precalc_last(const CARD_LIST* par_scope)
   assert(par_scope);
   COMMON_COMPONENT::precalc_last(par_scope);
 
+  file.e_val_normal("UNSET" , par_scope);
+  module.e_val_normal("UNSET" , par_scope);
+
   trace1("COMMON_LOGIC_VVP::precalc_last " + file.string(), status);
   if(!_extlib){
-    void* h =  dlopen("libvvp.so",RTLD_LAZY|RTLD_GLOBAL);
-      if(h==NULL) throw Exception("cannot open libvvpi %s", dlerror());
-      dlerror();
+    void* h = dlopen("libvvp.so",RTLD_LAZY|RTLD_GLOBAL);
+    if(h==NULL) throw Exception("cannot open libvvp: %s: ", dlerror());
+    dlerror();
+    trace1("dlopened libvvp.so", (intptr_t)h%PRIME);
     _extlib = new ExtLib("foo",h);
-    trace0("-M. -mbindsigs2 -v "+string(file));
-    int ret=_extlib->init(("-M. -mbindsigs2 -v "+string(file)+".vvp").c_str());   
+    int ret;
+    ret=_extlib->init(("-M. -mbindsigs2 -v "+string(file)+".vvp").c_str());   
     if(dlerror()) throw Exception("cannot init vvp %s", dlerror());
-    if(ret) throw Exception("cannot init vvp %i", ret);
+
+    if(ret)
+      error(bDANGER, "somethings wrong with vvp: %s\n", file.string().c_str() );
 
   } else {
     untested();
   }
 
-  if (!status) startsim();
   status++;
 
 }
@@ -548,6 +565,14 @@ std::string DEV_LOGIC_VVP::port_name(uint_t i)const{
   stringstream a;
   a << "port" << i;
   return a.str();
+}
+/*--------------------------------------------------------------------------*/
+void MODEL_LOGIC_VVP::precalc_first(){
+  unreachable();
+}
+/*--------------------------------------------------------------------------*/
+void MODEL_LOGIC_VVP::precalc_last(){
+  unreachable();
 }
 /*--------------------------------------------------------------------------*/
 MODEL_LOGIC_VVP::MODEL_LOGIC_VVP(const DEV_LOGIC_VVP* p)
@@ -567,10 +592,6 @@ bool COMMON_LOGIC_VVP::param_is_printable(int i) const{
     return (COMMON_COMPONENT::param_count() - 1 - i)  < param_count();
 }
 /*--------------------------------------------------------------------------*/
-bool MODEL_LOGIC_VVP::param_is_printable(int i) const{
-    return (MODEL_LOGIC::param_count() - 1 - i)  < param_count();
-}
-/*--------------------------------------------------------------------------*/
 std::string COMMON_LOGIC_VVP::param_name(int i) const{
     switch (COMMON_COMPONENT::param_count() - 1 - i) {
       case 0: return "file";
@@ -579,6 +600,11 @@ std::string COMMON_LOGIC_VVP::param_name(int i) const{
     }
 }
 /*--------------------------------------------------------------------------*/
+bool MODEL_LOGIC_VVP::param_is_printable(int i) const{
+    return (MODEL_LOGIC::param_count() - 1 - i)  < param_count();
+}
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 std::string MODEL_LOGIC_VVP::param_name(int i) const{
     switch (MODEL_LOGIC_VVP::param_count() - 1 - i) {
       case 0: return "file_unused";
@@ -586,17 +612,6 @@ std::string MODEL_LOGIC_VVP::param_name(int i) const{
       case 2: return "output";
       default: return MODEL_LOGIC::param_name(i);
     }
-}
-/*--------------------------------------------------------------------------*/
-std::string COMMON_LOGIC_VVP::param_name(int i, int j)const
-{
-  if (j == 0) {
-    return param_name(i);
-  }else if (i >= COMMON_COMPONENT::param_count()) {
-    return "";
-  }else{
-    return COMMON_COMPONENT::param_name(i, j);
-  }
 }
 /*--------------------------------------------------------------------------*/
 std::string MODEL_LOGIC_VVP::param_name(int i, int j)const
@@ -612,7 +627,6 @@ std::string MODEL_LOGIC_VVP::param_name(int i, int j)const
 /*--------------------------------------------------------------------------*/
 void COMMON_LOGIC_VVP::set_param_by_index(int i, std::string& value, int offset)
 {
-  trace1("COMMON_LOGIC_VVP::set_param_by_index " + value,  COMMON_COMPONENT::param_count() - 1 - i);
   switch (COMMON_COMPONENT::param_count() - 1 - i) {
   case 0: file = value;
           break;
@@ -632,6 +646,17 @@ void MODEL_LOGIC_VVP::set_param_by_index(int i, std::string& value, int offset)
   }
 }
 /*--------------------------------------------------------------------------*/
+std::string COMMON_LOGIC_VVP::param_name(int i, int j)const
+{
+  if (j == 0) {
+    return param_name(i);
+  }else if (i >= COMMON_COMPONENT::param_count()) {
+    return "";
+  }else{
+    return COMMON_COMPONENT::param_name(i, j);
+  }
+}
+/*--------------------------------------------------------------------------*/
 std::string COMMON_LOGIC_VVP::param_value(int i)const
 {
   switch (COMMON_COMPONENT::param_count() - 1 - i) {
@@ -639,6 +664,11 @@ std::string COMMON_LOGIC_VVP::param_value(int i)const
   case 1: return module.string();
   default: return COMMON_COMPONENT::param_value(i);
   }
+}
+/*--------------------------------------------------------------------------*/
+COMMON_COMPONENT* COMMON_LOGIC_VVP::clone()const
+{
+  return new COMMON_LOGIC_VVP(*this);
 }
 /*--------------------------------------------------------------------------*/
 std::string MODEL_LOGIC_VVP::param_value(int i)const
@@ -651,36 +681,26 @@ std::string MODEL_LOGIC_VVP::param_value(int i)const
   }
 }
 /*--------------------------------------------------------------------------*/
-COMMON_COMPONENT* COMMON_LOGIC_VVP::clone()const  { return new COMMON_LOGIC_VVP(*this);}
-std::string COMMON_LOGIC_VVP::name()const {itested();return "logic";}
-
-/*--------------------------------------------------------------------------*/
-void COMMON_LOGIC_VVP::expand(const  COMPONENT* d ){
-  trace0("COMMON_LOGIC_VVP::expand");
-  attach_model(d);
-  // COMMON_LOGIC_VVP* c = this;
-  const MODEL_LOGIC* m = dynamic_cast<const MODEL_LOGIC*>(model());
-  if (!m) {
-    throw Exception_Model_Type_Mismatch(d->long_label(), modelname(), name());
-  }
-
-}
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-int DEV_LOGIC_VVP::_count = -1;
+int MODEL_LOGIC_VVP::_count = -1;
 int COMMON_LOGIC_VVP::_count = -1;
-// int MODEL_LOGIC::_count = -1; // there is one in e_node.cc, and the dispatcher
-// static LOGIC_NONE Default_LOGIC(CC_STATIC);
+typeof(COMMON_LOGIC_VVP::_commons) COMMON_LOGIC_VVP::_commons;
+int DEV_LOGIC_VVP::_count = -1;
 static COMMON_LOGIC_VVP Default_Params(CC_STATIC);
 /*--------------------------------------------------------------------------*/
+namespace DEV_DISP {
 static DEV_LOGIC_VVP p1;
 static DISPATCHER<CARD>::INSTALL
 d1(&device_dispatcher, "vvp", &p1);
+}
 /*--------------------------------------------------------------------------*/
+namespace MOD_DISP{
+static DEV_LOGIC_VVP p1;
 static MODEL_LOGIC_VVP p2(&p1);
 static DISPATCHER<MODEL_CARD>::INSTALL
 d2(&model_dispatcher, "vvp", &p2);
+}
 /*--------------------------------------------------------------------------*/
 DEV_LOGIC_VVP::DEV_LOGIC_VVP()
   :BASE_SUBCKT(),
@@ -691,7 +711,6 @@ DEV_LOGIC_VVP::DEV_LOGIC_VVP()
   trace0("DEV_LOGIC_VVP::DEV_LOGIC_VVP nodes");
   _n = nodes;
   ++_count;
-  // _modelname="vvp";
 }
 /*--------------------------------------------------------------------------*/
 DEV_LOGIC_VVP::DEV_LOGIC_VVP(const DEV_LOGIC_VVP& p)
@@ -707,7 +726,7 @@ DEV_LOGIC_VVP::DEV_LOGIC_VVP(const DEV_LOGIC_VVP& p)
 /*--------------------------------------------------------------------------*/
 void DEV_LOGIC_VVP::expand()
 {
-  trace0(("DEV_LOGIC_VVP::expand model:" + common()->modelname()).c_str());
+  trace0("DEV_LOGIC_VVP::expand " + long_label());
   BASE_SUBCKT::expand(); // calls common->expand, attaches model
   assert(_n);
 
@@ -745,23 +764,32 @@ void DEV_LOGIC_VVP::expand()
    //  _n[1].new_model_node("." + long_label() + ".vdd", this);
     //}else{
     //  untested0(_n[1].short_label().c_str());
-    trace0("DEV_LOGIC_VVP::expand entering loop");
+    trace0("DEV_LOGIC_VVP::expand "+ short_label() + " entering loop");
     //}
     for( ; n<net_nodes(); ++n){
       string name;
       char src;
+      COMMON_COMPONENT* logic_common;
 
       // a hack...
       stringstream a;
       a << "p" << n;
       name=a.str();
       src='V';
-      name="out";
+      name="out"; // from_iv
+      logic_common = &Default_out;
+      node_t lnodes[] = {_n[n], _n[0], _n[1], _n[1], _n[0]};
 
 
       if (n==3){
           src='I';
-          name="in";
+          name="in"; // to verilog
+          lnodes[0] = _n[0];
+          lnodes[1] = _n[0];
+          lnodes[2] = _n[1];
+          lnodes[3] = _n[1];
+          lnodes[4] = _n[n];
+          logic_common = &Default_in;
       }
       assert(n<4);
 
@@ -770,6 +798,7 @@ void DEV_LOGIC_VVP::expand()
 
       // _n[n].new_model_node(long_label() + "."+ name, this);
       const CARD* p;
+      const CARD* logic_dev;
       //if (i->direction == pIN){
 
       //}else{
@@ -778,14 +807,14 @@ void DEV_LOGIC_VVP::expand()
       
         //src=get_pin_type(n)
       p = device_dispatcher[string(&src,1)];
+      logic_dev =  device_dispatcher["logic"];
+
       assert(p);
       COMPONENT* _I = dynamic_cast<COMPONENT*>(p->clone());
       assert(_I);
       subckt()->push_front(_I);
-//      node_t nodes[] = {_n[0], _n[1], _n[n]};
       node_t nodes[] = {_n[n], _n[0]};
       const COMMON_COMPONENT* e = bm_dispatcher["extpwl2"];
-      //EVAL_BM_EXTPWL
       EVAL_BM_EXTPWL*_e = dynamic_cast<EVAL_BM_EXTPWL*>(e->clone());
 
       // from SigInit
@@ -823,11 +852,6 @@ void DEV_LOGIC_VVP::expand()
 
   trace0("DEV_LOGIC_VVP::expand done");
 
-}
-/*--------------------------------------------------------------------------*/
-void COMMON_LOGIC_VVP::startsim()
-{
-  trace0("COMMON_LOGIC_VVP::startsim");
 }
 /*--------------------------------------------------------------------------*/
 ExtLib* DEV_LOGIC_VVP::extlib()const{

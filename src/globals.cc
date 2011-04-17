@@ -47,7 +47,7 @@ DISPATCHER<PROBELIST> probe_dispatcher;
 
 // for the rest, order should not matter, but it is convenient here
 CARD_LIST CARD_LIST::card_list;	// root circuit 
-ADP_LIST ADP_LIST::adp_list;	// age parms.
+ADP_LIST ADP_LIST::adp_list;	// age parms. obsolete?
 ADP_NODE_LIST ADP_NODE_LIST::adp_node_list;	// age parms.
 PROBELIST PROBE_LISTS::alarm[sCOUNT]; /* list of alarm points */
 PROBELIST PROBE_LISTS::plot[sCOUNT];  /* list of plot points */

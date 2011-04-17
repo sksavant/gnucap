@@ -137,7 +137,7 @@ void EVAL_BM_EXTPWL::precalc_first(const CARD_LIST* Scope)
   _smooth.e_val(_default_smooth, Scope);
   if (_ext) {
       trace1(("EVAL_BM_EXTPWL::precalc_first binding "+_ext.string()).c_str(), _ext); 
-      _ext = (some_int)bindExtSigConnect(_ext, _ext.string(), Scope, this);
+      _ext = (intptr_t)bindExtSigConnect(_ext, _ext.string(), Scope, this);
       trace1(("EVAL_BM_EXTPWL::precalc_first bound"), _ext); 
   }
   for (std::vector<std::pair<PARAMETER<double>,PARAMETER<double> > >::iterator
@@ -219,7 +219,7 @@ bool EVAL_BM_EXTPWL::parse_numlist(CS& cmd)
   std::pair<PARAMETER<double>, PARAMETER<double> > p;
   if (0 == _ext) {
     trace0(("EVAL_BM_EXTPWL::parse_numlist, Init " + (string)cmd).c_str());
-    _ext  = (some_int)bindExtSigInit(_ext.string(),cmd.fullstring().c_str());
+    _ext  = (intptr_t)bindExtSigInit(_ext.string(),cmd.fullstring().c_str());
     p.first  = 0;
     p.second = 0;
     _raw_table.push_back(p);
@@ -255,7 +255,7 @@ bool EVAL_BM_EXTPWL::parse_numlist(CS& cmd)
   return cmd.gotit(start);
 }
 /*--------------------------------------------------------------------------*/
-bool Getptr(CS& cmd, const std::string& key, PARAMETER<some_int>* val)  // consumes key and optional "="
+bool Getptr(CS& cmd, const std::string& key, PARAMETER<intptr_t>* val)  // consumes key and optional "="
 {  // see for "iu_parameter.h" "Get" functions for example and reference
   std::string str;  
   if (cmd.umatch(key + ' ')) {

@@ -1022,6 +1022,8 @@ void DEV_BUILT_IN_DIODE::expand()
 /*--------------------------------------------------------------------------*/
 double DEV_BUILT_IN_DIODE::tr_probe_num(const std::string& x)const
 {
+  trace2("tr_probe_num" + short_label(), (intptr_t) common() %1000,
+                                         (intptr_t)( common()->model()) %1000 );
   assert(_n);
   const COMMON_BUILT_IN_DIODE* c = prechecked_cast<const COMMON_BUILT_IN_DIODE*>(common());
   assert(c);

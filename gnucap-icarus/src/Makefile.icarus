@@ -2,7 +2,7 @@
 all: lib
 
 LIB_SRCS = \
-bm_extpwl.cc s_exttr.cc extlib.cc versionvalues.cc
+  extlib.cc versionvalues.cc
 
 LIB_H 	 = \
 extlib.h

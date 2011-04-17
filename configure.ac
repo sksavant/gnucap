@@ -67,7 +67,47 @@ fi
 	enable_nongpl=no
 ])
 
+dnl Ivl for d_vvp.cc
+iverilog=no
+AC_ARG_WITH([iverilog],
+  [AS_HELP_STRING([--with-iverilog], [directory where ivl source resides])],
+  [],
+  [with_iverilog=no])
 
+
+IVERILOG=
+AS_IF([ test "x$with_iverilog" != xno],
+	[
+		AC_CHECK_LIB([vvp], [main],
+				  [
+					AC_SUBST([IVERILOG], ["-lvvp"])
+					AC_SUBST([IVERILOG_INCLUDE], ["-I$with_iverilog"])
+					  AC_DEFINE([HAVE_IVERILOG], [1], [Define if you have libreadline])
+				  ],
+				  [
+					AC_MSG_FAILURE([--with-iverilog was given, but test failed
+	consider LDFLAGS=-L/path/to/libvvp.so/ configure"])
+				  ],
+				  [-L$with_iverilog/lib])
+	]
+)
+
+
+echo AAAAAAAAA: $with_iverilog $IVERILOG
+
+#	IVERILOG_PATH=${iverilog}
+#	IVERILOG_INCLUDE=${iverilog}/include/iverilog
+#	AC_DEFINE(IVERILOG_PATH, [1], [${iverilog}])
+#else
+#	IVERILOG_PATH=
+#	IVERILOG_INCLUDE=
+#fi
+
+AC_SUBST(IVERILOG_PATH)
+AC_SUBST(IVERILOG_INCLUDE)
+AM_CONDITIONAL(IVERILOG, test x$with_iverilog != xno )
+
+dnl debugging
 AC_MSG_CHECKING([if debug code should be compiled in])
 AC_ARG_ENABLE([debug],
 [  --enable-debug            Enable building of debug code. [[default: disabled]]],
@@ -113,12 +153,10 @@ fi
 
 # Checks for libraries.
 
-# this is a c++ program so use c++ for the tests
 AC_LANG([C++])
-
-#AC_CHECK_LIB([termcap], [main])	
-#AC_CHECK_LIB([readline], [main])
 AC_CHECK_LIB([m], [cos])
+
+# probably unneeded.
 AC_CHECK_LIB([gslcblas], [cblas_dgemm])
 AC_CHECK_LIB([gsl], [gsl_blas_dgemm])
 AC_CHECK_LIB([gsl], [gsl_fit_linear])
@@ -231,6 +269,7 @@ AC_MSG_RESULT([
    prefix:     $prefix
    exec_prefix:$exec_prefix
    libdir:     $libdir
+   Icarus V:   $iverilog
    CPPFLAGS:   $CPPFLAGS
    CFLAGS:     $CFLAGS
    CXXFLAGS:   $CXXFLAGS
@@ -238,6 +277,7 @@ AC_MSG_RESULT([
    LIBS:       $LIBS
    debug:      $enable_debug
    non-GPL:    $enable_nongpl
+   shared:     $shared
 
 ])
 

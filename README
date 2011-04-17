@@ -1,3 +1,10 @@
+Readme for iverilog module
+
+1) configure icarus-verilog with --enable-shared --prefix=$ivlp
+2) install ivl
+3) configure --with-iverilog=$ivlip
+4) install
+
 Readme for fucap branch 2010-10:
 
 compiling and use of modules now has become easier.  read
