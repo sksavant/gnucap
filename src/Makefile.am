@@ -24,15 +24,6 @@
 ##  02110-1301, USA.
 
 
-bin_PROGRAMS= gnucap
-
-## gnucap as a shared library
-lib_LTLIBRARIES = libgnucap.la
-
-libgnucap_la_SOURCES = ${SRCS1} ${MODELSRCS} ${SRCS2}
-# libd_vvp_la_SOURCES = d_vvp.cc extlib.cc
-libgnucap_includedir = $(includedir)/gnucap
-libgnucap_include_HEADERS = ${RAW_HDRS}
 
 #------------------------------------------------------------------------
 #------------------------------------------------------------------------
@@ -52,10 +43,15 @@ d_cs.cc d_poly_g.cc d_poly_cap.cc d_res.cc d_switch.cc \
 d_trln.cc d_vcg.cc d_vcr.cc d_vcvs.cc d_vs.cc d_vcvs2.cc \
 d_rcd.cc d_bti.cc
 
+gnucap_LDADD = libgnucap.la
 
 if IVERILOG
-  D_SRCS += d_vvp.cc extlib.cc
+D_SRCS += d_vvp.cc extlib.cc
+#	libvvpg_la_SOURCES = vvp_main.cc
+#  bin_PROGRAMS += libvvpg
+gnucap_LDADD += @IVERILOG@
 endif
+
 
 
 # behavioral modeling functions
@@ -128,7 +124,7 @@ bm.h \
 c_comand.h globals.h extlib.h
 
 if IVERILOG
-  RAW_HDRS += d_vvp.h
+RAW_HDRS += d_vvp.h
 # doesnt work (?)
 # dvvp_lo_CFLAGS = -I$(IVERILOG_PATH)/include
 endif
@@ -147,11 +143,6 @@ MODELOBJS= ${MODELS:.model=.${OBJEXT}}
 # nodist_gnucap_SOURCES= ${SRCS1} ${MODELSRCS} ${SRCS2}
 # henjo:
 nodist_gnucap_SOURCES= main.cc
-
-#gnucap_LDADD = libgnucap.la
-# gnucap_LDADD = -lAAAAAAAAA
-
-gnucap_LDADD = @IVERILOG@ libgnucap.la
 
 
 # gibsnich
@@ -178,6 +169,17 @@ Make3 Makefile.template \
 Make2.g++ Make2.Debug Make2.mingw32 \
 Makefile.am
 
+
+bin_PROGRAMS= gnucap
+
+## gnucap as a shared library
+lib_LTLIBRARIES = libgnucap.la
+
+libgnucap_la_SOURCES = ${SRCS1} ${MODELSRCS} ${SRCS2}
+
+libgnucap_includedir = $(includedir)/gnucap
+libgnucap_include_HEADERS = ${RAW_HDRS}
+
 ### Clean out the modelgen generated files
 CLEANFILES= ${MODELSRCS}
 
@@ -195,8 +197,6 @@ MAKEDEPEND = gcc -M $(CPPFLAGS) -o $*.d $<
 %.h : %.model ${MODELGEN}${EXEEXT}
 	${MODELGEN} -h $<
 
-## depend:
-##	 $(CPP) -MM $(CPPFLAGS)  $(RAW_SRCS) > $@
 
 d_vvp.lo extlib.lo: CPPFLAGS+= @IVERILOG_INCLUDE@
 

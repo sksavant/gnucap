@@ -24,6 +24,9 @@
  * Dynamic binding of PWL signal sources to external simulators 
  */
 
+
+#ifndef EXT_H_LIB
+#define EXT_H_LIB
 #include "vvp/vpi_priv.h"
 #include "extpwl.h"
 #include "e_compon.h"
@@ -46,6 +49,16 @@ class ExtBase {
   virtual int id() {return 0;}
   static void null_call() { unreachable(); }
   virtual ~ExtBase(){}
+};
+
+struct SpcDllData {
+    char   active;
+    double next_time;
+    void   (*activate)(SpcDllData *,SpcIvlCB *,double);
+
+    SpcDllData(void (*fn)(SpcDllData *,SpcIvlCB *,double))
+             : active(0), next_time(0.0), activate(fn) {}
+    void* El;
 };
 
 // schnittstelle zu digisim
@@ -165,3 +178,9 @@ class ExtControl{
   void ExtContSim(const char *,double);
   void ExtEndSim(double);
 };
+
+void PrintInst(FILE *fp,struct __vpiScope *scope);
+
+
+
+#endif

@@ -76,6 +76,8 @@ int ExtLib::init(const char *args) {
 
   so_main =  (typeof(so_main))dlsym(handle,"main");
   assert(so_main);
+
+#ifdef testshared
   startsim = (typeof(startsim))dlsym(handle,"startsim");
   assert(startsim);
   endsim   = (typeof(endsim))dlsym(handle,"endsim");
@@ -86,6 +88,9 @@ int ExtLib::init(const char *args) {
   assert(contsim);
   activate = (typeof(activate))SetActive;
   assert(activate);
+#else
+
+#endif
 
   argv[++i] = 0;
   return( (*so_main)((int)i,argv) );
@@ -125,5 +130,17 @@ void ExtSig::SetActive(void *,void *sig,double time) {
 }
 
 void ExtSig::set_active(double ) {
+}
+
+void PrintInst(FILE *fp,struct __vpiScope *scope);
+extern int SpcDebug;
+
+void PrintInst(FILE *fp,struct __vpiScope *scope)
+{
+  if (scope->scope) {
+    PrintInst(fp,scope->scope);
+    fputs(".",fp);
+  } 
+  fputs(scope->name,fp);
 }
 

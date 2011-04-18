@@ -302,6 +302,7 @@ static PLI_INT32 bindsigs_calltf(PLI_BYTE8 *user_data)
 static void bindsigs_register()
 {
   s_vpi_systf_data tf_data;
+
   
   tf_data.type      = vpiSysTask;
   tf_data.tfname    = "$bindsigs";

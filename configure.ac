@@ -82,18 +82,19 @@ AS_IF([ test "x$with_iverilog" != xno],
 				  [
 					AC_SUBST([IVERILOG], ["-lvvp"])
 					AC_SUBST([IVERILOG_INCLUDE], ["-I$with_iverilog"])
-					  AC_DEFINE([HAVE_IVERILOG], [1], [Define if you have libreadline])
+					AC_DEFINE([HAVE_IVERILOG], [1], [Define if you have libreadline])
 				  ],
 				  [
 					AC_MSG_FAILURE([--with-iverilog was given, but test failed
 	consider LDFLAGS=-L/path/to/libvvp.so/ configure"])
 				  ],
-				  [-L$with_iverilog/lib])
+				  [-lvvp])
 	]
 )
 
 
-echo AAAAAAAAA: $with_iverilog $IVERILOG
+#echo AAAAAAAAA: $with_iverilog $IVERILOG
+AM_CONDITIONAL(IVERILOG, test x$with_iverilog != xno )
 
 #	IVERILOG_PATH=${iverilog}
 #	IVERILOG_INCLUDE=${iverilog}/include/iverilog
@@ -105,7 +106,6 @@ echo AAAAAAAAA: $with_iverilog $IVERILOG
 
 AC_SUBST(IVERILOG_PATH)
 AC_SUBST(IVERILOG_INCLUDE)
-AM_CONDITIONAL(IVERILOG, test x$with_iverilog != xno )
 
 dnl debugging
 AC_MSG_CHECKING([if debug code should be compiled in])
@@ -254,6 +254,7 @@ fi
 AC_OUTPUT([
 	Makefile
 	doc/Makefile
+	vvpg/Makefile
 	examples/Makefile
 	modelgen/Makefile
 	src/Makefile])

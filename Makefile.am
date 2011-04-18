@@ -4,5 +4,9 @@
 
 SUBDIRS=	doc examples modelgen src non-GPL tests
 
+if IVERILOG
+	SUBDIRS+=vvpg
+endif
+
 EXTRA_DIST=	autogen.sh Makefile.template configure.old
 

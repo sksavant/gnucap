@@ -541,7 +541,7 @@ void COMMON_LOGIC_VVP::precalc_last(const CARD_LIST* par_scope)
 
   trace1("COMMON_LOGIC_VVP::precalc_last " + file.string(), status);
   if(!_extlib){
-    void* h = dlopen("libvvp.so",RTLD_LAZY|RTLD_GLOBAL);
+    void* h = dlopen("libvvpg.so",RTLD_LAZY|RTLD_GLOBAL);
     if(h==NULL) throw Exception("cannot open libvvp: %s: ", dlerror());
     dlerror();
     trace1("dlopened libvvp.so", (intptr_t)h%PRIME);
