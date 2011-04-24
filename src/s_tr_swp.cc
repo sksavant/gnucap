@@ -71,13 +71,11 @@ void TRANSIENT::sweep()
     _sim->restore_voltages();
     CARD_LIST::card_list.tr_restore();
   } else {
-    // std::cout << "\n";
     _sim->clear_limit();
     CARD_LIST::card_list.tr_begin();
   }
   
   first();
-  trace0( "TRANSIENT::sweep first done" );
   _sim->_genout = gen();
   
   // assert (_sim->_loadq.empty());
@@ -85,7 +83,6 @@ void TRANSIENT::sweep()
     trace2("TRANSIENT::sweep uic_now solve", time1, _sim->_time0);
     advance_time();
     if (!_inside_tt) {
-      std::cerr << "TRANSIENT::sweep zeroing voltages\n";
       _sim->zero_voltages(); // ?
     }
     CARD_LIST::card_list.do_tr();    //evaluate_models
@@ -115,10 +112,8 @@ void TRANSIENT::sweep()
       trace0("done outdata");
       if( _sim->_mode  == s_TTT && OPT::behave ){
         CARD_LIST::card_list.do_forall( &CARD::tr_save_amps, _sim->_stepno );
-        trace0("TRANSIENT::saved amps");
         CKT_BASE::tt_behaviour_del +=  CKT_BASE::tr_behaviour_del;
         CKT_BASE::tt_behaviour_rel +=  CKT_BASE::tr_behaviour_rel;
-        trace0("TRANSIENT::sweep done things");
       }
       CKT_BASE::tr_behaviour_del = 0;
       CKT_BASE::tr_behaviour_rel = 0;
@@ -144,9 +139,6 @@ void TRANSIENT::sweep()
 	++(_sim->_stepno);
 	_time_by_user_request += _tstep;	/* advance user time */
         _time_by_user_request = min(_time_by_user_request, (double)_tstop);
-        // std::cerr.precision(19);
-        //std::cerr << "TRANSIENT::next set _time_by_user_request: " << _time_by_user_request << " " << _tstop << "\n";
-        trace1("TRANSIENT::sweep advance ", _time_by_user_request );
       }else{
       }
       assert(_sim->_time0 <= _time_by_user_request);
@@ -163,9 +155,7 @@ void TRANSIENT::sweep()
         _sim->keep_voltages();
         if( _sim->_mode  == s_TTT && OPT::behave )
           CARD_LIST::card_list.do_forall( &CARD::tr_save_amps, (_sim->_stepno) );
-        // hack
-        //
-        CKT_BASE::tt_behaviour_del +=  CKT_BASE::tr_behaviour_del;
+        CKT_BASE::tt_behaviour_del +=  CKT_BASE::tr_behaviour_del; // hack
         CKT_BASE::tt_behaviour_rel +=  CKT_BASE::tr_behaviour_rel;
 
         outdata(_sim->_time0);
@@ -179,7 +169,6 @@ void TRANSIENT::sweep()
 
         if( !valid )
         {
-          std::cerr << "invalid during tr\n";
           _accepted = false;
           return;
         }
@@ -192,14 +181,9 @@ void TRANSIENT::sweep()
       throw Exception("convergence failure, giving up");
     }else{
     }
-    trace1("endof loop loadq:", _sim->_loadq.size() );
-
-  }//next loop
+  }
 
   trace2("TRANSIENT::sweep done loop ", _sim->_time0, _sim->_last_time);
-
-
-  trace0("TRANSIENT::sweep BUG ");
 
   // BUG keep_volteges breaks last_time
   // NOT keep_volteges breaks cap_bug
@@ -242,7 +226,6 @@ int TRANSIENT::step_cause()const
 /*--------------------------------------------------------------------------*/
 void TRANSIENT::first()
 {
-  trace0( "TRANSIENT::first()" );
   /* usually, _sim->_time0, time1 == 0, from setup */
   assert(_sim->_time0 == time1);
   assert(_sim->_time0 <= _tstart);
@@ -286,9 +269,9 @@ void TRANSIENT::first()
  */
 bool TRANSIENT::next()
 {
+  ::status.review.start();
   double old_dt = _sim->_time0 - time1;
   trace3("TRANSIENT::next()", time1, _sim->_time0, old_dt);
-  ::status.review.start();
 
   assert(old_dt >= 0);
   
@@ -321,8 +304,6 @@ bool TRANSIENT::next()
     trace2("TRANSIENT::next ", step_cause(), old_dt);
     trace3("TRANSIENT::next ", time1, _sim->_time0, reftime);
     trace1("TRANSIENT::next ", _time_by_user_request);
-    //std::cerr.precision(17);
-    //std::cerr << "TRANSIENT::next _time_by_user_request: " << _time_by_user_request << "\n";
 
     newtime = _time_by_user_request;
     trace4("TRANSIENT::next request ", newtime, new_dt, reftime, _sim->_dtmin);
@@ -363,7 +344,6 @@ bool TRANSIENT::next()
     // not sure of exact time.  will be rescheduled if wrong.
     // ok to move by _sim->_dtmin.  time is not that accurate anyway.
     if (_time_by_ambiguous_event < newtime - _sim->_dtmin) {  
-      trace3("TRANSIENT::next ambi ", newtime, new_dt, _time_by_ambiguous_event);
       if (_time_by_ambiguous_event < time1 + 2*_sim->_dtmin) {untested();
 	double mintime = time1 + 2*_sim->_dtmin;
 	if (newtime - _sim->_dtmin < mintime) {untested();
@@ -380,7 +360,6 @@ bool TRANSIENT::next()
       check_consistency();
     }else{
     }
-    trace3("TRANSIENT::next after ambi", newtime, new_dt, _time_by_ambiguous_event);
     
     // device error estimates
     if (_time_by_error_estimate < newtime - _sim->_dtmin) {
@@ -498,7 +477,6 @@ bool TRANSIENT::next()
   
   set_step_cause(new_control);
 
-  //  std::cerr << "TRANSIENT::next time0 " << newtime <<  "\n";
   trace1("TRANSIENT::next got it i think", newtime);
   
   /* check to be sure */
@@ -586,9 +564,6 @@ bool TRANSIENT::next()
   bool ret= _sim->_time0 < _tstop + _sim->_dtmin;
   ret = ret &&  time1 < _time_by_user_request;
   ret = ret &&  newtime <= _time_by_user_request;
- // std::cerr.precision(17);
- // std::cerr << "TRANSIENT::next time0 " << _sim->_time0 << " " << _tstop <<  "\n";
- // std::cerr << "TRANSIENT::next time0 " << _sim->_time0 << " " << _tstop <<  "\n";
   trace4("TRANSIENT::next", _sim->_time0, _tstop, _sim->_dtmin, (double) ret );
   return (ret);
 }
@@ -636,7 +611,7 @@ void TRANSIENT::accept()
   _sim->_dt0 = _sim->_time0 - time1; // ungefaehrlich
   if(_sim->_dt0 <=0) assert (_sim->_stepno == 0);
   ::status.accept.start();
-  _sim->set_limit(); // verstehe/brauch ich nicht.
+  _sim->set_limit();
   if (OPT::traceload) {
     while (!_sim->_acceptq.empty()) {
       _sim->_acceptq.back()->tr_accept();
@@ -648,14 +623,11 @@ void TRANSIENT::accept()
   }
   ++steps_accepted_;
   if( _sim->analysis_is_tt() || OPT::trage ) {
-    // put into tr_accept (good idea?)
-//    if ( _sim->_dt0>0) CARD_LIST::card_list.do_forall( &CARD::tr_stress );
     trace0( "TRANSIENT::accept: done stressing cardlist");
     if ( OPT::trage ) {
-      untested();
-      //incomplete();
+      // untested();
+      incomplete();
       CARD_LIST::card_list.do_forall( &CARD::stress_apply );
-//      CARD_LIST::card_list.do_forall( &CARD::tr_reset );
     }
   }
   ::status.accept.stop();
