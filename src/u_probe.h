@@ -1,4 +1,5 @@
-/*$Id: u_probe.h,v 26.81 2008/05/27 05:34:00 al Exp $ -*- C++ -*-
+/*$Id: u_probe.h,v 1.6 2010-09-22 13:19:51 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -25,33 +26,149 @@
 #ifndef U_PROBE_H
 #define U_PROBE_H
 #include "l_compar.h" // inorder
+#include "e_cardlist.h" // inorder
+#include "m_expression.h" 
 /*--------------------------------------------------------------------------*/
 class CKT_BASE;
 /*--------------------------------------------------------------------------*/
-class INTERFACE PROBE {
-private:
-  std::string	_what;    
-  const CKT_BASE* _brh;
-  double	_lo,_hi;
-public:
-  explicit  PROBE(const std::string& what, const CKT_BASE *brh);
-	    PROBE(const PROBE& p);
-	    ~PROBE()				{detach();}
+#define MATH_OP_CONST 0
+#define MATH_OP_UNARY 1 * 32
+#define MATH_OP_BINARY 2 * 32
+#define MATH_OP_OTHER 3 * 32
+#define MATH_OP_SET  4 * 32
 
-  void	    set_limit(double Lo,double Hi)	{_lo = Lo; _hi = Hi;}
-  void	    detach();
+#define MATH_OP_MASK  7 * 32
+
+
+// this is c-ish. fixme
+typedef enum{
+  op_null = MATH_OP_CONST,
+  op_pi,
+  op_sum = MATH_OP_SET,
+  op_prod,
+  op_exp = MATH_OP_UNARY,
+  op_neg,
+  op_abs,
+  op_inv,
+  op_square,
+  op_cos,
+  op_sin,
+  op_tan,
+  op_artan,
+  op_diff = MATH_OP_BINARY,
+  op_quot
+} MATH_OP;
+
+MATH_OP strtotype( std::string );
+
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+class INTERFACE PROBE {
+  public:
+    PROBE(){_brh=0;_next=0;untested();};
+    explicit  PROBE(const std::string& what, const CKT_BASE *brh);
+    PROBE(const PROBE& p);
+    ~PROBE(){
+      detach();
+    }
+
+    virtual double value()const;
+    void push( PROBE* );
+    void	    set_arg( PROBE* n  )	{ assert(this); _arg=n;}
+    PROBE* arg() const {return _arg;}
+    virtual PROBE* clone()const { return (new PROBE(*this));}
+  private:
+    PROBE* _arg;
+  protected:
+    std::string	_what;    
+  private:
+    const CKT_BASE* _brh;
+    double _lo,_hi;
+  public:
+
+
+    void	    set_limit(double Lo,double Hi)	{_lo = Lo; _hi = Hi;}
+    void	    set_next( PROBE* n  )	{ assert(this); _next=n;}
+    void	    detach();
   PROBE&    operator=(const PROBE& p);
 
-  const std::string label()const;
-  double	  value()const;
+  virtual const std::string label()const;
   const CKT_BASE* object()const	 {return _brh;}
   double	  lo()const	 {return _lo;}
   double	  hi()const	 {return _hi;}
   double	  range()const	 {return hi()-lo();}
   bool		  in_range()const{return in_order(lo(),value(),hi());}
+  PROBE* next()const {return _next;}
 private:
   double	  probe_node()const;
+protected:
+  PROBE* _next;
+
+public: // compare probes.
+  bool operator==(const PROBE& p)const
+  { return ( ( _what == p._what ) 
+           &&(  _brh == p._brh  )); 
+  
+  }
+
+public: // compare (for STL)
+  bool operator==(const CKT_BASE& brh)const
+  { return (object() == &brh); }
+  bool operator!=(const CKT_BASE& brh)const
+  { untested(); return (object() != &brh); }
+  bool operator==(const std::string& par)const
+  { return wmatch(label(), par); }
+  bool operator!=(const std::string& par)const
+  { untested(); return !( *this == par); }
+  
+};
+
+/*--------------------------------------------------------------------------*/
+class MATH_PROBE : public PROBE {
+  public:
+    MATH_PROBE(): PROBE() {_next=0;untested();};
+    MATH_PROBE(const MATH_OP type) { _type=type; _next=NULL; }
+    MATH_PROBE(const MATH_PROBE& p);
+    virtual PROBE* clone()const { return new MATH_PROBE(*this);}
+    MATH_OP type()const{return(_type);}
+    MATH_PROBE&    operator=(const MATH_PROBE& p);
+  private:
+    MATH_OP _type;
+  public:
+    double value()const;
 };
 /*--------------------------------------------------------------------------*/
+class EVAL_PROBE: public PROBE {
+  public:
+    EVAL_PROBE(): PROBE() {_cmd="none";untested();};
+    EVAL_PROBE(const EVAL_PROBE& p);
+    explicit  EVAL_PROBE(const std::string& what, const CARD_LIST* scope);
+    virtual PROBE* clone()const { return new EVAL_PROBE(*this);}
+    EVAL_PROBE&    operator=(const EVAL_PROBE& p);
+  private:
+    // FIXME carry expression. not _cmd and _scope
+    std::string _cmd;
+    Expression _exp;
+    const CARD_LIST* _scope;
+  public:
+    double value()const;
+    const std::string label()const { return _cmd; }
+};
+/*--------------------------------------------------------------------------*/
+class MEAS_PROBE: public PROBE {
+  public:
+    MEAS_PROBE(): PROBE() {_cmd="none";untested();};
+    MEAS_PROBE(const MEAS_PROBE& p);
+    explicit  MEAS_PROBE(const std::string& what);
+    explicit  MEAS_PROBE(const std::string& what, const CARD_LIST* scope);
+    virtual PROBE* clone()const { return new MEAS_PROBE(*this);}
+    MEAS_PROBE&    operator=(const MEAS_PROBE& p);
+  private:
+    std::string _cmd;
+    const CARD_LIST* _scope;
+  public:
+    double value()const;
+    const std::string label()const;
+};
 /*--------------------------------------------------------------------------*/
 #endif

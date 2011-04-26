@@ -1,4 +1,5 @@
-/*$Id: c_measure.cc,v 26.113 2009/08/12 03:37:19 al Exp $ -*- C++ -*-
+/*$Id: c_measure.cc,v 1.2 2010-09-07 07:46:19 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -36,7 +37,7 @@ public:
     std::string assign_to, function;
     Cmd >> assign_to >> '=' >> function >> '(';
     if (FUNCTION* f = measure_dispatcher[function]) {
-      std::string value = f->eval(Cmd, Scope);
+      fun_t value = f->eval(Cmd, Scope);
       if (!Cmd.skip1b(')')) {
 	Cmd.warn(bWARNING, "need )");
       }else{

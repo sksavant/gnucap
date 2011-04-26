@@ -37,10 +37,10 @@ private: // override virtual
   char	   id_letter()const	{return 'R';}
   std::string value_name()const {return "r";}
   std::string dev_type()const	{return "resistor";}
-  int	   max_nodes()const	{return 2;}
-  int	   min_nodes()const	{return 2;}
-  int	   matrix_nodes()const	{return 2;}
-  int	   net_nodes()const	{return 2;}
+  uint_t	   max_nodes()const	{return 2;}
+  uint_t	   min_nodes()const	{return 2;}
+  uint_t	   matrix_nodes()const	{return 2;}
+  uint_t	   net_nodes()const	{return 2;}
   bool	   has_iv_probe()const  {return true;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_RESISTANCE(*this);}
@@ -49,7 +49,7 @@ private: // override virtual
   void     tr_begin();
   bool	   do_tr();
   void	   tr_load()		{tr_load_passive();}
-  void	   tr_unload()		{untested();tr_unload_passive();}
+  void	   tr_unload()		{tr_unload_passive();}
   double   tr_involts()const	{return tr_outvolts();}
   double   tr_input()const	{untested(); return _m0.c0 + _m0.c1 * tr_involts();}
   double   tr_involts_limited()const {return tr_outvolts_limited();}
@@ -60,8 +60,8 @@ private: // override virtual
   void	   ac_load()		{ac_load_passive();}
   COMPLEX  ac_involts()const	{return ac_outvolts();}
 
-  std::string port_name(int i)const {itested();
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {itested();
+    assert(i != INVALID_NODE);
     assert(i < 2);
     static std::string names[] = {"p", "n"};
     return names[i];

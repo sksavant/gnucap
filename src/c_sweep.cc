@@ -1,4 +1,5 @@
 /*$Id: c_sweep.cc,v 26.83 2008/06/05 04:46:59 al Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -106,6 +107,8 @@ static void doit(CARD_LIST* scope)
       strncpy(buffer, "fault                              ", ind);
       buffer[ind-1] = ' ';		/* make sure there is a delimiter   */
     }					/* in case the words run together   */
+
+    try {
     for (;;) {				/* may wipe out one letter of fault */
       {
 	CS cmd(CS::_STRING, buffer); //fgets from local file, obsolete
@@ -125,6 +128,11 @@ static void doit(CARD_LIST* scope)
       }
       IO::mstdout << swp_count[swp_nest]+1 << "> " << buffer;
     }
+    }
+    catch(Exception &e){
+      error (bDANGER, "Error during sweep"+e.message() );
+      throw (Exception ("Error during sweep"));
+    }
   }
   fclose(fptr);
   fptr = NULL;
@@ -143,7 +151,7 @@ public:
     command("unfault", Scope);
   }
 } p;
-DISPATCHER<CMD>::INSTALL d(&command_dispatcher, "sweep", &p);
+DISPATCHER<CMD>::INSTALL d(&command_dispatcher, "sweepold", &p);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/

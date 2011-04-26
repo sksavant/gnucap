@@ -1,4 +1,4 @@
-/*$Id: u_lang.h,v 26.109 2009/02/02 06:39:10 al Exp $ -*- C++ -*-
+/*$Id: u_lang.h,v 1.1 2009-10-23 12:01:45 felix Exp $ -*- C++ -*-
  * Copyright (C) 2006 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

@@ -1,4 +1,4 @@
-/*$Id: c_exp.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: c_exp.cc,v 1.4 2010-09-17 12:25:56 felix Exp $ -*- C++ -*-
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -31,10 +31,11 @@ class CMD_ : public CMD {
 public:
   void do_it(CS& cmd, CARD_LIST* Scope)
   {
+
     Expression e(cmd);
-    cmd.check(bDANGER, "syntax error");
+    cmd.check(bDANGER, "syntax error parsing expression");
     Expression r(e, Scope);
-    std::cout << e << '=' << r << '\n';
+    std::cout << e << " =" << r << '\n';
   }
 } p0;
 DISPATCHER<CMD>::INSTALL d0(&command_dispatcher, "exp|eval", &p0);

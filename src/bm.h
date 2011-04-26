@@ -1,4 +1,5 @@
-/*$Id: bm.h,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: bm.h,v 1.4 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -35,7 +36,9 @@ protected:
     :COMMON_COMPONENT(c) {}
   explicit	EVAL_BM_BASE(const EVAL_BM_BASE& p)
     :COMMON_COMPONENT(p) {}
-		~EVAL_BM_BASE() {}
+		~EVAL_BM_BASE() { 
+			trace0("~EVAL_BM_BASE");
+		}
 protected: // override virtual
   bool operator==(const COMMON_COMPONENT&)const{/*incomplete();*/return false;}
   bool		has_tr_eval()const	{return true;}
@@ -59,12 +62,23 @@ protected:
 protected:
   explicit	EVAL_BM_ACTION_BASE(int c=0);
   explicit	EVAL_BM_ACTION_BASE(const EVAL_BM_ACTION_BASE& p);
-		~EVAL_BM_ACTION_BASE() {}
+		~EVAL_BM_ACTION_BASE() {
+                  trace0("~EVAL_BM_ACTION_BASE");
+                }
+
   double	temp_adjust()const;
   void		tr_final_adjust(FPOLY1* y, bool f_is_value)const;
   void		tr_finish_tdv(ELEMENT* d, double val)const;
-  void		ac_final_adjust(COMPLEX* y)const;
+
+  template <class T>
+  void		ac_final_adjust(T* y)const;
+
+
   void		ac_final_adjust_with_temp(COMPLEX* y)const;
+  void		ac_final_adjust_with_temp(std::complex<long double>* y)const;
+
+  template <class T> void		ac_final_adjust_with_temp(T* y)const;
+
   double	uic(double x)const	{return (CKT_BASE::_sim->uic_now()) ? _ic : x;}
   double	ioffset(double x)const	{return uic(x) + _ioffset;}	
 public: // override virtual
@@ -87,11 +101,15 @@ class EVAL_BM_VALUE : public EVAL_BM_ACTION_BASE {
 private:
   explicit	EVAL_BM_VALUE(const EVAL_BM_VALUE& p):EVAL_BM_ACTION_BASE(p) {}
 public:
-  explicit      EVAL_BM_VALUE(int c=0) :EVAL_BM_ACTION_BASE(c) {}
-		~EVAL_BM_VALUE()	{}
+  explicit      EVAL_BM_VALUE(int c=0) :EVAL_BM_ACTION_BASE(c) {
+    trace0("EVAL_BM_VALUE(c)");
+  }
+		~EVAL_BM_VALUE()	{ trace0("~EVAL_BM_VALUE");}
 private: // override virtual
   bool		operator==(const COMMON_COMPONENT&)const;
-  COMMON_COMPONENT* clone()const	{return new EVAL_BM_VALUE(*this);}
+  COMMON_COMPONENT* clone()const	{
+    trace0("clone EVAL_BM_VALUE");
+    return new EVAL_BM_VALUE(*this);}
   void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
   bool		is_trivial()const;
 

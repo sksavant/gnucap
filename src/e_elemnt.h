@@ -1,4 +1,5 @@
-/*$Id: e_elemnt.h,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: e_elemnt.h,v 1.12 2010-09-07 07:46:23 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -41,6 +42,9 @@ public:
   double*  set__value()			{return _value.pointer_hack();}
 
   bool	   skip_dev_type(CS&);
+
+
+  virtual  void tr_save_amps(int n);
 public: // override virtual
   bool	   print_type_in_spice()const {return false;}
   void	   precalc_last();
@@ -59,6 +63,10 @@ public: // override virtual
   }
 #endif
   TIME_PAIR tr_review();
+  virtual void  tr_stress() {
+    trace0( ("ELEMENT device " + short_label() + ": no stress").c_str() );
+  } // calcul
+  virtual void  tr_stress_at_once() const    {}
 
   //void   map_nodes();
   void	   tr_iwant_matrix() = 0;
@@ -67,7 +75,8 @@ public: // override virtual
   XPROBE   ac_probe_ext(const std::string&)const;
 
 protected: // inline, below
-  double   dampdiff(double*, const double&);
+  template <class T>
+  T   dampdiff(T*, const T&);
 
   void	   tr_load_inode();
   void	   tr_unload_inode();
@@ -93,21 +102,26 @@ protected: // inline, below
   void	   tr_unload_active();
   void	   ac_load_active();
 
+  template <class T>
   void	   tr_load_extended(const node_t& no1, const node_t& no2,
 			    const node_t& ni1, const node_t& ni2,
-			    double* value, double* old_value);
+			    T* value, T* old_value);
+
   void	   ac_load_extended(const node_t& no1, const node_t& no2,
 			    const node_t& ni1, const node_t& ni2,
 			    COMPLEX value);
 
-  void	   tr_load_source_point(node_t& no1, double* value, double* old_value);
+  void	   tr_load_source_point(node_t& no1, hp_float_t* value, hp_float_t* old_value);
   void	   ac_load_source_point(node_t& no1, COMPLEX new_value);
 
-  void	   tr_load_diagonal_point(const node_t& no1, double* value, double* old_value);
+  template <class T>
+  void	   tr_load_diagonal_point(const node_t& no1, T* value, T* old_value);
+
   void	   ac_load_diagonal_point(const node_t& no1, COMPLEX value);
   
+  template <class T>
   void	   tr_load_point(const node_t& no1, const node_t& no2,
-			 double* value, double* old_value);
+			 T* value, T* old_value);
   void	   ac_load_point(const node_t& no1, const node_t& no2,
 			 COMPLEX value);
   
@@ -133,15 +147,19 @@ public:
 
   double   tr_outvolts()const	{return dn_diff(_n[OUT1].v0(), _n[OUT2].v0());}
   double   tr_outvolts_limited()const{return volts_limited(_n[OUT1],_n[OUT2]);}
-  COMPLEX  ac_outvolts()const	{return _n[OUT1]->vac() - _n[OUT2]->vac();}
+  COMPLEX  ac_outvolts()const	{return _n[OUT1].vac() - _n[OUT2].vac();}
 
-  virtual  double  tr_involts()const		= 0;
-  virtual  double  tr_input()const		{return tr_involts();}
-  virtual  double  tr_involts_limited()const	= 0;
-  virtual  double  tr_input_limited()const	{return tr_involts_limited();}
-  virtual  double  tr_amps()const;
+  virtual  hp_float_t  tr_involts()const		= 0;
+  virtual  hp_float_t  tr_input()const		{return tr_involts();}
+  virtual  hp_float_t  tr_involts_limited()const	= 0;
+  virtual  hp_float_t  tr_input_limited()const	{return tr_involts_limited();}
+  virtual  hp_float_t  tr_amps()const;
   virtual  COMPLEX ac_involts()const		= 0;
   virtual  COMPLEX ac_amps()const;
+  virtual void tt_next() ;// !const
+  virtual void tt_prepare(){
+	  COMPONENT::tt_prepare();
+  }
 
   virtual int order()const		{return OPT::trsteporder;}
   virtual double error_factor()const	{return OPT::trstepcoef[OPT::trsteporder];}
@@ -153,11 +171,11 @@ private:
 public:
   CPOLY1   _m0;		// matrix parameters, new
   CPOLY1   _m1;		// matrix parameters, 1 fill ago
-  double   _loss0;	// shunt conductance
-  double   _loss1;
+  hp_float_t   _loss0;	// shunt conductance
+  hp_float_t   _loss1;
   COMPLEX  _acg;	// ac admittance matrix values
 public: // commons
-  COMPLEX  _ev;		// ac effective value (usually real)
+  hCOMPLEX  _ev;		// ac effective value (usually real)
   double   _dt;
 
   double   _time[OPT::_keep_time_steps];
@@ -166,13 +184,17 @@ public: // commons
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-inline double ELEMENT::dampdiff(double* v0, const double& v1)
+template <class T>
+inline T ELEMENT::dampdiff(T* v0, const T& v1)
 {
   //double diff = v0 - v1;
   assert(v0);
-  assert(*v0 == *v0);
+  if(*v0 != *v0){ 
+    std::cerr << "ungood: " << *v0 << "\n";
+    exit(2);
+  }
   assert(v1 == v1);
-  double diff = dn_diff(*v0, v1);
+  T diff = dn_diff(*v0, v1);
   assert(diff == diff);
   if (!_sim->is_advance_or_first_iteration()) {
     diff *= _sim->_damp;
@@ -184,7 +206,8 @@ inline double ELEMENT::dampdiff(double* v0, const double& v1)
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::tr_load_inode()
 {
-  double d = dampdiff(&_loss0, _loss1);
+  assert(_loss0 == _loss0);
+  hp_float_t d = dampdiff(&_loss0, _loss1);
   if (d != 0.) {
     _sim->_aa.load_couple(_n[OUT1].m_(), _n[IN1].m_(), -d);
     _sim->_aa.load_couple(_n[OUT2].m_(), _n[IN1].m_(),  d);
@@ -208,6 +231,7 @@ inline void ELEMENT::ac_load_inode()
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::tr_load_shunt()
 {
+  assert(_loss0 == _loss0);
   double d = dampdiff(&_loss0, _loss1);
   if (d != 0.) {
     _sim->_aa.load_symmetric(_n[OUT1].m_(), _n[OUT2].m_(), d);
@@ -231,13 +255,16 @@ inline void ELEMENT::ac_load_shunt()
 inline void ELEMENT::tr_load_source()
 {
 #if !defined(NDEBUG)
+  trace2(("ELEMENT::tr_load_source " + long_label()).c_str(), _loaditer,
+      _sim->iteration_tag() );
   assert(_loaditer != _sim->iteration_tag()); // double load
   _loaditer = _sim->iteration_tag();
 #endif
 
-  double d = dampdiff(&_m0.c0, _m1.c0);
+  assert(_m0.c0 == _m0.c0);
+  hp_float_t d = dampdiff(&_m0.c0, _m1.c0);
   if (d != 0.) {
-    if (_n[OUT2].m_() != 0) {
+    if (_n[OUT2].m_() != 0) { //gnd knoten
       _n[OUT2].i() += d;
     }else{
     }
@@ -260,17 +287,19 @@ inline void ELEMENT::tr_unload_source()
 inline void ELEMENT::ac_load_source()
 {
   if (_n[OUT2].m_() != 0) {
-    _n[OUT2]->iac() += mfactor() * _acg;
+    _n[OUT2].iac() += mfactor() * _acg;
   }else{
   }
   if (_n[OUT1].m_() != 0) {
-    _n[OUT1]->iac() -= mfactor() * _acg;
+    _n[OUT1].iac() -= mfactor() * _acg;
   }else{itested();
   }
 }
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::tr_load_couple()
 {
+  untested();
+  assert( _m0.c1 == _m0.c1 );
   double d = dampdiff(&_m0.c1, _m1.c1);
   if (d != 0.) {
     _sim->_aa.load_couple(_n[OUT1].m_(), _n[OUT2].m_(), d);
@@ -293,6 +322,11 @@ inline void ELEMENT::ac_load_couple()
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::tr_load_passive()
 {
+  // untested0( long_label().c_str() );
+  if( _m0.c1 != _m0.c1 ){
+    std::cerr << "ELEMENT::tr_load_passive: " << long_label() << "\n";
+    exit(30);
+  }
   double d = dampdiff(&_m0.c1, _m1.c1);
   if (d != 0.) {
     _sim->_aa.load_symmetric(_n[OUT1].m_(), _n[OUT2].m_(), d);
@@ -315,6 +349,7 @@ inline void ELEMENT::ac_load_passive()
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::tr_load_active()
 {
+  assert( _m0.c1 == _m0.c1 );
   double d = dampdiff(&_m0.c1, _m1.c1);
   if (d != 0.) {
     _sim->_aa.load_asymmetric(_n[OUT1].m_(), _n[OUT2].m_(),
@@ -337,11 +372,14 @@ inline void ELEMENT::ac_load_active()
 		      _n[IN1].m_(), _n[IN2].m_(), mfactor() * _acg);
 }
 /*--------------------------------------------------------------------------*/
+template <class T>
 inline void ELEMENT::tr_load_extended(const node_t& no1, const node_t& no2,
 				      const node_t& ni1, const node_t& ni2,
-				      double* new_value, double* old_value)
+				      T* new_value, T* old_value)
 {
-  double d = dampdiff(new_value, *old_value);
+  // untested();
+  assert( new_value == new_value);
+  T d = dampdiff(new_value, *old_value);
   if (d != 0.) {
     _sim->_aa.load_asymmetric(no1.m_(), no2.m_(), ni1.m_(), ni2.m_(), d);
   }else{
@@ -357,9 +395,10 @@ inline void ELEMENT::ac_load_extended(const node_t& no1, const node_t& no2,
 }
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::tr_load_source_point(node_t& no1,
-				   double* new_value, double* old_value)
+				   hp_float_t* new_value, hp_float_t* old_value)
 {
-  double d = dampdiff(new_value, *old_value);
+  assert( new_value == new_value);
+  hp_float_t d = dampdiff(new_value, *old_value);
   if (d != 0.) {
     if (no1.m_() != 0) {
       no1.i() += d;
@@ -373,15 +412,16 @@ inline void ELEMENT::tr_load_source_point(node_t& no1,
 inline void ELEMENT::ac_load_source_point(node_t& no1, COMPLEX new_value)
 {itested();
   if (no1.m_() != 0) {itested();
-    no1->iac() += mfactor() * new_value;
+    no1.iac() += mfactor() * new_value;
   }else{itested();
   }
 }
 /*--------------------------------------------------------------------------*/
+template <class T>
 inline void ELEMENT::tr_load_diagonal_point(const node_t& no1,
-					    double* new_value, double* old_value)
+					    T* new_value, T* old_value)
 {
-  double d = dampdiff(new_value, *old_value);
+  T d = dampdiff(new_value, *old_value);
   if (d != 0.) {
     _sim->_aa.load_diagonal_point(no1.m_(), d);
   }else{
@@ -394,10 +434,12 @@ inline void ELEMENT::ac_load_diagonal_point(const node_t& no1, COMPLEX new_value
   _sim->_acx.load_diagonal_point(no1.m_(), mfactor() * new_value);
 }
 /*--------------------------------------------------------------------------*/
+template <class T>
 inline void ELEMENT::tr_load_point(const node_t& no1, const node_t& no2,
-				   double* new_value, double* old_value)
+				   T* new_value, T* old_value)
 {
-  double d = dampdiff(new_value, *old_value);
+  untested();
+  T d = dampdiff(new_value, *old_value);
   if (d != 0.) {
     _sim->_aa.load_point(no1.m_(), no2.m_(), d);
   }else{
@@ -420,6 +462,7 @@ inline bool ELEMENT::conv_check()const
 /*--------------------------------------------------------------------------*/
 inline bool ELEMENT::has_tr_eval()const
 {
+  //  untested0(long_label().c_str());
   return (has_common() && common()->has_tr_eval());
 }
 /*--------------------------------------------------------------------------*/
@@ -440,6 +483,8 @@ inline bool ELEMENT::using_ac_eval()const
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::tr_eval()
 {
+  trace1("ELEMENT::tr_eval " + long_label(), has_tr_eval() );
+
   if (has_tr_eval()) {
     common()->tr_eval(this);
   }else{

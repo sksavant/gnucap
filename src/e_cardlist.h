@@ -1,4 +1,4 @@
-/*$Id: e_cardlist.h,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: e_cardlist.h,v 1.10 2010-08-26 09:07:17 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -76,6 +76,7 @@ public:
 
   // status queries
   bool is_empty()const			{return _cl.empty();}
+  size_t size()const			{return _cl.size();}
   const CARD_LIST* parent()const	{return _parent;}
   const LANGUAGE* language()const	{untested(); return _language;}
 
@@ -105,23 +106,34 @@ public:
   CARD_LIST& erase_all();
 
   // operations on the whole list
+  CARD_LIST& do_forall( void (CARD::*thing)( void ) );
+  CARD_LIST& do_forall( void (CARD::*thing)( int ), int );
+  const CARD_LIST& do_forall( void (CARD::*thing)( void ) const ) const;
+  const CARD_LIST& tr_stress_last()const;
+  CARD_LIST& stress_calc();   // calculate stress parameters
+  CARD_LIST& stress_apply();  // apply stress parameters to components.
   CARD_LIST& set_owner(CARD* owner);
   CARD_LIST& set_slave();
   CARD_LIST& precalc_first();
   CARD_LIST& expand();
   CARD_LIST& precalc_last();
+  CARD_LIST& tt_next();
   CARD_LIST& map_nodes();
   CARD_LIST& tr_iwant_matrix();
   CARD_LIST& tr_begin();
   CARD_LIST& tr_restore();
+  CARD_LIST& tt_prepare();
+  CARD_LIST& tt_behaviour_commit();
   CARD_LIST& dc_advance();
   CARD_LIST& tr_advance();
+  CARD_LIST& tt_advance();
   CARD_LIST& tr_regress();
   bool	     tr_needs_eval()const;
   CARD_LIST& tr_queue_eval();
   bool	     do_tr();
   CARD_LIST& tr_load();
   TIME_PAIR  tr_review();
+  TIME_PAIR  tt_review();
   CARD_LIST& tr_accept();
   CARD_LIST& tr_unload();
   CARD_LIST& ac_iwant_matrix();

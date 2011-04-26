@@ -1,4 +1,4 @@
-/*$Id: io_trace.h,v 26.81 2008/05/27 05:34:00 al Exp $ -*- C++ -*-
+/*$Id: io_trace.h,v 1.7 2010-09-07 07:46:23 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -23,32 +23,73 @@
  */
 //testing=trivial 2006.07.17
 /* allow multiple inclusions with different DO_TRACE */
+#include <iostream>
+
 #undef trace_line
+#undef trace
 #undef trace0
 #undef trace1
 #undef trace2
 #undef trace3
 #undef trace4
 #undef trace5
+#undef trace6
+#undef trace7
 #undef untested
+#undef untested0
 #undef unreachable
 #undef incomplete
 /*--------------------------------------------------------------------------*/
+// using namespace std;
 #ifdef DO_TRACE
-#define trace_line() (printf("@@#\n@#@:%s:%u:%s\n", \
+#ifndef hashpointer_
+#define hashpointer_
+
+class hp{
+	int p;
+	public:
+	hp(void* x){
+		p = (intptr_t)x %30011;
+	}
+	hp(intptr_t x){
+		p = x%2001;
+	}
+	operator int(){
+		return p;
+	}
+};
+
+#endif
+
+
+
+#define trace_line() (fprintf(stderr, "@@#\n@#@:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))
-#define trace0(s) (printf("@#@%s\n", s))
-#define trace1(s,x) (printf("@#@%s  %s=%g\n", s, #x, (double)(x)))
-#define trace2(s,x,y) (printf("@#@%s  %s=%g  %s=%g\n",\
-	s, #x, (double)(x), #y, (double)(y)))
-#define trace3(s,x,y,z) (printf("@#@%s  %s=%g  %s=%g  %s=%g\n",\
-	s, #x, (double)(x), #y, (double)(y), #z, (double)(z)))
-#define trace4(s,w,x,y,z)(printf("@#@%s  %s=%g  %s=%g  %s=%g  %s=%g\n",\
+#define trace0(s) ( cerr << "@#@" << s << "\n")   
+// #define trace0(s) (fprintf(stderr, "@#@%s\n", s )) // needs c_str()...
+#define trace1(s,x) ( cerr <<  "@#@" << s << "  " << #x << "=" << (double)(x) << endl )
+// #define trace1(s,x) (fprintf(stderr, "@#@%s  %s=%g\n", s, #x, (double)(x)))
+#define trace2(s,x,y) ( cerr <<  "@#@" << s << "  " << #x << "=" << (double)(x)  \
+		                                      << "  " << #y << "=" << (double)(y)  \
+		                                      << endl )
+#define trace3(s,x,y,z) ( cerr <<  "@#@" << s << "  " << #x << "=" << (double)(x)  \
+		                                      << "  " << #y << "=" << (double)(y)  \
+		                                      << "  " << #z << "=" << (double)(z)  \
+		                                      << endl )
+#define trace4(s,w,x,y,z)(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g\n",\
 	s, #w, (double)(w), #x, (double)(x), #y, (double)(y), #z, (double)(z)))
 #define trace5(s,v,w,x,y,z)\
-	(printf("@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g\n",\
+	(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g\n",\
 	s, #v, (double)(v), #w, (double)(w), #x, (double)(x),\
 	#y, (double)(y), #z, (double)(z)))
+#define trace6(s,u,v,w,x,y,z)\
+	(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g\n",\
+    s, #u, (double)(u),#v, (double)(v), #w, (double)(w), #x, (double)(x),\
+	#y, (double)(y), #z, (double)(z)))
+#define trace7(s,t,u,v,w,x,y,z)\
+	(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g %s=%g\n",\
+    s, #t, (double)(t), #u, (double)(u),#v, (double)(v), #w, (double)(w),\
+    #x, (double)(x), #y, (double)(y), #z, (double)(z)))
 #else
 #define trace_line()
 #define trace0(s)
@@ -57,23 +98,34 @@
 #define trace3(s,x,y,z)
 #define trace4(s,w,x,y,z)
 #define trace5(s,v,w,x,y,z)
+#define trace6(s,u,v,w,x,y,z)
+#define trace7(s,t,u,v,w,x,y,z)
 #endif
 
-#define unreachable() (printf("@@#\n@@@unreachable:%s:%u:%s\n", \
+#define unreachable() (fprintf(stderr, "@@#\n@@@unreachable:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))
 
-#define incomplete() (printf("@@#\n@@@incomplete:%s:%u:%s\n", \
+#define incomplete() (fprintf(stderr, "@@#\n@@@incomplete:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))
 
 #ifdef TRACE_UNTESTED
-#define untested() (printf("@@#\n@@@:%s:%u:%s\n", \
+#define untested() (fprintf(stderr, "@@#\n@@@:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))
+#define untested0(s) (fprintf(stderr, "@@#\n@@@:%s:%u:%s: %s\n", \
+			   __FILE__, __LINE__, __func__, s))
+#define untested1(s,x) (fprintf(stderr, "@@#\n@@@:%s:%u:%s: %s  %s=%g\n", \
+			   __FILE__, __LINE__, __func__, s, #x, (double)(x)))
+#define untested2(s,x,y) (fprintf(stderr, "@@#\n@@@:%s:%u:%s: %s  %s=%g, %s=%g\n", \
+			   __FILE__, __LINE__, __func__, s, #x, (double)(x), #y, (double)(y) ))
 #else
 #define untested()
+#define untested0(s)
+#define untested1(s,x)
+#define untested2(s,x,y)
 #endif
 
 #ifdef TRACE_ITESTED
-#define itested() (printf("@@#\n@@@:%s:%u:%s\n", \
+#define itested() (fprintf(stderr, "@i#\n@i@:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))
 #else
 #define itested()

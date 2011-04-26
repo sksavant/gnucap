@@ -1,4 +1,4 @@
-/*$Id: d_switch.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: d_switch.cc,v 1.6 2010-07-09 12:14:22 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -64,11 +64,11 @@ protected: // override virtual
   std::string value_name()const	{return "";}
   std::string dev_type()const {assert(common()); return common()->modelname().c_str();}
   bool	   print_type_in_spice()const {return true;}
-  int	   tail_size()const	{return 1;}
-  int	   max_nodes()const	= 0;
-  int	   min_nodes()const	= 0;
-  int	   matrix_nodes()const	{return 2;}
-  int	   net_nodes()const	= 0;
+  uint_t	   tail_size()const	{return 1;}
+  uint_t	   max_nodes()const	= 0;
+  uint_t	   min_nodes()const	= 0;
+  uint_t	   matrix_nodes()const	{return 2;}
+  uint_t	   net_nodes()const	= 0;
   CARD*	   clone()const		= 0;
   void     expand();
   void     precalc_last();
@@ -77,13 +77,13 @@ protected: // override virtual
   void     dc_advance();
   void     tr_advance();
   void     tr_regress();
-  bool	   tr_needs_eval()const {return _sim->analysis_is_static();} // also q by tr_advance
+  bool     tr_needs_eval()const {return _sim->analysis_is_static();} // also q by tr_advance
   bool	   do_tr();
   void	   tr_load()		{tr_load_passive();}
   TIME_PAIR tr_review();
   void	   tr_unload()		{untested(); tr_unload_passive();}
-  double   tr_involts()const	{untested(); return tr_outvolts();}
-  double   tr_involts_limited()const {unreachable(); return tr_outvolts_limited();}
+  hp_float_t   tr_involts()const	{untested(); return tr_outvolts();}
+  hp_float_t   tr_involts_limited()const {unreachable(); return tr_outvolts_limited();}
   void	   ac_iwant_matrix()	{ac_iwant_matrix_passive();}
   void	   ac_begin()		{_ev = _y[0].f1; _acg = _m0.c1;}
   void	   do_ac();
@@ -92,7 +92,7 @@ protected: // override virtual
 protected:
   const ELEMENT* _input;
 private:
-  double	_in[OPT::_keep_time_steps];
+  hp_float_t	_in[OPT::_keep_time_steps];
   state_t	_state[OPT::_keep_time_steps];
 };
 /*--------------------------------------------------------------------------*/
@@ -102,14 +102,14 @@ private:
 public:
   explicit  DEV_VSWITCH()	:SWITCH_BASE() {}
 private: // override virtual
-  int	    max_nodes()const	{return 4;}
-  int	    min_nodes()const	{return 4;}
-  int	    net_nodes()const	{return 4;}
+  uint_t	    max_nodes()const	{return 4;}
+  uint_t	    min_nodes()const	{return 4;}
+  uint_t	    net_nodes()const	{return 4;}
   CARD*	    clone()const	{return new DEV_VSWITCH(*this);}
   char	    id_letter()const	{return 'S';}
 
-  std::string port_name(int i)const {itested();
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {itested();
+    assert(i != INVALID_NODE);
     assert(i < 4);
     static std::string names[] = {"p", "n", "ps", "ns"};
     return names[i];
@@ -123,28 +123,28 @@ private:
 public:
   explicit  DEV_CSWITCH()	:SWITCH_BASE(), _input_label() {}
 private: // override virtual
-  int	    max_nodes()const	{return 3;}
-  int	    ext_nodes()const	{return 2;}
-  int	    min_nodes()const	{return 3;}
-  int	    net_nodes()const	{return 2;}
-  int	    num_current_ports()const {return 1;}
-  const std::string current_port_value(int)const {return _input_label;};
+  uint_t	    max_nodes()const	{return 3;}
+  uint_t	    ext_nodes()const	{return 2;}
+  uint_t	    min_nodes()const	{return 3;}
+  uint_t	    net_nodes()const	{return 2;}
+  uint_t	    num_current_ports()const {return 1;}
+  const std::string current_port_value(uint_t)const {return _input_label;};
   CARD*	    clone()const	{return new DEV_CSWITCH(*this);}
   void	    expand();
   char	    id_letter()const	{return 'W';}
   void	   set_port_by_name(std::string& Name, std::string& Value)
 		{untested(); SWITCH_BASE::set_port_by_name(Name,Value);}
-  void	   set_port_by_index(int, std::string&);
-  bool	   node_is_connected(int)const;
+  void	   set_port_by_index(uint_t, std::string&);
+  bool	   node_is_connected(uint_t)const;
 
-  std::string port_name(int i)const {itested();
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {itested();
+    assert(i != INVALID_NODE);
     assert(i < 2);
     static std::string names[] = {"p", "n"};
     return names[i];
   }
-  std::string current_port_name(int i)const {
-    assert(i >= 0);
+  std::string current_port_name(uint_t i)const {
+    assert(i != INVALID_NODE);
     assert(i < 1);
     static std::string names[] = {"in"};
     return names[i];
@@ -536,7 +536,7 @@ bool SWITCH_BASE::do_tr()
       _y[0].f1 = (new_state == _ON) ? m->ron : m->roff;	/* unknown is off */
       _state[0] = new_state;
       _m0.c1 = 1./_y[0].f1;
-      trace4("change", new_state, old_state, _y[0].f1, _m0.c1);
+      //trace4("change", new_state, old_state, _y[0].f1, _m0.c1);
       q_load();
       store_values();
       set_not_converged();
@@ -598,7 +598,7 @@ TIME_PAIR SWITCH_BASE::tr_review()
 void SWITCH_BASE::do_ac()
 {
   assert(_ev  == _y[0].f1);
-  assert(_acg == _m0.c1);
+  assert(_acg == (double)_m0.c1);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -612,7 +612,7 @@ void DEV_CSWITCH::expand()
   }
 }
 /*--------------------------------------------------------------------------*/
-void DEV_CSWITCH::set_port_by_index(int Num, std::string& Value)
+void DEV_CSWITCH::set_port_by_index(uint_t Num, std::string& Value)
 {
   if (Num == 2) {
     _input_label = Value;
@@ -621,7 +621,7 @@ void DEV_CSWITCH::set_port_by_index(int Num, std::string& Value)
   }
 }
 /*--------------------------------------------------------------------------*/
-bool DEV_CSWITCH::node_is_connected(int i)const
+bool DEV_CSWITCH::node_is_connected(uint_t i)const
 {
   if (i == 2) {
     return _input_label != "";

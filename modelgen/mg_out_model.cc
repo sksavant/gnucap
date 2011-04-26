@@ -1,4 +1,5 @@
-/*$Id: mg_out_model.cc,v 26.128 2009/11/10 04:21:03 al Exp $ -*- C++ -*-
+/*$Id: mg_out_model.cc,v 1.3 2010-06-29 10:53:24 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -40,11 +41,13 @@ static void make_model_dispatcher(std::ofstream& out, const Model& m)
 	 k = m.public_key_list().begin();
 	 k != m.public_key_list().end();
 	 ++k) {
-      if (k != m.public_key_list().begin()) {
-	out << '|';
-      }else{
+      if ((**k).name() != "\0"){
+        if (k != m.public_key_list().begin()) {
+          out << '|';
+        }else{
+        }
+        out << (**k).name();
       }
-      out << (**k).name();
     }
     out << "\", &p1);\n"
       "}\n"

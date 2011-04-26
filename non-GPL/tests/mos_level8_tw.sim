@@ -1,0 +1,39 @@
+* mos degrade proof-of-concept
+
+*bug. still breaks things
+*.options insensitive=0
+
+*.options adpreltol=0.001
+.include mos_level8.ckt
+
+*.print tw dvth(MP1.BTi) 
+*+ hci(MP1) dvth_hci(MP1) dvth(MP1)
+*+ meas({max(probe="v(nout)")})
+*+dvth(B1)
+*+dvth(MP1.a) hci(MP1.a)
+
+.store tran v(nout) v(ng)
+.print tw  dvth(Mp1)
++ meas({max(probe="v(nout)")})
++ meas({min(probe="v(nout)")})
+
+*+dvth(b1) tr(MP1.BTI.RCD0) tr(B1.rcd0)
+*+ vc(B1.rcd0 ) te(MP1.BTI.rcd0) te(B1.rcd0) re(MP1.BTI.rcd0) re(B1.rcd0)
+*+vin(MP1.BTI) v(ng) dv_bti(mp1) order(MP1.bti.rcd0)
+*+wdt(MP1.bti.rcd0)
+*+trr(MP1.bti.rcd0)
+
+
+*+meas({max(probe="v(nout)")})
+*+meas({max(probe="v(ng)")})
+
+
+
+*.print tr ig(MP1) v(nout)
+*.print tr vin(MP1.BTI.rcd0) vin(B1.rcd0) vc(MP1.BTI.rcd0) vc(B1.rcd0)
+*+ wdt(MP1.BTI.rcd0) wdt(B1.rcd0)
+* trr(MP1.BTI.rcd0) trr(B1.rcd0) 
+
+
+.tw 1u .1m 10 100 basic
+

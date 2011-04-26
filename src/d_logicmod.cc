@@ -1,4 +1,4 @@
-/*$Id: d_logicmod.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: d_logicmod.cc,v 1.1 2009-10-23 12:01:45 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -27,7 +27,7 @@
 //testing=script 2006.07.17
 #include "d_logic.h"
 /*--------------------------------------------------------------------------*/
-MODEL_LOGIC::MODEL_LOGIC(const DEV_LOGIC* p)
+MODEL_LOGIC::MODEL_LOGIC(const COMPONENT* p)
   :MODEL_CARD(p),
    delay  (1e-9),
    vmax   (5.),

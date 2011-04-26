@@ -1,4 +1,5 @@
-/*$Id: e_card.h,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: e_card.h,v 1.16 2010-08-26 09:07:17 felix Exp $ -*- C++ -*-
+ * vim:sw=2:ts=8:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -25,6 +26,7 @@
 #ifndef E_CARD_H
 #define E_CARD_H
 #include "e_base.h"
+#include "u_time_pair.h"
 /*--------------------------------------------------------------------------*/
 // this file
 class CARD;
@@ -34,7 +36,7 @@ class node_t;
 class CARD_LIST;
 class PARAM_LIST;
 class LANGUAGE;
-class TIME_PAIR;
+class COMPONENT;
 /*--------------------------------------------------------------------------*/
 class INTERFACE CARD : public CKT_BASE {
 private:
@@ -45,7 +47,7 @@ private:
 protected:
   node_t*	_n;
 public:
-  int		_net_nodes;	// actual number of "nodes" in the netlist
+  uint_t 	_net_nodes;	// actual number of "nodes" in the netlist
   //--------------------------------------------------------------------
 public:   				// traversal functions
   CARD* find_in_my_scope(const std::string& name);
@@ -76,6 +78,7 @@ public:	// dc-tran
   virtual void	 dc_advance()		{}
   virtual void	 tr_advance()		{}
   virtual void	 tr_regress()		{}
+
   virtual bool	 tr_needs_eval()const	{return false;}
   virtual void	 tr_queue_eval()	{}
   virtual bool	 do_tr()		{return true;}
@@ -93,7 +96,7 @@ public:	// ac
   //--------------------------------------------------------------------
 public:	// state, aux data
   virtual char id_letter()const	{unreachable(); return '\0';}
-  virtual int  net_nodes()const	{untested();return 0;}
+  virtual uint_t  net_nodes()const	{untested();return 0;}
   virtual bool is_device()const	{return false;}
   virtual void set_slave()	{untested(); assert(!subckt());}
 	  bool evaluated()const;
@@ -105,7 +108,6 @@ public: // owner, scope
   virtual CARD_LIST*	   scope();
   virtual const CARD_LIST* scope()const;
   virtual bool		   makes_own_scope()const  {return false;}
-
   CARD*		owner()		   {return _owner;}
   const CARD*	owner()const	   {return _owner;}
   void		set_owner(CARD* o) {assert(!_owner||_owner==o); _owner=o;}
@@ -146,6 +148,27 @@ public:	// obsolete -- do not use in new code
   virtual bool use_obsolete_callback_parse()const {return false;}
   virtual bool use_obsolete_callback_print()const {return false;}
   virtual void print_args_obsolete_callback(OMSTREAM&,LANGUAGE*)const {unreachable();}
+  //--------------------------------------------------------------------
+public:	// tt
+  virtual void	 tt_begin()		{}
+  virtual void   tt_next()  {} // set times back to 0, leaving state alone
+  virtual void   tt_commit()  {}
+  virtual void   tt_accept()    {}
+//  virtual void   tt_prepare()           {}
+  virtual void  tt_prepare() {  } // save unstressed parameters
+  virtual void  tt_init_i() {  } // save unstressed parameters
+  virtual void	 tr_stress()	{    } // calculate stress during tr
+  virtual void	 tr_stress_last() {   } // calculate stress during tr
+  virtual void	 stress_apply(); // not const (element)
+  // virtual void   stress_apply(COMPONENT* )const{ unreachable();}
+  virtual void	 tr_save_amps( int ){ } // behaviouir??
+  hp_float_t tr_behaviour_del; // behaviour now.
+  hp_float_t tt_behaviour_del;
+  hp_float_t tr_behaviour_rel; 
+  hp_float_t tt_behaviour_rel;
+  void tt_behaviour_reset() { tt_behaviour_del=0; tt_behaviour_rel=0; }
+  void tt_behaviour_commit(){ tt_behaviour_reset(); }
+  virtual TIME_PAIR tt_review()		{return TIME_PAIR(NEVER,NEVER);}
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

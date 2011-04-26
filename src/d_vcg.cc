@@ -1,4 +1,4 @@
-/*$Id: d_vcg.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: d_vcg.cc,v 1.4 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -43,10 +43,10 @@ private: // override virtual
   char	   id_letter()const	{untested();return '\0';}
   std::string value_name()const {untested(); return "g";}
   std::string dev_type()const	{return "vcg";}
-  int	   max_nodes()const	{return 4;}
-  int	   min_nodes()const	{return 4;}
-  int	   matrix_nodes()const	{return 4;}
-  int	   net_nodes()const	{return 4;}
+  uint_t	   max_nodes()const	{return 4;}
+  uint_t	   min_nodes()const	{return 4;}
+  uint_t	   matrix_nodes()const	{return 4;}
+  uint_t	   net_nodes()const	{return 4;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_VCG(*this);}
   void	   tr_iwant_matrix()	{tr_iwant_matrix_extended();}
@@ -54,16 +54,17 @@ private: // override virtual
   bool	   do_tr();
   void	   tr_load()		{tr_load_shunt(); tr_load_active();}
   void	   tr_unload()	{untested(); tr_unload_shunt(); tr_unload_active();}
-  double   tr_involts()const	{return dn_diff(_n[IN1].v0(), _n[IN2].v0());}
-  double   tr_involts_limited()const {return volts_limited(_n[IN1],_n[IN2]);}
+  hp_float_t   tr_involts()const	{return dn_diff(_n[IN1].v0(), _n[IN2].v0());}
+  hp_float_t   tr_involts_limited()const {return volts_limited(_n[IN1],_n[IN2]);}
+
   void	    ac_iwant_matrix()	{ac_iwant_matrix_extended();}
   void	    ac_begin()		{_ev = _y[0].f0;  _acg = _m0.c1;}
   void	    do_ac();
   void	    ac_load()		{ac_load_shunt(); ac_load_active();}
-  COMPLEX   ac_involts()const	{return _n[IN1]->vac() - _n[IN2]->vac();}
+  COMPLEX   ac_involts()const	{return _n[IN1].vac() - _n[IN2].vac();}
 
-  std::string port_name(int i)const {untested();
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {untested();
+    assert(i !=INVALID_NODE);
     assert(i < 4);
     static std::string names[] = {"p", "n", "ps", "ns"};
     return names[i];
@@ -106,7 +107,7 @@ void DEV_VCG::do_ac()
     _ev *= _y[0].x;
   }else{
     assert(_ev == _y[0].f0);
-    assert(_acg == _m0.c1);
+    assert(_acg == (COMPLEX)_m0.c1);
   }
 }
 /*--------------------------------------------------------------------------*/

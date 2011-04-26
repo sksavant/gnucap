@@ -1,4 +1,5 @@
-/*$Id: u_opt.h,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: u_opt.h,v 1.8 2010-09-17 12:26:02 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -81,6 +82,7 @@ public:
 	WCASE=7, TRACE=8, ITL_COUNT=9};
   enum {_keep_time_steps = 5};
 public:
+  static bool quiet;	    // flag: no advertisments
   static bool acct;	    // flag: print accounting info
   static bool listing;	    // flag: print listing
   static bool mod;	    // flag: print models
@@ -93,6 +95,19 @@ public:
   static double reltol;	    // relative error tolerance
   static double abstol;	    // absolute current error tolerance
   static double vntol;	    // absolute voltage error tolerance
+  static double tttol;	    // transient error overestimation factor
+  static uint_t adporder;   // adp extrapolation order
+  static int threads;	    // number of threads, 0=#cpus
+  static std::string libpath;	 // sharedobject searchpath
+  static std::string includepath;	 // searchpath for .include command
+  static double adpreltol;	    // adp allowed relative aging misprediction
+  static double behreltol;	    // beh allowed relative
+  static double adpkorr;	    // adp correction
+  static bool trage;	       // ageing during tr
+  static double adpabstol;	    // adp ?
+  static bool behave;	    // use behaviour...
+  static bool printrejected;	    // adp ?
+  static bool printguess;	    // adp ?
   static double trtol;	    // transient error overestimation factor
   static double chgtol;	    // charge tolerance
   static double pivtol;	    // minimum acceptable pivot
@@ -119,7 +134,7 @@ public:
   static double dampmin;    // Newton-Raphson damping coefficient min
   static int dampstrategy;  // bit flags, damping strategy options
   static double roundofftol;// rel tolerance for zeroing after subtraction
-  static double temp_c;    // ambient temperature
+  static double temp_c;     // ambient temperature
   static double shortckt;   // short resistance
   static int picky;	    // error picky-ness
   static unsigned outwidth; // width of output devices
@@ -135,14 +150,17 @@ public:
   static bool lubypass;	    // bypass parts of LU decomposition, if appropriate
   static bool fbbypass;	    // bypass fwd & back sub when last iter converged
   static bool traceload;    // load only elements that need it, using queue
+  static bool tracewdtt;    // trace wanted dT
   static int itermin;	    // forced min iteration count.
   static double vmax;	    // + voltage limit for nonlinear calculations
   static double vmin;	    // - voltage limit for nonlinear calculations
   static double dtmin;	    // smallest internal step in transient analysis
+  static double dTmin;	    // smallest internal step in transient analysis
   static double dtratio;    // ratio of max / min dt in transient analysis
   static bool rstray;	    // include stray resistors in models
   static bool cstray;	    // include stray capacitors in models
   static int harmonics;	    // number of harmonics in fourier analysis
+  static double ttstepgrow; // limit of step size growth in transient analysis
   static double trstepgrow; // limit of step size growth in transient analysis
   static double trstephold; // hold step size growth, converges slowly
   static double trstepshrink;// amt to shrink step size on convergence failure
@@ -154,6 +172,7 @@ public:
   static int diodeflags;    // convergence heuristic flags for diode
   static int mosflags;      // convergence heuristic flags for mosfet
   static bool quitconvfail; // quit on convergence failure
+  static int history;	    // history length
   static bool edit;	    // use readline - command editing
   static int recursion;	    // max recursion depth
   static LANGUAGE* language; // simulation language
@@ -171,6 +190,7 @@ public:
 			    // 6=source stepping iteration limit
 			    // 7=worst case iteration limit
 			    // 8=trace nonconvergence start iteration
+  static int err;
 };
 /*--------------------------------------------------------------------------*/
 class SET_RUN_MODE {

@@ -1,4 +1,5 @@
-/*$Id: c__cmd.cc,v 26.130 2009/11/15 21:51:59 al Exp $ -*- C++ -*-
+/*$Id: c__cmd.cc,v 1.7 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -68,6 +69,7 @@ void CMD::cmdproc(CS& cmd, CARD_LIST* scope)
   else if (cmd.umatch("st{atus} "))     {            s = "status";}
   else if (cmd.umatch("te{mperature} ")){itested();  s = "temperature";}
   else if (cmd.umatch("tr{ansient} "))  {            s = "transient";}
+  else if (cmd.umatch("tw{otimetran} ")){            s = "twotimetran";}
   else if (cmd.umatch("!"))		{	     s = "system";}
   else if (cmd.umatch("<"))		{untested(); s = "<";}
   else if (cmd.umatch(">"))		{untested(); s = ">";}
@@ -81,6 +83,7 @@ void CMD::cmdproc(CS& cmd, CARD_LIST* scope)
   }else if (s != "") {
     CMD* c = command_dispatcher[s];
     if (c) {
+    //std::cerr << "CMD::cmdproc " <<  s <<"\n";
       c->do_it(cmd, scope);
       didsomething = true;
     }else{itested();
@@ -97,7 +100,7 @@ void CMD::cmdproc(CS& cmd, CARD_LIST* scope)
   }else{
   }
   plclose();
-  outreset();
+  IO::mstdout.outreset();
 
   if (get_timer_was_running) {
     ::status.get.start();
@@ -110,6 +113,8 @@ void CMD::command(const std::string& cs, CARD_LIST* scope)
   CS cmd(CS::_STRING, cs); // from string, full command
   std::string s;
   cmd >> s;
+
+  //std::cerr << "CMD::command " << s << " " <<cs << "\n";
 
   CMD* c = command_dispatcher[s];
   if (c) {

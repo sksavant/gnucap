@@ -1,4 +1,4 @@
-/*$Id: s__.h,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: s__.h,v 1.9 2009-12-16 17:22:07 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -43,7 +43,8 @@ protected:
     tALLTIME   = 2,	/* show every time step, including hidden 	*/
     tREJECTED  = 3,	/* show rejected time steps			*/
     tITERATION = 4,	/* show every iteration, including nonconverged	*/
-    tVERBOSE   = 5	/* show extended diagnostics			*/
+    tVERBOSE   = 5,	/* show extended diagnostics			*/
+    tDEBUG     = 6
   };
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   CARD_LIST* _scope;
@@ -70,14 +71,16 @@ protected:
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
 protected:
 	 const PROBELIST& alarmlist()const;	/* s__out.cc */
+	 const PROBELIST& verifylist()const;	/* s__out.cc */
 	 const PROBELIST& plotlist()const;
 	 const PROBELIST& printlist()const;
 	 const PROBELIST& storelist()const;
-  virtual void	outdata(double);
-  virtual void	head(double,double,const std::string&);
-  virtual void	print_results(double);
-  virtual void	alarm();
-  virtual void	store_results(double);
+	 virtual void	outdata(double);
+	 virtual void	head(double,double,const std::string&);
+	 virtual void	print_results(double);
+	 virtual bool	verify();
+	 virtual void	alarm();
+	 virtual void	store_results(double);
 public:
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
 protected:				/* s__solve.cc */

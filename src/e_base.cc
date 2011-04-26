@@ -1,4 +1,5 @@
-/*$Id: e_base.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: e_base.cc,v 1.11 2010-09-22 13:19:50 felix Exp $ -*- C++ -*-
+ * vim:et:sw=2:ts=8
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -34,16 +35,25 @@ static char fix_case(char c)
 }
 /*--------------------------------------------------------------------------*/
 double CKT_BASE::tr_probe_num(const std::string&)const {return NOT_VALID;}
+double CKT_BASE::tt_probe_num(const std::string&)const {return NOT_VALID;}
 XPROBE CKT_BASE::ac_probe_ext(const std::string&)const {return XPROBE(NOT_VALID, mtNONE);}
 /*--------------------------------------------------------------------------*/
 SIM_DATA sim_data;
 SIM_DATA* CKT_BASE::_sim = &sim_data;
 /*--------------------------------------------------------------------------*/
+double	CKT_BASE::tt_behaviour =  0;
+double	CKT_BASE::tr_behaviour_del =  0;
+double	CKT_BASE::tr_behaviour_rel =  0;
+double	CKT_BASE::tt_behaviour_del =  0;
+double	CKT_BASE::tt_behaviour_rel =  0;
+/*--------------------------------------------------------------------------*/
 CKT_BASE::~CKT_BASE()
 {
-  trace1("~CKT_BASE", _probes);
+//  trace1("~CKT_BASE", _probes);
   PROBE_LISTS::purge(this);
-  trace1("", _probes);
+  if(_probes!=0){
+    error(bDANGER ,"CKT_BASE::~CKT_BASE %s %i ", long_label().c_str() , _probes);
+  }
   assert(_probes==0);
 }
 /*--------------------------------------------------------------------------*/
@@ -59,13 +69,18 @@ const std::string CKT_BASE::long_label()const
 /*--------------------------------------------------------------------------*/
 double CKT_BASE::probe_num(const std::string& what)const
 {
+  trace0(("CKT_BASE::probe_num "+ what).c_str() );
   double x;
-  if (_sim->analysis_is_ac()) {
-    x = ac_probe_num(what);
+  if (_sim->analysis_is_tt()){
+	  x= tt_probe_num(what) ;
+          if (x == NOT_VALID)  x = tr_probe_num(what);
+  }else  if (_sim->analysis_is_ac()) {
+	  x = ac_probe_num(what);
   }else{
-    x = tr_probe_num(what);
+	  x = tr_probe_num(what);
   }
-  return (std::abs(x)>=1) ? x : floor(x/OPT::floor + .5) * OPT::floor;
+  // FIXME, HACK
+  return x; // (std::abs(x)>=1) ? x : floor(x/OPT::floor + .5) * OPT::floor;
 }
 /*--------------------------------------------------------------------------*/
 double CKT_BASE::ac_probe_num(const std::string& what)const
@@ -119,18 +134,23 @@ double CKT_BASE::ac_probe_num(const std::string& what)const
 /*--------------------------------------------------------------------------*/
 /*static*/ WAVE* CKT_BASE::find_wave(const std::string& probe_name)
 {
+  trace0("CKT_BASE::find_wave( " + probe_name + " )");
   int ii = 0;
   for (PROBELIST::const_iterator
        p  = PROBE_LISTS::store[_sim->_mode].begin();
        p != PROBE_LISTS::store[_sim->_mode].end();
        ++p) {
-    if (wmatch(p->label(), probe_name)) {
+    if (wmatch((*p)->label(), probe_name)) {
       return &(_sim->_waves[ii]);
     }else{
+      trace0( "CKT_BASE::find_wave " + probe_name + " " + (*p)->label() );
     }
     ++ii;
   }
+  trace1( ( "CKT_BASE::find_wave( " + probe_name + " ) not found ").c_str(),  _sim->_mode);
   return NULL;
 }
+/*--------------------------------------------------------------------------*/
+bool CKT_BASE::operator!=(const std::string& n)const {return strcasecmp(_label.c_str(),n.c_str())!=0;}
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

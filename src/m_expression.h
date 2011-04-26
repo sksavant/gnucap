@@ -1,4 +1,4 @@
-/*$Id: m_expression.h,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: m_expression.h,v 1.3 2010-09-22 13:19:50 felix Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -21,6 +21,9 @@
  *------------------------------------------------------------------
  */
 //testing=script 2009.08.12
+
+#ifndef EXPR_H__
+#define EXPR_H__
 #include "m_base.h"
 /*--------------------------------------------------------------------------*/
 class Symbol_Table;
@@ -125,6 +128,7 @@ private: // expression-in.cc
   void arglist(CS& File);
   void leaf(CS& File);
   void factor(CS& File);
+  void factortail(CS& File);
   void termtail(CS& File);
   void term(CS& File);
   void addexptail(CS& File);
@@ -151,3 +155,4 @@ public: // other
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+#endif

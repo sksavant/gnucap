@@ -1,4 +1,5 @@
 #
+<<<<<<< HEAD
 $1 -b eq2-145.ckt
 $1 -b eq2-289.ckt
 $1 -b eq2-577.ckt
@@ -14,3 +15,22 @@ $1 -b nmos30.ckt
 $1 -b nmp100.ckt 
 $1 -b opamp-ol.ckt
 $1 -b opamp-vf.ckt
+=======
+
+gc=../src/gnucap
+$gc -b eq2-145.ckt
+$gc -b eq2-289.ckt
+$gc -b eq2-577.ckt
+$gc -b eq3-1153.ckt
+$gc -b eq4-2305.ckt
+$gc -b eqboost.ckt
+$gc -b eqflat.ckt 
+$gc -b eqmodify.ckt
+$gc -b killzap.ckt
+$gc -b nmos100.ckt
+$gc -b nmos18.ckt 
+$gc -b nmos30.ckt 
+$gc -b nmp100.ckt 
+$gc -b opamp-ol.ckt
+$gc -b opamp-vf.ckt
+>>>>>>> ims

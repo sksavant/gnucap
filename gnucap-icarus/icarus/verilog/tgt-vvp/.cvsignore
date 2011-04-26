@@ -1,0 +1,10 @@
+Makefile
+vvp_config.h
+configure
+config.status
+config.log
+autom4te.cache
+dep
+vvp.tgt
+vvp.conf
+vvp-s.conf

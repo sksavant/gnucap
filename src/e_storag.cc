@@ -1,4 +1,5 @@
-/*$Id: e_storag.cc,v 26.132 2009/11/24 04:26:37 al Exp $ -*- C++ -*-
+/*$Id: e_storag.cc,v 1.6 2010-07-27 07:45:35 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -69,6 +70,18 @@ void STORAGE::precalc_last()
    */
 }
 /*--------------------------------------------------------------------------*/
+// not yet. only cap.
+//void STORAGE::tr_init(double x)
+//{
+//  untested0("uic");
+//  for (int i = 0;  i < OPT::_keep_time_steps;  ++i) {
+//    _i[i] = FPOLY1(0., 0., 0.);
+//  }
+//  _m1 = _m0 = CPOLY1(x, 0., 0.);
+//
+//  tr_load();
+//}
+/*--------------------------------------------------------------------------*/
 void STORAGE::tr_begin()
 {
   ELEMENT::tr_begin();
@@ -123,6 +136,17 @@ bool STORAGE::tr_needs_eval()const
  * returns an approximation of the time derivative of _q,
  * where _q is an array of states .. charge for capacitors, flux for inductors.
  * return value is current for capacitors, volts for inductors.
+ *
+ * inductor case:
+ * q.x=voltage
+ * q.f0=q(u_new)
+ * q.f1=dq/du
+ *
+ * returns
+ * x  <- i.x=q.x
+ * f0 <- dq(u,t)/dt at u_new, t_new (approx.)
+ * f1 <- d^2 q(u,t)/dt/dq at u_new, t_new (approx.)
+ *
  */
 FPOLY1 differentiate(const FPOLY1* q, const FPOLY1* i, double* time, METHOD method)
 {

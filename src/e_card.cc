@@ -1,4 +1,4 @@
-/*$Id: e_card.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: e_card.cc,v 1.9 2010-07-27 07:45:33 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -36,24 +36,32 @@ CARD::CARD()
    _owner(0),
    _constant(false),
    _n(0),
-   _net_nodes(0)
+   _net_nodes(0),
+	tr_behaviour_del(0),
+	tt_behaviour_del(0),
+	tr_behaviour_rel(0),
+	tt_behaviour_rel(0)
 {
 }
 /*--------------------------------------------------------------------------*/
 CARD::CARD(const CARD& p)
   :CKT_BASE(p),
    _evaliter(-100),
-   _subckt(0), //BUG// isn't this supposed to copy????
-   _owner(0),
-   _constant(p._constant),
-   _n(0),
-   _net_nodes(p._net_nodes)
+	_subckt(0), //BUG// isn't this supposed to copy????
+	_owner(0),
+	_constant(p._constant),
+	_n(0),
+	_net_nodes(p._net_nodes),
+	tr_behaviour_del(0),
+	tt_behaviour_del(0),
+	tr_behaviour_rel(0),
+	tt_behaviour_rel(0)
 {
 }
 /*--------------------------------------------------------------------------*/
 CARD::~CARD()
 {
-  delete _subckt;
+	delete _subckt;
 }
 /*--------------------------------------------------------------------------*/
 const std::string CARD::long_label()const
@@ -75,7 +83,7 @@ int CARD::connects_to(const node_t& node)const
   untested();
   int count = 0;
   if (is_device()) {
-    for (int ii = 0;  ii < net_nodes();  ++ii) {
+    for (uint_t ii = 0;  ii < net_nodes();  ++ii) {
       untested();
       if (node.n_() == _n[ii].n_()) {
         ++count;
@@ -115,6 +123,8 @@ CARD* CARD::find_in_my_scope(const std::string& name)
   assert(name != "");
   assert(scope());
 
+  trace0(("CARD::find_in_my_scope, looking for " + name).c_str() );
+
   CARD_LIST::iterator i = scope()->find_(name);
   if (i == scope()->end()) {
     throw Exception_Cant_Find(long_label(), name,
@@ -133,6 +143,8 @@ const CARD* CARD::find_in_my_scope(const std::string& name)const
 {
   assert(name != "");
   assert(scope());
+
+  trace0(("CARD::find_in_my_scope looking for " + name).c_str() );
 
   CARD_LIST::const_iterator i = scope()->find_(name);
   if (i == scope()->end()) {
@@ -259,5 +271,7 @@ bool CARD::evaluated()const
     return false;
   }
 }
+/*--------------------------------------------------------------------------*/
+void	 CARD::stress_apply()	{ };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-/*$Id: e_storag.h,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: e_storag.h,v 1.3 2010-07-16 08:22:01 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -45,6 +45,8 @@ public: // override virtual
   void	   precalc_last();
   void     tr_begin();
   void     tr_restore();
+  void     tr_adapt();
+  virtual void    tr_init(double) { unreachable(); }
   void     dc_advance();
   void     tr_advance();
   //void   tr_regress();	//ELEMENT

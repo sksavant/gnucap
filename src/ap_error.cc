@@ -1,4 +1,4 @@
-/*$Id: ap_error.cc,v 26.122 2009/09/23 11:23:50 al Exp $ -*- C++ -*-
+/*$Id: ap_error.cc,v 1.1 2009-10-23 12:01:44 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

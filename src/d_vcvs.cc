@@ -1,4 +1,5 @@
-/*$Id: d_vcvs.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: d_vcvs.cc,v 1.7 2010-07-09 12:14:22 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -36,10 +37,10 @@ private: // override virtual
   char	   id_letter()const	{return 'E';}
   std::string value_name()const {return "gain";}
   std::string dev_type()const	{return "vcvs";}
-  int	   max_nodes()const	{return 4;}
-  int	   min_nodes()const	{return 4;}
-  int	   matrix_nodes()const	{return 4;}
-  int	   net_nodes()const	{return 4;}
+  uint_t	   max_nodes()const	{return 4;}
+  uint_t	   min_nodes()const	{return 4;}
+  uint_t	   matrix_nodes()const	{return 4;}
+  uint_t	   net_nodes()const	{return 4;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_VCVS(*this);}
   void     precalc_last();
@@ -48,16 +49,17 @@ private: // override virtual
   bool	   do_tr();
   void	   tr_load()		{tr_load_shunt(); tr_load_active();}
   void	   tr_unload()		{untested();tr_unload_active();}
-  double   tr_involts()const	{return dn_diff(_n[IN1].v0(), _n[IN2].v0());}
-  double   tr_involts_limited()const {return volts_limited(_n[IN1],_n[IN2]);}
+  hp_float_t tr_involts()const {return dn_diff(_n[IN1].v0(), _n[IN2].v0());}
+  hp_float_t tr_involts_limited()const {return volts_limited(_n[IN1],_n[IN2]);}
+  hp_float_t tr_amps()const{ std::cout << short_label() ; return 881;}	//ELEMENT
   void	   ac_iwant_matrix()	{ac_iwant_matrix_extended();}
   void	   ac_begin();
   void	   do_ac();
   void	   ac_load()		{ac_load_shunt(); ac_load_active();}
-  COMPLEX  ac_involts()const	{return _n[IN1]->vac() - _n[IN2]->vac();}
+  COMPLEX  ac_involts()const	{return _n[IN1].vac() - _n[IN2].vac();}
 
-  std::string port_name(int i)const {
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {
+    assert(i !=INVALID_NODE);
     assert(i < 4);
     static std::string names[] = {"p", "n", "ps", "ns"};
     return names[i];
@@ -120,7 +122,7 @@ void DEV_VCVS::do_ac()
     _acg = -_loss0 * _ev;
   }else{
     assert(_ev == _y[0].f1);
-    assert(has_tr_eval() || _ev == double(value()));
+    assert(has_tr_eval() || _ev == hp_float_t(value()));
   }
 }
 /*--------------------------------------------------------------------------*/

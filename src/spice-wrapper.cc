@@ -1,4 +1,4 @@
-/* $Id: spice-wrapper.cc,v 26.136 2009/12/07 23:20:42 al Exp $ -*- C++ -*-
+/* $Id: spice-wrapper.cc,v 1.4 2010-06-16 08:30:10 felix Exp $ -*- C++ -*-
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -236,9 +236,9 @@ protected: // override virtual
   TIME_PAIR tr_review();
   void    tr_accept();
   void	  tr_unload();
-  double  tr_involts()const	{unreachable();return NOT_VALID;}
+  hp_float_t  tr_involts()const	{unreachable();return NOT_VALID;}
   //double tr_input()const	//ELEMENT
-  double  tr_involts_limited()const {unreachable();return NOT_VALID;}
+  hp_float_t  tr_involts_limited()const {unreachable();return NOT_VALID;}
   //double tr_input_limited()const //ELEMENT
   double  tr_amps()const	{itested();return NOT_VALID;}
   double  tr_probe_num(const std::string&)const;

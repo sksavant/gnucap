@@ -1,4 +1,5 @@
-/*$Id: ap.h,v 26.130 2009/11/15 21:51:59 al Exp $  -*- C++ -*-
+/*$Id: ap.h,v 1.4 2010-09-17 12:25:54 felix Exp $  -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -66,13 +67,14 @@ public:
   CS&	      operator=(const std::string& s);
   CS&	      operator=(const CS& p);
   CS&	      get_line(const std::string& prompt);
-	      ~CS()		{if (is_file()) {fclose(_file);}}
+  ~CS();
   
   // status - non-consuming
   unsigned cursor()const	{return _cnt;}
   bool	stuck(unsigned* last)	{bool ok=*last<_cnt; *last=_cnt; return !ok;}
   bool	gotit(unsigned last)	{return last<_cnt;}
-	operator bool()const	{return _ok;}
+  operator bool()const	{return _ok;}
+  operator std::string()const {return _cmd;}
 
   // get -- non-consuming
   const std::string fullstring()const		{return _cmd;}
@@ -112,7 +114,8 @@ public:
 		{untested(); return (match1("0123456789abcdefABCDEF"));}
   bool	      is_digit()const	{return (match1("0123456789"));}
   bool	      is_pfloat()const	{return (match1(".0123456789"));}
-  bool	      is_float()const	{return (match1("+-.0123456789"));}
+  // inf support is a hack, but hackish anyway
+  bool	      is_float()const	{return (match1("+-.0123456789") || match1("iI") );}
   bool	      is_argsym()const	{return (match1("*?$%_&@"));}
   bool	      is_alpha()const	{return !!isalpha(toascii(peek()));}
   bool	      is_alnum()const   {return !!isalnum(toascii(peek()));}

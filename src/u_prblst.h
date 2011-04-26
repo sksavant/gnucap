@@ -1,4 +1,4 @@
-/*$Id: u_prblst.h,v 26.136 2009/12/07 23:20:42 al Exp $ -*- C++ -*-
+/*$Id: u_prblst.h,v 1.6 2010-09-22 13:19:51 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -24,51 +24,64 @@
 //testing=script,complete 2006.09.28
 #ifndef U_PRBLST_H
 #define U_PRBLST_H
+#include <iostream>
 #include "mode.h"
 #include "u_probe.h"
+// using namespace std;
+
 /*--------------------------------------------------------------------------*/
 class CARD_LIST;
 /*--------------------------------------------------------------------------*/
 class INTERFACE PROBELIST {
 private:
-  typedef std::vector<PROBE> _container;
+  typedef std::vector<PROBE*> _container;
   _container bag;
 
   explicit PROBELIST(const PROBELIST&) {unreachable();incomplete();}
 public:
   explicit PROBELIST() {}
-  ~PROBELIST() {}
+  ~PROBELIST();
 
   typedef _container::iterator	     iterator;
   typedef _container::const_iterator const_iterator;
-  void	   listing(const std::string&)const;
+  void	  listing(const std::string&)const;
   void     clear();
-
-  void	   remove_list(CS&);
+  void	  remove_list(CS&);
   void     remove_one(CKT_BASE*);
-  void     add_list(CS&);
+  void push_probe(PROBE*);
+  void merge_probe(PROBE*);
+
+  PROBE*     add_list(CS&);
   int	   size()const		{return static_cast<int>(bag.size());}
   const_iterator begin()const	{return bag.begin();}
   const_iterator end()const	{return bag.end();}
-  iterator begin()		{return bag.begin();}
-  iterator end()		{return bag.end();}
+  iterator begin()            {return bag.begin();}
+  iterator end()              {return bag.end();}
+  virtual void        open(CS&)       {incomplete();}
+  virtual void        send(OMSTREAM, double)  {incomplete();}
+  virtual void        close()         {incomplete();}
+  friend std::ostream& operator<< ( std::ostream&, const PROBELIST& );
 
-  virtual void	open(CS&)	{incomplete();}
-  virtual void	send(OMSTREAM, double)	{incomplete();}
-  virtual void	close()		{incomplete();}
 private:
-  void	  erase(iterator b, iterator e) {bag.erase(b,e);}
-  void	  push_new_probe(const std::string& param, const CKT_BASE* object);
-  bool    add_branches(const std::string&,const std::string&,const CARD_LIST*);
+  void     erase(iterator , iterator );// {bag.erase(b,e);}
+  PROBE*	  push_new_probe(const std::string& param, const CKT_BASE* object);
+  MEAS_PROBE*	  push_new_meas_probe(const std::string& param);
+
+  PROBE*   add_branches(const std::string&,const std::string&,const CARD_LIST*);
   void    add_all_nodes(const std::string&);
+
+  // FIXME
+  PROBE* add_expr(const std::string&,const MATH_OP,const CARD_LIST*,CS&, PROBELIST&);
 };
 /*--------------------------------------------------------------------------*/
 class INTERFACE PROBE_LISTS {
 public:
  static PROBELIST alarm[sCOUNT]; // list of alarm probes
+ static PROBELIST verify[sCOUNT]; // list of alarm probes
  static PROBELIST plot[sCOUNT];  // list of plot probes
  static PROBELIST print[sCOUNT]; // list of print probes
  static PROBELIST store[sCOUNT]; // list of probes to store for postproc
+ static PROBELIST expr[sCOUNT]; // list of probes to store for postproc
  static void purge(CKT_BASE*);
 };
 /*--------------------------------------------------------------------------*/

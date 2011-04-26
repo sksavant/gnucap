@@ -1,0 +1,35 @@
+* BTI TW
+.include non-GPL.inc
+
+.options adpreltol 0.01
+*.option dupcheck
+
+.param my_uref=1.2
+
+.model my_rcd_fast rcdsym RE=2.1 RC=0.0001
+.model my_rcd_slow rcdsym RE=2.1 RC=100
+
+.model my_btimodel_fast bti_single ( rcd_number=1 rcd_model_name=my_rcd_fast uref=my_uref)
+.model my_btimodel_slow bti_single ( rcd_number=1 rcd_model_name=my_rcd_slow uref=my_uref)
+
+B1 nin 0 my_btimodel_fast
+B2 nin 0 my_btimodel_slow 
+
+
+**** .include pulse.src
+.param amplitude=my_uref
+.param period=0
+.param rise=1n
+.param fall=0
+.param width=0
+V1 nin 0 pulse ( iv=0 pv=amplitude delay=0 rise=1n fall=fall width=width period=period )
+
+.print tw vw(B*.RCD*) wt(B*.RCD*) te(B*.RCD*) tc(B*.RCD*) wt(B*.RCD*) vin(B*.RCD*) basic
++ value(B*.UBTI)
+
+.param amplitude = my_uref
+.tw 10u 6m 1 2 basic
+.echo runter
+
+.param amplitude = 0
+.tw 5 basic

@@ -1,4 +1,4 @@
-/*$Id: u_time_pair.h,v 26.81 2008/05/27 05:34:00 al Exp $ -*- C++ -*-
+/*$Id: u_time_pair.h,v 1.1 2009-10-23 12:01:45 felix Exp $ -*- C++ -*-
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -58,7 +58,13 @@ struct TIME_PAIR {
   TIME_PAIR& min(double Error_Estimate, double Event) {untested();
     return min_error_estimate(Error_Estimate).min_event(Event);
   }
+  bool operator<(const TIME_PAIR&) const;
 };
+/*--------------------------------------------------------------------------*/
+inline bool TIME_PAIR::operator<(const TIME_PAIR& A) const
+{
+  return (_event<A._event);
+}
 /*--------------------------------------------------------------------------*/
 inline TIME_PAIR min(TIME_PAIR A, const TIME_PAIR& B)
 {

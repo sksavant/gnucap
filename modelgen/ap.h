@@ -1,4 +1,4 @@
-/*$Id: ap.h,v 26.130 2009/11/15 21:51:59 al Exp $  -*- C++ -*-
+/*$Id: ap.h,v 1.3 2009-12-13 17:55:01 felix Exp $  -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

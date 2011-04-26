@@ -1,4 +1,4 @@
-/*$Id: d_cccs.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: d_cccs.cc,v 1.4 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -50,14 +50,14 @@ private: // override virtual
   void	   do_ac();
   void	   ac_load()		{ac_load_active();}
 
-  std::string port_name(int i)const {untested();
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {untested();
+    assert(i != INVALID_NODE);
     assert(i < 2);
     static std::string names[] = {"sink", "src"};
     return names[i];
   }
-  std::string current_port_name(int i)const {untested();
-    assert(i >= 0);
+  std::string current_port_name(uint_t i)const {untested();
+    assert(i != INVALID_NODE);
     assert(i < 1);
     static std::string names[] = {"in"};
     return names[i];
@@ -122,16 +122,16 @@ void DEV_CCCS::do_ac()
     ac_eval();
   }else{
     assert(_ev == _y[0].f1);
-    assert(has_tr_eval() || _ev == double(value()));
+    assert(has_tr_eval() || ( _ev) == hp_float_t(value()));
   }
   if (_input->is_source()) {	/* if the sense elt is a fixed source.. */
-    _acg = _ev * _input->_acg;	/* then part of this one can be modeled */
+    _acg = (COMPLEX)_ev * _input->_acg;	/* then part of this one can be modeled */
     ac_load_source();		/* as a fixed source. ...		*/
     _acg = _ev * _input->_loss0;/* so load it in 2 pieces		*/
   }else if (_input->has_inode()) {untested();
     _acg = _ev;
   }else if (_input->has_iv_probe()) {
-    _acg = _ev * _input->_acg;
+    _acg = (COMPLEX) _ev * _input->_acg;
   }else{unreachable();
   }
 }

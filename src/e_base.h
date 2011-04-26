@@ -1,4 +1,5 @@
-/*$Id: e_base.h,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: e_base.h,v 1.12 2010-09-17 12:25:58 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -25,12 +26,13 @@
 #ifndef E_BASE_H
 #define E_BASE_H
 #include "md.h"
+#include "u_sim_data.h"
 /*--------------------------------------------------------------------------*/
 // external
 class XPROBE;
 class WAVE;
 class OMSTREAM;
-class SIM_DATA;
+// class SIM_DATA;
 /*--------------------------------------------------------------------------*/
 class INTERFACE CKT_BASE {
 private:
@@ -57,17 +59,31 @@ public: // probes
 	  void	      inc_probes()const	{++_probes;}
 	  void	      dec_probes()const	{assert(_probes>0); --_probes;}
 	  bool	      has_probes()const	{return _probes > 0;}
+	  int	      probes()const	{return _probes;}
   static  double      probe(const CKT_BASE*,const std::string&);
   static  WAVE*	      find_wave(const std::string& probe_name);
   //--------------------------------------------------------------------
 public: // label
-  bool operator!=(const std::string& n)const {return strcasecmp(_label.c_str(),n.c_str())!=0;}
+  bool operator!=(const std::string& n)const;
   virtual const std::string long_label()const;
   const std::string&  short_label()const {return _label;}
   void	set_label(const std::string& s) {_label = s;}
+public:
+  static double tr_behaviour_del;
+  static double tr_behaviour_rel;
+  static double tt_behaviour;
+  static double tt_behaviour_del;
+  static double tt_behaviour_rel;
+  void tt_prepare();
+  virtual void   tr_stress_last() {}
+  virtual double tt_probe_num(const std::string&)const;
+
+  int iteration_number()const   {return _sim->_iter[iSTEP];}
+  int tt_iteration_number()const   {return _sim->_tt_iter;} // accepted steps
 };
 /*--------------------------------------------------------------------------*/
 inline bool exists(const CKT_BASE* c) {return c!=0;}
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 #endif

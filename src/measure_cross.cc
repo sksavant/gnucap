@@ -1,4 +1,6 @@
-/*$Id: measure_cross.cc,v 26.131 2009/11/20 08:22:10 al Exp $ -*- C++ -*-
+/*$Id: measure_cross.cc,v 1.2 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
+ * * vim:ts=8:sw=2:et
+ *
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -28,7 +30,7 @@ namespace {
 /*--------------------------------------------------------------------------*/
 class MEASURE : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     std::string probe_name;
     PARAMETER<double> before(BIGBIG);
@@ -102,7 +104,8 @@ public:
 	  break;
 	};
       }
-      return to_string(x_time);
+
+      return to_fun_t(x_time);
     }else{
       throw Exception_No_Match(probe_name);
     }

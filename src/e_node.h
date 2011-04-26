@@ -1,4 +1,5 @@
-/*$Id: e_node.h,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: e_node.h,v 1.5 2010-09-20 08:21:54 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -35,7 +36,7 @@ enum {
   IN1 = 2,
   IN2 = 3,
   NODES_PER_BRANCH = 4,
-  INVALID_NODE = -1
+  INVALID_NODE = 65500
 };
 #define	qBAD	 (0)
 #define qGOOD	 (OPT::transits)
@@ -62,11 +63,11 @@ public:
   LOGICVAL& operator=(const LOGICVAL& p) {_lv=p._lv; return *this;}
 
   LOGICVAL& operator&=(LOGICVAL p)
-	{untested(); _lv = and_truth[_lv][p._lv]; return *this;}
+	{itested(); _lv = and_truth[_lv][p._lv]; return *this;}
   LOGICVAL& operator|=(LOGICVAL p)
 	{_lv = or_truth[_lv][p._lv]; return *this;}
   LOGICVAL  operator^=(LOGICVAL p)
-	{untested(); _lv = xor_truth[_lv][p._lv]; return *this;}
+	{itested(); _lv = xor_truth[_lv][p._lv]; return *this;}
   LOGICVAL  operator~()const	{return not_truth[_lv];}
   
   bool is_unknown()const	{return _lv == lvUNKNOWN;}
@@ -79,11 +80,28 @@ public:
   LOGICVAL& set_in_transition(LOGICVAL newval);
 };
 /*--------------------------------------------------------------------------*/
-class NODE : public CKT_BASE {
-private:
-  int	_user_number;
-  //int	_flat_number;
-  //int	_matrix_number;
+// necessary?
+class NODE_BASE : public CKT_BASE {
+  protected:
+    explicit NODE_BASE();
+    explicit NODE_BASE(const NODE_BASE& p);
+  protected:
+    uint_t	_user_number;
+    //int	_flat_number;
+    //int	_matrix_number;
+  public:
+    explicit NODE_BASE(const NODE_BASE* p);
+    explicit NODE_BASE(const std::string& s, int n);
+    virtual ~NODE_BASE() {}
+    NODE_BASE&	set_user_number(int n)	{_user_number = n; return *this;}
+  public: // virtuals
+    virtual double	tr_probe_num(const std::string&)const;
+    virtual double	tt_probe_num(const std::string&)const;
+    virtual XPROBE	ac_probe_ext(const std::string&)const;
+
+};
+/*--------------------------------------------------------------------------*/
+class NODE : public NODE_BASE {
 protected:
   explicit NODE();
 private: // inhibited
@@ -94,43 +112,43 @@ public:
   ~NODE() {}
 
 public: // raw data access (rvalues)
-  int	user_number()const	{return _user_number;}
+  uint_t	user_number()const	{return _user_number;}
   //int	flat_number()const	{itested();return _flat_number;}
 public: // simple calculated data access (rvalues)
-  int	matrix_number()const	{return _sim->_nm[_user_number];}
-  int	m_()const		{return matrix_number();}
+  uint_t	matrix_number()const	{return _sim->_nm[_user_number];}
+  uint_t	m_()const		{return matrix_number();}
 public: // maniputation
-  NODE&	set_user_number(int n)	{_user_number = n; return *this;}
   //NODE& set_flat_number(int n) {itested();_flat_number = n; return *this;}
   //NODE& set_matrix_number(int n){untested();_matrix_number = n;return *this;}
 public: // virtuals
   double	tr_probe_num(const std::string&)const;
+  double	tt_probe_num(const std::string& x)const{return tr_probe_num(x);}
   XPROBE	ac_probe_ext(const std::string&)const;
 
-  double      v0()const	{
-    assert(m_() >= 0);
+  hp_float_t      v0()const	{
+    assert(m_() != INVALID_NODE );
     assert(m_() <= _sim->_total_nodes);
-    return _sim->_v0[m_()];
+    return _sim->_v0 [m_()];
   }
-  double      vt1()const {
-    assert(m_() >= 0);
+  hp_float_t      vt1()const {
+    assert(m_() != INVALID_NODE );
     assert(m_() <= _sim->_total_nodes);
     return _sim->_vt1[m_()];
   }
   COMPLEX     vac()const {
-    assert(m_() >= 0);
+    assert(m_() != INVALID_NODE );
     assert(m_() <= _sim->_total_nodes);
-    return _sim->_ac[m_()];
+    return _sim->_ac [m_()];
   }
-  //double      vdc()const		{untested();return _vdc[m_()];}
+  //double      vdc()const		{untested();return _sim->_vdc[m_()];}
 
-  //double&     i()	{untested();return _i[m_()];}  /* lvalues */
+  //double&     i()	{untested();return SIM::i[m_()];}  /* lvalues */
   COMPLEX&    iac() {
-    assert(m_() >= 0);
+    assert(m_() != INVALID_NODE);
     assert(m_() <= _sim->_total_nodes);
     return _sim->_ac[m_()];
   }
-};
+}; //NODE
 extern NODE ground_node;
 /*--------------------------------------------------------------------------*/
 class INTERFACE LOGIC_NODE : public NODE {
@@ -214,8 +232,8 @@ public: // action, used by logic
   void	      set_event(double delay, LOGICVAL v);
   void	      force_initial_value(LOGICVAL v);
   void	      propagate();
-  double      to_analog(const MODEL_LOGIC*f);
-  void	      to_logic(const MODEL_LOGIC*f);
+  double      to_analog(const MODEL_LOGIC*);
+  void	      to_logic(const MODEL_LOGIC*);
 
 private: // inhibited
   explicit LOGIC_NODE(const LOGIC_NODE&):NODE(){incomplete();unreachable();}
@@ -229,18 +247,16 @@ public: // matrix
 /*--------------------------------------------------------------------------*/
 class INTERFACE node_t {
 private:
-  static bool node_is_valid(int i) {
-    if (i == INVALID_NODE) {untested();
+  static bool node_is_valid( uint_t i) {
+    if (i == (uint_t) INVALID_NODE) {untested();
       itested();
-    }else if (i < 0) {
-      unreachable();
-    }else if (i > NODE::_sim->_total_nodes) {
+    }else if ( i > NODE::_sim->_total_nodes) {
       unreachable();
     }else{
     }
-    return i>=0 && i<=NODE::_sim->_total_nodes;
+    return i!=INVALID_NODE && i<=NODE::_sim->_total_nodes;
   }
-  static int  to_internal(int n) {
+  static int  to_internal(uint_t n) {
     assert(node_is_valid(n));
     assert(NODE::_sim->_nm);
     return NODE::_sim->_nm[n];
@@ -252,7 +268,7 @@ private:
   int _m;		// mapped, after reordering
 
 public:
-  int	      m_()const	{return _m;}
+  uint_t	      m_()const	{return _m;}
 
   int	      t_()const {
     //assert(_nnn);
@@ -261,9 +277,9 @@ public:
   }	// e_cardlist.cc:CARD_LIST::map_subckt_nodes:436 and
 	// e_node.h:node_t::map:263,265 only
 
-  int	      e_()const {
+  uint_t	      e_()const {
     assert(_nnn);
-    return ((_nnn) ? _nnn->user_number() : INVALID_NODE);
+    return ((_nnn) ? _nnn->user_number() : (uint_t) INVALID_NODE);
   }
   const NODE* n_()const {return _nnn;}
   NODE*	      n_()	{return _nnn;}
@@ -273,7 +289,7 @@ public:
   void	set_to_ground(CARD*);
   void	new_node(const std::string&, const CARD*);
   void	new_model_node(const std::string& n, CARD* d);
-  void	map_subckt_node(int* map_array, const CARD* d);
+  void	map_subckt_node(uint_t* map_array, const CARD* d);
   bool	is_grounded()const {return (e_() == 0);}
   bool	is_connected()const {return (e_() != INVALID_NODE);}
 
@@ -307,7 +323,7 @@ public:
 public:
   double      v0()const {
     //assert(m_() >= 0);
-    if (m_() >= 0) {
+    if (m_() != INVALID_NODE ) {
       assert(m_() <= NODE::_sim->_total_nodes);
       assert(n_());
       //assert(n_()->m_() == m_());
@@ -321,7 +337,7 @@ public:
 
   COMPLEX     vac()const {
     //assert(m_() >= 0);
-    if (m_() >= 0) {
+    if (m_() != INVALID_NODE ) {
       assert(m_() <= NODE::_sim->_total_nodes);
       assert(n_());
       //assert(n_()->m_() == m_());
@@ -334,19 +350,19 @@ public:
   }
 
   double&     i() {
-    assert(m_() >= 0);
+    assert(m_() != INVALID_NODE);
     assert(m_() <= NODE::_sim->_total_nodes);
     return NODE::_sim->_i[m_()];
   }
-#if 0
+
+  // ??
   COMPLEX&    iac() {untested();
     assert(n_());
     assert(n_()->m_() == m_());
-    assert(n_()->iac() == NODE::_ac[m_()]);
+    // assert(n_()->iac() == NODE::_ac[m_()]);
     //return n_()->iac();
     return NODE::_sim->_ac[m_()];
   }
-#endif
 };
 /*--------------------------------------------------------------------------*/
 INTERFACE double volts_limited(const node_t& n1, const node_t& n2);

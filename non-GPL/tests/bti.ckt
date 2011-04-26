@@ -1,0 +1,18 @@
+*==============  Begin SPICE netlist of main design ============
+.options TEMP=25
+
+.model my_rcdmodel rcdsym RC=111+1000
+.model my_btimodel bti_single ( rcd_number=1 rcd_model_name=rcd_model_string uref=1)
+.param rcd_model_string=my_rcdmodel
+
+.model bti_matrix_model bti_matrix ( rcd_number=1 rcd_model_name=rcd_model_string rows=3 cols=3 base=10 uref=1 )
+
+
+B1 nin 0 bti_matrix_model
+V1 nin 0 pulse ( iv=0 pv=amplitude delay=3m rise=1n fall=fall width=width period=period )
+.param amplitude=1
+.param period=6m
+.param fall=1n
+.param width=2.9m
+
+.end

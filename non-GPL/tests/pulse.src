@@ -1,0 +1,7 @@
+* pulse source
+
+.param amplitude=1
+.param period=0;
+.param width=0;
+.param fall=0;
+V1 nin 0 pulse ( iv=0 pv=amplitude delay=0 rise=1n fall=fall width=width period=period )

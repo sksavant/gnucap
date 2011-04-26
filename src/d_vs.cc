@@ -1,4 +1,5 @@
-/*$Id: d_vs.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: d_vs.cc,v 1.9 2010-07-29 12:37:21 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -36,32 +37,33 @@ private: // override virtual
   char	   id_letter()const	{return 'V';}
   std::string value_name()const {return "dc";}
   std::string dev_type()const	{return "vsource";}
-  int	   max_nodes()const	{return 2;}
-  int	   min_nodes()const	{return 2;}
-  int	   matrix_nodes()const	{return 2;}
-  int	   net_nodes()const	{return 2;}
+  uint_t	   max_nodes()const	{return 2;}
+  uint_t	   min_nodes()const	{return 2;}
+  uint_t	   matrix_nodes()const	{return 2;}
+  uint_t	   net_nodes()const	{return 2;}
   bool	   is_source()const	{return true;}
   bool	   f_is_value()const	{return true;}
   bool	   has_iv_probe()const  {return true;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_VS(*this);}
   void     precalc_last();
-  void	   tr_iwant_matrix()	{tr_iwant_matrix_passive();}
+  void	   tr_iwant_matrix()	{
+	  tr_iwant_matrix_passive();}
   void	   tr_begin();
   bool	   do_tr();
   void	   tr_load()		{tr_load_shunt(); tr_load_source();}
   void	   tr_unload()		{untested();tr_unload_source();}
-  double   tr_involts()const	{return 0.;}
-  double   tr_involts_limited()const {unreachable(); return 0.;}
+  hp_float_t   tr_involts()const	{return 0.;}
+  hp_float_t   tr_involts_limited()const {unreachable(); return 0.;}
   void	   ac_iwant_matrix()	{ac_iwant_matrix_passive();}
-  void	   ac_begin()		{_loss1 = _loss0 = 1./OPT::shortckt; _acg = _ev = 0.;}
+  void	   ac_begin()	{_loss1 = _loss0 = 1./OPT::shortckt; _acg = _ev = 0.;}
   void	   do_ac();
   void	   ac_load()		{ac_load_shunt(); ac_load_source();}
   COMPLEX  ac_involts()const	{return 0.;}
-  COMPLEX  ac_amps()const	{return (_acg + ac_outvolts()*_loss0);}
+  COMPLEX  ac_amps()const	{return (_acg + ac_outvolts()* (double)_loss0);}
 
-  std::string port_name(int i)const {
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {
+    assert(i != INVALID_NODE);
     assert(i < 2);
     static std::string names[] = {"p", "n"};
     return names[i];
@@ -71,6 +73,7 @@ private: // override virtual
 /*--------------------------------------------------------------------------*/
 void DEV_VS::precalc_last()
 {
+  trace0("DEV_VS::precalc_last()");
   ELEMENT::precalc_last();
   set_constant(!has_tr_eval());
   set_converged(!has_tr_eval());
@@ -115,6 +118,7 @@ bool DEV_VS::do_tr()
     _m0.c0 = -_loss0 * _y[0].f1;
     assert(_m0.c1 == 0.);
   }else{itested();
+    // assert(false); //??
     assert(conchk(_loss0, 1./OPT::shortckt));
     assert(_y[0].x == 0.);
     assert(_y[0].f0 == 0.);

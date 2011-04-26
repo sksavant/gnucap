@@ -1,4 +1,5 @@
-/*$Id: mode.h,v 26.81 2008/05/27 05:34:00 al Exp $ -*- C++ -*-
+/*$Id: mode.h,v 1.3 2010-09-07 07:46:24 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -27,11 +28,11 @@
 #include "io_.h"
 /*--------------------------------------------------------------------------*/
 enum smode_t   {moUNKNOWN=0, moANALOG=1, moDIGITAL, moMIXED};
+const std::string smode_t_names[] = {"unknown", "analog", "digital", "mixed"};
 inline OMSTREAM& operator<<(OMSTREAM& o, smode_t t) {
-  const std::string s[] = {"unknown", "analog", "digital", "mixed"};
   assert(t >= int(moUNKNOWN));
   assert(t <= int(moMIXED));
-  return (o << s[t]);
+  return (o << smode_t_names[t]);
 }
 
 enum SIM_MODE { // simulation types
@@ -40,12 +41,14 @@ enum SIM_MODE { // simulation types
   s_OP,  	/* op command					*/
   s_DC,  	/* dc sweep command				*/
   s_TRAN,	/* transient command				*/
+  s_TTT,	/* two time transient command			*/
   s_FOURIER	/* fourier command				*/
 };
 const int sSTART = s_NONE;
 const int sCOUNT = s_FOURIER + 1;
 inline OMSTREAM& operator<<(OMSTREAM& o, SIM_MODE t) {
-  const std::string s[] = {"ALL", "AC", "OP", "DC", "TRAN", "FOURIER"};
+  trace0( "mode stream" );
+  const std::string s[] = {"ALL", "AC", "OP", "DC", "TRAN", "TTT", "FOURIER"};
   assert(t >= int(s_NONE));
   assert(t <= int(s_FOURIER));
   return (o << s[t]);

@@ -1,4 +1,5 @@
-/*$Id: s__out.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: s__out.cc,v 1.8 2010-09-07 07:46:24 felix Exp $ -*- C++ -*-
+ * vim:sw=2:ts=8:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -31,6 +32,10 @@
 /*--------------------------------------------------------------------------*/
 /* SIM::____list: access probe lists
  */
+const PROBELIST& SIM::verifylist()const
+{
+  return PROBE_LISTS::verify[CKT_BASE::_sim->_mode];
+}
 const PROBELIST& SIM::alarmlist()const
 {
   return PROBE_LISTS::alarm[_sim->_mode];
@@ -55,6 +60,7 @@ void SIM::outdata(double x)
   ::status.output.start();
   plottr(x, plotlist());
   print_results(x);
+  
   alarm();
   store_results(x);
   _sim->reset_iteration_counter(iPRINTSTEP);
@@ -66,12 +72,16 @@ void SIM::outdata(double x)
  */
 void SIM::head(double start, double stop, const std::string& col1)
 {
-  if (_sim->_waves) {
-    delete [] _sim->_waves;
-  }else{
-  }
 
-  _sim->_waves = new WAVE [storelist().size()];
+  if (!_sim->analysis_is_tt()) {
+    trace0("SIM::head tr WAVE");
+    if (_sim->_waves) {
+      delete [] _sim->_waves;
+    }else{
+    }
+
+    _sim->_waves = new WAVE [storelist().size()];
+  }
 
 
   if (!plopen(start, stop, plotlist())) {
@@ -81,11 +91,11 @@ void SIM::head(double start, double stop, const std::string& col1)
     //sprintf(format, "%%c%%-%u.%us", width, width);
     sprintf(format, "%%c%%-%us", width);
 
-    _out.form(format, '#', col1.c_str());
+    _out.form(format, '*', col1.c_str());
 
     for (PROBELIST::const_iterator
 	   p=printlist().begin();  p!=printlist().end();  ++p) {
-      _out.form(format, ' ', p->label().c_str());
+      _out.form(format, ' ', (*p)->label().c_str());
     }
     _out << '\n';
   }else{
@@ -97,17 +107,21 @@ void SIM::head(double start, double stop, const std::string& col1)
  */
 void SIM::print_results(double x)
 {
+  trace0("SIM::print_results");
   if (!IO::plotout.any()) {
     _out.setfloatwidth(OPT::numdgt, OPT::numdgt+6);
     assert(x != NOT_VALID);
     _out << x;
     for (PROBELIST::const_iterator
 	   p=printlist().begin();  p!=printlist().end();  ++p) {
-      _out << p->value();
+      trace0(("SIM::print_results" + (*p)->label()).c_str() );
+      _out << (*p)->value();
     }
     _out << '\n';
   }else{
   }
+  trace0("SIM::print_results done");
+
 }
 /*--------------------------------------------------------------------------*/
 /* SIM::alarm: print a message when a probe is out of range
@@ -117,11 +131,32 @@ void SIM::alarm(void)
   _out.setfloatwidth(OPT::numdgt, OPT::numdgt+6);
   for (PROBELIST::const_iterator
 	 p=alarmlist().begin();  p!=alarmlist().end();  ++p) {
-    if (!p->in_range()) {
-      _out << p->label() << '=' << p->value() << '\n';
+    if (!(*p)->in_range()) {
+      _out << (*p)->label() << '=' << (*p)->value() << '\n';
     }else{
     }
   }
+}
+/*--------------------------------------------------------------------------*/
+bool SIM::verify(void)
+{
+  bool ret=true;
+  _out.setfloatwidth(OPT::numdgt, OPT::numdgt+6);
+  for (PROBELIST::const_iterator
+	 p=verifylist().begin();  p!=verifylist().end();  ++p) {
+    if (!(*p)->in_range()) {
+      if(CKT_BASE::_sim->_mode==s_TTT)
+      {
+        _out << CKT_BASE::_sim->_Time0 << "\n";
+      }
+
+
+      std::cerr << "verify: " <<  (*p)->label() << '=' << (*p)->value() << '\n';
+      ret=false;
+    }else{
+    }
+  }
+  return ret;
 }
 /*--------------------------------------------------------------------------*/
 /* SIM::store: store data in preparation for post processing
@@ -131,7 +166,8 @@ void SIM::store_results(double x)
   int ii = 0;
   for (PROBELIST::const_iterator
 	 p=storelist().begin();  p!=storelist().end();  ++p) {
-    _sim->_waves[ii++].push(x, p->value());
+//    std::cout << "pushing " << (*p)->value() << "\n";
+    _sim->_waves[ii++].push(x, (*p)->value());
   }
 }
 /*--------------------------------------------------------------------------*/

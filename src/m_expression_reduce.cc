@@ -1,4 +1,4 @@
-/*$Id: m_expression_reduce.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: m_expression_reduce.cc,v 1.2 2009-11-18 20:53:18 felix Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -47,6 +47,8 @@ Token* Token_BINOP::op(const Token* T1, const Token* T2)const
     b = (T1->data())->subtract(T2->data());
   }else if (name() == "/") {
     b = (T1->data())->divide(T2->data());
+  }else if (name() == "**" || name() == "^") {
+    b = (T1->data())->powerof(T2->data());
   }else if (name() == "==") {
     b = (T1->data())->equal(T2->data());
   }else if (name() == "!=") {
@@ -121,9 +123,9 @@ void Token_SYMBOL::stack_op(Expression* E)const
       const Token* T1 = E->back(); // arglist
       E->pop_back();
       CS cmd(CS::_STRING, T1->name());      
-      std::string value = f->eval(cmd, E->_scope);
+      fun_t value = f->eval(cmd, E->_scope);
       const Float* v = new Float(value);
-      E->push_back(new Token_CONSTANT(value, v, ""));
+      E->push_back(new Token_CONSTANT( to_string(value), v, ""));
       delete T1;
     }else{
       throw Exception_No_Match(name()); //BUG// memory leak

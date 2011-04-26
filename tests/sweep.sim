@@ -1,0 +1,23 @@
+kleiner sweep test
+.param b 1
+.eval b
+
+
+.sweep 4 a 1 3
+.eval a+b
+.eval a
+.eval exp(a)
+go
+
+.param howmany = 15
+.param from = 0
+.param to = 17
+.param x = 0
+
+.sweep 3 x from to
+.eval x
+go
+
+.sweep howmany x from to
+.eval x
+go

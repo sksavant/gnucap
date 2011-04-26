@@ -1,6 +1,10 @@
 # -*- Automake -*-
 #
+<<<<<<< HEAD
 # $Id: Makefile.am,v 26.70 2008/02/05 02:03:56 al Exp $
+=======
+# $Id: Makefile.am,v 1.1 2009-10-23 14:52:05 felix Exp $
+>>>>>>> ims
 #
 # Process this file with autoconf to produce a configure script.
 #

@@ -1,0 +1,44 @@
+* mos degrade proof-of-concept
+
+.include non-GPL.inc
+.options adpreltol=0.01
+*.options adporder=1
+.options temp=25
+
+*abstol= 1e-12
+*.options abstol=1e-15
+*reltol= 1e-3
+*.options reltol=1e-5
+
+.param vdd=1.8
+.param pulse_iv=0
+.param pulse_rise=1n
+.param pamp=1
+.param voff=0.4
+.param freq=1e4
+.param pamp=0.00
+
+.model my_rcd rcdsym_v2()
+
+.model bti_test bti_inf (uref=1 rcd_model_name=my_rcd weight=1e-3 v2=yes mn=1)
+
+.include lf150_mos_hs.mod
+.include models.mod
+.param lfpbti=bti_test
+.param cmosp_bti=bti_test
+
+VDD ndd 0 vdd
+
+*V1 ndd ninp pulse ( iv=pulse_iv pv=pamp delay=1n rise=1n fall=0 period=0 )
+*V2 nin ninp sin   ( offset=-0.4  amplitude=0.4 frequency=freq delay={-1/freq/4} )
+
+V3 nin ndd sin ( offset=-0.4 phase=0 amplitude=0.4 frequency=freq delay={-1/4/freq})
+
+* MP1 ndd nin nout ndd my_pmos 4.5/0.15
+*MP1 ndd nin nout ndd cmosp l=1.5e-7 w=4.5e-6
+MP1 ndd nin nout ndd pmos_hs l=1.5e-7 w=4.5e-6
+* comparison
+B1  ndd nin  bti_test
+
+R3 0 nout 9k
+R2 ng nin 10k

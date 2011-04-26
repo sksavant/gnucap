@@ -1,4 +1,5 @@
-/*$Id: measure_average.cc,v 26.131 2009/11/20 08:22:10 al Exp $ -*- C++ -*-
+/*$Id: measure_average.cc,v 1.3 2010-09-07 07:46:23 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -28,7 +29,7 @@ namespace {
 /*--------------------------------------------------------------------------*/
 class MEASURE : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     std::string probe_name;
     PARAMETER<double> before(BIGBIG);
@@ -73,7 +74,7 @@ public:
 	area += .5 * (lower->second + i->second) * (i->first - lower->first);
 	lower = i;
       }
-      return to_string(area/(lower->first - begin->first));
+      return to_fun_t(area/(lower->first - begin->first));
     }else{
       throw Exception_No_Match(probe_name);
     }

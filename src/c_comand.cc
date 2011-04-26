@@ -1,4 +1,4 @@
-/*$Id: c_comand.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: c_comand.cc,v 1.3 2010-08-16 12:23:29 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -91,7 +91,7 @@ public:
     case rPRE_MAIN:	unreachable(); break;
     case rINTERACTIVE:	itested();
     case rSCRIPT:
-    case rBATCH:	command("clear", Scope); exit(0); break;
+	 case rBATCH:	command("clear", Scope); exit(ENV::error); break;
     case rPRESET:	untested(); /*nothing*/ break;
     }
   }
@@ -124,6 +124,27 @@ public:
   }
 } p4;
 DISPATCHER<CMD>::INSTALL d4(&command_dispatcher, "title", &p4);
+/*--------------------------------------------------------------------------*/
+class CMD_ECHO : public CMD {
+	public:
+		void do_it(CS& cmd, CARD_LIST*) {untested();
+			//BUG// buffer problem
+			std::string what=cmd.tail();
+			string str;
+			OMSTREAM out = IO::mstdout;
+			while(cmd.ns_more()){
+				char c = cmd.peek();
+				if(c=='>'){
+					out.outset(cmd);
+				   break;
+				}
+				str += cmd.ctoc();
+			}
+			out << "* " <<str << "\n";
+			out.reset();
+		}
+} p6;
+DISPATCHER<CMD>::INSTALL d6(&command_dispatcher, "echo", &p6);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/

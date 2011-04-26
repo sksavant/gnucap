@@ -1,4 +1,4 @@
-/*$Id: ap_convert.cc,v 26.125 2009/10/15 20:58:21 al Exp $ -*- C++ -*-
+/*$Id: ap_convert.cc,v 1.2 2009-11-18 20:53:30 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

@@ -1,4 +1,4 @@
-/*$Id: mg_out_dump.cc,v 26.81 2008/05/27 05:33:43 al Exp $ -*- C++ -*-
+/*$Id: mg_out_dump.cc,v 1.1 2009-10-23 14:52:05 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

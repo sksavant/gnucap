@@ -1,4 +1,4 @@
-/*$Id: l_compar.h,v 26.98 2008/10/24 06:10:07 al Exp $ -*- C++ -*-
+/*$Id: l_compar.h,v 1.1 2009-10-23 12:01:45 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

@@ -1,4 +1,5 @@
-/*$Id: bm_cond.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: bm_cond.cc,v 1.4 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -112,6 +113,7 @@ void EVAL_BM_COND::parse_common_obsolete_callback(CS& cmd) //used
       || Set(cmd, "op", 	&mode, s_OP)
       || Set(cmd, "dc", 	&mode, s_DC)
       || Set(cmd, "tran{sient}",&mode, s_TRAN)
+      || Set(cmd, "ttt",        &mode, s_TTT)
       || Set(cmd, "four{ier}",  &mode, s_FOURIER)
       || Set(cmd, "else",       &mode, s_NONE)
       || Set(cmd, "all",        &mode, s_NONE)
@@ -183,6 +185,7 @@ void EVAL_BM_COND::parse_common_obsolete_callback(CS& cmd) //used
   if (!_func[s_TRAN])		     {attach_common(&func_zero,&(_func[s_TRAN]));}
 
   if (!_func[s_FOURIER])	     {attach_common(_func[s_TRAN],&(_func[s_FOURIER]));}
+  if (!_func[s_TTT])                 {attach_common(_func[s_TRAN],&(_func[s_TTT]));}
 
   const EVAL_BM_ACTION_BASE* c = prechecked_cast<const EVAL_BM_ACTION_BASE*>(_func[s_NONE]);
 

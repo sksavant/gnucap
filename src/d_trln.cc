@@ -1,4 +1,4 @@
-/*$Id: d_trln.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: d_trln.cc,v 1.4 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -83,10 +83,10 @@ private: // override virtual
   char		id_letter()const	{return 'T';}
   std::string   value_name()const	{return "#";}
   std::string	dev_type()const		{itested(); return "tline";}
-  int		max_nodes()const	{return 4;}
-  int		min_nodes()const	{return 4;}
-  int		matrix_nodes()const	{return 4;}
-  int		net_nodes()const	{return 4;}
+  uint_t		max_nodes()const	{return 4;}
+  uint_t		min_nodes()const	{return 4;}
+  uint_t		matrix_nodes()const	{return 4;}
+  uint_t		net_nodes()const	{return 4;}
   CARD*		clone()const		{return new DEV_TRANSLINE(*this);}
   void		precalc_last();
   void		tr_iwant_matrix();
@@ -100,15 +100,15 @@ private: // override virtual
   TIME_PAIR 	tr_review();
   void		tr_accept();
   void		tr_unload();
-  double	tr_involts()const;
-  double	tr_involts_limited()const;
+  hp_float_t	tr_involts()const;
+  hp_float_t	tr_involts_limited()const;
   void		ac_iwant_matrix()	{ac_iwant_matrix_extended();}
   void		do_ac();
   void		ac_load();
   COMPLEX	ac_involts()const;
 
-  std::string port_name(int i)const {itested();
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {itested();
+    assert(i != INVALID_NODE);
     assert(i < 4);
     static std::string names[] = {"t1", "b1", "t2", "b2"};
     return names[i];
@@ -123,12 +123,12 @@ inline bool DEV_TRANSLINE::tr_needs_eval()const
   return (_if0!=_if1 || _ir0!=_ir1);
 }
 /*--------------------------------------------------------------------------*/
-inline double DEV_TRANSLINE::tr_involts()const
+inline hp_float_t DEV_TRANSLINE::tr_involts()const
 {
   return dn_diff(_n[IN1].v0(), _n[IN2].v0());
 }
 /*--------------------------------------------------------------------------*/
-inline double DEV_TRANSLINE::tr_involts_limited()const
+inline hp_float_t DEV_TRANSLINE::tr_involts_limited()const
 {
   unreachable();
   return volts_limited(_n[IN1],_n[IN2]);
@@ -136,7 +136,7 @@ inline double DEV_TRANSLINE::tr_involts_limited()const
 /*--------------------------------------------------------------------------*/
 inline COMPLEX DEV_TRANSLINE::ac_involts()const
 {untested();
-  return _n[IN1]->vac() - _n[IN2]->vac();
+  return _n[IN1].vac() - _n[IN2].vac();
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

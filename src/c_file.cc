@@ -1,4 +1,5 @@
-/*$Id: c_file.cc,v 26.86 2008/07/07 22:31:11 al Exp $ -*- C++ -*-
+/*$Id: c_file.cc,v 1.1 2009-10-23 12:01:44 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -38,11 +39,13 @@ class CMD_INCLUDE : public CMD {
 public:
   void do_it(CS& cmd, CARD_LIST* Scope)
   {
+    trace0("CMD_INCLUDE::do_it");
     unsigned here = cmd.cursor();
     try {
       std::string file_name;
       cmd >> file_name;
       CS file(CS::_INC_FILE, file_name);
+      trace1( (" CMD_INCLUDE::do_it > " +file_name).c_str() , (long int)(OPT::language) );
       for (;;) {
 	OPT::language->parse_top_item(file, Scope);
       }

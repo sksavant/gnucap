@@ -1,4 +1,4 @@
-/*$Id: u_opt2.cc,v 26.132 2009/11/24 04:26:37 al Exp $ -*- C++ -*-
+/*$Id: u_opt2.cc,v 1.7 2010-09-17 12:26:03 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -43,6 +43,9 @@ bool OPT::set_values(CS& cmd)
   unsigned here = cmd.cursor();
   do{
     ONE_OF
+      || Get(cmd, "includepath",	&includepath)
+      || Get(cmd, "libpath",	&libpath)
+      || Get(cmd, "quiet",	&quiet)
       || Get(cmd, "acct",	&acct)
       || Get(cmd, "list",	&listing)
       || Get(cmd, "mod",	&mod)
@@ -54,8 +57,16 @@ bool OPT::set_values(CS& cmd)
       || Get(cmd, "loadtol",	&loadtol,   mPOSITIVE)
       || Get(cmd, "reltol",	&reltol, mPOSITIVE)
       || Get(cmd, "abstol",	&abstol, mPOSITIVE)
+      || Get(cmd, "adpreltol",	&adpreltol, mPOSITIVE)
+      || Get(cmd, "printrejected",	&printrejected)
+      || Get(cmd, "printguess",	&printguess)
+      || Get(cmd, "behreltol",	&behreltol, mPOSITIVE)
+      || Get(cmd, "adpkorr",	&adpkorr, mPOSITIVE)
+      || Get(cmd, "trage", 	&trage)
+      || Get(cmd, "adpabstol",	&adpabstol, mPOSITIVE)
       || Get(cmd, "vntol",	&vntol,  mPOSITIVE)
       || Get(cmd, "trtol",	&trtol,  mPOSITIVE)
+      || Get(cmd, "tttol",	&tttol,  mPOSITIVE)
       || Get(cmd, "chgtol",	&chgtol, mPOSITIVE)
       || Get(cmd, "pivtol",	&pivtol, mPOSITIVE)
       || Get(cmd, "pivrel",	&pivrel, mPOSITIVE)
@@ -133,7 +144,10 @@ bool OPT::set_values(CS& cmd)
       || Get(cmd, "lub{ypass}",    &lubypass)
       || Get(cmd, "fbb{ypass}",	   &fbbypass)
       || Get(cmd, "tracel{oad}",   &traceload)
+      || Get(cmd, "tracewdtt",   &tracewdtt)
       || Get(cmd, "itermin",	   &itermin)
+      || Get(cmd, "adporder",	   &adporder)
+      || Get(cmd, "threads",	   &threads)
       || Get(cmd, "vmax",	   &vmax)
       || Get(cmd, "vmin",	   &vmin)
       || Get(cmd, "mrt",	   &dtmin,	mPOSITIVE)
@@ -142,6 +156,7 @@ bool OPT::set_values(CS& cmd)
       || (Get(cmd, "rstray",	   &rstray) && (big_change = true))
       || (Get(cmd, "cstray",	   &cstray) && (big_change = true))
       || Get(cmd, "harmonics",	   &harmonics)
+      || Get(cmd, "ttstepgrow",    &ttstepgrow,  mPOSITIVE)
       || Get(cmd, "trstepgrow",    &trstepgrow,  mPOSITIVE)
       || Get(cmd, "trstephold",    &trstephold,  mPOSITIVE)
       || Get(cmd, "trstepshrink",  &trstepshrink,mPOSITIVE)
@@ -156,11 +171,12 @@ bool OPT::set_values(CS& cmd)
       || Get(cmd, "mos{flags}",    &mosflags,	mOCTAL)
       || Get(cmd, "quitconv{fail}",&quitconvfail)
       || Get(cmd, "edit",	   &edit)
+      || Get(cmd, "history",	   &history)
       || Get(cmd, "recur{sion}",   &recursion)
       || (Get(cmd, "lang{uage}",   &language)
 	  && ((case_insensitive = language->case_insensitive()),
 	      (units = language->units()), true))
-      || Get(cmd, "insensitive",   &case_insensitive)
+      || (  Get(cmd, "insensitive",   &case_insensitive) && std::cout << "*ins" << OPT::case_insensitive << "\n" )
       || (cmd.umatch("units {=}") &&
 	  (ONE_OF
 	   || Set(cmd, "si",	&units,	uSI)
@@ -206,6 +222,8 @@ void OPT::print(OMSTREAM& o)
 
   o << "* i/o\n";
   o << ".options";
+  o << "  includepath="   << includepath;
+  o << "  libpath="   << libpath;
   o << ((acct)   ?"  acct" :"  noacct");
   o << ((listing)?"  list" :"  nolist");
   o << ((clobber) ? "  clobber" : "  noclobber");
@@ -230,6 +248,7 @@ void OPT::print(OMSTREAM& o)
 
   o << "* accuracy, tolerances\n";
   o << ".options";
+  o << "  short="  << shortckt;
   o << "  gmin="   << gmin;
   o << "  short="  << shortckt;
   o << "  reltol=" << reltol;
@@ -263,6 +282,7 @@ void OPT::print(OMSTREAM& o)
     o << "  itl@" << ii << "=" << itl[ii];
   }
   o << "  itermin="<< itermin;
+  o << "  adporder="<< adporder;
   o << "  vmax="   << vmax;
   o << "  vmin="   << vmin;
   o << "  dampmax="<< dampmax;
@@ -274,6 +294,7 @@ void OPT::print(OMSTREAM& o)
   o << ".options";
   o << "  dtmin="  << dtmin;
   o << "  dtratio="<< dtratio;
+  o << "  ttstepgrow="  << ttstepgrow;
   o << "  trstepgrow="  << trstepgrow;
   o << "  trstephold="  << trstephold;
   o << "  trstepshrink="<< trstepshrink;

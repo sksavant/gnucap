@@ -1,4 +1,5 @@
-/*$Id: measure_max.cc,v 26.131 2009/11/20 08:22:10 al Exp $ -*- C++ -*-
+/*$Id: measure_max.cc,v 1.3 2010-09-22 13:19:50 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -28,7 +29,7 @@ namespace {
 /*--------------------------------------------------------------------------*/
 class MEASURE : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     std::string probe_name;
     PARAMETER<double> before(BIGBIG);
@@ -72,6 +73,7 @@ public:
       double m = -BIGBIG;
       WAVE::const_iterator begin = lower_bound(w->begin(), w->end(), DPAIR(after, -BIGBIG));
       WAVE::const_iterator end   = upper_bound(w->begin(), w->end(), DPAIR(before, BIGBIG));
+      if (begin == end) return(NAN);
       for (WAVE::const_iterator i = begin; i < end; ++i) {
 	double val = i->second;
 	if (val > m || (last && (val == m))) {
@@ -80,7 +82,7 @@ public:
 	}else{
 	}
       }
-      return to_string((arg) ? (time) : (m));
+      return to_fun_t((arg) ? (time) : (m));
     }else{
       throw Exception_No_Match(probe_name);
     }

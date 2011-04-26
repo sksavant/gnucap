@@ -1,0 +1,12 @@
+* mos degrade proof-of-concept
+
+.options TrAge=yes
+.options adporder=1
+
+.include mos_level1.ckt
+
+.print tran dv_bti(MP1) dvth(B1) v(nout) v(ng) dvth(Mp1.bti.r_5_7)
++ wt(MP1.BTI) dvth(MP1.BTI) v(nout)
++ vin(MP1.bti.rcd0) vc(MP1.bti.rcd0)
+
+.tr 1u 10 basic

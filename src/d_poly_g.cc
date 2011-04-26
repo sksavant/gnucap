@@ -1,4 +1,4 @@
-/*$Id: d_poly_g.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: d_poly_g.cc,v 1.4 2010-04-15 07:42:56 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -35,11 +35,11 @@ namespace {
 /*--------------------------------------------------------------------------*/
 class DEV_CPOLY_G : public ELEMENT {
 protected:
-  double*  _values;
-  double*  _old_values;
-  int	   _n_ports;
+  hp_float_t*  _values;
+  hp_float_t*  _old_values;
+  uint_t	   _n_ports;
   double   _time;
-  const double** _inputs;
+  const hp_float_t** _inputs;
 protected:
   explicit DEV_CPOLY_G(const DEV_CPOLY_G& p);
 public:
@@ -49,24 +49,24 @@ protected: // override virtual
   char	   id_letter()const	{unreachable(); return '\0';}
   std::string value_name()const	{incomplete(); return "";}
   std::string dev_type()const	{unreachable(); return "cpoly_g";}
-  int	   max_nodes()const	{return net_nodes();}
-  int	   min_nodes()const	{return net_nodes();}
-  int	   matrix_nodes()const	{return _n_ports*2;}
-  int	   net_nodes()const	{return _n_ports*2;}
+  uint_t	   max_nodes()const	{return net_nodes();}
+  uint_t	   min_nodes()const	{return net_nodes();}
+  uint_t	   matrix_nodes()const	{return _n_ports*2;}
+  uint_t	   net_nodes()const	{return _n_ports*2;}
   CARD*	   clone()const		{return new DEV_CPOLY_G(*this);}
   void	   tr_iwant_matrix()	{tr_iwant_matrix_extended();}
   bool	   do_tr();
   void	   tr_load();
   void	   tr_unload();
-  double   tr_involts()const	{unreachable(); return NOT_VALID;}
-  double   tr_involts_limited()const {unreachable(); return NOT_VALID;}
-  double   tr_amps()const;
+  hp_float_t   tr_involts()const	{unreachable(); return NOT_VALID;}
+  hp_float_t   tr_involts_limited()const {unreachable(); return NOT_VALID;}
+  hp_float_t   tr_amps()const;
   void	   ac_iwant_matrix()	{ac_iwant_matrix_extended();}
   void	   ac_load();
   COMPLEX  ac_involts()const	{itested(); return NOT_VALID;}
   COMPLEX  ac_amps()const	{itested(); return NOT_VALID;}
 
-  std::string port_name(int)const {untested();
+  std::string port_name(uint_t)const {untested();
     incomplete();
     unreachable();
     return "";
@@ -74,8 +74,8 @@ protected: // override virtual
 public:
   void set_parameters(const std::string& Label, CARD* Parent,
 		      COMMON_COMPONENT* Common, double Value,
-		      int state_count, double state[],
-		      int node_count, const node_t nodes[]);
+		      uint_t state_count, hp_float_t state[],
+		      uint_t node_count, const node_t nodes[]);
   //		      const double* inputs[]=0);
 protected:
   bool do_tr_con_chk_and_q();
@@ -142,7 +142,7 @@ bool DEV_CPOLY_G::do_tr_con_chk_and_q()
   assert(_old_values);
   set_converged(conchk(_time, _sim->_time0));
   _time = _sim->_time0;
-  for (int i=0; converged() && i<=_n_ports; ++i) {
+  for (uint_t i=0; converged() && i<=_n_ports; ++i) {
     set_converged(conchk(_old_values[i], _values[i]));
   }
   return converged();
@@ -185,7 +185,7 @@ void DEV_CPOLY_G::tr_load()
   tr_load_passive();
   _old_values[0] = _values[0];
   _old_values[1] = _values[1];
-  for (int i=2; i<=_n_ports; ++i) {
+  for (uint_t i=2; i<=_n_ports; ++i) {
     tr_load_extended(_n[OUT1], _n[OUT2], _n[2*i-2], _n[2*i-1], &(_values[i]), &(_old_values[i]));
   }
 }
@@ -198,10 +198,10 @@ void DEV_CPOLY_G::tr_unload()
   tr_load();
 }
 /*--------------------------------------------------------------------------*/
-double DEV_CPOLY_G::tr_amps()const
+hp_float_t DEV_CPOLY_G::tr_amps()const
 {
-  double amps = _m0.c0;
-  for (int i=1; i<=_n_ports; ++i) {
+  hp_float_t amps = _m0.c0;
+  for (uint_t i=1; i<=_n_ports; ++i) {
     amps += dn_diff(_n[2*i-2].v0(),_n[2*i-1].v0()) * _values[i];
   }
   return amps;
@@ -211,7 +211,7 @@ void DEV_CPOLY_G::ac_load()
 {
   _acg = _values[1];
   ac_load_passive();
-  for (int i=2; i<=_n_ports; ++i) {
+  for (uint_t i=2; i<=_n_ports; ++i) {
     ac_load_extended(_n[OUT1], _n[OUT2], _n[2*i-2], _n[2*i-1], _values[i]);
   }
 }
@@ -220,8 +220,8 @@ void DEV_CPOLY_G::ac_load()
  */
 void DEV_CPOLY_G::set_parameters(const std::string& Label, CARD *Owner,
 				 COMMON_COMPONENT *Common, double Value,
-				 int n_states, double states[],
-				 int n_nodes, const node_t nodes[])
+				 uint_t n_states, hp_float_t states[],
+				 uint_t n_nodes, const node_t nodes[])
   //				 const double* inputs[])
 {
   bool first_time = (net_nodes() == 0);
@@ -233,10 +233,10 @@ void DEV_CPOLY_G::set_parameters(const std::string& Label, CARD *Owner,
 
   if (first_time) {
     _n_ports = n_nodes/2; // sets num_nodes() = _n_ports*2
-    assert(_n_ports == n_states-1);
+    assert(_n_ports+1 == n_states);
 
     assert(!_old_values);
-    _old_values = new double[n_states];
+    _old_values = new hp_float_t[n_states];
 
     if (net_nodes() > NODES_PER_BRANCH) {
       // allocate a bigger node list

@@ -1,4 +1,4 @@
-/*$Id: u_opt1.cc,v 26.121 2009/09/22 20:30:18 al Exp $ -*- C++ -*-
+/*$Id: u_opt1.cc,v 1.7 2010-09-17 12:26:02 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -38,6 +38,14 @@ double	OPT::reltol = .001;
 double	OPT::abstol = 1e-12;
 double	OPT::vntol = 1e-6;
 double	OPT::trtol = 7.0;
+double	OPT::tttol = 1;
+double	OPT::adpabstol = 1;
+double	OPT::adpreltol = 0.001;
+bool	OPT::printrejected = false;
+bool	OPT::printguess = false;
+bool	OPT::behave = false;
+double	OPT::behreltol = 0.001;
+double	OPT::adpkorr = 0.;
 double	OPT::chgtol = 1e-14;
 double	OPT::pivtol = 1e-13;
 double	OPT::pivrel = 1e-3;
@@ -54,7 +62,12 @@ double	OPT::defl = 100e-6;
 double	OPT::defw = 100e-6;
 double	OPT::defad = 0.;
 double	OPT::defas = 0.;
+std::string	OPT::libpath = ""; // PREFIX/?
 
+const char* h ="HOME";
+const char* home= getenv(h);
+std::string	OPT::includepath = std::string(".:")+home+std::string("/.gnucap/include");
+bool	OPT::quiet = false; 
 bool	OPT::clobber = true;
 bool	OPT::keys_between_nodes = true;
 double	OPT::dampmax = 1.0;
@@ -79,7 +92,11 @@ bool	OPT::lcbypass = true;
 bool	OPT::lubypass = true;
 bool	OPT::fbbypass = true;
 bool	OPT::traceload = true;
+bool	OPT::tracewdtt = false;
 int	OPT::itermin = 1;
+int	OPT::threads = 1;
+uint_t OPT::adporder = 2;
+bool	OPT::trage = false;
 double	OPT::vmax =  5;
 double	OPT::vmin = -5;
 double	OPT::dtmin = 1e-12;
@@ -87,6 +104,7 @@ double	OPT::dtratio = 1e9;
 bool	OPT::rstray = true;
 bool	OPT::cstray = true;
 int	OPT::harmonics = 9;
+double	OPT::ttstepgrow = 1.1;
 double	OPT::trstepgrow = 1e99;
 double	OPT::trstephold = 1e99;
 double	OPT::trstepshrink = 2.;		/* spice is fixed at 8 */
@@ -100,6 +118,7 @@ int	OPT::diodeflags = 0;
 int	OPT::mosflags = 0;
 bool	OPT::quitconvfail = false;
 bool	OPT::edit = true;
+int	OPT::history = 40;
 int	OPT::recursion = 20;
 LANGUAGE* OPT::language = NULL;
 bool	OPT::case_insensitive = false;

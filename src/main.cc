@@ -1,4 +1,5 @@
-/*$Id: main.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: main.cc,v 1.7 2010-09-22 13:19:50 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -29,6 +30,7 @@
 #include "patchlev.h"
 #include "c_comand.h"
 #include "declare.h"	/* plclose */
+// #define COMMENT_CHAR "*"
 /*--------------------------------------------------------------------------*/
 struct JMP_BUF{
   sigjmp_buf p;
@@ -36,16 +38,18 @@ struct JMP_BUF{
 /*--------------------------------------------------------------------------*/
 static void sign_on(void)
 {
+  if (OPT::quiet) return;
   IO::mstdout <<
-    "Gnucap "  PATCHLEVEL  "\n"
-    "The Gnu Circuit Analysis Package\n"
-    "Never trust any version less than 1.0\n"
-    "Copyright 1982-2009, Albert Davis\n"
-    "Gnucap comes with ABSOLUTELY NO WARRANTY\n"
-    "This is free software, and you are welcome\n"
-    "to redistribute it under the terms of \n"
-    "the GNU General Public License, version 3 or later.\n"
-    "See the file \"COPYING\" for details.\n";
+    COMMENT_CHAR " Fucap "  PATCHLEVEL  "\n"
+    COMMENT_CHAR " Copyright 2009-2011 Felix Salfelder\n"
+    COMMENT_CHAR " derived from\n"
+    COMMENT_CHAR " Gucap\n"
+    COMMENT_CHAR " Copyright 1982-2009, Albert Davis\n"
+    COMMENT_CHAR " Gnucap comes with ABSOLUTELY NO WARRANTY\n"
+    COMMENT_CHAR " This is free software, and you are welcome\n"
+    COMMENT_CHAR " to redistribute it under the terms of \n"
+    COMMENT_CHAR " the GNU General Public License, version 3 or later.\n"
+    COMMENT_CHAR " See the file \"COPYING\" for details.\n";
 }
 /*--------------------------------------------------------------------------*/
 static void read_startup_files(void)
@@ -55,10 +59,15 @@ static void read_startup_files(void)
     CMD::command("get " + name, &CARD_LIST::card_list);
   }else{
   }
-  name = findfile(USERSTARTFILE, USERSTARTPATH, R_OK);
+  name = findfile(USERSTARTFILE, PWD, R_OK);
   if (name != "") {untested();
     CMD::command("get " + name, &CARD_LIST::card_list);
   }else{
+    name = findfile(USERSTARTFILE, USERSTARTPATH, R_OK);
+    if (name != "") {untested();
+      CMD::command("get " + name, &CARD_LIST::card_list);
+    }else{
+    }
   }
   CMD::command("clear", &CARD_LIST::card_list);
   if (!OPT::language) {
@@ -125,13 +134,21 @@ static void setup_traps(void)
 static void finish(void)
 {
   plclose();
-  outreset();
+  IO::mstdout.outreset();
 }
 /*--------------------------------------------------------------------------*/
 static void process_cmd_line(int argc, const char *argv[])
 {
   for (int ii = 1;  ii < argc;  /*inside*/) {
     try {
+      if (strcasecmp(argv[ii], "-q") == 0) {
+        ++ii;
+        if (ii < argc) {itested();
+          fprintf( stderr, "quiet mode" );
+
+        }else{untested();
+        }
+      }else 
       if (strcasecmp(argv[ii], "-i") == 0) {itested();
 	++ii;
 	if (ii < argc) {itested();
@@ -149,12 +166,14 @@ static void process_cmd_line(int argc, const char *argv[])
 	try {
 	  ++ii;
 	  if (ii < argc) {
+            // dashier startet den OPT::language modus
 	    CMD::command(std::string("< ") + argv[ii++], &CARD_LIST::card_list);
 	  }else{untested();
 	    CMD::command(std::string("< /dev/stdin"), &CARD_LIST::card_list);
 	  }
 	}catch (Exception& e) {
 	  error(bDANGER, e.message() + '\n');
+          throw(Exception("error"));
 	  finish();
 	}
 	if (ii >= argc) {
@@ -172,6 +191,7 @@ static void process_cmd_line(int argc, const char *argv[])
       }
     }catch (Exception& e) {itested();
       error(bDANGER, e.message() + '\n');
+      throw(Exception("error"));
       finish();
     }
   }
@@ -179,22 +199,31 @@ static void process_cmd_line(int argc, const char *argv[])
 /*--------------------------------------------------------------------------*/
 int main(int argc, const char *argv[])
 {
+  ENV::error = 0;
+  // sigsetjmp unneeded here (isnt it?)
+  read_startup_files();
+  sign_on();
+
   {
     SET_RUN_MODE xx(rBATCH);
-    sign_on();
+    trace0("batch mode");
     if (!sigsetjmp(env.p, true)) {
       try {
-	read_startup_files();
+        trace0("... \n");
 	setup_traps();
+        trace0("done traps");
 	process_cmd_line(argc,argv);
+        trace0("done cmdline  mode");
       }catch (Exception& e) {untested();
+        ENV::error++;
 	error(bDANGER, e.message() + '\n');
 	finish();		/* error clean up (from longjmp()) */
 	CMD::command("quit", &CARD_LIST::card_list);
 	unreachable();
-	exit(0);
+	exit(1);
       }
     }else{
+      trace0("finish batch");
       finish();		/* error clean up (from longjmp()) */
       CMD::command("quit", &CARD_LIST::card_list);
       exit(0);
@@ -202,6 +231,7 @@ int main(int argc, const char *argv[])
   }
   {itested();
     SET_RUN_MODE xx(rINTERACTIVE);
+    trace0("interactive mode");
     CS cmd(CS::_STDIN);
     for (;;) {itested();
       if (!sigsetjmp(env.p, true)) {itested();
@@ -218,6 +248,7 @@ int main(int argc, const char *argv[])
 	  exit(0);
 	}catch (Exception& e) {itested();
 	  error(bDANGER, e.message() + '\n');
+          ENV::error++;
 	  finish();
 	}
       }else{itested();
@@ -226,7 +257,7 @@ int main(int argc, const char *argv[])
     }
   }
   unreachable();
-  return 0;
+  return 1;
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

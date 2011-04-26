@@ -1,4 +1,5 @@
-/*$Id: mg_in.cc,v 26.81 2008/05/27 05:33:43 al Exp $ -*- C++ -*-
+/*$Id: mg_in.cc,v 1.3 2010-07-14 15:17:30 felix Exp $ -*- C++ -*-
+ * vim:sw=2:ts=8:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -338,6 +339,7 @@ void Model::parse(CS& file)
       || ((file >> "size_dependent ")	     && (file >> _size_dependent))
       || ((file >> "temperature_dependent ") && (file >> _temperature))
       || ((file >> "tr_eval ")		     && (file >> _tr_eval))
+      || ((file >> "tt_eval ")		     && (file >> _tt_eval))
       || ((file >> "validate ")		     && (file >> _validate))
       || ((file >> "/*")		     && (file >> dummy_c_comment))
       || ((file >> "//")		     && (file >> dummy_cxx_comment))
@@ -388,9 +390,11 @@ void Device::parse(CS& file)
       || ((file >> "model_type ") && (file >> _model_type))
       || ((file >> "circuit ")	  && (file >> _circuit))
       || ((file >> "tr_probe ")   && (file >> _probes))
+      || ((file >> "tt_probe ")   && (file >> _tt_probes))
       || ((file >> "device ")	  && (file >> _device))
       || ((file >> "common ") 	  && (file >> _common))
       || ((file >> "tr_eval ")	  && (file >> _tr_eval))
+      || ((file >> "tt_eval ")	  && (file >> _tt_eval))
       || ((file >> "eval ")	  && (file >> _eval_list))
       || ((file >> "function ")   && (file >> _function_list))
       || ((file >> "/*")	  && (file >> dummy_c_comment))

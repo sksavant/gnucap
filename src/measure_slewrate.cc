@@ -1,4 +1,5 @@
-/*$Id: measure_slewrate.cc,v 26.131 2009/11/20 08:22:10 al Exp $ -*- C++ -*-
+/*$Id: measure_slewrate.cc,v 1.4 2010-09-07 07:46:24 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -29,7 +30,7 @@ namespace {
 /*--------------------------------------------------------------------------*/
 class MEASURE : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     std::string probe_name;
     PARAMETER<double> before(BIGBIG);
@@ -41,6 +42,8 @@ public:
 
     unsigned here = Cmd.cursor();
     Cmd >> probe_name;
+
+    trace0( ("MEASURE::eval probe_name: " + probe_name ).c_str());
     WAVE* w = find_wave(probe_name);
 
     if (!w) {
@@ -136,17 +139,24 @@ public:
       if (stop_time < BIGBIG) {
 	assert(stop_time > start_time);
 	if (expression) {
-	  return "((" + to_string(stop_val) + "-" + to_string(start_val) + ")/(" 
-	    + to_string(stop_time) + "-" + to_string(start_time) + "))";
+          return ( stop_val - start_val ) / (stop_time - start_time);
+
+        // STRING_FUN ?!
+	//  return "((" + to_string(stop_val) + "-" + to_string(start_val) + ")/(" 
+	//    + to_string(stop_time) + "-" + to_string(start_time) + "))";
+
+
 	}else{
-	  return to_string((stop_val-start_val)/(stop_time-start_time));
+	  return to_fun_t((stop_val-start_val)/(stop_time-start_time));
 	}
       }else{
-	return to_string(BIGBIG);
+	return to_fun_t(BIGBIG);
       }
     }else{
-      throw Exception_No_Match(probe_name);
+     // throw Exception_No_Match(probe_name);
     }
+
+    return to_fun_t(888);
   }
 } p3;
 DISPATCHER<FUNCTION>::INSTALL d3(&measure_dispatcher, "ddt|slewrate|slope", &p3);

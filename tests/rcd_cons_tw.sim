@@ -1,0 +1,35 @@
+* tw checking consecutive TWs
+
+*.options adpreltol 5
+*.options adpabstol 4
+.options behreltol 1e9
+.options adporder 2
+
+.option dupcheck
+
+**.include "rcd.ckt"
+.model my_rcd rcdnet
+
+* common par!
+z1 nin 0 my_rcd (RE=10 , RC0=10, RC1=10, REDUMMY=0, RCDUMMY=0, WEIGHT=1 )
+R1 nin nout 1
+
+V1 nin 0 pulse ( iv=0 pv=amplitude delay=delay rise=1n fall=1n width=width period=period )
+.param amplitude=1
+.param period=6m
+.param width=2.9m
+.param delay=3m
+.para period=6m
+
+***
+
+.param testv=1
+
+.print tw amplitude vc(z1) tr(z1) trr(z1) tra(z1) wdt(z1) tr(z1) dtt(0) order(z1)
+
+.param amplitude=1.0
+.tw 10u 6m 6m 24m
+
+.param amplitude=0
+.tw 48m
+

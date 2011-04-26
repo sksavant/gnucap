@@ -1,0 +1,20 @@
+* RCD test
+
+.model my_rcdnet rcdnet 
+
+* fixme. strange parameters
+*z1  nin 0   my_rcdnet (RE=1000 , RC0=100, rc1=100, WEIGHT=1 uref=1)
+
+z1  nin 0   my_rcdnet (RE=1000 , RC0=100, Rc1=1000, WEIGHT=1, uref=0)
+
+V1 nin 0 pulse ( iv=0 pv=amplitude delay=delay rise=1n fall=1n width=width period=period )
+.param amplitude=1
+.param period=6m
+.param width=0
+.param delay=1n
+
+.print tr  vc(z1)  v(nin) vc(z1) te(z1) tc(z1) uref(z1)
+
+.tr  .1 10 basic
+.param amplitude=0
+.tr 40

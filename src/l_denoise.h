@@ -1,4 +1,4 @@
-/*$Id: l_denoise.h,v 26.81 2008/05/27 05:34:00 al Exp $ -*- C++ -*-
+/*$Id: l_denoise.h,v 1.2 2009-12-10 14:34:44 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -39,6 +39,13 @@ inline void fixzero(double *z, double r)
 }
 /*--------------------------------------------------------------------------*/
 /* fixzero: force numbers near zero to zero - returns value */
+inline long double  fixzero(long double z, long double r)
+{
+  assert(z == z);
+  assert(r == r);
+  return  z;
+}
+/*--------------------------------------------------------------------------*/
 inline double fixzero(double z, double r)
 {
   assert(z == z);

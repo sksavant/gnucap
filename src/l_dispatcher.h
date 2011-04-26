@@ -1,4 +1,5 @@
-/*$Id: l_dispatcher.h,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: l_dispatcher.h,v 1.4 2010-09-17 12:25:58 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2006 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -52,7 +53,7 @@ public:
       _map = new std::map<std::string, T*>;
     }else{
     }
-    trace0(s.c_str());
+    trace0("DISPATCHER " + s);
     // loop over all keys, separated by '|'
     for (std::string::size_type			// bss: begin sub-string
 	 bss = 0, ess = s.find('|', bss);	// ess: end sub-string
@@ -61,7 +62,7 @@ public:
 	   ess = s.find('|', bss)) {
       std::string name = s.substr(bss, 
 		(ess != std::string::npos) ? ess-bss : std::string::npos);
-      trace2(name.c_str(), bss, ess);
+      //trace2(name.c_str(), bss, ess);
       if (name == "") {
 	// quietly ignore empty string
       }else if ((*_map)[name]) {
@@ -135,6 +136,7 @@ public:
   }
 
   T* operator[](std::string s) {
+    trace0(("Dispatching "+s).c_str());
     assert(_map);
     T* rv = (*_map)[s];
     if (!rv && OPT::case_insensitive) {
@@ -146,6 +148,7 @@ public:
   }
 
   T* operator[](CS& cmd) {
+    trace0(("Dispatching " + (std::string)cmd).c_str());
     unsigned here = cmd.cursor();
     std::string s;
     cmd >> s;
@@ -160,6 +163,7 @@ public:
   }
 
   T* clone(std::string s) {
+    trace0(("Dispatcher, cloning "+s).c_str());
     T* proto = (*this)[s];
     if (proto) {
       return proto->clone();

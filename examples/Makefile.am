@@ -1,4 +1,4 @@
-## $Id$
+## $Id: Makefile.am,v 1.1 2009-10-23 14:52:04 felix Exp $
 ##
 
 pkgexamplesdir=	${pkgdatadir}/examples

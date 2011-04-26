@@ -1,4 +1,4 @@
-/*$Id: u_opt.h,v 26.80 2008/05/27 02:18:47 al Exp $ -*- C++ -*-
+/*$Id: u_opt.h,v 1.1 2009-10-23 14:52:05 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

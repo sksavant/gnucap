@@ -1,4 +1,4 @@
-/*$Id: l_lib.h,v 26.81 2008/05/27 05:34:00 al Exp $ -*- C++ -*-
+/*$Id: l_lib.h,v 1.3 2010-08-16 12:23:30 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -27,9 +27,20 @@
 	  char*		trim(char*);
 INTERFACE bool		Umatch(const std::string&, const std::string&);
 INTERFACE bool		wmatch(const std::string& s1,const std::string& s2);
-INTERFACE std::string	to_string(unsigned);
-INTERFACE std::string	to_string(int);
-INTERFACE std::string	to_string(double);
+
+//template doesnt work?
+INTERFACE std::string to_string(std::string);
+INTERFACE std::string to_string(int);
+INTERFACE std::string to_string(unsigned long int);
+INTERFACE std::string to_string(long int);
+INTERFACE std::string to_string(unsigned);
+INTERFACE std::string to_string(double);
+INTERFACE std::string to_string(long double);
+
+//FIXME: template?
+INTERFACE std::string to_string(std::vector<double>);
+INTERFACE std::string to_string(std::list<double>);
+
 INTERFACE char*		ftos(double,int,int,int);
 /*--------------------------------------------------------------------------*/
 //ftos stuff

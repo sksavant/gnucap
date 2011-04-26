@@ -1,4 +1,4 @@
-/*$Id: bm_model.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: bm_model.cc,v 1.3 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -62,6 +62,7 @@ EVAL_BM_MODEL::EVAL_BM_MODEL(const EVAL_BM_MODEL& p)
    _arglist(p._arglist),
    _func(0)
 {
+  trace0("EVAL_BM_MODEL::EVAL_BM_MODEL attaching...");
   attach_common(p._func, &_func);
 }
 /*--------------------------------------------------------------------------*/

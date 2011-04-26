@@ -1,4 +1,5 @@
-/*$Id: mg_.h,v 26.81 2008/05/27 05:33:43 al Exp $ -*- C++ -*-
+/*$Id: mg_.h,v 1.3 2010-07-14 15:17:30 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -506,6 +507,7 @@ class Model
   Parameter_Block	_size_dependent;
   Parameter_Block	_temperature;
   Code_Block		_tr_eval;
+  Code_Block		_tt_eval;
   Code_Block		_validate;
   Bool_Arg		_hide_base;
 public:
@@ -523,6 +525,7 @@ public:
   const Parameter_Block& size_dependent()const	{return _size_dependent;}
   const Parameter_Block& temperature()const	{return _temperature;}
   const Code_Block&	 tr_eval()const		{return _tr_eval;}
+  const Code_Block&	 tt_eval()const		{return _tt_eval;}
   const Code_Block&	 validate()const	{return _validate;}
 };
 typedef Collection<Model> Model_List;
@@ -536,9 +539,11 @@ class Device
   String_Arg		_model_type;
   Circuit		_circuit;
   Probe_List		_probes;
+  Probe_List		_tt_probes;
   Parameter_Block	_device;
   Parameter_Block	_common;
   Code_Block		_tr_eval;
+  Code_Block		_tt_eval;
   Eval_List		_eval_list;
   Function_List		_function_list;
 public:
@@ -551,9 +556,11 @@ public:
   const String_Arg&	 model_type()const	{return _model_type;}
   const Circuit&	 circuit()const		{return _circuit;}
   const Probe_List&	 probes()const		{return _probes;}
+  const Probe_List&	 tt_probes()const	{return _tt_probes;}
   const Parameter_Block& device()const		{return _device;}
   const Parameter_Block& common()const		{return _common;}
   const Code_Block&	 tr_eval()const		{return _tr_eval;}
+  const Code_Block&	 tt_eval()const		{return _tt_eval;}
   const Eval_List&	 eval_list()const	{return _eval_list;}
   const Function_List&	 function_list()const	{return _function_list;}
     	size_t		 min_nodes()const	{return circuit().min_nodes();}

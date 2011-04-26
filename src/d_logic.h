@@ -1,4 +1,5 @@
-/*$Id: d_logic.h,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: d_logic.h,v 1.4 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -26,6 +27,7 @@
 #define D_LOGIC_H
 #include "e_model.h"
 #include "e_elemnt.h"
+
 /*--------------------------------------------------------------------------*/
 enum {PORTS_PER_GATE = 10};
 /*--------------------------------------------------------------------------*/
@@ -50,11 +52,11 @@ private: // override virtuals
   bool	      print_type_in_spice()const {return true;}
   std::string dev_type()const {assert(has_common());
     return (common()->modelname() + " " + common()->name()).c_str();}
-  int	   tail_size()const	{return 2;}
-  int	   max_nodes()const	{return PORTS_PER_GATE;}
-  int	   min_nodes()const	{return BEGIN_IN+1;}
-  int	   matrix_nodes()const	{return 2;}
-  int	   net_nodes()const	{return _net_nodes;}
+  uint_t	   tail_size()const	{return 2;}
+  uint_t	   max_nodes()const	{return PORTS_PER_GATE;}
+  uint_t	   min_nodes()const	{return BEGIN_IN+1;}
+  uint_t	   matrix_nodes()const	{return 2;}
+  uint_t	   net_nodes()const	{return _net_nodes;}
   CARD*	   clone()const		{return new DEV_LOGIC(*this);}
   void	   precalc_first() {ELEMENT::precalc_first(); if (subckt()) {subckt()->precalc_first();}}
   void	   expand();
@@ -74,9 +76,9 @@ private: // override virtuals
   TIME_PAIR tr_review();
   void	   tr_accept();
   void	   tr_unload();
-  double   tr_involts()const		{unreachable(); return 0;}
+  hp_float_t   tr_involts()const		{unreachable(); return 0;}
   //double tr_input()const		//ELEMENT
-  double   tr_involts_limited()const	{unreachable(); return 0;}
+  hp_float_t   tr_involts_limited()const	{unreachable(); return 0;}
   //double tr_input_limited()const	//ELEMENT
   //double tr_amps()const		//ELEMENT
   double   tr_probe_num(const std::string&)const;
@@ -84,12 +86,13 @@ private: // override virtuals
   void	   ac_iwant_matrix();
   void	   ac_begin();
   void	   do_ac()	{untested();  assert(subckt());  subckt()->do_ac();}
+  void	   tt_next();
   void	   ac_load()	{untested();  assert(subckt());  subckt()->ac_load();}
   COMPLEX  ac_involts()const		{unreachable(); return 0.;}
   COMPLEX  ac_amps()const		{unreachable(); return 0.;}
   XPROBE   ac_probe_ext(const std::string&)const;
 
-  std::string port_name(int)const {untested();
+  std::string port_name(uint_t)const {untested();
     incomplete();
     return "";
   }
@@ -102,12 +105,12 @@ private:
 };
 /*--------------------------------------------------------------------------*/
 class MODEL_LOGIC : public MODEL_CARD {
-private:
+protected:
   explicit	MODEL_LOGIC(const MODEL_LOGIC& p);
 public:
-  explicit MODEL_LOGIC(const DEV_LOGIC*);
+  explicit MODEL_LOGIC(const COMPONENT*);
 	   ~MODEL_LOGIC()		{--_count;}
-private: // override virtuals
+protected: // override virtuals
   std::string	dev_type()const		{return "logic";}
   CARD*		clone()const		{return new MODEL_LOGIC(*this);}
   void		precalc_first();
@@ -151,7 +154,7 @@ protected:
   explicit	COMMON_LOGIC(const COMMON_LOGIC& p)
     :COMMON_COMPONENT(p), incount(p.incount) {++_count;}
 public:
-		~COMMON_LOGIC()			{--_count;}
+        	~COMMON_LOGIC()			{ --_count; }
   bool operator==(const COMMON_COMPONENT&)const;
   static  int	count()				{return _count;}
   virtual LOGICVAL logic_eval(const node_t*)const	= 0;
@@ -183,9 +186,9 @@ private:
   COMMON_COMPONENT* clone()const {return new LOGIC_NAND(*this);}
 public:
   explicit LOGIC_NAND(int c=0)		  :COMMON_LOGIC(c) {}
-  LOGICVAL logic_eval(const node_t* n)const {untested();
+  LOGICVAL logic_eval(const node_t* n)const {itested();
     LOGICVAL out(n[0]->lv());
-    for (int ii=1; ii<incount; ++ii) {untested();
+    for (int ii=1; ii<incount; ++ii) {itested();
       out &= n[ii]->lv();
     }
     return ~out;
@@ -195,13 +198,13 @@ public:
 /*--------------------------------------------------------------------------*/
 class LOGIC_OR : public COMMON_LOGIC {
 private:
-  explicit LOGIC_OR(const LOGIC_OR& p)	 :COMMON_LOGIC(p){untested();++_count;}
-  COMMON_COMPONENT* clone()const {untested(); return new LOGIC_OR(*this);}
+  explicit LOGIC_OR(const LOGIC_OR& p)	 :COMMON_LOGIC(p){itested();++_count;}
+  COMMON_COMPONENT* clone()const {itested(); return new LOGIC_OR(*this);}
 public:
-  explicit LOGIC_OR(int c=0)		  :COMMON_LOGIC(c) {untested();}
-  LOGICVAL logic_eval(const node_t* n)const {untested();
+  explicit LOGIC_OR(int c=0)		  :COMMON_LOGIC(c) {itested();}
+  LOGICVAL logic_eval(const node_t* n)const {itested();
     LOGICVAL out(n[0]->lv());
-    for (int ii=1; ii<incount; ++ii) {untested();
+    for (int ii=1; ii<incount; ++ii) {itested();
       out |= n[ii]->lv();
     }
     return out;
@@ -281,5 +284,6 @@ public:
   virtual std::string name()const	  {untested();return "error";}
 };
 /*--------------------------------------------------------------------------*/
+//extern LOGIC_NONE Default_LOGIC;
 /*--------------------------------------------------------------------------*/
 #endif

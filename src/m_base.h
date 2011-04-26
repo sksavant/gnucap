@@ -1,4 +1,4 @@
-/*$Id: m_base.h,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: m_base.h,v 1.2 2009-11-18 20:53:18 felix Exp $ -*- C++ -*-
  * Copyright (C) 2003 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -84,6 +84,9 @@ public:
   virtual Base* r_divide(const Base*)const	{untested(); return NULL;}
   virtual Base* r_divide(const Float*)const	{untested(); return NULL;}
   virtual Base* r_divide(const String*)const	{untested(); return NULL;}
+  virtual Base* powerof(const Base*)const	{untested(); return NULL;}
+  virtual Base* powerof(const Float*)const	{untested(); return NULL;}
+  virtual Base* powerof(const String*)const	{untested(); return NULL;}
 
   Base* logic_not()const;
   Base* logic_or(const Base* X)const;
@@ -179,6 +182,7 @@ public:
   Base* r_subtract(const Float* X)const	{assert(X); return new Float(X->_data - _data);}
   Base* divide(const Float* X)const	{untested();assert(X); return new Float(_data / X->_data);}
   Base* r_divide(const Float* X)const	{assert(X); return new Float(X->_data / _data);}
+  Base* powerof(const Float* X)const	{assert(X); return new Float(pow (X->_data , _data));}
 
   Base* less(const Base* X)const	{return ((X) ? (X->greater(this))   : (NULL));}
   Base* greater(const Base* X)const	{return ((X) ? (X->less(this))      : (NULL));}
@@ -192,6 +196,7 @@ public:
   Base* r_subtract(const Base* X)const	{untested();return ((X) ? (X->subtract(this))  : (NULL));}
   Base* divide(const Base* X)const	{return ((X) ? (X->r_divide(this))  : (NULL));}
   Base* r_divide(const Base* X)const	{untested();return ((X) ? (X->divide(this))    : (NULL));}
+  Base* powerof(const Base* X)const	{return ((X) ? (X->powerof(this))    : (NULL));}
 
   Base* less(const String*)const	{untested();return NULL;}
   Base* greater(const String*)const	{untested();return NULL;}
@@ -205,6 +210,7 @@ public:
   Base* r_subtract(const String*)const	{untested();return NULL;}
   Base* divide(const String*)const	{untested();return NULL;}
   Base* r_divide(const String*)const	{	    return NULL;}
+  Base* powerof(const String*)const	{	    return NULL;}
 
   bool  is_NA()const			{untested();return _data == NOT_INPUT;}
 };

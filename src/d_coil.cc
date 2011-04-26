@@ -1,4 +1,4 @@
-/*$Id: d_coil.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: d_coil.cc,v 1.4 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -43,11 +43,11 @@ public: // override virtual
   char	   id_letter()const	{return 'L';}
   std::string value_name()const {return "l";}
   std::string dev_type()const	{return "inductor";}
-  int	   max_nodes()const	{return 2;}
-  int	   min_nodes()const	{return 2;}
-  int	   net_nodes()const	{return 2;}
-  int	   int_nodes()const     {return (!_c_model) ? 0 : 1;}
-  int	   matrix_nodes()const	{return net_nodes() + int_nodes();}
+  uint_t	   max_nodes()const	{return 2;}
+  uint_t	   min_nodes()const	{return 2;}
+  uint_t	   net_nodes()const	{return 2;}
+  uint_t	   int_nodes()const     {return (!_c_model) ? 0 : 1;}
+  uint_t	   matrix_nodes()const	{return net_nodes() + int_nodes();}
 
   bool	   has_inode()const	{return _c_model;}
   bool	   has_iv_probe()const  {return true;}
@@ -59,11 +59,11 @@ public: // override virtual
   bool	   do_tr();
   void	   tr_load();
   void	   tr_unload();
-  double   tr_involts()const	{return tr_outvolts();}
-  double   tr_input()const;
-  double   tr_involts_limited()const {return tr_outvolts_limited();}
-  double   tr_input_limited()const;
-  double   tr_amps()const;
+  hp_float_t   tr_involts()const	{return tr_outvolts();}
+  hp_float_t   tr_input()const;
+  hp_float_t   tr_involts_limited()const {return tr_outvolts_limited();}
+  hp_float_t   tr_input_limited()const;
+  hp_float_t   tr_amps()const;
   double   tr_probe_num(const std::string&)const;
   void	   ac_iwant_matrix();
   void	   ac_begin()		{_loss1 = _loss0 = ((!_c_model) ? 0. : 1.); _ev = _y[0].f1;}
@@ -72,8 +72,8 @@ public: // override virtual
   COMPLEX  ac_involts()const	{return ac_outvolts();}
   COMPLEX  ac_amps()const;
 
-  std::string port_name(int i)const {itested();
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {itested();
+    assert(i != INVALID_NODE);
     assert(i < 2);
     static std::string names[] = {"p", "n"};
     return names[i];
@@ -88,11 +88,11 @@ private:
   DEV_INDUCTANCE* _output;
   std::string	  _input_label;
   DEV_INDUCTANCE* _input;
-  double _lm;
-  double _mf0_c0;	// matrix parameters, new
-  double _mf1_c0;	// matrix parameters, 1 fill ago
-  double _mr0_c0;	// matrix parameters, new
-  double _mr1_c0;	// matrix parameters, 1 fill ago
+  hp_float_t _lm;
+  hp_float_t _mf0_c0;	// matrix parameters, new
+  hp_float_t _mf1_c0;	// matrix parameters, 1 fill ago
+  hp_float_t _mr0_c0;	// matrix parameters, new
+  hp_float_t _mr1_c0;	// matrix parameters, 1 fill ago
   FPOLY1 _yf1;		// iteration parameters, 1 iter ago
   FPOLY1 _yf[OPT::_keep_time_steps];
   FPOLY1 _if[OPT::_keep_time_steps];
@@ -108,11 +108,11 @@ private: // override virtual
   bool	   print_type_in_spice()const {return false;}
   std::string value_name()const {return "k";}
   std::string dev_type()const	{untested(); return "mutual_inductor";}
-  int	   max_nodes()const	{return 2;}
-  int	   min_nodes()const	{return 2;}
-  int	   matrix_nodes()const	{return 2;}
-  int	   net_nodes()const	{return 0;}
-  int	   num_current_ports()const {return 2;}
+  uint_t	   max_nodes()const	{return 2;}
+  uint_t	   min_nodes()const	{return 2;}
+  uint_t	   matrix_nodes()const	{return 2;}
+  uint_t	   net_nodes()const	{return 0;}
+  uint_t	   num_current_ports()const {return 2;}
   bool	   has_iv_probe()const  {untested(); return false;}
   bool	   use_obsolete_callback_parse()const {return false;}
   CARD*	   clone()const		{return new DEV_MUTUAL_L(*this);}
@@ -128,20 +128,20 @@ private: // override virtual
   void	   tr_load();
   TIME_PAIR tr_review()		{return TIME_PAIR(NEVER,NEVER);}
   void	   tr_unload();
-  double   tr_input()const		{return tr_involts();}
-  double   tr_input_limited()const	{untested(); return tr_involts_limited();}
-  double   tr_amps()const		{untested(); return _loss0 * tr_outvolts();}
+  hp_float_t   tr_input()const		{return tr_involts();}
+  hp_float_t   tr_input_limited()const	{untested(); return tr_involts_limited();}
+  hp_float_t   tr_amps()const		{untested(); return _loss0 * tr_outvolts();}
   double   tr_probe_num(const std::string&)const;
 
   void	   ac_iwant_matrix()	{ac_iwant_matrix_passive();}
   void	   ac_load();
-  COMPLEX  ac_amps()const	{untested(); return _loss0 * ac_outvolts();}
+  COMPLEX  ac_amps()const	{untested(); return (double)_loss0 * ac_outvolts();}
 
   void	   set_port_by_name(std::string& Name, std::string& Value)
 		{untested(); COMPONENT::set_port_by_name(Name,Value);}
-  void	   set_port_by_index(int Index, std::string& Value)
+  void	   set_port_by_index(uint_t Index, std::string& Value)
 		{set_current_port_by_index(Index, Value);}
-  bool	   node_is_connected(int i)const {
+  bool	   node_is_connected(uint_t i)const {
     switch (i) {
     case 0:  return _output_label != "";
     case 1:  return _input_label != "";
@@ -149,23 +149,23 @@ private: // override virtual
     }
   }
 
-  std::string port_name(int)const {untested();
+  std::string port_name(uint_t)const {untested();
     return "";
   }
-  std::string current_port_name(int i)const {untested();
-    assert(i >= 0);
+  std::string current_port_name(uint_t i)const {untested();
+    assert(i != INVALID_NODE);
     assert(i < 2);
     static std::string names[] = {"l1", "l2"};
     return names[i];
   }
-  const std::string current_port_value(int i)const {
+  const std::string current_port_value(uint_t i)const {
     switch (i) {
     case 0:  return _output_label;
     case 1:  return _input_label;
     default: unreachable(); return COMPONENT::current_port_value(i);
     }
   }
-  void set_current_port_by_index(int i, const std::string& s) {
+  void set_current_port_by_index(uint_t i, const std::string& s) {
     switch (i) {
     case 0:  _output_label = s;	break;
     case 1:  _input_label = s;	break;
@@ -281,9 +281,9 @@ void DEV_INDUCTANCE::tr_iwant_matrix()
   }else{
     assert(matrix_nodes() == 3);
     
-    assert(_n[OUT1].m_() != INVALID_NODE);
-    assert(_n[OUT2].m_() != INVALID_NODE);
-    assert(_n[IN1].m_() != INVALID_NODE);
+    assert(_n[OUT1].m_() != (uint_t) INVALID_NODE);
+    assert(_n[OUT2].m_() != (uint_t) INVALID_NODE);
+    assert(_n[IN1].m_() != (uint_t) INVALID_NODE);
     
     _sim->_aa.iwant(_n[OUT1].m_(),_n[IN1].m_());
     _sim->_aa.iwant(_n[OUT2].m_(),_n[IN1].m_());
@@ -446,7 +446,7 @@ void DEV_MUTUAL_L::tr_unload()
   tr_unload_couple();
 }
 /*--------------------------------------------------------------------------*/
-double DEV_INDUCTANCE::tr_input()const
+hp_float_t DEV_INDUCTANCE::tr_input()const
 {
   if (!_c_model) {
     return _m0.c0 + _m0.c1 * tr_involts();
@@ -455,7 +455,7 @@ double DEV_INDUCTANCE::tr_input()const
   }
 }
 /*--------------------------------------------------------------------------*/
-double DEV_INDUCTANCE::tr_input_limited()const
+hp_float_t DEV_INDUCTANCE::tr_input_limited()const
 {
   if (!_c_model) {
     return _m0.c0 + _m0.c1 * tr_involts_limited();
@@ -464,7 +464,7 @@ double DEV_INDUCTANCE::tr_input_limited()const
   }
 }
 /*--------------------------------------------------------------------------*/
-double DEV_INDUCTANCE::tr_amps()const
+hp_float_t DEV_INDUCTANCE::tr_amps()const
 {
   if (!_c_model) {
     return fixzero((_m0.c1 * tr_involts() + _m0.c0), _m0.c0);
@@ -495,16 +495,16 @@ void DEV_INDUCTANCE::do_ac()
     ac_eval();
   }else{
     assert(_ev == _y[0].f1);
-    assert(dynamic_cast<DEV_MUTUAL_L*>(this) || has_tr_eval() || _ev == double(value()));
+    assert(dynamic_cast<DEV_MUTUAL_L*>(this) || has_tr_eval() || _ev == hp_float_t(value()));
   }
   if (!_c_model) {
-    if (_ev * _sim->_jomega == 0.) {untested();
+    if ((COMPLEX)_ev * _sim->_jomega == 0.) {untested();
       _acg = 1. / OPT::shortckt;
     }else{
-      _acg = 1. / (_ev * _sim->_jomega);
+      _acg = 1. / ((COMPLEX)_ev * _sim->_jomega);
     }
   }else{
-    _acg =  -_loss0 * _loss0 * _ev * _sim->_jomega;
+    _acg =  -(double)_loss0 *(double) _loss0 * (COMPLEX)_ev * _sim->_jomega;
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -528,7 +528,7 @@ COMPLEX DEV_INDUCTANCE::ac_amps()const
   if (!_c_model) {
     return (ac_involts() * _acg);
   }else{
-    return  _loss0 * _n[IN1].vac();
+    return (  (double)_loss0 * (COMPLEX)(_n[IN1].vac()) );
   }
 }
 /*--------------------------------------------------------------------------*/

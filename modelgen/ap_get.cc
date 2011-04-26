@@ -1,4 +1,4 @@
-/*$Id: ap_get.cc,v 26.85 2008/06/19 05:01:15 al Exp $ -*- C++ -*-
+/*$Id: ap_get.cc,v 1.1 2009-10-23 14:52:05 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

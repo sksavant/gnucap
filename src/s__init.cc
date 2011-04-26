@@ -1,4 +1,5 @@
-/* $Id: s__init.cc,v 26.135 2009/12/02 09:26:53 al Exp $
+/* $Id: s__init.cc,v 1.4 2009-12-13 17:55:02 felix Exp $
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -48,7 +49,7 @@ void SIM::command_base(CS& cmd)
     case rPRE_MAIN:	unreachable();	break;
     case rBATCH:	itested();
     case rINTERACTIVE:	itested();
-    case rSCRIPT:	sweep();	break;
+    case rSCRIPT:	 fprintf(stderr, "sweepstart\n");	sweep(); break;
     case rPRESET:	/*nothing*/	break;
     }
    }catch (Exception& e) {untested();
@@ -65,6 +66,7 @@ void SIM::command_base(CS& cmd)
 /*--------------------------------------------------------------------------*/
 SIM::~SIM()
 {
+  trace0("~SIM");
   _sim->uninit();
 }
 /*--------------------------------------------------------------------------*/

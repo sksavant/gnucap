@@ -1,4 +1,5 @@
-/*$Id: c_prbcmd.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: c_prbcmd.cc,v 1.5 2010-07-09 12:14:20 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -49,6 +50,7 @@ void do_probe(CS& cmd, PROBELIST *probes)
 
   ONE_OF
     || Set(cmd, "tr{ansient}", &simtype, s_TRAN)
+    || Set(cmd, "tw{ot}",      &simtype, s_TTT)
     || Set(cmd, "ac",	       &simtype, s_AC)
     || Set(cmd, "dc",	       &simtype, s_DC)
     || Set(cmd, "op",	       &simtype, s_OP)
@@ -58,6 +60,7 @@ void do_probe(CS& cmd, PROBELIST *probes)
   if (!simtype) {			/* must be all simtypes */
     if (cmd.is_end()) {			/* list all */
       probes[s_TRAN].listing("tran");
+      probes[s_TTT].listing("tw");
       probes[s_AC].listing("ac");
       probes[s_DC].listing("dc");
       probes[s_OP].listing("op");
@@ -99,8 +102,10 @@ void do_probe(CS& cmd, PROBELIST *probes)
 	}else{
 	}
 	if (action == aDELETE) {
+          trace0( "do_probe aDELETE" );
 	  probes[simtype].remove_list(cmd);
 	}else{
+          trace0("calling add_list");
 	  probes[simtype].add_list(cmd);
 	}
       }
@@ -148,4 +153,13 @@ DISPATCHER<CMD>::INSTALL d3(&command_dispatcher, "iprint|print|probe", &p3);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+class CMD_VERIFY : public CMD {
+public:
+  void do_it(CS& cmd, CARD_LIST*)
+  {
+    do_probe(cmd,PROBE_LISTS::verify);
+  }
+} p4;
+DISPATCHER<CMD>::INSTALL d1(&command_dispatcher, "verify", &p4);
 /*--------------------------------------------------------------------------*/

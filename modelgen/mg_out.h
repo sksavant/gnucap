@@ -1,4 +1,4 @@
-/*$Id: mg_out.h,v 26.128 2009/11/10 04:21:03 al Exp $ -*- C++ -*-
+/*$Id: mg_out.h,v 1.2 2009-11-18 20:53:30 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

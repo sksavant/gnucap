@@ -1,4 +1,4 @@
-/*$Id: s_tr.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: s_tr.cc,v 1.4 2009-12-13 17:55:02 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -32,6 +32,7 @@ DISPATCHER<CKT_BASE>::INSTALL d6(&status_dispatcher,  "transient", &p5);
 int TRANSIENT::steps_accepted_;
 int TRANSIENT::steps_rejected_;
 int TRANSIENT::steps_total_;
+int TRANSIENT::steps_total_out_;
 /*--------------------------------------------------------------------------*/
 void TRANSIENT::do_it(CS& Cmd, CARD_LIST* Scope)
 {

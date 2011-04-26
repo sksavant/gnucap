@@ -1,4 +1,6 @@
-/*$Id: s__solve.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: s__solve.cc,v 1.7 2010-07-27 07:45:35 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
+ *
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -41,6 +43,7 @@ static bool converged = false;
 /*--------------------------------------------------------------------------*/
 bool SIM::solve(OPT::ITL itl, TRACE trace)
 {
+  trace0("SIM::solve");
   converged = false;
   int convergedcount = 0;
   
@@ -82,9 +85,15 @@ bool SIM::solve(OPT::ITL itl, TRACE trace)
     if (!converged || !OPT::fbbypass || _sim->_damp < .99) {
       set_damp();
       load_matrix();
+      assert(_sim->_loadq.empty());
+      trace0("solve_equations");
       solve_equations();
     }
   }while (!converged && !_sim->exceeds_iteration_limit(itl));
+
+  //for(unsigned int y=0; y<_sim->_loadq.size(); y++) {
+    //untested0( ("after solve loadq " + _sim->_loadq[y]->long_label()).c_str() );
+  //}
 
   return converged;
 }
@@ -92,7 +101,7 @@ bool SIM::solve(OPT::ITL itl, TRACE trace)
 bool SIM::solve_with_homotopy(OPT::ITL itl, TRACE trace)
 {
   solve(itl, trace);
-  trace2("plain", ::status.iter[iSTEP], OPT::gmin);
+  trace2("plain", _sim->_iter[iSTEP], OPT::gmin);
   if (!converged && OPT::itl[OPT::SSTEP] > 0) {
     int save_itermin = OPT::itermin;
     OPT::itermin = 0;
@@ -142,8 +151,9 @@ void SIM::finish_building_evalq(void)
 /*--------------------------------------------------------------------------*/
 void SIM::advance_time(void)
 {
-  ::status.advance.start();
   static double last_iter_time;
+  trace2("SIM::advance_time()", _sim->_time0, last_iter_time);
+  ::status.advance.start();
   if (_sim->_time0 > 0) {
     if (_sim->_time0 > last_iter_time) {	/* moving forward */
       notstd::copy_n(_sim->_v0, _sim->_total_nodes+1, _sim->_vt1);
@@ -196,6 +206,7 @@ void SIM::clear_arrays(void)
     _sim->_aa.dezero(OPT::gmin);		/* gmin fudge */
     std::fill_n(_sim->_i, _sim->_aa.size()+1, 0);
   }
+  trace0("loadq clear");
   _sim->_loadq.clear();
 }
 /*--------------------------------------------------------------------------*/
@@ -238,19 +249,33 @@ void SIM::load_matrix()
 {
   ::status.load.start();
   if (OPT::traceload && _sim->is_inc_mode()) {
+    trace0("loading some");
     while (!_sim->_loadq.empty()) {
       _sim->_loadq.back()->tr_load();
       _sim->_loadq.pop_back();
     }
   }else{
+    trace0("loading all :( ");
     _sim->_loadq.clear();
     CARD_LIST::card_list.tr_load();
   }
   ::status.load.stop();
 }
 /*--------------------------------------------------------------------------*/
+
+// #define DUMPMATRIX
+
 void SIM::solve_equations()
 {
+
+#ifdef DUMPMATRIX
+  std::cout << _sim->_aa << "\n( ";
+  for (int ii = 0 ; _sim->_lu.size() >= ii ; ++ii) {
+	  std::cout << (_sim->_i)[ii] << " ";
+  }
+  std::cout <<")\n(";
+#endif
+  
   ::status.lud.start();
   _sim->_lu.lu_decomp(_sim->_aa, bool(OPT::lubypass && _sim->is_inc_mode()));
   ::status.lud.stop();
@@ -268,6 +293,13 @@ void SIM::solve_equations()
     // pure analog
     untested();
   }
+
+#ifdef DUMPMATRIX
+  for (int ii = 0 ; _sim->_lu.size() >= ii ; ++ii) {
+	  std::cout << (_sim->_v0)[ii] << " ";
+  }
+  std::cout <<")\n";
+#endif
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

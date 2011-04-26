@@ -1,4 +1,5 @@
-/*$Id: u_parameter.cc,v 26.119 2009/09/09 13:27:53 al Exp $ -*- C++ -*-
+/*$Id: u_parameter.cc,v 1.4 2010-09-22 13:19:51 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2005 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -27,6 +28,25 @@
 #include "l_stlextra.h"
 #include "u_parameter.h"
 #include "u_lang.h"
+#include "e_card.h"
+#include "e_model.h"
+// #include "d_rcd.h" // hack
+/*--------------------------------------------------------------------------*/
+
+//template <>
+//MODEL_BUILT_IN_BTI PARAMETER<MODEL_BUILT_IN_BTI>::_NOT_INPUT(){ return MODEL_BUILT_IN_BTI() ;}
+
+//template <>
+//MODEL_BUILT_IN_RCD PARAMETER<MODEL_BUILT_IN_RCD>::_NOT_INPUT(){ return MODEL_BUILT_IN_RCD() ;}
+//
+//template <>
+//MODEL_CARD PARAMETER<MODEL_CARD>::_NOT_INPUT(){ return MODEL_CARD() ;}
+
+//template <>
+//CARD PARAMETER<CARD>::_NOT_INPUT(){ return CARD() ;}
+
+//template <>
+//std::string PARAMETER<std::string>::_NOT_INPUT(){ return "";}
 /*--------------------------------------------------------------------------*/
 void PARAM_LIST::parse(CS& cmd)
 {
@@ -140,6 +160,15 @@ const PARAMETER<double>& PARAM_LIST::deep_lookup(std::string Name)const
   }
 }
 /*--------------------------------------------------------------------------*/
+void PARAM_LIST::set(std::string Name, const double value)
+{
+  if (OPT::case_insensitive) {
+    notstd::to_lower(&Name);
+  }else{
+  }
+  _pl[Name] = value;
+}
+/*--------------------------------------------------------------------------*/
 void PARAM_LIST::set(std::string Name, const std::string& Value)
 {
   if (OPT::case_insensitive) {
@@ -177,4 +206,70 @@ bool Get(CS& cmd, const std::string& key, PARAMETER<int>* val)
   }
 }
 /*--------------------------------------------------------------------------*/
+std::string PARAMETER<std::string>::e_val_normal(const std::string& def, const CARD_LIST* scope)const
+{
+  trace0("PARAMETER<std::string>::e_val_normal " + _s + " default: " + def + " val " + _v);
+  assert(scope);
+
+  static int recursion=0;
+  static const std::string* first_name = NULL;
+  if (recursion == 0) {
+    first_name = &_s;
+  }else{
+  }
+  assert(first_name);
+ 
+  if (_s == "inf") {
+    return my_infty();
+  }
+  ++recursion;
+  if (_s == "") {
+    // blank string means to use default value
+    _v = def;
+    if (recursion > 1) {
+      error(bWARNING, "parameter " + *first_name + " has no value\n");
+    }else{
+    }
+  }else if (_s == "{") {
+    trace0("lookup");
+    // anything else means look up the value
+    if (recursion <= OPT::recursion) {
+      _v = lookup_solve(def, scope);
+      if (_v == "") {untested();itested();
+	error(bDANGER, "parameter " + *first_name + " has no value\n");
+      }else{
+      }
+    }else{untested();
+      _v = def;
+      error(bDANGER, "parameter " + *first_name + " recursion too deep\n");
+    }
+  }else{
+    // start with # means we have a final value
+    _v=_s;
+  }
+  --recursion;
+  trace0("PARAMETER<T>::e_val "+ _v);
+  return _v;
+}
+
+/*--------------------------------------------------------------------------*/
+string PARAMETER<string>::my_infty()const{ return "inf"; }
+/*--------------------------------------------------------------------------*/
+string PARAMETER<string>::value()const {
+  trace0(("PARAMETER::std::string " + _s + " -> " + _v ).c_str());
+  return to_string(_v);
+}
+/*--------------------------------------------------------------------------*/
+string PARAMETER<string>::string()const {
+  trace0(("PARAMETER::std::string " + _s + " -> " + _v ).c_str());
+  return to_string(_s);
+}
+/*--------------------------------------------------------------------------*/
+bool PARAMETER<string>::operator==(const PARAMETER& p)const
+{
+  bool ret= (_v == p._v && _s == p._s );
+  trace1("PARAMETER<string>operator== " + _v + " ?= " + p._v 
+                             + " and " + _s  + " ?= " + p._s , ret);
+  return ret;
+}
 /*--------------------------------------------------------------------------*/

@@ -1,4 +1,5 @@
-/*$Id: m_wave.h,v 26.86 2008/07/07 22:31:11 al Exp $ -*- C++ -*-
+/*$Id: m_wave.h,v 1.2 2010-09-07 07:46:23 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

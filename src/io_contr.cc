@@ -1,4 +1,5 @@
-/*$Id: io_contr.cc,v 26.110 2009/05/28 15:32:04 al Exp $ -*- C++ -*-
+/*$Id: io_contr.cc,v 1.1 2009-10-23 12:01:45 felix Exp $ -*- C++ -*-
+ * vim:ts=8:tw=2:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -33,8 +34,8 @@
 	OMSTREAM* outset(CS&,OMSTREAM*);
 static	FILE*	file_open(CS&,const char*,const char*,FILE*);
 /*--------------------------------------------------------------------------*/
-static FILE* fn;		/* write file				    */
-static FILE* to_pipe;
+//static FILE* fn;		/* write file				    */
+//static FILE* to_pipe;
 /*--------------------------------------------------------------------------*/
 /* initio: initialize file encryption, etc
  */
@@ -83,25 +84,27 @@ void decipher(char *buf)
 /*--------------------------------------------------------------------------*/
 /* outreset: close files and set i/o flags to standard values
  */
-void outreset(void)
+/*--------------------------------------------------------------------------*/
+void OMSTREAM::outreset(void)
 {
-  if (to_pipe) {
-    untested();
-    pclose(to_pipe);
-    to_pipe = NULL;
-  }else{
-  }
-  xclose(&fn);
-  IO::formaat = 0;
-  IO::incipher = false;
-  IO::mstdout.reset();
+   if (to_pipe) {
+      untested();
+      pclose(to_pipe);
+      to_pipe = NULL;
+   }else{
+   }
+   xclose(&fn);
+   IO::formaat = 0;
+   IO::incipher = false;
+   IO::mstdout.reset();
 }
 /*--------------------------------------------------------------------------*/
 /* outset: set up i/o for a command
  * return whether or not it did anything
  */
-OMSTREAM* outset(CS& cmd, OMSTREAM* out)
+OMSTREAM* OMSTREAM::outset(CS& cmd)
 {
+  OMSTREAM* out=this;
   bool echo = false;
   for (;;) {
     if (cmd.umatch("basic ")) {
@@ -137,6 +140,7 @@ OMSTREAM* outset(CS& cmd, OMSTREAM* out)
       }else{untested();
       }
     }else if (cmd.umatch(">")) {itested();
+      trace1("outset, redirect\n", (intptr_t) fn);
       // open a file for write or append
       const char *rwaflag;
       rwaflag = (cmd.umatch(">")) ? "a" : "w";
@@ -149,10 +153,17 @@ OMSTREAM* outset(CS& cmd, OMSTREAM* out)
       }else{untested();
       }
     }else{
+       trace0(( "OMSTREAM::outset rest ||| " +cmd.tail() ).c_str());
       break;
+
     }
   }
   return out;
+}
+/*--------------------------------------------------------------------------*/
+OMSTREAM* outset(CS& cmd, OMSTREAM* out)
+{
+   return out->outset(cmd);
 }
 /*--------------------------------------------------------------------------*/
 /* file_open: a different interface for xopen

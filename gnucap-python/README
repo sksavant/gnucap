@@ -1,0 +1,4 @@
+
+it works:
+gnucap installed to --prefix=/home/felix/.local
+./configure CXXFLAGS=-I/home/felix/.local/include LDFLAGS=-L/home/felix/.local/lib

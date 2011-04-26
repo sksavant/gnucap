@@ -1,0 +1,103 @@
+Gnucap-Icarus cosimulation plugin
+ToDo list:
+
+
+1. Get rid of method EVAL_BM_EXTPWL::voltage()
+instead of using this method, gnucap measurement shall be used (as far as  
+understanded now). Consequently - remove all what si related to ::voltage().
+
+2. Make EVAL_BM_EXTPWL derived from EVAL_BM_PWL
+
+3. make more usage examples
+
+4. Minor fixes:
+  o Move to gnucap-2009-10-11
+  o complete GNU BUILD (.so lib is not build yet using GNU Build system)
+  + fix KevinC's changes in Makefiles
+
+5. Icarus/Verilog is modified. 
+   Make that changes "movable" to icarus/verilog upstream 
+
+
+6. Here are Al Davis' comments on plugin and related changes in gnucap.
+Code has to be fixed accordingly
+
+
+> I am assuming that this is intended as a temporary hack to get 
+> something out now, with intent that it will be replaced soon.  I 
+> am further assuming that everyone involved knows this, and is 
+> not surprised that I am saying so here.
+
+> It is my policy that the core must not have hooks for specific 
+> plugins, even if they are static linked.  Any place where there 
+> is such a hook now, that is considered to be a release-critical 
+> bug, and "encapsulation violation".
+
+> There is a similar policy regarding functions marked as 
+> "obsolete", especially those with "obsolete_callback" in the 
+> name.  It is likely that I will let these go for now, but they 
+> will be removed as soon as it is practical to do so.  Based on 
+> this code being temporary, don't worry about it, but in the long 
+> run, anything using obsolete_callback will need to be changed.
+
+> There is a new snapshot coming out VERY SOON.  There are 
+> significant changes to the plugin interface, so some changes 
+> will be required to accomodate this.  The changes are not 
+> apparent to the user, but mostly have to do with fixing 
+> "encapsulation violations", so there can be a clean separation 
+> between "library" and "applications".  Most changes are in the 
+> s_* hierarchy, which is considered private in the sense that 
+> nothing outside of the s_* hierarchy is allowed to access it 
+> directly.  Any old code that references any data through SIM:: 
+> will need to be changed.  There will be other benefits of this 
+> in the long run, but it means some changes are needed now.
+
+> Now that I got that out of the way ..
+
+> None of the changes in gnucap-icarus.diff are necessary.
+
+> bm.h: voltage() -- info already available, I think.  If you 
+> really need it, you have a misunderstanding of the relation 
+> between the bm* plugins and the devices they are attached to.  I 
+> suggest looking at "tr_outvolts" and "tr_involts".  Also, 
+> question the need of and notion of voltage in the various types 
+> of elements that might use it.  In general, the bm* plugins 
+> think of input and output, not voltage and current.
+
+> e_elemnt.h: node() .. please use n_().  It does what you want. 
+> On a closer look at the code, better yet .. don't use it at all.  
+> You use it in "voltage".  Just use "tr_outvolts()" instead.  The 
+> array "_nodes" should never be used directly, because it isn't 
+> always the node list.  In general, anything marked "private" 
+> that doesn't already have an access function probably has a 
+> reason for it being private.
+
+ a) get rid from "voltage" and node() 
+
+> to_string(long) .. I don't see why you need it.  Please explain.  
+> Is it left over from old stuff?  I'm not opposed to it if you 
+> really need it, but don't want to have extra stuff that is not 
+> used or tested.  It is likely that if it were included, that it 
+> would get purged in a Muntzing.
+
+b) decide about to_string(long)
+
+> s_tr.h virtuals.  ..  This is in the s_* hierarchy, and 
+> considered to be part of the transient plugin.  In the version 
+> with separate library and applications, it won't be available 
+> across plugins.  Instead of doing this, can you do what you need 
+> in the "precalc", "expand" and "tr_advance" functions, as part 
+> of the bm_extpwl.h ?
+
+c) move needed operations to precalc, expand, tr_advance
+
+> u_parameter.h: get_str() .. why not just use Get?
+
+d) use Get, get rid from get_str()  
+
+results:
+DONE a) get rid from "voltage" and node()       ( tr_outvolts() used )
+DONE b) decide about to_string(long)            ( removed )
+     c) move needed operations to precalc, 
+        expand, tr_advance
+DONE d) use Get, get rid from get_str()         (Getptr moved in plugin)

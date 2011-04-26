@@ -1,4 +1,4 @@
-/*$Id: e_model.h,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: e_model.h,v 1.8 2010-07-15 10:13:58 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -26,6 +26,7 @@
 #define E_MODEL_H
 #include "u_parameter.h"
 #include "e_card.h"
+#include "e_adp.h"
 /*--------------------------------------------------------------------------*/
 // external
 class COMPONENT;
@@ -71,6 +72,23 @@ protected:
   const CARD* _component_proto;
 public:
   PARAMETER<double> _tnom_c;
+public:
+
+  virtual void do_tt_commit(COMPONENT*)const{ untested();}
+  virtual void do_stress_apply(COMPONENT*)const{ trace0("model.h stress apply(C)") ;}
+  void do_stress_apply()const{unreachable();} // not used for models.
+
+		 // void      stress_calc(COMPONENT*)const{   ;} //sollte eval heissen...
+		 //   void      stress_calc( )const{   ;} //sollte eval heissen...?
+		 //
+  virtual ADP_CARD* new_adp( const COMPONENT* d)const
+  {
+	  trace0( ( "MODEL_CARD::new_adp. empty adpcard for " + d->short_label() ).c_str());
+	  // return NULL;
+	  return( new ADP_CARD(d) ); // empty adpcard...
+  };
+		 //
+		 //
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

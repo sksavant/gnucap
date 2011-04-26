@@ -1,4 +1,4 @@
-/*$Id: u_status.h,v 26.131 2009/11/20 08:22:10 al Exp $ -*- C++ -*-
+/*$Id: u_status.h,v 1.3 2009-12-13 17:55:02 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -37,11 +37,13 @@ public:
   TIMER op;
   TIMER dc;
   TIMER tran;
+  TIMER ttt;
   TIMER four;
   TIMER ac;
   TIMER set_up;
   TIMER order;
   TIMER advance;
+  TIMER tt_advance;
   TIMER queue;
   TIMER evaluate;
   TIMER load;
@@ -56,7 +58,10 @@ public:
   TIMER aux3;
   TIMER total;
   int control;
+  int control_tt;
   int hidden_steps;
+  int hidden_steps_tt;
+  int tt_tries;
   
   void compute_overhead()const {
     overhead = total - advance - queue - evaluate - load - lud - back 
@@ -87,7 +92,9 @@ public:
     aux3("aux3"),
     total("total"),
     control(0),
-    hidden_steps(0)
+    control_tt(0),
+    hidden_steps(0),
+    hidden_steps_tt(0)
   {
   }
   ~STATUS() {}

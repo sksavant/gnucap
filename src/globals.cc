@@ -1,4 +1,4 @@
-/*$Id: globals.cc,v 26.136 2009/12/07 23:20:42 al Exp $ -*- C++ -*-
+/*$Id: globals.cc,v 1.6 2010-08-30 09:14:04 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -24,6 +24,7 @@
 #include "globals.h"
 #include "u_prblst.h"
 #include "e_cardlist.h"
+#include "e_adplist.h"
 #include "u_status.h"
 /*--------------------------------------------------------------------------*/
 // here to make sure they get constructed and destructed in proper order
@@ -32,6 +33,7 @@
 // dispatchers must be constructed before any static objects they contain
 // and destructed after.
 RUN_MODE ENV::run_mode = rPRE_MAIN;
+int ENV::error = 0;
 DISPATCHER<CMD> command_dispatcher;
 DISPATCHER<COMMON_COMPONENT> bm_dispatcher;
 DISPATCHER<MODEL_CARD> model_dispatcher;
@@ -45,10 +47,16 @@ DISPATCHER<PROBELIST> probe_dispatcher;
 
 // for the rest, order should not matter, but it is convenient here
 CARD_LIST CARD_LIST::card_list;	// root circuit 
+ADP_LIST ADP_LIST::adp_list;	// age parms. obsolete?
+ADP_NODE_LIST ADP_NODE_LIST::adp_node_list;	// age parms.
 PROBELIST PROBE_LISTS::alarm[sCOUNT]; /* list of alarm points */
 PROBELIST PROBE_LISTS::plot[sCOUNT];  /* list of plot points */
 PROBELIST PROBE_LISTS::print[sCOUNT]; /* list of print points */
 PROBELIST PROBE_LISTS::store[sCOUNT]; /* list of pts to store for postproc */
+PROBELIST PROBE_LISTS::verify[sCOUNT]; /* list of things to verify */
+
+PROBELIST PROBE_LISTS::expr[sCOUNT]; /* stupid hack. working around "PROBE
+													 parser is part of PROBELIST" */
 
 // the rest of this should not be here, is residue of old stuff
 STATUS status;

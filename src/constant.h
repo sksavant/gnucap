@@ -1,4 +1,4 @@
-/*$Id: constant.h,v 26.81 2008/05/27 05:34:00 al Exp $ -*- C++ -*-
+/*$Id: constant.h,v 1.1 2009-10-23 12:01:45 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -89,6 +89,8 @@ double const MAXDBL    = std::numeric_limits<double>::max();
 #else
 double const MAXDBL    = DBL_MAX;
 #endif
+
+// WAAH HACK
 
 double const BIGBIG    =  (MAXDBL)*(.9247958);	/* unlikely number	  */
 //double const OVERDUE   = -(MAXDBL)*(.9347958);/* unlikely number	  */

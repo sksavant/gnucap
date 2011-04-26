@@ -1,4 +1,4 @@
-/*$Id: io_error.h,v 26.130 2009/11/15 21:51:59 al Exp $ -*- C++ -*-
+/*$Id: io_error.h,v 1.2 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
  * data for error and exception handling
  *
  * Copyright (C) 2001 Albert Davis

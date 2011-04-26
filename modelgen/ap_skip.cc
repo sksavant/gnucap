@@ -1,4 +1,4 @@
-/*$Id: ap_skip.cc,v 26.81 2008/05/27 05:34:00 al Exp $ -*- C++ -*-
+/*$Id: ap_skip.cc,v 1.1 2009-10-23 14:52:05 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

@@ -1,4 +1,5 @@
-/*$Id: ap_convert.cc,v 26.125 2009/10/15 20:58:21 al Exp $ -*- C++ -*-
+/*$Id: ap_convert.cc,v 1.3 2010-09-17 12:25:55 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -260,6 +261,7 @@ int CS::ctox()
  */
 double CS::ctof()
 {
+  trace0( "CS::ctof " + tail());
   double val = 0.0;
   double power = 1.0;
   int    sign = 1;
@@ -276,6 +278,11 @@ double CS::ctof()
     sign = -1;
   }else{
     skip1("+");
+  }
+
+  if( umatch("inf") ){
+    trace0("Get read inf");
+    return sign*inf;
   }
 
   while (is_digit()) {			// up to dec pt

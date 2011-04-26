@@ -1,4 +1,5 @@
-/*$Id: u_sim_data.h,v 26.133 2009/11/26 05:02:28 al Exp $ -*- C++ -*-
+/*$Id: u_sim_data.h,v 1.7 2010-09-22 13:19:51 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2009 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -37,21 +38,35 @@ class LOGIC_NODE;
 enum TRI_STATE {tsNO=0, tsYES=1, tsBAD=-1};
 /*--------------------------------------------------------------------------*/
 struct INTERFACE SIM_DATA {
+  double _dt0;	/* time now */
   double _time0;	/* time now */
+  double _Time0;	/* Time now */
+  double _dT0;	
+  double _dT1;	
+  double _dT2;	/* HACK? */
+  double _dT3;	/* HACK? */
   double _freq;		/* AC frequency to analyze at (Hertz) */
   double _temp_c;	/* ambient temperature, actual */
   double _damp;		/* Newton-Raphson damping coefficient actual */
   double _dtmin;	/* min internal step size */
+  double _dTmin;	/* min internal step size */
   double _genout;	/* tr dc input to circuit (generator) */
   bool   _bypass_ok;	/* flag: ok to bypass model evaluation */
   bool	_fulldamp; 	/* flag: big iter. jump. use full (min) damp */
   double _last_time;	/* time at which "volts" is valid */
+  double _last_Time;	/* time at which "volts" is valid */
   bool _freezetime;	/* flag: don't advance stored time */
   int _iter[iCOUNT];
-  int _user_nodes;
-  int _subckt_nodes;
-  int _model_nodes;
-  int _total_nodes;
+  int _tt_iter;
+  int _tt_done;
+  int _tt_accepted;
+  int _tt_rejects;
+  int _tt_rejects_total;
+  uint_t _user_nodes;
+  uint_t _subckt_nodes;
+  uint_t _model_nodes;
+  uint_t _total_nodes;
+  uint_t _adp_nodes;
   COMPLEX _jomega;	/* AC frequency to analyze at (radians) */
   bool _limiting;	/* flag: node limiting */
   double _vmax;
@@ -66,20 +81,31 @@ struct INTERFACE SIM_DATA {
   double *_vt1;		/* dc-tran voltage, 1 time ago		*/
 			/*  used to restore after rejected step	*/
   COMPLEX *_ac;		/* ac right side			*/
+  double *_tr;
+  double *_tr1;
+  double *_tr2;
+  double *_tr3;
+
+  double *_tt1;
+  //double (* (_tr))[3];
+  //double (* (_tt))[3];
   LOGIC_NODE* _nstat;	/* digital data				*/
-  double *_vdc;		/* saved dc voltages			*/
-  BSMATRIX<double> _aa;	/* raw matrix for DC & tran */
-  BSMATRIX<double> _lu;	/* decomposed matrix for DC & tran */
+  hp_float_t *_vdc;		/* saved dc voltages			*/
+  hp_float_t *_tt;          /* aging node data */
+  BSMATRIX<hp_float_t> _aa;	/* raw matrix for DC & tran */
+  BSMATRIX<hp_float_t> _lu;	/* decomposed matrix for DC & tran */
   BSMATRIX<COMPLEX> _acx;/* raw & decomposed matrix for AC */
   std::priority_queue<double, std::vector<double> > _eq; /*event queue*/
   std::vector<CARD*> _loadq;
   std::vector<CARD*> _acceptq;
+  std::vector<CARD*> _tt_acceptq;
   std::deque<CARD*>  _evalq1; /* evaluate queues -- alternate between */
   std::deque<CARD*>  _evalq2; /* build one while other is processed */
   std::deque<CARD*>  _late_evalq; /* eval after everything else */
   std::deque<CARD*>* _evalq;   /* pointer to evalq to process */
   std::deque<CARD*>* _evalq_uc;/* pointer to evalq under construction */
   WAVE *_waves;		/* storage for waveforms "store" command*/
+  WAVE *_waves_tt;		/* storage for waveforms "store" command for tt. HACK*/
   SIM_DATA() {
     _evalq = &_evalq1;
     _evalq_uc = &_evalq2;
@@ -96,6 +122,9 @@ struct INTERFACE SIM_DATA {
   void keep_voltages();
   void restore_voltages();
   void zero_voltages();
+  void zero_dc_voltages();
+  void zero_some_voltages();
+  void zero_currents();
   void map__nodes();		/* s__map.cc */
   void order_reverse();
   void order_forward();
@@ -105,6 +134,7 @@ struct INTERFACE SIM_DATA {
   }
   int newnode_subckt() {++_subckt_nodes; return ++_total_nodes;}
   int newnode_model()  {++_model_nodes;  return ++_total_nodes;}
+  int newnode_adp()  {return _adp_nodes++;}
   bool is_inc_mode()	 {return _inc_mode;}
   bool inc_mode_is_no()	 {return _inc_mode == tsNO;}
   bool inc_mode_is_bad() {return _inc_mode == tsBAD;}
@@ -130,6 +160,7 @@ struct INTERFACE SIM_DATA {
   void set_command_op()	  {_mode = s_OP;}
   void set_command_tran() {_mode = s_TRAN;}
   void set_command_fourier() {_mode = s_FOURIER;}
+  void set_command_tt() {_mode = s_TTT;}
   SIM_MODE sim_mode()	   {return _mode;}
   bool command_is_ac()	   {return _mode == s_AC;}
   bool command_is_dc()	   {return _mode == s_DC;}
@@ -140,7 +171,8 @@ struct INTERFACE SIM_DATA {
   bool analysis_is_dcop()    {return _mode == s_DC || _mode == s_OP;}
   bool analysis_is_static()  {return _phase == p_INIT_DC || _phase == p_DC_SWEEP;}
   bool analysis_is_restore() {return _phase == p_RESTORE;}
-  bool analysis_is_tran()    {return _mode == s_TRAN || _mode == s_FOURIER;}
+  bool analysis_is_tran()    {return _mode == s_TRAN || _mode == s_FOURIER || _mode == s_TTT;}
+  bool analysis_is_tt()      {return _mode == s_TTT;}
   bool analysis_is_tran_static()  {return analysis_is_tran() && _phase == p_INIT_DC;}
   bool analysis_is_tran_restore() {return analysis_is_tran() && _phase == p_RESTORE;}
   bool analysis_is_tran_dynamic() {return analysis_is_tran() && _phase == p_TRAN;}
@@ -149,6 +181,8 @@ struct INTERFACE SIM_DATA {
   void count_iterations(int i)	{assert(up_order(0,i,iCOUNT-1)); ++_iter[i];}
   int iteration_tag()const      {return _iter[iTOTAL];}
   int iteration_number()const   {return _iter[iSTEP];}
+  uint_t tt_iteration_number()const   {return _tt_iter;} // accepted steps
+  uint_t tt_iteration_tries()const   {return _tt_done;} // accepted steps
   bool is_initial_step()	{return (_iter[_mode] <= 1  && analysis_is_static());}
   bool is_advance_iteration()const   {return (_iter[iSTEP] == 0);}
   bool is_advance_or_first_iteration()const {assert(_iter[iSTEP]>=0); return (_iter[iSTEP]<=1);}
@@ -157,6 +191,18 @@ struct INTERFACE SIM_DATA {
   bool is_iteration_number(int n)const    {return (_iter[iSTEP] == n);}
   bool exceeds_iteration_limit(OPT::ITL itlnum)const {return(_iter[iSTEP] > OPT::itl[itlnum]);}
   bool uic_now() {return _uic && analysis_is_static() && _time0==0.;}
+
+  private:
+  uint_t _tt_order;
+  uint_t last_order_tt;
+
+  public:
+  int _stepno; // number of transient steps accepted.
+  void update_tt_order();
+  uint_t get_tt_order() const;
+  void invalidate_tt();
+  void force_tt_order(uint_t i){ untested(); _tt_order = i;}
+  public:
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

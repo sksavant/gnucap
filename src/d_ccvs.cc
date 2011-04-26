@@ -1,4 +1,4 @@
-/*$Id: d_ccvs.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: d_ccvs.cc,v 1.4 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -51,14 +51,14 @@ private: // override virtual
   void	   ac_load()		{ac_load_active();}
   COMPLEX  ac_amps()const	{untested(); return ELEMENT::ac_amps();}
 
-  std::string port_name(int i)const {untested();
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {untested();
+    assert(i != INVALID_NODE);
     assert(i < 2);
     static std::string names[] = {"p", "n"};
     return names[i];
   }
-  std::string current_port_name(int i)const {untested();
-    assert(i >= 0);
+  std::string current_port_name(uint_t i)const {untested();
+    assert(i != INVALID_NODE);
     assert(i < 1);
     static std::string names[] = {"in"};
     return names[i];
@@ -124,16 +124,16 @@ void DEV_CCVS::do_ac()
     ac_eval();
   }else{
     assert(_ev == _y[0].f1);
-    assert(has_tr_eval() || _ev == double(value()));
+    assert(has_tr_eval() || (_ev) == hp_float_t(value()));
   }
   if (_input->is_source()) {
-    _acg = -_loss0 * _ev * _input->_acg;
+    _acg = - (double)_loss0 * (COMPLEX(_ev)) * _input->_acg;
     ac_load_source();
     _acg = -_loss0 * _ev * _input->_loss0;
   }else if (_input->has_inode()) {untested();
     _acg = -_loss0 * _ev;
   }else if (_input->has_iv_probe()) {
-    _acg = -_loss0 * _ev * _input->_acg;
+    _acg = -(double)_loss0 * (COMPLEX)_ev * _input->_acg;
   }else{unreachable();
   }
 }

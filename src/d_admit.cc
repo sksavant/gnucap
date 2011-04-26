@@ -1,4 +1,5 @@
-/*$Id: d_admit.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: d_admit.cc,v 1.6 2010-07-15 10:13:57 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -43,10 +44,10 @@ protected: // override virtual
   char	   id_letter()const	{return 'Y';}
   std::string value_name()const {return "g";}
   std::string dev_type()const	{return "admittance";}
-  int	   max_nodes()const	{return 2;}
-  int	   min_nodes()const	{return 2;}
-  int	   matrix_nodes()const	{return 2;}
-  int	   net_nodes()const	{return 2;}
+  uint_t	   max_nodes()const	{return 2;}
+  uint_t	   min_nodes()const	{return 2;}
+  uint_t	   matrix_nodes()const	{return 2;}
+  uint_t	   net_nodes()const	{return 2;}
   bool	   has_iv_probe()const  {return true;}
   bool	   use_obsolete_callback_parse()const {return true;}
   CARD*	   clone()const		{return new DEV_ADMITTANCE(*this);}
@@ -56,16 +57,16 @@ protected: // override virtual
   bool	   do_tr();
   void	   tr_load()		{tr_load_passive();}
   void	   tr_unload()		{tr_unload_passive();}
-  double   tr_involts()const	{return tr_outvolts();}
-  double   tr_involts_limited()const {return tr_outvolts_limited();}
+  hp_float_t   tr_involts()const	{return tr_outvolts();}
+  hp_float_t   tr_involts_limited()const {return tr_outvolts_limited();}
   void	   ac_iwant_matrix()	{ac_iwant_matrix_passive();}
   void	   ac_begin()		{_acg = _ev = _y[0].f1;}
   void	   do_ac();
   void	   ac_load()		{ac_load_passive();}
   COMPLEX  ac_involts()const	{untested();return ac_outvolts();}
 
-  std::string port_name(int i)const {
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {
+    assert(i != INVALID_NODE);
     assert(i < 2);
     static std::string names[] = {"p", "n"};
     return names[i];
@@ -81,23 +82,23 @@ protected: // override virtual
   char	   id_letter()const	{return 'G';}
   std::string value_name()const {return "gm";}
   std::string dev_type()const	{return "vccs";}
-  int	   max_nodes()const	{return 4;}
-  int	   min_nodes()const	{return 4;}
-  int	   matrix_nodes()const	{return 4;}
-  int	   net_nodes()const	{return 4;}
+  uint_t	   max_nodes()const	{return 4;}
+  uint_t	   min_nodes()const	{return 4;}
+  uint_t	   matrix_nodes()const	{return 4;}
+  uint_t	   net_nodes()const	{return 4;}
   bool	   has_iv_probe()const  {return false;}
   CARD*	   clone()const		{return new DEV_VCCS(*this);}
   void	   tr_iwant_matrix()	{tr_iwant_matrix_active();}
   void	   tr_load()		{tr_load_active();}
   void	   tr_unload()		{untested();tr_unload_active();}
-  double   tr_involts()const	{return dn_diff(_n[IN1].v0(), _n[IN2].v0());}
-  double   tr_involts_limited()const {return volts_limited(_n[IN1],_n[IN2]);}
+  hp_float_t   tr_involts()const	{return dn_diff(_n[IN1].v0(), _n[IN2].v0());}
+  hp_float_t   tr_involts_limited()const {return volts_limited(_n[IN1],_n[IN2]);}
   void	   ac_iwant_matrix()	{ac_iwant_matrix_active();}
   void	   ac_load()		{ac_load_active();}
-  COMPLEX  ac_involts()const	{untested();return _n[IN1]->vac() - _n[IN2]->vac();}
+  COMPLEX  ac_involts()const	{untested();return _n[IN1].vac() - _n[IN2].vac();}
 
-  std::string port_name(int i)const {
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {
+    assert(i != INVALID_NODE);
     assert(i < 4);
     static std::string names[] = {"sink", "src", "ps", "ns"};
     return names[i];
@@ -127,6 +128,7 @@ bool DEV_ADMITTANCE::do_tr()
 {
   if (using_tr_eval()) {
     _y[0].x = _m0.x = tr_involts_limited();
+    trace1("control voltage", _y[0].x);
     _y[0].f0 = _m0.c1 * _m0.x + _m0.c0;	//BUG//  patch for diode
     tr_eval();
     assert(_y[0].f0 != LINEAR);
@@ -151,9 +153,9 @@ void DEV_ADMITTANCE::do_ac()
     _acg = _ev;
   }else{
     assert(_ev == _y[0].f1);
-    assert(has_tr_eval() || _ev == double(value()));
+    assert(has_tr_eval() || _ev == hp_float_t(value()));
   }
-  assert(_acg == _ev);
+  assert((hCOMPLEX)_acg ==   _ev);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

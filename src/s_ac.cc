@@ -1,4 +1,4 @@
-/*$Id: s_ac.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: s_ac.cc,v 1.2 2009-12-13 17:55:02 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

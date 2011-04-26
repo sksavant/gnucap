@@ -1,4 +1,5 @@
-/*$Id: e_cardlist.cc,v 26.136 2009/12/08 02:03:49 al Exp $ -*- C++ -*-
+/*$Id: e_cardlist.cc,v 1.14 2010-09-07 07:46:22 felix Exp $ -*- C++ -*-
+ * vim:sw=2:ts=8:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -180,6 +181,15 @@ CARD_LIST& CARD_LIST::precalc_first()
   return *this;
 }
 /*--------------------------------------------------------------------------*/
+CARD_LIST& CARD_LIST::tt_next()
+{
+  for (iterator ci=begin(); ci!=end(); ++ci) {
+    trace_func_comp();
+    (**ci).tt_next();
+  }
+  return *this;
+}
+/*--------------------------------------------------------------------------*/
 CARD_LIST& CARD_LIST::precalc_last()
 {
   for (iterator ci=begin(); ci!=end(); ++ci) {
@@ -234,6 +244,17 @@ CARD_LIST& CARD_LIST::tr_restore()
   return *this;
 }
 /*--------------------------------------------------------------------------*/
+/*
+ */
+CARD_LIST& CARD_LIST::tt_behaviour_commit()
+{
+  for (iterator ci=begin(); ci!=end(); ++ci) {
+//    trace_func_comp();
+    (**ci).tt_behaviour_commit();
+  }
+  return *this;
+}
+/*--------------------------------------------------------------------------*/
 /* dc_advance: first pass on a new step in a dc sweep
  */
 CARD_LIST& CARD_LIST::dc_advance()
@@ -245,9 +266,62 @@ CARD_LIST& CARD_LIST::dc_advance()
   return *this;
 }
 /*--------------------------------------------------------------------------*/
+CARD_LIST& CARD_LIST::stress_apply(  ) 
+{
+  for (const_iterator ci=begin(); ci!=end(); ++ci) {
+    (*ci)->stress_apply();
+  }
+  return *this;
+}
+/*--------------------------------------------------------------------------*/
+const CARD_LIST& CARD_LIST::tr_stress_last(  ) const
+{
+  for (const_iterator ci=begin(); ci!=end(); ++ci) {
+    (*ci)->tr_stress_last();
+  }
+  return *this;
+}
+/*--------------------------------------------------------------------------*/
+/* apply things to all cards
+ */
+const CARD_LIST& CARD_LIST::do_forall( void (CARD::*thing)( ) const  ) const
+{
+  for (const_iterator ci=begin(); ci!=end(); ++ci) {
+    ((*ci)->*thing)( );
+  }
+  return *this;
+}
+/*--------------------------------------------------------------------------*/
+/* apply things to all cards
+ */
+CARD_LIST& CARD_LIST::do_forall( void (CARD::*thing)( )  )
+{
+  for (iterator ci=begin(); ci!=end(); ++ci) {
+    ((*ci)->*thing)( );
+  }
+  return *this;
+}
+/*--------------------------------------------------------------------------*/
+CARD_LIST& CARD_LIST::do_forall( void (CARD::*thing)( int ), int i  )
+{
+  for (iterator ci=begin(); ci!=end(); ++ci) {
+    ((*ci)->*thing)( i );
+  }
+  return *this;
+}
+/*--------------------------------------------------------------------------*/
 /* tr_advance: first pass on a new time step
  */
 CARD_LIST& CARD_LIST::tr_advance()
+{
+  for (iterator ci=begin(); ci!=end(); ++ci) {
+    trace_func_comp();
+    (**ci).tr_advance();
+  }
+  return *this;
+}
+/*--------------------------------------------------------------------------*/
+CARD_LIST& CARD_LIST::tt_advance()
 {
   for (iterator ci=begin(); ci!=end(); ++ci) {
     trace_func_comp();
@@ -278,7 +352,6 @@ bool CARD_LIST::tr_needs_eval()const
     }else{itested();
     }
   }
-  untested();
   return false;
 }
 /*--------------------------------------------------------------------------*/
@@ -345,12 +418,29 @@ CARD_LIST& CARD_LIST::tr_load()
   return *this;
 }
 /*--------------------------------------------------------------------------*/
-TIME_PAIR CARD_LIST::tr_review()
+TIME_PAIR CARD_LIST::tt_review()
 {
   TIME_PAIR time_by;
   for (iterator ci=begin(); ci!=end(); ++ci) {
     trace_func_comp();
+    time_by.min((**ci).tt_review());
+  }
+  return time_by;
+}
+/*--------------------------------------------------------------------------*/
+TIME_PAIR CARD_LIST::tr_review()
+{
+  trace0("CARD_LIST::tr_review()");
+  TIME_PAIR time_by(NEVER,NEVER);
+  if (begin() == end()) {
+    trace0("CARD_LIST::tr_review  empty");
+  }
+
+  for (iterator ci=begin(); ci!=end(); ++ci) {
+    trace_func_comp();
     time_by.min((**ci).tr_review());
+
+    trace1(("CARD_LIST::tr_review loop " + (*ci)->short_label() +" says").c_str(), time_by._event);
   }
   return time_by;
 }
@@ -465,12 +555,12 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
   trace0(model->long_label().c_str());
   trace0(owner->long_label().c_str());
 
-  int num_nodes_in_subckt = model->subckt()->nodes()->how_many();
-  int* map = new int[num_nodes_in_subckt+1];
+  uint_t num_nodes_in_subckt = model->subckt()->nodes()->how_many();
+  uint_t* map = new uint_t[num_nodes_in_subckt+1];
   {
     map[0] = 0;
     // self test: verify that port node numbering is correct
-    for (int port = 0; port < model->net_nodes(); ++port) {
+    for (uint_t port = 0; port < model->net_nodes(); ++port) {
       assert(model->n_(port).e_() <= num_nodes_in_subckt);
       //assert(model->n_(port).e_() == port+1);
       trace3("ports", port, model->n_(port).e_(), owner->n_(port).t_());
@@ -478,7 +568,7 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
     {
       // take care of the "port" nodes (external connections)
       // map them to what the calling circuit wants
-      int i=0;
+      uint_t i=0;
       for (i=1; i <= model->net_nodes(); ++i) {
 	map[i] = owner->n_(i-1).t_();
 	trace3("ports", i, map[i], owner->n_(i-1).t_());
@@ -503,7 +593,7 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
   for (CARD_LIST::iterator ci = begin(); ci != end(); ++ci) {
     // for each card in card_list
     if ((**ci).is_device()) {
-      for (int ii = 0;  ii < (**ci).net_nodes();  ++ii) {
+      for (uint_t ii = 0;  ii < (**ci).net_nodes();  ++ii) {
 	// for each connection node in card
 	(**ci).n_(ii).map_subckt_node(map, owner);
       }

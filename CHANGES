@@ -1,0 +1,33 @@
+- added Doxyfile
+- send traces and errors to stderr
+- changed PROBElist to (*PROBE)-list
+- added tw
+  - waves, measurements
+  - step control
+- added "math probes" (preliminary, stupid)
+- allow inf as double value (hack), breaks i.* as variable name
+   FIXME: use constant parameters (?)
+- added ADP_CARD. not of any use.
+- added sim commmand, time-as-parameter (hack?)
+- added command history (incomplete)
+- allow parameters as probe (HACK)
+      ( almost: expressions like {a+v(foo)} )
+- repaired sweep for batchmode. 
+    uses parameters, breaks interactive mode sweep (?)
+    also takes parameters.
+    no nesting yet
+- make output easier to parse for gnuplot (^* for non-data-lines)
+- added options:
+  - printrejected simplifies figuring out rejects.
+  - some tolarance values (tt)
+  - new option includepath (colon separated)
+- load/attach makes use of includepath
+- powerof from gnucap-a merged
+- fixed measurements to return double (not string)
+   ( if strings are needed, templates should be used ?)
+- fixed OMSTREAM to support multiple files. (used in tt)
+- .echo command
+- read $PWD/.gnucaprc on startup (otherwise read ~/.gnucaprc)
+- rudimentary .vdump .vload support
+- propagate error ( return from main )
+- switched to automake dependencies (good idea? might break modelgen stuff)

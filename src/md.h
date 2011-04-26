@@ -1,4 +1,5 @@
-/*$Id: md.h,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: md.h,v 1.7 2010-09-17 12:25:59 felix Exp $ -*- C++ -*-
+ *  vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -29,6 +30,18 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+/*--------------------------------------------------------------------------*/
+// float type to use for currents, voltages & stuff
+// typedef double double; // has to be double
+//typedef long double hp_float_t;
+typedef double hp_float_t;
+// typedef unsigned int uint_t;
+typedef  int uint_t;
+
+// FIXME!!
+
+typedef double fun_t;
+inline double to_fun_t(double x){return x;}
 /*--------------------------------------------------------------------------*/
 /* std collection of includes */
 // system
@@ -79,7 +92,7 @@ enum {
 #define SYSTEMSTARTFILE	"gnucap.rc"
 #define SYSTEMSTARTPATH	OS::getenv("PATH")
 #define USERSTARTFILE	"gnucap.rc"
-#define	USERSTARTPATH	OS::getenv("HOME")
+#define USERSTARTPATH	OS::getenv("HOME")
 #define STEPFILE   	"/tmp/SXXXXXX"
 #define SHELL		OS::getenv("COMSPEC")
 /*--------------------------------------------------------------------------*/
@@ -89,10 +102,15 @@ enum {
 #define SYSTEMSTARTFILE	"gnucap.rc"
 #define SYSTEMSTARTPATH	OS::getenv("PATH")
 #define USERSTARTFILE	".gnucaprc"
-#define	USERSTARTPATH	OS::getenv("HOME")
+#define USERSTARTPATH	OS::getenv("HOME")
 #define STEPFILE   	"/tmp/SXXXXXX"
 #define SHELL		OS::getenv("SHELL")
 #endif
+/*--------------------------------------------------------------------------*/
+#define	PWD	"."
+
+// for pointer hashing.
+#define PRIME 2001
 /*--------------------------------------------------------------------------*/
 /* machine and compiler patches */
 #if defined(__MINGW32__)
@@ -101,8 +119,11 @@ enum {
 #endif
 /*--------------------------------------------------------------------------*/
 /* some convenient names */
+typedef std::complex<hp_float_t> hCOMPLEX;
+typedef std::pair<hp_float_t,hp_float_t> hDPAIR;
 typedef std::complex<double> COMPLEX;
 typedef std::pair<double,double> DPAIR;
+const double inf = std::numeric_limits<float>::infinity( );
 /*--------------------------------------------------------------------------*/
 // dynamic cast kluge.
 // Strictly, this should always be dynamic_cast, but if it has already
@@ -136,6 +157,7 @@ typedef std::pair<double,double> DPAIR;
 
 inline void* dlopen(const char* f, int)
 {
+  trace0("Loadlibrary");
   return LoadLibrary(const_cast<char*>(f));
 }
 
@@ -201,11 +223,39 @@ enum RUN_MODE {
 class INTERFACE ENV {
 public:
   static RUN_MODE run_mode; // variations on handling of dot commands
+  static int error; // error return code
 };
 /*--------------------------------------------------------------------------*/
 /* my standard collection of includes */
 #include "io_trace.h"
 #include "io_error.h"
 /*--------------------------------------------------------------------------*/
+
+namespace std{
+	// double max(double x, long double y) {return max(x, (double) y);}
+	// double max(long double x, double y) {return max((double) x, y);}
+
+	//double min(const double x, long double y){ return min((long double) x, (long double) y); }
+	//double min(long double x, double y) {return min((double) x, y);}
+}
+using namespace std;
+/*--------------------------------------------------------------------------*/
+inline double fmin(double x, double y, double z){
+  return ( fmin(fmin(x,y),z));
+}
+inline double fmax(double x, double y, double z){
+  return ( fmax(fmax(x,y),z));
+}
+inline bool is_number(long double x){
+  return (( x != inf ) && (x != -inf ) && (x == x)) ;
+}
+inline bool is_number(double x){
+  return (( x != inf ) && (x != -inf ) && (x == x)) ;
+}
+inline bool is_almost(double x, double y){
+  return ( fabs(x-y) / ( fmax(fabs(x),fabs(y))+1e-20) < 1e-10 );
+}
+inline double square(double x){return x*x;}
+inline long double square(long double x){return x*x;}
 /*--------------------------------------------------------------------------*/
 #endif

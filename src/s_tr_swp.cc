@@ -1,4 +1,5 @@
-/*$Id: s_tr_swp.cc,v 26.136 2009/12/08 02:03:49 al Exp $ -*- C++ -*-
+/*$Id: s_tr_swp.cc,v 1.23 2010-09-07 07:46:25 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -26,6 +27,7 @@
 #include "u_time_pair.h"
 #include "u_sim_data.h"
 #include "u_status.h"
+#include "e_card.h" // debugging...
 #include "declare.h"	/* gen */
 #include "s_tr.h"
 /*--------------------------------------------------------------------------*/
@@ -57,12 +59,15 @@ void TRANSIENT::sweep()
   head(_tstart, _tstop, "Time");
   _sim->_bypass_ok = false;
   _sim->set_inc_mode_bad();
-  
-  if (_cont) {  // use the data from last time
+ 
+  if ( _inside_tt ) {
+    _sim->restore_voltages();
+    CARD_LIST::card_list.do_tr();
+  } else if ( _cont ) {  // use the data from last time
     _sim->_phase = p_RESTORE;
     _sim->restore_voltages();
     CARD_LIST::card_list.tr_restore();
-  }else{
+  } else {
     _sim->clear_limit();
     CARD_LIST::card_list.tr_begin();
   }
@@ -70,9 +75,13 @@ void TRANSIENT::sweep()
   first();
   _sim->_genout = gen();
   
-  if (_sim->uic_now()) {
+  // assert (_sim->_loadq.empty());
+  if (_sim->uic_now() || _inside_tt ) {
+    trace2("TRANSIENT::sweep uic_now solve", time1, _sim->_time0);
     advance_time();
-    _sim->zero_voltages();
+    if (!_inside_tt) {
+      _sim->zero_voltages(); // ?
+    }
     CARD_LIST::card_list.do_tr();    //evaluate_models
     while (!_sim->_late_evalq.empty()) {itested(); //BUG// encapsulation violation
       _sim->_late_evalq.front()->do_tr_last();
@@ -89,16 +98,23 @@ void TRANSIENT::sweep()
   review(); 
   _accepted = true;
   accept();
-  
+
   {
     bool printnow = (_sim->_time0 == _tstart || _trace >= tALLTIME);
     if (printnow) {
       _sim->keep_voltages();
       outdata(_sim->_time0);
+      if( _sim->_mode  == s_TTT && OPT::behave ){
+        CARD_LIST::card_list.do_forall( &CARD::tr_save_amps, _sim->_stepno );
+        CKT_BASE::tt_behaviour_del +=  CKT_BASE::tr_behaviour_del;
+        CKT_BASE::tt_behaviour_rel +=  CKT_BASE::tr_behaviour_rel;
+      }
+      CKT_BASE::tr_behaviour_del = 0;
+      CKT_BASE::tr_behaviour_rel = 0;
     }else{untested();
     }
   }
-  
+
   while (next()) {
     _sim->_bypass_ok = false;
     _sim->_phase = p_TRAN;
@@ -112,12 +128,15 @@ void TRANSIENT::sweep()
       assert(_sim->_time0 <= _time_by_user_request);
       accept();
       if (step_cause() == scUSER) {
-	assert(up_order(_sim->_time0-_sim->_dtmin, _time_by_user_request, _sim->_time0+_sim->_dtmin));
-	++_stepno;
+        trace3("up order", _sim->_time0-_sim->_dtmin, _time_by_user_request, _sim->_time0+_sim->_dtmin);
+	assert( up_order(_sim->_time0-_sim->_dtmin, _time_by_user_request, _sim->_time0+_sim->_dtmin)
+            || _sim->_time0 == _tstop );
+	++(_sim->_stepno);
 	_time_by_user_request += _tstep;	/* advance user time */
+        // _time_by_user_request = min(_time_by_user_request, (double)_tstop);
       }else{
       }
-      assert(_sim->_time0 < _time_by_user_request);
+      assert(_sim->_time0 <= _time_by_user_request);
     }else{
       reject();
       assert(time1 < _time_by_user_request);
@@ -128,12 +147,30 @@ void TRANSIENT::sweep()
 	|| (_accepted && ((_trace >= tALLTIME) 
 			  || (step_cause() == scUSER && _sim->_time0+_sim->_dtmin > _tstart)));
       if (printnow) {
-	_sim->keep_voltages();
-	outdata(_sim->_time0);
+        _sim->keep_voltages();
+        if( _sim->_mode  == s_TTT && OPT::behave )
+          CARD_LIST::card_list.do_forall( &CARD::tr_save_amps, (_sim->_stepno) );
+        CKT_BASE::tt_behaviour_del +=  CKT_BASE::tr_behaviour_del; // hack
+        CKT_BASE::tt_behaviour_rel +=  CKT_BASE::tr_behaviour_rel;
+
+        outdata(_sim->_time0);
+        CKT_BASE::tr_behaviour_del = 0;
+        CKT_BASE::tr_behaviour_rel = 0;
+
+        //SIM_MODE oldmode=_mode;
+        //_mode=s_TRAN;
+        bool valid = verify(); 
+        //_mode=oldmode;
+
+        if( !valid )
+        {
+          _accepted = false;
+          return;
+        }
       }else{
       }
     }
-    
+
     if (!_converged && OPT::quitconvfail) {untested();
       outdata(_sim->_time0);
       throw Exception("convergence failure, giving up");
@@ -181,7 +218,7 @@ void TRANSIENT::first()
   while (!_sim->_eq.empty()) {
     _sim->_eq.pop();
   }
-  _stepno = 0;
+  _sim->_stepno = 0;
   set_step_cause(scUSER);
   ++::status.hidden_steps;
   ::status.review.stop();
@@ -196,19 +233,18 @@ void TRANSIENT::first()
     /*assert(newtime == almost_fixed_time || newtime <= almost_fixed_time - _sim->_dtmin);*/ \
     assert(newtime > time1);						\
     assert(newtime > reftime);						\
-    assert(new_dt > 0.);						\
-    assert(new_dt >= _sim->_dtmin);						\
-    assert(newtime <= _time_by_user_request);				\
+    assert(new_dt > 0.);                                                \
+    assert(new_dt >= _sim->_dtmin);                                     \
+    /*assert(new_dt == 0 || new_dt / _sim->_dtmin > 0.999999);*/        \
+    assert(newtime <= _time_by_user_request);		                \
     /*assert(newtime == _time_by_user_request*/				\
-    /*	   || newtime < _time_by_user_request - _sim->_dtmin);	*/	\
+    /*    || newtime < _time_by_user_request - _sim->_dtmin);  */	\
   }
 #define check_consistency2() {						\
     assert(newtime > time1);						\
-    assert(new_dt > 0.);						\
-    assert(new_dt >= _sim->_dtmin);						\
-    assert(newtime <= _time_by_user_request);				\
-    /*assert(newtime == _time_by_user_request	*/			\
-    /*	   || newtime < _time_by_user_request - _sim->_dtmin);*/		\
+    assert(new_dt == 0 || new_dt / _sim->_dtmin > 0.999999);	        \
+    assert(newtime == _time_by_user_request		          	\
+    	   || newtime <= _time_by_user_request + _sim->_dtmin);	        \
   }
 /*--------------------------------------------------------------------------*/
 /* next: go to next time step
@@ -233,6 +269,9 @@ bool TRANSIENT::next()
     new_dt = std::max(_dtmax/100., _sim->_dtmin);
     newtime = _sim->_time0 + new_dt;
     new_control = scINITIAL;
+  }else if (_sim->_time0 == _time_by_user_request){
+    untested();
+    return false;
   }else if (!_converged) {
     new_dt = old_dt / OPT::trstepshrink;
     newtime = _time_by_iteration_count = time1 + new_dt;
@@ -246,11 +285,18 @@ bool TRANSIENT::next()
       reftime = time1;
       trace0("rejected");
     }
-    trace2("", step_cause(), old_dt);
-    trace3("", time1, _sim->_time0, reftime);
+    trace2("TRANSIENT::next ", step_cause(), old_dt);
+    trace3("TRANSIENT::next ", time1, _sim->_time0, reftime);
+    trace2("TRANSIENT::next ", _time_by_user_request, _sim->_dtmin);
 
     newtime = _time_by_user_request;
     new_dt = newtime - reftime;
+    if(new_dt < _sim->_dtmin){
+      untested();
+      // last step handler?
+      new_dt=_sim->_dtmin;
+      newtime = reftime + _sim->_dtmin;
+    }
     new_control = scUSER;
     double fixed_time = newtime;
     double almost_fixed_time = newtime;
@@ -273,7 +319,7 @@ bool TRANSIENT::next()
       check_consistency();
     }else{
     }
-    
+
     // device events that may not happen
     // not sure of exact time.  will be rescheduled if wrong.
     // ok to move by _sim->_dtmin.  time is not that accurate anyway.
@@ -301,8 +347,10 @@ bool TRANSIENT::next()
       new_dt = newtime - reftime;
       new_control = scTE;
       check_consistency();
+      trace3("TRANSIENT::next err", newtime, new_dt, _time_by_error_estimate);
     }else{
     }
+    trace3("TRANSIENT::next ", newtime, new_dt, _time_by_error_estimate);
     
     // skip parameter
     if (new_dt > _dtmax) {
@@ -352,6 +400,7 @@ bool TRANSIENT::next()
 	  new_dt = newtime - reftime;
 	}else{
 	}
+        trace2("TRANSIENT::next", new_dt, _sim->_dtmin );
 	check_consistency();
       }else{
 	// There will be a step change.
@@ -362,6 +411,7 @@ bool TRANSIENT::next()
 	double steps = 1 + floor((target_dt - _sim->_dtmin) / new_dt);
 	assert(steps > 0);
 	new_dt = target_dt / steps;
+        trace3("TRANSIENT::next ", reftime, new_dt, reftime+new_dt);
 	newtime = reftime + new_dt;
 	check_consistency();
       }
@@ -378,38 +428,53 @@ bool TRANSIENT::next()
     }else{
     }
 
+    if ( _time_by_user_request - _sim->_dtmin < newtime  && newtime <  _time_by_user_request ){
+      untested();
+      //newtime = _time_by_user_request - _sim->_dtmin;
+      //new_dt = _sim->_dtmin;
+      trace2("TRANSIENT::next making step smaller", newtime, new_dt);
+    }
+
     // if all that makes it close to user_requested, make it official
     if (up_order(newtime-_sim->_dtmin, _time_by_user_request, newtime+_sim->_dtmin)) {
       //newtime = _time_by_user_request;
       //new_dt = newtime - reftime;
       new_control = scUSER;
+      if (new_dt>0)
       check_consistency();			   
     }else{
     }
-    check_consistency();
-    assert(!_accepted || newtime > _sim->_time0);
-    assert(_accepted || newtime <= _sim->_time0);
+    if (new_dt>0){
+      check_consistency();
+      assert(!_accepted || newtime > _sim->_time0 || time1 <= _time_by_user_request );
+      assert( _accepted || newtime <= _sim->_time0);
+    }
+
+
   }
+
   
   set_step_cause(new_control);
 
-  /* got it, I think */
+  trace1("TRANSIENT::next got it i think", newtime);
   
   /* check to be sure */
   if (newtime < time1 + _sim->_dtmin) {itested();
     /* It's really bad. */
     /* Reject the most recent step, back up as much as possible, */
     /* and creep along */
+    trace3("TRANSIENT::next ", newtime, time1, _sim->_dtmin );
     assert(!_accepted);
     assert(step_cause() < scREJECT);
     assert(step_cause() >= 0);
-    error(bDANGER,"non-recoverable " + TR::step_cause[step_cause()] + "\n");
+    error(bDANGER,"non-recoverable: " + TR::step_cause[step_cause()] + "\n");
     error(bDANGER, "newtime=%e  rejectedtime=%e  oldtime=%e  using=%e\n",
 	  newtime, _sim->_time0, time1, time1 + _sim->_dtmin);
     newtime = time1 + _sim->_dtmin;
     set_step_cause(scSMALL);
     //check_consistency2();
-    throw Exception("tried everything, still doesn't work, giving up");
+    throw Exception("tried everything, still doesn't work, giving up at %s step %i",
+        to_string(time1).c_str(), iteration_number());
     //}else if (newtime <= _sim->_time0 - _sim->_dtmin) {
   }else if (newtime < _sim->_time0) {
     /* Reject the most recent step. */
@@ -421,17 +486,24 @@ bool TRANSIENT::next()
     set_step_cause(scREJECT);
     _sim->mark_inc_mode_bad();
     check_consistency2();
+  }else if ( _sim->_time0 >= _time_by_user_request ){
+    trace3("TRANSIENT::next: already there", _sim->_time0, time1, newtime );
+    time1=_sim->_time0;
+    new_dt=0;
+   
   }else if (newtime < _sim->_time0 + _sim->_dtmin) {untested();
     /* Another evaluation at the same time. */
     /* Keep the most recent step, but creep along. */
     assert(newtime > _sim->_time0 - _sim->_dtmin);
     error(bDANGER, "zero time step\n");
-    error(bDANGER, "newtime=%e  rejectedtime=%e  oldtime=%e\n", newtime, _sim->_time0, time1);
+    error(bDANGER, "newtime=%e  rejectedtime=%e  time1=%e requested=%e\n",
+        newtime, _sim->_time0, time1, _time_by_user_request);
     if (_accepted) {untested();
       time1 = _sim->_time0;
     }else{untested();
       assert(_converged);
     }
+    trace3( "TRANSIENT::next:", newtime, time1, new_dt);
     check_consistency2();
     newtime = _sim->_time0 + _sim->_dtmin;
     if (newtime > _time_by_user_request) {untested();
@@ -462,13 +534,22 @@ bool TRANSIENT::next()
     _sim->_eq.pop();
   }
   //BUG// what if it is later rejected?  It's lost!
+  // -> why not move to tr_advance? tr_accept? hmmm
+  //
+
+  if(time1 < _tstop - _sim->_dtmin 
+      && _sim->_time0 > _tstop + _sim->_dtmin ) {
+    untested();
+    _sim->_time0=_tstop;
+
+  }
 
   check_consistency2();
   ++::status.hidden_steps;
   ++steps_total_;
   ::status.review.stop();
-  trace0("next");
-  return (_sim->_time0 <= _tstop + _sim->_dtmin);
+  bool ret= _sim->_time0 < _tstop + _sim->_dtmin;
+  return (ret);
 }
 /*--------------------------------------------------------------------------*/
 bool TRANSIENT::review()
@@ -482,6 +563,7 @@ bool TRANSIENT::review()
   // limit minimum time step
   // 2*_sim->_dtmin because _time[1] + _sim->_dtmin might be == _time[0].
   if (time_by._event < time1 + 2*_sim->_dtmin) {
+    trace1("TRANSIENT::review event ", time_by._event-time1);
     _time_by_ambiguous_event = time1 + 2*_sim->_dtmin;
   }else{
     _time_by_ambiguous_event = time_by._event;
@@ -510,6 +592,8 @@ bool TRANSIENT::review()
 void TRANSIENT::accept()
 {
   ::status.accept.start();
+  _sim->_dt0 = _sim->_time0 - time1;
+  if(_sim->_dt0 <=0) assert (_sim->_stepno == 0);
   _sim->set_limit();
   if (OPT::traceload) {
     while (!_sim->_acceptq.empty()) {
@@ -521,6 +605,14 @@ void TRANSIENT::accept()
     CARD_LIST::card_list.tr_accept();
   }
   ++steps_accepted_;
+  if( _sim->analysis_is_tt() || OPT::trage ) {
+    trace0( "TRANSIENT::accept: done stressing cardlist");
+    if ( OPT::trage ) {
+      // untested();
+      incomplete();
+      CARD_LIST::card_list.do_forall( &CARD::stress_apply );
+    }
+  }
   ::status.accept.stop();
 }
 /*--------------------------------------------------------------------------*/

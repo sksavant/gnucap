@@ -1,4 +1,4 @@
-/*$Id: s_fo.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: s_fo.cc,v 1.3 2010-09-07 07:46:25 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -122,8 +122,8 @@ void FOURIER::store_results(double X)
     int ii = 0;
     for (PROBELIST::const_iterator
 	   p=printlist().begin();  p!=printlist().end();  ++p) {
-      assert(_stepno < _timesteps);
-      _fdata[ii][_stepno] = p->value();
+      assert(_sim->_stepno < _timesteps);
+      _fdata[ii][_sim->_stepno] = (*p)->value();
       ++ii;
     }
   }else{untested();
@@ -139,7 +139,7 @@ void FOURIER::foout()
   int ii = 0;
   for (PROBELIST::const_iterator
 	 p=printlist().begin();  p!=printlist().end();  ++p) {
-    fohead(*p);
+    fohead(**p);
     fft(_fdata[ii], _timesteps-1,  0);
     foprint(_fdata[ii]);
     ++ii;

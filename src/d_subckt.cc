@@ -1,4 +1,4 @@
-/*$Id: d_subckt.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: d_subckt.cc,v 1.3 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -124,7 +124,7 @@ MODEL_SUBCKT::MODEL_SUBCKT()
 MODEL_SUBCKT::MODEL_SUBCKT(const MODEL_SUBCKT& p)
   :COMPONENT(p)
 {
-  for (int ii = 0;  ii < max_nodes();  ++ii) {
+  for (uint_t ii = 0;  ii < max_nodes();  ++ii) {
     _nodes[ii] = p._nodes[ii];
   }
   _n = _nodes;
@@ -159,7 +159,7 @@ DEV_SUBCKT::DEV_SUBCKT(const DEV_SUBCKT& p)
    _parent(p._parent)
 {
   //strcpy(modelname, p.modelname); in common
-  for (int ii = 0;  ii < max_nodes();  ++ii) {
+  for (uint_t ii = 0;  ii < max_nodes();  ++ii) {
     _nodes[ii] = p._nodes[ii];
   }
   _n = _nodes;

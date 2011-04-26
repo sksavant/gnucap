@@ -1,4 +1,4 @@
-/*$Id: io_error.cc,v 26.83 2008/06/05 04:46:59 al Exp $ -*- C++ -*-
+/*$Id: io_error.cc,v 1.1 2009-10-23 12:01:45 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

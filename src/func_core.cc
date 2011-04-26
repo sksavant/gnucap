@@ -1,4 +1,4 @@
-/*$Id: func_core.cc,v 26.127 2009/11/09 16:06:11 al Exp $ -*- C++ -*-
+/*$Id: func_core.cc,v 1.2 2009-11-18 20:53:18 felix Exp $ -*- C++ -*-
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -27,197 +27,197 @@ namespace {
 /*--------------------------------------------------------------------------*/
 class abs : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     PARAMETER<double> x;
     Cmd >> x;
     x.e_val(NOT_INPUT, Scope);
-    return to_string(std::abs(x));
+    return to_fun_t(std::abs(x));
   }
 } p_abs;
 DISPATCHER<FUNCTION>::INSTALL d_abs(&function_dispatcher, "abs", &p_abs);
 /*--------------------------------------------------------------------------*/
 class sqrt : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     PARAMETER<double> x;
     Cmd >> x;
     x.e_val(NOT_INPUT, Scope);
-    return to_string(std::sqrt(x));
+    return to_fun_t(std::sqrt(x));
   }
 } p_sqrt;
 DISPATCHER<FUNCTION>::INSTALL d_sqrt(&function_dispatcher, "sqrt", &p_sqrt);
 /*--------------------------------------------------------------------------*/
 class log : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     PARAMETER<double> x;
     Cmd >> x;
     x.e_val(NOT_INPUT, Scope);
-    return to_string(std::log(x));
+    return to_fun_t(std::log(x));
   }
 } p_log;
 DISPATCHER<FUNCTION>::INSTALL d_log(&function_dispatcher, "log", &p_log);
 /*--------------------------------------------------------------------------*/
 class exp : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     PARAMETER<double> x;
     Cmd >> x;
     x.e_val(NOT_INPUT, Scope);
-    return to_string(std::exp(x));
+    return to_fun_t(std::exp(x));
   }
 } p_exp;
 DISPATCHER<FUNCTION>::INSTALL d_exp(&function_dispatcher, "exp", &p_exp);
 /*--------------------------------------------------------------------------*/
 class INT : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     PARAMETER<double> x;
     Cmd >> x;
     x.e_val(NOT_INPUT, Scope);
-    return to_string(std::floor(x));
+    return to_fun_t(std::floor(x));
   }
 } p_int;
 DISPATCHER<FUNCTION>::INSTALL d_int(&function_dispatcher, "int", &p_int);
 /*--------------------------------------------------------------------------*/
 class pow : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     PARAMETER<double> x, y;
     Cmd >> x >> y;
     x.e_val(NOT_INPUT, Scope);
     y.e_val(NOT_INPUT, Scope);
-    return to_string(std::pow(x,y));
+    return to_fun_t(std::pow(x,y));
   }
 } p_pow;
 DISPATCHER<FUNCTION>::INSTALL d_pow(&function_dispatcher, "pow", &p_pow);
 /*--------------------------------------------------------------------------*/
 class MAX : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     PARAMETER<double> x, y;
     Cmd >> x >> y;
     x.e_val(NOT_INPUT, Scope);
     y.e_val(NOT_INPUT, Scope);
-    return to_string(std::max(x,y));
+    return to_fun_t(std::max(x,y));
   }
 } p_max;
 DISPATCHER<FUNCTION>::INSTALL d_max(&function_dispatcher, "max", &p_max);
 /*--------------------------------------------------------------------------*/
 class MIN : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     PARAMETER<double> x, y;
     Cmd >> x >> y;
     x.e_val(NOT_INPUT, Scope);
     y.e_val(NOT_INPUT, Scope);
-    return to_string(std::min(x,y));
+    return to_fun_t(std::min(x,y));
   }
 } p_min;
 DISPATCHER<FUNCTION>::INSTALL d_min(&function_dispatcher, "min", &p_min);
 /*--------------------------------------------------------------------------*/
 class IF : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     PARAMETER<double> x, y, z;
     Cmd >> x >> y;
     x.e_val(NOT_INPUT, Scope);
     y.e_val(NOT_INPUT, Scope);
     z.e_val(NOT_INPUT, Scope);
-    return to_string(x ? y : z);
+    return to_fun_t(x ? y : z);
   }
 } p_if;
 DISPATCHER<FUNCTION>::INSTALL d_if(&function_dispatcher, "if", &p_if);
 /*--------------------------------------------------------------------------*/
 class sin : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     PARAMETER<double> x;
     Cmd >> x;
     x.e_val(NOT_INPUT, Scope);
-    return to_string(std::sin(x));
+    return to_fun_t(std::sin(x));
   }
 } p_sin;
 DISPATCHER<FUNCTION>::INSTALL d_sin(&function_dispatcher, "sin", &p_sin);
 /*--------------------------------------------------------------------------*/
 class sinh : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     PARAMETER<double> x;
     Cmd >> x;
     x.e_val(NOT_INPUT, Scope);
-    return to_string(std::sinh(x));
+    return to_fun_t(std::sinh(x));
   }
 } p_sinh;
 DISPATCHER<FUNCTION>::INSTALL d_sinh(&function_dispatcher, "sinh", &p_sinh);
 /*--------------------------------------------------------------------------*/
 class cos : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     PARAMETER<double> x;
     Cmd >> x;
     x.e_val(NOT_INPUT, Scope);
-    return to_string(std::cos(x));
+    return to_fun_t(std::cos(x));
   }
 } p_cos;
 DISPATCHER<FUNCTION>::INSTALL d_cos(&function_dispatcher, "cos", &p_cos);
 /*--------------------------------------------------------------------------*/
 class cosh : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     PARAMETER<double> x;
     Cmd >> x;
     x.e_val(NOT_INPUT, Scope);
-    return to_string(std::cosh(x));
+    return to_fun_t(std::cosh(x));
   }
 } p_cosh;
 DISPATCHER<FUNCTION>::INSTALL d_cosh(&function_dispatcher, "cosh", &p_cosh);
 /*--------------------------------------------------------------------------*/
 class tan : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     PARAMETER<double> x;
     Cmd >> x;
     x.e_val(NOT_INPUT, Scope);
-    return to_string(std::tan(x));
+    return to_fun_t(std::tan(x));
   }
 } p_tan;
 DISPATCHER<FUNCTION>::INSTALL d_tan(&function_dispatcher, "tan", &p_tan);
 /*--------------------------------------------------------------------------*/
 class tanh : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     PARAMETER<double> x;
     Cmd >> x;
     x.e_val(NOT_INPUT, Scope);
-    return to_string(std::tanh(x));
+    return to_fun_t(std::tanh(x));
   }
 } p_tanh;
 DISPATCHER<FUNCTION>::INSTALL d_tanh(&function_dispatcher, "tanh", &p_tanh);
 /*--------------------------------------------------------------------------*/
 class na : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     PARAMETER<double> arg;
     Cmd >> arg;
     arg.e_val(NOT_INPUT, Scope);
-    return "NA";
+    return NAN;
     //return (arg.has_hard_value()) ? (to_string(double(arg))) : ("NA");
   }
 } p_na;
@@ -237,12 +237,12 @@ DISPATCHER<FUNCTION>::INSTALL d_na(&function_dispatcher, "na", &p_na);
 /*--------------------------------------------------------------------------*/
 class RANDOM_STUB : public FUNCTION {
 public:
-  std::string eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
     PARAMETER<double> arg;
     Cmd >> arg;
     arg.e_val(NOT_INPUT, Scope);
-    return to_string(double(arg));
+    return to_fun_t(double(arg));
   }
 } p_stub;
 DISPATCHER<FUNCTION>::INSTALL d_stub(&function_dispatcher, "agauss|gauss|aunif|unif", &p_stub);

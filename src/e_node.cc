@@ -1,4 +1,5 @@
-/*$Id: e_node.cc,v 26.132 2009/11/24 04:26:37 al Exp $ -*- C++ -*-
+/*$Id: e_node.cc,v 1.6 2010-08-26 09:07:18 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -65,7 +66,10 @@ static _LOGICVAL prop_truth[lvNUM_STATES][lvNUM_STATES] = {
 /*--------------------------------------------------------------------------*/
 inline LOGICVAL& LOGICVAL::set_in_transition(LOGICVAL newval)
 {
+// enum _LOGICVAL {lvSTABLE0,lvRISING,lvFALLING,lvSTABLE1,lvUNKNOWN};
+  trace2("LOGICVAL::set_in_transition", newval, _lv);
   _lv = prop_truth[_lv][newval];
+  trace2("LOGICVAL::set_in_transition", newval, _lv);
   assert(_lv != lvUNKNOWN);
   return *this;
 }
@@ -88,21 +92,28 @@ LOGIC_NODE::LOGIC_NODE()
 /*--------------------------------------------------------------------------*/
 /* default constructor : unconnected, don't use
  */
-NODE::NODE()
-  :CKT_BASE(),
+NODE_BASE::NODE_BASE() 
+  : CKT_BASE(),
    _user_number(INVALID_NODE)
-   //_flat_number(INVALID_NODE)
-   //_matrix_number(INVALID_NODE)
+{
+}
+NODE::NODE()
+  :NODE_BASE()
 {
 }
 /*--------------------------------------------------------------------------*/
 /* copy constructor : user data only
  */
-NODE::NODE(const NODE& p)
+NODE_BASE::NODE_BASE(const NODE_BASE& p)
   :CKT_BASE(p),
    _user_number(p._user_number)
    //_flat_number(p._flat_number)
    //_matrix_number(INVALID_NODE)
+{
+  unreachable();
+}
+NODE::NODE(const NODE& p)
+  :NODE_BASE(p)
 {
   unreachable();
 }
@@ -111,10 +122,7 @@ NODE::NODE(const NODE& p)
  * supposedly not used, but used by a required function that is also not used
  */
 NODE::NODE(const NODE* p)
-  :CKT_BASE(*p),
-   _user_number(p->_user_number)
-   //_flat_number(p->_flat_number)
-   //_matrix_number(INVALID_NODE)
+  :NODE_BASE(*p)
 {
   unreachable();
 }
@@ -122,6 +130,11 @@ NODE::NODE(const NODE* p)
 /* usual initializing constructor : name and index
  */
 NODE::NODE(const std::string& s, int n)
+  :NODE_BASE(s,n)
+{
+}
+/*--------------------------------------------------------------------------*/
+NODE_BASE::NODE_BASE(const std::string& s, int n)
   :CKT_BASE(s),
    _user_number(n)
    //_flat_number(n)
@@ -151,6 +164,7 @@ node_t::node_t(NODE* n)
 }
 node_t& node_t::operator=(const node_t& p)
 {
+  trace0(("copy node " + p.short_label()).c_str()); 
   if (p._nnn) {
     //assert(p._ttt == p._nnn->flat_number());
   }else{
@@ -221,7 +235,7 @@ double LOGIC_NODE::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "ai{ter} ")) {untested();
     return static_cast<double>(_a_iter);
   }else{
-    return NODE::tr_probe_num(x);
+    return NODE_BASE::tr_probe_num(x);
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -288,11 +302,11 @@ void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
     }
     double dt = _sim->_time0 - last_change_time();
     if (dt < 0.) {untested();
-      error(bPICKY, "time moving backwards.  was %g, now %g\n",
-	    last_change_time(), _sim->_time0);
+      error(bPICKY, "time moving backwards.  was %g, now %g, %g\n",
+	    last_change_time(), _sim->_time0, _sim->_Time0);
       dt = _sim->_time0 - old_last_change_time();
       if (dt <= 0.) {untested();
-	throw Exception("internal error: time moving backwards, can't recover");
+	throw Exception("internal error: time moving backwards, can't recover " + long_label());
       }else{untested();
       }
       assert(dt > 0.);
@@ -302,6 +316,7 @@ void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
       store_old_lv();			/* save to see if it changes */
     }
     
+    // MIXED_NODE?
     double sv = v0() / process()->range;	/* new scaled voltage */
     if (sv >= process()->th1) {		/* logic 1 */
       switch (lv()) {
@@ -392,7 +407,7 @@ void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
 				/* a transition state.		   */
     set_d_iter();
     set_last_change_time();
-    trace3(_failure_mode, _lastchange, _quality, _lv);
+    // trace3(_failure_mode, _lastchange, _quality, _lv);
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -445,6 +460,7 @@ double LOGIC_NODE::to_analog(const MODEL_LOGIC* f)
 /*--------------------------------------------------------------------------*/
 void LOGIC_NODE::propagate()
 {
+  trace1("LOGIC_NODE::propagate",_sim->_time0);
   assert(in_transit());
   if (lv().is_rising()) {
     set_lv(lvSTABLE1);
@@ -478,6 +494,7 @@ void LOGIC_NODE::force_initial_value(LOGICVAL v)
 /*--------------------------------------------------------------------------*/
 void LOGIC_NODE::set_event(double delay, LOGICVAL v)
 {
+  trace0("LOGIC_NODE::set_event");
   _lv.set_in_transition(v);
   if (_sim->analysis_is_tran_dynamic()  &&  in_transit()) {untested();
     set_bad_quality("race");
@@ -530,10 +547,10 @@ void node_t::new_model_node(const std::string& node_name, CARD* d)
   //assert(_ttt == _nnn->flat_number());
 }
 /*--------------------------------------------------------------------------*/
-void node_t::map_subckt_node(int* m, const CARD* d)
+void node_t::map_subckt_node(uint_t* m, const CARD* d)
 {
   assert(m);
-  assert(e_() >= 0);
+  assert(e_() !=INVALID_NODE);
   if (node_is_valid(m[e_()])) {
     _ttt = m[e_()];
   }else{untested();
@@ -543,4 +560,7 @@ void node_t::map_subckt_node(int* m, const CARD* d)
   assert(node_is_valid(_ttt));
 }
 /*--------------------------------------------------------------------------*/
+     double	NODE_BASE::tr_probe_num(const std::string&)const{return NAN;}
+     double	NODE_BASE::tt_probe_num(const std::string& x)const{return tr_probe_num(x);}
+    XPROBE	NODE_BASE::ac_probe_ext(const std::string&)const{ return XPROBE(0);}
 /*--------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-/*$Id: bm.cc,v 26.132 2009/11/24 04:26:37 al Exp $ -*- C++ -*-
+/*$Id: bm.cc,v 1.4 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -88,13 +88,14 @@ void EVAL_BM_ACTION_BASE::tr_finish_tdv(ELEMENT* d, double val)const
   tr_final_adjust(&(d->_y[0]), false);
 }
 /*--------------------------------------------------------------------------*/
-void EVAL_BM_ACTION_BASE::ac_final_adjust(COMPLEX* y)const
+template <class T>
+void EVAL_BM_ACTION_BASE::ac_final_adjust(T* y)const
 {
   if (_bandwidth != NOT_INPUT && _bandwidth != 0.) {untested();
     assert(y->imag() == 0);
     double ratio = CKT_BASE::_sim->_freq / _bandwidth;
-    double coeff = y->real() / (1.+(ratio*ratio));
-    *y = COMPLEX(coeff, -coeff * ratio);
+    double coeff = double( y->real() / (1.+(ratio*ratio)) );
+    *y = T(coeff, -coeff * ratio);
   }else{
   }
   
@@ -115,7 +116,19 @@ void EVAL_BM_ACTION_BASE::ac_final_adjust(COMPLEX* y)const
   }
 }
 /*--------------------------------------------------------------------------*/
+template <class T>
+void EVAL_BM_ACTION_BASE::ac_final_adjust_with_temp(T* y)const
+{
+  *y *= temp_adjust();
+  ac_final_adjust(y);
+}
+
 void EVAL_BM_ACTION_BASE::ac_final_adjust_with_temp(COMPLEX* y)const
+{
+  *y *= temp_adjust();
+  ac_final_adjust(y);
+}
+void EVAL_BM_ACTION_BASE::ac_final_adjust_with_temp(std::complex<long double>* y)const
 {
   *y *= temp_adjust();
   ac_final_adjust(y);

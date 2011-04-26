@@ -1,0 +1,11 @@
+#
+# This is the system function descriptor table for the
+# Verilog-A math functions.
+#
+
+# Single argument functions.
+$log    vpiSysFuncReal
+$abs    vpiSysFuncReal
+# Double argument functions.
+$min    vpiSysFuncReal
+$max    vpiSysFuncReal

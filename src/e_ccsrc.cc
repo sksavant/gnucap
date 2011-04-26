@@ -1,4 +1,4 @@
-/*$Id: e_ccsrc.cc,v 26.124 2009/09/28 22:59:33 al Exp $ -*- C++ -*-
+/*$Id: e_ccsrc.cc,v 1.1 2009-10-23 12:01:45 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -50,7 +50,7 @@ void CCSRC_BASE::expand_last()
   }
 }
 /*--------------------------------------------------------------------------*/
-void CCSRC_BASE::set_port_by_index(int num, std::string& Value)
+void CCSRC_BASE::set_port_by_index(uint_t num, std::string& Value)
 {
   if (num == 2) {
     _input_label = Value;
@@ -59,7 +59,7 @@ void CCSRC_BASE::set_port_by_index(int num, std::string& Value)
   }
 }
 /*--------------------------------------------------------------------------*/
-bool CCSRC_BASE::node_is_connected(int i)const
+bool CCSRC_BASE::node_is_connected(uint_t i)const
 {
   if (i == 2) {
     return _input_label != "";

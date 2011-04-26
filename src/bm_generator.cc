@@ -1,4 +1,4 @@
-/*$Id: bm_generator.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: bm_generator.cc,v 1.2 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -33,7 +33,9 @@ private:
   explicit	EVAL_BM_GENERATOR(const EVAL_BM_GENERATOR& p);
 public:
   explicit      EVAL_BM_GENERATOR(int c=0);
-		~EVAL_BM_GENERATOR()	{}
+		~EVAL_BM_GENERATOR()	{
+		trace0("~EVAL_BM_GENERATOR");
+		}
 private: // override virtual
   bool		operator==(const COMMON_COMPONENT&)const;
   COMMON_COMPONENT* clone()const	{return new EVAL_BM_GENERATOR(*this);}

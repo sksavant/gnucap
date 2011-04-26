@@ -1,4 +1,5 @@
-/*$Id: m_matrix.h,v 26.131 2009/11/20 08:22:10 al Exp $ -*- C++ -*-
+/*$Id: m_matrix.h,v 1.5 2010-07-09 12:14:24 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -33,7 +34,7 @@
  * 4. If you want, you can add an offset to the diagonal ...
  *	a.dezero(gmin);
  * 5. You probably should set a minimum pivot value ...
- *	a.setminpivot(gmin);
+ *	a.set_min_pivot(gmin);
  * 6. Fill in the matrix ...
  *	for (all pairs i,j you want to fill in)
  *	   a.m(i,j) += data;
@@ -111,6 +112,10 @@
 #define M_MATRIX_H
 /*--------------------------------------------------------------------------*/
 #include "l_stlextra.h"
+#include "io_.h"
+#include <iostream>
+#include <fstream>
+using namespace std;
 /*--------------------------------------------------------------------------*/
 template <class T>
 class BSMATRIX {
@@ -150,6 +155,7 @@ public:
   int		size()const		{return _size;}
   double 	density();
   T 	d(int r, int  )const	{return *(_diaptr[r]);}
+  const T& s(int r, int c)const; // for python?
 private:
   T 	u(int r, int c)const	{return _colptr[c][r];}
   T 	l(int r, int c)const	{return _rowptr[r][-c];}
@@ -157,8 +163,10 @@ private:
   T&	u(int r, int c);
   T&	l(int r, int c);
   T&	m(int r, int c);
-  //T&	s(int r, int c);
+//  T&	s(int r, int c);
 public:
+  template <class X>
+  friend ostream& operator<< ( ostream &o, const BSMATRIX<X>& m);
   void		load_diagonal_point(int i, T value);
   void		load_point(int i, int j, T value);
   void		load_couple(int i, int j, T value);
@@ -457,10 +465,10 @@ T& BSMATRIX<T>::m(int r, int c)
  *   Writing to trash is allowed and encouraged,
  *   but reading it gives a number not useful for anything.
  */
-#if 0
+#if 1
 template <class T>
-T& BSMATRIX<T>::s(int row, int col)
-{untested();
+const T& BSMATRIX<T>::s(int row, int col)const
+{
   assert(_lownode);
   assert(0 <= col);
   assert(col <= size());
@@ -468,24 +476,24 @@ T& BSMATRIX<T>::s(int row, int col)
   assert(row <= size());
   assert(_zero == 0.);
 
-  if (col == row) {untested();
+  if (col == row) {
     return d(row,col);
-  }else if (col > row) {untested();	/* above the diagonal */
-    if (row == 0) {untested();
+  }else if (col > row) {	/* above the diagonal */
+    if (row == 0) {
       return _trash;
-    }else if (row < _lownode[col]) {untested();
+    }else if (row < _lownode[col]) {
       return _zero;
-    }else{untested();
-      return u(row,col);
+    }else{
+      return (u(row,col));
     }
-  }else{untested();			/* below the diagonal */
+  }else{			/* below the diagonal */
     assert(col < row);
-    if (col == 0) {untested();
+    if (col == 0) {
       return _trash;
-    }else if (col < _lownode[row]) {untested();
+    }else if (col < _lownode[row]) {
       return _zero;
-    }else{untested();
-      return l(row,col);
+    }else{
+      return (l(row,col));
     }
   }
   unreachable();
@@ -692,9 +700,9 @@ void BSMATRIX<T>::fbsub(T* v) const
 }
 /*--------------------------------------------------------------------------*/
 /* fbsub: forward and back sub, separate storage
+ * x = solution vector
  * b = right side vector
  * c = intermediate vector after fwd sub
- * x = solution vector
  */
 template <class T>
 void BSMATRIX<T>::fbsub(T* x, const T* b, T* c) const
@@ -737,5 +745,28 @@ void BSMATRIX<T>::fbsub(T* x, const T* b, T* c) const
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+template <class T>
+inline ostream& operator<<( ostream& o, const BSMATRIX<T> &m)
+{
+  std::string s;
+  s = "Matrix of size ";
+  int size=m.size();
+  o << s << m.size();
+  o << " space " << m._nzcount;
+  o << "\n";
+  int i,j;
+  double x;
+
+  for(i = 1; i <=size ; i++ ){
+    for(j = 1; j <=size ; j++ ){
+      x = ((m).s(i,j));
+      o << x << " ";
+    }
+    if (i<size ) o << "\n";
+  }
+
+
+  return o;
+}
 #endif
 

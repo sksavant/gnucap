@@ -1,4 +1,4 @@
-/*$Id: lang_spectre.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: lang_spectre.cc,v 1.1 2009-12-14 10:40:08 felix Exp $ -*- C++ -*-
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

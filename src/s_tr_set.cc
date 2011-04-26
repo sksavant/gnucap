@@ -1,4 +1,5 @@
-/*$Id: s_tr_set.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: s_tr_set.cc,v 1.9 2010-08-02 07:51:06 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -65,6 +66,7 @@ void TRANSIENT::setup(CS& Cmd)
 	_tstart = arg1;			    /* _tstart _tstop _tstep */
 	_tstop  = arg2;				
 	_tstep  = arg3;
+        std::cout << "\n"; // gnuplot. no newline command yet.
       }else if (arg1 > arg3) {untested();   /* eca (logical) order: */
 	_tstart = arg1;			    /* _tstart _tstop _tstep */
 	_tstop  = arg2;				
@@ -166,6 +168,7 @@ void TRANSIENT::options(CS& Cmd)
 {
   _out = IO::mstdout;
   _out.reset(); //BUG// don't know why this is needed
+
   _sim->_temp_c = OPT::temp_c;
   bool ploton = IO::plotset  &&  plotlist().size() > 0;
   _sim->_uic = _cold = false;
@@ -195,7 +198,7 @@ void TRANSIENT::options(CS& Cmd)
 		       "rejected, iterations, verbose")
 	   )
 	  )
-      || outset(Cmd,&_out)
+      || _out.outset(Cmd)
       ;
   }while (Cmd.more() && !Cmd.stuck(&here));
   Cmd.check(bWARNING, "what's this?");
@@ -207,6 +210,7 @@ void TRANSIENT::options(CS& Cmd)
   _dtmin_in.e_val(OPT::dtmin, _scope);
   _dtratio_in.e_val(OPT::dtratio, _scope);
   _skip_in.e_val(1, _scope);
+
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

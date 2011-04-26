@@ -1,4 +1,4 @@
-/*$Id: md.h,v 26.112 2009/07/24 00:10:32 al Exp $ -*- C++ -*-
+/*$Id: md.h,v 1.1 2009-10-23 14:52:05 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

@@ -1,4 +1,5 @@
-/*$Id: e_compon.h,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: e_compon.h,v 1.21 2010-08-26 09:07:18 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -28,16 +29,24 @@
 #include "u_time_pair.h"
 #include "u_parameter.h"
 #include "e_card.h"
+//HACK
+#include "s_tr.h"
+#include "s__.h"
+//#include "u_adp.h"
+#include "e_adplist.h"
+#include "globals.h"
 /*--------------------------------------------------------------------------*/
 // this file
 class COMMON_COMPONENT;
 class COMPONENT;
+class ADP_CARD;
 /*--------------------------------------------------------------------------*/
 // external
 class MODEL_CARD;
 class CS;
 class ELEMENT;
 class CARD_LIST;
+class ADP_LIST;
 /*--------------------------------------------------------------------------*/
 inline bool conchk(double o, double n,
 		   double a=OPT::abstol, double r=OPT::reltol)
@@ -103,16 +112,22 @@ public:
   virtual int param_count()const {return 4;}
 public:
   virtual void precalc_first(const CARD_LIST*);
-  virtual void expand(const COMPONENT*)		{}
-  virtual COMMON_COMPONENT* deflate()		{return this;}
+  virtual void expand(const COMPONENT* c);
+  virtual COMMON_COMPONENT* deflate(); //		{return this;}
   virtual void precalc_last(const CARD_LIST*)	{}
 
   virtual void	tr_eval(ELEMENT*)const;
   virtual void	ac_eval(ELEMENT*)const;
   virtual TIME_PAIR tr_review(COMPONENT*) {return TIME_PAIR(NEVER,NEVER);}
   virtual void  tr_accept(COMPONENT*)	{}
-  virtual bool	has_tr_eval()const	{untested(); return false;}
+  virtual bool	has_tr_eval()const	{untested0( name().c_str() ); return false;}
   virtual bool	has_ac_eval()const	{untested(); return false;}
+
+public:
+  virtual bool	has_tt_eval()const	{untested(); return false;}
+  virtual void	tt_commit (ELEMENT*)const;
+  virtual void	stress_apply() {untested0("COMP::stress_apply()");}
+
 
   virtual bool	parse_numlist(CS&);
   virtual bool	parse_params_obsolete_callback(CS&);
@@ -122,8 +137,18 @@ public:
   virtual bool  operator==(const COMMON_COMPONENT&x)const;
 
   bool operator!=(const COMMON_COMPONENT& x)const {return !(*this == x);}
-  std::string	      modelname()const	{return _modelname;}
-  const MODEL_CARD*   model()const	{assert(_model); return _model;}
+  int attach_count()const{
+    trace1("COMMON_COMPONENT::attach_count ", hp((intptr_t)this));
+    return _attach_count;
+  }
+  std::string	      modelname()const	{
+    return _modelname;}
+  const MODEL_CARD*   model()const	{
+    if(!_model) { 
+        trace1((" model name : " + _modelname) + " but no model", (long int) this %1000);
+    }
+    // assert(_model); stupid.
+    return _model;}
   bool		      has_model()const	{return _model;}
   const PARAMETER<double>& mfactor()const {return _mfactor;}
   const PARAMETER<double>& value()const {return _value;}
@@ -162,6 +187,7 @@ public:
 protected: // create and destroy.
   explicit   COMPONENT();
   explicit   COMPONENT(const COMPONENT& p);
+
 	     ~COMPONENT();
   //--------------------------------------------------------------------
 public:	// "elaborate"
@@ -175,6 +201,9 @@ public:	// dc-tran
   TIME_PAIR tr_review();
   void      tr_accept();
   double    tr_probe_num(const std::string&)const;
+  //--------------------------------------------------------------------
+public:   // tt-tran
+  double    tt_probe_num(const std::string&)const;
   //--------------------------------------------------------------------
 public:	// ac
   void  ac_iwant_matrix();
@@ -204,8 +233,10 @@ public:	// state, aux data
   void	mark_q_for_eval()	 {_q_for_eval = _sim->iteration_tag();}
   void	mark_always_q_for_eval() {_q_for_eval = INT_MAX;}
   void	q_eval();
-  void	q_load()		 {_sim->_loadq.push_back(this);}
+  void	q_load()		 { trace0(("q_load: "+ short_label()).c_str() );
+                                   _sim->_loadq.push_back(this);}
   void	q_accept()		 {_sim->_acceptq.push_back(this);}
+  void	q_tt_accept()		 {_sim->_tt_acceptq.push_back(this);}
   //--------------------------------------------------------------------
   // model
   const MODEL_CARD* find_model(const std::string& name)const;
@@ -215,43 +246,44 @@ public:	// state, aux data
   COMMON_COMPONENT* mutable_common()	  {return _common;}
   const COMMON_COMPONENT* common()const	  {return _common;}
   bool	has_common()const		  {return _common;}
-  void	attach_common(COMMON_COMPONENT*c) {COMMON_COMPONENT::attach_common(c,&_common);}
-  void	detach_common()			  {COMMON_COMPONENT::detach_common(&_common);}
+  void	attach_common(COMMON_COMPONENT*c) {
+    COMMON_COMPONENT::attach_common(c,&_common);}
+  void	detach_common()	  {COMMON_COMPONENT::detach_common(&_common);}
   void	deflate_common();
   //--------------------------------------------------------------------
 public:	// type
   void  set_dev_type(const std::string& new_type);
   //--------------------------------------------------------------------
 public:	// ports
-  virtual std::string port_name(int)const = 0;
+  virtual std::string port_name(uint_t)const = 0;
   virtual void set_port_by_name(std::string& name, std::string& value);
-  virtual void set_port_by_index(int index, std::string& value);
-  bool port_exists(int i)const {return i < net_nodes();}
-  const std::string port_value(int i)const;
-  void	set_port_to_ground(int index);
+  virtual void set_port_by_index(uint_t index, std::string& value);
+  bool port_exists(uint_t i)const {return i < net_nodes();}
+  const std::string port_value(uint_t i)const;
+  void	set_port_to_ground(uint_t index);
 
-  virtual std::string current_port_name(int)const {return "";}
-  virtual const std::string current_port_value(int)const;
-  virtual void set_current_port_by_index(int, const std::string&) {unreachable();}    
-  bool current_port_exists(int i)const	{return i < num_current_ports();}
+  virtual std::string current_port_name(uint_t)const {return "";}
+  virtual const std::string current_port_value(uint_t)const;
+  virtual void set_current_port_by_index(uint_t, const std::string&) {unreachable();}    
+  bool current_port_exists(uint_t i)const	{return i < num_current_ports();}
 
-  virtual int	max_nodes()const	{unreachable(); return 0;}
-  virtual int	min_nodes()const	{unreachable(); return 0;}
-  virtual int	num_current_ports()const {return 0;}
-  virtual int	tail_size()const	{return 0;}
+  virtual uint_t	max_nodes()const	{unreachable(); return 0;}
+  virtual uint_t	min_nodes()const	{unreachable(); return 0;}
+  virtual uint_t	num_current_ports()const {return 0;}
+  virtual uint_t	tail_size()const	{return 0;}
 
-  virtual int	net_nodes()const	{untested();return 0;} //override
-  virtual int	ext_nodes()const	{return max_nodes();}
-  virtual int	int_nodes()const	{return 0;}
-  virtual int	matrix_nodes()const	{return 0;}
+  virtual uint_t	net_nodes()const	{untested();return 0;} //override
+  virtual uint_t	ext_nodes()const	{return max_nodes();}
+  virtual uint_t	int_nodes()const	{return 0;}
+  virtual uint_t	matrix_nodes()const	{return 0;}
 
   virtual bool	has_inode()const	{return false;}
   virtual bool	has_iv_probe()const	{return false;}
   virtual bool	is_source()const	{return false;}
   virtual bool	f_is_value()const	{return false;}
 
-  bool		node_is_grounded(int i)const;
-  virtual bool	node_is_connected(int i)const;
+  bool		node_is_grounded(uint_t i)const;
+  virtual bool	node_is_connected(uint_t i)const;
   //--------------------------------------------------------------------
 public: // parameters
   void set_param_by_name(std::string, std::string);
@@ -265,8 +297,8 @@ public: // parameters
 
   virtual void set_parameters(const std::string& Label, CARD* Parent,
 			      COMMON_COMPONENT* Common, double Value,
-			      int state_count, double state[],
-			      int node_count, const node_t nodes[]);
+			      uint_t state_count, hp_float_t state[],
+			      uint_t node_count, const node_t nodes[]);
   void	set_value(const PARAMETER<double>& v)	{_value = v;}
   void	set_value(double v)			{_value = v;}
   void  set_value(const std::string& v)		{untested(); _value = v;}
@@ -279,6 +311,62 @@ public:	// obsolete -- do not use in new code
   bool use_obsolete_callback_print()const;
   void print_args_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
   void obsolete_move_parameters_from_common(const COMMON_COMPONENT*);
+  //--------------------------------------------------------------------
+public:
+  ADP_CARD* adp()const {return(_adp);}
+  void attach_adp(ADP_CARD* a);
+  virtual void tt_prepare();
+protected:
+  double  _tr_amps_diff_cur;
+  double  _tr_amps_diff_max;
+  double  _tr_amps_scale_max;
+  double* _amps;
+  double* _amps_new;
+  double _amps_max;
+
+  void tt_behaviour_update();
+  void tr_behaviour(){ tt_behaviour_update(); }
+  virtual void tt_begin() {  }
+  virtual void tt_next() {  }
+
+  virtual void tt_init_i(){
+	  std::cerr << short_label() << " COMP:init_i have " << net_nodes() << "nodes "<< TRANSIENT::total_outsteps() << "\n";
+	  // _amps = (double*) malloc(sizeof (double) * net_nodes() * TRANSIENT::total_outsteps() );
+	  _amps=NULL;
+	  // _amps_new = (double*) malloc(sizeof (double) * net_nodes() * TRANSIENT::total_outsteps() );
+          _amps_new = new double[net_nodes() * TRANSIENT::total_outsteps()];
+
+	  std::cerr << "COMPONENT::tt_init_i: allocated " 
+                    << net_nodes() * TRANSIENT::total_outsteps() << "doubles  for " << short_label() << ": " << _amps  << "\n";
+  }
+
+  void tr_dinge(){
+		// _amps[SIM::stepno()]= 4;
+
+  }
+  void tr_diff_amps();
+  void tt_accept(); // !const bc. behauviour
+  double _amps_max_diff;
+  double get_amps_max_diff(){ return _amps_max_diff; }
+  virtual void tr_do_behaviour();
+  virtual void tr_save_amps(int n); 
+  void reset_amps_max_diff(){ _amps_max_diff=0; }
+
+
+private:
+  ADP_CARD* _adp;
+public:
+  virtual void stress_apply() { }
+  virtual void  tr_stress()  {
+    trace0 ( ( "COMP device " + short_label() + ": no stress" ).c_str() );
+  } // calcul
+  virtual void  tr_stress_last()    { trace0("COMPONENT::tr_stress_last");}
+  virtual double tr_amps_diff()const {return 0.;}
+  virtual double tr_amps_diff_cur()const {return 0.;}
+  virtual bool	has_stress()const	{untested(); return false;}
+
+
+
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

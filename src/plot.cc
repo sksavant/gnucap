@@ -1,4 +1,4 @@
-/*$Id: plot.cc,v 26.110 2009/05/28 15:32:04 al Exp $
+/*$Id: plot.cc,v 1.2 2010-09-07 07:46:24 felix Exp $
  * (this file is a mess.  it should be redone.)
  */
 //testing=script 2006.07.17
@@ -40,10 +40,10 @@ void plottr(double xx, const PROBELIST& plotlist) /* plot a data point,	    */
 	 i =  plotlist.begin();
 	 i != plotlist.end();
 	 ++i) {
-      val[ii] = i->value();
-      if (i->range() != 0.) {
-	lo[ii] = i->lo();
-	hi[ii] = i->hi();
+      val[ii] = (*i)->value();
+      if ((*i)->range() != 0.) {
+	lo[ii] = (*i)->lo();
+	hi[ii] = (*i)->hi();
       }else{
 	lo[ii] = -5.;
 	hi[ii] = 5.;
@@ -174,7 +174,7 @@ static void plhead(const PROBELIST& plotlist)
        i =  plotlist.begin();
        i != plotlist.end();
        ++i) {
-    calibrate(*i);
+    calibrate(**i);
   }
   for (int ii = 0;  ii < CONSSCALE; ii++) {		/* build strings */
     border[ii] = '-';

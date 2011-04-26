@@ -1,4 +1,4 @@
-/*$Id: s_tr.h,v 26.131 2009/11/20 08:22:10 al Exp $ -*- C++ -*-
+/*$Id: s_tr.h,v 1.10 2010-07-27 07:45:35 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -53,6 +53,8 @@ public:
     _dtmax(0.),
     _cold(false),
     _cont(false),
+    _tt_cont(false),
+    _inside_tt(false),
     _trace(tNONE),
     _time_by_iteration_count(0.),
     _time_by_user_request(0.),
@@ -61,6 +63,8 @@ public:
     _converged(false),
     _accepted(false)
   {
+	  steps_total_out_ = (int) ceil( ( (_tstop - _tstart ) / _tstep ) );
+	  trace4( "TRANSIENT()",  steps_total_out_, _tstep , _tstop, _tstart );
   }
   ~TRANSIENT() {}
 public:
@@ -70,7 +74,7 @@ public:
 private:		// s_tr_rev.cc
   bool	review();
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
-private:		// s_tr_set.cc
+protected:		// s_tr_set.cc
   void	setup(CS&);
 protected:
   void	options(CS&);
@@ -80,10 +84,12 @@ protected:		// s_tr_swp.cc
 private:
   void	set_step_cause(STEP_CAUSE);
 public:
+  int stepno(){return _sim->_stepno;}		// count of visible (saved) steps
+  static int total_outsteps(){return steps_total_out_  ;}		// count of visible (saved) steps
   int	step_cause()const;
-  void	first();
+  void	first(); // HACK/
   bool	next();
-  void	accept();
+  virtual void	accept(); // HACK
   void	reject();
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
 private:
@@ -102,13 +108,16 @@ protected:
   double _dtmax;	// max internal step size (step / _skip)
   bool _cold;		// flag: start time=0, all voltages=0
   bool _cont;		// flag: continue from previous run
-  int _stepno;		// count of visible (saved) steps
+  bool _tt_cont;	// 
+  bool _inside_tt;// hack: tell tr_swp to not reinit circuit
+  //int _stepno;		// count of visible (saved) steps
 private:
   TRACE _trace;		// enum: show extended diagnostics
   double _time_by_iteration_count;
   double _time_by_user_request;
   double _time_by_error_estimate;
   double _time_by_ambiguous_event;
+protected:
   bool _converged;
   bool _accepted;
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -116,6 +125,8 @@ private:
   static int steps_accepted_;
   static int steps_rejected_;
   static int steps_total_;
+protected:
+  static int steps_total_out_;
 public:
   static int steps_accepted() {return steps_accepted_;}
   static int steps_rejected() {return steps_rejected_;}

@@ -1,4 +1,5 @@
-/*$Id: c_genrat.cc,v 26.133 2009/11/26 04:58:04 al Exp $ -*- C++ -*-
+/*$Id: c_genrat.cc,v 1.4 2010-07-16 08:22:00 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -113,9 +114,11 @@ double gen()
   level *= (freq == 0.) 
     ? ampl
     : ampl * sin(M_TWO_PI * freq*(CKT_BASE::_sim->_time0-delay) + phaz * DTOR);
-  return (CKT_BASE::_sim->_time0 <= delay + rise)
+  double tmp = (CKT_BASE::_sim->_time0 <= delay + rise)
     ? level + (offset - init_) * (loctime/rise) + init_
     : level + offset;
+
+  return tmp;
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

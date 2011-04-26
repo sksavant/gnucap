@@ -1,4 +1,5 @@
-/*$Id: ap_construct.cc,v 26.130 2009/11/15 21:51:59 al Exp $ -*- C++ -*-
+/*$Id: ap_construct.cc,v 1.3 2010-09-17 12:25:54 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -24,8 +25,15 @@
 //testing=script,sparse 2006.07.17
 #include "u_opt.h"
 #include "ap.h"
+#include <ios>
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
 
-#if defined(HAVE_LIBREADLINE)
+#ifdef HAVE_LIBREADLINE
   #include <readline/readline.h>
   #include <readline/history.h>
 #endif
@@ -45,11 +53,55 @@ CS::CS(CS::STDIN)
    _ok(true),
    _line_number(0)
 {
+
+  std::string gh = std::string(getenv("HOME")) + "/.gnucap_history";
+  char str[BUFLEN];
+  std::ifstream file;
+  file.open(gh.c_str());
+  if( file )
+    while(file >> str){
+      add_history(str);
+    }
+  file.close();
+  
+  // add history
 }
-/*--------------------------------------------------------------------------*/
+
+CS::~CS()
+{
+  if (_file==stdin){
+
+
+  }
+  if (is_file()) {fclose(_file);}
+
+}
+/*--------------------------------------------------------------------------
+  bool search_file( std::string &name ){
+    const char* h ="HOME";
+    const char* home= getenv(h);
+
+    if (name[0] == '/') return true; // fixme
+
+    std::string pathlist[4] = { OPT::libpath , "./",  LIBDIR,
+      std::string(home) + std::string("/.gnucap/lib/") };
+
+    // FIXME. use libpath 
+
+    for(int i=1; i<4 ; i++) {
+      if ( FILE* tmp = fopen( (pathlist[i] + "/" + name).c_str(), "r" ) ) {
+        fclose(tmp);
+        name = pathlist[i]+"/"+name;
+        return true;
+      }
+      trace0( (" not found " + pathlist[i] + "/" + name).c_str());
+    }
+    return false;
+
+  }
+--------------------------------------------------------------------------*/
 CS::CS(CS::INC_FILE, const std::string& name)
-  :_file(fopen(name.c_str(), "r")),
-   _name(name),
+  :_name(name),
    _cmd(),
    _cnt(0),
    _length(0),
@@ -58,6 +110,27 @@ CS::CS(CS::INC_FILE, const std::string& name)
    _ok(true),
    _line_number(0)
 {
+
+  if(name[0]=='/' || name[0]=='~'){
+    trace0(("CS::CS(inc, absulute " +  name).c_str());
+    _file = fopen(name.c_str(), "r");
+  }else{
+
+    std::vector< std::string > pathlist;
+    std::string includepath=OPT::includepath;
+    boost::algorithm::split(pathlist, includepath, boost::is_any_of(":"));
+    for(std::vector< std::string >::iterator i=pathlist.begin(); i!=pathlist.end() ; ++i) {
+      std::string fn=(*i + "/" + name);
+      trace0(("CS::CS(inc, trying " + fn).c_str());
+      if (( _file = fopen( fn.c_str(), "r" ) ) ) {
+        break;
+      }else{
+        trace0("no file");
+      }
+    }
+  }
+
+
   if (!_file) {itested();
     throw Exception_File_Open(name + ':' + strerror(errno));
   }else{
@@ -155,6 +228,7 @@ CS& CS::get_line(const std::string& prompt)
   }else{itested();
     assert(_file == stdin);
     char cmdbuf[BUFLEN];
+//    trace0("CS::get_line " + std::string(cmdbuf));
     getcmd(prompt.c_str(), cmdbuf, BUFLEN);
     _cmd = cmdbuf;
     _cnt = 0;
@@ -179,7 +253,7 @@ char *getcmd(const char *prompt, char *buffer, int buflen)
   assert(buffer);
   if (isatty(fileno(stdin))) {
     // stdin is keyboard
-#if defined(HAVE_LIBREADLINE)
+#ifdef HAVE_LIBREADLINE
     if (OPT::edit) {
       char* line_read = readline(prompt);
       if (!line_read) {itested();
@@ -196,7 +270,16 @@ char *getcmd(const char *prompt, char *buffer, int buflen)
       free(line_read);
       
       if (*buffer) {
+        trace0("adding history " + std::string(buffer));
 	add_history(buffer);
+
+        std::string gh = std::string(getenv("HOME")) + "/.gnucap_history";
+        std::ofstream file;
+        file.open(gh.c_str(),std::ios_base::app);
+        if( file )
+                file << buffer << "\n";
+        file.close();
+
       }else{
       }
     }else
@@ -243,7 +326,8 @@ static std::string getlines(FILE *fileptr)
     }else{
       trim(buffer);
       size_t count = strlen(buffer);
-      if (buffer[count-1] == '\\') {itested();
+//      trace1("getlines", count);
+      if ( count > 0 && buffer[count-1] == '\\') {itested();
 	buffer[count-1] = '\0';
       }else{
 	// look ahead at next line

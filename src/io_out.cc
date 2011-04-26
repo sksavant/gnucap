@@ -1,4 +1,5 @@
-/*$Id: io_out.cc,v 26.81 2008/05/27 05:34:00 al Exp $ -*- C++ -*-
+/*$Id: io_out.cc,v 1.2 2010-07-09 12:14:23 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -32,6 +33,7 @@
  */
 //testing=script,sparse 2006.07.17
 #include "u_opt.h"
+#include "m_matrix.h"
 /*--------------------------------------------------------------------------*/
 	const char* octal(int x);
 //	OMSTREAM & OMSTREAM::tab(int count)
@@ -220,5 +222,6 @@ OMSTREAM & OMSTREAM::operator<<(char chr)
   }
   return *this;
 }
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

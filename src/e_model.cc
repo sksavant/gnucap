@@ -1,4 +1,4 @@
-/*$Id: e_model.cc,v 26.132 2009/11/24 04:26:37 al Exp $ -*- C++ -*-
+/*$Id: e_model.cc,v 1.4 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -30,6 +30,7 @@ MODEL_CARD::MODEL_CARD(const COMPONENT* p)
    _component_proto(p),
    _tnom_c(NOT_INPUT)
 {
+  trace0("MODEL_CARD::MODEL_CARD sim->uninit" + dev_type());
   _sim->uninit();
 }
 /*--------------------------------------------------------------------------*/
@@ -38,11 +39,13 @@ MODEL_CARD::MODEL_CARD(const MODEL_CARD& p)
    _component_proto(p._component_proto),
    _tnom_c(p._tnom_c)
 {
+  trace0("MODEL_CARD::MODEL_CARD uninit");
   _sim->uninit();
 }
 /*--------------------------------------------------------------------------*/
 MODEL_CARD::~MODEL_CARD()
 {
+  trace0("MODEL_CARD::~MODEL_CARD uninit "+ dev_type());
   _sim->uninit(); // disconnect models from devices
 }
 /*--------------------------------------------------------------------------*/

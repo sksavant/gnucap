@@ -1,0 +1,35 @@
+* mos degrade proof-of-concept
+
+.include non-GPL.inc
+.options adpreltol=0.01
+*.options adporder=1
+.options TEMP=25
+
+
+.param vdd=5
+.param pulse_iv=0
+.param pulse_rise=1n
+.param pamp=3
+.param voff=0.4
+
+.model my_rcd rcdsym_v2()
+
+* V1 nin ndd sin ( delay=-0.025m amplitude=0.4 frequency=1e4 offset=-0.4)
+
+# very fast simple aging...
+.model bti_test bti_inf (uref=1 rcd_model_name=my_rcd weight=1e-3 v2=yes mn=1)
+.model my_pmos pmos (
++ level = 1
++ bti_model = bti_test )
+
+V2 ndd ngp pulse ( iv=pulse_iv pv=pamp delay=1n rise=pulse_rise fall=0 period=0 )
+V2 ng  ngp sin   ( amplitude=1 frequency=1e4 )
+
+*MP1 ndd ng nout ndd my_pmos 4.5/0.15
+MP1 ndd ng nout ndd my_pmos l=1.5e-7 w=4.5e-6
+* comparison
+B1  ndd ng  bti_test
+
+R3 0 nout 300
+VDD ndd 0 vdd
+

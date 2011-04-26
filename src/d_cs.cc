@@ -1,4 +1,5 @@
-/*$Id: d_cs.cc,v 26.134 2009/11/29 03:47:06 al Exp $ -*- C++ -*-
+/*$Id: d_cs.cc,v 1.5 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
+ * vim:ts=2:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -36,10 +37,10 @@ private: // override virtual
   char	   id_letter()const	{return 'I';}
   std::string value_name()const {itested(); return "dc";}
   std::string dev_type()const	{return "isource";}
-  int	   max_nodes()const	{return 2;}
-  int	   min_nodes()const	{return 2;}
-  int	   matrix_nodes()const	{return 2;}
-  int	   net_nodes()const	{return 2;}
+  uint_t	   max_nodes()const	{return 2;}
+  uint_t	   min_nodes()const	{return 2;}
+  uint_t	   matrix_nodes()const	{return 2;}
+  uint_t	   net_nodes()const	{return 2;}
   bool	   is_source()const	{return true;}
   bool	   f_is_value()const	{return true;}
   bool	   has_iv_probe()const  {return true;}
@@ -51,8 +52,8 @@ private: // override virtual
   bool	   do_tr();
   void	   tr_load()		{tr_load_source();}
   void	   tr_unload()		{untested();tr_unload_source();}
-  double   tr_involts()const	{return 0.;}
-  double   tr_involts_limited()const {unreachable(); return 0.;}
+  hp_float_t   tr_involts()const	{return 0.;}
+  hp_float_t   tr_involts_limited()const {unreachable(); return 0.;}
   void	   ac_iwant_matrix()	{/* nothing */}
   void	   ac_begin()		{_acg = _ev = 0.;}
   void	   do_ac();
@@ -60,8 +61,8 @@ private: // override virtual
   COMPLEX  ac_involts()const	{untested();return 0.;}
   COMPLEX  ac_amps()const	{return _acg;}
 
-  std::string port_name(int i)const {
-    assert(i >= 0);
+  std::string port_name(uint_t i)const {
+    assert(i != INVALID_NODE);
     assert(i < 2);
     static std::string names[] = {"p", "n"};
     return names[i];
@@ -71,6 +72,7 @@ private: // override virtual
 /*--------------------------------------------------------------------------*/
 void DEV_CS::precalc_last()
 {
+  trace0("DEV_CS::precalc_last()");
   ELEMENT::precalc_last();
   set_constant(!has_tr_eval());
   set_converged(!has_tr_eval());
@@ -90,6 +92,7 @@ void DEV_CS::tr_begin()
 /*--------------------------------------------------------------------------*/
 bool DEV_CS::do_tr()
 {
+	trace1("DEV_CS::do_tr " + short_label(), using_tr_eval() );
   assert(_m0.x == 0.);
   if (using_tr_eval()) {
     _y[0].x = _sim->_time0;

@@ -1,4 +1,4 @@
-/*$Id: mg_out_h.cc,v 26.134 2009/11/29 03:44:57 al Exp $ -*- C++ -*-
+/*$Id: mg_out_h.cc,v 1.5 2010-07-14 15:17:30 felix Exp $ -*- C++ -*-
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -110,6 +110,7 @@ static void make_model(std::ofstream& out, const Model& m)
     "  void      precalc_first();\n"
     "  void      precalc_last();\n"
     "  SDP_CARD* new_sdp(COMMON_COMPONENT* c)const;\n"
+    "  ADP_CARD* new_adp(COMPONENT* c)const;\n"
     "  void      set_param_by_index(int, std::string&, int);\n"
     "  bool      param_is_printable(int)const;\n"
     "  std::string param_name(int)const;\n"
@@ -122,9 +123,15 @@ static void make_model(std::ofstream& out, const Model& m)
   }else{
     out << ");}\n";
   }
+  if (!m.tt_eval().is_empty()) {
+    out << "void tt_eval(COMPONENT*)const;\n";
+  }else{
+    out << "";
+  }
   out <<
     "  bool      is_valid(const COMPONENT*)const;\n"
     "  void      tr_eval(COMPONENT*)const;\n"
+    "  virtual void      stress_apply(COMPONENT*)const{ std::cerr<<\"virtual stress apply(C)\\n\" ;}\n"
     "public: // not virtual\n"
     "  static int count() {return _count;}\n"
     "private: // strictly internal\n";
@@ -254,7 +261,19 @@ static void make_device(std::ofstream& out, const Device& d)
     "  //void    map_nodes();         //BASE_SUBCKT\n"
     "  //void    tr_begin();          //BASE_SUBCKT\n"
     "  //void    tr_restore();        //BASE_SUBCKT\n";
+  if (d.tt_eval().is_empty()) {
+	 trace0( "tt_eval isempty" );
+    out <<
+      "  //void    tt_commit();         //BASE_SUBCKT\n"
+      "  //void    tt_prepare();         //BASE_SUBCKT\n";
+  }else{
+    out <<
+      "  void    stress_apply();         //BASE_SUBCKT\n"
+      "  void    tt_commit();         //BASE_SUBCKT\n"
+      "  void    tt_prepare();         //BASE_SUBCKT\n";
+  }
   if (d.tr_eval().is_empty()) {
+	 trace0( "tr_eval isempty" );
     out <<
       "  //void    dc_advance();        //BASE_SUBCKT\n"
       "  //void    tr_advance();        //BASE_SUBCKT\n"
@@ -268,6 +287,7 @@ static void make_device(std::ofstream& out, const Device& d)
       "  void      tr_advance() {set_not_converged(); BASE_SUBCKT::tr_advance();}\n"
       "  void      tr_regress() {set_not_converged(); BASE_SUBCKT::tr_regress();}\n"
       "  bool      tr_needs_eval()const;\n"
+		"  // ????? what is this good for?\n"
       "  void      tr_queue_eval()      {if(tr_needs_eval()){q_eval();}}\n"
       "  bool      do_tr();\n";
   }
@@ -277,6 +297,7 @@ static void make_device(std::ofstream& out, const Device& d)
     "  //void    tr_accept();         //BASE_SUBCKT\n"
     "  //void    tr_unload();         //BASE_SUBCKT\n"
     "  double    tr_probe_num(const std::string&)const;\n"
+    "  double    tt_probe_num(const std::string&)const;\n"
     "  //void    ac_begin();          //BASE_SUBCKT\n"
     "  //void    do_ac();             //BASE_SUBCKT\n"
     "  //void    ac_load();           //BASE_SUBCKT\n"
@@ -406,7 +427,7 @@ static void make_evals(std::ofstream& out, const Device& d)
 /*--------------------------------------------------------------------------*/
 static void make_tail(std::ofstream& out, const File& in)
 {
-  out << in.h_direct() <<
+  out << "// h_direct\n" << in.h_direct() <<
     "/*--------------------------------------"
     "------------------------------------*/\n"
     "/*--------------------------------------"

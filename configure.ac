@@ -1,6 +1,6 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
-# $Id$
+# $Id: configure.ac,v 1.2 2009-12-13 17:55:01 felix Exp $
 #
 #                            COPYRIGHT
 #
@@ -21,16 +21,94 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 #  02110-1301, USA.
 
-AC_PREREQ(2.59)
-AC_INIT([src/main.cc])
-# this is any file in the source directory
-# used as a check to be sure we found it
+AC_PREREQ(2.67)
+AC_INIT([fucap],[1.1])
+AM_INIT_AUTOMAKE(fucap, 2009-12-07)
 
-AM_INIT_AUTOMAKE(gnucap, 2009-12-07)
-AM_CONFIG_HEADER([config.h])
+AC_PROG_CXX
+
+AC_PROG_MAKE_SET 
+
+AC_CONFIG_SRCDIR([src/main.cc])
+
+AC_CONFIG_MACRO_DIR([m4])
+
+AC_CONFIG_HEADERS([config.h])
 
 AM_MAINTAINER_MODE
 
+AC_PREFIX_DEFAULT("/usr/local")
+
+# libdir_const="${prefix}/lib"
+
+#sysconfdir='/bar/etc'
+
+#
+
+#AC_SUBST([PREFIX])
+#AC_SUBST([LIBDIR])
+
+
+
+
+AC_MSG_CHECKING([if nongpl code should be compiled in])
+AC_ARG_ENABLE([nongpl],
+[  --enable-nongpl            Enable building of non-GPL code. [[default: disabled]]],
+[
+if test "X$enable_nongpl" = "Xno" ; then
+	AC_MSG_RESULT([no])
+else
+	AC_MSG_RESULT([yes])
+	enable_nongpl=yes
+fi
+],
+[
+	AC_MSG_RESULT([no])
+	enable_nongpl=no
+])
+
+dnl Ivl for d_vvp.cc
+iverilog=no
+AC_ARG_WITH([iverilog],
+  [AS_HELP_STRING([--with-iverilog], [directory where ivl source resides])],
+  [],
+  [with_iverilog=no])
+
+
+IVERILOG=
+AS_IF([ test "x$with_iverilog" != xno],
+	[
+		AC_CHECK_LIB([vvp], [main],
+				  [
+					AC_SUBST([IVERILOG], ["-lvvp"])
+					AC_SUBST([IVERILOG_SO], ["$with_iverilog/lib/libvvp.so"])
+					AC_SUBST([IVERILOG_INCLUDE], ["-I$with_iverilog"])
+					AC_DEFINE([HAVE_IVERILOG], [1], [Define if you have ivl])
+				  ],
+				  [
+					AC_MSG_FAILURE([--with-iverilog was given, but test failed
+	consider LDFLAGS=-L/path/to/libvvp.so/ configure"])
+				  ],
+				  [-lvvp])
+	]
+)
+
+
+#echo AAAAAAAAA: $with_iverilog $IVERILOG
+AM_CONDITIONAL(IVERILOG, test x$with_iverilog != xno )
+
+#	IVERILOG_PATH=${iverilog}
+#	IVERILOG_INCLUDE=${iverilog}/include/iverilog
+#	AC_DEFINE(IVERILOG_PATH, [1], [${iverilog}])
+#else
+#	IVERILOG_PATH=
+#	IVERILOG_INCLUDE=
+#fi
+
+AC_SUBST(IVERILOG_PATH)
+AC_SUBST(IVERILOG_INCLUDE)
+
+dnl debugging
 AC_MSG_CHECKING([if debug code should be compiled in])
 AC_ARG_ENABLE([debug],
 [  --enable-debug            Enable building of debug code. [[default: disabled]]],
@@ -76,11 +154,15 @@ fi
 
 # Checks for libraries.
 
-# this is a c++ program so use c++ for the tests
 AC_LANG([C++])
+AC_CHECK_LIB([m], [cos])
 
-#AC_CHECK_LIB([termcap], [main])	
-#AC_CHECK_LIB([readline], [main])
+# probably unneeded.
+AC_CHECK_LIB([gslcblas], [cblas_dgemm])
+AC_CHECK_LIB([gsl], [gsl_blas_dgemm])
+AC_CHECK_LIB([gsl], [gsl_fit_linear])
+AC_CHECK_FUNCS([sqrt])
+
 AC_ARG_WITH([readline],
 [AS_HELP_STRING([--with-readline],
   [support command line editing @<:@default=yes@:>@])],
@@ -93,6 +175,12 @@ if test "x$with_readline" != xno ; then
 fi    
 
 AC_CHECK_LIB([dl], [dlopen])
+
+LT_INIT([disable-static])
+
+AC_DISABLE_STATIC
+AC_PROG_LIBTOOL
+
 
 # Checks for header files.
 #AC_CHECK_HEADERS([fcntl.h unistd.h])
@@ -135,6 +223,7 @@ fi
 # exports symbols to plugins
 LDFLAGS="$LDFLAGS -rdynamic"
 
+
 #AC_OUTPUT([
 #	Makefile
 #	doc/Makefile
@@ -149,23 +238,49 @@ LDFLAGS="$LDFLAGS -rdynamic"
 #	src/Makefile
 #	])
 
+
+# stupid hack.
+if test "x${prefix}" = "xNONE"; then
+		AC_DEFINE_UNQUOTED( PREFIX, "${ac_default_prefix}", "Prefix")
+		AC_DEFINE_UNQUOTED( LIBDIR, "${ac_default_prefix}/lib", "Libdir")
+		AC_DEFINE_UNQUOTED( SODIR, "${ac_default_prefix}/lib", "Sodir")
+else
+		AC_DEFINE_UNQUOTED( PREFIX, "${prefix}", "Prefix")
+		AC_DEFINE_UNQUOTED( LIBDIR, "${prefix}/lib", "Libdir")
+		AC_DEFINE_UNQUOTED( SODIR, "${prefix}/lib", "Sodir")
+fi
+
+
+
 AC_OUTPUT([
 	Makefile
 	doc/Makefile
+	vvpg/Makefile
 	examples/Makefile
 	modelgen/Makefile
-	src/Makefile
-	])
+	src/Makefile])
+
+if test "X$enable_nongpl" = "Xyes"; then
+	AC_OUTPUT([ non-GPL/Makefile ])
+fi
+
 
 AC_MSG_RESULT([
 ** Configuration summary for $PACKAGE $VERSION:
 
-   prefix:                   $prefix
-   CPPFLAGS:                 $CPPFLAGS
-   CFLAGS:                   $CFLAGS
-   CXXFLAGS:                 $CXXFLAGS
-   LDFLAGS:                  $LDFLAGS
-   LIBS:                     $LIBS
+   prefix:     $prefix
+   exec_prefix:$exec_prefix
+   libdir:     $libdir
+   Icarus V:   $iverilog
+   CPPFLAGS:   $CPPFLAGS
+   CFLAGS:     $CFLAGS
+   CXXFLAGS:   $CXXFLAGS
+   LDFLAGS:    $LDFLAGS
+   LIBS:       $LIBS
+   debug:      $enable_debug
+   non-GPL:    $enable_nongpl
+   shared:     $shared
 
 ])
+
 
