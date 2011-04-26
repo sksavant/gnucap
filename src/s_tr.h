@@ -84,7 +84,7 @@ protected:		// s_tr_swp.cc
 private:
   void	set_step_cause(STEP_CAUSE);
 public:
-  int stepno(){return _stepno;}		// count of visible (saved) steps
+  int stepno(){return _sim->_stepno;}		// count of visible (saved) steps
   static int total_outsteps(){return steps_total_out_  ;}		// count of visible (saved) steps
   int	step_cause()const;
   void	first(); // HACK/
@@ -110,7 +110,7 @@ protected:
   bool _cont;		// flag: continue from previous run
   bool _tt_cont;	// 
   bool _inside_tt;// hack: tell tr_swp to not reinit circuit
-  int _stepno;		// count of visible (saved) steps
+  //int _stepno;		// count of visible (saved) steps
 private:
   TRACE _trace;		// enum: show extended diagnostics
   double _time_by_iteration_count;

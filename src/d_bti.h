@@ -20,6 +20,42 @@
 #include "e_model.h"
 class COMMON_BUILT_IN_RCD;
 /*--------------------------------------------------------------------------*/
+class COMMON_BUILT_IN_BTI
+  :public COMMON_COMPONENT{
+public:
+  explicit COMMON_BUILT_IN_BTI(const COMMON_BUILT_IN_BTI& p);
+  explicit COMMON_BUILT_IN_BTI(int c=0);
+           ~COMMON_BUILT_IN_BTI();
+  bool     operator==(const COMMON_COMPONENT&)const;
+  COMMON_COMPONENT* clone()const {return new COMMON_BUILT_IN_BTI(*this);}
+  void     set_param_by_index(int, std::string&, int);
+  bool     param_is_printable(int)const;
+  std::string param_name(int)const;
+  std::string param_name(int,int)const;
+  std::string param_value(int)const;
+  int param_count()const {return (3 + COMMON_COMPONENT::param_count());}
+  virtual void     precalc_first(const CARD_LIST*);
+  void     expand(const COMPONENT*);
+  void     precalc_last(const CARD_LIST*);
+  std::string name()const {itested();return "bti";}
+  const SDP_CARD* sdp()const {return _sdp;}
+  bool     has_sdp()const {untested();return _sdp;}
+  static int  count() {return _count;}
+private: // strictly internal
+  static int _count;
+public: // input parameters
+  PARAMETER<double> lambda;	// lambda
+  PARAMETER<uint_t>    number;	// number
+  PARAMETER<int>    type;	// type
+  PARAMETER<double> base;	
+  PARAMETER<double> weight;	// weight
+  PARAMETER<polarity_t> polarity;	// polarity
+public: // calculated parameters
+  SDP_CARD* _sdp;
+public: // attached commons
+  COMMON_COMPONENT** _RCD;
+};
+/*--------------------------------------------------------------------------*/
 class SDP_BUILT_IN_BTI
   :public SDP_CARD{
 public:
@@ -139,42 +175,6 @@ public: // input parameters
   PARAMETER<int> fooo;
 //  PARAMETER<MODEL_BUILT_IN_RCD> rcd_model;	// 
 public: // calculated parameters
-};
-/*--------------------------------------------------------------------------*/
-class COMMON_BUILT_IN_BTI
-  :public COMMON_COMPONENT{
-public:
-  explicit COMMON_BUILT_IN_BTI(const COMMON_BUILT_IN_BTI& p);
-  explicit COMMON_BUILT_IN_BTI(int c=0);
-           ~COMMON_BUILT_IN_BTI();
-  bool     operator==(const COMMON_COMPONENT&)const;
-  COMMON_COMPONENT* clone()const {return new COMMON_BUILT_IN_BTI(*this);}
-  void     set_param_by_index(int, std::string&, int);
-  bool     param_is_printable(int)const;
-  std::string param_name(int)const;
-  std::string param_name(int,int)const;
-  std::string param_value(int)const;
-  int param_count()const {return (3 + COMMON_COMPONENT::param_count());}
-  virtual void     precalc_first(const CARD_LIST*);
-  void     expand(const COMPONENT*);
-  void     precalc_last(const CARD_LIST*);
-  std::string name()const {itested();return "bti";}
-  const SDP_CARD* sdp()const {return _sdp;}
-  bool     has_sdp()const {untested();return _sdp;}
-  static int  count() {return _count;}
-private: // strictly internal
-  static int _count;
-public: // input parameters
-  PARAMETER<double> lambda;	// lambda
-  PARAMETER<int>    number;	// number
-  PARAMETER<int>    type;	// type
-  PARAMETER<double> base;	
-  PARAMETER<double> weight;	// weight
-  PARAMETER<polarity_t> polarity;	// polarity
-public: // calculated parameters
-  SDP_CARD* _sdp;
-public: // attached commons
-  COMMON_COMPONENT** _RCD;
 };
 /*--------------------------------------------------------------------------*/
 class DEV_BUILT_IN_BTI : public BASE_SUBCKT {

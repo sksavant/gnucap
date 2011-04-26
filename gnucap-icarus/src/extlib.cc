@@ -164,6 +164,7 @@ double ExtSigTrCheck(intptr_t data,double dtime,
     }
     else
     { 
+      // to ivl...
       dp = (*cbd->eval)(cbd,accpt_time,CB_TRUNC,getVoltage,xsig,0);
 
       nxt = dp[2];

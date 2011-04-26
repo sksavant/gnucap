@@ -122,8 +122,8 @@ void FOURIER::store_results(double X)
     int ii = 0;
     for (PROBELIST::const_iterator
 	   p=printlist().begin();  p!=printlist().end();  ++p) {
-      assert(_stepno < _timesteps);
-      _fdata[ii][_stepno] = (*p)->value();
+      assert(_sim->_stepno < _timesteps);
+      _fdata[ii][_sim->_stepno] = (*p)->value();
       ++ii;
     }
   }else{untested();

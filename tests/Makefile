@@ -4,6 +4,11 @@ CIRQUITS= $(NAMES:%=%.ckt)
 GNUCAP_PS=$(NAMES:%=%.gc.ps)
 NGSPICE_PS=$(NAMES:%=%.ng.ps)
 
+HERE:= $(dir $(lastword $(MAKEFILE_LIST)))
+
+
+SHELL=/bin/bash
+
 # STYLE="data lines"
 STYLE="data dots"
 
@@ -49,11 +54,6 @@ compare: mos_level1_tw.1.2-3.ps  \
 %.ng.ps: %.out.raw
 	echo -e "set hcopydevtype=postscript\n hardcopy $@ V(vout) V(vin)" | ngnutmeg $<
 
-%.2.ps: %.out
-	echo "set style ${STYLE}; \
-		set terminal postscript portrait enhanced ${COLOR} dashed lw ${LW} 'Helvetica' 14; \
-		set output '$@'; \
-		plot '$<' using 1:2" |gnuplot
 
 # nicht so einfach
 %.auto.ps: %.out
@@ -62,12 +62,6 @@ compare: mos_level1_tw.1.2-3.ps  \
 		set output '$@'; \
 		plot '$<' using 1:3" |gnuplot
 
-
-%.1.2.ps: %.out
-	echo "set style ${STYLE}; \
-		set terminal postscript portrait enhanced ${COLOR} dashed lw ${LW} 'Helvetica' 14; \
-		set output '$@'; \
-		plot '$<' using 1:2" |gnuplot
 
 %.1.2-3.ps: %.out
 	echo "set style ${STYLE}; \
@@ -324,6 +318,23 @@ plots: inv_amp_p_1ks.2.3.ps
 	set output '$@'; \
 	plot '$<' using 2:3" |gnuplot
 
+.SECONDEXPANSION:
+%.compare.ps: $$(shell echo % | sed -e 's/\(\(^\.\)*\)\.[0-9]\+\(\.[0-9]\+\)\+/\1.out/'  )
+	@echo auto plotting $(shell $(HERE)/pscols $*) from $< into $@
+	[[ $* =~ [^.]*\.[0-9]\.[0-9]\.[0-9] ]] && S=s;\
+	echo "set style ${STYLE}; \
+		set terminal postscript ${ORIENT} enhanced ${COLOR} dashed lw ${LW} 'Helvetica' 14; \
+		set output '$@'; \
+		$${S}plot '$<' using $(shell $(HERE)/pscols $*), \
+	             '$<.ref' using $(shell $(HERE)/pscols $*)" |gnuplot
+
+%.ps: $$(shell echo % | sed -e 's/\(\(^\.\)*\)\.[0-9]\+\(\.[0-9]\+\)\+/\1.out/'  )
+	@echo auto plotting $(shell $(HERE)/pscols $*) from $< into $@
+	[[ $* =~ [^.]*\.[0-9]\.[0-9]\.[0-9] ]] && S=s;\
+	echo "set style ${STYLE}; \
+		set terminal postscript ${ORIENT} enhanced ${COLOR} dashed lw ${LW} 'Helvetica' 14; \
+		set output '$@'; \
+		$${S}plot '$<' using  $(shell $(HERE)/pscols $*)" |gnuplot
 
 all:
 

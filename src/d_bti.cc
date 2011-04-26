@@ -22,13 +22,17 @@ class COMMON_COMPONENT;
 int  MODEL_BUILT_IN_BTI_MATRIX::foo(){return 1;}
 int  MODEL_BUILT_IN_BTI_SINGLE::foo(){return 1;}
 /*--------------------------------------------------------------------------*/
+int DEV_BUILT_IN_BTI::_count = -1;
+int COMMON_BUILT_IN_BTI::_count = -1;
+static COMMON_BUILT_IN_BTI Default_BUILT_IN_BTI(CC_STATIC);
+/*--------------------------------------------------------------------------*/
 
 //const double NA(NOT_INPUT);
 const double INF(BIGBIG);
 /*--------------------------------------------------------------------------*/
 int MODEL_BUILT_IN_BTI::_count = 0;
 /*--------------------------------------------------------------------------*/
-namespace MODEL_BUILT_IN_BTI_DISPATCHER { 
+namespace { 
   static DEV_BUILT_IN_BTI p3d;
   static MODEL_BUILT_IN_BTI p3(&p3d);
   static DISPATCHER<MODEL_CARD>::INSTALL
@@ -512,10 +516,6 @@ namespace MODEL_BUILT_IN_BTI_SINGLE_DISPATCHER {
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-int DEV_BUILT_IN_BTI::_count = -1;
-int COMMON_BUILT_IN_BTI::_count = -1;
-static COMMON_BUILT_IN_BTI Default_BUILT_IN_BTI(CC_STATIC);
-/*--------------------------------------------------------------------------*/
 COMMON_BUILT_IN_BTI::COMMON_BUILT_IN_BTI(int c)
   :COMMON_COMPONENT(c),
    lambda(1.0),
@@ -525,6 +525,7 @@ COMMON_BUILT_IN_BTI::COMMON_BUILT_IN_BTI(int c)
    _sdp(0),
    _RCD(0)
 {
+  trace1("COMMON_BUILT_IN_BTI::COMMON_BUILT_IN_BTI new bti", c);
   ++_count;
 }
 /*--------------------------------------------------------------------------*/
@@ -691,7 +692,7 @@ void MODEL_BUILT_IN_BTI::attach_rcds(COMMON_BUILT_IN_RCD** _RCDc) const
 }
 /*--------------------------------------------------------------------------*/
 double MODEL_BUILT_IN_BTI::hoch(int i) const {
-  int n = rcd_number;
+  uint_t n = rcd_number;
   //int type = m->bti_type;
   int a = int(sqrt(n));
   int col=i % a;
@@ -715,7 +716,7 @@ void COMMON_BUILT_IN_BTI::precalc_first(const CARD_LIST* par_scope)
   assert(par_scope);
   COMMON_COMPONENT::precalc_first(par_scope);
     e_val(&(this->lambda), 1.0, par_scope);
-    e_val(&(this->number), 0, par_scope);
+    e_val(&(this->number), uint_t(0), par_scope);
     e_val(&(this->weight), 1.0, par_scope);
 }
 /*--------------------------------------------------------------------------*/
@@ -725,20 +726,9 @@ void COMMON_BUILT_IN_BTI::precalc_last(const CARD_LIST* par_scope)
   COMMON_COMPONENT::precalc_last(par_scope);
   COMMON_BUILT_IN_BTI* c = this;
   const MODEL_BUILT_IN_BTI* m = prechecked_cast<const MODEL_BUILT_IN_BTI*>(model());
-    // final adjust: code_pre
-    // final adjust: override
-    // final adjust: raw
-    e_val(&(this->lambda), 1.0, par_scope);
-    e_val(&(this->number), 0, par_scope);
-
-    e_val(&weight, m->weight, par_scope);
-    // final adjust: mid
-    // final adjust: calculated
-    // final adjust: post
-    // final adjust: done
-
-  // size dependent
-  //delete _sdp;
+  e_val(&(this->lambda), 1.0, par_scope);
+  e_val(&(this->number), uint_t(0), par_scope);
+  e_val(&weight, m->weight, par_scope);
   _sdp = m->new_sdp(this);
   assert(_sdp);
   const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(_sdp);
@@ -755,7 +745,7 @@ void COMMON_BUILT_IN_BTI::precalc_last(const CARD_LIST* par_scope)
 namespace DEV_BUILT_IN_BTI_DISPATCHER { 
   static DEV_BUILT_IN_BTI p0;
   static DISPATCHER<CARD>::INSTALL
-    d0(&device_dispatcher, "B|bti", &p0);
+    dd0(&device_dispatcher, "bti", &p0);
 }
 /*--------------------------------------------------------------------------*/
 DEV_BUILT_IN_BTI::DEV_BUILT_IN_BTI()
@@ -770,6 +760,9 @@ DEV_BUILT_IN_BTI::DEV_BUILT_IN_BTI()
 //   _RCD3(0)
 {
   _n = _nodes;
+  trace1("DEV_BUILT_IN_BTI::DEV_BUILT_IN_BTI calling attach", hp(&Default_BUILT_IN_BTI));
+  trace1("DEV_BUILT_IN_BTI::DEV_BUILT_IN_BTI" , Default_BUILT_IN_BTI.attach_count());
+  trace0("DEV_BUILT_IN_BTI::DEV_BUILT_IN_BTI" + Default_BUILT_IN_BTI.modelname());
   attach_common(&Default_BUILT_IN_BTI);
   ++_count;
   // overrides
@@ -910,7 +903,7 @@ void DEV_BUILT_IN_BTI::expand()
   }else{
   }
   assert(adp());
-  assert(subckt()->size() == m->rcd_number +1);
+  assert(subckt()->size() == size_t (m->rcd_number +1));
 }
 /*--------------------------------------------------------------------------*/
 // resultung dvth.
@@ -924,7 +917,7 @@ double DEV_BUILT_IN_BTI::vw()const{
   assert(s);
   const ADP_BUILT_IN_BTI* a = prechecked_cast<const ADP_BUILT_IN_BTI*>(adp()); a=a;
   double buf = 0;
-  int i=m->rcd_number;
+  int i = m->rcd_number;
   for(; i-->0;  buf += CARD::probe(_RCD[i],"vw") );
   return buf*c->weight;
 }

@@ -137,7 +137,12 @@ public:
   virtual bool  operator==(const COMMON_COMPONENT&x)const;
 
   bool operator!=(const COMMON_COMPONENT& x)const {return !(*this == x);}
-  std::string	      modelname()const	{return _modelname;}
+  int attach_count()const{
+    trace1("COMMON_COMPONENT::attach_count ", hp((intptr_t)this));
+    return _attach_count;
+  }
+  std::string	      modelname()const	{
+    return _modelname;}
   const MODEL_CARD*   model()const	{
     if(!_model) { 
         trace1((" model name : " + _modelname) + " but no model", (long int) this %1000);

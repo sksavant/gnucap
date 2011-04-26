@@ -40,6 +40,9 @@
 #include "e_elemnt.h"
 #include "d_bjt.h"
 /*--------------------------------------------------------------------------*/
+int DEV_BUILT_IN_BJT::_count = -1;
+int COMMON_BUILT_IN_BJT::_count = -1;
+static COMMON_BUILT_IN_BJT Default_BUILT_IN_BJT(CC_STATIC);
 const double NA(NOT_INPUT);
 const double INF(BIGBIG);
 /*--------------------------------------------------------------------------*/
@@ -47,7 +50,7 @@ int MODEL_BUILT_IN_BJT::_count = 0;
 /*--------------------------------------------------------------------------*/
 const int LEVEL(1);
 /*--------------------------------------------------------------------------*/
-namespace MODEL_BUILT_IN_BJT_DISPATCHER { 
+namespace  { 
   static DEV_BUILT_IN_BJT p1d;
   static MODEL_BUILT_IN_BJT p1(&p1d);
   static DISPATCHER<MODEL_CARD>::INSTALL
@@ -1002,9 +1005,6 @@ void MODEL_BUILT_IN_BJT::tr_eval(COMPONENT* brh)const
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-int DEV_BUILT_IN_BJT::_count = -1;
-int COMMON_BUILT_IN_BJT::_count = -1;
-static COMMON_BUILT_IN_BJT Default_BUILT_IN_BJT(CC_STATIC);
 /*--------------------------------------------------------------------------*/
 COMMON_BUILT_IN_BJT::COMMON_BUILT_IN_BJT(int c)
   :COMMON_COMPONENT(c),

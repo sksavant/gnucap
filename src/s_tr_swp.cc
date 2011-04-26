@@ -534,6 +534,8 @@ bool TRANSIENT::next()
     _sim->_eq.pop();
   }
   //BUG// what if it is later rejected?  It's lost!
+  // -> why not move to tr_advance? tr_accept? hmmm
+  //
 
   if(time1 < _tstop - _sim->_dtmin 
       && _sim->_time0 > _tstop + _sim->_dtmin ) {

@@ -123,7 +123,7 @@ CARD* CARD::find_in_my_scope(const std::string& name)
   assert(name != "");
   assert(scope());
 
-  trace0(("looking for " + name).c_str() );
+  trace0(("CARD::find_in_my_scope, looking for " + name).c_str() );
 
   CARD_LIST::iterator i = scope()->find_(name);
   if (i == scope()->end()) {
@@ -144,7 +144,7 @@ const CARD* CARD::find_in_my_scope(const std::string& name)const
   assert(name != "");
   assert(scope());
 
-  trace0(("looking for " + name).c_str() );
+  trace0(("CARD::find_in_my_scope looking for " + name).c_str() );
 
   CARD_LIST::const_iterator i = scope()->find_(name);
   if (i == scope()->end()) {

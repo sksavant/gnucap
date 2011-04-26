@@ -42,6 +42,27 @@
 /*--------------------------------------------------------------------------*/
 // using namespace std;
 #ifdef DO_TRACE
+#ifndef hashpointer_
+#define hashpointer_
+
+class hp{
+	int p;
+	public:
+	hp(void* x){
+		p = (intptr_t)x %30011;
+	}
+	hp(intptr_t x){
+		p = x%2001;
+	}
+	operator int(){
+		return p;
+	}
+};
+
+#endif
+
+
+
 #define trace_line() (fprintf(stderr, "@@#\n@#@:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))
 #define trace0(s) ( cerr << "@#@" << s << "\n")   

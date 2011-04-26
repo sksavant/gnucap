@@ -38,6 +38,10 @@
 #include "e_elemnt.h"
 #include "d_diode.h"
 /*--------------------------------------------------------------------------*/
+int DEV_BUILT_IN_DIODE::_count = -1;
+int COMMON_BUILT_IN_DIODE::_count = -1;
+static COMMON_BUILT_IN_DIODE Default_BUILT_IN_DIODE(CC_STATIC);
+/*--------------------------------------------------------------------------*/
 const double NA(NOT_INPUT);
 const double INF(BIGBIG);
 /*--------------------------------------------------------------------------*/
@@ -377,10 +381,6 @@ void MODEL_BUILT_IN_DIODE::tr_eval(COMPONENT*)const
 {untested();//425
 }
 /*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-int DEV_BUILT_IN_DIODE::_count = -1;
-int COMMON_BUILT_IN_DIODE::_count = -1;
-static COMMON_BUILT_IN_DIODE Default_BUILT_IN_DIODE(CC_STATIC);
 /*--------------------------------------------------------------------------*/
 COMMON_BUILT_IN_DIODE::COMMON_BUILT_IN_DIODE(int c)
   :COMMON_COMPONENT(c),

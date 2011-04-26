@@ -293,7 +293,7 @@ void SIM_DATA::unalloc_vectors()
  */
 void SIM_DATA::uninit()
 {
-  trace0("SIM_DATA::uninit");
+  // fixme adp?
   if (_vdc) {
     _acx.reinit(0);
     _lu.reinit(0);
@@ -312,6 +312,7 @@ void SIM_DATA::uninit()
     assert(!_nstat);
     assert(!_nm);
   }
+  trace0("SIM_DATA::uninit done");
 }
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::update_tt_order()

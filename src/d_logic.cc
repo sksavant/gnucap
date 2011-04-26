@@ -65,7 +65,7 @@ DEV_LOGIC::DEV_LOGIC(const DEV_LOGIC& p)
    _gatemode(moUNKNOWN)   
 {
   assert(max_nodes() == PORTS_PER_GATE);
-  for (uint_t ii = 0;  ii < max_nodes();  ++ii) {
+  for (uint_t ii = 0; ii < max_nodes(); ++ii) {
     nodes[ii] = p.nodes[ii];
   }
   _n = nodes;
@@ -146,7 +146,6 @@ void DEV_LOGIC::dc_advance()
   ELEMENT::dc_advance();
 
   if (_gatemode != _oldgatemode) {untested();
-    trace2("DEV_LOGIC::dc_advance", _gatemode, _oldgatemode );
     tr_unload();
     _n[OUTNODE]->set_mode(_gatemode);
     _oldgatemode = _gatemode;
@@ -299,7 +298,6 @@ bool DEV_LOGIC::tr_eval_digital()
 /*--------------------------------------------------------------------------*/
 bool DEV_LOGIC::do_tr()
 {  
-  trace0("DEV_LOGIC::do_tr");
   switch (_gatemode) {
   case moUNKNOWN: unreachable(); break;
   case moMIXED:   unreachable(); break;
@@ -361,11 +359,11 @@ void DEV_LOGIC::tr_accept()
     _quality = _n[OUTNODE]->quality();  /* the worst quality on this device */
     _failuremode = _n[OUTNODE]->failure_mode();    /* what is wrong with it? */
     _lastchangenode = OUTNODE;		/* which node changed most recently */
-    int lastchangeiter = _n[OUTNODE]->d_iter();/* iteration # when it changed */
+    int lastchangeiter=_n[OUTNODE]->d_iter();/* iteration # when it changed */
     trace0(long_label().c_str());
     trace2(_n[OUTNODE]->failure_mode().c_str(), OUTNODE, _n[OUTNODE]->quality());
     
-    for (uint_t ii = BEGIN_IN;  ii < net_nodes();  ++ii) {
+    for (uint_t ii = BEGIN_IN; ii < net_nodes(); ++ii) {
       _n[ii]->to_logic(m);
       if (_n[ii]->quality() < _quality) {
 	_quality = _n[ii]->quality();

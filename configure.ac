@@ -81,8 +81,9 @@ AS_IF([ test "x$with_iverilog" != xno],
 		AC_CHECK_LIB([vvp], [main],
 				  [
 					AC_SUBST([IVERILOG], ["-lvvp"])
+					AC_SUBST([IVERILOG_SO], ["$with_iverilog/lib/libvvp.so"])
 					AC_SUBST([IVERILOG_INCLUDE], ["-I$with_iverilog"])
-					AC_DEFINE([HAVE_IVERILOG], [1], [Define if you have libreadline])
+					AC_DEFINE([HAVE_IVERILOG], [1], [Define if you have ivl])
 				  ],
 				  [
 					AC_MSG_FAILURE([--with-iverilog was given, but test failed

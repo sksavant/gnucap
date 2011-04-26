@@ -53,7 +53,7 @@ public:
       _map = new std::map<std::string, T*>;
     }else{
     }
-    trace0(s.c_str());
+    trace0("DISPATCHER " + s);
     // loop over all keys, separated by '|'
     for (std::string::size_type			// bss: begin sub-string
 	 bss = 0, ess = s.find('|', bss);	// ess: end sub-string

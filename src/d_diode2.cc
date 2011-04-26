@@ -32,8 +32,8 @@
 
 #include "e_aux.h"
 #include "e_storag.h"
-  static bool dummy=false;
-  enum {USE_OPT = 0x8000};
+static bool dummy=false;
+enum {USE_OPT = 0x8000};
 #include "globals.h"
 #include "e_elemnt.h"
 #include "d_diode2.h"
@@ -42,6 +42,10 @@ const double NA(NOT_INPUT);
 const double INF(BIGBIG);
 /*--------------------------------------------------------------------------*/
 int MODEL_BUILT_IN_DIODE2::_count = 0;
+/*--------------------------------------------------------------------------*/
+int DEV_BUILT_IN_DIODE2::_count = -1;
+int COMMON_BUILT_IN_DIODE2::_count = -1;
+static COMMON_BUILT_IN_DIODE2 Default_BUILT_IN_DIODE2(CC_STATIC);
 /*--------------------------------------------------------------------------*/
 namespace MODEL_BUILT_IN_DIODE2_DISPATCHER { 
   static DEV_BUILT_IN_DIODE2 p1d;
@@ -359,10 +363,6 @@ void MODEL_BUILT_IN_DIODE2::tr_eval(COMPONENT*)const
 {untested();//425
 }
 /*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-int DEV_BUILT_IN_DIODE2::_count = -1;
-int COMMON_BUILT_IN_DIODE2::_count = -1;
-static COMMON_BUILT_IN_DIODE2 Default_BUILT_IN_DIODE2(CC_STATIC);
 /*--------------------------------------------------------------------------*/
 COMMON_BUILT_IN_DIODE2::COMMON_BUILT_IN_DIODE2(int c)
   :COMMON_COMPONENT(c),

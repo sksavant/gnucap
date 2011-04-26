@@ -21,6 +21,10 @@ static bool dummy=false;
 const double NA(NOT_INPUT);
 const double INF(BIGBIG);
 /*--------------------------------------------------------------------------*/
+int DEV_BUILT_IN_RCD::_count = -1;
+int COMMON_BUILT_IN_RCD::_count = -1;
+static COMMON_BUILT_IN_RCD Default_BUILT_IN_RCD(CC_STATIC);
+/*--------------------------------------------------------------------------*/
 int MODEL_BUILT_IN_RCD::_count = 0;
 /*--------------------------------------------------------------------------*/
 namespace MODEL_BUILT_IN_RCD_DISPATCHER { 
@@ -340,10 +344,6 @@ void MODEL_BUILT_IN_RCD::tr_eval(COMPONENT*)const
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-int DEV_BUILT_IN_RCD::_count = -1;
-int COMMON_BUILT_IN_RCD::_count = -1;
-static COMMON_BUILT_IN_RCD Default_BUILT_IN_RCD(CC_STATIC);
 /*--------------------------------------------------------------------------*/
 COMMON_BUILT_IN_RCD::COMMON_BUILT_IN_RCD(int c)
   :COMMON_COMPONENT(c),

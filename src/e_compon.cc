@@ -48,15 +48,17 @@ COMMON_COMPONENT::COMMON_COMPONENT(int c)
    _temp_c(NOT_INPUT),
    _mfactor(1),
    _value(0),
+   //_modelname("unset"),
    _modelname(),
    _model(0),
    _attach_count(c)
 {
+  trace2("initializing COMMON_COMPONENT"+ _modelname, c, hp(this));
 }
 /*--------------------------------------------------------------------------*/
 COMMON_COMPONENT::~COMMON_COMPONENT()
 {
-//  trace2("~COMMON_COMPONENT ", _attach_count, CC_STATIC);
+  trace3("~COMMON_COMPONENT " + modelname(), _attach_count, CC_STATIC, hp(this));
   assert(_attach_count == 0 || _attach_count == CC_STATIC);
 }
 /*--------------------------------------------------------------------------*/
@@ -65,19 +67,24 @@ COMMON_COMPONENT::~COMMON_COMPONENT()
 /*--------------------------------------------------------------------------*/
 void COMMON_COMPONENT::attach_common(COMMON_COMPONENT*c, COMMON_COMPONENT**to)
 {
+  trace2("COMMON_COMPONENT::attach_common", hp(c), hp(*to));
   assert(to);
   if (c == *to) {
     itested();
     // The new and old are the same object.  Do nothing.
-  }else if (!c) {untested();
+  }else if (!c) {
+    untested();
     // There is no new common.  probably a simple element
     detach_common(to);
   }else if (!*to) {
     // No old one, but have a new one.
     ++(c->_attach_count);
     *to = c;
+    trace1("COMMON_COMPONENT::attach_common attached new ", hp(c) );
+    // trace2( c->modelname(), c->attach_count(), hp(c));
   }else if (*c != **to) {
     // They are different, usually by edit.
+    trace1("different... "+ c->name() + " " + c->modelname() , c->_attach_count );
     detach_common(to);
     ++(c->_attach_count);
     *to = c;
@@ -87,6 +94,7 @@ void COMMON_COMPONENT::attach_common(COMMON_COMPONENT*c, COMMON_COMPONENT**to)
     // The new one is not used anywhere, so throw it away.
     delete c;
   }else{
+    trace0("COMMON_COMPONENT::attach_common same twice");
     untested();
     // The new and old are identical.
     // Use the old one.
@@ -98,9 +106,10 @@ void COMMON_COMPONENT::detach_common(COMMON_COMPONENT** from)
 {
   assert(from);
   if (*from) {
+    trace2("COMMON_COMPONENT::detach_common", (**from)._attach_count, hp(*from) );
     assert((**from)._attach_count > 0);
+    //assert((**from)._attach_count != CC_STATIC );
     --((**from)._attach_count);
-    trace1(("--" + (*from)->modelname()).c_str(), (**from)._attach_count);
     if ((**from)._attach_count == 0) {
       delete *from;
 
@@ -110,7 +119,9 @@ void COMMON_COMPONENT::detach_common(COMMON_COMPONENT** from)
     }
     *from = NULL;
   }else{
+    trace0("COMMON_COMPONENT::detach_common no *from" );
   }
+  trace0("COMMON_COMPONENT::detach_common done");
 }
 /*--------------------------------------------------------------------------*/
 void COMMON_COMPONENT::attach_model(const COMPONENT* d)const
@@ -318,7 +329,7 @@ bool COMMON_COMPONENT::operator==(const COMMON_COMPONENT& x)const
 {
   trace3("COMMON_COMPONENT::operator== model:", _model == x._model,
       (intptr_t)_model % PRIME, (intptr_t)x._model % PRIME  );
-  trace1("COMMON_COMPONENT::operator== modelname:", _modelname == x._modelname);
+  trace1("COMMON_COMPONENT::operator== modelname: " + _modelname, _modelname == x._modelname);
   return (_modelname == x._modelname
 	  && _model == x._model
 	  && _tnom_c == x._tnom_c
@@ -409,6 +420,7 @@ COMPONENT::COMPONENT()
    _amps_new(0),
    _adp(0)
 {
+  trace0("COMPONENT::COMPONENT");
   _sim->uninit();
 }
 /*--------------------------------------------------------------------------*/
@@ -426,6 +438,7 @@ COMPONENT::COMPONENT(const COMPONENT& p)
    _adp(0)
 {
   _sim->uninit();
+  trace0("attaching common");
   attach_common(p._common);
   assert(_common == p._common);
 }
@@ -434,8 +447,8 @@ COMPONENT::~COMPONENT()
 {
   if (_amps)     free (_amps);
   if (_amps_new) free (_amps_new);
+  trace0("COMPONENT::~COMPONENT deconstruct " + long_label() + " " + short_label());
   detach_common();
-  trace0("COMPONENT::~COMPONENT uninit");
   _sim->uninit();
 }
 /*--------------------------------------------------------------------------*/
@@ -540,18 +553,20 @@ void COMPONENT::deflate_common()
 /*--------------------------------------------------------------------------*/
 void COMPONENT::expand()
 {
+  trace0("COMPONENT::expand");
   CARD::expand();
+  trace0("COMPONENT::expand, CARD done");
   if (has_common()) {
     assert(common());
     COMMON_COMPONENT* new_common = common()->clone();
     new_common->expand(this);
-
 
     COMMON_COMPONENT* deflated_common = new_common->deflate();
     if (deflated_common != common()) {
       attach_common(deflated_common);
     }else if (deflated_common != new_common ) {
       untested();
+      trace0("COMPONENT::expand: deleting new unused common");
       delete new_common;
     }else{
       untested();
@@ -569,11 +584,13 @@ COMMON_COMPONENT* COMMON_COMPONENT::deflate()
 /*--------------------------------------------------------------------------*/
 void COMPONENT::precalc_first()
 {
+  trace0("COMPONENT::precalc_first");
   CARD::precalc_first();
   if (has_common()) {
     try {
       mutable_common()->precalc_first(scope());
     }catch (Exception_Precalc& e) {
+      trace0("COMPONENT::precalc_first exception...");
       error(bWARNING, long_label() + ": " + e.message());
     }
     _mfactor = common()->mfactor();
@@ -582,13 +599,13 @@ void COMPONENT::precalc_first()
   
   _mfactor.e_val(1, scope());
   _value.e_val(0.,scope());
-  trace1(long_label().c_str(), double(_mfactor));
+  trace1("COMPONENT::precalc_first " + long_label(), double(_mfactor));
   if (const COMPONENT* o = prechecked_cast<const COMPONENT*>(owner())) {
     _mfactor_fixed = o->mfactor() * _mfactor;
   }else{
     _mfactor_fixed =  _mfactor;
   } 
-  trace1(long_label().c_str(), _mfactor_fixed);
+  trace1("COMPONENT::precalc_first " + long_label(), _mfactor_fixed);
 }
 /*--------------------------------------------------------------------------*/
 void COMPONENT::precalc_last()
@@ -653,15 +670,22 @@ void COMPONENT::set_parameters(const std::string& Label, CARD *Owner,
 			       uint_t , hp_float_t [],
 			       uint_t node_count, const node_t Nodes[])
 {
+  trace1("COMPONENT::set_parameters " + Label, hp(Common));
   set_label(Label);
   set_owner(Owner);
+  trace0("COMPONENT::set_parameters owner set to " + Owner->short_label());
   set_value(Value);
   attach_common(Common);
 
+
   if (node_count > net_nodes()) {
-    exit(2);
+    error(bDANGER, "net nodes problem, only %i\n", net_nodes());
   }
+  assert(node_count <= net_nodes());
+
+  trace0("COMPONENT::set_parameters copy nodes...");
   notstd::copy_n(Nodes, node_count, _n);
+  trace0("COMPONENT::set_parameters done");
 }
 /*--------------------------------------------------------------------------*/
 /* set_slave: force evaluation whenever the owner is evaluated.

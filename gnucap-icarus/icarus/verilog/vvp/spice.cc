@@ -53,6 +53,7 @@ void PrintInst(FILE *fp,struct __vpiScope *scope)
 int SpcDebug;
 SpcIvlCB::pwr_fn SpcIvlCB::pBSgetPWR;
 
+// gets data from gc to vl (?)
 double *EvalVPI(SpcIvlCB *cb,double sim_time,eCBmode mode,
                 int (*fn)(void *,...),void *handle,void *xtra)
 {

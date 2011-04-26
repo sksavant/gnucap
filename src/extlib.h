@@ -33,16 +33,32 @@
 #include "e_elemnt.h" 
 #include <dlfcn.h>
 
+# include  "vvp/compile.h"
+# include  "vvp/schedule.h"
+# include  "vvp/vpi_priv.h"
+# include  "vvp/statistics.h"
+# include  "vvp/vvp_cleanup.h"
+# include  <cstdio>
+# include  <csignal>
+# include  <cstdlib>
+# include  <cstring>
+# include  <unistd.h>
+
+  // trace facility from gnucap
+# include "io_trace.h"
+
+#if defined(HAVE_SYS_RESOURCE_H)
+# include  <sys/time.h>
+# include  <sys/resource.h>
+#endif // defined(HAVE_SYS_RESOURCE_H)
+
 # define EXT_BAS 0
 # define EXT_REF 1
 # define EXT_SIG 2
 
-enum sim_mode {SIM_ALL,
-               SIM_INIT,SIM_CONT0,SIM_CONT1,
-               SIM_PREM,SIM_DONE};
-extern double SimTimeD, // time in digital
-              SimTimeA; // time in analog
 extern void schedule_simulate(void);
+extern void vpip_mcd_init(FILE *log);
+
 
 class ExtBase {
  public:
@@ -65,11 +81,11 @@ struct SpcDllData {
 class ExtAPI : public SpcDllData {
  public:
 
-  double  *(*bindnet)(const char *,char,int *,void *,void (*)(void *,void *,double));
-  double   (*startsim)(const char *,SpcDllData *);
-  void     (*endsim)(double);
+  void    *(*bindnet)(const char *,char,int *,void *,void (*)(void *,void *,double));
+  double   (*startsim)(const char *);
+  void     (*endsim)();
   double   (*contsim)(const char *,double);
-  int      (*so_main)(int ,const char**);
+  int      (*so_main)(const char*);
 
   ExtAPI() : SpcDllData((typeof(activate))ExtBase::null_call) {
     startsim = (typeof(startsim))ExtBase::null_call;
@@ -181,6 +197,39 @@ class ExtControl{
 
 void PrintInst(FILE *fp,struct __vpiScope *scope);
 
+/*------------------------------------------------------------*/
+enum sim_mode {SIM_ALL,
+               SIM_INIT,SIM_CONT0,SIM_CONT1,
+               SIM_PREM,SIM_DONE};
+/*------------------------------------------------------------*/
+class vvp{
+  public:
+  static double SimTimeD;
+  static double SimTimeA; 
+  static double SimTimeDlast;
+  static double SimDelayD;
+  static sim_mode SimState;
+  // Provide dummies
+  inline static void my_getrusage(struct rusage *);
+  inline static void print_rusage(struct rusage *, struct rusage *);
 
+  //from vvp_vpi.cc
+  static void vvp_vpi_init();
+  static int init(const char* design_path);
+
+  static void signals_capture(void);
+  static void signals_revert(void);
+  /*--------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------*/
+  static double getdtime(struct event_time_s *et);
+  static sim_mode schedule_simulate_m(sim_mode mode);
+  /*--------------------------------------------------------------------*/
+  static double startsim(const char *analysis);
+  static double contsim(const char *analysis,double time);
+  static void endsim();
+  static void *bindnet(const char *,char ,int *, void *,void (*)(void *,void *,double));
+
+};
 
 #endif

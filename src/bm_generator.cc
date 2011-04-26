@@ -33,7 +33,9 @@ private:
   explicit	EVAL_BM_GENERATOR(const EVAL_BM_GENERATOR& p);
 public:
   explicit      EVAL_BM_GENERATOR(int c=0);
-		~EVAL_BM_GENERATOR()	{}
+		~EVAL_BM_GENERATOR()	{
+		trace0("~EVAL_BM_GENERATOR");
+		}
 private: // override virtual
   bool		operator==(const COMMON_COMPONENT&)const;
   COMMON_COMPONENT* clone()const	{return new EVAL_BM_GENERATOR(*this);}

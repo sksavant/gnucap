@@ -27,6 +27,7 @@
 #define D_LOGIC_H
 #include "e_model.h"
 #include "e_elemnt.h"
+
 /*--------------------------------------------------------------------------*/
 enum {PORTS_PER_GATE = 10};
 /*--------------------------------------------------------------------------*/
@@ -53,8 +54,8 @@ private: // override virtuals
     return (common()->modelname() + " " + common()->name()).c_str();}
   uint_t	   tail_size()const	{return 2;}
   uint_t	   max_nodes()const	{return PORTS_PER_GATE;}
-  uint_t	   min_nodes()const	{return BEGIN_IN;}
-  virtual uint_t matrix_nodes()const	{return 2;} // for OUTPORT...
+  uint_t	   min_nodes()const	{return BEGIN_IN+1;}
+  uint_t	   matrix_nodes()const	{return 2;}
   uint_t	   net_nodes()const	{return _net_nodes;}
   CARD*	   clone()const		{return new DEV_LOGIC(*this);}
   void	   precalc_first() {ELEMENT::precalc_first(); if (subckt()) {subckt()->precalc_first();}}
@@ -110,15 +111,15 @@ public:
   explicit MODEL_LOGIC(const COMPONENT*);
 	   ~MODEL_LOGIC()		{--_count;}
 protected: // override virtuals
-  virtual std::string	dev_type()const		{return "logic";}
-  virtual CARD*		clone()const		{return new MODEL_LOGIC(*this);}
-  virtual void		precalc_first();
-  virtual void		set_param_by_index(int, std::string&, int);
-  virtual bool		param_is_printable(int)const;
-  virtual std::string	param_name(int)const;
-  virtual std::string	param_name(int,int)const;
-  virtual std::string	param_value(int)const;
-  virtual int		param_count()const	{return (13 + MODEL_CARD::param_count());}
+  std::string	dev_type()const		{return "logic";}
+  CARD*		clone()const		{return new MODEL_LOGIC(*this);}
+  void		precalc_first();
+  void		set_param_by_index(int, std::string&, int);
+  bool		param_is_printable(int)const;
+  std::string	param_name(int)const;
+  std::string	param_name(int,int)const;
+  std::string	param_value(int)const;
+  int		param_count()const	{return (13 + MODEL_CARD::param_count());}
 public:
   static int	count()			{return _count;}
 public:
@@ -153,7 +154,7 @@ protected:
   explicit	COMMON_LOGIC(const COMMON_LOGIC& p)
     :COMMON_COMPONENT(p), incount(p.incount) {++_count;}
 public:
-		~COMMON_LOGIC()			{--_count;}
+        	~COMMON_LOGIC()			{ --_count; }
   bool operator==(const COMMON_COMPONENT&)const;
   static  int	count()				{return _count;}
   virtual LOGICVAL logic_eval(const node_t*)const	= 0;
@@ -283,5 +284,6 @@ public:
   virtual std::string name()const	  {untested();return "error";}
 };
 /*--------------------------------------------------------------------------*/
+//extern LOGIC_NONE Default_LOGIC;
 /*--------------------------------------------------------------------------*/
 #endif

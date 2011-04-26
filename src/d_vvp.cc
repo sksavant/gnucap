@@ -27,8 +27,7 @@
 //testing=script,sparse 2006.07.17
 #include "d_subckt.h"
 #include "u_xprobe.h"
-// #include "d_vvp.h"
-#include "d_logic.h"
+#include "d_vvp.h"
 #include "ap.h"
 #include "u_lang.h"
 #include "e_elemnt.h"
@@ -39,18 +38,25 @@
 /*--------------------------------------------------------------------------*/
 
 #include "extlib.h"
+#include "d_ivl_ports.h"
 
-#include "schedule.cc"
+//#include "schedule.cc"
 
-namespace {
-#include "d_vvp.h"
 
 /*--------------------------------------------------------------------------*/
 const double _default_delta (NOT_INPUT);
 const int    _default_smooth(0);
 /*--------------------------------------------------------------------------*/
-class MODEL_LOGIC_VVP;
+// class MODEL_LOGIC_VVP;
 class COMMON_LOGIC_VVP;
+/*--------------------------------------------------------------------------*/
+int MODEL_LOGIC_VVP::_count = -1;
+int COMMON_LOGIC_VVP::_count = -1;
+int DEV_LOGIC_VVP::_count = -1;
+typeof(COMMON_LOGIC_VVP::_commons) COMMON_LOGIC_VVP::_commons;
+static COMMON_LOGIC_VVP Default_Logic_Params(CC_STATIC);
+static LOGIC_NONE Default_LOGIC(CC_STATIC);
+/*--------------------------------------------------------------------------*/
 //from extlib.cc
 //???
 static int getVoltage(ExtSig *xsig,void *,double *ret) 
@@ -63,40 +69,51 @@ void ExtContSim(ExtLib* ext, const char *analysis,double accpt_time) {
   trace0("ExtContSim");
   ExtLib *lib = ext;
 
-  list<ExtRef*>::iterator scan=lib->refs.begin();
-  lib->now = accpt_time;
-  for (; scan != lib->refs.end(); scan++) {
-    ExtRef *ref = *scan;
-    if ('I' == ref->iv) {
-      list<ExtSig*>::iterator ss=ref->sigs.begin();
-      for (; ss != ref->sigs.end(); ss++) {
-        ExtSig *sig = *ss; 
-        SpcIvlCB *cbd = sig->cb_data;
-        (*cbd->eval)(cbd,accpt_time,CB_ACCEPT,'I' == ref->iv ? getVoltage
-            : 0,
-            sig,0);
-      }
-    }   
-  }
+  //list<ExtRef*>::iterator scan=lib->refs.begin();
+  //lib->now = accpt_time;
+  //for (; scan != lib->refs.end(); scan++) {
+  //  ExtRef *ref = *scan;
+  //  if ('I' == ref->iv) {
+  //    list<ExtSig*>::iterator ss=ref->sigs.begin();
+  //    for (; ss != ref->sigs.end(); ss++) {
+  //      ExtSig *sig = *ss; 
+  //      SpcIvlCB *cbd = sig->cb_data;
+  //      (*cbd->eval)(cbd,accpt_time,CB_ACCEPT,'I' == ref->iv ? getVoltage
+  //          : 0,
+  //          sig,0);
+  //    }
+  //  }   
+  //}
   if (lib->active) {
     if (lib->next_time <= accpt_time) lib->active = 0;    
   }
-  //bug
+  trace1("tr_accept calling contsim", accpt_time);
   lib->contsim(analysis,accpt_time);
 }
 /*--------------------------------------------------------------------------*/
 class LOGIC_IN : public COMMON_LOGIC {
-  // data from icarus
+  // device with only the input node
+  // data to ivl
+  // schedule_set_vector(vvp_net_ptr_t ptr
 private:
   explicit LOGIC_IN(const LOGIC_IN& p) :COMMON_LOGIC(p){++_count;}
+  explicit LOGIC_IN(const COMMON_LOGIC& p) :COMMON_LOGIC(p){++_count;}
   COMMON_COMPONENT* clone()const	{return new LOGIC_IN(*this);}
 public:
-  ExtSig* _ext;
+  vpiHandle ivlhandle;
+  uint_t net_nodes()const{return 5;} // 3 should be plenty
+  ~LOGIC_IN() {}
   explicit LOGIC_IN(int c=0)		  :COMMON_LOGIC(c) {}
+  LOGICVAL to_ivl;
+  bool operator==(const COMMON_COMPONENT&)const{return false;}
 
-  LOGICVAL logic_eval(const node_t* )const {
+  LOGICVAL logic_eval(const node_t* n )const {
     // called by DEV_LOGIC::tr_accept
-    return _ext->get_logic();
+    LOGICVAL out(n[0]->lv());
+    // to_ivl=out;
+    trace1("latching for ivl", out);
+
+    return lvSTABLE0;
   }
   virtual std::string name()const	  {return "in";}
 };
@@ -104,89 +121,27 @@ public:
 static LOGIC_IN Default_in(CC_STATIC);
 /*--------------------------------------------------------------------------*/
 class LOGIC_OUT : public COMMON_LOGIC {
-  // just the outnode. data to icarus
+  // just the output node. data from icarus
+
 private:
   explicit LOGIC_OUT(const LOGIC_OUT& p) :COMMON_LOGIC(p){++_count;}
   COMMON_COMPONENT* clone()const	{return new LOGIC_OUT(*this);}
+  explicit LOGIC_OUT(const COMMON_LOGIC& p) :COMMON_LOGIC(p){++_count;}
 public:
+  uint_t net_nodes()const{return 5;} // 3 should be plenty
+  ~LOGIC_OUT() { trace0("~LOGIC_OUT()"); }
   explicit LOGIC_OUT(int c=0)		  :COMMON_LOGIC(c) {}
+  bool operator==(const COMMON_COMPONENT&)const{return false;}
   LOGICVAL logic_eval(const node_t* )const {
     trace0("LOGIC_OUT::logic_eval noting to eval");
-    return lvUNKNOWN; 
+    // return _ext->get_logic();
+    return lvSTABLE0;
   }
   virtual std::string name()const	  {return "out";}
 };
 /*--------------------------------------------------------------------------*/
 static LOGIC_OUT Default_out(CC_STATIC);
 /*--------------------------------------------------------------------------*/
-static inline double FixTable(double *dp,std::vector<DPAIR> *num_table,
-                              double now)
-{
-  double t = -1,nxt = -1;
-  unsigned int s;
-  int rsz = 1;
-  for (s = 0;; s++) {
-    double t2 = *dp++;
-//    trace3("Fix", *dp,s,t2);
-    if (t2 <= t) break;
-      t = t2;
-      if (nxt < now) nxt = t;
-      double v = *dp++;
-      if (s >= num_table->size()) {
-        DPAIR p(t,v);
-	num_table->push_back(p); rsz = 0;
-      } else {
-	DPAIR &p((*num_table)[s]);
-	p.first = t;
-	p.second = v;
-      }
-  }
-  if (rsz) num_table->resize(s);
-
-  return nxt;
-}
-/*--------------------------------------------------------------------------*/
-class EVAL_BM_EXTPWL : public EVAL_BM_ACTION_BASE {
-private:
-  PARAMETER<double>   _delta;
-  PARAMETER<int>      _smooth;
-  ExtSig* _ext;
-  ExtRef* _extref; // unneeded?
-  std::vector<std::pair<PARAMETER<double>,PARAMETER<double> > > _raw_table;
-  std::vector<DPAIR> _num_table;
-  explicit	EVAL_BM_EXTPWL(const EVAL_BM_EXTPWL& p);
-public:
-  explicit      EVAL_BM_EXTPWL(int c=0);
-		~EVAL_BM_EXTPWL()		{}
-
-  void attach_sig(ExtSig* a) {assert(_ext==0); _ext=a; }
-
-// delete this function (see bm.h), use measurement;
-// to find related places use code "ICARCOSIMVOLT"
-//  virtual double    voltage(ELEMENT *) const;
-
-private: // override virtual
-  bool		operator==(const COMMON_COMPONENT&)const;
-  COMMON_COMPONENT* clone()const	{return new EVAL_BM_EXTPWL(*this);}
-  void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
-
-  void		precalc_first(const CARD_LIST*);
-  //void  	expand(const COMPONENT*);//COMPONENT_COMMON/nothing
-  //COMMON_COMPONENT* deflate();	 //COMPONENT_COMMON/nothing
-  void		precalc_last(const CARD_LIST*);
-  /// gs - 2remove void		precalc(const CARD_LIST*);
-
-  void		tr_eval(ELEMENT*)const;
-  //void	ac_eval(ELEMENT*)const; //EVAL_BM_ACTION_BASE
-  //bool	has_tr_eval()const;	//EVAL_BM_BASE/true
-  //bool	has_ac_eval()const;	//EVAL_BM_BASE/true
-  TIME_PAIR	tr_review(COMPONENT*);
-  std::string	name()const		{return "extpwl2";}
-  bool		ac_too()const		{return false;}
-  bool		parse_numlist(CS&);
-  bool		parse_params_obsolete_callback(CS&);
-  void		skip_type_tail(CS& cmd)const {cmd.umatch("(1)");}
-};
 /*--------------------------------------------------------------------------*/
 COMMON_LOGIC_VVP::COMMON_LOGIC_VVP(int c)
       :COMMON_COMPONENT(c), 
@@ -194,8 +149,12 @@ COMMON_LOGIC_VVP::COMMON_LOGIC_VVP(int c)
       incount(0),
       file(""),
       module(""),
-      status(0)
+      status(0),
+      _logic_out(0),
+      _logic_in(0),
+      _logic_none(0)
 {
+  trace1("COMMON_LOGIC_VVP::COMMON_LOGIC_VVP", c);
   ++_count;
 }
 /*--------------------------------------------------------------------------*/
@@ -205,7 +164,10 @@ COMMON_LOGIC_VVP::COMMON_LOGIC_VVP(const COMMON_LOGIC_VVP& p)
       incount(p.incount),
       file(p.file),
       module(p.module),
-      status(p.status)
+      status(p.status),
+      _logic_out(0),
+      _logic_in(0),
+      _logic_none(0)
 {
   trace0("COMMON_LOGIC_VVP::COMMON_LOGIC_VVP( COMMON_LOGIC_VVP )");
   ++_count;
@@ -217,15 +179,17 @@ bool COMMON_LOGIC_VVP::operator==(const COMMON_COMPONENT& x )const{
      //       && (module==p->module); // bad idea...?
   bool cr = COMMON_COMPONENT::operator==(x);
 
-  trace2("COMMON_LOGIC_VVP::operator==" + string( file ) + " " + string( p->file),ret,cr);
   return ret && cr;
 }
 /*--------------------------------------------------------------------------*/
 COMMON_COMPONENT* COMMON_LOGIC_VVP::deflate()
 {
+  trace0("COMMON_LOGIC_VVP::deflate");
+  // return this;
   for( list<const COMMON_COMPONENT*>::iterator i = _commons.begin();
       i != _commons.end(); ++i ){
     if (*this == **i){
+      trace0("COMMON_LOGIC_VVP::deflate hit");
       return const_cast<COMMON_COMPONENT*>( *i );
     }
     trace0("COMMON_LOGIC_VVP::deflate miss");
@@ -234,218 +198,8 @@ COMMON_COMPONENT* COMMON_LOGIC_VVP::deflate()
   return this;
 }
 /*--------------------------------------------------------------------------*/
-EVAL_BM_EXTPWL::EVAL_BM_EXTPWL(int c)
-  :EVAL_BM_ACTION_BASE(c),
-   _delta(_default_delta),
-   _smooth(_default_smooth),
-   _ext(NULL),
-   _extref(NULL), //unneeded?
-   _raw_table(),
-   _num_table()
-{
-}
 /*--------------------------------------------------------------------------*/
-EVAL_BM_EXTPWL::EVAL_BM_EXTPWL(const EVAL_BM_EXTPWL& p)
-  :EVAL_BM_ACTION_BASE(p),
-   _delta(p._delta),
-   _smooth(p._smooth),
-   _ext(p._ext),
-   _extref(p._extref), //unneeded
-   _raw_table(p._raw_table),
-   _num_table(p._num_table)
-{
-}
 /*--------------------------------------------------------------------------*/
-bool EVAL_BM_EXTPWL::operator==(const COMMON_COMPONENT& x)const
-{
-  const EVAL_BM_EXTPWL* p = dynamic_cast<const EVAL_BM_EXTPWL*>(&x);
-  bool rv = p
-    && _delta == p->_delta
-    && _smooth == p->_smooth
-    && _ext == p->_ext
-    && _extref == p->_extref
-    && _raw_table == p->_raw_table
-    && _num_table == p->_num_table
-    && EVAL_BM_ACTION_BASE::operator==(x);
-  if (rv) {
-    untested();
-  }
-  return rv;
-}
-/*--------------------------------------------------------------------------*/
-void EVAL_BM_EXTPWL::print_common_obsolete_callback(OMSTREAM& o, LANGUAGE* lang)const
-{
-  incomplete(); // remove obs cb.
-  assert(lang);
-  o << name() << '(';
-  o << (long int)(void*)this <<  ')';
-  print_pair(o, lang, "delta", _delta, _delta.has_hard_value());
-  print_pair(o, lang, "smooth",_smooth,_smooth.has_hard_value());
-  EVAL_BM_ACTION_BASE::print_common_obsolete_callback(o, lang);
-}
-/*--------------------------------------------------------------------------*/
-void EVAL_BM_EXTPWL::precalc_first(const CARD_LIST* Scope)
-{
-  assert(Scope);
-  EVAL_BM_ACTION_BASE::precalc_first(Scope);
-  _delta.e_val(_default_delta, Scope);
-  _smooth.e_val(_default_smooth, Scope);
-  assert(_ext);
-
-  trace0(("EVAL_BM_EXTPWL::precalc_first bound ")); 
-
-  for (std::vector<std::pair<PARAMETER<double>,PARAMETER<double> > >::iterator
-	 p = _raw_table.begin();  p != _raw_table.end();  ++p) {
-    p->first.e_val(0, Scope);
-    p->second.e_val(0, Scope);
-  }
-}
-/*--------------------------------------------------------------------------*/
-void EVAL_BM_EXTPWL::precalc_last(const CARD_LIST* Scope)
-{
-  assert(Scope);
-  EVAL_BM_ACTION_BASE::precalc_last(Scope);
-  trace0("EVAL_BM_EXTPWL::precalc_last ");
-
-  double last = -BIGBIG;
-  for (std::vector<std::pair<PARAMETER<double>,PARAMETER<double> > >::iterator
-	 p = _raw_table.begin();  p != _raw_table.end();  ++p) {
-    if (last > p->first) {
-      throw Exception_Precalc("PWL is out of order: (" + to_string(last)
-			      + ", " + to_string(p->first) + ")\n");
-    }else{
-      DPAIR x(p->first, p->second);
-      _num_table.push_back(x);
-    }
-    last = p->first;
-  }
-
-}
-/*--------------------------------------------------------------------------*/
-
-/*--------------------------------------------------------------------------*/
-void EVAL_BM_EXTPWL::tr_eval(ELEMENT* d)const
-{
-  ExtSig *xsig = _ext;
-  assert (xsig);
-  SpcIvlCB *cbd = xsig->cb_data;
-  double time0 = CKT_BASE::_sim->_time0,*dp,nxt;
-  dp=0;
-  xsig->d= d; // not here.
-
-  // to Ivl
-  //if (d->id_letter()=='V')
-  dp  = (*cbd->eval)(cbd,time0,CB_LOAD,getVoltage,xsig,0);
-
-  // &_num_table is const? why?
-  std::vector<DPAIR>* num_table = const_cast<std::vector<DPAIR>*>(&_num_table);
-  nxt = FixTable(dp,num_table,time0);
-
-  double ext = (d->is_source()) ? 0. : NOT_INPUT;
-  assert(ext==0);
-
-  if(d->id_letter()=='V')
-  { // from ivl
-    d->_y[0] = interpolate(_num_table.begin(), _num_table.end(), 
-                         ioffset(d->_y[0].x), ext, ext);
-    tr_final_adjust(&(d->_y[0]), d->f_is_value());
-  }
-}
-/*--------------------------------------------------------------------------*/
-TIME_PAIR EVAL_BM_EXTPWL::tr_review(COMPONENT* comp)
-{
-  assert (_ext);
-  double dtime = comp->_sim->_dtmin;
-  double dt = dtime;
-
-  ExtSig *xsig = _ext;
-
-  if ('I' == xsig->iv) {
-    assert(comp->id_letter()=='I');
-    SpcIvlCB *cbd = xsig->cb_data;
-    double time0 = CKT_BASE::_sim->_time0,accpt_time = time0+dtime,*dp,nxt;
-
-    if (cbd->sig==NULL)
-    {
-      trace0("ExtSigTrCheck Warnung xsig->cb_data->sig noch nicht gesetzt: Keine Schrittweitenkontrolle\n");
-    }
-    else
-    { 
-      dp = (*cbd->eval)(cbd,accpt_time,CB_TRUNC,getVoltage,xsig,0);
-
-      nxt = dp[2];
-      if (nxt <= time0) {
-        dt = CKT_BASE::_sim->_dtmin;
-      } else if (nxt < accpt_time) {
-        dt = accpt_time - nxt;
-      }
-    }
-  }
-
-
-  //--------------------
-  if (dt < dtime) {
-    comp->_time_by.min_event(dt + comp->_sim->_time0);
-  }
-
-  if (comp->is_source()) {
-    ELEMENT* dd = prechecked_cast<ELEMENT*>(comp);
-    assert(dd);
-    double x = dd->_y[0].x + comp->_sim->_dtmin * .01;
-    DPAIR here(x, BIGBIG);
-    std::vector<DPAIR>::iterator begin = _num_table.begin();
-    std::vector<DPAIR>::iterator end   = _num_table.end();
-    std::vector<DPAIR>::iterator upper = upper_bound(begin, end, here);
-    std::vector<DPAIR>::iterator lower = upper - 1;
-    assert(x > lower->first);
-    comp->_time_by.min_event((x < upper->first) ? upper->first : NEVER);
-  }else{untested();
-  }
-
-  return comp->_time_by;
-}
-/*--------------------------------------------------------------------------*/
-bool EVAL_BM_EXTPWL::parse_numlist(CS& cmd)
-{
-  unsigned start = cmd.cursor();
-  unsigned here  = cmd.cursor();
-  std::pair<PARAMETER<double>, PARAMETER<double> > p;
-  if (0 == _ext) {
-    // _ext  = (some_int)bindExtSigInit(_ext.string(),cmd.fullstring().c_str());
-    p.first  = 0;
-    p.second = 0;
-    _raw_table.push_back(p);
-    p.first  = BIGBIG;
-    p.second = 0;
-    _raw_table.push_back(p);
-  } else {
-    // _ext = 0;
-    for (;;) {
-      unsigned start_of_pair = here;
-      //cmd >> key >> value;
-      cmd >> p.first; // key
-      if (cmd.stuck(&here)) {
-	// no more, graceful finish
-	break;
-      }else{
-	cmd >> p.second; // value
-	if (cmd.stuck(&here)) {
-	  // ran out, but already have half of the pair
-	  // back up one, hoping somebody else knows what to do with it
-	  cmd.reset(start_of_pair);
-	  break;
-	}else{
-	  _raw_table.push_back(p);
-	}
-      }
-    }
-    if (cmd.gotit(start)) {
-    }else{
-      untested();
-    }
-  }
-  return cmd.gotit(start);
-}
 /*--------------------------------------------------------------------------*/
 bool Getptr(CS& cmd, const std::string& key, PARAMETER<intptr_t>* val)  // consumes key and optional "="
 {  // see for "iu_parameter.h" "Get" functions for example and reference
@@ -467,19 +221,6 @@ bool Getptr(CS& cmd, const std::string& key, PARAMETER<intptr_t>* val)  // consu
     }
 }
 /*--------------------------------------------------------------------------*/
-bool EVAL_BM_EXTPWL::parse_params_obsolete_callback(CS& cmd)
-{
-  trace0("EVAL_BM_EXTPWL::parse_params_obsolete_callback");
-  return ONE_OF
-    || Get(cmd, "delta",    &_delta)
-    || Get(cmd, "smooth",   &_smooth)
-    || EVAL_BM_ACTION_BASE::parse_params_obsolete_callback(cmd)
-    ;
-}
-/*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-EVAL_BM_EXTPWL pp1(CC_STATIC);
-DISPATCHER<COMMON_COMPONENT>::INSTALL dd1(&bm_dispatcher, "extpwl2", &pp1);
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
@@ -502,9 +243,21 @@ bool DEV_LOGIC_VVP::do_tr(){
 /*--------------------------------------------------------------------------*/
 void DEV_LOGIC_VVP::tr_accept(){
   //trace1("DEV_LOGIC_VVP::tr_accept", _sim->_time0);
-  ExtContSim(extlib(),"TRAN",_sim->_time0);     
 
   subckt()->tr_accept();
+
+  ExtContSim(extlib(),"TRAN",_sim->_time0);     
+
+  uint_t incount=1;
+//  FIXME;
+
+  node_t* n=&_n[2];
+  for (uint_t ii=0; ii<incount; ++ii) {itested();
+    LOGICVAL x = n[ii]->lv();
+    /// vvp_net_ptr_t ptr = * _outnet[ii];
+    // schedule_set_vector(ptr,data(x) );
+  }
+
   q_eval();
 }
 /*--------------------------------------------------------------------------*/
@@ -516,19 +269,40 @@ void COMMON_LOGIC_VVP::precalc_first(const CARD_LIST* par_scope)
   COMMON_COMPONENT::precalc_first(par_scope);
   file.e_val_normal("UNSET" , par_scope);
   module.e_val_normal("UNSET" , par_scope);
+  outports.e_val(1, par_scope);
 }
 /*--------------------------------------------------------------------------*/
-void COMMON_LOGIC_VVP::expand(const  COMPONENT* d ){
-  trace1("COMMON_LOGIC_VVP::expand" + d->long_label(), (intptr_t) d % PRIME);
+void COMMON_LOGIC_VVP::expand(const COMPONENT* dev ){
+  trace1("COMMON_LOGIC_VVP::expand" + dev->long_label(), (intptr_t) dev % PRIME);
 
-  COMMON_COMPONENT::expand(d);
-  attach_model(d);
+  COMMON_COMPONENT::expand(dev);
+  attach_model(dev);
+
+  // 
+  // dev->outports=outports;
+
   // COMMON_LOGIC_VVP* c = this;
   const MODEL_LOGIC* m = dynamic_cast<const MODEL_LOGIC*>(model());
   if (!m) {
-    throw Exception_Model_Type_Mismatch(d->long_label(), modelname(), name());
+    throw Exception_Model_Type_Mismatch(dev->long_label(), modelname(), name());
   }
 
+  COMMON_LOGIC* logic_none = new LOGIC_NONE;
+  COMMON_LOGIC* logic_out = new LOGIC_OUT;
+  COMMON_LOGIC* logic_in = new LOGIC_IN;
+  logic_none->set_modelname(modelname());
+  logic_none->attach(model());
+  logic_out->set_modelname(modelname());
+  logic_out->attach(model());
+
+  logic_in->set_modelname(modelname());
+  logic_in->attach(model());
+
+  attach_common(logic_in, &_logic_in);
+  attach_common(logic_out, &_logic_out);
+  attach_common(logic_none, &_logic_none);
+  trace2("COMMON_LOGIC_VVP::expand done modelname " + modelname() ,(intptr_t)_logic_out, (intptr_t)_logic_in);
+  trace2("COMMON_LOGIC_VVP::expand  " + modelname() ,_logic_out->attach_count(),_logic_in->attach_count());
 }
 /*--------------------------------------------------------------------------*/
 void COMMON_LOGIC_VVP::precalc_last(const CARD_LIST* par_scope)
@@ -538,23 +312,30 @@ void COMMON_LOGIC_VVP::precalc_last(const CARD_LIST* par_scope)
 
   file.e_val_normal("UNSET" , par_scope);
   module.e_val_normal("UNSET" , par_scope);
+  outports.e_val(1, par_scope);
 
   trace1("COMMON_LOGIC_VVP::precalc_last " + file.string(), status);
   if(!_extlib){
+#ifdef SOMETHING_
+    /// dlopen has been overwritten!!1
     void* h = dlopen("libvvpg.so",RTLD_LAZY|RTLD_GLOBAL);
     if(h==NULL) throw Exception("cannot open libvvp: %s: ", dlerror());
+    trace0("=========== LOADED libvvpg.so ==========");
     dlerror();
-    trace1("dlopened libvvp.so", (intptr_t)h%PRIME);
+#else
+    void* h = NULL;
+#endif
     _extlib = new ExtLib("foo",h);
     int ret;
-    ret=_extlib->init(("-M. -mbindsigs2 -v "+string(file)+".vvp").c_str());   
+    // ret=_extlib->init(("-M. -mbindsigs2 -v "+string(file)+".vvp").c_str());   
+    ret=_extlib->init((string(file)+".vvp").c_str());   
     if(dlerror()) throw Exception("cannot init vvp %s", dlerror());
 
     if(ret)
       error(bDANGER, "somethings wrong with vvp: %s\n", file.string().c_str() );
 
   } else {
-    untested();
+    trace0("COMMON_LOGIC_VVP::precalc_last already done extlib");
   }
 
   status++;
@@ -592,58 +373,39 @@ bool COMMON_LOGIC_VVP::param_is_printable(int i) const{
     return (COMMON_COMPONENT::param_count() - 1 - i)  < param_count();
 }
 /*--------------------------------------------------------------------------*/
+DEV_LOGIC_VVP::~DEV_LOGIC_VVP() {
+  --_count;
+
+  trace0("~DEV_LOGIC_VVP");
+
+/*  for( vector<COMMON_COMPONENT*>::iterator i = _subcommons.begin();
+      i!=_subcommons.end(); ++i){
+  //   COMMON_COMPONENT::detach_common(&(*i));
+  }
+  */
+}
+/*--------------------------------------------------------------------------*/
+COMMON_LOGIC_VVP::~COMMON_LOGIC_VVP()	{
+  --_count;
+
+  detach_common(&_logic_in);
+  detach_common(&_logic_out);
+  detach_common(&_logic_none);
+
+  for( vector<COMMON_COMPONENT*>::iterator i = _subcommons.begin();
+      i!=_subcommons.end(); ++i){
+    //trace0("~DEV_LOGIC_VVP detaching from " + short_label());
+    delete (&(*i));
+  }
+}
+/*--------------------------------------------------------------------------*/
 std::string COMMON_LOGIC_VVP::param_name(int i) const{
     switch (COMMON_COMPONENT::param_count() - 1 - i) {
       case 0: return "file";
       case 1: return "module";
+      case 2: return "outports";
       default: return COMMON_COMPONENT::param_name(i);
     }
-}
-/*--------------------------------------------------------------------------*/
-bool MODEL_LOGIC_VVP::param_is_printable(int i) const{
-    return (MODEL_LOGIC::param_count() - 1 - i)  < param_count();
-}
-/*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-std::string MODEL_LOGIC_VVP::param_name(int i) const{
-    switch (MODEL_LOGIC_VVP::param_count() - 1 - i) {
-      case 0: return "file_unused";
-      case 1: return "input";
-      case 2: return "output";
-      default: return MODEL_LOGIC::param_name(i);
-    }
-}
-/*--------------------------------------------------------------------------*/
-std::string MODEL_LOGIC_VVP::param_name(int i, int j)const
-{
-  if (j == 0) {
-    return param_name(i);
-  }else if (i >= MODEL_LOGIC::param_count()) {
-    return "";
-  }else{
-    return MODEL_LOGIC::param_name(i, j);
-  }
-}
-/*--------------------------------------------------------------------------*/
-void COMMON_LOGIC_VVP::set_param_by_index(int i, std::string& value, int offset)
-{
-  switch (COMMON_COMPONENT::param_count() - 1 - i) {
-  case 0: file = value;
-          break;
-
-  case 1: module = value; break;
-  default: COMMON_COMPONENT::set_param_by_index(i, value, offset); break;
-  }
-}
-/*--------------------------------------------------------------------------*/
-void MODEL_LOGIC_VVP::set_param_by_index(int i, std::string& value, int offset)
-{
-  switch (MODEL_LOGIC_VVP::param_count() - 1 - i) {
-  case 0: file = value; break;
-  case 1: output = value; break;
-  case 2: input = value; break;
-  default: MODEL_LOGIC::set_param_by_index(i, value, offset); break;
-  }
 }
 /*--------------------------------------------------------------------------*/
 std::string COMMON_LOGIC_VVP::param_name(int i, int j)const
@@ -662,6 +424,7 @@ std::string COMMON_LOGIC_VVP::param_value(int i)const
   switch (COMMON_COMPONENT::param_count() - 1 - i) {
   case 0: return file.string();
   case 1: return module.string();
+  case 2: return outports.string();
   default: return COMMON_COMPONENT::param_value(i);
   }
 }
@@ -669,6 +432,52 @@ std::string COMMON_LOGIC_VVP::param_value(int i)const
 COMMON_COMPONENT* COMMON_LOGIC_VVP::clone()const
 {
   return new COMMON_LOGIC_VVP(*this);
+}
+/*--------------------------------------------------------------------------*/
+//   MODEL
+/*--------------------------------------------------------------------------*/
+bool MODEL_LOGIC_VVP::param_is_printable(int i) const{
+    return (MODEL_LOGIC::param_count() - 1 - i)  < param_count();
+}
+/*--------------------------------------------------------------------------*/
+std::string MODEL_LOGIC_VVP::param_name(int i, int j)const
+{
+  if (j == 0) {
+    return param_name(i);
+  }else if (i >= MODEL_LOGIC::param_count()) {
+    return "";
+  }else{
+    return MODEL_LOGIC::param_name(i, j);
+  }
+}
+/*--------------------------------------------------------------------------*/
+void MODEL_LOGIC_VVP::set_param_by_index(int i, std::string& value, int offset)
+{
+  switch (MODEL_LOGIC_VVP::param_count() - 1 - i) {
+  case 0: file = value; break;
+  case 1: output = value; break;
+  case 2: input = value; break;
+  default: MODEL_LOGIC::set_param_by_index(i, value, offset); break;
+  }
+}
+/*--------------------------------------------------------------------------*/
+std::string MODEL_LOGIC_VVP::param_name(int i) const{
+    switch (MODEL_LOGIC_VVP::param_count() - 1 - i) {
+      case 0: return "file_unused";
+      case 1: return "input";
+      case 2: return "output";
+      default: return MODEL_LOGIC::param_name(i);
+    }
+}
+/*--------------------------------------------------------------------------*/
+void COMMON_LOGIC_VVP::set_param_by_index(int i, std::string& value, int offset)
+{
+  switch (COMMON_COMPONENT::param_count() - 1 - i) {
+  case 0: file = value; break;
+  case 1: module = value; break;
+  case 2: outports = value; break;
+  default: COMMON_COMPONENT::set_param_by_index(i, value, offset); break;
+  }
 }
 /*--------------------------------------------------------------------------*/
 std::string MODEL_LOGIC_VVP::param_value(int i)const
@@ -683,33 +492,26 @@ std::string MODEL_LOGIC_VVP::param_value(int i)const
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-int MODEL_LOGIC_VVP::_count = -1;
-int COMMON_LOGIC_VVP::_count = -1;
-typeof(COMMON_LOGIC_VVP::_commons) COMMON_LOGIC_VVP::_commons;
-int DEV_LOGIC_VVP::_count = -1;
-static COMMON_LOGIC_VVP Default_Params(CC_STATIC);
-/*--------------------------------------------------------------------------*/
-namespace DEV_DISP {
+namespace {
 static DEV_LOGIC_VVP p1;
-static DISPATCHER<CARD>::INSTALL
-d1(&device_dispatcher, "vvp", &p1);
+static DISPATCHER<CARD>::INSTALL x1(&device_dispatcher, "vvp", &p1);
 }
-/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------
 namespace MOD_DISP{
 static DEV_LOGIC_VVP p1;
 static MODEL_LOGIC_VVP p2(&p1);
 static DISPATCHER<MODEL_CARD>::INSTALL
-d2(&model_dispatcher, "vvp", &p2);
+d2(&model_dispatcher, "vvpmodel", &p2);
 }
-/*--------------------------------------------------------------------------*/
+--------------------------------------------------------------------------*/
 DEV_LOGIC_VVP::DEV_LOGIC_VVP()
   :BASE_SUBCKT(),
   status(0)
 {
   trace0("DEV_LOGIC_VVP::DEV_LOGIC_VVP attaching...");
-  attach_common(&Default_Params);
+  attach_common(&Default_Logic_Params); // as in mos.cc
   trace0("DEV_LOGIC_VVP::DEV_LOGIC_VVP nodes");
-  _n = nodes;
+  _n = _nodes;
   ++_count;
 }
 /*--------------------------------------------------------------------------*/
@@ -718,9 +520,9 @@ DEV_LOGIC_VVP::DEV_LOGIC_VVP(const DEV_LOGIC_VVP& p)
    ,status(0)
 {
   for (uint_t ii = 0;  ii < max_nodes();  ++ii) {
-    nodes[ii] = p.nodes[ii];
+    _nodes[ii] = p._nodes[ii];
   }
-  _n = nodes;
+  _n = _nodes;
   ++_count;
 }
 /*--------------------------------------------------------------------------*/
@@ -728,15 +530,12 @@ void DEV_LOGIC_VVP::expand()
 {
   trace0("DEV_LOGIC_VVP::expand " + long_label());
   BASE_SUBCKT::expand(); // calls common->expand, attaches model
+  trace0("DEV_LOGIC_VVP::expand BASE_SUBCKT done");
   assert(_n);
 
   assert(common());
   const COMMON_LOGIC_VVP* c = prechecked_cast<const COMMON_LOGIC_VVP*>(common());
   assert(c);
-
-  // c->attach(  dynamic_cast<const MODEL_LOGIC_VVP*>(find_model(_modelname)) );
-  //
-  assert(c->model());
 
   assert(c->model()); // d_mos.cc has a model here...
   const MODEL_LOGIC* m = prechecked_cast<const MODEL_LOGIC*>(c->model());
@@ -753,7 +552,35 @@ void DEV_LOGIC_VVP::expand()
     precalc_last();
     uint_t n=2;
 
-    assert(((const COMMON_LOGIC_VVP*) common())->_extlib);
+    ExtLib*el=((const COMMON_LOGIC_VVP*) common())->_extlib;
+    assert(el);
+
+    vpi_mode_flag = VPI_MODE_COMPILETF;
+    trace0("Looking around");
+    vpiHandle item;
+//    vpiHandle H = vpi_handle(vpiNet, NULL);
+
+    const char* modulename="main";
+
+
+    vpiHandle module = vpi_handle_by_name(modulename,NULL);
+    assert(module);
+
+    //int typeof_module = vpi_get(vpiType, module);
+    //trace1 ("have " + string( modulename), typeof_module);
+
+    vpiHandle vvp_device = vpi_handle_by_name(short_label().c_str(),module);
+    assert(vvp_device);
+
+    //int typeof_device=vpi_get(vpiType, vvp_device);
+    //trace1 ("have " +long_label(), typeof_device);
+
+    vpiHandle vvp_device_module = vpi_handle(vpiModule,vvp_device);
+    assert(vvp_device_module);
+
+
+    //char*  vvp_device_module_name = vpi_get_str(vpiName,vvp_device_module);
+    //trace1 ("have " + string(vvp_device_module_name), vpi_get(vpiType, vvp_device_module));
 
     //if (!(_n[0].n_())) {
    //  _n[0].new_model_node("." + long_label() + ".gnd", this);
@@ -764,84 +591,104 @@ void DEV_LOGIC_VVP::expand()
    //  _n[1].new_model_node("." + long_label() + ".vdd", this);
     //}else{
     //  untested0(_n[1].short_label().c_str());
-    trace0("DEV_LOGIC_VVP::expand "+ short_label() + " entering loop");
+    assert ((_n[0].n_()));
+    assert ((_n[1].n_()));
+    assert ((_n[2].n_()));
+    assert ((_n[3].n_()));
+    trace1("DEV_LOGIC_VVP::expand "+ short_label() + " entering loop", net_nodes());
     //}
-    for( ; n<net_nodes(); ++n){
-      string name;
-      char src;
-      COMMON_COMPONENT* logic_common;
+    //uint_t k = 0;
+    //uint_t l = 0;
+//    vpiHandle outports = vpi_Scope(vpiReg,vvp_device);
+//    vpiHandle inports  = vpi_iterate(vpiNet,vvp_device);
+        char src;
+        COMMON_COMPONENT* logic_common;
 
-      // a hack...
-      stringstream a;
-      a << "p" << n;
-      name=a.str();
-      src='V';
-      name="out"; // from_iv
-      logic_common = &Default_out;
-      node_t lnodes[] = {_n[n], _n[0], _n[1], _n[1], _n[0]};
+    node_t* lnodes;
+    node_t innodes[] = {_n[0], _n[0], _n[1], _n[1], _n[n]};
+    node_t outnodes[] = {_n[n], _n[0], _n[1], _n[1], _n[0]};
+//  vpiParameter  holds fall, rise etc.
+    trace0 ("listing " +long_label());
+    string name;
+    vpiHandle net_iterator = vpi_iterate(vpiScope,vvp_device);
+    assert(net_iterator);
+    CARD* logicdevice;
+    node_t* x;
+    while ((item = vpi_scan(net_iterator))) {
+      int type= vpi_get(vpiType,item);
+      name = vpi_get_str(vpiName,item);
 
+      switch(type){
+        case vpiNet: //inputport
+      trace2("==> net loop V  " + string(name), item->vpi_type->type_code, n );
+          src='V';
+          logic_common = c->_logic_none;
+          lnodes = outnodes;
+          x = new node_t();
+          x->new_model_node("fake_in", this);
+          lnodes[0]=_n[n];
+          lnodes[4]=*x;
+          logicdevice = device_dispatcher["port_from_ivl"];
+          break;
 
-      if (n==3){
+        case vpiReg: // -> ivl
+      trace2("==> net loop to_ivl " + string(name), item->vpi_type->type_code, n );
           src='I';
-          name="in"; // to verilog
-          lnodes[0] = _n[0];
-          lnodes[1] = _n[0];
-          lnodes[2] = _n[1];
-          lnodes[3] = _n[1];
-          lnodes[4] = _n[n];
-          logic_common = &Default_in;
-      }
-      assert(n<4);
+          lnodes = innodes;
+          x = new node_t();
+          x->new_model_node("fake_out", this);
+          lnodes[4]=_n[n];
+          lnodes[0]=*x;
+          logic_common = c->_logic_none;
+          logicdevice = device_dispatcher["port_to_ivl"];
+          ((DEV_LOGIC_OUT*) logicdevice)->H = item;
 
-      trace1("DEV_LOGIC_VVP::expand "+ name + " " + short_label(), n);
+          break;
+        default:
+          trace1("ignoring", type);
+          continue;
+      }
+      //trace2("DEV_LOGIC_VVP::expand "+ short_label() + " loop", n, noutports);
+
+
+      trace2("DEV_LOGIC_VVP::expand "+ name + " " + short_label(), n, (intptr_t)logic_common);
       assert(_n[n].n_());
 
-      // _n[n].new_model_node(long_label() + "."+ name, this);
-      const CARD* p;
-      const CARD* logic_dev;
-      //if (i->direction == pIN){
 
-      //}else{
-      //  src='V';
-      //}
-      
-        //src=get_pin_type(n)
-      p = device_dispatcher[string(&src,1)];
-      logic_dev =  device_dispatcher["logic"];
+      assert(logicdevice);
 
-      assert(p);
-      COMPONENT* _I = dynamic_cast<COMPONENT*>(p->clone());
-      assert(_I);
-      subckt()->push_front(_I);
-      node_t nodes[] = {_n[n], _n[0]};
-      const COMMON_COMPONENT* e = bm_dispatcher["extpwl2"];
-      EVAL_BM_EXTPWL*_e = dynamic_cast<EVAL_BM_EXTPWL*>(e->clone());
+      COMPONENT* P = dynamic_cast<COMPONENT*>(logicdevice->clone());
+      assert(P);
+      for (int i=0; i<5; i++ ){
+        stringstream a;
+        a << short_label() << "." << name << n << "_" << i;
+        string port=a.str();
+       // P->set_port_by_index(i, port);
+      }
 
-      // from SigInit
-      ExtRef* extref = new ExtRef(extlib(),( name ).c_str(),(char)toupper(src));
-      ExtRefList.push_back(extref);
+      trace0("pushing controller for "+name);
+      subckt()->push_front(P);
 
+      // _e->attach_sig(sig);
       //
-      // from SigConn
-      //  ExtSig(COMMON_COMPONENT *_c,ExtLib *_l,char _iv,void *cbd) 
-      int s;
-      trace0("binding something "+ extref->spec );
-      SpcIvlCB* foo = (SpcIvlCB*) (* extlib()->bindnet)(name.c_str(),extref->iv,
-          &s,extlib()->handle,ExtSig::SetActive);
-      trace3("cb " + (string)(foo->spec) , foo->last_error, foo->last_time, s);
+      trace3("setting parameters", intptr_t(logic_common), logic_common->attach_count(), n );
+      trace0("modelname: " + logic_common->modelname());
 
-      ExtSig* sig= new ExtSig(_e, extlib(), extref->iv, foo);
-      // (*_extlib->bindnet)(name.c_str(),extref->iv,
-      //    &s,_extlib->handle,ExtSig::SetActive));
-      string path=short_label();
-      trace3(("ExtSig *bindExtSigConnect p: " + path).c_str(), (intptr_t)sig, s, foo->last_value);
-      sig->slots = s;
-      extref->sigs.push_back(sig);
+      if (src=='I'){
+        // to ivl
+        LOGIC_IN* L = (LOGIC_IN*) logic_common;
+        L->ivlhandle = item;
+        P->set_parameters(name, this, L, 0, 0, NULL, 5 , lnodes);
+      }else{
+        // from ivl.
+        LOGIC_OUT* L = (LOGIC_OUT*) logic_common;
+        P->set_parameters(name, this, L, 0, 0, NULL, 5 , lnodes);
+      }
 
-      _e->attach_sig(sig);
-
-      _I->set_parameters("in", this, (COMMON_COMPONENT*) _e, 0, 0, NULL, 2, nodes);
+      trace1("loop end for "+name, n);
+      n++;
     } 
+    vpi_mode_flag = VPI_MODE_NONE;
   }
 
   std::string subckt_name(c->modelname()+"."+string(c->file));
@@ -851,7 +698,6 @@ void DEV_LOGIC_VVP::expand()
   subckt()->expand();
 
   trace0("DEV_LOGIC_VVP::expand done");
-
 }
 /*--------------------------------------------------------------------------*/
 ExtLib* DEV_LOGIC_VVP::extlib()const{
@@ -864,7 +710,7 @@ void DEV_LOGIC_VVP::tr_begin()
   assert(c);
 
   trace2("DEV_LOGIC_VVP::tr_begin startsim", status, (intptr_t) extlib());
-  extlib()->startsim("TRAN",extlib());
+  extlib()->startsim("TRAN");
 
   status++;
   subckt()->tr_begin();
@@ -879,9 +725,10 @@ void DEV_LOGIC_VVP::precalc_first()
 
    // FIXME: get ports from file...
    //
-
-
-  if(subckt()) subckt()->precalc_first();
+  trace1("DEV_LOGIC_VVP::precalc_first, doing subckt()", (intptr_t)subckt());
+  if(subckt()){
+    subckt()->precalc_first();
+  }
 }
 /*--------------------------------------------------------------------------*/
 void DEV_LOGIC_VVP::precalc_last()
@@ -893,6 +740,34 @@ void DEV_LOGIC_VVP::precalc_last()
   if (subckt()) {subckt()->precalc_last();}
 
   assert(common()->model());
+}
+
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+
+void DEV_LOGIC_VVP::register_port( vpiHandle net){ // data from ivl
+  string netname = vpi_get_str(vpiName, net);
+  // int porttype = vpi_get(vpiNetType,net);
+        
+  int type = net->vpi_type->type_code;
+
+
+  switch(type) {
+    case vpiReg: // -> ivl
+      _outport.push_back(net);
+
+      break;
+    case vpiNet: // <- ivl
+
+      _inport.push_back(net);
+
+
+      break;
+    default:
+      assert(false);
+
+  }
+
 }
 /*--------------------------------------------------------------------------*/
 // DEV_LOGIC_VVP::schluss{
@@ -912,8 +787,6 @@ void DEV_LOGIC_VVP::precalc_last()
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
 //bool DEV_LOGIC_VVP::want_analog()const
 //{
 //  return subckt() &&
@@ -928,4 +801,3 @@ void DEV_LOGIC_VVP::precalc_last()
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-}

@@ -32,7 +32,7 @@ class CARD;
 class BASE_SUBCKT : public COMPONENT {
 protected:
   explicit BASE_SUBCKT()
-    :COMPONENT() {}
+    :COMPONENT() { trace0("BASE_SUBCKT");}
   explicit BASE_SUBCKT(const BASE_SUBCKT& p)
     :COMPONENT(p) {}
   ~BASE_SUBCKT() {}
