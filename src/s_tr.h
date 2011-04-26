@@ -87,9 +87,9 @@ public:
   int stepno(){return _sim->_stepno;}		// count of visible (saved) steps
   static int total_outsteps(){return steps_total_out_  ;}		// count of visible (saved) steps
   int	step_cause()const;
-  void	first(); // HACK/
+  void	first();
   bool	next();
-  virtual void	accept(); // HACK
+  void	accept();
   void	reject();
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
 private:
