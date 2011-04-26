@@ -1,29 +1,39 @@
 ./tmp/*
 ./*.old
 *.o
+*.lo
+*.in
+*.la
 *.so
-gnucap/src/d_mos*.cc
-gnucap/src/d_mos*.h
-gnucap/src/d_dio*.cc
-gnucap/src/d_dio*.h
-gnucap/src/d_bjt.cc
-gnucap/src/d_bjt.h
+Makefile
+.deps
+.libs
 
-gnucap/src/gnucap
-gnucap/modelgen/gnucap-modelgen
+#vim backup files
+*~
 
-gnucap/Makefile
-gnucap/doc/Makefile
-gnucap/modelgen/Makefile
-gnucap/src/Makefile
-gnucap/examples/Makefile
+src/d_mos*.cc
+src/d_mos*.h
+src/d_dio*.cc
+src/d_dio*.h
+src/d_bjt.cc
+src/d_bjt.h
 
-gnucap/config.h
-gnucap/config.log
-gnucap/config.status
+src/gnucap
+modelgen/gnucap-modelgen
 
-gnucap/modelgen/.deps
-gnucap/src/.deps
+Makefile
+doc/Makefile
+modelgen/Makefile
+src/Makefile
+examples/Makefile
 
-gnucap/stamp-h1
+config.h
+config.log
+config.status
+
+modelgen/.deps
+src/.deps
+
+stamp-h1
 
