@@ -1,5 +1,0 @@
-
-# This is an example function table.
-$realtime vpiSysFuncReal
-
-$verywide vpiSysFuncSized 128 signed

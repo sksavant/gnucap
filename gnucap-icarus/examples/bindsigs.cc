@@ -1,1 +1,0 @@
-../icarus/verilog/vpi/bindsigs.cc
