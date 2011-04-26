@@ -35,6 +35,7 @@
 #include "bm.h"
 #include "l_lib.h"
 #include "io_trace.h"
+#include "vvp/vvp_net.h"
 /*--------------------------------------------------------------------------*/
 
 #include "extlib.h"
@@ -59,11 +60,11 @@ static LOGIC_NONE Default_LOGIC(CC_STATIC);
 /*--------------------------------------------------------------------------*/
 //from extlib.cc
 //???
-static int getVoltage(ExtSig *xsig,void *,double *ret) 
-{
-  ret[0] = xsig->d->tr_outvolts();
-  return 1;
-}
+//static int getVoltage(ExtSig *xsig,void *,double *ret) 
+//{
+//  ret[0] = xsig->d->tr_outvolts();
+//  return 1;
+//}
 /*--------------------------------------------------------------------------*/
 void ExtContSim(ExtLib* ext, const char *analysis,double accpt_time) {
   trace0("ExtContSim");
@@ -526,6 +527,80 @@ DEV_LOGIC_VVP::DEV_LOGIC_VVP(const DEV_LOGIC_VVP& p)
   ++_count;
 }
 /*--------------------------------------------------------------------------*/
+class vvp_cb : public vvp_net_fun_t {
+  public:
+    vvp_cb(COMPONENT* c) : vvp_net_fun_t(), _card(c) {}
+    vvp_cb() : vvp_net_fun_t() {}
+    virtual ~vvp_cb(){}
+
+    void recv_vec4(vvp_net_ptr_t port, const vvp_vector4_t&bit,
+        vvp_context_t context){
+      DEV_LOGIC_IN* c= dynamic_cast<DEV_LOGIC_IN*>(_card);
+
+        switch (bit.value(0)) {
+          case 0: c->lvfromivl = lvFALLING; break;
+          case 1: c->lvfromivl = lvRISING; break;
+
+          default: unreachable();		break;
+        }
+        trace2("recv_vec4", bit.value(0), c->lvfromivl );
+
+        c->qe();
+      
+
+      //assert(false);
+    }
+    virtual void recv_vec8(vvp_net_ptr_t port, const vvp_vector8_t&bit){
+      assert(false);
+      trace0("recv_vec4");
+
+    }
+    virtual void recv_real(vvp_net_ptr_t port, double bit,
+        vvp_context_t context){
+      assert(false);
+    }
+    virtual void recv_long(vvp_net_ptr_t port, long bit){
+      assert(false);
+    }
+
+    // Part select variants of above
+    virtual void recv_vec4_pv(vvp_net_ptr_t p, const vvp_vector4_t&bit,
+        unsigned base, unsigned wid, unsigned vwid,
+        vvp_context_t context)
+    {assert(false);}
+    virtual void recv_vec8_pv(vvp_net_ptr_t p, const vvp_vector8_t&bit,
+        unsigned base, unsigned wid, unsigned vwid)
+    {assert(false);}
+
+    virtual void recv_long_pv(vvp_net_ptr_t port, long bit,
+        unsigned base, unsigned wid)
+    {assert(false);}
+
+    virtual void force_flag(void)
+    {assert(false);}
+
+  public: // These objects are only permallocated.
+    //static void* operator new(std::size_t size) { return NULL ; }//{heap_.alloc(size); }
+    static void operator delete(void*){assert(false);} // not implemented
+
+    static std::size_t heap_total() { assert(false); return heap_.heap_total(); }
+
+  protected:
+    static permaheap heap_;
+
+  private:
+    CARD* _card;
+
+  private: // not implemented
+    //      vvp_net_fun_t(const vvp_net_fun_t&);
+    //      vvp_net_fun_t& operator= (const vvp_net_fun_t&);
+    //      static void* operator new[](std::size_t size);
+    //      static void operator delete[](void*){}
+};
+
+static vvp_cb vvp_cb_inst;
+
+/*--------------------------------------------------------------------------*/
 void DEV_LOGIC_VVP::expand()
 {
   trace0("DEV_LOGIC_VVP::expand " + long_label());
@@ -617,10 +692,12 @@ void DEV_LOGIC_VVP::expand()
     while ((item = vpi_scan(net_iterator))) {
       int type= vpi_get(vpiType,item);
       name = vpi_get_str(vpiName,item);
+      COMPONENT* P;
 
       switch(type){
         case vpiNet: //inputport
-      trace2("==> net loop V  " + string(name), item->vpi_type->type_code, n );
+          {
+          trace2("==> net loop V  " + string(name), item->vpi_type->type_code, n );
           src='V';
           logic_common = c->_logic_none;
           lnodes = outnodes;
@@ -629,10 +706,21 @@ void DEV_LOGIC_VVP::expand()
           lnodes[0]=_n[n];
           lnodes[4]=*x;
           logicdevice = device_dispatcher["port_from_ivl"];
-          break;
 
+          vvp_net_t* HS = (vvp_net_t*)  item;
+          trace1("have vvpnet", hp(HS));
+          assert (!HS->fun);
+          // assert (!HS->fil);
+
+          P = dynamic_cast<COMPONENT*>(logicdevice->clone());
+          vvp_net_fun_t* cb = new vvp_cb( P);
+          HS->fun = cb;
+
+          break;
+      }
         case vpiReg: // -> ivl
-      trace2("==> net loop to_ivl " + string(name), item->vpi_type->type_code, n );
+          {
+          trace2("==> net loop to_ivl " + string(name), item->vpi_type->type_code, n );
           src='I';
           lnodes = innodes;
           x = new node_t();
@@ -642,8 +730,10 @@ void DEV_LOGIC_VVP::expand()
           logic_common = c->_logic_none;
           logicdevice = device_dispatcher["port_to_ivl"];
           ((DEV_LOGIC_OUT*) logicdevice)->H = item;
-
+          P = dynamic_cast<COMPONENT*>(logicdevice->clone());
           break;
+      }
+
         default:
           trace1("ignoring", type);
           continue;
@@ -657,7 +747,6 @@ void DEV_LOGIC_VVP::expand()
 
       assert(logicdevice);
 
-      COMPONENT* P = dynamic_cast<COMPONENT*>(logicdevice->clone());
       assert(P);
       for (int i=0; i<5; i++ ){
         stringstream a;

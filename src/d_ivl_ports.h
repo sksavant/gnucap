@@ -179,6 +179,8 @@ private: // override virtuals
 public:
   static int count()			{return _count;}
   vpiHandle H;
+  LOGICVAL lvfromivl;
+  void	   qe(); //{tr_queue_eval();}
 private:
   bool	   tr_eval_digital();
   bool	   want_analog()const;

@@ -66,10 +66,7 @@ static _LOGICVAL prop_truth[lvNUM_STATES][lvNUM_STATES] = {
 /*--------------------------------------------------------------------------*/
 inline LOGICVAL& LOGICVAL::set_in_transition(LOGICVAL newval)
 {
-// enum _LOGICVAL {lvSTABLE0,lvRISING,lvFALLING,lvSTABLE1,lvUNKNOWN};
-  trace2("LOGICVAL::set_in_transition", newval, _lv);
   _lv = prop_truth[_lv][newval];
-  trace2("LOGICVAL::set_in_transition", newval, _lv);
   assert(_lv != lvUNKNOWN);
   return *this;
 }
@@ -164,7 +161,6 @@ node_t::node_t(NODE* n)
 }
 node_t& node_t::operator=(const node_t& p)
 {
-  trace0(("copy node " + p.short_label()).c_str()); 
   if (p._nnn) {
     //assert(p._ttt == p._nnn->flat_number());
   }else{
@@ -460,7 +456,6 @@ double LOGIC_NODE::to_analog(const MODEL_LOGIC* f)
 /*--------------------------------------------------------------------------*/
 void LOGIC_NODE::propagate()
 {
-  trace1("LOGIC_NODE::propagate",_sim->_time0);
   assert(in_transit());
   if (lv().is_rising()) {
     set_lv(lvSTABLE1);
@@ -494,7 +489,6 @@ void LOGIC_NODE::force_initial_value(LOGICVAL v)
 /*--------------------------------------------------------------------------*/
 void LOGIC_NODE::set_event(double delay, LOGICVAL v)
 {
-  trace0("LOGIC_NODE::set_event");
   _lv.set_in_transition(v);
   if (_sim->analysis_is_tran_dynamic()  &&  in_transit()) {untested();
     set_bad_quality("race");
