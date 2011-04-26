@@ -255,7 +255,6 @@ fi
 AC_OUTPUT([
 	Makefile
 	doc/Makefile
-	vvpg/Makefile
 	examples/Makefile
 	modelgen/Makefile
 	src/Makefile])

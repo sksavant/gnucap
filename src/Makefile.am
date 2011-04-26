@@ -1,10 +1,6 @@
 ## -*- Makefile -*-
 ##
-<<<<<<< HEAD
-## $Id: Makefile.am,v 26.136 2009/12/08 02:03:49 al Exp $
-=======
 ## $Id: Makefile.am,v 1.8 2010-07-29 12:37:18 felix Exp $
->>>>>>> ims
 ##
 ##                            COPYRIGHT
 ##
@@ -27,11 +23,7 @@
 ##  Foundation, Inc.,  51 Franklin Street, Fifth Floor, Boston, MA
 ##  02110-1301, USA.
 
-<<<<<<< HEAD
-bin_PROGRAMS= gnucap
-=======
 
->>>>>>> ims
 
 #------------------------------------------------------------------------
 #------------------------------------------------------------------------
@@ -41,20 +33,13 @@ MODELS = \
 d_mos1.model d_mos2.model d_mos3.model \
 d_mos4.model d_mos5.model d_mos6.model d_mos7.model d_mos8.model \
 d_mos123.model d_mos_base.model d_mos.model \
-<<<<<<< HEAD
-d_bjt.model d_diode.model
-=======
 d_bjt.model d_diode.model d_diode2.model
 #d_rcd.model d_bti.model 
->>>>>>> ims
 
 # device models hand coded in C++
 D_SRCS = \
 d_admit.cc d_cap.cc d_cccs.cc d_ccvs.cc d_coil.cc \
 d_cs.cc d_poly_g.cc d_poly_cap.cc d_res.cc d_switch.cc \
-<<<<<<< HEAD
-d_trln.cc d_vcg.cc d_vcr.cc d_vcvs.cc d_vs.cc
-=======
 d_trln.cc d_vcg.cc d_vcr.cc d_vcvs.cc d_vs.cc d_vcvs2.cc \
 d_rcd.cc d_bti.cc
 
@@ -68,7 +53,6 @@ gnucap_LDADD += @IVERILOG@
 endif
 
 
->>>>>>> ims
 
 # behavioral modeling functions
 BM_SRCS = \
@@ -79,23 +63,14 @@ bm_sin.cc bm_tanh.cc bmm_table.cc bmm_semi.cc
 # utility commands, usually one file per command
 # some have multiple commands in a file
 C_SRCS = \
-<<<<<<< HEAD
-c_clear.cc c_comand.cc c_delete.cc c_exp.cc c_list.cc \
-c_measure.cc c_modify.cc c_param.cc c_prbcmd.cc c_status.cc \
-c_sweep.cc c_sim.cc c_system.cc
-=======
 c_clear.cc c_comand.cc c_delete.cc c_exp.cc c_list.cc c_save.cc \
 c_measure.cc c_modify.cc c_param.cc c_prbcmd.cc c_status.cc \
 c_sweep.cc c_sim.cc c_system.cc c_for.cc
->>>>>>> ims
 
 # simulation commands, usually multiple files for one command
 S_SRCS = \
 s_ac.cc s_dc.cc s_fo.cc \
-<<<<<<< HEAD
-=======
 s_ttt.cc s_tt_set.cc \
->>>>>>> ims
 s_tr.cc s_tr_set.cc s_tr_swp.cc
 
 # netlist languages
@@ -109,13 +84,8 @@ measure_max.cc measure_min.cc measure_slewrate.cc measure_cross.cc \
 measure_integral.cc measure_average.cc measure_rms.cc measure_at.cc
 #------------------------------------------------------------------------
 RAW_SRCS = \
-<<<<<<< HEAD
-$(D_SRCS) \
-$(BM_SRCS) \
-=======
 $(BM_SRCS) \
 $(D_SRCS) \
->>>>>>> ims
 $(C_SRCS) \
 $(S_SRCS) \
 $(LANG_SRCS) \
@@ -128,14 +98,6 @@ io.cc io_contr.cc io_error.cc io_findf.cc io_out.cc io_xopen.cc \
 u_function.cc u_lang.cc u_nodemap.cc u_opt1.cc u_opt2.cc u_parameter.cc \
 u_prblst.cc u_probe.cc u_sim_data.cc u_xprobe.cc \
 s__init.cc s__out.cc s__solve.cc \
-<<<<<<< HEAD
-d_subckt.cc d_logic.cc d_logicmod.cc \
-e_base.cc e_card.cc e_node.cc e_model.cc e_compon.cc \
-e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc \
-bm_value.cc bm.cc \
-c__cmd.cc c_attach.cc c_file.cc c_genrat.cc \
-findbr.cc plot.cc main.cc globals.cc
-=======
 d_subckt.cc d_logic.cc d_logicmod.cc d_ivl_ports.cc \
 e_base.cc e_card.cc e_node.cc e_model.cc e_compon.cc \
 e_homebrew.cc \
@@ -143,7 +105,6 @@ e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc e_adplist.cc\
 bm_value.cc bm.cc \
 c__cmd.cc c_attach.cc c_file.cc c_genrat.cc \
 findbr.cc plot.cc globals.cc e_adp.cc 
->>>>>>> ims
 #------------------------------------------------------------------------
 RAW_HDRS = \
 md.h ap.h mode.h constant.h declare.h patchlev.h \
@@ -154,23 +115,6 @@ m_base.h m_expression.h m_phase.h \
 io_.h io_error.h io_trace.h \
 u_cardst.h u_function.h u_lang.h u_limit.h u_nodemap.h u_opt.h u_parameter.h \
 u_prblst.h u_probe.h u_sim_data.h u_sdp.h u_status.h u_time_pair.h u_xprobe.h \
-<<<<<<< HEAD
-s__.h s_tr.h \
-e_base.h e_card.h e_node.h e_aux.h e_model.h e_compon.h e_subckt.h \
-e_elemnt.h e_ccsrc.h e_storag.h e_cardlist.h \
-d_coment.h d_dot.h d_logic.h d_subckt.h \
-bm.h \
-c_comand.h globals.h
-#------------------------------------------------------------------------
-## The modelgen generated files
-MODELSRCS= ${MODELS:.model=.cc} ${MODELS:.model=.h}
-MODELOBJS= ${MODELS:.model=.${OBJEXT}}
-
-nodist_gnucap_SOURCES= ${SRCS1} ${MODELSRCS} ${SRCS2}
-
-SRCS1= 
-SRCS2= ${RAW_SRCS} ${RAW_HDRS}
-=======
 s__.h s_tr.h e_adp.h s_tt.h\
 e_base.h e_card.h e_node.h e_aux.h e_model.h e_compon.h e_subckt.h \
 e_homebrew.h e_adplist.h \
@@ -210,7 +154,6 @@ nodist_gnucap_SOURCES= main.cc
 SRCS1= 
 SRCS2= ${RAW_SRCS} 
 #${RAW_HDRS}
->>>>>>> ims
 
 # make all of the model object files depend on all of the model sources
 # this is a bit overkill, but for example the bjt model makes use of the
@@ -226,8 +169,6 @@ Make3 Makefile.template \
 Make2.g++ Make2.Debug Make2.mingw32 \
 Makefile.am
 
-<<<<<<< HEAD
-=======
 
 bin_PROGRAMS= gnucap
 
@@ -239,7 +180,6 @@ libgnucap_la_SOURCES = ${SRCS1} ${MODELSRCS} ${SRCS2}
 libgnucap_includedir = $(includedir)/gnucap
 libgnucap_include_HEADERS = ${RAW_HDRS}
 
->>>>>>> ims
 ### Clean out the modelgen generated files
 CLEANFILES= ${MODELSRCS}
 
@@ -249,19 +189,14 @@ CLEANFILES= ${MODELSRCS}
 SUFFIXES= .model
 MODELGEN= @MODELGEN@
 
-<<<<<<< HEAD
-=======
 MAKEDEPEND = gcc -M $(CPPFLAGS) -o $*.d $<
 
->>>>>>> ims
 %.cc : %.model %.h ${MODELGEN}${EXEEXT}
 	${MODELGEN} -cc $<
 
 %.h : %.model ${MODELGEN}${EXEEXT}
 	${MODELGEN} -h $<
 
-<<<<<<< HEAD
-=======
 
 d_ivl_ports.lo d_vvp.lo extlib.lo: CPPFLAGS+= @IVERILOG_INCLUDE@
 
@@ -270,4 +205,3 @@ d_ivl_ports.lo d_vvp.lo extlib.lo: CPPFLAGS+= @IVERILOG_INCLUDE@
 #
 # %.o: .deps/%.
 
->>>>>>> ims
