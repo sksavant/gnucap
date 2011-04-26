@@ -35,8 +35,8 @@
 // typedef double double; // has to be double
 //typedef long double hp_float_t;
 typedef double hp_float_t;
-// typedef unsigned int uint_t;
-typedef  int uint_t;
+typedef unsigned int uint_t;
+// typedef  int uint_t;
 
 // FIXME!!
 
