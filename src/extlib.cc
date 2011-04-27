@@ -42,6 +42,8 @@
 # include  <cstring>
 # include  <unistd.h>
 /*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+
 
 // static std::list<ExtLib*> Libs;
 
@@ -199,6 +201,8 @@ int vvp::init(const char* design_path)
   }
 
 //   vpip_mcd_init(logfile); // not shared yet.
+    vpip_mcd_init(logfile);
+//
   // 	 
   trace0( "Init VVP ...\n");
   vvp_vpi_init();

@@ -463,33 +463,30 @@ DEV_LOGIC_VVP::DEV_LOGIC_VVP(const DEV_LOGIC_VVP& p)
   ++_count;
 }
 /*--------------------------------------------------------------------------*/
-class vvp_cb : public vvp_net_fun_t {
-  public:
-    vvp_cb(COMPONENT* c) : vvp_net_fun_t(), _card(c) {}
-    vvp_cb() : vvp_net_fun_t() {}
-    virtual ~vvp_cb(){}
+PLI_INT32 callback(t_cb_data*x){
+  DEV_LOGIC_IN* c= reinterpret_cast<DEV_LOGIC_IN*>(x->user_data);
+  assert(c);
 
-    void recv_vec4(vvp_net_ptr_t port, const vvp_vector4_t&bit,
-        vvp_context_t context){
-      DEV_LOGIC_IN* c= dynamic_cast<DEV_LOGIC_IN*>(_card);
+  __vpiSignal* signal = (__vpiSignal*) x->obj;
+  vvp_sub_pointer_t<vvp_net_t> ptr(signal->node,0);    
 
-        switch (bit.value(0)) {
-          case 0: c->lvfromivl = lvFALLING; break;
-          case 1: c->lvfromivl = lvRISING; break;
-          default: unreachable();		break;
-        }
-        trace2("recv_vec4", bit.value(0), c->lvfromivl );
-        c->qe();
-    }
+  struct t_vpi_value argval;  
+  argval.format = vpiIntVal; 
+  vpi_get_value(x->obj, &argval);
+  const vvp_vector4_t bit(1,(vvp_bit4_t)argval.value.integer);
 
-  public: // These objects are only permallocated.
-    static void operator delete(void*){assert(false);} // not implemented
-    static std::size_t heap_total() { assert(false); return heap_.heap_total(); }
+  trace4("callback", bit.value(0), x->time->real, x->value->value.integer, c->lvfromivl);
 
-  private:
-    CARD* _card;
-    //NODE* _node; favourable... ?
-};
+  if (CKT_BASE::_sim->_time0 == 0 )  return 0; // UGLY HACK
+
+  switch (bit.value(0)) {
+    case 0: c->lvfromivl = lvFALLING; break;
+    case 1: c->lvfromivl = lvRISING;  break;
+    default: unreachable();           break;
+  }
+  c->qe();
+  return 0;
+}
 /*--------------------------------------------------------------------------*/
 void DEV_LOGIC_VVP::expand()
 {
@@ -557,11 +554,10 @@ void DEV_LOGIC_VVP::expand()
       int type= vpi_get(vpiType,item);
       name = vpi_get_str(vpiName,item);
       COMPONENT* P;
-      vvp_net_fun_t*  cb;
-          vvp_net_t* netH;
 
       switch(type){
         case vpiNet: // <- ivl
+          {
           trace2("==> net loop V  " + string(name), item->vpi_type->type_code, n );
           src='V';
           logic_common = c->_logic_none;
@@ -572,16 +568,23 @@ void DEV_LOGIC_VVP::expand()
           lnodes[4]=*x;
           logicdevice = device_dispatcher["port_from_ivl"];
 
-          netH = (vvp_net_t*)  item;
-          trace1("have vvpnet", hp(netH));
-          assert (!netH->fun);
-          // assert (!HS->fil);
-
           P = dynamic_cast<COMPONENT*>(logicdevice->clone());
-          cb = new vvp_cb( P);
-          netH->fun = cb;
+
+          t_cb_data cbd = {
+            cbValueChange, //reason
+            callback, //cb_rtn
+            item, //obj
+            0, //time
+            0, //value
+            0, //index
+            (char*)P //user_data
+          };
+
+
+          vpi_register_cb(&cbd);
 
           break;
+      }
         case vpiReg: // -> ivl
           trace2("==> net loop to_ivl " + string(name), item->vpi_type->type_code, n );
           src='I';
