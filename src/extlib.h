@@ -28,7 +28,7 @@
 #ifndef EXT_H_LIB
 #define EXT_H_LIB
 #include "vvp/vpi_priv.h"
-#include "extpwl.h"
+//#include "extpwl.h"
 #include "e_compon.h"
 #include "e_elemnt.h" 
 #include <dlfcn.h>
@@ -70,10 +70,7 @@ class ExtBase {
 struct SpcDllData {
     char   active;
     double next_time;
-    void   (*activate)(SpcDllData *,SpcIvlCB *,double);
 
-    SpcDllData(void (*fn)(SpcDllData *,SpcIvlCB *,double))
-             : active(0), next_time(0.0), activate(fn) {}
     void* El;
 };
 
@@ -86,8 +83,10 @@ class ExtAPI : public SpcDllData {
   void     (*endsim)();
   double   (*contsim)(const char *,double);
   int      (*so_main)(const char*);
+   void   (*activate)(void *,void *,double);
 
-  ExtAPI() : SpcDllData((typeof(activate))ExtBase::null_call) {
+
+  ExtAPI() {
     startsim = (typeof(startsim))ExtBase::null_call;
     endsim   = (typeof(endsim))ExtBase::null_call;
     bindnet  = (typeof(bindnet))ExtBase::null_call;
@@ -139,7 +138,7 @@ class ExtSig : public ExtBase {
   COMMON_COMPONENT *cmpnt;
 
   ExtLib       *lib;
-  SpcIvlCB     *cb_data;
+  void     *cb_data;
   int           slots;
   char          iv;
   ELEMENT      *d;
@@ -148,7 +147,7 @@ class ExtSig : public ExtBase {
   static void SetActive(void *,void *,double);
 
   ExtSig(COMMON_COMPONENT *_c,ExtLib *_l,char _iv,void *cbd) 
-    : cmpnt(_c), lib(_l),  cb_data((SpcIvlCB *)cbd), iv(_iv){}
+    : cmpnt(_c), lib(_l), iv(_iv){}
 
  private:
   ExtSig();
