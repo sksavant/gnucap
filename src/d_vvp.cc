@@ -121,28 +121,6 @@ public:
 /*--------------------------------------------------------------------------*/
 static LOGIC_IN Default_in(CC_STATIC);
 /*--------------------------------------------------------------------------*/
-class LOGIC_OUT : public COMMON_LOGIC {
-  // just the output node. data from icarus
-
-private:
-  explicit LOGIC_OUT(const LOGIC_OUT& p) :COMMON_LOGIC(p){++_count;}
-  COMMON_COMPONENT* clone()const	{return new LOGIC_OUT(*this);}
-  explicit LOGIC_OUT(const COMMON_LOGIC& p) :COMMON_LOGIC(p){++_count;}
-public:
-  uint_t net_nodes()const{return 5;} // 3 should be plenty
-  ~LOGIC_OUT() { trace0("~LOGIC_OUT()"); }
-  explicit LOGIC_OUT(int c=0)		  :COMMON_LOGIC(c) {}
-  bool operator==(const COMMON_COMPONENT&)const{return false;}
-  LOGICVAL logic_eval(const node_t* )const {
-    trace0("LOGIC_OUT::logic_eval noting to eval");
-    // return _ext->get_logic();
-    return lvSTABLE0;
-  }
-  virtual std::string name()const	  {return "out";}
-};
-/*--------------------------------------------------------------------------*/
-static LOGIC_OUT Default_out(CC_STATIC);
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 COMMON_LOGIC_VVP::COMMON_LOGIC_VVP(int c)
       :COMMON_COMPONENT(c), 
@@ -289,21 +267,16 @@ void COMMON_LOGIC_VVP::expand(const COMPONENT* dev ){
   }
 
   COMMON_LOGIC* logic_none = new LOGIC_NONE;
-  COMMON_LOGIC* logic_out = new LOGIC_OUT;
   COMMON_LOGIC* logic_in = new LOGIC_IN;
   logic_none->set_modelname(modelname());
   logic_none->attach(model());
-  logic_out->set_modelname(modelname());
-  logic_out->attach(model());
-
   logic_in->set_modelname(modelname());
   logic_in->attach(model());
 
   attach_common(logic_in, &_logic_in);
-  attach_common(logic_out, &_logic_out);
   attach_common(logic_none, &_logic_none);
-  trace2("COMMON_LOGIC_VVP::expand done modelname " + modelname() ,(intptr_t)_logic_out, (intptr_t)_logic_in);
-  trace2("COMMON_LOGIC_VVP::expand  " + modelname() ,_logic_out->attach_count(),_logic_in->attach_count());
+  //trace2("COMMON_LOGIC_VVP::expand done modelname " + modelname() ,(intptr_t)_logic_out, (intptr_t)_logic_in);
+  //trace2("COMMON_LOGIC_VVP::expand  " + modelname() ,_logic_out->attach_count(),_logic_in->attach_count());
 }
 /*--------------------------------------------------------------------------*/
 void COMMON_LOGIC_VVP::precalc_last(const CARD_LIST* par_scope)
@@ -390,7 +363,7 @@ COMMON_LOGIC_VVP::~COMMON_LOGIC_VVP()	{
   --_count;
 
   detach_common(&_logic_in);
-  detach_common(&_logic_out);
+//  detach_common(&_logic_out);
   detach_common(&_logic_none);
 
   for( vector<COMMON_COMPONENT*>::iterator i = _subcommons.begin();
@@ -544,61 +517,20 @@ class vvp_cb : public vvp_net_fun_t {
           default: unreachable();		break;
         }
         trace2("recv_vec4", bit.value(0), c->lvfromivl );
-
         c->qe();
-      
-
-      //assert(false);
     }
-    virtual void recv_vec8(vvp_net_ptr_t port, const vvp_vector8_t&bit){
-      assert(false);
-      trace0("recv_vec4");
-
-    }
-    virtual void recv_real(vvp_net_ptr_t port, double bit,
-        vvp_context_t context){
-      assert(false);
-    }
-    virtual void recv_long(vvp_net_ptr_t port, long bit){
-      assert(false);
-    }
-
-    // Part select variants of above
-    virtual void recv_vec4_pv(vvp_net_ptr_t p, const vvp_vector4_t&bit,
-        unsigned base, unsigned wid, unsigned vwid,
-        vvp_context_t context)
-    {assert(false);}
-    virtual void recv_vec8_pv(vvp_net_ptr_t p, const vvp_vector8_t&bit,
-        unsigned base, unsigned wid, unsigned vwid)
-    {assert(false);}
-
-    virtual void recv_long_pv(vvp_net_ptr_t port, long bit,
-        unsigned base, unsigned wid)
-    {assert(false);}
-
-    virtual void force_flag(void)
-    {assert(false);}
 
   public: // These objects are only permallocated.
-    //static void* operator new(std::size_t size) { return NULL ; }//{heap_.alloc(size); }
     static void operator delete(void*){assert(false);} // not implemented
-
     static std::size_t heap_total() { assert(false); return heap_.heap_total(); }
-
-  protected:
-    static permaheap heap_;
 
   private:
     CARD* _card;
-
-  private: // not implemented
-    //      vvp_net_fun_t(const vvp_net_fun_t&);
-    //      vvp_net_fun_t& operator= (const vvp_net_fun_t&);
-    //      static void* operator new[](std::size_t size);
-    //      static void operator delete[](void*){}
+    //NODE* _node; favourable... ?
 };
+/*--------------------------------------------------------------------------*/
 
-static vvp_cb vvp_cb_inst;
+//static vvp_cb vvp_cb_inst;
 
 /*--------------------------------------------------------------------------*/
 void DEV_LOGIC_VVP::expand()
@@ -633,51 +565,25 @@ void DEV_LOGIC_VVP::expand()
     vpi_mode_flag = VPI_MODE_COMPILETF;
     trace0("Looking around");
     vpiHandle item;
-//    vpiHandle H = vpi_handle(vpiNet, NULL);
 
-    const char* modulename="main";
-
+    const char* modulename="main"; // FIXME
 
     vpiHandle module = vpi_handle_by_name(modulename,NULL);
     assert(module);
 
-    //int typeof_module = vpi_get(vpiType, module);
-    //trace1 ("have " + string( modulename), typeof_module);
-
     vpiHandle vvp_device = vpi_handle_by_name(short_label().c_str(),module);
     assert(vvp_device);
-
-    //int typeof_device=vpi_get(vpiType, vvp_device);
-    //trace1 ("have " +long_label(), typeof_device);
 
     vpiHandle vvp_device_module = vpi_handle(vpiModule,vvp_device);
     assert(vvp_device_module);
 
-
-    //char*  vvp_device_module_name = vpi_get_str(vpiName,vvp_device_module);
-    //trace1 ("have " + string(vvp_device_module_name), vpi_get(vpiType, vvp_device_module));
-
-    //if (!(_n[0].n_())) {
-   //  _n[0].new_model_node("." + long_label() + ".gnd", this);
-    //}else{
-    //  untested0(_n[0].short_label().c_str());
-    //}
-    //if (!(_n[1].n_())) {
-   //  _n[1].new_model_node("." + long_label() + ".vdd", this);
-    //}else{
-    //  untested0(_n[1].short_label().c_str());
     assert ((_n[0].n_()));
     assert ((_n[1].n_()));
     assert ((_n[2].n_()));
     assert ((_n[3].n_()));
     trace1("DEV_LOGIC_VVP::expand "+ short_label() + " entering loop", net_nodes());
-    //}
-    //uint_t k = 0;
-    //uint_t l = 0;
-//    vpiHandle outports = vpi_Scope(vpiReg,vvp_device);
-//    vpiHandle inports  = vpi_iterate(vpiNet,vvp_device);
-        char src;
-        COMMON_COMPONENT* logic_common;
+    char src;
+    COMMON_COMPONENT* logic_common;
 
     node_t* lnodes;
     node_t innodes[] = {_n[0], _n[0], _n[1], _n[1], _n[n]};
@@ -693,10 +599,11 @@ void DEV_LOGIC_VVP::expand()
       int type= vpi_get(vpiType,item);
       name = vpi_get_str(vpiName,item);
       COMPONENT* P;
+      vvp_net_fun_t*  cb;
+          vvp_net_t* netH;
 
       switch(type){
         case vpiNet: //inputport
-          {
           trace2("==> net loop V  " + string(name), item->vpi_type->type_code, n );
           src='V';
           logic_common = c->_logic_none;
@@ -707,19 +614,17 @@ void DEV_LOGIC_VVP::expand()
           lnodes[4]=*x;
           logicdevice = device_dispatcher["port_from_ivl"];
 
-          vvp_net_t* HS = (vvp_net_t*)  item;
-          trace1("have vvpnet", hp(HS));
-          assert (!HS->fun);
+          netH = (vvp_net_t*)  item;
+          trace1("have vvpnet", hp(netH));
+          assert (!netH->fun);
           // assert (!HS->fil);
 
           P = dynamic_cast<COMPONENT*>(logicdevice->clone());
-          vvp_net_fun_t* cb = new vvp_cb( P);
-          HS->fun = cb;
+          cb = new vvp_cb( P);
+          netH->fun = cb;
 
           break;
-      }
         case vpiReg: // -> ivl
-          {
           trace2("==> net loop to_ivl " + string(name), item->vpi_type->type_code, n );
           src='I';
           lnodes = innodes;
@@ -732,7 +637,6 @@ void DEV_LOGIC_VVP::expand()
           ((DEV_LOGIC_OUT*) logicdevice)->H = item;
           P = dynamic_cast<COMPONENT*>(logicdevice->clone());
           break;
-      }
 
         default:
           trace1("ignoring", type);
@@ -765,12 +669,12 @@ void DEV_LOGIC_VVP::expand()
 
       if (src=='I'){
         // to ivl
-        LOGIC_IN* L = (LOGIC_IN*) logic_common;
-        L->ivlhandle = item;
+        COMMON_LOGIC* L = (COMMON_LOGIC*) logic_common;
+        //L->ivlhandle = item;
         P->set_parameters(name, this, L, 0, 0, NULL, 5 , lnodes);
       }else{
         // from ivl.
-        LOGIC_OUT* L = (LOGIC_OUT*) logic_common;
+        COMMON_LOGIC* L = (COMMON_LOGIC*) logic_common;
         P->set_parameters(name, this, L, 0, 0, NULL, 5 , lnodes);
       }
 
@@ -799,7 +703,7 @@ void DEV_LOGIC_VVP::tr_begin()
   assert(c);
 
   trace2("DEV_LOGIC_VVP::tr_begin startsim", status, (intptr_t) extlib());
-  extlib()->startsim("TRAN");
+  vvp::startsim("TRAN");
 
   status++;
   subckt()->tr_begin();

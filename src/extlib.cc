@@ -448,7 +448,6 @@ done:
 /*--------------------------------------------------------------------*/
 double vvp::startsim(const char *analysis)
 {
-  trace0("startsim -> schedule_simulate_m(SIM_INIT)");
   SimDelayD  = -1;
   SimState = schedule_simulate_m(SIM_INIT);
   SimTimeDlast = SimTimeD;
