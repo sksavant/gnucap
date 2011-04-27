@@ -56,8 +56,8 @@
 # define EXT_REF 1
 # define EXT_SIG 2
 
-extern void schedule_simulate(void);
-extern void vpip_mcd_init(FILE *log);
+// extern void schedule_simulate(void);
+//extern void vpip_mcd_init(FILE *log);
 
 
 class ExtBase {

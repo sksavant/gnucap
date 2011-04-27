@@ -489,6 +489,7 @@ void LOGIC_NODE::force_initial_value(LOGICVAL v)
 /*--------------------------------------------------------------------------*/
 void LOGIC_NODE::set_event(double delay, LOGICVAL v)
 {
+  trace2("LOGIC_NODE::set_event", delay, v);
   _lv.set_in_transition(v);
   if (_sim->analysis_is_tran_dynamic()  &&  in_transit()) {untested();
     set_bad_quality("race");

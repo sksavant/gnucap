@@ -162,6 +162,7 @@ void vvp::vvp_vpi_init()
 }
 /*------------------------------------------------*/
 /*------------------------------------------------*/
+// replacement for main...
 int vvp::init(const char* design_path)
 {
   static int vvp_return_value;
@@ -197,7 +198,7 @@ int vvp::init(const char* design_path)
     }
   }
 
-  vpip_mcd_init(logfile); // not shared yet.
+//   vpip_mcd_init(logfile); // not shared yet.
   // 	 
   trace0( "Init VVP ...\n");
   vvp_vpi_init();

@@ -440,7 +440,10 @@ void DEV_LOGIC_OUT::tr_accept()
         if (_n[OUTNODE]->lv() == lvUNKNOWN
             || future_state.lv_future() != _n[OUTNODE]->lv_future()) {
 
-          _n[OUTNODE]->set_event(m->delay, future_state);
+          double        d_dly = _sim->_time0 - vvp::SimTimeD;
+          double delay = d_dly;
+          trace2("DEV_LOGIC_OUT::tr_accept, setting event... ", delay, _sim->_time0);
+          _n[OUTNODE]->set_event(delay, future_state);
           _sim->new_event(_n[OUTNODE]->final_time());
 
           int l=future_state;
@@ -452,7 +455,6 @@ void DEV_LOGIC_OUT::tr_accept()
           __vpiSignal* HS = (__vpiSignal*) H;
           vvp_sub_pointer_t<vvp_net_t> ptr(HS->node,0);
           //    schedule_set_vector(ptr, vvp_vector4_t(1, l) );
-          double        d_dly = _sim->_time0 - vvp::SimTimeD;
           int           i_dly = int(d_dly / pow(10.0,vpip_get_time_precision()));
           vvp_time64_t  dly(i_dly);
           vvp_vector4_t val(1,l);
