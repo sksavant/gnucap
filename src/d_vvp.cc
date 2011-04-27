@@ -92,35 +92,6 @@ void ExtContSim(ExtLib* ext, const char *analysis,double accpt_time) {
   lib->contsim(analysis,accpt_time);
 }
 /*--------------------------------------------------------------------------*/
-class LOGIC_IN : public COMMON_LOGIC {
-  // device with only the input node
-  // data to ivl
-  // schedule_set_vector(vvp_net_ptr_t ptr
-private:
-  explicit LOGIC_IN(const LOGIC_IN& p) :COMMON_LOGIC(p){++_count;}
-  explicit LOGIC_IN(const COMMON_LOGIC& p) :COMMON_LOGIC(p){++_count;}
-  COMMON_COMPONENT* clone()const	{return new LOGIC_IN(*this);}
-public:
-  vpiHandle ivlhandle;
-  uint_t net_nodes()const{return 5;} // 3 should be plenty
-  ~LOGIC_IN() {}
-  explicit LOGIC_IN(int c=0)		  :COMMON_LOGIC(c) {}
-  LOGICVAL to_ivl;
-  bool operator==(const COMMON_COMPONENT&)const{return false;}
-
-  LOGICVAL logic_eval(const node_t* n )const {
-    // called by DEV_LOGIC::tr_accept
-    LOGICVAL out(n[0]->lv());
-    // to_ivl=out;
-    trace1("latching for ivl", out);
-
-    return lvSTABLE0;
-  }
-  virtual std::string name()const	  {return "in";}
-};
-/*--------------------------------------------------------------------------*/
-static LOGIC_IN Default_in(CC_STATIC);
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 COMMON_LOGIC_VVP::COMMON_LOGIC_VVP(int c)
       :COMMON_COMPONENT(c), 
@@ -267,16 +238,10 @@ void COMMON_LOGIC_VVP::expand(const COMPONENT* dev ){
   }
 
   COMMON_LOGIC* logic_none = new LOGIC_NONE;
-  COMMON_LOGIC* logic_in = new LOGIC_IN;
   logic_none->set_modelname(modelname());
   logic_none->attach(model());
-  logic_in->set_modelname(modelname());
-  logic_in->attach(model());
 
-  attach_common(logic_in, &_logic_in);
   attach_common(logic_none, &_logic_none);
-  //trace2("COMMON_LOGIC_VVP::expand done modelname " + modelname() ,(intptr_t)_logic_out, (intptr_t)_logic_in);
-  //trace2("COMMON_LOGIC_VVP::expand  " + modelname() ,_logic_out->attach_count(),_logic_in->attach_count());
 }
 /*--------------------------------------------------------------------------*/
 void COMMON_LOGIC_VVP::precalc_last(const CARD_LIST* par_scope)
@@ -362,8 +327,6 @@ DEV_LOGIC_VVP::~DEV_LOGIC_VVP() {
 COMMON_LOGIC_VVP::~COMMON_LOGIC_VVP()	{
   --_count;
 
-  detach_common(&_logic_in);
-//  detach_common(&_logic_out);
   detach_common(&_logic_none);
 
   for( vector<COMMON_COMPONENT*>::iterator i = _subcommons.begin();
@@ -513,7 +476,6 @@ class vvp_cb : public vvp_net_fun_t {
         switch (bit.value(0)) {
           case 0: c->lvfromivl = lvFALLING; break;
           case 1: c->lvfromivl = lvRISING; break;
-
           default: unreachable();		break;
         }
         trace2("recv_vec4", bit.value(0), c->lvfromivl );
@@ -528,10 +490,6 @@ class vvp_cb : public vvp_net_fun_t {
     CARD* _card;
     //NODE* _node; favourable... ?
 };
-/*--------------------------------------------------------------------------*/
-
-//static vvp_cb vvp_cb_inst;
-
 /*--------------------------------------------------------------------------*/
 void DEV_LOGIC_VVP::expand()
 {
@@ -603,7 +561,7 @@ void DEV_LOGIC_VVP::expand()
           vvp_net_t* netH;
 
       switch(type){
-        case vpiNet: //inputport
+        case vpiNet: // <- ivl
           trace2("==> net loop V  " + string(name), item->vpi_type->type_code, n );
           src='V';
           logic_common = c->_logic_none;
@@ -644,10 +602,8 @@ void DEV_LOGIC_VVP::expand()
       }
       //trace2("DEV_LOGIC_VVP::expand "+ short_label() + " loop", n, noutports);
 
-
       trace2("DEV_LOGIC_VVP::expand "+ name + " " + short_label(), n, (intptr_t)logic_common);
       assert(_n[n].n_());
-
 
       assert(logicdevice);
 
@@ -656,7 +612,6 @@ void DEV_LOGIC_VVP::expand()
         stringstream a;
         a << short_label() << "." << name << n << "_" << i;
         string port=a.str();
-       // P->set_port_by_index(i, port);
       }
 
       trace0("pushing controller for "+name);
@@ -734,16 +689,13 @@ void DEV_LOGIC_VVP::precalc_last()
 
   assert(common()->model());
 }
-
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-
 void DEV_LOGIC_VVP::register_port( vpiHandle net){ // data from ivl
   string netname = vpi_get_str(vpiName, net);
   // int porttype = vpi_get(vpiNetType,net);
         
   int type = net->vpi_type->type_code;
-
 
   switch(type) {
     case vpiReg: // -> ivl
@@ -758,39 +710,6 @@ void DEV_LOGIC_VVP::register_port( vpiHandle net){ // data from ivl
       break;
     default:
       assert(false);
-
   }
-
 }
-/*--------------------------------------------------------------------------*/
-// DEV_LOGIC_VVP::schluss{
-//    lib->endsim(end_time);
-//    }
-/*--------------------------------------------------------------------------*/
-//void DEV_LOGIC_VVP::tr_queue_eval()
-//{
-//  switch (_gatemode) {
-//  case moUNKNOWN: unreachable(); break;
-//  case moMIXED:	  unreachable(); break;
-//  case moDIGITAL: ELEMENT::tr_queue_eval(); break;
-//  case moANALOG:  assert(subckt()); subckt()->tr_queue_eval(); break;
-//  }
-//}
-/*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-//bool DEV_LOGIC_VVP::want_analog()const
-//{
-//  return subckt() &&
-//    ((OPT::mode == moANALOG) || (OPT::mode == moMIXED && _quality != qGOOD));
-//}
-///*--------------------------------------------------------------------------*/
-//bool DEV_LOGIC_VVP::want_digital()const
-//{
-//  return !subckt() ||
-//    ((OPT::mode == moDIGITAL) || (OPT::mode == moMIXED && _quality == qGOOD));
-//}
-/*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
