@@ -27,6 +27,9 @@
 #include "d_logic.h"
 #include "extlib.h"
 
+// enum smode_t   {moUNKNOWN=0, moANALOG=1, moDIGITAL, moMIXED};
+
+
 /*--------------------------------------------------------------------------
 // from t-net.cc
 void ivl_nexus_s::operator delete(void*, size_t)   
@@ -292,7 +295,7 @@ bool DEV_LOGIC_OUT::tr_eval_digital()
   assert(m);
   untested();
   _y[0].x = 0.;
-  _y[0].f1 = _n[OUTNODE]->to_analog(m);
+//  _y[0].f1 = _n[OUTNODE]->to_analog(m);
   _y[0].f0 = 0.;
   _m0.x = 0.;
   _m0.c1 = 1./m->rs;
@@ -306,6 +309,7 @@ bool DEV_LOGIC_OUT::tr_eval_digital()
 /*--------------------------------------------------------------------------*/
 bool DEV_LOGIC_OUT::do_tr()
 {  
+  trace0("DEV_LOGIC_OUT::do_tr");
  //bm tr_eval
  //  ExtSigTrEval(_ext,const_cast<std::vector<DPAIR>*>(&_num_table),d);
   switch (_gatemode) {
@@ -513,6 +517,7 @@ XPROBE DEV_LOGIC_OUT::ac_probe_ext(const std::string& what)const
 /*--------------------------------------------------------------------------*/
 bool DEV_LOGIC_OUT::want_analog()const
 {
+  untested();
   return false;
 }
 /*--------------------------------------------------------------------------*/
@@ -651,6 +656,7 @@ void DEV_LOGIC_IN::dc_advance()
  */
 void DEV_LOGIC_IN::tr_advance()
 {
+  trace0("DEV_LOGIC_IN::tr_advance");
   ELEMENT::tr_advance();
 
   if (_gatemode != _oldgatemode) {
@@ -678,8 +684,10 @@ void DEV_LOGIC_IN::tr_advance()
                     break;
   }
 }
+/*--------------------------------------------------------------------------*/
 void DEV_LOGIC_IN::tr_regress()
 {itested();
+  trace0("DEV_LOGIC_IN::tr_regress");
   ELEMENT::tr_regress();
 
   if (_gatemode != _oldgatemode) {itested();
@@ -766,6 +774,7 @@ bool DEV_LOGIC_IN::tr_eval_digital()
   assert(m);
   _y[0].x = 0.;
   _y[0].f1 = _n[OUTNODE]->to_analog(m);
+  trace1("DEV_LOGIC_IN::tr_eval_digital", _y[0].f1);
   _y[0].f0 = 0.;
   _m0.x = 0.;
   _m0.c1 = 1./m->rs;
@@ -779,12 +788,10 @@ bool DEV_LOGIC_IN::tr_eval_digital()
 /*--------------------------------------------------------------------------*/
 bool DEV_LOGIC_IN::do_tr()
 {  
- 
  //bm tr_eval
  //  ExtSigTrEval(_ext,const_cast<std::vector<DPAIR>*>(&_num_table),d);
 
-
-  trace1("DEV_LOGIC_IN::do_tr",_sim->_time0);
+  trace2("DEV_LOGIC_IN::do_tr",_sim->_time0, _gatemode);
   switch (_gatemode) {
     case moUNKNOWN: unreachable(); break;
     case moMIXED:   unreachable(); break;
@@ -835,10 +842,13 @@ TIME_PAIR DEV_LOGIC_IN::tr_review()
   return _time_by;
 }
 /*--------------------------------------------------------------------------*/
+// stupid hack. doesnt work right
 void DEV_LOGIC_IN::qe() 
 {
   trace0("DEV_LOGIC_IN::qe");
-  tr_queue_eval();
+//  tr_queue_eval();
+//  q_eval();
+    _sim->_evalq_uc->push_back(this);
 }
 /*--------------------------------------------------------------------------*/
 /* tr_accept: This runs after everything has passed "review".
@@ -1003,11 +1013,7 @@ XPROBE DEV_LOGIC_IN::ac_probe_ext(const std::string& what)const
   return _n[OUTNODE]->ac_probe_ext(what);
 }
 /*--------------------------------------------------------------------------*/
-bool DEV_LOGIC_IN::want_analog()const
-{
-  return subckt() &&
-    ((OPT::mode == moANALOG) || (OPT::mode == moMIXED && _quality != qGOOD));
-}
+bool DEV_LOGIC_IN::want_analog()const { return false; }
 /*--------------------------------------------------------------------------*/
 bool DEV_LOGIC_IN::want_digital()const
 {

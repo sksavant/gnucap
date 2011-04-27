@@ -642,7 +642,7 @@ void DEV_LOGIC_VVP::expand()
   std::string subckt_name(c->modelname()+"."+string(c->file));
 
   assert(!is_constant());
-  subckt()->set_slave();
+//  subckt()->set_slave();
   subckt()->expand();
 
   trace0("DEV_LOGIC_VVP::expand done");

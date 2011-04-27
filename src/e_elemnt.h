@@ -257,7 +257,12 @@ inline void ELEMENT::tr_load_source()
 #if !defined(NDEBUG)
   trace2(("ELEMENT::tr_load_source " + long_label()).c_str(), _loaditer,
       _sim->iteration_tag() );
-  assert(_loaditer != _sim->iteration_tag()); // double load
+
+  if (_loaditer == _sim->iteration_tag()){
+    // this is a HACK
+    error(bDANGER, "ELEMENT::tr_load_source. double load %s %i\n", long_label().c_str(), _loaditer);
+    return;
+  }
   _loaditer = _sim->iteration_tag();
 #endif
 
