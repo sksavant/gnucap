@@ -150,6 +150,7 @@ struct INTERFACE SIM_DATA {
   }
   void new_event(double etime) {
     if (etime <= BIGBIG) {
+      trace2("queueing event", etime, _time0);
       _eq.push(etime);
     }else{
     }

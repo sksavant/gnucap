@@ -227,6 +227,7 @@ CARD_LIST& CARD_LIST::tr_iwant_matrix()
 CARD_LIST& CARD_LIST::tr_begin()
 {
   for (iterator ci=begin(); ci!=end(); ++ci) {
+    trace0("P::tr_begin" + (**ci).short_label() );
     trace_func_comp();
     (**ci).tr_begin();
   }

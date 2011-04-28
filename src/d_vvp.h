@@ -80,7 +80,6 @@ class COMMON_LOGIC_VVP : public COMMON_COMPONENT {
     int		incount; //?
     PARAMETER<std::string> file;
     PARAMETER<std::string> module;
-    PARAMETER<uint_t> outports;
   private:
    uint_t status;
 

@@ -30,6 +30,7 @@
 // enum smode_t   {moUNKNOWN=0, moANALOG=1, moDIGITAL, moMIXED};
 
 
+#define INNODE BEGIN_IN
 /*--------------------------------------------------------------------------
 // from t-net.cc
 void ivl_nexus_s::operator delete(void*, size_t)   
@@ -125,7 +126,13 @@ void DEV_LOGIC_OUT::tr_iwant_matrix()
 /*--------------------------------------------------------------------------*/
 void DEV_LOGIC_OUT::tr_begin()
 {
+  const COMMON_LOGIC* c = prechecked_cast<const COMMON_LOGIC*>(common());
+  assert(c);
+  const MODEL_LOGIC* m = prechecked_cast<const MODEL_LOGIC*>(c->model());
+  assert(m);
   ELEMENT::tr_begin();
+  trace5("DEV_LOGIC_OUT::tr_begin", lvtoivl, _n[INNODE]->lv(), _n[INNODE]->v0(),
+                                             _n[OUTNODE]->lv(), _n[OUTNODE]->v0());
   if (!subckt()) {
     _gatemode = moDIGITAL;
     _n[OUTNODE]->set_mode(_gatemode);
@@ -168,9 +175,15 @@ void DEV_LOGIC_OUT::dc_advance()
                     subckt()->dc_advance();
                     break;
     case moDIGITAL:
-                    if (_n[OUTNODE]->in_transit()) {
-                      //q_eval(); evalq is not used for DC
-                      _n[OUTNODE]->propagate();
+                    trace5("DEV_LOGIC_OUT::dc_advance", 
+                        lvtoivl,
+                        _n[INNODE]->final_time(),
+                        _n[INNODE]->lv(),
+                        _n[OUTNODE]->lv(),
+                        _n[INNODE]->v0());
+                    if (
+                        _n[INNODE]->in_transit()) {
+                      _n[INNODE]->propagate();
                     }else{
                     }
                     break;
@@ -294,12 +307,8 @@ bool DEV_LOGIC_OUT::tr_eval_digital()
   const MODEL_LOGIC* m = prechecked_cast<const MODEL_LOGIC*>(c->model());
   assert(m);
   untested();
-  _y[0].x = 0.;
-//  _y[0].f1 = _n[OUTNODE]->to_analog(m);
-  _y[0].f0 = 0.;
-  _m0.x = 0.;
-  _m0.c1 = 1./m->rs;
-  _m0.c0 = _y[0].f1 / -m->rs;
+  
+  _n[OUTNODE]->to_logic(m);
   set_converged(conv_check());
   store_values();
   q_load();
@@ -364,7 +373,7 @@ TIME_PAIR DEV_LOGIC_OUT::tr_review()
 /* tr_accept: This runs after everything has passed "review".
  * It sets up and queues transitions, and sometimes determines logic states.
  */
-void DEV_LOGIC_OUT::tr_accept()
+void DEV_LOGIC_OUT::tr_accept() // to ivl
 {
   assert(_gatemode == moDIGITAL || _gatemode == moANALOG);
   const COMMON_LOGIC* c = prechecked_cast<const COMMON_LOGIC*>(common());
@@ -378,19 +387,27 @@ void DEV_LOGIC_OUT::tr_accept()
   _quality = qGOOD; //_n[OUTNODE]->quality();  /* the worst quality on this device */
   _failuremode = "ok"; // _n[OUTNODE]->failure_mode();    /* what is wrong with it? */
   _lastchangenode = OUTNODE;		/* which node changed most recently */
-  int lastchangeiter = 17; //_n[OUTNODE]->d_iter();/* iteration # when it changed */
+  int lastchangeiter = 0; //_n[OUTNODE]->d_iter();/* iteration # when it changed */
 
-  _n[BEGIN_IN]->to_logic(m);
-  if (_n[BEGIN_IN]->quality() < _quality) {
-    _quality = _n[BEGIN_IN]->quality();
-    _failuremode = _n[BEGIN_IN]->failure_mode();
+  _n[INNODE]->to_logic(m);
+  if (_n[INNODE]->quality() < _quality) {
+    _quality = _n[INNODE]->quality();
+    _failuremode = _n[INNODE]->failure_mode();
   }else{
   }
-  if (_n[BEGIN_IN]->d_iter() >= lastchangeiter) {
-    lastchangeiter = _n[BEGIN_IN]->d_iter();
-    _lastchangenode = BEGIN_IN;
+  if (_n[INNODE]->d_iter() >= lastchangeiter) {
+    lastchangeiter = _n[INNODE]->d_iter();
+    _lastchangenode = INNODE;
   }else{
   }
+
+  trace6("DEV_LOGIC_OUT::tr_accept", _sim->_time0,
+      _n[INNODE]->quality(), 
+      _n[INNODE]->v0(),
+      _n[INNODE]->lv(),
+      _n[OUTNODE]->v0(),
+      _n[OUTNODE]->lv()
+      );
 /* If _lastchangenode == OUTNODE, no new changes, bypass may be ok.
    * Otherwise, an input changed.  Need to evaluate.
    * If all quality are good, can evaluate as digital.
@@ -446,10 +463,11 @@ void DEV_LOGIC_OUT::tr_accept()
 
           double d_dly = 1e-11; // _sim->_time0 - vvp::SimTimeD;
           double delay = d_dly;
-          trace2("DEV_LOGIC_OUT::tr_accept, setting event... ", delay, _sim->_time0);
+          trace4("DEV_LOGIC_OUT::tr_accept, setting event... ", delay,
+              _sim->_time0, future_state, _n[OUTNODE]->lv());
 
-          _n[OUTNODE]->set_event(delay, future_state);
-          _sim->new_event(_n[OUTNODE]->final_time());
+          //_n[OUTNODE]->set_event(delay, future_state);
+          //_sim->new_event(_n[OUTNODE]->final_time());
 
           int l=future_state;
           if (l==3) l=1;
@@ -855,7 +873,7 @@ void DEV_LOGIC_IN::qe()
 /* tr_accept: This runs after everything has passed "review".
  * It sets up and queues transitions, and sometimes determines logic states.
  */
-void DEV_LOGIC_IN::tr_accept()
+void DEV_LOGIC_IN::tr_accept() // from ivl.
 {
   trace0("DEV_LOGIC_IN::tr_accept");
   assert(_gatemode == moDIGITAL || _gatemode == moANALOG);
@@ -916,7 +934,7 @@ void DEV_LOGIC_IN::tr_accept()
     }else if (_sim->analysis_is_static()) {
     }else{
     }
-    trace1("DEV_LOGIC_IN, transition?", _lastchangenode);
+    trace2("DEV_LOGIC_IN, transition?", _lastchangenode, _sim->_time0);
     if (!_sim->_bypass_ok
         || _lastchangenode != OUTNODE
         || _sim->analysis_is_static()
@@ -961,6 +979,7 @@ void DEV_LOGIC_IN::tr_accept()
           }
           _n[OUTNODE]->set_event(delay, future_state);
 // ENQUEUE enqueue
+          trace1("DEV_LOGIC_IN new event", _n[OUTNODE]->final_time());
           _sim->new_event(_n[OUTNODE]->final_time());
 
           //assert(future_state == _n[OUTNODE].lv_future());

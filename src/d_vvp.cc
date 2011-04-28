@@ -39,7 +39,8 @@
 /*--------------------------------------------------------------------------*/
 inline double event_(struct event_time_s *et)
 {
-    return  ( et->delay * pow(10.0,vpip_get_time_precision()) );
+  trace2("event_",vpip_get_time_precision(),et->delay );
+  return  ( et->delay * pow(10.0,vpip_get_time_precision()) );
 }
 /*--------------------------------------------------------------------------*/
 
@@ -223,10 +224,13 @@ void DEV_LOGIC_VVP::tr_accept(){
 
   if (ctim){
     evt= event_(ctim);
+
     trace2("DEV_LOGIC_VVP::tr_accept", ctim->delay, evt );
-    _sim->new_event(evt);
+    assert(evt>0);
+    _sim->new_event(evt+_sim->_time0);
   }
 
+  // FIXME: implement tr_needs_eval...
   q_eval();
 }
 /*--------------------------------------------------------------------------*/
@@ -238,7 +242,6 @@ void COMMON_LOGIC_VVP::precalc_first(const CARD_LIST* par_scope)
   COMMON_COMPONENT::precalc_first(par_scope);
   file.e_val_normal("UNSET" , par_scope);
   module.e_val_normal("UNSET" , par_scope);
-  outports.e_val(1, par_scope);
 }
 /*--------------------------------------------------------------------------*/
 void COMMON_LOGIC_VVP::expand(const COMPONENT* dev ){
@@ -247,10 +250,6 @@ void COMMON_LOGIC_VVP::expand(const COMPONENT* dev ){
   COMMON_COMPONENT::expand(dev);
   attach_model(dev);
 
-  // 
-  // dev->outports=outports;
-
-  // COMMON_LOGIC_VVP* c = this;
   const MODEL_LOGIC* m = dynamic_cast<const MODEL_LOGIC*>(model());
   if (!m) {
     throw Exception_Model_Type_Mismatch(dev->long_label(), modelname(), name());
@@ -270,7 +269,6 @@ void COMMON_LOGIC_VVP::precalc_last(const CARD_LIST* par_scope)
 
   file.e_val_normal("UNSET" , par_scope);
   module.e_val_normal("UNSET" , par_scope);
-  outports.e_val(1, par_scope);
 
   trace1("COMMON_LOGIC_VVP::precalc_last " + file.string(), status);
   if(!_extlib){
@@ -285,7 +283,6 @@ void COMMON_LOGIC_VVP::precalc_last(const CARD_LIST* par_scope)
 #endif
     _extlib = new ExtLib("foo",h);
     int ret;
-    // ret=_extlib->init(("-M. -mbindsigs2 -v "+string(file)+".vvp").c_str());   
     ret=_extlib->init((string(file)+".vvp").c_str());   
     if(dlerror()) throw Exception("cannot init vvp %s", dlerror());
 
@@ -359,7 +356,6 @@ std::string COMMON_LOGIC_VVP::param_name(int i) const{
     switch (COMMON_COMPONENT::param_count() - 1 - i) {
       case 0: return "file";
       case 1: return "module";
-      case 2: return "outports";
       default: return COMMON_COMPONENT::param_name(i);
     }
 }
@@ -380,7 +376,6 @@ std::string COMMON_LOGIC_VVP::param_value(int i)const
   switch (COMMON_COMPONENT::param_count() - 1 - i) {
   case 0: return file.string();
   case 1: return module.string();
-  case 2: return outports.string();
   default: return COMMON_COMPONENT::param_value(i);
   }
 }
@@ -431,7 +426,6 @@ void COMMON_LOGIC_VVP::set_param_by_index(int i, std::string& value, int offset)
   switch (COMMON_COMPONENT::param_count() - 1 - i) {
   case 0: file = value; break;
   case 1: module = value; break;
-  case 2: outports = value; break;
   default: COMMON_COMPONENT::set_param_by_index(i, value, offset); break;
   }
 }
@@ -496,12 +490,14 @@ PLI_INT32 callback(t_cb_data*x){
 
   trace4("callback", bit.value(0), x->time->real, x->value->value.integer, c->lvfromivl);
 
-  if (CKT_BASE::_sim->_time0 == 0 )  return 0; // UGLY HACK
+//  if (CKT_BASE::_sim->_time0 == 0 )  return 0; // UGLY HACK
 
   switch (bit.value(0)) {
     case 0: c->lvfromivl = lvFALLING; break;
     case 1: c->lvfromivl = lvRISING;  break;
-    default: unreachable();           break;
+    default: 
+             error(bDANGER, "got bogus value %i from ivl\n", bit.value(0));
+             break;
   }
   c->qe();
   return 0;
@@ -572,10 +568,11 @@ void DEV_LOGIC_VVP::expand()
       name = vpi_get_str(vpiName,item);
       COMPONENT* P;
 
+      trace2("==> "+ short_label() + " " + string(name), item->vpi_type->type_code, n );
+
       switch(type){
         case vpiNet: // <- ivl
           {
-          trace2("==> net loop V  " + string(name), item->vpi_type->type_code, n );
           src='V';
           logic_common = c->_logic_none;
           x = new node_t();
@@ -604,7 +601,6 @@ void DEV_LOGIC_VVP::expand()
           break;
           }
         case vpiReg: // -> ivl
-          trace2("==> net loop to_ivl " + string(name), item->vpi_type->type_code, n );
           src='I';
           x = new node_t();
           x->new_model_node("i_"+name, this);
@@ -623,7 +619,6 @@ void DEV_LOGIC_VVP::expand()
           trace1("ignoring", type);
           continue;
       }
-      //trace2("DEV_LOGIC_VVP::expand "+ short_label() + " loop", n, noutports);
 
       trace2("DEV_LOGIC_VVP::expand "+ name + " " + short_label(), n, (intptr_t)logic_common);
       assert(_n[n].n_());
@@ -680,8 +675,9 @@ void DEV_LOGIC_VVP::tr_begin()
   const COMMON_LOGIC_VVP* c = prechecked_cast<const COMMON_LOGIC_VVP*>(common());
   assert(c);
 
-  trace2("DEV_LOGIC_VVP::tr_begin startsim", status, (intptr_t) extlib());
+  trace1("DEV_LOGIC_VVP::tr_begin " + short_label(), status);
   vvp::startsim("TRAN");
+  vvp::contsim("TRAN",0);
 
   status++;
   subckt()->tr_begin();
@@ -713,26 +709,4 @@ void DEV_LOGIC_VVP::precalc_last()
   assert(common()->model());
 }
 /*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-void DEV_LOGIC_VVP::register_port( vpiHandle net){ // data from ivl
-  string netname = vpi_get_str(vpiName, net);
-  // int porttype = vpi_get(vpiNetType,net);
-        
-  int type = net->vpi_type->type_code;
-
-  switch(type) {
-    case vpiReg: // -> ivl
-      _outport.push_back(net);
-
-      break;
-    case vpiNet: // <- ivl
-
-      _inport.push_back(net);
-
-
-      break;
-    default:
-      assert(false);
-  }
-}
 /*--------------------------------------------------------------------------*/

@@ -306,9 +306,12 @@ bool TRANSIENT::next()
     // exact time.  NOT ok to move or omit, even by _sim->_dtmin
     // some action is associated with it.
     if (!_sim->_eq.empty() && _sim->_eq.top() < newtime) {
+      trace2("eventq", newtime, time1);
       newtime = _sim->_eq.top();
+      assert( newtime >= time1 );
       new_dt = newtime - reftime;
       if (new_dt < _sim->_dtmin) {
+        untested();
 	//new_dt = _sim->_dtmin;
 	//newtime = reftime + new_dt;
       }else{
@@ -316,6 +319,7 @@ bool TRANSIENT::next()
       new_control = scEVENTQ;
       fixed_time = newtime;
       almost_fixed_time = newtime;
+      trace2("checking", reftime, newtime);
       check_consistency();
     }else{
     }
@@ -526,6 +530,17 @@ bool TRANSIENT::next()
   /* advance event queue (maybe) */
   /* We already looked at it.  Dump what's on top if we took it. */
 
+#ifndef ALT_CQ
+
+  while (!_sim->_eq.empty() && _sim->_eq.top() <= _sim->_time0) {
+    trace1("eq", _sim->_eq.top());
+    _sim->_eq.pop();
+  }
+  while (!_sim->_eq.empty() && _sim->_eq.top() < _sim->_time0 + _sim->_dtmin) {itested();
+    trace1("eq-extra", _sim->_eq.top());
+    _sim->_eq.pop();
+  }
+#endif
   // event queue cleanup moved....
   //BUG// what if it is later rejected?  It's lost!
   // -> why not move to tr_advance? tr_accept? hmmm
@@ -586,6 +601,8 @@ void TRANSIENT::accept()
 {
   ::status.accept.start();
 
+
+# ifdef ALT_CQ
   while (!_sim->_eq.empty() && _sim->_eq.top() <= _sim->_time0) {
     trace1("eq", _sim->_eq.top());
     _sim->_eq.pop();
@@ -594,6 +611,7 @@ void TRANSIENT::accept()
     trace1("eq-extra", _sim->_eq.top());
     _sim->_eq.pop();
   }
+# endif
 
 
   _sim->_dt0 = _sim->_time0 - time1;

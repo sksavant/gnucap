@@ -101,6 +101,7 @@ private: // override virtuals
   }
 public:
   static int count()			{return _count;}
+  LOGICVAL lvtoivl;
   vpiHandle H;
 private:
   bool	   tr_eval_digital();

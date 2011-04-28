@@ -210,10 +210,14 @@ int vvp::init(const char* design_path)
   char *argv[]={0};
   vpi_set_vlog_info(0, argv );
 
-  trace0( "Compiling VVP ...\n");
+  trace0( "Compiling VVP "+(string)design_path);
   compile_init();
 
-  vpip_load_module("bindsigs2");
+
+  // for m in modules...
+  // vpip_load_module("bindsigs2");
+
+
   int ret_cd = compile_design(design_path);
 
   trace1( " ...\n", ret_cd);
