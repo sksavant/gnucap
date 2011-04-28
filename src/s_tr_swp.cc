@@ -525,14 +525,8 @@ bool TRANSIENT::next()
   
   /* advance event queue (maybe) */
   /* We already looked at it.  Dump what's on top if we took it. */
-  while (!_sim->_eq.empty() && _sim->_eq.top() <= _sim->_time0) {
-    trace1("eq", _sim->_eq.top());
-    _sim->_eq.pop();
-  }
-  while (!_sim->_eq.empty() && _sim->_eq.top() < _sim->_time0 + _sim->_dtmin) {itested();
-    trace1("eq-extra", _sim->_eq.top());
-    _sim->_eq.pop();
-  }
+
+  // event queue cleanup moved....
   //BUG// what if it is later rejected?  It's lost!
   // -> why not move to tr_advance? tr_accept? hmmm
   //
@@ -563,7 +557,6 @@ bool TRANSIENT::review()
   // limit minimum time step
   // 2*_sim->_dtmin because _time[1] + _sim->_dtmin might be == _time[0].
   if (time_by._event < time1 + 2*_sim->_dtmin) {
-    trace1("TRANSIENT::review event ", time_by._event-time1);
     _time_by_ambiguous_event = time1 + 2*_sim->_dtmin;
   }else{
     _time_by_ambiguous_event = time_by._event;
@@ -592,6 +585,17 @@ bool TRANSIENT::review()
 void TRANSIENT::accept()
 {
   ::status.accept.start();
+
+  while (!_sim->_eq.empty() && _sim->_eq.top() <= _sim->_time0) {
+    trace1("eq", _sim->_eq.top());
+    _sim->_eq.pop();
+  }
+  while (!_sim->_eq.empty() && _sim->_eq.top() < _sim->_time0 + _sim->_dtmin) {itested();
+    trace1("eq-extra", _sim->_eq.top());
+    _sim->_eq.pop();
+  }
+
+
   _sim->_dt0 = _sim->_time0 - time1;
   if(_sim->_dt0 <=0) assert (_sim->_stepno == 0);
   _sim->set_limit();

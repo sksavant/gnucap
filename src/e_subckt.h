@@ -89,9 +89,6 @@ protected: // override virtual
   TIME_PAIR tr_review()	{
     assert(subckt()); 
     _time_by = subckt()->tr_review();
-    if (_time_by._event < 1e-5 ) {
-      trace1(("BASE_SUBCKT::tr_review " + short_label()).c_str() , _time_by._event );
-    }
     return  _time_by;
   }
   void	  tr_accept()	{assert(subckt()); subckt()->tr_accept();}

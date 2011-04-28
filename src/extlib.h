@@ -83,7 +83,7 @@ class ExtAPI : public SpcDllData {
   void     (*endsim)();
   double   (*contsim)(const char *,double);
   int      (*so_main)(const char*);
-   void   (*activate)(void *,void *,double);
+  void     (*activate)(void *,void *,double);
 
 
   ExtAPI() {

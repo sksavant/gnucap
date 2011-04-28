@@ -31,15 +31,15 @@ class TRANSIENT : public SIM {
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
 protected:
   enum STEP_CAUSE {
-    scUSER      = 1,	/* user requested				*/
-    scEVENTQ    = 2,	/* an "event" from the queue			*/
-    scSKIP      = 3,	/* effect of "skip" parameter			*/
-    scITER_R    = 4,	/* iter count exceeds itl4 (reducing)		*/
-    scITER_A    = 5,	/* iter count exceeds itl3 (holding)		*/
-    scTE	= 6,	/* truncation error, or device stuff		*/
-    scAMBEVENT	= 7,	/* ambiguous event				*/
-    scADT	= 8,	/* by iter count limited by max(rdt, 2*adt)	*/
-    scINITIAL	= 9,	/* initial guess				*/
+    scUSER      =  1,	/* user requested				*/
+    scEVENTQ    =  2,	/* an "event" from the queue			*/
+    scSKIP      =  3,	/* effect of "skip" parameter			*/
+    scITER_R    =  4,	/* iter count exceeds itl4 (reducing)		*/
+    scITER_A    =  5,	/* iter count exceeds itl3 (holding)		*/
+    scTE        =  6,	/* truncation error, or device stuff		*/
+    scAMBEVENT	 =  7,	/* ambiguous event				*/
+    scADT       =  8,	/* by iter count limited by max(rdt, 2*adt)	*/
+    scINITIAL   =  9,	/* initial guess				*/
     scREJECT    = 10,	/* rejected previous time step			*/
     scZERO      = 20,	/* fixed zero time step				*/
     scSMALL     = 30,	/* time step too small				*/

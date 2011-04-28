@@ -37,6 +37,11 @@
 #include "io_trace.h"
 #include "vvp/vvp_net.h"
 /*--------------------------------------------------------------------------*/
+inline double event_(struct event_time_s *et)
+{
+    return  ( et->delay * pow(10.0,vpip_get_time_precision()) );
+}
+/*--------------------------------------------------------------------------*/
 
 #include "extlib.h"
 #include "d_ivl_ports.h"
@@ -182,6 +187,12 @@ inline OMSTREAM& operator<<(OMSTREAM& o, direction_t t) {
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 TIME_PAIR  DEV_LOGIC_VVP::tr_review(){
+  trace1("DEV_LOGIC_VVP::tr_review", _sim->_time0 );
+
+  event_time_s* ctim = schedule_list();
+
+  if (ctim)  trace1("DEV_LOGIC_VVP::tr_review", ctim->delay );
+
   return  BASE_SUBCKT::tr_review();
 }
 /*--------------------------------------------------------------------------*/
@@ -192,20 +203,28 @@ bool DEV_LOGIC_VVP::do_tr(){
 }
 /*--------------------------------------------------------------------------*/
 void DEV_LOGIC_VVP::tr_accept(){
-  //trace1("DEV_LOGIC_VVP::tr_accept", _sim->_time0);
+  trace1("DEV_LOGIC_VVP::tr_accept", _sim->_time0);
 
   subckt()->tr_accept();
 
   ExtContSim(extlib(),"TRAN",_sim->_time0);     
-
   uint_t incount=1;
-//  FIXME;
 
   node_t* n=&_n[2];
   for (uint_t ii=0; ii<incount; ++ii) {itested();
     LOGICVAL x = n[ii]->lv();
     /// vvp_net_ptr_t ptr = * _outnet[ii];
     // schedule_set_vector(ptr,data(x) );
+  }
+
+
+  event_time_s* ctim = schedule_list();
+  double evt;
+
+  if (ctim){
+    evt= event_(ctim);
+    trace2("DEV_LOGIC_VVP::tr_accept", ctim->delay, evt );
+    _sim->new_event(evt);
   }
 
   q_eval();

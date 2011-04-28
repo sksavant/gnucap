@@ -444,9 +444,10 @@ void DEV_LOGIC_OUT::tr_accept()
         if (_n[OUTNODE]->lv() == lvUNKNOWN
             || future_state.lv_future() != _n[OUTNODE]->lv_future()) {
 
-          double        d_dly = _sim->_time0 - vvp::SimTimeD;
+          double d_dly = 1e-11; // _sim->_time0 - vvp::SimTimeD;
           double delay = d_dly;
           trace2("DEV_LOGIC_OUT::tr_accept, setting event... ", delay, _sim->_time0);
+
           _n[OUTNODE]->set_event(delay, future_state);
           _sim->new_event(_n[OUTNODE]->final_time());
 
@@ -959,6 +960,7 @@ void DEV_LOGIC_IN::tr_accept()
                             assert(false); break;
           }
           _n[OUTNODE]->set_event(delay, future_state);
+// ENQUEUE enqueue
           _sim->new_event(_n[OUTNODE]->final_time());
 
           //assert(future_state == _n[OUTNODE].lv_future());

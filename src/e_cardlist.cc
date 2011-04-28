@@ -432,15 +432,10 @@ TIME_PAIR CARD_LIST::tr_review()
 {
   trace0("CARD_LIST::tr_review()");
   TIME_PAIR time_by(NEVER,NEVER);
-  if (begin() == end()) {
-    trace0("CARD_LIST::tr_review  empty");
-  }
 
   for (iterator ci=begin(); ci!=end(); ++ci) {
     trace_func_comp();
     time_by.min((**ci).tr_review());
-
-    trace1(("CARD_LIST::tr_review loop " + (*ci)->short_label() +" says").c_str(), time_by._event);
   }
   return time_by;
 }
