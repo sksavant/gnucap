@@ -540,9 +540,7 @@ void DEV_LOGIC_VVP::expand()
     char src;
     COMMON_COMPONENT* logic_common;
 
-    node_t* lnodes;
-    node_t innodes[] = {_n[0], _n[0], _n[1], _n[1], _n[n]};
-    node_t outnodes[] = {_n[n], _n[0], _n[1], _n[1], _n[0]};
+    node_t lnodes[] = {_n[n], _n[0], _n[1], _n[1], _n[0]};
 //  vpiParameter  holds fall, rise etc.
     trace0 ("listing " +long_label());
     string name;
@@ -561,11 +559,13 @@ void DEV_LOGIC_VVP::expand()
           trace2("==> net loop V  " + string(name), item->vpi_type->type_code, n );
           src='V';
           logic_common = c->_logic_none;
-          lnodes = outnodes;
           x = new node_t();
-          x->new_model_node("fake_in", this);
-          lnodes[0]=_n[n];
-          lnodes[4]=*x;
+          x->new_model_node("i_"+name, this);
+          lnodes[0] = _n[n];
+          lnodes[1] = _n[0];
+          lnodes[2] = _n[1];
+          lnodes[3] = _n[1];
+          lnodes[4] = *x;
           logicdevice = device_dispatcher["port_from_ivl"];
 
           P = dynamic_cast<COMPONENT*>(logicdevice->clone());
@@ -580,19 +580,20 @@ void DEV_LOGIC_VVP::expand()
             (char*)P //user_data
           };
 
-
           vpi_register_cb(&cbd);
 
           break;
-      }
+          }
         case vpiReg: // -> ivl
           trace2("==> net loop to_ivl " + string(name), item->vpi_type->type_code, n );
           src='I';
-          lnodes = innodes;
           x = new node_t();
-          x->new_model_node("fake_out", this);
-          lnodes[4]=_n[n];
-          lnodes[0]=*x;
+          x->new_model_node("i_"+name, this);
+          lnodes[0] = *x;
+          lnodes[1] = _n[0];
+          lnodes[2] = _n[1];
+          lnodes[3] = _n[1];
+          lnodes[4] = _n[n];
           logic_common = c->_logic_none;
           logicdevice = device_dispatcher["port_to_ivl"];
           ((DEV_LOGIC_OUT*) logicdevice)->H = item;
