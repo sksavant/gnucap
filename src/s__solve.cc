@@ -43,7 +43,7 @@ static bool converged = false;
 /*--------------------------------------------------------------------------*/
 bool SIM::solve(OPT::ITL itl, TRACE trace)
 {
-  trace0("SIM::solve");
+  trace1("SIM::solve", trace);
   converged = false;
   int convergedcount = 0;
   

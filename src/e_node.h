@@ -71,8 +71,10 @@ public:
   LOGICVAL  operator~()const	{return not_truth[_lv];}
   
   bool is_unknown()const	{return _lv == lvUNKNOWN;}
-  bool lv_future()const		{assert(_lv!=lvUNKNOWN); return _lv & 1;}
-  bool lv_old()const		{assert(_lv!=lvUNKNOWN); return _lv & 2;}
+  bool lv_future()const		{assert(_lv!=lvUNKNOWN); 
+                                        return _lv & 1;}
+  bool lv_old()const		{assert(_lv!=lvUNKNOWN); 
+                                          return _lv & 2;}
 
   bool is_rising() const	{return _lv == lvRISING;}
   bool is_falling()const	{return _lv == lvFALLING;}

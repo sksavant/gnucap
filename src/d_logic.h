@@ -170,7 +170,7 @@ private:
   COMMON_COMPONENT* clone()const {untested(); return new LOGIC_AND(*this);}
 public:
   explicit LOGIC_AND(int c=0)		  :COMMON_LOGIC(c) {untested();}
-  LOGICVAL logic_eval(const node_t* n)const {untested();
+  LOGICVAL logic_eval(const node_t* n)const {
     LOGICVAL out(n[0]->lv());
     for (int ii=1; ii<incount; ++ii) {untested();
       out &= n[ii]->lv();

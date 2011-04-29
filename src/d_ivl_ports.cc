@@ -29,6 +29,10 @@
 
 // enum smode_t   {moUNKNOWN=0, moANALOG=1, moDIGITAL, moMIXED};
 
+inline double digital_time(void)
+{
+  return double(schedule_simtime() * (long double) pow(10.0,vpip_get_time_precision())) ;
+}
 
 #define INNODE BEGIN_IN
 /*--------------------------------------------------------------------------
@@ -159,6 +163,7 @@ void DEV_LOGIC_OUT::tr_restore()
 /*--------------------------------------------------------------------------*/
 void DEV_LOGIC_OUT::dc_advance()
 {
+  trace0("DEV_LOGIC_OUT::dc_advance");
   ELEMENT::dc_advance();
 
   if (_gatemode != _oldgatemode) {untested();
@@ -175,15 +180,8 @@ void DEV_LOGIC_OUT::dc_advance()
                     subckt()->dc_advance();
                     break;
     case moDIGITAL:
-                    trace5("DEV_LOGIC_OUT::dc_advance", 
-                        lvtoivl,
-                        _n[INNODE]->final_time(),
-                        _n[INNODE]->lv(),
-                        _n[OUTNODE]->lv(),
-                        _n[INNODE]->v0());
-                    if (
-                        _n[INNODE]->in_transit()) {
-                      _n[INNODE]->propagate();
+                    if ( _n[OUTNODE]->in_transit()) {
+                      _n[OUTNODE]->propagate();
                     }else{
                     }
                     break;
@@ -195,6 +193,8 @@ void DEV_LOGIC_OUT::dc_advance()
  */
 void DEV_LOGIC_OUT::tr_advance()
 {
+//  return DEV_LOGIC::tr_advance();
+  trace0("DEV_LOGIC::tr_advance");
   ELEMENT::tr_advance();
 
   if (_gatemode != _oldgatemode) {
@@ -223,6 +223,7 @@ void DEV_LOGIC_OUT::tr_advance()
                     break;
   }
 }
+/*--------------------------------------------------------------------------*/
 void DEV_LOGIC_OUT::tr_regress()
 {itested();
   ELEMENT::tr_regress();
@@ -290,7 +291,7 @@ void DEV_LOGIC_OUT::tr_queue_eval()
 }
 /*--------------------------------------------------------------------------*/
 bool DEV_LOGIC_OUT::tr_eval_digital()
-{
+/*{
   assert(_gatemode == moDIGITAL);
   if (_sim->analysis_is_restore()) {untested();
   }else if (_sim->analysis_is_static()) {
@@ -309,6 +310,35 @@ bool DEV_LOGIC_OUT::tr_eval_digital()
   untested();
   
   _n[OUTNODE]->to_logic(m);
+  set_converged(conv_check());
+  store_values();
+  q_load();
+
+  return converged();
+}*/
+{
+  trace0("DEV_LOGIC_OUT::tr_eval_digital");
+  assert(_gatemode == moDIGITAL);
+  if (_sim->analysis_is_restore()) {untested();
+  }else if (_sim->analysis_is_static()) {
+  }else{
+  }
+  if (_sim->analysis_is_static() || _sim->analysis_is_restore()) {
+    tr_accept();
+  }else{
+    assert(_sim->analysis_is_tran_dynamic());
+  }
+
+  const COMMON_LOGIC* c = prechecked_cast<const COMMON_LOGIC*>(common());
+  assert(c);
+  const MODEL_LOGIC* m = prechecked_cast<const MODEL_LOGIC*>(c->model());
+  assert(m);
+  _y[0].x = 0.;
+  _y[0].f1 = _n[OUTNODE]->to_analog(m);
+  _y[0].f0 = 0.;
+  _m0.x = 0.;
+  _m0.c1 = 1./m->rs;
+  _m0.c0 = _y[0].f1 / -m->rs;
   set_converged(conv_check());
   store_values();
   q_load();
@@ -349,17 +379,8 @@ void DEV_LOGIC_OUT::tr_load()
 /*--------------------------------------------------------------------------*/
 TIME_PAIR DEV_LOGIC_OUT::tr_review()
 {
-  // not calling ELEMENT::tr_review();
-
-  q_accept();
-  //digital mode queues events explicitly in tr_accept
-  //
-  //double dt_s = d->_sim->_dtmin;
-  //double dt = ExtSigTrCheck(_ext,dt_s,
-  //    const_cast<std::vector<DPAIR>*>(&_num_table),d);
-  //if (dt < dt_s) {
-  //  d->_time_by.min_event(dt + d->_sim->_time0);
- // }
+  //obsolete?
+//  q_accept();
 
   switch (_gatemode) {
     case moUNKNOWN: unreachable(); break;
@@ -375,6 +396,7 @@ TIME_PAIR DEV_LOGIC_OUT::tr_review()
  */
 void DEV_LOGIC_OUT::tr_accept() // to ivl
 {
+  trace1("DEV_LOGIC_OUT::tr_accept()", _sim->_time0);
   assert(_gatemode == moDIGITAL || _gatemode == moANALOG);
   const COMMON_LOGIC* c = prechecked_cast<const COMMON_LOGIC*>(common());
   assert(c);
@@ -384,11 +406,14 @@ void DEV_LOGIC_OUT::tr_accept() // to ivl
   /* Check quality and get node info to local array. */
   /* side effect --- generate digital values for analog nodes */
   //_n[OUTNODE]->to_logic(m);
-  _quality = qGOOD; //_n[OUTNODE]->quality();  /* the worst quality on this device */
+
+  _n[OUTNODE]->to_logic(m);
+  _quality = _n[OUTNODE]->quality();  /* the worst quality on this device */
   _failuremode = "ok"; // _n[OUTNODE]->failure_mode();    /* what is wrong with it? */
   _lastchangenode = OUTNODE;		/* which node changed most recently */
-  int lastchangeiter = 0; //_n[OUTNODE]->d_iter();/* iteration # when it changed */
+  int lastchangeiter = _n[OUTNODE]->d_iter();/* iteration # when it changed */
 
+  // LOOP
   _n[INNODE]->to_logic(m);
   if (_n[INNODE]->quality() < _quality) {
     _quality = _n[INNODE]->quality();
@@ -396,13 +421,15 @@ void DEV_LOGIC_OUT::tr_accept() // to ivl
   }else{
   }
   if (_n[INNODE]->d_iter() >= lastchangeiter) {
+    trace2("DEV_LOGIC_OUT::tr_accept inchange", _sim->_time0, _n[INNODE]->d_iter());
     lastchangeiter = _n[INNODE]->d_iter();
     _lastchangenode = INNODE;
   }else{
   }
 
-  trace6("DEV_LOGIC_OUT::tr_accept", _sim->_time0,
+  trace7("DEV_LOGIC_OUT::tr_accept", _sim->_time0,
       _n[INNODE]->quality(), 
+      _n[OUTNODE]->quality(), 
       _n[INNODE]->v0(),
       _n[INNODE]->lv(),
       _n[OUTNODE]->v0(),
@@ -413,88 +440,109 @@ void DEV_LOGIC_OUT::tr_accept() // to ivl
    * If all quality are good, can evaluate as digital.
    * Otherwise need to evaluate as analog.
    */
-  trace3(_failuremode.c_str(), _lastchangenode, lastchangeiter, _quality);
+  trace3("DEV_LOGIC_OUT::tr_accept " + _failuremode, _lastchangenode, lastchangeiter, _quality);
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */  
-  {
-    assert(want_digital());
-    if (_gatemode == moANALOG) {
-      error(bTRACE, "%s:%u:%g switch to digital\n",
-          long_label().c_str(), _sim->iteration_tag(), _sim->_time0);
-      _oldgatemode = _gatemode;
-      _gatemode = moDIGITAL;
-    }else{
+  assert(want_digital());
+  assert(_gatemode == moDIGITAL);
+
+  if (_sim->analysis_is_restore()) {untested();
+  }else if (_sim->analysis_is_static()) {
+  }else{
+  }
+  if (!_sim->_bypass_ok
+      || _lastchangenode != OUTNODE
+      || _sim->analysis_is_static()
+      || _sim->analysis_is_restore()) {
+    LOGICVAL future_state = _n[INNODE]->lv();
+    //		         ^^^^^^^^^^
+    if ((_n[OUTNODE]->is_unknown() 
+        ) &&
+        (_sim->analysis_is_static() || _sim->analysis_is_restore())) {
+      trace1("DEV_LOGIC_OUT::tr_accept, Forcing", future_state);
+
+
+      switch (future_state) {
+        case lvSTABLE0:	/*nothing*/		break;
+        case lvRISING:  future_state=lvSTABLE1;	break;
+        case lvFALLING: future_state=lvSTABLE0;	break;
+        case lvSTABLE1:	/*nothing*/		break;
+        case lvUNKNOWN: unreachable();		break;
+      }
+
+      _n[OUTNODE]->force_initial_value(future_state);
+      //time0==0
+
+      //prop immediately, its just a shadow value.
+      __vpiSignal* HS = (__vpiSignal*) H;
+      vvp_sub_pointer_t<vvp_net_t> ptr(HS->node,0);
+      int l=future_state;
+      if (l==3) l=1;
+
+      //need floor. event needs to be executed during DEV_LOGIC_VVP::tr_accept
+      vvp_time64_t  dly=0;
+      vvp_vector4_t val(1,l);
+      trace2("DEV_LOGIC_OUT, forcing ivl", _sim->_time0, 0);
+      schedule_assign_plucked_vector(ptr,dly,val,0,1);
+
+      /* This happens when initial DC is digital.
+       * Answers could be wrong if order in netlist is reversed 
+       */
     }
-    assert(_gatemode == moDIGITAL);
-    if (_sim->analysis_is_restore()) {untested();
-    }else if (_sim->analysis_is_static()) {
-    }else{
-    }
-    if (!_sim->_bypass_ok
-        || _lastchangenode != OUTNODE
-        || _sim->analysis_is_static()
-        || _sim->analysis_is_restore()) {
-      LOGICVAL future_state = _n[BEGIN_IN]->lv();
-      //		         ^^^^^^^^^^
-      if ((_n[OUTNODE]->is_unknown()) &&
-          (_sim->analysis_is_static() || _sim->analysis_is_restore())) {
-        _n[OUTNODE]->force_initial_value(future_state);
-        /* This happens when initial DC is digital.
-         * Answers could be wrong if order in netlist is reversed 
-         */
-      }else if (future_state != _n[OUTNODE]->lv()) {
-        assert(future_state != lvUNKNOWN);
-        switch (future_state) {
-          case lvSTABLE0:	/*nothing*/		break;
-          case lvRISING:  future_state=lvSTABLE0;	break;
-          case lvFALLING: future_state=lvSTABLE1;	break;
-          case lvSTABLE1:	/*nothing*/		break;
-          case lvUNKNOWN: unreachable();		break;
-        }
-        /* This handling of rising and falling may seem backwards.
-         * These states occur when the value has been contaminated 
-         * by another pending action.  The "old" value is the
-         * value without this contamination.
-         * This code is planned for replacement as part of VHDL/Verilog
-         * conversion, so the kluge stays in for now.
-         */
-        assert(future_state.lv_old() == future_state.lv_future());
-        if (_n[OUTNODE]->lv() == lvUNKNOWN
-            || future_state.lv_future() != _n[OUTNODE]->lv_future()) {
+                //else removed!
+    if (future_state != _n[OUTNODE]->lv()) {
+      trace0("DEV_LOGIC_OUT::tr_accept ...");
+      assert(future_state != lvUNKNOWN);
+      switch (future_state) {
+        case lvSTABLE0:	/*nothing*/		break;
+        case lvRISING:  future_state=lvSTABLE0;	break;
+        case lvFALLING: future_state=lvSTABLE1;	break;
+        case lvSTABLE1:	/*nothing*/		break;
+        case lvUNKNOWN: unreachable();		break;
+      }
+      /* This handling of rising and falling may seem backwards.
+       * These states occur when the value has been contaminated 
+       * by another pending action.  The "old" value is the
+       * value without this contamination.
+       * This code is planned for replacement as part of VHDL/Verilog
+       * conversion, so the kluge stays in for now.
+       */
+      assert(future_state.lv_old() == future_state.lv_future());
+      if (_n[OUTNODE]->lv() == lvUNKNOWN
+          || future_state.lv_future() != _n[OUTNODE]->lv_future()) {
 
-          double d_dly = 1e-11; // _sim->_time0 - vvp::SimTimeD;
-          double delay = d_dly;
-          trace4("DEV_LOGIC_OUT::tr_accept, setting event... ", delay,
-              _sim->_time0, future_state, _n[OUTNODE]->lv());
+        trace5("DEV_LOGIC_OUT::tr_accept, setting event... ", 
+            _sim->_time0, future_state, _n[OUTNODE]->lv(), digital_time(), vvp::SimTimeD);
+        _n[OUTNODE]->set_event(0, future_state);
+        trace0("DEV_LOGIC_OUT::tr_accept, prop " );
+        _n[OUTNODE]->propagate();
+        q_eval();
 
-          //_n[OUTNODE]->set_event(delay, future_state);
-          //_sim->new_event(_n[OUTNODE]->final_time());
+        _sim->new_event(_n[OUTNODE]->final_time());
+        lvtoivl = future_state;
 
-          int l=future_state;
-          if (l==3) l=1;
+        int l=future_state;
+        if (l==3) l=1;
 
-          assert(l==0 || l ==1 );
-          assert(H);
+        assert(l==0 || l ==1 );
+        assert(H);
 
-          __vpiSignal* HS = (__vpiSignal*) H;
-          vvp_sub_pointer_t<vvp_net_t> ptr(HS->node,0);
-          //    schedule_set_vector(ptr, vvp_vector4_t(1, l) );
-          int           i_dly = int(d_dly / pow(10.0,vpip_get_time_precision()));
-          vvp_time64_t  dly(i_dly);
-          vvp_vector4_t val(1,l);
-          schedule_assign_plucked_vector(ptr,dly,val,0,1);
+        __vpiSignal* HS = (__vpiSignal*) H;
+        vvp_sub_pointer_t<vvp_net_t> ptr(HS->node,0);
 
-          if (_lastchangenode == OUTNODE) {
-            unreachable();
-            error(bDANGER, "%s:%u:%g non-event state change\n",
-                long_label().c_str(), _sim->iteration_tag(), _sim->_time0);
-          }else{
-          }
-        }else{
-        }
+        //need floor. event needs to be executed during DEV_LOGIC_VVP::tr_accept
+        vvp_time64_t  i_dly = (int)floor(_sim->_time0 /
+            pow(10.0,vpip_get_time_precision())) -  schedule_simtime();
+        vvp_time64_t  dly(i_dly);
+        vvp_vector4_t val(1,l);
+        trace2("DEV_LOGIC_OUT, scheduling ivl event", _sim->_time0, i_dly);
+        schedule_assign_plucked_vector(ptr,dly,val,0,1);
+
+        assert (_lastchangenode != OUTNODE);
       }else{
       }
     }else{
     }
+  }else{
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -526,6 +574,9 @@ void DEV_LOGIC_OUT::ac_begin()
 /*--------------------------------------------------------------------------*/
 double DEV_LOGIC_OUT::tr_probe_num(const std::string& what)const
 {
+  if (Umatch(what, "ivl ")) { 
+    return lvtoivl;
+  } 
   return _n[OUTNODE]->tr_probe_num(what);
 }
 /*--------------------------------------------------------------------------*/
@@ -594,7 +645,7 @@ void DEV_LOGIC_IN::expand()
 
     if(!dynamic_cast<const MODEL_SUBCKT*>(model)) {untested();
       error(((!_sim->is_first_expand()) ? (bDEBUG) : (bWARNING)),
-          long_label() + ": " + subckt_name + " is not a subckt, forcing digital\n");
+          long_label() + "DEV_LOGIC_IN::expand: " + subckt_name + " is not a subckt, forcing digital\n");
     }else{
       _gatemode = OPT::mode;    
       renew_subckt(model, this, scope(), NULL/*&(c->_params)*/);    
@@ -604,6 +655,8 @@ void DEV_LOGIC_IN::expand()
     error(((!_sim->is_first_expand()) ? (bDEBUG) : (bWARNING)), 
         long_label() + ": can't find subckt: " + subckt_name + ", forcing digital\n");
   }
+
+  trace1("DEV_LOGIC_IN::expand",_gatemode);
 
   assert(!is_constant()); /* is a BUG */
 }
@@ -630,6 +683,8 @@ void DEV_LOGIC_IN::tr_begin()
     _oldgatemode = _gatemode;
     subckt()->tr_begin();
   }
+  q_eval();
+
 }
 /*--------------------------------------------------------------------------*/
 void DEV_LOGIC_IN::tr_restore()
@@ -646,6 +701,12 @@ void DEV_LOGIC_IN::tr_restore()
 void DEV_LOGIC_IN::dc_advance()
 {
   ELEMENT::dc_advance();
+  trace5("DEV_LOGIC_IN::dc_advance", 
+      lvfromivl,
+      _n[OUTNODE]->is_digital(),
+      _n[INNODE]->v0(),
+      _gatemode,
+      _oldgatemode );
 
   if (_gatemode != _oldgatemode) {untested();
     tr_unload();
@@ -696,7 +757,7 @@ void DEV_LOGIC_IN::tr_advance()
                       q_eval();
                       if (_sim->_time0 >= _n[OUTNODE]->final_time()) {
                         _n[OUTNODE]->propagate();
-                      }else{untested();
+                      }else{
                       }
                     }else{
                     }
@@ -751,7 +812,6 @@ bool DEV_LOGIC_IN::tr_needs_eval()const
                     }else if (_sim->analysis_is_static()) {
                     }else{
                     }
-                    trace1("ret", (_sim->analysis_is_static() || _sim->analysis_is_restore()));
                     return (_sim->analysis_is_static() || _sim->analysis_is_restore());
     case moANALOG:
                     //untested();
@@ -765,7 +825,6 @@ bool DEV_LOGIC_IN::tr_needs_eval()const
 /*--------------------------------------------------------------------------*/
 void DEV_LOGIC_IN::tr_queue_eval()
 {
-  trace1("DEV_LOGIC_IN::tr_queue_eval", _gatemode);
   switch (_gatemode) {
     case moUNKNOWN: unreachable(); break;
     case moMIXED:	  unreachable(); break;
@@ -776,6 +835,7 @@ void DEV_LOGIC_IN::tr_queue_eval()
 /*--------------------------------------------------------------------------*/
 bool DEV_LOGIC_IN::tr_eval_digital()
 {
+  trace0("DEV_LOGIC_IN::tr_eval_digital");
   assert(_gatemode == moDIGITAL);
   if (_sim->analysis_is_restore()) {untested();
   }else if (_sim->analysis_is_static()) {
@@ -810,7 +870,7 @@ bool DEV_LOGIC_IN::do_tr()
  //bm tr_eval
  //  ExtSigTrEval(_ext,const_cast<std::vector<DPAIR>*>(&_num_table),d);
 
-  trace2("DEV_LOGIC_IN::do_tr",_sim->_time0, _gatemode);
+  trace2("DEV_LOGIC_IN::do_tr " + long_label(),_sim->_time0, _gatemode);
   switch (_gatemode) {
     case moUNKNOWN: unreachable(); break;
     case moMIXED:   unreachable(); break;
@@ -849,7 +909,7 @@ TIME_PAIR DEV_LOGIC_IN::tr_review()
   //  d->_time_by.min_event(dt + d->_sim->_time0);
  // }
 
-  q_accept();
+  // q_accept();
   //digital mode queues events explicitly in tr_accept
 
   switch (_gatemode) {
@@ -864,10 +924,10 @@ TIME_PAIR DEV_LOGIC_IN::tr_review()
 // stupid hack. doesnt work right
 void DEV_LOGIC_IN::qe() 
 {
-  trace0("DEV_LOGIC_IN::qe");
+  trace1("DEV_LOGIC_IN::qe",_n[OUTNODE]->is_digital());
 //  tr_queue_eval();
 //  q_eval();
-    _sim->_evalq_uc->push_back(this);
+    _sim->_evalq_uc->push_back(owner());
 }
 /*--------------------------------------------------------------------------*/
 /* tr_accept: This runs after everything has passed "review".
@@ -875,7 +935,8 @@ void DEV_LOGIC_IN::qe()
  */
 void DEV_LOGIC_IN::tr_accept() // from ivl.
 {
-  trace0("DEV_LOGIC_IN::tr_accept");
+  trace4("DEV_LOGIC_IN::tr_accept() " +long_label(),
+      _gatemode,  _n[OUTNODE]->is_digital(),_sim->_time0,lvfromivl);
   assert(_gatemode == moDIGITAL || _gatemode == moANALOG);
   const COMMON_LOGIC* c = prechecked_cast<const COMMON_LOGIC*>(common());
   assert(c);
@@ -884,29 +945,30 @@ void DEV_LOGIC_IN::tr_accept() // from ivl.
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /* Check quality and get node info to local array. */
   /* side effect --- generate digital values for analog nodes */
+  _n[OUTNODE]->to_logic(m);
+  _quality = _n[OUTNODE]->quality();  /* the worst quality on this device */
+  _failuremode = _n[OUTNODE]->failure_mode();    /* what is wrong with it? */
+  _lastchangenode = OUTNODE;		/* which node changed most recently */
+  int lastchangeiter = _n[OUTNODE]->d_iter();/* iteration # when it changed */
+  trace0(long_label().c_str());
+  trace2(_n[OUTNODE]->failure_mode().c_str(), OUTNODE, _n[OUTNODE]->quality());
+
+  if (lvfromivl == lvRISING || lvfromivl == lvFALLING)
   {
-    _n[OUTNODE]->to_logic(m);
-    _quality = _n[OUTNODE]->quality();  /* the worst quality on this device */
-    _failuremode = _n[OUTNODE]->failure_mode();    /* what is wrong with it? */
-    _lastchangenode = OUTNODE;		/* which node changed most recently */
-    int lastchangeiter = _n[OUTNODE]->d_iter();/* iteration # when it changed */
-    trace0(long_label().c_str());
-    trace2(_n[OUTNODE]->failure_mode().c_str(), OUTNODE, _n[OUTNODE]->quality());
-
-    if (lvfromivl == lvRISING || lvfromivl == lvFALLING)
-      _lastchangenode=1;
-
-
-    ///for (uint_t ii = BEGIN_IN;  ii < net_nodes();  ++ii) {
-    //  ...
-   // }
-    /* If _lastchangenode == OUTNODE, no new changes, bypass may be ok.
-     * Otherwise, an input changed.  Need to evaluate.
-     * If all quality are good, can evaluate as digital.
-     * Otherwise need to evaluate as analog.
-     */
-    trace3(_failuremode.c_str(), _lastchangenode, lastchangeiter, _quality);
+    trace1("DEV_LOGIC_IN::tr_accept", lvfromivl);
+    _lastchangenode=1;
   }
+
+
+  ///for (uint_t ii = BEGIN_IN;  ii < net_nodes();  ++ii) {
+  //  ...
+  // }
+  /* If _lastchangenode == OUTNODE, no new changes, bypass may be ok.
+   * Otherwise, an input changed.  Need to evaluate.
+   * If all quality are good, can evaluate as digital.
+   * Otherwise need to evaluate as analog.
+   */
+  trace3(_failuremode.c_str(), _lastchangenode, lastchangeiter, _quality);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */  
   if (want_analog()) {
     trace0("DEV_LOGIC_IN want_analog");
@@ -941,20 +1003,25 @@ void DEV_LOGIC_IN::tr_accept() // from ivl.
         || _sim->analysis_is_restore()) {
       trace1("DEV_LOGIC_IN transition",lvfromivl);
       LOGICVAL future_state = lvfromivl;
-      //		         ^^^^^^^^^^
+
+//enum smode_t   {moUNKNOWN=0, moANALOG=1, moDIGITAL, moMIXED};
+//enum _LOGICVAL {lvSTABLE0,lvRISING,lvFALLING,lvSTABLE1,lvUNKNOWN};
+
       if ((_n[OUTNODE]->is_unknown()) &&
           (_sim->analysis_is_static() || _sim->analysis_is_restore())) {
+        trace3("DEV_LOGIC_IN force",future_state, _sim->_time0, _gatemode);
         _n[OUTNODE]->force_initial_value(future_state);
         /* This happens when initial DC is digital.
          * Answers could be wrong if order in netlist is reversed 
          */
       }else if (future_state != _n[OUTNODE]->lv()) {
-        trace2("DEV_LOGIC_IN, new state", future_state, _n[OUTNODE]->lv());
+        trace4("DEV_LOGIC_IN, new state", future_state, _n[OUTNODE]->lv(),
+            _sim->_time0, future_state.lv_future());
         assert(future_state != lvUNKNOWN);
         switch (future_state) {
           case lvSTABLE0:	/*nothing*/		break;
-          case lvRISING:  future_state=lvSTABLE0;	break;
-          case lvFALLING: future_state=lvSTABLE1;	break;
+          case lvRISING:  future_state=lvSTABLE1;	break;
+          case lvFALLING: future_state=lvSTABLE0;	break;
           case lvSTABLE1:	/*nothing*/		break;
           case lvUNKNOWN: unreachable();		break;
         }
@@ -966,7 +1033,10 @@ void DEV_LOGIC_IN::tr_accept() // from ivl.
          * This code is planned for replacement as part of VHDL/Verilog
          * conversion, so the kluge stays in for now.
          */
+        trace3("DEV_LOGIC_IN debugging",  future_state.lv_future() ,
+            _n[OUTNODE]->lv_future(),_n[OUTNODE]->lv() );
         assert(future_state.lv_old() == future_state.lv_future());
+
         if (_n[OUTNODE]->lv() == lvUNKNOWN
             || future_state.lv_future() != _n[OUTNODE]->lv_future()) {
 
@@ -978,7 +1048,6 @@ void DEV_LOGIC_IN::tr_accept() // from ivl.
                             assert(false); break;
           }
           _n[OUTNODE]->set_event(delay, future_state);
-// ENQUEUE enqueue
           trace1("DEV_LOGIC_IN new event", _n[OUTNODE]->final_time());
           _sim->new_event(_n[OUTNODE]->final_time());
 
@@ -1024,9 +1093,12 @@ void DEV_LOGIC_IN::ac_begin()
   }
 }
 /*--------------------------------------------------------------------------*/
-double DEV_LOGIC_IN::tr_probe_num(const std::string& what)const
+double DEV_LOGIC_IN::tr_probe_num(const std::string& x)const
 {
-  return _n[OUTNODE]->tr_probe_num(what);
+  if (Umatch(x, "ivl ")) { 
+    return lvfromivl;
+  }
+  return _n[OUTNODE]->tr_probe_num(x);
 }
 /*--------------------------------------------------------------------------*/
 XPROBE DEV_LOGIC_IN::ac_probe_ext(const std::string& what)const

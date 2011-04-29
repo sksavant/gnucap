@@ -107,14 +107,12 @@ void SIM::head(double start, double stop, const std::string& col1)
  */
 void SIM::print_results(double x)
 {
-  trace0("SIM::print_results");
   if (!IO::plotout.any()) {
     _out.setfloatwidth(OPT::numdgt, OPT::numdgt+6);
     assert(x != NOT_VALID);
     _out << x;
     for (PROBELIST::const_iterator
 	   p=printlist().begin();  p!=printlist().end();  ++p) {
-      trace0(("SIM::print_results" + (*p)->label()).c_str() );
       _out << (*p)->value();
     }
     _out << '\n';

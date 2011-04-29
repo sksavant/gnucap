@@ -146,7 +146,7 @@ class ExtSig : public ExtBase {
   void set_active(double time);
   static void SetActive(void *,void *,double);
 
-  ExtSig(COMMON_COMPONENT *_c,ExtLib *_l,char _iv,void *cbd) 
+  ExtSig(COMMON_COMPONENT *_c,ExtLib *_l,char _iv,void *) 
     : cmpnt(_c), lib(_l), iv(_iv){}
 
  private:

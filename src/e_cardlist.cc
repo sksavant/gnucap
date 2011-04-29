@@ -431,7 +431,6 @@ TIME_PAIR CARD_LIST::tt_review()
 /*--------------------------------------------------------------------------*/
 TIME_PAIR CARD_LIST::tr_review()
 {
-  trace0("CARD_LIST::tr_review()");
   TIME_PAIR time_by(NEVER,NEVER);
 
   for (iterator ci=begin(); ci!=end(); ++ci) {

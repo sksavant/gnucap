@@ -44,6 +44,10 @@
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
+inline double digital_time(void)
+{
+  return double(schedule_simtime() * (long double) pow(10.0,vpip_get_time_precision())) ;
+}
 
 // static std::list<ExtLib*> Libs;
 
@@ -329,7 +333,7 @@ sim_mode vvp::schedule_simulate_m(sim_mode mode)
   trace0("schedule_list?");
   if (schedule_runnable())
     while (schedule_list()) {
-      trace0("schedule list ... ");
+      trace2("schedule list ... ", mode, schedule_stopped() );
 
       if (schedule_stopped()) {
         schedule_start();
@@ -362,12 +366,12 @@ sim_cont0:
 
               trace4("cont0", SimTimeDlast, te, dly, SimTimeA);
 
-              if (te >= SimTimeA) {
+              if (te > SimTimeA) {
                 SimDelayD = te - SimTimeA;
-                trace1("SimTimeD PREM", SimDelayD);
+                trace1("schedule_sim  SimTimeD PREM", SimDelayD);
                 return SIM_PREM; 
               }
-              trace1("SimTimeD increasing...",dly);
+              trace1("schedule_sim SimTimeD increasing...",dly);
               SimTimeD  = SimTimeDlast + dly;
             }
             break;
@@ -398,6 +402,7 @@ sim_cont0:
              events and delete this time step. This also
              deletes threads as needed. */
           if (ctim->active == 0) {
+            trace0("rosync");
             run_rosync(ctim);
             schedule_enlist( ctim->next);
             switch (mode) {
@@ -418,7 +423,7 @@ sim_cont1:
                   goto cycle_done;
                 }
               default:
-                fprintf(stderr,"default 2\n");
+                trace1("default ", mode);
             }
             delete ctim;
             goto cycle_done;
@@ -440,6 +445,7 @@ sim_cont1:
       delete (cur);
 
 cycle_done:;
+           trace0("cycle done");
     }
 
   if (SIM_ALL == mode) {
@@ -451,11 +457,11 @@ cycle_done:;
   }
 
 done:
-  trace0("schedule_simulate_m done.");
+  trace1("schedule_simulate_m done.", SimTimeD);
   return SIM_DONE;
 }
 /*--------------------------------------------------------------------*/
-double vvp::startsim(const char *analysis)
+double vvp::startsim(const char *)
 {
   SimDelayD  = -1;
   SimState = schedule_simulate_m(SIM_INIT);
@@ -463,24 +469,25 @@ double vvp::startsim(const char *analysis)
   return SimDelayD;
 } 
 /*--------------------------------------------------------------------*/
-
-double vvp::contsim(const char *analysis,double time)
+double vvp::contsim(const char *,double time)
 {
-  trace4("contsim", time, SimTimeA, SimTimeD, SimTimeDlast);
+  trace5("contsim", time, SimTimeA, SimTimeD, SimTimeDlast, digital_time());
   SimTimeA  = time;
+  assert(CKT_BASE::_sim->_time0 == time );
   SimDelayD = -1;
 
   SimState = SIM_CONT0;
   while (SimTimeDlast < time) {
-    trace1("loop", time);
+    trace1("contsim loop", time);
     SimState = schedule_simulate_m(SimState);
     SimTimeDlast = SimTimeD;
-    trace1("loop", SimTimeD);
+    trace1("contsim loop", SimTimeD);
     if (SIM_PREM <= SimState) break;
   }
 
   return SimDelayD;
 } 
+/*------------------------------------------------------*/
 void vvp::endsim()
 {
   vpi_handle_by_name("foo",NULL);

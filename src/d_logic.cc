@@ -193,7 +193,7 @@ void DEV_LOGIC::tr_advance()
       q_eval();
       if (_sim->_time0 >= _n[OUTNODE]->final_time()) {
 	_n[OUTNODE]->propagate();
-      }else{untested();
+      }else{ // untested();
       }
     }else{
     }
@@ -278,7 +278,7 @@ bool DEV_LOGIC::tr_eval_digital()
   }else{
     assert(_sim->analysis_is_tran_dynamic());
   }
-  
+
   const COMMON_LOGIC* c = prechecked_cast<const COMMON_LOGIC*>(common());
   assert(c);
   const MODEL_LOGIC* m = prechecked_cast<const MODEL_LOGIC*>(c->model());
@@ -292,7 +292,7 @@ bool DEV_LOGIC::tr_eval_digital()
   set_converged(conv_check());
   store_values();
   q_load();
-  
+
   return converged();
 }
 /*--------------------------------------------------------------------------*/

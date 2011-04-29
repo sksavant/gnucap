@@ -31,3 +31,7 @@
 - rudimentary .vdump .vload support
 - propagate error ( return from main )
 - switched to automake dependencies (good idea? might break modelgen stuff)
+- icarus verilog interfacing device.
+- hacked TRANSIENT:
+  - last step handler added
+  - moved clear-queue loop to accept()

@@ -30,6 +30,7 @@
 #include "e_card.h" // debugging...
 #include "declare.h"	/* gen */
 #include "s_tr.h"
+#define ALT_CQ // alternatively clear queue (experimental)
 /*--------------------------------------------------------------------------*/
 //	void	TRANSIENT::sweep(void);
 //	void	TRANSIENT::first(void);
@@ -269,9 +270,9 @@ bool TRANSIENT::next()
     new_dt = std::max(_dtmax/100., _sim->_dtmin);
     newtime = _sim->_time0 + new_dt;
     new_control = scINITIAL;
-  }else if (_sim->_time0 == _time_by_user_request){
-    untested();
-    return false;
+ // }else if (_sim->_time0 == _time_by_user_request){
+  //  untested();
+    // return false;
   }else if (!_converged) {
     new_dt = old_dt / OPT::trstepshrink;
     newtime = _time_by_iteration_count = time1 + new_dt;
@@ -306,7 +307,7 @@ bool TRANSIENT::next()
     // exact time.  NOT ok to move or omit, even by _sim->_dtmin
     // some action is associated with it.
     if (!_sim->_eq.empty() && _sim->_eq.top() < newtime) {
-      trace2("eventq", newtime, time1);
+      trace2("TRANSIENT eventq", newtime, time1);
       newtime = _sim->_eq.top();
       assert( newtime >= time1 );
       new_dt = newtime - reftime;
@@ -321,9 +322,11 @@ bool TRANSIENT::next()
       almost_fixed_time = newtime;
       trace2("checking", reftime, newtime);
       check_consistency();
-    }else{
+    }else if ( !_sim->_eq.empty()  ) {
+      trace2("TRANSIENT skipping non empty eq", time1, _sim->_eq.top() );
+    } else {
+      trace0("TRANSIENT no events pending");
     }
-
     // device events that may not happen
     // not sure of exact time.  will be rescheduled if wrong.
     // ok to move by _sim->_dtmin.  time is not that accurate anyway.
@@ -433,7 +436,7 @@ bool TRANSIENT::next()
     }
 
     if ( _time_by_user_request - _sim->_dtmin < newtime  && newtime <  _time_by_user_request ){
-      untested();
+      //untested();
       //newtime = _time_by_user_request - _sim->_dtmin;
       //new_dt = _sim->_dtmin;
       trace2("TRANSIENT::next making step smaller", newtime, new_dt);
@@ -456,11 +459,9 @@ bool TRANSIENT::next()
 
 
   }
-
-  
   set_step_cause(new_control);
 
-  trace1("TRANSIENT::next got it i think", newtime);
+  trace2("TRANSIENT::next got it i think", newtime, new_control);
   
   /* check to be sure */
   if (newtime < time1 + _sim->_dtmin) {itested();
@@ -602,16 +603,6 @@ void TRANSIENT::accept()
   ::status.accept.start();
 
 
-# ifdef ALT_CQ
-  while (!_sim->_eq.empty() && _sim->_eq.top() <= _sim->_time0) {
-    trace1("eq", _sim->_eq.top());
-    _sim->_eq.pop();
-  }
-  while (!_sim->_eq.empty() && _sim->_eq.top() < _sim->_time0 + _sim->_dtmin) {itested();
-    trace1("eq-extra", _sim->_eq.top());
-    _sim->_eq.pop();
-  }
-# endif
 
 
   _sim->_dt0 = _sim->_time0 - time1;
@@ -635,6 +626,16 @@ void TRANSIENT::accept()
       CARD_LIST::card_list.do_forall( &CARD::stress_apply );
     }
   }
+# ifdef ALT_CQ
+  while (!_sim->_eq.empty() && _sim->_eq.top() <= _sim->_time0) {
+    trace1("eq", _sim->_eq.top());
+    _sim->_eq.pop();
+  }
+  while (!_sim->_eq.empty() && _sim->_eq.top() < _sim->_time0 + _sim->_dtmin) {itested();
+    trace1("TRANSIENT::accept eq-extra", _sim->_eq.top());
+    _sim->_eq.pop();
+  }
+# endif
   ::status.accept.stop();
 }
 /*--------------------------------------------------------------------------*/

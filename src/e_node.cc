@@ -66,8 +66,12 @@ static _LOGICVAL prop_truth[lvNUM_STATES][lvNUM_STATES] = {
 /*--------------------------------------------------------------------------*/
 inline LOGICVAL& LOGICVAL::set_in_transition(LOGICVAL newval)
 {
+  trace3("LOGICVAL::set_in_transition", _lv ,newval,  prop_truth[_lv][newval]);
+     
   _lv = prop_truth[_lv][newval];
-  assert(_lv != lvUNKNOWN);
+  if(_lv == lvUNKNOWN){
+    error(bWARNING, "set_in_transition: lv unknown...");
+  }
   return *this;
 }
 /*--------------------------------------------------------------------------*/
@@ -222,11 +226,11 @@ double LOGIC_NODE::tr_probe_num(const std::string& x)const
 {
   if (Umatch(x, "l{ogic} ")) {
     return annotated_logic_value();
-  }else if (Umatch(x, "la{stchange} ")) {untested();
+  }else if (Umatch(x, "la{stchange} ")) {
     return _lastchange;
-  }else if (Umatch(x, "fi{naltime} ")) {untested();
+  }else if (Umatch(x, "fi{naltime} ")) {
     return final_time();
-  }else if (Umatch(x, "di{ter} ")) {untested();
+  }else if (Umatch(x, "di{ter} ")) {
     return static_cast<double>(_d_iter);
   }else if (Umatch(x, "ai{ter} ")) {untested();
     return static_cast<double>(_a_iter);
@@ -424,7 +428,6 @@ double LOGIC_NODE::to_analog(const MODEL_LOGIC* f)
   case lvSTABLE0:
     return process()->vmin;
   case lvRISING:
-    untested(); 
     start = process()->vmin;
     end = process()->vmax;
     risefall = process()->rise;
@@ -449,7 +452,8 @@ double LOGIC_NODE::to_analog(const MODEL_LOGIC* f)
     untested();
     return end;
   }else{
-    untested();
+    trace3("to_analog", _sim->_time0, final_time(), risefall );
+//    untested(); // seems to do the right thing...
     return end - ((end-start) * (final_time()-_sim->_time0) / risefall);
   }
 }
@@ -472,6 +476,7 @@ void LOGIC_NODE::propagate()
 /*--------------------------------------------------------------------------*/
 void LOGIC_NODE::force_initial_value(LOGICVAL v)
 {
+  trace2("LOGIC_NODE::force_initial_value "+ short_label(), _mode, v);
   if (_sim->analysis_is_restore()) {untested();
   }else if (_sim->analysis_is_static()) {
   }else{untested();
@@ -479,7 +484,7 @@ void LOGIC_NODE::force_initial_value(LOGICVAL v)
   assert(_sim->analysis_is_static() || _sim->analysis_is_restore());
   assert(_sim->_time0 == 0.);
   assert(is_unknown());
-  assert(is_digital());
+  assert(is_digital()); // fails e.g. if outputs are short.
   set_lv(v); // BUG ??
   set_good_quality("initial dc");
   set_d_iter();

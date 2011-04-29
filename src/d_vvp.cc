@@ -40,7 +40,14 @@
 inline double event_(struct event_time_s *et)
 {
   trace2("event_",vpip_get_time_precision(),et->delay );
-  return  ( et->delay * pow(10.0,vpip_get_time_precision()) );
+  return  double ( et->delay * (long double) pow(10.0,vpip_get_time_precision()) );
+}
+inline double digital_time(void)
+{
+  return double(schedule_simtime() * (long double)  pow(10.0,vpip_get_time_precision())) ;
+}
+inline double prec(){
+  return double(pow(10.0,vpip_get_time_precision()));
 }
 /*--------------------------------------------------------------------------*/
 
@@ -71,32 +78,6 @@ static LOGIC_NONE Default_LOGIC(CC_STATIC);
 //  ret[0] = xsig->d->tr_outvolts();
 //  return 1;
 //}
-/*--------------------------------------------------------------------------*/
-void ExtContSim(ExtLib* ext, const char *analysis,double accpt_time) {
-  trace0("ExtContSim");
-  ExtLib *lib = ext;
-
-  //list<ExtRef*>::iterator scan=lib->refs.begin();
-  //lib->now = accpt_time;
-  //for (; scan != lib->refs.end(); scan++) {
-  //  ExtRef *ref = *scan;
-  //  if ('I' == ref->iv) {
-  //    list<ExtSig*>::iterator ss=ref->sigs.begin();
-  //    for (; ss != ref->sigs.end(); ss++) {
-  //      ExtSig *sig = *ss; 
-  //      SpcIvlCB *cbd = sig->cb_data;
-  //      (*cbd->eval)(cbd,accpt_time,CB_ACCEPT,'I' == ref->iv ? getVoltage
-  //          : 0,
-  //          sig,0);
-  //    }
-  //  }   
-  //}
-  if (lib->active) {
-    if (lib->next_time <= accpt_time) lib->active = 0;    
-  }
-  trace1("tr_accept calling contsim", accpt_time);
-  lib->contsim(analysis,accpt_time);
-}
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 COMMON_LOGIC_VVP::COMMON_LOGIC_VVP(int c)
@@ -189,26 +170,45 @@ inline OMSTREAM& operator<<(OMSTREAM& o, direction_t t) {
 /*--------------------------------------------------------------------------*/
 TIME_PAIR  DEV_LOGIC_VVP::tr_review(){
   trace1("DEV_LOGIC_VVP::tr_review", _sim->_time0 );
+   _time_by =  BASE_SUBCKT::tr_review();
 
   event_time_s* ctim = schedule_list();
 
-  if (ctim)  trace1("DEV_LOGIC_VVP::tr_review", ctim->delay );
-
-  return  BASE_SUBCKT::tr_review();
+  if (ctim){
+    double delay = (double)ctim->delay;
+    trace1("DEV_LOGIC_VVP::tr_review", delay );
+    _time_by.min_event(delay + _sim->_time0);
+  }
+  q_accept();
+  return _time_by;
 }
 /*--------------------------------------------------------------------------*/
 bool DEV_LOGIC_VVP::do_tr(){
   assert(status);
-  q_accept();
+  //q_accept();
   return BASE_SUBCKT::do_tr();
 }
 /*--------------------------------------------------------------------------*/
 void DEV_LOGIC_VVP::tr_accept(){
-  trace1("DEV_LOGIC_VVP::tr_accept", _sim->_time0);
+  static double lastaccept;
 
+  if ( lastaccept == _sim->_time0 && _sim->_time0!=0){
+    return;
+  }
+
+  trace2("DEV_LOGIC_VVP::tr_accept", _sim->_time0,  lastaccept);
+  lastaccept = _sim->_time0;
+
+  // first queue events.
   subckt()->tr_accept();
 
-  ExtContSim(extlib(),"TRAN",_sim->_time0);     
+  // then execute anythin until now.
+  trace1("DEV_LOGIC_VVP::tr_accept calling cont", _sim->_time0);
+  vvp::contsim("",_sim->_time0);
+
+  // accept again (the other nodes might have changed.)
+  subckt()->tr_accept();
+
   uint_t incount=1;
 
   node_t* n=&_n[2];
@@ -218,16 +218,17 @@ void DEV_LOGIC_VVP::tr_accept(){
     // schedule_set_vector(ptr,data(x) );
   }
 
-
+  
+  // copy next event to master queue
   event_time_s* ctim = schedule_list();
   double evt;
-
   if (ctim){
-    evt= event_(ctim);
-
-    trace2("DEV_LOGIC_VVP::tr_accept", ctim->delay, evt );
-    assert(evt>0);
-    _sim->new_event(evt+_sim->_time0);
+    evt = event_(ctim);
+    double eventtime = (double)(schedule_simtime() + ctim->delay) * prec();
+    trace3("DEV_LOGIC_VVP::tr_accept,  fetching event",_sim->_time0, ctim->delay, eventtime);
+    assert(evt>=0);
+    if(evt==0) { untested(); };
+    _sim->new_event(eventtime);
   }
 
   // FIXME: implement tr_needs_eval...
@@ -488,9 +489,18 @@ PLI_INT32 callback(t_cb_data*x){
   vpi_get_value(x->obj, &argval);
   const vvp_vector4_t bit(1,(vvp_bit4_t)argval.value.integer);
 
-  trace4("callback", bit.value(0), x->time->real, x->value->value.integer, c->lvfromivl);
+  trace5("callback", bit.value(0), digital_time() , x->value->value.integer,
+      c->lvfromivl, CKT_BASE::_sim->_time0);
+  assert(bit.value(0)==0 || bit.value(0)==1);
 
-//  if (CKT_BASE::_sim->_time0 == 0 )  return 0; // UGLY HACK
+  if (c->lvfromivl == lvUNKNOWN){
+    trace0("callback init.");
+    c->lvfromivl  = _LOGICVAL(3*bit.value(0)) ;
+    assert(CKT_BASE::_sim->_time0 == 0 );
+    return 0 ;
+  }
+
+  CKT_BASE::_sim->new_event( double( digital_time()) );
 
   switch (bit.value(0)) {
     case 0: c->lvfromivl = lvFALLING; break;
@@ -499,6 +509,7 @@ PLI_INT32 callback(t_cb_data*x){
              error(bDANGER, "got bogus value %i from ivl\n", bit.value(0));
              break;
   }
+  trace1("callback done ", c->lvfromivl);
   c->qe();
   return 0;
 }

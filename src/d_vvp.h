@@ -158,6 +158,7 @@ class DEV_LOGIC_VVP : public BASE_SUBCKT  {
     vector<vpiHandle> _inport;
 
   public:
+    //void qe() { q_eval(); }
     void register_port(vpiHandle); // data from ivl
 
     bool has_common()const {return true;}

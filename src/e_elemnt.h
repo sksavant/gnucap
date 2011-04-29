@@ -488,8 +488,6 @@ inline bool ELEMENT::using_ac_eval()const
 /*--------------------------------------------------------------------------*/
 inline void ELEMENT::tr_eval()
 {
-  trace1("ELEMENT::tr_eval " + long_label(), has_tr_eval() );
-
   if (has_tr_eval()) {
     common()->tr_eval(this);
   }else{
