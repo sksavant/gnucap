@@ -8,7 +8,7 @@ Readme for iverilog module
 Readme for fucap branch 2010-10:
 
 compiling and use of modules now has become easier.  read
-non-GPL/Makefile.am.empty (this also works with GPL code)
+modules/Makefile.am
 
 .load libNONGPL.so expects your module in ${libpath}/libNONGPL.so, where it is
 put by "make install"

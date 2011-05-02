@@ -2,7 +2,7 @@
 ##
 ## Top level automake file for gnucap
 
-SUBDIRS=	doc examples modelgen src non-GPL tests
+SUBDIRS=	doc examples modelgen src modules tests
 
 if IVERILOG
 	SUBDIRS+=vvpg

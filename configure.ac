@@ -51,20 +51,20 @@ AC_PREFIX_DEFAULT("/usr/local")
 
 
 
-AC_MSG_CHECKING([if nongpl code should be compiled in])
-AC_ARG_ENABLE([nongpl],
-[  --enable-nongpl            Enable building of non-GPL code. [[default: disabled]]],
+AC_MSG_CHECKING([if modules should be compiled in])
+AC_ARG_ENABLE([modules],
+[  --enable-modules            Enable building of modules. [[default: disabled]]],
 [
-if test "X$enable_nongpl" = "Xno" ; then
+if test "X$enable_modules" = "Xno" ; then
 	AC_MSG_RESULT([no])
 else
 	AC_MSG_RESULT([yes])
-	enable_nongpl=yes
+	enable_modules=yes
 fi
 ],
 [
 	AC_MSG_RESULT([no])
-	enable_nongpl=no
+	enable_modules=no
 ])
 
 dnl Ivl for d_vvp.cc
@@ -259,8 +259,8 @@ AC_OUTPUT([
 	modelgen/Makefile
 	src/Makefile])
 
-if test "X$enable_nongpl" = "Xyes"; then
-	AC_OUTPUT([ non-GPL/Makefile ])
+if test "X$enable_modules" = "Xyes"; then
+	AC_OUTPUT([ modules/Makefile ])
 fi
 
 
@@ -277,7 +277,7 @@ AC_MSG_RESULT([
    LDFLAGS:    $LDFLAGS
    LIBS:       $LIBS
    debug:      $enable_debug
-   non-GPL:    $enable_nongpl
+   modules:    $enable_modules
    shared:     $shared
 
 ])

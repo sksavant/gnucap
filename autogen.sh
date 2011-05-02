@@ -9,8 +9,8 @@
 CONFIG_SHELL=/bin/sh
 export CONFIG_SHELL
 
-# HACK? might not have non-GPL stuff.
-[ -d non-GPL ] || cp -r non-GPL.skel non-GPL
+# HACK? doesnt make sense
+# [ -d non-GPL ] || cp -r non-GPL.skel non-GPL
 
 libtoolize -c -f -i
 
