@@ -30,10 +30,9 @@ AC_PROG_CXX
 AC_PROG_MAKE_SET 
 
 AC_CONFIG_SRCDIR([src/main.cc])
-
 AC_CONFIG_MACRO_DIR([m4])
-
 AC_CONFIG_HEADERS([config.h])
+AC_LANG(C++)
 
 AM_MAINTAINER_MODE
 
@@ -75,11 +74,14 @@ AC_ARG_WITH([iverilog],
   [with_iverilog=no])
 
 
+# BUG. does not check $with_iverilog for correctness
 IVERILOG=
 AS_IF([ test "x$with_iverilog" != xno],
 	[
+	   echo "testing iverilog availibility..."
 		AC_CHECK_LIB([vvp], [main],
 				  [
+					CPPFLAGS+=-I$with_iverilog
 					AC_SUBST([IVERILOG], ["-lvvp"])
 					AC_SUBST([IVERILOG_SO], ["$with_iverilog/lib/libvvp.so"])
 					AC_SUBST([IVERILOG_INCLUDE], ["-I$with_iverilog"])
@@ -92,6 +94,14 @@ AS_IF([ test "x$with_iverilog" != xno],
 				  [-lvvp])
 	]
 )
+
+AS_IF([ test "x$with_iverilog" != xno], [
+AC_CHECK_HEADERS(vvp/schedule.h,
+					  [ ],
+					AC_MSG_FAILURE([there should be vvp headers ... ])
+					)
+				
+])
 
 
 #echo AAAAAAAAA: $with_iverilog $IVERILOG
@@ -126,7 +136,6 @@ fi
 ])
 
 # Checks for programs.
-AC_PROG_CXX
 
 # If we are cross compiling, then we need to search for a
 # gnucap-modelgen program to use for our build.  This can
