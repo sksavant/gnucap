@@ -158,7 +158,7 @@ public:
     return _v;
   }
 
-  std::string e_val_normal(const std::string& def, const CARD_LIST* scope)const;
+  std::string e_val(const std::string& def, const CARD_LIST* scope)const;
   std::string e_val_strange(const std::string& def, const CARD_LIST* scope)const;
   void	parse(CS& cmd);
 
@@ -166,9 +166,8 @@ public:
   std::string string()const;
   void	print(OMSTREAM& o)const	{o << string();}
   void	set_default(const std::string& v)		{_v = v;}
-  void	operator=(const PARAMETER& p)	{ _v = p._v; }
+  void	operator=(const PARAMETER& p)	{ _v = p._v; _s = p._s; }
  // argh
-  //void	operator=(const std::string& v)		{_v = v; }
   void	operator=(const std::string& s)	{
     if (strchr("'\"{", s[0])) {
       CS cmd(CS::_STRING, s);
@@ -533,6 +532,7 @@ inline void PARAMETER<T>::parse(CS& cmd)
   }
 }
 /*--------------------------------------------------------------------------*/
+// hacked e_val. does strange things
 inline std::string PARAMETER<std::string>::e_val_strange(const std::string& def, const CARD_LIST* scope)const
 {
   trace0("PARAMETER<std::string>::e_val_strange");

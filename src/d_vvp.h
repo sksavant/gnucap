@@ -48,7 +48,7 @@ struct port_info_t {
 class MODEL_LOGIC_VVP;
 class COMMON_LOGIC_VVP;
 class DEV_LOGIC_VVP;
-
+/*--------------------------------------------------------------------------*/
 class COMMON_LOGIC_VVP : public COMMON_COMPONENT {
   public:
     explicit	COMMON_LOGIC_VVP(int c=0);
@@ -78,7 +78,7 @@ class COMMON_LOGIC_VVP : public COMMON_COMPONENT {
     ExtLib* _extlib;
   public: // input parameters
     int		incount; //?
-    PARAMETER<std::string> file;
+    PARAMETER<std::string> vvpfile;
     PARAMETER<std::string> module;
   private:
    uint_t status;

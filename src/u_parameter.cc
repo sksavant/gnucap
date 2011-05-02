@@ -206,9 +206,9 @@ bool Get(CS& cmd, const std::string& key, PARAMETER<int>* val)
   }
 }
 /*--------------------------------------------------------------------------*/
-std::string PARAMETER<std::string>::e_val_normal(const std::string& def, const CARD_LIST* scope)const
+std::string PARAMETER<std::string>::e_val(const std::string& def, const CARD_LIST* scope)const
 {
-  trace0("PARAMETER<std::string>::e_val_normal " + _s + " default: " + def + " val " + _v);
+  trace0("PARAMETER<std::string>::e_val " + _s + " default: " + def + " val " + _v);
   assert(scope);
 
   static int recursion=0;

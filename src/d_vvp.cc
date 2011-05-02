@@ -40,10 +40,15 @@
 #include "l_lib.h"
 #include "io_trace.h"
 #include "vvp/vvp_net.h"
+#include "extlib.h"
+#include "d_ivl_ports.h"
+
+//#include "schedule.cc"
 /*--------------------------------------------------------------------------*/
 inline double event_(struct event_time_s *et)
 {
-  return  double ( et->delay * (long double) pow(10.0,vpip_get_time_precision()) );
+  return  double ( et->delay * (long double)
+      pow(10.0,vpip_get_time_precision()) );
 }
 inline double event_absolute(struct event_time_s *et)
 {
@@ -52,19 +57,17 @@ inline double event_absolute(struct event_time_s *et)
 }
 inline double digital_time(void)
 {
-  return double(schedule_simtime() * (long double)  pow(10.0,vpip_get_time_precision())) ;
+  return double(schedule_simtime() * (long double)
+      pow(10.0,vpip_get_time_precision())) ;
 }
 inline double prec(){
   return double(pow(10.0,vpip_get_time_precision()));
 }
 /*--------------------------------------------------------------------------*/
-
-#include "extlib.h"
-#include "d_ivl_ports.h"
-
-//#include "schedule.cc"
-
-
+inline OMSTREAM& operator<<(OMSTREAM& o, direction_t t) {
+  const std::string s[] = {"", "input", "output", "inout"};
+  return (o << s[t]);
+}
 /*--------------------------------------------------------------------------*/
 const double _default_delta (NOT_INPUT);
 const int    _default_smooth(0);
@@ -79,11 +82,80 @@ static COMMON_LOGIC_VVP Default_Logic_Params(CC_STATIC);
 static LOGIC_NONE Default_LOGIC(CC_STATIC);
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+//   MODEL (not in use)
+/*--------------------------------------------------------------------------*/
+void MODEL_LOGIC_VVP::precalc_first(){
+  unreachable();
+}
+/*--------------------------------------------------------------------------*/
+void MODEL_LOGIC_VVP::precalc_last(){
+  unreachable();
+}
+/*--------------------------------------------------------------------------*/
+MODEL_LOGIC_VVP::MODEL_LOGIC_VVP(const DEV_LOGIC_VVP* p)
+  :MODEL_LOGIC((const COMPONENT*) p){
+    trace0("MODEL_LOGIC_VVP::MODEL_LOGIC_VVP");
+  }
+/*--------------------------------------------------------------------------*/
+MODEL_LOGIC_VVP::MODEL_LOGIC_VVP(const MODEL_LOGIC_VVP& p)
+  :MODEL_LOGIC(p){
+    file=p.file;
+    output=p.output;
+    input=p.input;
+    trace0("MODEL_LOGIC_VVP::MODEL_LOGIC_VVP");
+}
+/*--------------------------------------------------------------------------*/
+bool MODEL_LOGIC_VVP::param_is_printable(int i) const{
+    return (MODEL_LOGIC::param_count() - 1 - i)  < param_count();
+}
+/*--------------------------------------------------------------------------*/
+std::string MODEL_LOGIC_VVP::param_name(int i, int j)const
+{
+  if (j == 0) {
+    return param_name(i);
+  }else if (i >= MODEL_LOGIC::param_count()) {
+    return "";
+  }else{
+    return MODEL_LOGIC::param_name(i, j);
+  }
+}
+/*--------------------------------------------------------------------------*/
+void MODEL_LOGIC_VVP::set_param_by_index(int i, std::string& value, int offset)
+{
+  switch (MODEL_LOGIC_VVP::param_count() - 1 - i) {
+  case 0: file = value; break;
+  case 1: output = value; break;
+  case 2: input = value; break;
+  default: MODEL_LOGIC::set_param_by_index(i, value, offset); break;
+  }
+}
+/*--------------------------------------------------------------------------*/
+std::string MODEL_LOGIC_VVP::param_name(int i) const{
+    switch (MODEL_LOGIC_VVP::param_count() - 1 - i) {
+      case 0: return "file_unused";
+      case 1: return "input";
+      case 2: return "output";
+      default: return MODEL_LOGIC::param_name(i);
+    }
+}
+/*--------------------------------------------------------------------------*/
+std::string MODEL_LOGIC_VVP::param_value(int i)const
+{
+  switch (MODEL_LOGIC::param_count() - 1 - i) {
+  case 0: return file.string();
+  case 1: return output.string();
+  case 2: return input.string();
+  default: return MODEL_LOGIC::param_value(i);
+  }
+}
+/*--------------------------------------------------------------------------*/
+// COMMON
+/*--------------------------------------------------------------------------*/
 COMMON_LOGIC_VVP::COMMON_LOGIC_VVP(int c)
       :COMMON_COMPONENT(c), 
       _extlib(0),
       incount(0),
-      file(""),
+      vvpfile(""),
       module(""),
       status(0),
       _logic_none(0)
@@ -96,7 +168,7 @@ COMMON_LOGIC_VVP::COMMON_LOGIC_VVP(const COMMON_LOGIC_VVP& p)
       :COMMON_COMPONENT(p),
       _extlib(p._extlib),
       incount(p.incount),
-      file(p.file),
+      vvpfile(p.vvpfile),
       module(p.module),
       status(p.status),
       _logic_none(0)
@@ -107,8 +179,8 @@ COMMON_LOGIC_VVP::COMMON_LOGIC_VVP(const COMMON_LOGIC_VVP& p)
 /*--------------------------------------------------------------------------*/
 bool COMMON_LOGIC_VVP::operator==(const COMMON_COMPONENT& x )const{
   const COMMON_LOGIC_VVP* p = dynamic_cast<const COMMON_LOGIC_VVP*>(&x);
-  bool ret = (file==p->file);
-     //       && (module==p->module); // bad idea...?
+  bool ret = (vvpfile==p->vvpfile)
+            && (module==p->module); // bad idea...?
   bool cr = COMMON_COMPONENT::operator==(x);
 
   return ret && cr;
@@ -131,12 +203,6 @@ COMMON_COMPONENT* COMMON_LOGIC_VVP::deflate()
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-inline OMSTREAM& operator<<(OMSTREAM& o, direction_t t) {
-  const std::string s[] = {"", "input", "output", "inout"};
-  return (o << s[t]);
-}
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -203,14 +269,14 @@ void DEV_LOGIC_VVP::tr_accept(){
 /*--------------------------------------------------------------------------*/
 void COMMON_LOGIC_VVP::precalc_first(const CARD_LIST* par_scope)
 {
+  trace0("COMMON_LOGIC_VVP::precalc_first " + (string) module + " " + (string) vvpfile );
   assert(par_scope);
 
   COMMON_COMPONENT::precalc_first(par_scope);
-  file.e_val_normal("UNSET" , par_scope);
-  module.e_val_normal("UNSET" , par_scope);
+  vvpfile.e_val("UNSET", par_scope);
+  module.e_val("UNSET", par_scope);
 
   //something hosed here.
-  trace0("COMMON_LOGIC_VVP::precalc_first " + (string) module + " " + (string) file );
 }
 /*--------------------------------------------------------------------------*/
 void COMMON_LOGIC_VVP::expand(const COMPONENT* dev ){
@@ -236,8 +302,10 @@ void COMMON_LOGIC_VVP::precalc_last(const CARD_LIST* par_scope)
   assert(par_scope);
   COMMON_COMPONENT::precalc_last(par_scope);
 
-  file.e_val_normal("UNSET" , par_scope);
-  module.e_val_normal("UNSET" , par_scope);
+  trace0("COMMON_LOGIC_VVP::precalc_last " + (string) module + " " + (string) vvpfile );
+
+  vvpfile.e_val("UNSET" , par_scope);
+  module.e_val("UNSET" , par_scope);
 
   if(!_extlib){
 #ifdef SOMETHING_
@@ -251,11 +319,11 @@ void COMMON_LOGIC_VVP::precalc_last(const CARD_LIST* par_scope)
 #endif
     _extlib = new ExtLib("foo",h);
     int ret;
-    ret=_extlib->init((string(file)+".vvp").c_str());   
+    ret=_extlib->init((string(vvpfile)+".vvp").c_str());   
     if(dlerror()) throw Exception("cannot init vvp %s", dlerror());
 
     if(ret)
-      error(bDANGER, "somethings wrong with vvp: %s\n", file.string().c_str() );
+      error(bDANGER, "somethings wrong with vvp: %s\n", vvpfile.string().c_str() );
 
   } else {
     trace0("COMMON_LOGIC_VVP::precalc_last already done extlib");
@@ -267,31 +335,6 @@ std::string DEV_LOGIC_VVP::port_name(uint_t i)const{
   stringstream a;
   a << "port" << i;
   return a.str();
-}
-/*--------------------------------------------------------------------------*/
-void MODEL_LOGIC_VVP::precalc_first(){
-  unreachable();
-}
-/*--------------------------------------------------------------------------*/
-void MODEL_LOGIC_VVP::precalc_last(){
-  unreachable();
-}
-/*--------------------------------------------------------------------------*/
-MODEL_LOGIC_VVP::MODEL_LOGIC_VVP(const DEV_LOGIC_VVP* p)
-  :MODEL_LOGIC((const COMPONENT*) p){
-    trace0("MODEL_LOGIC_VVP::MODEL_LOGIC_VVP");
-  }
-/*--------------------------------------------------------------------------*/
-MODEL_LOGIC_VVP::MODEL_LOGIC_VVP(const MODEL_LOGIC_VVP& p)
-  :MODEL_LOGIC(p){
-    file=p.file;
-    output=p.output;
-    input=p.input;
-    trace0("MODEL_LOGIC_VVP::MODEL_LOGIC_VVP");
-}
-/*--------------------------------------------------------------------------*/
-bool COMMON_LOGIC_VVP::param_is_printable(int i) const{
-    return (COMMON_COMPONENT::param_count() - 1 - i)  < param_count();
 }
 /*--------------------------------------------------------------------------*/
 DEV_LOGIC_VVP::~DEV_LOGIC_VVP() {
@@ -318,11 +361,16 @@ COMMON_LOGIC_VVP::~COMMON_LOGIC_VVP()	{
 }
 /*--------------------------------------------------------------------------*/
 std::string COMMON_LOGIC_VVP::param_name(int i) const{
-    switch (COMMON_COMPONENT::param_count() - 1 - i) {
-      case 0: return "file";
-      case 1: return "module";
-      default: return COMMON_COMPONENT::param_name(i);
-    }
+  trace1("COMMON_LOGIC_VVP::param_name ", i);
+  switch (COMMON_COMPONENT::param_count() - 1 - i) {
+    case 0: return "file";
+    case 1: return "module";
+    default: return COMMON_COMPONENT::param_name(i);
+  }
+}
+/*--------------------------------------------------------------------------*/
+bool COMMON_LOGIC_VVP::param_is_printable(int i) const{
+    return (COMMON_COMPONENT::param_count() - 1 - i)  < param_count();
 }
 /*--------------------------------------------------------------------------*/
 std::string COMMON_LOGIC_VVP::param_name(int i, int j)const
@@ -339,18 +387,20 @@ std::string COMMON_LOGIC_VVP::param_name(int i, int j)const
 std::string COMMON_LOGIC_VVP::param_value(int i)const
 {
   switch (COMMON_COMPONENT::param_count() - 1 - i) {
-  case 0: return file.string();
-  case 1: return module.string();
-  default: return COMMON_COMPONENT::param_value(i);
+    case 0: return vvpfile.string();
+    case 1: return module.string();
+    default: return COMMON_COMPONENT::param_value(i);
   }
 }
 /*--------------------------------------------------------------------------*/
 void COMMON_LOGIC_VVP::set_param_by_index(int i, std::string& value, int offset)
 {
   switch (COMMON_COMPONENT::param_count() - 1 - i) {
-  case 0: file = value; break;
-  case 1: module = value; break;
-  default: COMMON_COMPONENT::set_param_by_index(i, value, offset); break;
+    case 0: vvpfile = value; 
+            break;
+    case 1: module = value;
+            break;
+    default: COMMON_COMPONENT::set_param_by_index(i, value, offset); break;
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -358,53 +408,6 @@ COMMON_COMPONENT* COMMON_LOGIC_VVP::clone()const
 {
   return new COMMON_LOGIC_VVP(*this);
 }
-/*--------------------------------------------------------------------------*/
-//   MODEL
-/*--------------------------------------------------------------------------*/
-bool MODEL_LOGIC_VVP::param_is_printable(int i) const{
-    return (MODEL_LOGIC::param_count() - 1 - i)  < param_count();
-}
-/*--------------------------------------------------------------------------*/
-std::string MODEL_LOGIC_VVP::param_name(int i, int j)const
-{
-  if (j == 0) {
-    return param_name(i);
-  }else if (i >= MODEL_LOGIC::param_count()) {
-    return "";
-  }else{
-    return MODEL_LOGIC::param_name(i, j);
-  }
-}
-/*--------------------------------------------------------------------------*/
-void MODEL_LOGIC_VVP::set_param_by_index(int i, std::string& value, int offset)
-{
-  switch (MODEL_LOGIC_VVP::param_count() - 1 - i) {
-  case 0: file = value; break;
-  case 1: output = value; break;
-  case 2: input = value; break;
-  default: MODEL_LOGIC::set_param_by_index(i, value, offset); break;
-  }
-}
-/*--------------------------------------------------------------------------*/
-std::string MODEL_LOGIC_VVP::param_name(int i) const{
-    switch (MODEL_LOGIC_VVP::param_count() - 1 - i) {
-      case 0: return "file_unused";
-      case 1: return "input";
-      case 2: return "output";
-      default: return MODEL_LOGIC::param_name(i);
-    }
-}
-/*--------------------------------------------------------------------------*/
-std::string MODEL_LOGIC_VVP::param_value(int i)const
-{
-  switch (MODEL_LOGIC::param_count() - 1 - i) {
-  case 0: return file.string();
-  case 1: return output.string();
-  case 2: return input.string();
-  default: return MODEL_LOGIC::param_value(i);
-  }
-}
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
 namespace {
@@ -509,7 +512,7 @@ void DEV_LOGIC_VVP::expand()
     vpi_mode_flag = VPI_MODE_COMPILETF;
 
     vpiHandle item;
-    const char* modulename = "main"; // bug((string) c->module).c_str();
+    const char* modulename = ((string) c->module).c_str();
 
     vpiHandle module = vpi_handle_by_name(modulename,NULL);
     assert(module);
@@ -619,7 +622,7 @@ void DEV_LOGIC_VVP::expand()
     vpi_mode_flag = VPI_MODE_NONE;
   }
 
-  std::string subckt_name(c->modelname()+"."+string(c->file));
+  std::string subckt_name(c->modelname()+"."+string(c->vvpfile));
 
   assert(!is_constant());
 // is this an option?
@@ -1740,7 +1743,7 @@ void DEV_LOGIC_IN::tr_accept() // from ivl.
   _quality = _n[OUTNODE]->quality();  /* the worst quality on this device */
   _failuremode = _n[OUTNODE]->failure_mode();    /* what is wrong with it? */
   _lastchangenode = OUTNODE;		/* which node changed most recently */
-  int lastchangeiter = _n[OUTNODE]->d_iter();/* iteration # when it changed */
+//  int lastchangeiter = _n[OUTNODE]->d_iter();/* iteration # when it changed */
   trace0(long_label().c_str());
   trace2(_n[OUTNODE]->failure_mode().c_str(), OUTNODE, _n[OUTNODE]->quality());
 
@@ -1750,16 +1753,7 @@ void DEV_LOGIC_IN::tr_accept() // from ivl.
     _lastchangenode=1;
   }
 
-
-  ///for (uint_t ii = BEGIN_IN;  ii < net_nodes();  ++ii) {
-  //  ...
-  // }
-  /* If _lastchangenode == OUTNODE, no new changes, bypass may be ok.
-   * Otherwise, an input changed.  Need to evaluate.
-   * If all quality are good, can evaluate as digital.
-   * Otherwise need to evaluate as analog.
-   */
-  trace3(_failuremode.c_str(), _lastchangenode, lastchangeiter, _quality);
+  trace2(_failuremode.c_str(), _lastchangenode, _quality);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */  
   if (want_analog()) {
     trace0("DEV_LOGIC_IN want_analog");
@@ -1795,8 +1789,8 @@ void DEV_LOGIC_IN::tr_accept() // from ivl.
       trace1("DEV_LOGIC_IN transition",lvfromivl);
       LOGICVAL future_state = lvfromivl;
 
-//enum smode_t   {moUNKNOWN=0, moANALOG=1, moDIGITAL, moMIXED};
-//enum _LOGICVAL {lvSTABLE0,lvRISING,lvFALLING,lvSTABLE1,lvUNKNOWN};
+// enum smode_t   {moUNKNOWN=0, moANALOG=1, moDIGITAL, moMIXED};
+// enum _LOGICVAL {lvSTABLE0,lvRISING,lvFALLING,lvSTABLE1,lvUNKNOWN};
 
       if ((_n[OUTNODE]->is_unknown()) &&
           (_sim->analysis_is_static() || _sim->analysis_is_restore())) {
