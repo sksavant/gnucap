@@ -85,11 +85,11 @@ static LOGIC_NONE Default_LOGIC(CC_STATIC);
 //   MODEL (not in use)
 /*--------------------------------------------------------------------------*/
 void MODEL_LOGIC_VVP::precalc_first(){
-  unreachable();
+  MODEL_LOGIC::precalc_first();
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_LOGIC_VVP::precalc_last(){
-  unreachable();
+  MODEL_LOGIC::precalc_last();
 }
 /*--------------------------------------------------------------------------*/
 MODEL_LOGIC_VVP::MODEL_LOGIC_VVP(const DEV_LOGIC_VVP* p)
@@ -414,16 +414,14 @@ namespace {
 static DEV_LOGIC_VVP p1;
 static DISPATCHER<CARD>::INSTALL x1(&device_dispatcher, "vvp", &p1);
 }
-/*--------------------------------------------------------------------------
-// no model (yet)
-// just using MODEL_LOGIC
+/*--------------------------------------------------------------------------*/
 namespace MOD_DISP{
 static DEV_LOGIC_VVP p1;
 static MODEL_LOGIC_VVP p2(&p1);
 static DISPATCHER<MODEL_CARD>::INSTALL
-d2(&model_dispatcher, "vvpmodel", &p2);
+d2(&model_dispatcher, "vvpm", &p2);
 }
---------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 DEV_LOGIC_VVP::DEV_LOGIC_VVP()
   :BASE_SUBCKT(),
   status(0)

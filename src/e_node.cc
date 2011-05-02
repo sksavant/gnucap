@@ -281,11 +281,11 @@ inline bool LOGIC_NODE::just_reached_stable()const
 void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
 {
   assert(f);
-  if (process() && process() != f) {untested();
+  if (process() && process() != f->logic_hash()) {untested();
     set_bad_quality("logic process mismatch");
     error(bWARNING, "node " + long_label() 
-	  + " logic process mismatch\nis it " + process()->long_label() 
-	  + " or " + f->long_label() + "?\n");
+	  + " logic process mismatch\nis it %s " + 
+	   " or " + f->long_label() + "?\n");
   }
   set_process(f);
 
@@ -317,8 +317,8 @@ void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
     }
     
     // MIXED_NODE?
-    double sv = v0() / process()->range;	/* new scaled voltage */
-    if (sv >= process()->th1) {		/* logic 1 */
+    double sv = v0() / f->range;	/* new scaled voltage */
+    if (sv >= f->th1) {		/* logic 1 */
       switch (lv()) {
       case lvSTABLE0: dont_set_quality("stable 0 to stable 1");	break;
       case lvRISING:  dont_set_quality("begin stable 1");	break;
@@ -327,7 +327,7 @@ void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
       case lvUNKNOWN: set_good_quality("initial 1");		break;
       }
       set_lv(lvSTABLE1);
-    }else if (sv <= process()->th0) {	/* logic 0 */
+    }else if (sv <= f->th0) {	/* logic 0 */
       switch (lv()) {
       case lvSTABLE0: dont_set_quality("continuing stable 0");	break;
       case lvRISING: untested();set_bad_quality("rising to stable 0");	break;
@@ -337,7 +337,7 @@ void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
       }
       set_lv(lvSTABLE0);
     }else{				/* transition region */
-      double oldsv = vt1() / process()->range;/* old scaled voltage */
+      double oldsv = vt1() / f->range;/* old scaled voltage */
       double diff  = sv - oldsv;
       if (diff > 0) {	/* rising */
 	switch (lv()) {
@@ -345,7 +345,7 @@ void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
 	  dont_set_quality("begin good rise");
 	  break;
 	case lvRISING:
-	  if (diff < dt/(process()->mr * process()->rise)) {
+	  if (diff < dt/(f->mr * f->rise)) {
 	    set_bad_quality("slow rise");
 	  }else{
 	    dont_set_quality("continuing good rise");
@@ -374,7 +374,7 @@ void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
 	  set_bad_quality("negative glitch in rise");
 	  break;
 	case lvFALLING:
-	  if (-diff < dt/(process()->mf * process()->fall)) {
+	  if (-diff < dt/(f->mf * f->fall)) {
 	    set_bad_quality("slow fall");
 	  }else{
 	    dont_set_quality("continuing good fall");
@@ -396,7 +396,7 @@ void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
 	/* state (rise/fall)  unchanged */
       }
     }
-    if (sv > 1.+process()->over || sv < -process()->over) {/* out of range */
+    if (sv > 1.+f->over || sv < -f->over) {/* out of range */
       set_bad_quality("out of range");
     }
     if (just_reached_stable()) { /* A bad node gets a little better */
@@ -411,12 +411,14 @@ void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
   }
 }
 /*--------------------------------------------------------------------------*/
+void LOGIC_NODE::set_process(const MODEL_LOGIC* f) {_family = f->logic_hash();}
+/*--------------------------------------------------------------------------*/
 double LOGIC_NODE::to_analog(const MODEL_LOGIC* f)
 {
   assert(f);
-  if (process() && process() != f) {untested();
+  if (process() && process() != f->logic_hash()) {untested();
     error(bWARNING, "node " + long_label() 
-	  + " logic process mismatch\nis it " + process()->long_label() 
+	  + " logic process mismatch\nis it %i"
 	  + " or " + f->long_label() + "?\n");
   }
   set_process(f);
@@ -426,21 +428,21 @@ double LOGIC_NODE::to_analog(const MODEL_LOGIC* f)
   double risefall = NOT_VALID;
   switch (lv()) {
   case lvSTABLE0:
-    return process()->vmin;
+    return f->vmin;
   case lvRISING:
-    start = process()->vmin;
-    end = process()->vmax;
-    risefall = process()->rise;
+    start = f->vmin;
+    end = f->vmax;
+    risefall = f->rise;
     break;
   case lvFALLING:
-    start = process()->vmax;
-    end = process()->vmin;
-    risefall = process()->fall;
+    start = f->vmax;
+    end = f->vmin;
+    risefall = f->fall;
     break;
   case lvSTABLE1:
-    return process()->vmax;
+    return f->vmax;
   case lvUNKNOWN:
-    return process()->unknown;
+    return f->unknown;
   }
   assert(start != NOT_VALID);
   assert(end   != NOT_VALID);

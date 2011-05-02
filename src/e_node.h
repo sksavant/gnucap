@@ -155,7 +155,7 @@ extern NODE ground_node;
 /*--------------------------------------------------------------------------*/
 class INTERFACE LOGIC_NODE : public NODE {
 private:
-  const MODEL_LOGIC *_family;	/* logic family */
+  intptr_t    _family;	/* logic family */
   int 	      _d_iter;		/* iteration of last update - digital */
   int 	      _a_iter;		/* iteration of last update - analog */
   double      _final_time;	/* time logic transition attains final state */
@@ -181,7 +181,7 @@ public: // raw data access (rvalues)
   int	   a_iter()const		{return _a_iter;}
   double   final_time()const		{return _final_time;}
   double   last_change_time()const	{return _lastchange;}
-  const MODEL_LOGIC* process()const	{return _family;}
+  intptr_t process()const	{return _family;}
   double   old_last_change_time()const	{untested(); return _old_lastchange;}
   const LOGICVAL old_lv()const		{return _old_lv;}
 
@@ -205,7 +205,8 @@ public: // raw data access (lvalues)
   void	set_last_change_time()		{_lastchange = _sim->_time0;}
   void	set_last_change_time(double t)	{_lastchange = t;}
   void	set_lv(LOGICVAL v)		{_lv = v;}
-  void	set_process(const MODEL_LOGIC* f) {_family = f;}
+  void	set_process(const MODEL_LOGIC* f);
+ // {_family = f->logic_hash();}
 
   void  store_old_last_change_time()	{_old_lastchange = last_change_time();}
   void	store_old_lv()			{_old_lv = lv();}

@@ -89,6 +89,12 @@ void MODEL_LOGIC::precalc_first()
   over.e_val(.1, par_scope);
 
   range = vmax - vmin;
+  hash_logic();
+}
+/*--------------------------------------------------------------------------*/
+// this is completely stupid, but identifies equal logic models
+void MODEL_LOGIC::hash_logic(){
+	_hash = intptr_t(delay) + 11* intptr_t(fall) + 2001* intptr_t(rise) ;
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_LOGIC::set_param_by_index(int i, std::string& value, int offset)

@@ -143,8 +143,11 @@ public:
   PARAMETER<double> over;	/* overshoot limit - as fraction of range */
 public: // calculated parameters
   double range;			/* vmax - vmin */
+  intptr_t logic_hash()const {return _hash;}
+  void hash_logic();
 private:
   static int _count;
+  intptr_t _hash;
 };
 /*--------------------------------------------------------------------------*/
 class INTERFACE COMMON_LOGIC : public COMMON_COMPONENT {
