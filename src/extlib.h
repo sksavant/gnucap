@@ -22,6 +22,10 @@
  * 02110-1301, USA.
  *------------------------------------------------------------------
  * Dynamic binding of PWL signal sources to external simulators 
+ *
+ * mostly obsolete for DEV_VVP
+ * TODO: merge needed stuff into COMMON_VVP
+ *
  */
 
 
@@ -200,35 +204,5 @@ void PrintInst(FILE *fp,struct __vpiScope *scope);
 enum sim_mode {SIM_ALL,
                SIM_INIT,SIM_CONT0,SIM_CONT1,
                SIM_PREM,SIM_DONE};
-/*------------------------------------------------------------*/
-class vvp{
-  public:
-  static double SimTimeD;
-  static double SimTimeA; 
-  static double SimTimeDlast;
-  static double SimDelayD;
-  static sim_mode SimState;
-  // Provide dummies
-  inline static void my_getrusage(struct rusage *);
-  inline static void print_rusage(struct rusage *, struct rusage *);
-
-  //from vvp_vpi.cc
-  static void vvp_vpi_init();
-  static int init(const char* design_path);
-
-  static void signals_capture(void);
-  static void signals_revert(void);
-  /*--------------------------------------------------------------------*/
-  /*--------------------------------------------------------------------*/
-  /*--------------------------------------------------------------------*/
-  static double getdtime(struct event_time_s *et);
-  static sim_mode schedule_simulate_m(sim_mode mode);
-  /*--------------------------------------------------------------------*/
-  static double startsim(const char *analysis);
-  static double contsim(const char *analysis,double time);
-  static void endsim();
-  static void *bindnet(const char *,char ,int *, void *,void (*)(void *,void *,double));
-
-};
 
 #endif

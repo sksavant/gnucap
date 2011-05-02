@@ -560,7 +560,7 @@ void node_t::map_subckt_node(uint_t* m, const CARD* d)
   assert(node_is_valid(_ttt));
 }
 /*--------------------------------------------------------------------------*/
-     double	NODE_BASE::tr_probe_num(const std::string&)const{return NAN;}
-     double	NODE_BASE::tt_probe_num(const std::string& x)const{return tr_probe_num(x);}
-    XPROBE	NODE_BASE::ac_probe_ext(const std::string&)const{ return XPROBE(0);}
+double	NODE_BASE::tr_probe_num(const std::string&)const{return NAN;}
+double	NODE_BASE::tt_probe_num(const std::string& x)const{return tr_probe_num(x);}
+XPROBE	NODE_BASE::ac_probe_ext(const std::string&)const{ return XPROBE(0);}
 /*--------------------------------------------------------------------------*/

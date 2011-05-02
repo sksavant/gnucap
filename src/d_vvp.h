@@ -84,9 +84,8 @@ class COMMON_LOGIC_VVP : public COMMON_COMPONENT {
    uint_t status;
 
   public:
+   // doesnt make sense probably
     std::vector< COMMON_COMPONENT* > _subcommons;
-    COMMON_COMPONENT* _logic_out;
-    COMMON_COMPONENT* _logic_in;
     COMMON_COMPONENT* _logic_none;
 };
 /*--------------------------------------------------------------------------*/
@@ -165,5 +164,35 @@ class DEV_LOGIC_VVP : public BASE_SUBCKT  {
     std::string port_name(uint_t)const ;
     void tr_begin();
     ExtLib* extlib()const; //{return (((COMMON_LOGIC_VVP*) common())->_extlib);}
+};
+/*------------------------------------------------------------*/
+class vvp{
+  public:
+  static double SimTimeD;
+  static double SimTimeA; 
+  static double SimTimeDlast;
+  static double SimDelayD;
+  static sim_mode SimState;
+  // Provide dummies
+  inline static void my_getrusage(struct rusage *);
+  inline static void print_rusage(struct rusage *, struct rusage *);
+
+  //from vvp_vpi.cc
+  static void vvp_vpi_init();
+  static int init(const char* design_path);
+
+  static void signals_capture(void);
+  static void signals_revert(void);
+  /*--------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------*/
+  static double getdtime(struct event_time_s *et);
+  static sim_mode schedule_simulate_m(sim_mode mode);
+  /*--------------------------------------------------------------------*/
+  static double startsim(const char *analysis);
+  static double contsim(const char *analysis,double time);
+  static void endsim();
+  static void *bindnet(const char *,char ,int *, void *,void (*)(void *,void *,double));
+
 };
 #endif

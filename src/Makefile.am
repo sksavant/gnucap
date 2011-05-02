@@ -98,7 +98,7 @@ io.cc io_contr.cc io_error.cc io_findf.cc io_out.cc io_xopen.cc \
 u_function.cc u_lang.cc u_nodemap.cc u_opt1.cc u_opt2.cc u_parameter.cc \
 u_prblst.cc u_probe.cc u_sim_data.cc u_xprobe.cc \
 s__init.cc s__out.cc s__solve.cc \
-d_subckt.cc d_logic.cc d_logicmod.cc d_ivl_ports.cc \
+d_subckt.cc d_logic.cc d_logicmod.cc \
 e_base.cc e_card.cc e_node.cc e_model.cc e_compon.cc \
 e_homebrew.cc \
 e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc e_adplist.cc\
@@ -198,7 +198,7 @@ MAKEDEPEND = gcc -M $(CPPFLAGS) -o $*.d $<
 	${MODELGEN} -h $<
 
 
-d_ivl_ports.lo d_vvp.lo extlib.lo: CPPFLAGS+= @IVERILOG_INCLUDE@
+d_vvp.lo extlib.lo: CPPFLAGS+= @IVERILOG_INCLUDE@
 
 
 # include $(srcdir)/depend

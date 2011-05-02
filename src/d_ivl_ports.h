@@ -20,7 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  *------------------------------------------------------------------
- * data structures and defaults for logic model.
+ * data structures and defaults for logic ports.
+ *
+ *  FIXME: - merge into d_vvp.h
+ *         - remove unchanged members
+ *         - make obsolete(?)
  */
 //testing=script,sparse 2006.07.17
 #ifndef D_LOGIC_H_IVL
@@ -29,8 +33,6 @@
 #include "e_elemnt.h"
 #include "d_logic.h"
 #include "vvp/vpi_priv.h"
-/*--------------------------------------------------------------------------*/
-// enum {PORTS_PER_GATE = 10};
 /*--------------------------------------------------------------------------*/
 class DEV_LOGIC_OUT : public DEV_LOGIC {
 public:
@@ -46,11 +48,9 @@ private:
 public:
   explicit	DEV_LOGIC_OUT();
   explicit	DEV_LOGIC_OUT(const DEV_LOGIC_OUT& p);
-		~DEV_LOGIC_OUT()		{--_count;
-                trace0("~DEV_LOGIC_OUT");
-                }
+		~DEV_LOGIC_OUT() {--_count; }
 private: // override virtuals
-  char	   id_letter()const	{return 'U';}
+  char	   id_letter()const	{return '\0';}
   std::string value_name()const	{return "#";}
   bool	      print_type_in_spice()const {return true;}
   std::string dev_type()const {assert(has_common());
@@ -77,6 +77,7 @@ private: // override virtuals
   bool	   do_tr();
   void	   tr_load();
   TIME_PAIR tr_review();
+  void     tr_review_digital();
   void	   tr_accept();
   void	   tr_unload();
   hp_float_t   tr_involts()const		{unreachable(); return 0;}
@@ -91,8 +92,6 @@ private: // override virtuals
   void	   do_ac()	{untested();  assert(subckt());  subckt()->do_ac();}
   void	   tt_next();
   void	   ac_load()	{untested();  assert(subckt());  subckt()->ac_load();}
-  COMPLEX  ac_involts()const		{unreachable(); return 0.;}
-  COMPLEX  ac_amps()const		{unreachable(); return 0.;}
   XPROBE   ac_probe_ext(const std::string&)const;
 
   std::string port_name(uint_t)const {untested();
@@ -128,7 +127,7 @@ public:
                 trace0("~DEV_LOGIC_IN");
                 }
 private: // override virtuals
-  char	   id_letter()const	{return 'U';}
+  char	   id_letter()const	{return '\0';}
   std::string value_name()const	{return "#";}
   bool	      print_type_in_spice()const {return true;}
   std::string dev_type()const {assert(has_common());
@@ -157,11 +156,6 @@ private: // override virtuals
   TIME_PAIR tr_review();
   void	   tr_accept();
   void	   tr_unload();
-  hp_float_t   tr_involts()const		{unreachable(); return 0;}
-  //double tr_input()const		//ELEMENT
-  hp_float_t   tr_involts_limited()const	{unreachable(); return 0;}
-  //double tr_input_limited()const	//ELEMENT
-  //double tr_amps()const		//ELEMENT
   double   tr_probe_num(const std::string&)const;
 
   void	   ac_iwant_matrix();
@@ -169,8 +163,6 @@ private: // override virtuals
   void	   do_ac()	{untested();  assert(subckt());  subckt()->do_ac();}
   void	   tt_next();
   void	   ac_load()	{untested();  assert(subckt());  subckt()->ac_load();}
-  COMPLEX  ac_involts()const		{unreachable(); return 0.;}
-  COMPLEX  ac_amps()const		{unreachable(); return 0.;}
   XPROBE   ac_probe_ext(const std::string&)const;
 
   std::string port_name(uint_t)const {untested();

@@ -30,7 +30,7 @@
 #include "e_card.h" // debugging...
 #include "declare.h"	/* gen */
 #include "s_tr.h"
-#define ALT_CQ // alternatively clear queue (experimental)
+//#define ALT_CQ // alternatively clear queue (experimental)
 /*--------------------------------------------------------------------------*/
 //	void	TRANSIENT::sweep(void);
 //	void	TRANSIENT::first(void);
@@ -258,6 +258,7 @@ bool TRANSIENT::next()
 
   double old_dt = _sim->_time0 - time1;
   assert(old_dt >= 0);
+
   
   double newtime = NEVER;
   double new_dt = NEVER;
@@ -313,8 +314,8 @@ bool TRANSIENT::next()
       new_dt = newtime - reftime;
       if (new_dt < _sim->_dtmin) {
         untested();
-	//new_dt = _sim->_dtmin;
-	//newtime = reftime + new_dt;
+	new_dt = _sim->_dtmin;
+	newtime = reftime + new_dt;
       }else{
       }
       new_control = scEVENTQ;
@@ -357,7 +358,7 @@ bool TRANSIENT::next()
       trace3("TRANSIENT::next err", newtime, new_dt, _time_by_error_estimate);
     }else{
     }
-    trace3("TRANSIENT::next ", newtime, new_dt, _time_by_error_estimate);
+    trace3("TRANSIENT::next", newtime, new_dt, _time_by_error_estimate);
     
     // skip parameter
     if (new_dt > _dtmax) {
@@ -399,6 +400,7 @@ bool TRANSIENT::next()
 	  && reftime + old_dt <= almost_fixed_time) {
 	// new_dt is close enough to old_dt.
 	// use old_dt, to avoid a step change.
+        old_dt = max(_sim->_dtmin,old_dt);  // eliminate numerical noise to pass assertion
 	new_dt = old_dt;
 	newtime = reftime + new_dt;
 	if (newtime > almost_fixed_time) {untested();
@@ -407,7 +409,7 @@ bool TRANSIENT::next()
 	  new_dt = newtime - reftime;
 	}else{
 	}
-        trace2("TRANSIENT::next", new_dt, _sim->_dtmin );
+        trace4("TRANSIENT::next", new_dt, _sim->_dtmin, _sim->_dtmin-new_dt, new_control );
 	check_consistency();
       }else{
 	// There will be a step change.
@@ -602,8 +604,12 @@ void TRANSIENT::accept()
 {
   ::status.accept.start();
 
-
-
+#ifdef ALT_CQ_PRE
+  while (!_sim->_eq.empty() && _sim->_eq.top() < _sim->_time0 + _sim->_dtmin) {itested();
+    trace1("TRANSIENT::accept eq-pop-extra", _sim->_eq.top());
+    _sim->_eq.pop();
+  }
+#endif
 
   _sim->_dt0 = _sim->_time0 - time1;
   if(_sim->_dt0 <=0) assert (_sim->_stepno == 0);
@@ -629,10 +635,6 @@ void TRANSIENT::accept()
 # ifdef ALT_CQ
   while (!_sim->_eq.empty() && _sim->_eq.top() <= _sim->_time0) {
     trace1("eq", _sim->_eq.top());
-    _sim->_eq.pop();
-  }
-  while (!_sim->_eq.empty() && _sim->_eq.top() < _sim->_time0 + _sim->_dtmin) {itested();
-    trace1("TRANSIENT::accept eq-extra", _sim->_eq.top());
     _sim->_eq.pop();
   }
 # endif

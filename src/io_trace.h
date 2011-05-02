@@ -112,7 +112,7 @@ class hp{
 			   __FILE__, __LINE__, __func__))
 
 #ifdef TRACE_UNTESTED
-#define untested() (fprintf(stdout, "@@# untested \n@@@:%s:%u:%s\n", \
+#define untested() (fprintf(stderr, "@@# untested \n@@@:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))
 #define untested0(s) (fprintf(stderr, "@@#\n@@@:%s:%u:%s: %s\n", \
 			   __FILE__, __LINE__, __func__, s))
