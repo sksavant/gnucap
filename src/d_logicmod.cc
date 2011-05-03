@@ -92,9 +92,31 @@ void MODEL_LOGIC::precalc_first()
   hash_logic();
 }
 /*--------------------------------------------------------------------------*/
-// this is completely stupid, but identifies equal logic models
 void MODEL_LOGIC::hash_logic(){
-	_hash = intptr_t(delay) + 11* intptr_t(fall) + 2001* intptr_t(rise) ;
+	typedef struct {
+		double d1;
+		double d2;
+		double d3;
+	} doubles;
+   doubles myparms = { (double) delay, 
+		                 (double) fall,
+							  (double) rise
+                    	};
+
+	union {
+		doubles data;
+		unsigned char bin[sizeof(doubles)];
+	} hash;
+
+	hash.data=myparms;
+
+	_hash = 0;
+	for( unsigned i=0; i < sizeof(doubles); ++i){
+		_hash*=17;
+	  	_hash+=(unsigned) hash.bin[i];
+	}
+	trace1( "hashed ", _hash );
+	assert(_hash!=0);
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_LOGIC::set_param_by_index(int i, std::string& value, int offset)
