@@ -96,24 +96,12 @@ AS_IF([ test "x$with_iverilog" != xno],
 )
 
 AS_IF([ test "x$with_iverilog" != xno], [
-AC_CHECK_HEADERS(vvp/schedule.h,
-					  [ ],
-					AC_MSG_FAILURE([there should be vvp headers ... ])
-					)
-				
-])
+AC_CHECK_HEADERS(vvp/schedule.h, [ ],
+					AC_MSG_FAILURE([there should be vvp headers in $with_iverilog  ])
+					) ] )
 
 
-#echo AAAAAAAAA: $with_iverilog $IVERILOG
 AM_CONDITIONAL(IVERILOG, test x$with_iverilog != xno )
-
-#	IVERILOG_PATH=${iverilog}
-#	IVERILOG_INCLUDE=${iverilog}/include/iverilog
-#	AC_DEFINE(IVERILOG_PATH, [1], [${iverilog}])
-#else
-#	IVERILOG_PATH=
-#	IVERILOG_INCLUDE=
-#fi
 
 AC_SUBST(IVERILOG_PATH)
 AC_SUBST(IVERILOG_INCLUDE)
