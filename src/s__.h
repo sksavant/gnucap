@@ -39,12 +39,13 @@ class INTERFACE SIM : public CMD {
 protected:
   enum TRACE { // how much diagnostics to show
     tNONE      = 0,	/* no extended diagnostics			*/
-    tUNDER     = 1,	/* show underlying analysis, important pts only	*/
-    tALLTIME   = 2,	/* show every time step, including hidden 	*/
-    tREJECTED  = 3,	/* show rejected time steps			*/
-    tITERATION = 4,	/* show every iteration, including nonconverged	*/
-    tVERBOSE   = 5,	/* show extended diagnostics			*/
-    tDEBUG     = 6
+    tUNDER     ,	/* show underlying analysis, important pts only	*/
+    tGUESS     ,	/* show guesses (from predictor) */
+    tALLTIME   ,	/* show every time step, including hidden 	*/
+    tREJECTED  ,	/* show rejected time steps			*/
+    tITERATION ,	/* show every iteration, including nonconverged	*/
+    tVERBOSE   ,	/* show extended diagnostics			*/
+    tDEBUG     
   };
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   CARD_LIST* _scope;

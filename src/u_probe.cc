@@ -94,7 +94,8 @@ void PROBE::detach()
     _brh->dec_probes();
     trace1( ( "PROBE::detach --probe: " + label() ).c_str(),  _brh->probes());
   }else{
-    untested();
+    // could be measurement or probe(0) or something.
+    //untested();
   }
   _what = "";
   _brh = 0;

@@ -183,12 +183,19 @@ public:
       switch (ENV::run_mode) {
         case rSCRIPT:
           trace0("in script mode");
-
           sbuffer = std::string( cmd.get_line("") );
-
           break;
+
+        case rBATCH:
+
+          trace0("in batch mode");
+          sbuffer = std::string( cmd.get_line("") );
+          break;
+
+
         default:
-          trace0("not in script mode");
+          
+          trace1("not in script mode", ENV::run_mode);
           getcmd(">>>", buffer, BUFLEN);
           sbuffer=buffer;
       }
@@ -205,7 +212,7 @@ public:
     fptr = NULL;
   }
 } p;
-DISPATCHER<CMD>::INSTALL d(&command_dispatcher, "sweep|for", &p);
+DISPATCHER<CMD>::INSTALL d(&command_dispatcher, "sweep| for ", &p);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/

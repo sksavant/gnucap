@@ -128,7 +128,7 @@ public:
   std::string param_name(int)const;
   std::string param_name(int,int)const;
   std::string param_value(int)const;
-  int param_count()const {return (9 + COMMON_COMPONENT::param_count());}
+  int param_count()const {return (3 + COMMON_COMPONENT::param_count());}
   void     precalc_first(const CARD_LIST*);
   void     expand(const COMPONENT*);
   void     precalc_last(const CARD_LIST*);

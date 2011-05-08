@@ -62,6 +62,8 @@ void TRANSIENT::sweep()
   _sim->set_inc_mode_bad();
  
   if ( _inside_tt ) {
+    assert(  _sim->_mode == s_TTT );
+
     _sim->restore_voltages();
     CARD_LIST::card_list.do_tr();
   } else if ( _cont ) {  // use the data from last time
@@ -463,7 +465,7 @@ bool TRANSIENT::next()
   }
   set_step_cause(new_control);
 
-  trace2("TRANSIENT::next got it i think", newtime, new_control);
+  trace3("TRANSIENT::next got it i think", newtime, new_control, newtime-_sim->_time0);
   
   /* check to be sure */
   if (newtime < time1 + _sim->_dtmin) {itested();

@@ -162,7 +162,7 @@ void TTT::first()
 
   trace1("TTT::first", _sim->_Time0);
 
-  // if (OPT::printguess) 
+  // if (_trace >= tGUESS) 
   outdata_b4(_sim->_Time0);
   ::status.tran.reset().start();
 
@@ -214,7 +214,6 @@ void TTT::first_after_interruption(){
   //    _sim->_dT0=_sim->_last_time;
   advance_Time(); // fix last_iter time (dT0==0);
 
-
   if (_trace>0 )
     _out << "* first after int " << _sim->tt_iteration_number() << "\n";
 
@@ -228,9 +227,7 @@ void TTT::first_after_interruption(){
     _sim->_nstat[_sim->_nm[ii]].set_final_time(0);
   }
 
-  _inside_tt=true;
   TTT::sweep();
-  _inside_tt=false;
 
   set_step_tt_cause(scUSER);
   ++::status.hidden_steps;
@@ -342,10 +339,8 @@ void TTT::sweep_tt()
 
     trace2( "TTT::sweep calling TTT::sweep", _cont, _sim->_Time0 );
     store_results_tt(_sim->_Time0); // first output tt data
-    _inside_tt=true;
     // ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tr_reset );
     TTT::sweep();
-    _inside_tt=false;
 
     if(!_accepted) 
     {
@@ -383,7 +378,7 @@ void TTT::sweep_tt()
     // if OPT::printbefore
     //
     //
-    if (OPT::printguess) print_stored_results_tt(_sim->_Time0);
+    if (_trace >= tGUESS) print_stored_results_tt(_sim->_Time0);
     outdata_tt(_sim->_Time0); // first output tt data
 
     _sim->_last_Time = _sim->_Time0+_tstop;
@@ -428,13 +423,16 @@ void TTT::sweep() // tr sweep wrapper.
   // if (_tt_cont) _inside_tt = true;
   try{
     trace3("calling sweep", _sim->_time0, _sim->_last_time, _tstep);
+    _inside_tt=true;
     TRANSIENT::sweep();
     assert(_accepted);
     if (_trace>0 ) _out<< "* done sweep "<<tt_iteration_number()<<  "\n";
     trace0("done sweep, tr_stress_last");
     CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
   }catch (Exception& e) {
-    error(bDANGER, "Exception %s at %E, dT0 %E, step %i\n", e.message().c_str(), _sim->_Time0, _sim->_dT0, tt_iteration_number());
+    untested();
+    error(bDANGER, "Exception %s at %E, dT0 %E, step %i\n",
+        e.message().c_str(), _sim->_Time0, _sim->_dT0, tt_iteration_number());
     _out << "* tt sweep failed\n";
     _accepted=_accepted_tt=false;
     ::status.review.stop();
@@ -453,6 +451,7 @@ void TTT::sweep() // tr sweep wrapper.
 
   // hier gibs noch kein behaviour.  
   // ::status.tran.stop();
+  _inside_tt=false;
 }
 /*--------------------------------------------------------------------------*/
 void TTT::accept_tt()
@@ -641,6 +640,7 @@ void TTT::options(CS& Cmd)
 	   || Set(Cmd, "n{one}",      &_trace, tNONE)
 	   || Set(Cmd, "o{ff}",       &_trace, tNONE)
 	   || Set(Cmd, "w{arnings}",  &_trace, tUNDER)
+	   || Set(Cmd, "g{uess}",     &_trace, tGUESS)
 	   || Set(Cmd, "a{lltime}",   &_trace, tALLTIME)
 	   || Set(Cmd, "r{ejected}",  &_trace, tREJECTED)
 	   || Set(Cmd, "i{terations}",&_trace, tITERATION)
@@ -736,6 +736,7 @@ bool TTT::next()
       trace4("TTT::next last step", _Tstop, _sim->_last_Time, _tstop,_Tstart);
       if ( _trace > 0 ) 
         _out << "* last step handler..." <<  _sim->_last_Time << "\n";
+
       untested();
       new_dT=_Tstop - _sim->_Time0 - _tstop ;
     } else {
@@ -942,14 +943,13 @@ void TTT::outdata_b4(double time)
 {
   assert( _sim->_mode  == s_TTT );
   ::status.output.start();
-//  trace1("TTT::outdata_b4", time);
   print_results_tt( time );
   ::status.output.stop();
 }
 /*--------------------------------------------------------------------------*/
 void TTT::outdata_tt(double x)
 {
- // trace0("TTT::outdata_tt()");
+  trace0("TTT::outdata_tt()");
   assert( _sim->_mode  == s_TTT );
   ::status.output.start();
   print_results(0); //transient print?
@@ -1108,6 +1108,7 @@ void TTT::outdata(double x)
   ::status.hidden_steps = 0;
   ::status.output.stop();
   assert( _sim->_mode  == s_TTT );
+  trace0("TTT::outdata done");
 }
 /*--------------------------------------------------------------------------*/
 std::string TTT::status()const
@@ -1154,8 +1155,8 @@ void TTT::advance_Time(void)
           " iteration number " << _sim->tt_iteration_number() << 
           " have "<<  _sim->_adp_nodes << " nodes " << "\n";
 
-      trace2("TTT::advance_Time ", _sim->_tr[0], _sim->_tt[0]);
-      trace2("TTT::advance_Time ", _sim->_tr1[0], _sim->_tt1[0]);
+      //trace2("TTT::advance_Time ", _sim->_tr[0], _sim->_tt[0]);
+      //trace2("TTT::advance_Time ", _sim->_tr1[0], _sim->_tt1[0]);
 
       notstd::copy_n(_sim->_tr2, _sim->_adp_nodes, _sim->_tr3);
       notstd::copy_n(_sim->_tr1, _sim->_adp_nodes, _sim->_tr2);

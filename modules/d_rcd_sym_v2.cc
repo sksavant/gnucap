@@ -197,6 +197,7 @@ double MODEL_BUILT_IN_RCD_SYM_V2::dvth(const COMPONENT* brh) const{
   if (_sim->analysis_is_tt()){
     return (c->_Ccgfill->get_tt()+ cc->_wcorr )* cc->_weight;
   } else {
+    assert(is_number( c->_Ccgfill->get_total()+ cc->_wcorr )* cc->_weight);
     return (c->_Ccgfill->get_total()+ cc->_wcorr )* cc->_weight;
   }
 }

@@ -1,4 +1,5 @@
 /*$Id: u_opt1.cc,v 1.7 2010-09-17 12:26:02 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

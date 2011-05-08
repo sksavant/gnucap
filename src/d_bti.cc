@@ -573,11 +573,11 @@ bool COMMON_BUILT_IN_BTI::operator==(const COMMON_COMPONENT& x)const
 /*--------------------------------------------------------------------------*/
 void COMMON_BUILT_IN_BTI::set_param_by_index(int I, std::string& Value, int Offset)
 {
+  trace1("COMMON_BUILT_IN_BTI::set_param_by_index " + Value , I);
   switch (COMMON_BUILT_IN_BTI::param_count() - 1 - I) {
-  case 0:  untested(); break;
-  case 1:  lambda = Value; break;
-  case 2:  number = Value; break;
-  case 3:  weight = Value; break;
+  case 0:  lambda = Value; break;
+  case 1:  number = Value; break;
+  case 2:  weight = Value; break;
   default: COMMON_COMPONENT::set_param_by_index(I, Value, Offset);
   }
 }
@@ -587,7 +587,7 @@ bool COMMON_BUILT_IN_BTI::param_is_printable(int i)const
   switch (COMMON_BUILT_IN_BTI::param_count() - 1 - i) {
   case 0:  return (true);
   case 1:  return (true);
-  case 2:  return (weight != 0.);
+  case 2:  return (true);
   default: return COMMON_COMPONENT::param_is_printable(i);
   }
 }
@@ -628,6 +628,19 @@ std::string COMMON_BUILT_IN_BTI::param_value(int i)const
   }
 }
 /*--------------------------------------------------------------------------*/
+void COMMON_BUILT_IN_BTI::precalc_first(const CARD_LIST* par_scope)
+{
+//  const MODEL_BUILT_IN_BTI* m = prechecked_cast<const MODEL_BUILT_IN_BTI*>(model());
+//  assert(m); not yet?
+  assert(par_scope);
+  COMMON_COMPONENT::precalc_first(par_scope);
+
+  e_val(&(this->lambda), 1.0, par_scope);
+  e_val(&(this->number), uint_t(0), par_scope);
+  e_val(&(this->weight), 17.0, par_scope);
+
+}
+/*--------------------------------------------------------------------------*/
 void COMMON_BUILT_IN_BTI::expand(const COMPONENT* d)
 {
   trace0("COMMON_BUILT_IN_BTI::expand");
@@ -665,8 +678,31 @@ void COMMON_BUILT_IN_BTI::expand(const COMPONENT* d)
   m->attach_rcds( (COMMON_BUILT_IN_RCD**) _RCD);
   trace0("COMMON_BUILT_IN_BTI::expand attached rcds");
 
-  weight=m->weight;
+  //weight=m->weight;
+
   assert(c == this);
+}
+/*--------------------------------------------------------------------------*/
+void COMMON_BUILT_IN_BTI::precalc_last(const CARD_LIST* par_scope)
+{
+  assert(par_scope);
+  COMMON_COMPONENT::precalc_last(par_scope);
+  COMMON_BUILT_IN_BTI* c = this;
+  const MODEL_BUILT_IN_BTI* m = prechecked_cast<const MODEL_BUILT_IN_BTI*>(model());
+  assert(m);
+  e_val(&(this->lambda), 1.0, par_scope);
+  e_val(&(this->number), uint_t(0), par_scope);
+  e_val(&weight, m->weight, par_scope);
+  _sdp = m->new_sdp(this);
+  assert(_sdp);
+  const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(_sdp);
+  assert(s);
+
+  //
+  m->attach_rcds( (COMMON_BUILT_IN_RCD**) _RCD);
+
+  assert(c == this);
+  return;
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_BTI::attach_rcds(COMMON_BUILT_IN_RCD** _RCDc) const
@@ -709,36 +745,6 @@ double MODEL_BUILT_IN_BTI::runter(int i) const{
   int row=i / a;
 
   return 100 * pow(10,row);
-}
-/*--------------------------------------------------------------------------*/
-void COMMON_BUILT_IN_BTI::precalc_first(const CARD_LIST* par_scope)
-{
-  assert(par_scope);
-  COMMON_COMPONENT::precalc_first(par_scope);
-    e_val(&(this->lambda), 1.0, par_scope);
-    e_val(&(this->number), uint_t(0), par_scope);
-    e_val(&(this->weight), 1.0, par_scope);
-}
-/*--------------------------------------------------------------------------*/
-void COMMON_BUILT_IN_BTI::precalc_last(const CARD_LIST* par_scope)
-{
-  assert(par_scope);
-  COMMON_COMPONENT::precalc_last(par_scope);
-  COMMON_BUILT_IN_BTI* c = this;
-  const MODEL_BUILT_IN_BTI* m = prechecked_cast<const MODEL_BUILT_IN_BTI*>(model());
-  e_val(&(this->lambda), 1.0, par_scope);
-  e_val(&(this->number), uint_t(0), par_scope);
-  e_val(&weight, m->weight, par_scope);
-  _sdp = m->new_sdp(this);
-  assert(_sdp);
-  const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(_sdp);
-  assert(s);
-
-  //
-  m->attach_rcds( (COMMON_BUILT_IN_RCD**) _RCD);
-
-  assert(c == this);
-  return;
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -958,6 +964,7 @@ double DEV_BUILT_IN_BTI::tr_probe_num(const std::string& x)const
     double buf = 0;
     int i=m->rcd_number;
     while ( i-->0 )   buf += CARD::probe(_RCD[i],"dvth");
+    assert(is_number(buf));
     return buf * c->weight;
   }else if (Umatch(x, "vw ")) {
     return vw();
@@ -983,8 +990,8 @@ double DEV_BUILT_IN_BTI::tt_probe_num(const std::string& x)const
   assert(m);
   const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(c->sdp());
   assert(s);
-  const ADP_BUILT_IN_BTI* a = prechecked_cast<const ADP_BUILT_IN_BTI*>(adp());
-  if(!a)untested0(("no a"+long_label()).c_str());
+//  const ADP_BUILT_IN_BTI* a = prechecked_cast<const ADP_BUILT_IN_BTI*>(adp());
+//  if(!a)untested0(("no a"+long_label()).c_str());
 
   if (Umatch(x, "vc{v} |fill ")) {
     double buf = 0;

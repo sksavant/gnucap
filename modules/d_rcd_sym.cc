@@ -21,7 +21,11 @@ double MODEL_BUILT_IN_RCD_SYM::dvth( const COMPONENT* brh) const
   if ( _sim->analysis_is_tt() ){
     return c->_Ccgfill->get_tt() * cc->_weight * cc->_wcorr;
   }else{
-    return c->_Ccgfill->get_total() * cc->_weight * cc->_wcorr;
+    assert(is_number( c->_Ccgfill->get_tt() * cc->_weight * cc->_wcorr));
+    // return c->_Ccgfill->get_tt() * cc->_weight * cc->_wcorr;
+    //
+    //FIXME. _tr_fill must be part of an ADP_NODE
+    return (c->_tr_fill + c->_Ccgfill->get_tt()) * cc->_weight * cc->_wcorr;
   }
 }
 /*--------------------------------------------------------------------------*/

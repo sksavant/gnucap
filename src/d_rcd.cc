@@ -97,7 +97,7 @@ double MODEL_BUILT_IN_RCD::dvth(const COMPONENT* ) const{
   //const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
   //const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
   // return _Ccgfill->get_tt() * cc->_weight * cc->_wcorr;
-  unreachable();
+  assert(false);
   return ( NAN ); //c->_Ccgfill->get()+ _tr_fill ) * cc->_weight * cc->_wcorr;
 }
 /*--------------------------------------------------------------------------*/
@@ -108,6 +108,7 @@ double MODEL_BUILT_IN_RCD_NET::dvth(const COMPONENT* c) const{
   // read from CAP. _Ccgfill is only updated after tr
   const  ELEMENT* cap = dynamic_cast<const ELEMENT*> (d->_Ccg);
   assert(cap);
+  assert(is_number( cap->tr_involts() ) * cc->_weight * cc->_wcorr );
 
   return  ( cap->tr_involts() ) * cc->_weight * cc->_wcorr;
 }
@@ -1037,6 +1038,7 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "uref ")) {
     return  ( c->Uref );
   }else if (Umatch(x, "dvth |vth ")) {
+    assert(is_number(  ( m->dvth(this) )));
     return  ( m->dvth(this) );
   }else if (Umatch(x, "vw{v} ")) {
     assert (c->_weight != .0);
@@ -1255,7 +1257,8 @@ void DEV_BUILT_IN_RCD::stress_apply()
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(c->sdp());
   assert(s);
 
-  assert(_sim->_time0 == 0);
+  assert(_sim->_time0 == 0 || _sim->_mode==s_TRAN ); //?
+
   trace2("DEV_BUILT_IN_RCD::stress_apply ",  _sim->_dT0, _Ccgfill->tt() );
   
   if(_sim->_dT0==0){
@@ -1656,7 +1659,8 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
     edge = false;
     trace7("COMMON_BUILT_IN _RCD::__uin_iter loop", (double)uin, (double)res, (double)deltaE, Edu, E, i,Euin);
     trace3(" ",dx_res,Q,df_fres);
-    if( i> 200){
+    if( i> 50){
+      untested();
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge uin="
           "%LE, E=%LE, res=%LE, lres=%Lg, Q=%Lg\n", uin, E, res, log(fabs(res)), Q);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge bounds %E, %E\n",
@@ -1671,9 +1675,6 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
           A, B, C, D, U, putres);
       throw(Exception("does not converge"));
       break;
-    }
-    if (i>100 ) {
-      // damp=.5;
     }
     if(!is_number(uin)){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter uin wrong %E diff "
