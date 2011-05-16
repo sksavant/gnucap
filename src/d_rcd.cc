@@ -1566,7 +1566,7 @@ void DEV_BUILT_IN_RCD::tt_commit()
 }
 ///*--------------------------------------------------------------------------*/
 //
-// tt_begin
+// tt_begin??
 void DEV_BUILT_IN_RCD::tt_prepare()
 {
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());

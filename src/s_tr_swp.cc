@@ -80,7 +80,7 @@ void TRANSIENT::sweep()
   
   // assert (_sim->_loadq.empty());
   if (_sim->uic_now() || _inside_tt ) {
-    trace2("TRANSIENT::sweep uic_now solve", time1, _sim->_time0);
+    trace3("TRANSIENT::sweep uic_now solve", time1, _sim->_time0, _inside_tt);
     advance_time();
     if (!_inside_tt) {
       _sim->zero_voltages(); // ?

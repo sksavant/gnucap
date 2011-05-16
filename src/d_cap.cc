@@ -56,7 +56,14 @@ protected: // override virtual
   void	   tr_load()		{tr_load_passive();}
   void	   tr_init(double )		;
   void	   tr_unload()		{tr_unload_passive();}
-  hp_float_t   tr_involts()const	{return tr_outvolts();}
+  hp_float_t   tr_involts()const	{
+    if(_n[OUT1].v0() != _n[OUT1].v0()){
+      error(bDANGER, "involts %E %s\n", _sim->_time0 , long_label().c_str());
+      assert(false);
+      //throw(Exception("Error in " + long_label()));
+    }
+    return tr_outvolts();
+  }
   hp_float_t   tr_involts_limited()const {return tr_outvolts_limited();}
   double   tr_probe_num(const std::string&)const;
   void	   ac_iwant_matrix()	{ac_iwant_matrix_passive();}
@@ -177,12 +184,13 @@ void DEV_CAPACITANCE::tr_init( double charge )
 bool DEV_CAPACITANCE::do_tr()
 {
   // FPOLY1* q=_y;
+  trace0(("DEV_CAPACITANCE::do_tr " + long_label()));
+  trace3(("DEV_CAPACITANCE::do_tr " + long_label()).c_str(), _y[0].f1, value(), tr_input() );
   if (using_tr_eval()) {
     _y[0].x = tr_input_limited();
     tr_eval();
   }else{
     _y[0].x = tr_input(); // tr_involts();
-    trace3(("DEV_CAPACITANCE::do_tr " + long_label()).c_str(), _y[0].f1, value(), tr_input() );
     assert(_y[0].f1 == value());
     _y[0].f0 = _y[0].x * _y[0].f1;
     assert(converged());

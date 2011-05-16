@@ -1037,7 +1037,7 @@ double COMPONENT::volts_limited(const node_t & n1, const node_t & n2)
   double v1 = n1.v0();
   double v2 = n2.v0();
 
-  trace2("COMPONENT::volts_limited", v1 ,v2);
+  trace3("COMPONENT::volts_limited", v1 ,v2, _sim->_time0);
   assert(v1 == v1);
   if (v1 < _sim->_vmin) {
     limiting = true;

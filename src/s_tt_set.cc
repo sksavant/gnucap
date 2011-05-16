@@ -57,6 +57,7 @@ namespace TT {
 				arg2.e_val(0.,_scope);
 				arg3.e_val(0.,_scope);
 				_sim->_last_Time = .0;
+				 _sim->_last_time=0.000;
 
 				_tstep  = arg1;
 				_tstop  = arg2;
