@@ -42,6 +42,9 @@ ADP_NODE::ADP_NODE( const ADP_NODE& p ) :
 {
   unreachable();
   std::cout << "copy?? (should not happen)\n";
+  assert(false);
+  tr_lo = inf;
+  tr_hi = -inf;
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -53,6 +56,8 @@ ADP_NODE::ADP_NODE( const COMPONENT* c, const std::string n ) :
 {
   init(c,n);
   assert(c);
+  tr_lo = inf;
+  tr_hi = -inf;
 }
 /*----------------------------------------------------------------------------*/
 ADP_NODE_UDC::ADP_NODE_UDC( const COMPONENT* c ) : ADP_NODE(c, "udc") { }

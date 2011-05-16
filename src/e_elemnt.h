@@ -190,7 +190,8 @@ inline T ELEMENT::dampdiff(T* v0, const T& v1)
   //double diff = v0 - v1;
   assert(v0);
   if(*v0 != *v0){ 
-    std::cerr << "ungood: " << *v0 << "\n";
+    error(bDANGER,"ELEMENT::dampdiff: %s\n", short_label().c_str());
+//    std::cerr << "ungood: " << *v0 << "\n";
     exit(2);
   }
   assert(v1 == v1);

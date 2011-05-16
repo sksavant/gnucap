@@ -35,7 +35,8 @@ namespace MODEL_BUILT_IN_RCD_DISPATCHER {
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::tr_accept() {
-  trace0(("DEV_BUILT_IN_RCD::tr_accept (stress) " + long_label()).c_str());
+  trace3(("DEV_BUILT_IN_RCD::tr_accept (stress) " + long_label()).c_str(),
+      _sim->_time0, _sim->_Time0, involts());
   // assert(subckt()); subckt()->tr_accept();
   assert(is_number((double)_tr_fill));
   tr_stress();
@@ -720,7 +721,7 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD()
   :BASE_SUBCKT(),
    // input parameters,
    // calculated parameters,
-   lasts(0),
+   lasts(-inf),
    _region(UNKNOWN),
    // netlist,
    _Ccg(0),
@@ -742,7 +743,7 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p)
   :BASE_SUBCKT(p),
    // input parameters,
    // calculated parameters,
-   lasts(0),
+   lasts(-inf),
    _region(p._region),
    // netlist,
    _Ccg(0),
@@ -1345,23 +1346,12 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
   assert(m);
   assert(c->sdp());
+  assert(_Ccgfill);
 
-  trace1("DEV_BUILT_IN_RCD::tr_stress at", _sim->_time0 );
+  trace2("DEV_BUILT_IN_RCD::tr_stress " + long_label(), _sim->_time0, lasts );
 
-
-  if( _sim->_time0==0 ){
-    _Ccgfill->tr_lo=involts();
-    _Ccgfill->tr_hi=involts();
-  }  else {
-    _Ccgfill->tr_lo=min(involts(), _Ccgfill->tr_lo);
-    _Ccgfill->tr_hi=max(involts(), _Ccgfill->tr_hi);
-
-    assert( -5<  _Ccgfill->tr_hi &&  _Ccgfill->tr_hi < 100 );
-    assert( -5<  _Ccgfill->tr_lo &&  _Ccgfill->tr_lo < 100 );
-  }
-
-  if( _sim->_time0 > lasts || _sim->_time0==0 ){
-    lasts=_sim->_time0;
+  if( _sim->_time0 > lasts ){
+    lasts = _sim->_time0;
   }else {
     trace1("DEV_BUILT_IN_RCD::tr_stress again?? bug??", _sim->_time0 );
     if (! (_sim->_time0 == lasts) ){
@@ -1370,6 +1360,35 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
       throw(Exception("time mismatch in " + long_label()));
     }
     return;
+  }
+
+
+  if( _sim->_time0==0 ){
+    assert( _Ccgfill->tr_lo == inf );
+    assert( _Ccgfill->tr_hi == -inf );
+  } else {
+    assert( is_number(_Ccgfill->tr_lo) );
+    assert( is_number(_Ccgfill->tr_hi) );
+  }
+
+  assert(is_number(involts()));
+
+  _Ccgfill->tr_lo = min(involts(), _Ccgfill->tr_lo);
+  _Ccgfill->tr_hi = max(involts(), _Ccgfill->tr_hi);
+
+  assert( is_number(_Ccgfill->tr_lo) );
+  assert( is_number(_Ccgfill->tr_hi) );
+  assert(fabs(_Ccgfill->tr_lo) < 1e5);
+  assert(fabs(_Ccgfill->tr_hi) < 1e5);
+
+
+  if( -15<  _Ccgfill->tr_hi &&  _Ccgfill->tr_hi < 100  &&
+      -15<  _Ccgfill->tr_lo &&  _Ccgfill->tr_lo < 100 ){
+  }else{
+    error(bDANGER, "%s something wrong with input range %f %f at time %E\n",
+        long_label().c_str(), _Ccgfill->tr_lo, _Ccgfill->tr_hi, _sim->_time0 );
+    assert(false);
+    throw(Exception("boundary error in " + long_label()));
   }
 
 
@@ -1444,8 +1463,11 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   // _Ccgfill->set_tt(_tr_fill);
 }
 /*----------------------------------------------------------------------------*/
-double DEV_BUILT_IN_RCD::involts() const {
-  return _n[n_u].v0()  - _n[n_b].v0();
+hp_float_t DEV_BUILT_IN_RCD::involts() const {
+  hp_float_t v = _n[n_u].v0()  - _n[n_b].v0();
+  assert(is_number(v));
+  assert(fabs(v) < 1e5);
+  return v;
 }
 /*----------------------------------------------------------------------------*/
 // FIXME: move pred/corr to here.
@@ -1543,6 +1565,8 @@ void DEV_BUILT_IN_RCD::tt_commit()
   return;
 }
 ///*--------------------------------------------------------------------------*/
+//
+// tt_begin
 void DEV_BUILT_IN_RCD::tt_prepare()
 {
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
@@ -1558,7 +1582,13 @@ void DEV_BUILT_IN_RCD::tt_prepare()
   trace0(("DEV_BUILT_IN_RCD::tt_prepare " + short_label()).c_str());
   m->do_tt_prepare(this);
 
-  lasts=0;
+  lasts = -inf;
+}
+///*--------------------------------------------------------------------------*/
+void DEV_BUILT_IN_RCD::tr_begin(){
+  BASE_SUBCKT::tr_begin();
+
+  q_accept();
 }
 ///*--------------------------------------------------------------------------*/
 bool DEV_BUILT_IN_RCD::do_tr()
@@ -1809,4 +1839,11 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
 
   assert(uin>=-0.001 || !m->positive);
   return uin;
+}
+/*-----------------*/
+void DEV_BUILT_IN_RCD::tt_next(){
+  lasts = -inf;
+  _Ccgfill->tr_hi = -inf;
+  _Ccgfill->tr_lo = inf;
+  q_accept();
 }

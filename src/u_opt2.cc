@@ -1,4 +1,5 @@
 /*$Id: u_opt2.cc,v 1.7 2010-09-17 12:26:03 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -59,7 +60,7 @@ bool OPT::set_values(CS& cmd)
       || Get(cmd, "abstol",	&abstol, mPOSITIVE)
       || Get(cmd, "adpreltol",	&adpreltol, mPOSITIVE)
       || Get(cmd, "printrejected",	&printrejected)
-      || Get(cmd, "printguess",	&printguess)
+      || Get(cmd, "printguess",	&printguess) // obsolete
       || Get(cmd, "behreltol",	&behreltol, mPOSITIVE)
       || Get(cmd, "adpkorr",	&adpkorr, mPOSITIVE)
       || Get(cmd, "trage", 	&trage)
@@ -176,7 +177,7 @@ bool OPT::set_values(CS& cmd)
       || (Get(cmd, "lang{uage}",   &language)
 	  && ((case_insensitive = language->case_insensitive()),
 	      (units = language->units()), true))
-      || (  Get(cmd, "insensitive",   &case_insensitive) && std::cout << "*ins" << OPT::case_insensitive << "\n" )
+      || Get(cmd, "insensitive",   &case_insensitive)
       || (cmd.umatch("units {=}") &&
 	  (ONE_OF
 	   || Set(cmd, "si",	&units,	uSI)

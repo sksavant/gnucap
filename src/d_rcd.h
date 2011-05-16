@@ -211,10 +211,11 @@ public:
   ~DEV_BUILT_IN_RCD() {
     --_count;
     if( _Ccgfill ) {
-    //  ADP_NODE_LIST::adp_node_list.erase( _Ccgfill );
+   //   ADP_NODE_LIST::adp_node_list.erase( _Ccgfill );
     }
-    if( _Udc ) 
-      ADP_NODE_LIST::adp_node_list.erase( _Ccgfill );
+    if( _Udc )  {
+   //   ADP_NODE_LIST::adp_node_list.erase( _Udc );
+    }
   }
 protected: // override virtual
   char      id_letter()const     {untested();return 'Z';}
@@ -231,8 +232,8 @@ protected: // override virtual
   virtual   void      expand(); // virtual??
   void      precalc_last();
   //void    map_nodes();         //BASE_SUBCKT
- //  void    tr_begin();    // BASE_SUBCKT
-  void tt_next(){ lasts=0; } // HACK
+  void    tr_begin();    // BASE_SUBCKT
+  void tt_next(); //{  } // HACK
   void    tr_stress(); //BASE_SUBCKT
   void    tr_stress_();
   //void    tr_restore();        //BASE_SUBCKT
