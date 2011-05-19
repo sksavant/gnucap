@@ -954,7 +954,11 @@ void ADP_NODE::tr_expect_( ){
         assert( false);
       }
     case 1:
-      assert(is_almost(tr1(), tr(Time1())));
+      if (! is_almost(tr1(), tr(Time1()))) {
+        error( bDANGER, "ADP_NODE::tr_sanity check failed %1.19g %1.19g \n",tr1(),tr(Time1()));
+        untested();
+      }
+      // assert(is_almost(tr1(), tr(Time1())));
       //tr()=tr(_sim->_Time0);
       tr()=tr_rel(dT0());
 
