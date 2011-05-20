@@ -50,7 +50,7 @@ bool SIM::solve(OPT::ITL itl, TRACE trace)
   _sim->reset_iteration_counter(iSTEP);
   advance_time();
 
-  _sim->_damp = OPT::dampmax;
+  _sim->_damp = OPT::dampmax; // default 1.0
  
   do{
     if (trace >= tITERATION) {
@@ -242,7 +242,7 @@ void SIM::set_damp()
   }else{
     _sim->_damp = OPT::dampmax;
   }
-  trace1("", _sim->_damp);
+  trace1("SIM::set_damp", _sim->_damp);
 }
 /*--------------------------------------------------------------------------*/
 void SIM::load_matrix()
