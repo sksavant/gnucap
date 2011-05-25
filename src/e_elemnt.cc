@@ -392,6 +392,16 @@ double ELEMENT::tr_probe_num(const std::string& x)const
     }
   }else if (Umatch(x, "ev |df ")) {
     return _y[0].f1;
+  }else if (Umatch(x, "dx ")) {
+    return _y1.x-_y[0].x;
+  }else if (Umatch(x, "res ")) {
+    return _y1.f0-_y[0].f0;
+  }else if (Umatch(x, "conv ")) {
+    // assert(converged()==conv_check());
+    if (conv_check()) { 
+      return 10; } 
+    //  fprintf(stderr,"hi\n");
+    return 1993;
   }else if (Umatch(x, "nv ")) {
     return value();
   }else if (Umatch(x, "eiv ")) {untested();

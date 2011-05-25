@@ -54,7 +54,8 @@ bool SIM::solve(OPT::ITL itl, TRACE trace)
  
   do{
     if (trace >= tITERATION) {
-      print_results(static_cast<double>(-_sim->iteration_number()));
+      SIM::print_results(static_cast<double>(-_sim->iteration_number()));
+      // Hack: Added SIM:: / print_results has been overloade but puts out the wrong data
     }
     set_flags();
     clear_arrays();

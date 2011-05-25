@@ -923,9 +923,15 @@ void TTT::print_head_tr()
     int width = std::min(OPT::numdgt+5, BIGBUFLEN-10);
     char format[20];
     //sprintf(format, "%%c%%-%u.%us", width, width);
+    for (int i=0; i< OPT::numdgt-5; i++) {
+      TRANSIENT::_out << "-";
+    }  
     sprintf(format, "%%c%%-%us", width);
 //    _out.form(format, "", "tiime");
     TRANSIENT::_out << "time      ";
+    for (int i=0; i< OPT::numdgt-5; i++) {
+      TRANSIENT::_out << " ";
+    }  
     for (PROBELIST::const_iterator
         p=printlist().begin();  p!=printlist().end();  ++p) {
       TRANSIENT::_out.form(format, ' ', (*p)->label().c_str());
@@ -1098,6 +1104,9 @@ void TTT::outdata(double time0)
   _sim->set_command_tt();
 
   // FIXME (only > 0)
+  if (_trace==tDEBUG) {
+    TRANSIENT::outdata(time0);
+  }
   store_results(time0);
 
   _sim->_mode=s_TTT;

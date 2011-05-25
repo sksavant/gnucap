@@ -280,7 +280,10 @@ bool TRANSIENT::next()
     new_dt = old_dt / OPT::trstepshrink;
     newtime = _time_by_iteration_count = time1 + new_dt;
     new_control = scITER_R;
-  }else{
+    //    fprintf(stderr,".");
+    //    _trace=tDEBUG;
+  }else{  // converged 
+    // _trace=tNONE;
     double reftime;
     if (_accepted) {
       reftime = _sim->_time0;
@@ -462,7 +465,7 @@ bool TRANSIENT::next()
     }
 
 
-  }
+  } // end of else converged 
   set_step_cause(new_control);
 
   trace3("TRANSIENT::next got it i think", newtime, new_control, newtime-_sim->_time0);
