@@ -459,13 +459,7 @@ bool TRANSIENT::next()
       assert(!_accepted || newtime > _sim->_time0 || time1 <= _time_by_user_request );
       assert( _accepted || newtime <= _sim->_time0);
     }
-<<<<<<< HEAD
-  } // converged
-=======
-
-
   } // end of else converged 
->>>>>>> 3fadc6ab224ef0b87b8766a1ac18c109283ac7ff
   set_step_cause(new_control);
 
   trace3("TRANSIENT::next got it i think", newtime, new_control, newtime-_sim->_time0);
