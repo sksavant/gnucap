@@ -109,8 +109,8 @@ void TRANSIENT::sweep()
       outdata(_sim->_time0);
       if( _sim->_mode  == s_TTT && OPT::behave ){
         CARD_LIST::card_list.do_forall( &CARD::tr_save_amps, _sim->_stepno );
-        CKT_BASE::tt_behaviour_del +=  CKT_BASE::tr_behaviour_del;
-        CKT_BASE::tt_behaviour_rel +=  CKT_BASE::tr_behaviour_rel;
+        CKT_BASE::tt_behaviour_del += CKT_BASE::tr_behaviour_del;
+        CKT_BASE::tt_behaviour_rel += CKT_BASE::tr_behaviour_rel;
       }
       CKT_BASE::tr_behaviour_del = 0;
       CKT_BASE::tr_behaviour_rel = 0;
@@ -151,10 +151,6 @@ void TRANSIENT::sweep()
 			  || (step_cause() == scUSER && _sim->_time0+_sim->_dtmin > _tstart)));
       if (printnow) {
         _sim->keep_voltages();
-        if( _sim->_mode  == s_TTT && OPT::behave )
-          CARD_LIST::card_list.do_forall( &CARD::tr_save_amps, (_sim->_stepno) );
-        CKT_BASE::tt_behaviour_del +=  CKT_BASE::tr_behaviour_del; // hack
-        CKT_BASE::tt_behaviour_rel +=  CKT_BASE::tr_behaviour_rel;
 
         outdata(_sim->_time0);
         CKT_BASE::tr_behaviour_del = 0;
@@ -460,9 +456,7 @@ bool TRANSIENT::next()
       assert(!_accepted || newtime > _sim->_time0 || time1 <= _time_by_user_request );
       assert( _accepted || newtime <= _sim->_time0);
     }
-
-
-  }
+  } // converged
   set_step_cause(new_control);
 
   trace3("TRANSIENT::next got it i think", newtime, new_control, newtime-_sim->_time0);
