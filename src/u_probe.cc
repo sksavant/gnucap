@@ -196,6 +196,7 @@ double MATH_PROBE::value(void)const
 //   std::cerr << "PROBE::mathvalue  getting tokenv from token" << token << " \n";
   double ret=token->value();
 
+  //// waah.  C style
   switch(_type){
     case op_quot:
       return( token->next()->value()/ret );
@@ -310,16 +311,13 @@ double EVAL_PROBE::value(void)const
 { 
   assert(_scope);
   trace0(("EVAL_PROBE::value()"+_what).c_str());
-  trace0(("EVAL_PROBE::value()"+(std::string)_cmd).c_str());
 
   CS cmd(CS::_STRING, _cmd);
 
   Expression e(cmd);
   cmd.check(bDANGER, "syntax error");
-  trace0(("EVAL_PROBE::value()"+(std::string)cmd).c_str());
   Expression r(e, _scope);
 
-  trace0("EVAL_PROBE::value");
   return r.eval();
 }
 /*--------------------------------------------------------------------------*/
