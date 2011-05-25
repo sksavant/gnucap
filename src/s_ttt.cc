@@ -874,8 +874,6 @@ void TTT::head_tt(double start, double stop, const std::string& col1)
 */
 void TTT::head(double /* start */ , double /* stop */, const std::string& )
 {
-
-
   assert( _sim->_mode==s_TTT );
   {
     trace0("TTT::head tr ttt WAVE");
@@ -914,10 +912,7 @@ void TTT::print_head_tr()
     TRANSIENT::_out << "* no trprint\n";
     return;
   }
-
-  std::string foo="* TTime-----";
-
-  TRANSIENT::_out << foo;
+  TRANSIENT::_out << "* TTime-----";
   {
     // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     int width = std::min(OPT::numdgt+5, BIGBUFLEN-10);
@@ -934,7 +929,50 @@ void TTT::print_head_tr()
   }
   _sim->_mode=oldmode;
 }
+/*--------------------------------------------------------------------------*/
+// save things during TR
+void TTT::outdata(double time0)
+{
 
+  /*   
+   *   untested();
+   *   if( _sim->_mode  == s_TTT && OPT::behave )
+          CARD_LIST::card_list.do_forall( &CARD::tr_save_amps, (_sim->_stepno) );
+        CKT_BASE::tt_behaviour_del +=  CKT_BASE::tr_behaviour_del; // hack
+        CKT_BASE::tt_behaviour_rel +=  CKT_BASE::tr_behaviour_rel;
+        */
+
+  trace3("TTT::outdata", _sim->tt_iteration_number(), _sim->iteration_number(), time0);
+  assert( _sim->_mode  == s_TTT );
+  ::status.output.start();
+  assert( _sim->_mode  == s_TTT );
+
+  // SIM::alarm();
+  _sim->_mode=s_TRAN;
+  if ( OPT::printrejected ) { //FIXME
+//    TRANSIENT::print_results(time0);
+  }
+
+  _sim->set_command_tran();
+  if(_sim->tt_iteration_number()==0 && printlist().size() != 0 )
+  {
+    TRANSIENT::_out << (double)_sim->_Time0;
+    TRANSIENT::print_results(time0);
+  } else {
+    // store_results(time0);
+  }
+  _sim->set_command_tt();
+
+  // FIXME (only > 0)
+  store_results(time0);
+
+  _sim->_mode=s_TTT;
+  _sim->reset_iteration_counter(iPRINTSTEP);
+  ::status.hidden_steps = 0;
+  ::status.output.stop();
+  assert( _sim->_mode  == s_TTT );
+  trace0("TTT::outdata done");
+}
 /*--------------------------------------------------------------------------*/
 void TTT::outdata_b4(double time)
 {
@@ -1071,41 +1109,6 @@ void TTT::print_results_tt(double x)
     _out << '\n';
   }else{
   }
-}
-/*--------------------------------------------------------------------------*/
-// save things during TR
-void TTT::outdata(double time0)
-{
-  trace3("TTT::outdata", _sim->tt_iteration_number(), _sim->iteration_number(), time0);
-  assert( _sim->_mode  == s_TTT );
-  ::status.output.start();
-  assert( _sim->_mode  == s_TTT );
-
-  // SIM::alarm();
-  _sim->_mode=s_TRAN;
-  if ( OPT::printrejected ) { //FIXME
-//    TRANSIENT::print_results(time0);
-  }
-
-  _sim->set_command_tran();
-  if(_sim->tt_iteration_number()==0 && printlist().size() != 0 )
-  {
-    TRANSIENT::_out << (double)_sim->_Time0;
-    TRANSIENT::print_results(time0);
-  } else {
-    // store_results(time0);
-  }
-  _sim->set_command_tt();
-
-  // FIXME (only > 0)
-  store_results(time0);
-
-  _sim->_mode=s_TTT;
-  _sim->reset_iteration_counter(iPRINTSTEP);
-  ::status.hidden_steps = 0;
-  ::status.output.stop();
-  assert( _sim->_mode  == s_TTT );
-  trace0("TTT::outdata done");
 }
 /*--------------------------------------------------------------------------*/
 std::string TTT::status()const
