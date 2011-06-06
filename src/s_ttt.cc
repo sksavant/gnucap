@@ -1003,11 +1003,16 @@ void TTT::outdata_tt(double x)
   ::status.output.stop();
 }
 /*--------------------------------------------------------------------------*/
-
 // print during tr. i.e. print from storelist
-void TTT::print_results(double )
+void TTT::print_results(double time)
 {
-  trace0("TTT::print_results()");
+  // deprecated call.
+  untested();
+  print_results_tr(time);
+}
+void TTT::print_results_tr(double )
+{
+  trace0("TTT::print_results_tr()");
   SIM_MODE oldmode=_sim->_mode;
   _sim->set_command_tran();
   WAVE* w =NULL;

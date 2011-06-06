@@ -94,7 +94,7 @@ void TRANSIENT::sweep()
   }else{
     _converged = solve_with_homotopy(OPT::DCBIAS,_trace);
     if (!_converged) {
-      error(bWARNING, "did not converge\n");
+      error(bWARNING, "did not converge at %E\n", _sim->_time0);
     }else{
     }
   }

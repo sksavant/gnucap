@@ -1210,9 +1210,8 @@ long double COMMON_BUILT_IN_RCD::__step(long double uin, long double cur,  doubl
   // long double Eend = 1.0L/(1.0L + expl(-Rc1*uin)/uin/Rc0*Re0 );
   long double Eend = uin /( uin  + expl(-Rc1*uin)/Rc0*Re0 );
 
-  long double ret =  (cur-Eend) 
-       * expl( -(uin /Re0 + expl(-Rc1*uin)/Rc0)*t )
-       + Eend;
+  long double tauinv = (uin /Re0 + expl(-Rc1*uin)/Rc0);
+  long double ret =  (cur-Eend) * expl( -t*tauinv ) + Eend;
 
   trace6("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, uin, Rc0, ret,  logl(fabsl(cur-Eend ) ) );
 //  assert(is_almost(retalt ,ret));
