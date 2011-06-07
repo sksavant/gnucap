@@ -86,7 +86,8 @@ class TTT : public TRANSIENT {
     double _dTmin;
     double _dTmax;
     void   outdata(double);
-    void   print_results(double);
+    void   print_results(double); // stupid?
+    void   print_results_tr(double);
     void   print_results_tt(double);
     double _Time_by_user_request;
     bool   _accepted_tt;
