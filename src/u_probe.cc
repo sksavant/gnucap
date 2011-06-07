@@ -35,13 +35,14 @@
 /*--------------------------------------------------------------------------*/
 PROBE::PROBE(const std::string& what,const CKT_BASE *brh)
   :_what(what),
+   _override_label(""),
    _brh(brh),
    _lo(0.),
    _hi(0.)
 {
   if (_brh) {
     _brh->inc_probes();
-    trace1( ( "PROBE::PROBE ++probe: " + _what ).c_str(),  _brh->probes());
+    trace1( ( "PROBE::PROBE ++probe: " + _what +_override_label).c_str(),  _brh->probes());
   }else{
   }
 }
@@ -50,6 +51,7 @@ PROBE::PROBE(const std::string& what,const CKT_BASE *brh)
 PROBE::PROBE(const PROBE& p)
   :_arg(p._arg),
    _what(p._what),
+   _override_label(p._override_label),
    _brh(p._brh),
    _lo(p._lo),
    _hi(p._hi),
@@ -57,7 +59,7 @@ PROBE::PROBE(const PROBE& p)
 {
   if (_brh) {
     _brh->inc_probes();
-    trace1( ( "PROBE::PROBE copy ++probe: " + _what ).c_str(),  _brh->probes());
+    trace1( ( "PROBE::PROBE copy ++probe: " + _what +_override_label ).c_str(),  _brh->probes());
   }else{
   }
 }
@@ -70,6 +72,7 @@ PROBE& PROBE::operator=(const PROBE& p)
   trace0("PROBE::operator=()");
   detach();
   _what = p._what;
+  _override_label= p._override_label;
   _brh  = p._brh;
   _lo   = p._lo;
   _hi   = p._hi;
@@ -98,6 +101,7 @@ void PROBE::detach()
     //untested();
   }
   _what = "";
+  _override_label = "";
   _brh = 0;
 }
 /*--------------------------------------------------------------------------*/
@@ -108,11 +112,16 @@ void PROBE::detach()
 const std::string PROBE::label(void)const
 {
   if (_brh) {
+    if ( _override_label.compare("")!=0 ) {
+    return _override_label;
+    } else {
     return _what + '(' + _brh->long_label() + ')';
+    }
   }else{
     return _what + "(0)";
   }
 }
+
 /*--------------------------------------------------------------------------*/
 double PROBE::value(void)const
 {

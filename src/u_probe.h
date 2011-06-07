@@ -75,12 +75,17 @@ class INTERFACE PROBE {
     virtual double value()const;
     void push( PROBE* );
     void	    set_arg( PROBE* n  )	{ assert(this); _arg=n;}
+    void        set_override_label(const std::string _override)
+                   { _override_label=_override; } 
+
     PROBE* arg() const {return _arg;}
+    std::string  override_label() const {return _override_label;}
     virtual PROBE* clone()const { return (new PROBE(*this));}
   private:
     PROBE* _arg;
   protected:
     std::string	_what;    
+    std::string	_override_label;    
   private:
     const CKT_BASE* _brh;
     double _lo,_hi;
@@ -106,7 +111,8 @@ protected:
 
 public: // compare probes.
   bool operator==(const PROBE& p)const
-  { return ( ( _what == p._what ) 
+  { return ( ( _what == p._what )
+           &&( _override_label == p._override_label ) 
            &&(  _brh == p._brh  )); 
   
   }

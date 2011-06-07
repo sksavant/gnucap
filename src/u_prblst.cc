@@ -30,6 +30,7 @@
 #include "ap.h"
 #include "u_prblst.h"
 #include "u_probe.h"
+#include "s__.h"
 /*--------------------------------------------------------------------------*/
 void PROBE_LISTS::purge(CKT_BASE* brh)
 {
@@ -372,6 +373,7 @@ PROBE* PROBELIST::add_branches(const std::string&device,
                                const std::string&param,
                                const CARD_LIST* scope)
 {
+  //  fprintf(stderr, ("PROBELIST::add_branches " + device + "->" + param + " \n" ).c_str());
   trace0( ( "PROBELIST::add_branches " + device + "->" + param + " \n" ).c_str());
   assert(scope);
   PROBE* found_something = NULL;
@@ -385,9 +387,13 @@ PROBE* PROBELIST::add_branches(const std::string&device,
       for (CARD_LIST::const_iterator
              i = scope->begin();  i != scope->end();  ++i) {
         CARD* card = *i;
+//         cerr << " Verilog Card Match " << container << " dev "<< dev << " param " << param 
+//              << " long label " <<  card->long_label()
+//              << " short label " <<  card->short_label() <<  std::endl;
         if (card->is_device()
             && card->subckt()
             && wmatch(card->short_label(), container)) {
+          //          cerr << " Found " << std::endl;
           found_something = add_branches(dev, param, card->subckt());
         }else{
         }
@@ -400,10 +406,13 @@ PROBE* PROBELIST::add_branches(const std::string&device,
       for (CARD_LIST::const_iterator
              i = scope->begin();  i != scope->end();  ++i) {
         CARD* card = *i;
-        //        cerr << " Card Match " << container << " dev "<< dev << " param " << param << std::endl;
+//         cerr << " ACS Card Match " << container << " dev "<< dev << " param " << param 
+//              << " long label " <<  card->long_label()
+//              << " short label " <<  card->short_label() <<  std::endl;
         if (card->is_device()
             && card->subckt()
             && wmatch(card->short_label(), container)) {
+//           cerr << " Found " << " long label " <<  card->long_label() << std::endl;
           found_something = add_branches(dev, param, card->subckt());
         }else{
         }
@@ -414,10 +423,13 @@ PROBE* PROBELIST::add_branches(const std::string&device,
     if (device.find_first_of("*?") != std::string::npos) {
       // there's a wild card.  do linear search for all
       { // nodes
+//         cerr << "searching for nodes in " << scope << std::endl;
         for (NODE_MAP::const_iterator 
                i = scope->nodes()->begin();
              i != scope->nodes()->end();
              ++i) {
+//           cerr << "node  " << i->first << " sec" << i->second->long_label() << std::endl;
+        
           if (i->first != "0") {
             NODE* node = i->second;
             assert (node);
@@ -440,6 +452,65 @@ PROBE* PROBELIST::add_branches(const std::string&device,
         for (CARD_LIST::const_iterator 
                i = scope->begin();  i != scope->end();  ++i) {
           CARD* card = *i;
+//           cerr << "searching for comp in " << card->short_label() << std::endl;
+          // now seaching for nodes in subckt which are ports of the 
+          // devices in the subcircuits. The original name of the nodes could be 
+          // recovered from node_names of devices. 
+          if (param=="V")
+          { 
+            if ((*card).is_device()) {
+              for (uint_t ii = 0;  ii < (*card).net_nodes();  ++ii) {
+                // for each connection node in card
+                // (*card).n_(ii).map_subckt_node(map, owner);
+//                 cerr << "mapping in device "+ (*card).short_label() + " node " 
+//                   + (*card).n_(ii).short_label() << " node nr " <<  
+//                   ((*card).n_(ii)).e_() <<" index " << ii << std::endl;
+                // this maps the internal nodename n_(ii) of the device (**ci) in the subckt  with 
+                // the map to  
+                if (wmatch((*card).n_(ii).short_label(),device)) {
+                  if ((*card).n_(ii).short_label().find_first_of(".") == std::string::npos) {
+                    char str[10];
+                    sprintf(str,"V%1d",ii+1);
+                    string paramipn(str);
+                    if ( (*card).owner() != NULL  && (*card).owner()->owner()  != NULL )
+                    {
+                      string subckt_node( "V(" + (*card).owner()->owner()->long_label() +"."
+                                          +(*card).n_(ii).short_label() + ")" );
+//                       cerr << "FFFFFFFFound "+  subckt_node + 
+//                         "  that is Port "+paramipn+ " of  device  "
+//                         + (*card).long_label()   << std::endl;
+                      // this is the desired voltage of the node of the subcircuit 
+                      bool already_included=false;
+                      for (PROBELIST::const_iterator
+                             p=this->begin();  p!=this->end();  ++p) {
+                        if ( (*p)->override_label().compare(subckt_node)==0) { 
+                          already_included=true;
+                          found_something=(*p);
+                        }
+                      }
+                      if (!already_included) {
+                        PROBE* p =push_new_probe(paramipn,card);
+                        p->set_override_label(subckt_node);
+                        found_something=p;
+                        //    found_something->detach(); // Wipe out
+                      }
+//                       PROBE* p=found_something;
+//                       do {
+//                         cerr << " override " + p->override_label() << std::endl; 
+//                       } while (p != NULL); 
+                    } else { 
+                      //              found_something=(*(this->end()));
+//                       cerr << "FFFFFFF Owner not Found "
+//                         +(*card).n_(ii).short_label()+ 
+//                         "  that is Port "+paramipn+ " of  device  "
+//                         + (*card).long_label()   << std::endl;
+                    }
+                    
+                  }
+                }
+              }
+            }
+          }            
           if (wmatch(card->short_label(), device)) {
             //            cerr << " Components dev "<< card << " param " << param << std::endl;
             if (param=="V?")
