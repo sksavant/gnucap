@@ -29,20 +29,14 @@
 namespace {
 /*--------------------------------------------------------------------------*/
 class MEASURE : public FUNCTION {
-public:
-  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
-  {
-    std::string probe_name;
-    PARAMETER<double> before(BIGBIG);
-    PARAMETER<double> after(-BIGBIG);
-    PARAMETER<double> cross(0.);
-    int slope = 1;
-    bool last = false;
-    
-    unsigned here = Cmd.cursor();
-    Cmd >> probe_name;
-    WAVE* w = find_wave(probe_name);
+  std::string probe_name;
+  PARAMETER<double> before(BIGBIG);
+  PARAMETER<double> after(-BIGBIG);
+  PARAMETER<double> cross(0.);
+  int slope = 1;
+  bool last = false;
 
+  void expand(){
     if (!w) {
       Cmd.reset(here);
     }else{
@@ -69,6 +63,15 @@ public:
     }else{
     }
 
+    unsigned here = Cmd.cursor();
+    Cmd >> probe_name;
+    WAVE* w = find_wave(probe_name);
+
+  }
+
+public:
+  fun_t eval()const
+  {
     if (w) {
       before.e_val(BIGBIG, Scope);
       after.e_val(-BIGBIG, Scope);

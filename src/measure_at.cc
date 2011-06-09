@@ -1,4 +1,5 @@
 /*$Id: measure_at.cc,v 1.2 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -26,17 +27,14 @@
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class MEASURE : public FUNCTION {
+class MEASURE : public WAVE_FUNCTION {
+  PARAMETER<double> x;
+  bool derivative = false;
 public:
-  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
-  {
-    std::string probe_name;
-    PARAMETER<double> x;
-    bool derivative = false;
-
+  void expand(CS& Cmd, const CARD_LIST* Scope){
     unsigned here = Cmd.cursor();
     Cmd >> probe_name;
-    WAVE* w = find_wave(probe_name);
+    w = find_wave(probe_name);
 
     if (!w) {
       Cmd.reset(here);
@@ -46,18 +44,21 @@ public:
     here = Cmd.cursor();
     do {
       ONE_OF
-	|| Get(Cmd, "probe",	    &probe_name)
-	|| Get(Cmd, "x",	    &x)
-	|| Get(Cmd, "at",	    &x)
-	|| Get(Cmd, "deriv{ative}", &derivative)
-	;
+        || Get(Cmd, "probe",	    &probe_name)
+        || Get(Cmd, "x",	    &x)
+        || Get(Cmd, "at",	    &x)
+        || Get(Cmd, "deriv{ative}", &derivative)
+        ;
     }while (Cmd.more() && !Cmd.stuck(&here));
 
     if (!w) {
       w = find_wave(probe_name);
     }else{
     }
-    
+  }
+/*--------------------------------------------------------------------------*/
+  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
+  {
     if (w) {
       x.e_val(BIGBIG, Scope);
       return to_fun_t((derivative) ? (w->v_out(x).f1) : (w->v_out(x).f0));

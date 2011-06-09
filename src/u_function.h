@@ -1,4 +1,5 @@
 /*$Id: u_function.h,v 1.3 2010-09-07 07:46:26 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -29,10 +30,14 @@ class WAVE;
 /*--------------------------------------------------------------------------*/
 class FUNCTION {
 public:
-	// ARGH
-  virtual fun_t eval(CS&, const CARD_LIST*)const = 0;
+  FUNCTION():w(0),probe_name("unset"){}
+  WAVE* w;
+  string probe_name;
+  virtual void expand(CS&, const CARD_LIST*){}
+  virtual fun_t eval()const = 0;
 protected:
   WAVE* find_wave(const std::string& probe_name)const;
 };
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

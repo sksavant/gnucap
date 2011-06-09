@@ -28,14 +28,13 @@
 namespace {
 /*--------------------------------------------------------------------------*/
 class MEASURE : public FUNCTION {
+  PARAMETER<double> before(BIGBIG);
+  PARAMETER<double> after(-BIGBIG);
+  bool last = false;
+  bool arg = false;
 public:
   double eval(CS& Cmd, const CARD_LIST* Scope)const
   {
-    std::string probe_name;
-    PARAMETER<double> before(BIGBIG);
-    PARAMETER<double> after(-BIGBIG);
-    bool last = false;
-    bool arg = false;
 
     unsigned here = Cmd.cursor();
     Cmd >> probe_name;
@@ -64,6 +63,8 @@ public:
       w = find_wave(probe_name);
     }else{
     }
+  }
+  double eval()const
     
     if (w) {
       before.e_val(BIGBIG, Scope);
