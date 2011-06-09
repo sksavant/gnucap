@@ -1099,7 +1099,7 @@ double DEV_BUILT_IN_DIODE::tt_probe_num(const std::string& x)const
   assert(m);
   const SDP_BUILT_IN_DIODE* s = prechecked_cast<const SDP_BUILT_IN_DIODE*>(c->sdp());
   assert(s);
-  const ADP_BUILT_IN_DIODE* a = prechecked_cast<const ADP_BUILT_IN_DIODE*>(adp());
+  // const ADP_BUILT_IN_DIODE* a = prechecked_cast<const ADP_BUILT_IN_DIODE*>(adp());
   //  if(!a)untested0("no a");
 
   {
