@@ -34,12 +34,13 @@
 // float type to use for currents, voltages & stuff
 // typedef double double; // has to be double
 //typedef long double hp_float_t;
+typedef double voltage_t;
+typedef double current_t;
+typedef double charge_t;
 typedef double hp_float_t;
 typedef unsigned int uint_t;
-// typedef  int uint_t;
 
 // FIXME!!
-
 typedef double fun_t;
 inline double to_fun_t(double x){return x;}
 /*--------------------------------------------------------------------------*/

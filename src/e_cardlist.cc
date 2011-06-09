@@ -539,18 +539,6 @@ void CARD_LIST::shallow_copy(const CARD_LIST* p)
 }
 /*--------------------------------------------------------------------------*/
 // set up the map of external to expanded node numbers
-// #define trace0(s) ( cerr << "@#@" << s << "\n")   
-// // #define trace0(s) (fprintf(stderr, "@#@%s\n", s )) // needs c_str()...
-// #define trace1(s,x) ( cerr <<  "@#@" << s << "  " << #x << "=" << (double)(x) << endl )
-// // #define trace1(s,x) (fprintf(stderr, "@#@%s  %s=%g\n", s, #x, (double)(x)))
-// #define trace2(s,x,y) ( cerr <<  "@#@" << s << "  " << #x << "=" << (double)(x)  \
-// 		                                      << "  " << #y << "=" << (double)(y)  \
-// 		                                      << endl )
-// #define trace3(s,x,y,z) ( cerr <<  "@#@" << s << "  " << #x << "=" << (double)(x)  \
-// 		                                      << "  " << #y << "=" << (double)(y)  \
-// 		                                      << "  " << #z << "=" << (double)(z)  \
-// 		                                      << endl )
-
 void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
 {
   assert(model);
@@ -616,9 +604,3 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-// #undef trace0
-// #undef trace1
-// #undef trace2
-// #undef trace3
-// #undef trace4
-

@@ -890,7 +890,7 @@ void DEV_BUILT_IN_MOS::expand()
       }
     }
 
-    trace2("DEV_BUILT_IN_MOS::expand bti expand?", m->polarity, m->use_bti());
+    trace2("DEV_BUILT_IN_MOS::expand bti expand", m->polarity, m->use_bti());
     if( m->use_bti() ) {
       if (!_BTI) {
         const CARD* p = device_dispatcher["bti"];
@@ -900,7 +900,6 @@ void DEV_BUILT_IN_MOS::expand()
 #ifdef BTI_IN_SUBCKT
         subckt()->push_front(_BTI);
 #endif
-      }else{
       }
       {
         if (m->polarity==pP) { // stupid hack. use voltage source?
@@ -1540,8 +1539,8 @@ ADP_BUILT_IN_MOS::ADP_BUILT_IN_MOS(const COMPONENT* c, const std::string n) :
 	  ADP_BUILT_IN_DIODE(c,n),
 	  bti_stress(0)
 	  {init(c);}
+/*--------------------------------------------------------------------------*/
 //expand?
-
 void ADP_BUILT_IN_MOS::init(const COMPONENT* c)
 {
   trace0(("ADP_BUILT_IN_MOS::init " + c->long_label()).c_str());
