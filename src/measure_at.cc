@@ -29,8 +29,12 @@ namespace {
 /*--------------------------------------------------------------------------*/
 class MEASURE : public WAVE_FUNCTION {
   PARAMETER<double> x;
-  bool derivative = false;
+  bool derivative;
 public:
+  MEASURE() :
+    WAVE_FUNCTION(),
+    derivative(false)
+  {}
   void expand(CS& Cmd, const CARD_LIST* Scope){
     unsigned here = Cmd.cursor();
     Cmd >> probe_name;
@@ -55,12 +59,12 @@ public:
       w = find_wave(probe_name);
     }else{
     }
+    x.e_val(BIGBIG, Scope);
   }
 /*--------------------------------------------------------------------------*/
-  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
+  fun_t wave_eval()const
   {
     if (w) {
-      x.e_val(BIGBIG, Scope);
       return to_fun_t((derivative) ? (w->v_out(x).f1) : (w->v_out(x).f0));
     }else{
       throw Exception_No_Match(probe_name);

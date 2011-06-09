@@ -76,16 +76,15 @@ public:
     }else{
     }
 
+    before.e_val(BIGBIG, Scope);
+    after.e_val(-BIGBIG, Scope);
+    cross.e_val(0., Scope);
   }
 
 public:
   fun_t wave_eval()const
   {
     if (w) {
-      before.e_val(BIGBIG, Scope);
-      after.e_val(-BIGBIG, Scope);
-      cross.e_val(0., Scope);
-
       double cross1 = cross * slope;
       enum STAT {WAITING, READY, DONE} stat = WAITING;
       double x_time = (last) ? -BIGBIG : BIGBIG;

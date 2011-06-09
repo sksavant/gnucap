@@ -27,11 +27,16 @@
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class MEASURE : public FUNCTION {
-    PARAMETER<double> before(BIGBIG);
-    PARAMETER<double> after(-BIGBIG);
+class MEASURE : public WAVE_FUNCTION {
+  PARAMETER<double> before;
+  PARAMETER<double> after;
 public:
-  fun_t expand(CS& Cmd, const CARD_LIST* Scope)
+  MEASURE():
+    WAVE_FUNCTION(),
+    before(BIGBIG),
+    after(-BIGBIG)
+  {}
+  void expand(CS& Cmd, const CARD_LIST* Scope)
   {
     
     unsigned here = Cmd.cursor();
@@ -53,18 +58,20 @@ public:
 	|| Get(Cmd, "begin",  &after)
 	;
     }while (Cmd.more() && !Cmd.stuck(&here));
-  }
 
-  fun_t eval()const
-  {
     if (!w) {
       w = find_wave(probe_name);
     }else{
     }
 
+    before.e_val(BIGBIG, Scope);
+    after.e_val(-BIGBIG, Scope);
+  }
+
+  fun_t wave_eval()const
+  {
+
     if (w) {
-      before.e_val(BIGBIG, Scope);
-      after.e_val(-BIGBIG, Scope);
 
       WAVE::const_iterator begin = lower_bound(w->begin(), w->end(), DPAIR(after, -BIGBIG));
       WAVE::const_iterator end   = upper_bound(w->begin(), w->end(), DPAIR(before, BIGBIG));
