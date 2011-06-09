@@ -45,7 +45,11 @@ public:
   {}
 
   void expand(CS& Cmd, const CARD_LIST* Scope)
-  {
+  { 
+    unsigned here = Cmd.cursor();
+    Cmd >> probe_name;
+    w = find_wave(probe_name);
+
     if (!w) {
       Cmd.reset(here);
     }else{
@@ -71,10 +75,6 @@ public:
       w = find_wave(probe_name);
     }else{
     }
-
-    unsigned here = Cmd.cursor();
-    Cmd >> probe_name;
-    WAVE* w = find_wave(probe_name);
 
   }
 
