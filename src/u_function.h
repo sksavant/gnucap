@@ -30,11 +30,17 @@ class WAVE;
 /*--------------------------------------------------------------------------*/
 class FUNCTION {
 public:
-  FUNCTION():w(0),probe_name("unset"){}
+  virtual void expand(CS&, const CARD_LIST*){}
+  virtual fun_t eval(CS&, const CARD_LIST*)const = 0;
+};
+/*--------------------------------------------------------------------------*/
+class WAVE_FUNCTION : public FUNCTION{
+  public:
+  virtual fun_t eval(CS&, const CARD_LIST*)const{ incomplete(); return 0; }
+  virtual fun_t wave_eval()const = 0;
+  WAVE_FUNCTION():w(0),probe_name("unset"){}
   WAVE* w;
   string probe_name;
-  virtual void expand(CS&, const CARD_LIST*){}
-  virtual fun_t eval()const = 0;
 protected:
   WAVE* find_wave(const std::string& probe_name)const;
 };

@@ -28,15 +28,24 @@
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class MEASURE : public FUNCTION {
-  std::string probe_name;
-  PARAMETER<double> before(BIGBIG);
-  PARAMETER<double> after(-BIGBIG);
-  PARAMETER<double> cross(0.);
-  int slope = 1;
-  bool last = false;
+class MEASURE : public WAVE_FUNCTION {
+  PARAMETER<double> before;
+  PARAMETER<double> after;
+  PARAMETER<double> cross;
+  int slope;
+  bool last;
+public:
+  MEASURE():
+    WAVE_FUNCTION(),
+    before(BIGBIG),
+    after(-BIGBIG),
+    cross(0),
+    slope(1),
+    last(false)
+  {}
 
-  void expand(){
+  void expand(CS& Cmd, const CARD_LIST* Scope)
+  {
     if (!w) {
       Cmd.reset(here);
     }else{
@@ -70,7 +79,7 @@ class MEASURE : public FUNCTION {
   }
 
 public:
-  fun_t eval()const
+  fun_t wave_eval()const
   {
     if (w) {
       before.e_val(BIGBIG, Scope);
