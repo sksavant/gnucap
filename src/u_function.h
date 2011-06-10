@@ -22,6 +22,8 @@
  *------------------------------------------------------------------
  */
 //testing=none
+#ifndef _U_FUNC
+#define _U_FUNC
 #include "md.h"
 /*--------------------------------------------------------------------------*/
 class CS;
@@ -35,15 +37,19 @@ public:
 };
 /*--------------------------------------------------------------------------*/
 class WAVE_FUNCTION : public FUNCTION{
+  protected:
+    WAVE* w;
   public:
-  virtual fun_t eval(CS&, const CARD_LIST*)const{ incomplete(); return 0; }
-  virtual fun_t wave_eval()const = 0;
-  WAVE_FUNCTION():w(0),probe_name("unset"){}
-  WAVE* w;
-  string probe_name;
-protected:
-  WAVE* find_wave(const std::string& probe_name)const;
+    virtual fun_t eval(CS&, const CARD_LIST*)const{ incomplete(); return 0; }
+    virtual fun_t wave_eval()const = 0;
+    WAVE_FUNCTION():w(0),probe_name("unset"){}
+    string probe_name;
+    void set_wave(WAVE* ww);// { w=ww; }
+
+  protected:
+    WAVE* find_wave(const std::string& probe_name)const;
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+#endif

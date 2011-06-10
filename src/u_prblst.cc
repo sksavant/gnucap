@@ -158,6 +158,7 @@ void PROBELIST::remove_one(CKT_BASE *brh)
  * but not "v(r4) v(r5)" which has two parameters.
  * It also takes care of setting the range for plot or alarm.
  */
+// FIXME: add add_probe (single probe only)
 PROBE* PROBELIST::add_list(CS& cmd)
 {
   CARD_LIST* scope = &CARD_LIST::card_list;
@@ -171,7 +172,6 @@ PROBE* PROBELIST::add_list(CS& cmd)
     cmd.warn(bWARNING, "need a probe");
   }else{
   }
-
 
   MATH_OP op;
   int paren;
@@ -196,10 +196,6 @@ PROBE* PROBELIST::add_list(CS& cmd)
     }else if (what == "meas") {
       std::string meas_descr;
       cmd >> meas_descr ; 
-     // if (!cmd.skip1b(')')) {
-     //   cmd.warn(bWARNING, "add_list: need )");
-     // }
-//        cmd.warn(bWARNING, "add_list: need )?");
 
       trace0( ("PROBELIST::add_list measurement: (for tt only)" + meas_descr).c_str());
 

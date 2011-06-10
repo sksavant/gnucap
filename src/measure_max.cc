@@ -74,7 +74,6 @@ public:
   fun_t wave_eval()const
   {
     if (w) {
-
       double time = (last) ? -BIGBIG : BIGBIG;
       double m = -BIGBIG;
       WAVE::const_iterator begin = lower_bound(w->begin(), w->end(), DPAIR(after, -BIGBIG));
@@ -90,6 +89,7 @@ public:
       }
       return to_fun_t((arg) ? (time) : (m));
     }else{
+      trace0("measure max, !w "+ probe_name );
       throw Exception_No_Match(probe_name);
     }
   }

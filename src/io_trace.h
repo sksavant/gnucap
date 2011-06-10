@@ -49,10 +49,10 @@ class hp{
 	int p;
 	public:
 	hp(void* x){
-		p = (intptr_t)x %30011;
+		p = static_cast<int>( (intptr_t)x %30011 );
 	}
 	hp(intptr_t x){
-		p = x%2001;
+		p = static_cast<int>( x%2001 );
 	}
 	operator int(){
 		return p;
