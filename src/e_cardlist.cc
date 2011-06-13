@@ -55,6 +55,9 @@ CARD_LIST::CARD_LIST(const CARD* model, CARD* owner,
   shallow_copy(model->subckt());
   set_owner(owner);
   map_subckt_nodes(model, owner);
+  rewire_nodenames(model->subckt());
+  trace1("CARD_LIST::CARD_LIST owner "+ owner->short_label(), _nm->how_many() );
+  trace1("CARD_LIST::CARD_LIST owner "+ owner->short_label(), model->subckt()->nodes()->how_many() );
 }
 /*--------------------------------------------------------------------------*/
 CARD_LIST::~CARD_LIST()
@@ -524,6 +527,32 @@ void CARD_LIST::attach_params(PARAM_LIST* p, const CARD_LIST* scope)
   }
 }
 /*--------------------------------------------------------------------------*/
+// probably stupid hack to pull node names from e.g. model
+void CARD_LIST::rewire_nodenames(const CARD_LIST* p)
+{
+  trace0("CARD_LIST::rewire_nodenames");
+  NODE_MAP* nm=(p->nodes());
+
+  for (NODE_MAP::const_iterator ni = nm->begin(); ni != nm->end(); ++ni) {
+    NODE* n = (*ni).second;
+    string label = (*ni).first;
+
+    trace0("CARD_LIST::rewire_nodenames " + label + " " +
+        n->short_label());
+
+    _nm->old_node(label, n);
+
+  }
+  for (NODE_MAP::const_iterator ni = _nm->begin(); ni != _nm->end(); ++ni) {
+    NODE* n = (*ni).second;
+    string label = (*ni).first;
+
+    trace0("CARD_LIST::rewire_nodenames " + label + " " +
+        n->short_label());
+
+  }
+}
+/*--------------------------------------------------------------------------*/
 void CARD_LIST::shallow_copy(const CARD_LIST* p)
 {
   assert(p);
@@ -548,8 +577,8 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
   //assert(owner->subckt());
   //assert(owner->subckt() == this);
 
-  trace0(("model: "+model->long_label()).c_str());
-  trace0(("owner: "+owner->long_label()).c_str());
+  trace0("model: "+model->long_label());
+  trace0("owner: "+owner->long_label());
 
   uint_t num_nodes_in_subckt = model->subckt()->nodes()->how_many();
   uint_t* map = new uint_t[num_nodes_in_subckt+1];
@@ -559,7 +588,8 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
     for (uint_t port = 0; port < model->net_nodes(); ++port) {
       assert(model->n_(port).e_() <= num_nodes_in_subckt);
       //assert(model->n_(port).e_() == port+1);
-      trace3("ports", port, model->n_(port).e_(), owner->n_(port).t_());
+      trace3("CARD_LIST::map_subckt_nodes ports", 
+          port, model->n_(port).e_(), owner->n_(port).t_());
     }
     {
       // take care of the "port" nodes (external connections)
@@ -591,11 +621,13 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
     if ((**ci).is_device()) {
       for (uint_t ii = 0;  ii < (**ci).net_nodes();  ++ii) {
 	// for each connection node in card
-	(**ci).n_(ii).map_subckt_node(map, owner);
-    trace2("mapping in device "+ (**ci).short_label() + " node " 
-           + (**ci).n_(ii).short_label() , ((**ci).n_(ii)).e_() , ii );
-    // this maps the internal nodename n_(ii) of the device (**ci) in the subckt  with 
-    // the map to  
+        const CARD* c = *ci;
+	c->n_(ii).map_subckt_node(map, owner);
+        trace2("CARD_LIST::map_subckt_nodes " + owner->short_label() 
+            + " mapping in device "+ (**ci).short_label() + " node " 
+           + c->n_(ii).short_label() , (c->n_(ii)).e_() , ii );
+        // this maps the internal nodename n_(ii) of the device (**ci) in the subckt  with 
+        // the map to  
       }
     }else{
       assert(dynamic_cast<MODEL_CARD*>(*ci));

@@ -51,7 +51,9 @@ public:
   void push_probe(PROBE*);
   void merge_probe(PROBE*);
 
-  PROBE*     add_list(CS&);
+  PROBE*     add_list(CS& cmd)
+  { return add_list( cmd, &CARD_LIST::card_list ); }
+  PROBE*     add_list(CS&, const CARD_LIST* scope);
   int	   size()const		{return static_cast<int>(bag.size());}
   const_iterator begin()const	{return bag.begin();}
   const_iterator end()const	{return bag.end();}
@@ -67,8 +69,8 @@ private:
   PROBE*	  push_new_probe(const std::string& param, const CKT_BASE* object);
   MEAS_PROBE*	  push_new_meas_probe(const std::string& param);
 
-  PROBE*   add_branches(const std::string&,const std::string&,const CARD_LIST*);
-  void    add_all_nodes(const std::string&);
+  PROBE*  add_branches(const std::string&,const std::string&,const CARD_LIST*);
+  void    add_all_nodes(const std::string&, const CARD_LIST* scope);
 
   // FIXME
   PROBE* add_expr(const std::string&,const MATH_OP,const CARD_LIST*,CS&, PROBELIST&);

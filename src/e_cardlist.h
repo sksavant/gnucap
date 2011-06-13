@@ -119,6 +119,7 @@ public:
   CARD_LIST& precalc_last();
   CARD_LIST& tt_next();
   CARD_LIST& map_nodes();
+  void rewire_nodenames(const CARD_LIST*); //temporary hack
   CARD_LIST& tr_iwant_matrix();
   CARD_LIST& tr_begin();
   CARD_LIST& tr_restore();

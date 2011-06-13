@@ -551,7 +551,7 @@ MODEL_CARD* LANG_SPICE_BASE::parse_paramset(CS& cmd, MODEL_CARD* x)
 /*--------------------------------------------------------------------------*/
 MODEL_SUBCKT* LANG_SPICE_BASE::parse_module(CS& cmd, MODEL_SUBCKT* x)
 {
-  trace0(("LANG_SPICE_BASE::parse_module " + cmd.tail()).c_str() );
+  trace0(("LANG_SPICE_BASE::parse_module " + cmd.tail()) );
   assert(x);
 
   // header
@@ -562,6 +562,8 @@ MODEL_SUBCKT* LANG_SPICE_BASE::parse_module(CS& cmd, MODEL_SUBCKT* x)
     unsigned here = cmd.cursor();
     int num_nodes = count_ports(cmd, x->max_nodes(), x->min_nodes(), 
 				0/*no unnamed par*/, 0/*start*/);
+
+    trace1("LANG_SPICE_BASE::parse_module ", num_nodes );
     cmd.reset(here);
     parse_ports(cmd, x, x->min_nodes(), 0/*start*/, num_nodes, true/*all new*/);
   }
@@ -583,6 +585,7 @@ void LANG_SPICE_BASE::parse_module_body(CS& cmd, MODEL_SUBCKT* x, CARD_LIST* Sco
 	  || cmd.umatch(exit_key)) {
 	break;
       }else{
+        trace0("LANG_SPICE_BASE::parse_module_body " + cmd.fullstring());
 	skip_pre_stuff(cmd);
 	new__instance(cmd, x, Scope);
       }

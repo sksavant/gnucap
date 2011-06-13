@@ -39,6 +39,9 @@ public:
   NODE*     operator[](std::string);
   NODE*     new_node(std::string);
 
+  //probably a hack. name nodes afterwards...
+  NODE* old_node(std::string, NODE*);
+
   typedef std::map<const std::string, NODE*>::iterator iterator;
   typedef std::map<const std::string, NODE*>::const_iterator const_iterator;
 

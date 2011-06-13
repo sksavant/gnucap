@@ -55,6 +55,7 @@ NODE_MAP::NODE_MAP(const NODE_MAP& p)
 /*--------------------------------------------------------------------------*/
 NODE_MAP::~NODE_MAP()
 {
+  trace0("NODE_MAP::~NODE_MAP");
   for (iterator i = _node_map.begin(); i != _node_map.end(); ++i) {
     if (i->first != "0") {
       assert(i->second);
@@ -98,6 +99,24 @@ NODE* NODE_MAP::new_node(std::string s)
     _node_map[s] = node;
   }
   assert(node);
+  return node;
+}
+/*--------------------------------------------------------------------------*/
+NODE* NODE_MAP::old_node(std::string s, NODE* n)
+{  
+  if(s=="0") return _node_map["0"];
+  trace0("NODE_MAP::old_node " + s );
+  if (OPT::case_insensitive) {
+    notstd::to_lower(&s);
+  }else{
+  }
+  NODE* node = _node_map[s];
+  assert (!node);
+
+  // increments how_many() when lookup fails (new s)  
+  if (!node) {
+    _node_map[s] = n;
+  }
   return node;
 }
 /*--------------------------------------------------------------------------*/
