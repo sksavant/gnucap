@@ -527,10 +527,12 @@ PROBE* PROBELIST::add_branches(const std::string&device,
       // no wild card.  do fast search for one
       { // nodes
         trace0("PROBELIST::add_branches looking up node "+device );
-        NODE* node = (*scope->nodes())[device];
+        NODE* node = (*scope).node(device);
         if (node) {
-          found_something =   push_new_probe(param, node);
+          found_something = push_new_probe(param, node);
         }else{
+          trace0("PROBELIST::add_branches not found "+device );
+
         }
       }
       { //components
@@ -547,7 +549,7 @@ PROBE* PROBELIST::add_branches(const std::string&device,
               found_something =     push_new_probe(paramipn, *i);
             }
           }else {
-              found_something =     push_new_probe(param, *i);
+            found_something =     push_new_probe(param, *i);
           }
           // found_something = 	  push_new_probe(param, *i);
         }else{

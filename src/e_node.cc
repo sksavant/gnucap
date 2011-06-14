@@ -141,6 +141,7 @@ NODE_BASE::NODE_BASE(const std::string& s, int n)
    //_flat_number(n)
    //_matrix_number(INVALID_NODE)
 {
+  trace1("NODE_BASE::NODE_BASE()" + s, n);
 }
 /*--------------------------------------------------------------------------*/
 node_t::node_t()
@@ -148,21 +149,27 @@ node_t::node_t()
    _ttt(INVALID_NODE),
    _m(INVALID_NODE)
 {
+  trace0("node_t::node_t()");
 }
+/*--------------------------------------------------------------------------*/
 node_t::node_t(const node_t& p)
   :_nnn(p._nnn),
    _ttt(p._ttt),
    _m(p._m)
 {
+  trace0("node_t::node_t cloning" + _nnn->long_label());
   //assert(_ttt == _nnn->flat_number());
 }
+/*--------------------------------------------------------------------------*/
 node_t::node_t(NODE* n)
   :_nnn(n),
    _ttt(n->user_number()),
    _m(to_internal(n->user_number()))
 {
+  trace0("node_t::node_t(NODE*) " + _nnn->long_label());
   //assert(_ttt == _nnn->flat_number());
 }
+/*--------------------------------------------------------------------------*/
 node_t& node_t::operator=(const node_t& p)
 {
   if (p._nnn) {
@@ -549,10 +556,18 @@ void node_t::new_model_node(const std::string& node_name, CARD* d)
   //assert(_ttt == _nnn->flat_number());
 }
 /*--------------------------------------------------------------------------*/
+void node_t::hack_subckt_node(NODE* n)
+{
+  _nnn = n;
+
+}
+/*--------------------------------------------------------------------------*/
+
 void node_t::map_subckt_node(uint_t* m, const CARD* d)
 {
   assert(m);
   assert(e_() !=INVALID_NODE);
+  trace2("node_t::map_subckt_node", m[e_()], hp(_nnn));
   if (node_is_valid(m[e_()])) {
     _ttt = m[e_()];
   }else{untested();

@@ -293,6 +293,7 @@ public:
   void	new_node(const std::string&, const CARD*);
   void	new_model_node(const std::string& n, CARD* d);
   void	map_subckt_node(uint_t* map_array, const CARD* d);
+  void	hack_subckt_node(NODE* );
   bool	is_grounded()const {return (e_() == 0);}
   bool	is_connected()const {return (e_() != INVALID_NODE);}
 

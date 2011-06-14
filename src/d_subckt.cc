@@ -191,6 +191,7 @@ void DEV_SUBCKT::expand()
   assert(c->_params._try_again);
   renew_subckt(model, this, scope(), &(c->_params));
   subckt()->expand();
+//  subckt()->set_(model);
 }
 /*--------------------------------------------------------------------------*/
 void DEV_SUBCKT::precalc_first()

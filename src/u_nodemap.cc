@@ -1,4 +1,5 @@
 /*$Id: u_nodemap.cc,v 1.1 2009-10-23 12:01:45 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2002 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -86,6 +87,7 @@ NODE* NODE_MAP::operator[](std::string s)
  */
 NODE* NODE_MAP::new_node(std::string s)
 {  
+  trace0("NODE_MAP::new_node " +s);
   if (OPT::case_insensitive) {
     notstd::to_lower(&s);
   }else{
