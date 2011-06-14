@@ -556,10 +556,13 @@ void node_t::new_model_node(const std::string& node_name, CARD* d)
   //assert(_ttt == _nnn->flat_number());
 }
 /*--------------------------------------------------------------------------*/
-void node_t::hack_subckt_node(NODE* n)
+void node_t::hack_subckt_node(NODE* n, int i )
 {
+  if(_nnn){
+    trace0("node_t::hack_subckt_node " + _nnn->short_label() + " " + n->short_label());
+  }
   _nnn = n;
-
+  _nnn->hack_back(i);
 }
 /*--------------------------------------------------------------------------*/
 

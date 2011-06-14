@@ -693,15 +693,13 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
 	c->n_(ii).map_subckt_node(map, owner);
 
         if ((c->n_(ii)).e_() > model->net_nodes() ){
-          std::stringstream a;
-          a << "int_" << (c->n_(ii)).e_();
-          trace1("CARD_LIST::map_subckt_nodes hacknode " + a.str() + " " + c->n_(ii).short_label(), ii);
+          trace2("CARD_LIST::map_subckt_nodes hacknode " + c->n_(ii).short_label(), ii, (c->n_(ii)).e_() );
           //NODE* hacknode = (*_nm)[c->n_(ii).short_label()];
           NODE* hacknode = _nm->new_node( c->n_(ii).short_label());
           // NODE* hacknode = (*_nm)[a.str()];
           assert(hacknode);
 
-          c->n_(ii).hack_subckt_node( hacknode );
+          c->n_(ii).hack_subckt_node( hacknode, map[  (c->n_(ii)).e_() ]  );
 
         }
 

@@ -115,6 +115,7 @@ public:
 
 public: // raw data access (rvalues)
   uint_t	user_number()const	{return _user_number;}
+  void hack_back(int i){_user_number=i;}
   //int	flat_number()const	{itested();return _flat_number;}
 public: // simple calculated data access (rvalues)
   uint_t	matrix_number()const	{return _sim->_nm[_user_number];}
@@ -293,7 +294,7 @@ public:
   void	new_node(const std::string&, const CARD*);
   void	new_model_node(const std::string& n, CARD* d);
   void	map_subckt_node(uint_t* map_array, const CARD* d);
-  void	hack_subckt_node(NODE* );
+  void	hack_subckt_node(NODE*, int );
   bool	is_grounded()const {return (e_() == 0);}
   bool	is_connected()const {return (e_() != INVALID_NODE);}
 
