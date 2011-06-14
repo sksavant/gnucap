@@ -663,17 +663,6 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
       for (assert(i==model->net_nodes() + 1); i <= num_nodes_in_subckt; ++i) {
 	// for each remaining node in card_list
 	map[i] = CKT_BASE::_sim->newnode_subckt();
-        std::stringstream a;
-        a << "int_" << i;
-
-        // put internal node to nodemap...
-//        NODE* nnn = _nm->new_node(a.str());
-
-        // nnn->set_(i);
-  //      string nname=(model->n_(i)).short_label();
-
-
-	// trace2("CARD_LIST::map_subckt_nodes internal "+ a.str() + " " + nname, i, map[i]);
       }
     }
   }
@@ -692,23 +681,20 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
         const CARD* c = *ci;
 	c->n_(ii).map_subckt_node(map, owner);
 
+        // hack internal nodes into subckt instance scope
         if ((c->n_(ii)).e_() > model->net_nodes() ){
-          trace2("CARD_LIST::map_subckt_nodes hacknode " + c->n_(ii).short_label(), ii, (c->n_(ii)).e_() );
-          //NODE* hacknode = (*_nm)[c->n_(ii).short_label()];
+          trace2("CARD_LIST::map_subckt_nodes hacknode " +
+              c->n_(ii).short_label(), ii, (c->n_(ii)).e_() );
           NODE* hacknode = _nm->new_node( c->n_(ii).short_label());
-          // NODE* hacknode = (*_nm)[a.str()];
           assert(hacknode);
-
-          c->n_(ii).hack_subckt_node( hacknode, map[  (c->n_(ii)).e_() ]  );
-
+          c->n_(ii).hack_subckt_node( hacknode, map[ (c->n_(ii)).e_() ] );
         }
-
         trace3("CARD_LIST::map_subckt_nodes " 
-            + owner->long_label()
-            + " mapping in device "+ (**ci).long_label() + " node " 
-            + c->n_(ii).short_label()
-            + " " + (c->n_(ii)).n_()->long_label(), (c->n_(ii)).e_() , ii, hp((c->n_(ii)).n_() ));
-
+            + owner->long_label() + " mapping in device "+ (**ci).long_label()
+            + " node " + c->n_(ii).short_label() + " "
+            + (c->n_(ii)).n_()->long_label(),
+            (c->n_(ii)).e_(),
+            ii, hp((c->n_(ii)).n_() ));
       }
     }else{
       assert(dynamic_cast<MODEL_CARD*>(*ci));
