@@ -95,7 +95,8 @@ LOGIC_NODE::LOGIC_NODE()
  */
 NODE_BASE::NODE_BASE() 
   : CKT_BASE(),
-   _user_number(INVALID_NODE)
+  _parent(0),
+  _user_number(INVALID_NODE)
 {
 }
 NODE::NODE()
@@ -106,8 +107,9 @@ NODE::NODE()
 /* copy constructor : user data only
  */
 NODE_BASE::NODE_BASE(const NODE_BASE& p)
-  :CKT_BASE(p),
-   _user_number(p._user_number)
+  : CKT_BASE(p),
+  _parent(0),
+  _user_number(p._user_number)
    //_flat_number(p._flat_number)
    //_matrix_number(INVALID_NODE)
 {
@@ -130,13 +132,14 @@ NODE::NODE(const NODE* p)
 /*--------------------------------------------------------------------------*/
 /* usual initializing constructor : name and index
  */
-NODE::NODE(const std::string& s, int n)
-  :NODE_BASE(s,n)
+NODE::NODE(const std::string& s, int n, CARD_LIST*p)
+  :NODE_BASE(s,n,p)
 {
 }
 /*--------------------------------------------------------------------------*/
-NODE_BASE::NODE_BASE(const std::string& s, int n)
+NODE_BASE::NODE_BASE(const std::string& s, int n, CARD_LIST* p)
   :CKT_BASE(s),
+   _parent(p),
    _user_number(n)
    //_flat_number(n)
    //_matrix_number(INVALID_NODE)
@@ -244,6 +247,17 @@ double LOGIC_NODE::tr_probe_num(const std::string& x)const
   }else{
     return NODE_BASE::tr_probe_num(x);
   }
+}
+/*--------------------------------------------------------------------------*/
+const std::string  NODE_BASE::long_label()const
+{
+  string ret(short_label());
+  if (_parent){
+    if( _parent->owner()){
+      ret=_parent->owner()->long_label() + "." + ret;
+    }
+  }
+  return ret;
 }
 /*--------------------------------------------------------------------------*/
 XPROBE NODE::ac_probe_ext(const std::string& x)const
@@ -559,13 +573,13 @@ void node_t::new_model_node(const std::string& node_name, CARD* d)
 void node_t::hack_subckt_node(NODE* n, int i )
 {
   if(_nnn){
-    trace0("node_t::hack_subckt_node " + _nnn->short_label() + " " + n->short_label());
+    trace0("node_t::hack_subckt_node " + _nnn->short_label() + " " 
+        + n->short_label());
   }
   _nnn = n;
-  _nnn->hack_back(i);
+  _nnn->set_user_number(i);
 }
 /*--------------------------------------------------------------------------*/
-
 void node_t::map_subckt_node(uint_t* m, const CARD* d)
 {
   assert(m);
@@ -583,4 +597,5 @@ void node_t::map_subckt_node(uint_t* m, const CARD* d)
 double	NODE_BASE::tr_probe_num(const std::string&)const{return NAN;}
 double	NODE_BASE::tt_probe_num(const std::string& x)const{return tr_probe_num(x);}
 XPROBE	NODE_BASE::ac_probe_ext(const std::string&)const{ return XPROBE(0);}
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

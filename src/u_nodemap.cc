@@ -85,7 +85,7 @@ NODE* NODE_MAP::operator[](std::string s)
 /* return a pointer to a node given a string
  * creates a new one if it isn't already there.
  */
-NODE* NODE_MAP::new_node(std::string s)
+NODE* NODE_MAP::new_node(std::string s, CARD_LIST* p)
 {  
   trace0("NODE_MAP::new_node " +s);
   if (OPT::case_insensitive) {
@@ -96,29 +96,11 @@ NODE* NODE_MAP::new_node(std::string s)
 
   // increments how_many() when lookup fails (new s)  
   if (!node) {
-    node = new NODE(s, how_many());
+    node = new NODE(s, how_many(), p);
     //                 ^^^^ is really the map number of the new node
     _node_map[s] = node;
   }
   assert(node);
-  return node;
-}
-/*--------------------------------------------------------------------------*/
-NODE* NODE_MAP::old_node(std::string s, NODE* n)
-{  
-  if(s=="0") return _node_map["0"];
-  trace0("NODE_MAP::old_node " + s );
-  if (OPT::case_insensitive) {
-    notstd::to_lower(&s);
-  }else{
-  }
-  NODE* node = _node_map[s];
-  assert (!node);
-
-  // increments how_many() when lookup fails (new s)  
-  if (!node) {
-    _node_map[s] = n;
-  }
   return node;
 }
 /*--------------------------------------------------------------------------*/

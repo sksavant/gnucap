@@ -580,34 +580,6 @@ void CARD_LIST::attach_params(PARAM_LIST* p, const CARD_LIST* scope)
   }
 }
 /*--------------------------------------------------------------------------*/
-// probably stupid hack to pull node names from e.g. model
-void CARD_LIST::rewire_nodenames(const CARD_LIST* p)
-{
-  trace0("CARD_LIST::rewire_nodenames");
-  NODE_MAP* nm=(p->nodes());
-
-  for (NODE_MAP::const_iterator ni = _nm->begin(); ni != _nm->end(); ++ni) {
-    NODE* n = (*ni).second;
-    string label = (*ni).first;
-    trace0("CARD_LIST::rewire_nodenames my node " + label );
-  }
-
-  for (NODE_MAP::const_iterator ni = nm->begin(); ni != nm->end(); ++ni) {
-    NODE* n = (*ni).second;
-    string label = (*ni).first;
-
-    trace0("CARD_LIST::rewire_nodenames model node " + label );
-
-    _nm->old_node(label, n);
-
-  }
-  for (NODE_MAP::const_iterator ni = _nm->begin(); ni != _nm->end(); ++ni) {
-    NODE* n = (*ni).second;
-    string label = (*ni).first;
-    trace0("CARD_LIST::rewire_nodenames " + label );
-  }
-}
-/*--------------------------------------------------------------------------*/
 void CARD_LIST::shallow_copy(const CARD_LIST* p)
 {
   assert(p);
@@ -685,7 +657,7 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
         if ((c->n_(ii)).e_() > model->net_nodes() ){
           trace2("CARD_LIST::map_subckt_nodes hacknode " +
               c->n_(ii).short_label(), ii, (c->n_(ii)).e_() );
-          NODE* hacknode = _nm->new_node( c->n_(ii).short_label());
+          NODE* hacknode = _nm->new_node( c->n_(ii).short_label(), this);
           assert(hacknode);
           c->n_(ii).hack_subckt_node( hacknode, map[ (c->n_(ii)).e_() ] );
         }

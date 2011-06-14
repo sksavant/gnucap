@@ -416,7 +416,6 @@ PROBE* PROBELIST::add_branches(const std::string&device,
     if (device.find_first_of("*?") != std::string::npos) {
       // there's a wild card.  do linear search for all
       { // nodes
-//         cerr << "searching for nodes in " << scope << std::endl;
         for (NODE_MAP::const_iterator 
                i = scope->nodes()->begin();
              i != scope->nodes()->end();
