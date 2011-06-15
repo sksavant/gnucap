@@ -1,0 +1,27 @@
+* test subckt node probes
+
+.subckt half a1 a2
+R2 a1  ni 1
+R3 nii ni 1
+R3 nii niii 1
+R1 a2 niii 1
+.ends
+
+V1 ne1 0 1
+X1 ne1 0 half
+
+X2 ne3 ne4 half
+R1 ne4 0   1
+V2 ne3 0 2
+
+.print tran v(X1.ni) v(X1.nii)
+.tran 1 5 
+
+.print tran v(X2.*ii)
+.tran 1 5 
+
+.print tran v(X1.nodes)
+.tran 1 5 
+
+.print tran v(X*.nodes)
+.tran 1 5 

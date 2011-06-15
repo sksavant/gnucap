@@ -272,7 +272,7 @@ void PROBELIST::merge_probe( PROBE* m )
 /*--------------------------------------------------------------------------*/
 PROBE* PROBELIST::push_new_probe(const std::string& param,const CKT_BASE* object)
 {
-  trace0("PROBELIST::push_new_probe");
+  trace0("PROBELIST::push_new_probe " + param + " for " + object->long_label());
   if (param=="V?") {
     cerr << "warning V? not supported" << std::endl;
   }
@@ -292,7 +292,7 @@ void PROBELIST::add_all_nodes(const std::string& what, const CARD_LIST* scope)
     if ((i->first != "0") ) {
       NODE* node = i->second;
       assert (node);
-      //      cerr << "Allnodes adding " << what << " i " << i->second << std::endl;
+      trace0("PROBELIST::add_all_nodes " + what + " i " + i->second->long_label() );
       push_new_probe(what, node);
     }else{
     }
@@ -385,13 +385,14 @@ PROBE* PROBELIST::add_branches(const std::string&device,
         if (card->is_device()
             && card->subckt()
             && wmatch(card->short_label(), container)) {
-          trace0( "PROBELIST::add_branches Found cont: " + container + " dev " + dev );
+          trace0( "PROBELIST::add_branches dot cont: " + container + " dev " + dev + " " +
+              card->long_label());
           found_something = add_branches(dev, param, card->subckt());
         }else{
         }
       }
     }
-    if(0) // disabled by felix (for some reason)
+#if 0  // disabled by felix (for some reason)
     { // reverse (ACS style)
       dotplace = device.find_last_of(".");
       std::string container = device.substr(dotplace+1, std::string::npos);
@@ -411,9 +412,12 @@ PROBE* PROBELIST::add_branches(const std::string&device,
         }
       }
     }
-  }else{
-    // no dots, look here
-    if (device.find_first_of("*?") != std::string::npos) {
+#endif
+  }else{ // no dots, look here
+    if ( device == "nodes") {
+      trace0("PROBELIST::add_branches " + param + "( nodes )" );
+      add_all_nodes(param, scope);
+    } else if (device.find_first_of("*?") != std::string::npos) {
       // there's a wild card.  do linear search for all
       { // nodes
         for (NODE_MAP::const_iterator 
