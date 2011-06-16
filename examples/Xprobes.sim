@@ -2,7 +2,7 @@
 
 .subckt half a1 a2
 R2 a1  ni 1
-R3 nii ni 1
+R4 nii ni 1
 R3 nii niii 1
 R1 a2 niii 1
 .ends
