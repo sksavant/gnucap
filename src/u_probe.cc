@@ -232,8 +232,8 @@ double MATH_PROBE::value(void)const
 /*--------------------------------------------------------------------------*/
 MEAS_PROBE::MEAS_PROBE(const MEAS_PROBE& p) : 
   PROBE(p),
-  w(w),
-  f(f)
+  f(f),
+  w(w)
 {  untested(); }
 /*--------------------------------------------------------------------------*/
 MEAS_PROBE::MEAS_PROBE(const std::string& cmd)
@@ -257,13 +257,14 @@ void MEAS_PROBE::expand(){
   std::string function;
 
   *Cmd >> function >> '(';
-  f = dynamic_cast<WAVE_FUNCTION*>( measure_dispatcher[function] );
+  f = dynamic_cast<WAVE_FUNCTION*>(( measure_dispatcher[function] )->clone() );
 
   if(!f) { 
     untested(); 
   } else {
     f->expand( *Cmd, _scope );
     probe_name=f->probe_name;
+    // _what=probe_name;
     trace0("MEAS_PROBE::expand " + probe_name);
   }
 
@@ -301,8 +302,9 @@ MEAS_PROBE& MEAS_PROBE::operator=(const MEAS_PROBE& p)
 /*--------------------------------------------------------------------------*/
 const std::string MEAS_PROBE::label(void)const
 {
-  trace0("MEAS_PROBE::label()");
-  return _what;
+  trace1("MEAS_PROBE::label()" + probe_name, hp(f));
+  // FIXME
+  return "meas("+probe_name+")";
 }
 /*--------------------------------------------------------------------------*/
 void MEAS_PROBE::precalc_last()

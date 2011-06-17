@@ -32,17 +32,19 @@ class WAVE;
 /*--------------------------------------------------------------------------*/
 class FUNCTION {
 public:
+  virtual FUNCTION* clone()const {unreachable(); return 0;}
   virtual void expand(CS&, const CARD_LIST*){}
-  virtual fun_t eval(CS&, const CARD_LIST*)const = 0;
+  virtual fun_t eval(CS&, const CARD_LIST*)const {return 888;}
 };
 /*--------------------------------------------------------------------------*/
 class WAVE_FUNCTION : public FUNCTION{
   protected:
     WAVE* w;
   public:
-    virtual fun_t eval(CS&, const CARD_LIST*)const{ incomplete(); return 0; }
-    virtual fun_t wave_eval()const = 0;
+    virtual FUNCTION* clone()const {return NULL;}
     WAVE_FUNCTION():w(0),probe_name("unset"){}
+    virtual fun_t eval(CS&, const CARD_LIST*)const{ incomplete(); return 0; }
+    virtual fun_t wave_eval()const { unreachable(); return 888; }
     string probe_name;
     void set_wave(WAVE* ww);// { w=ww; }
 

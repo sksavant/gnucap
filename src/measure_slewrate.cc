@@ -43,6 +43,7 @@ public:
     last(false),
     expression(false)
   {}
+  virtual FUNCTION* clone()const { return new MEASURE(*this);}
 
   void expand(CS& Cmd, const CARD_LIST* Scope)
   {

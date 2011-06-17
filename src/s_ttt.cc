@@ -836,12 +836,6 @@ void TTT::head_tt(double start, double stop, const std::string& col1)
     sprintf(format, "%%c%%-%us", width);
     _out.form(format, '*', col1.c_str());
 
-    for (PROBELIST::const_iterator
-        p=printlist().begin();  p!=printlist().end();  ++p) {
-      _out.form(format, ' ', (*p)->label().c_str());
-      //  _out.flush();
-    }
-    _out << '\n';
 
     for (PROBELIST::const_iterator
         p=printlist().begin();  p!=printlist().end();  ++p) {
@@ -856,6 +850,11 @@ void TTT::head_tt(double start, double stop, const std::string& col1)
       }
 
     }
+    for (PROBELIST::const_iterator
+        p=printlist().begin();  p!=printlist().end();  ++p) {
+      _out.form(format, ' ', (*p)->label().c_str());
+    }
+    _out << '\n';
 
   }else{
   }
