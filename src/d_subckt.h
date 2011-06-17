@@ -31,6 +31,7 @@
 #define PORTS_PER_SUBCKT 100
 //BUG// fixed limit on number of ports
 /*--------------------------------------------------------------------------*/
+// why is this not derived from MODEL_CARD??
 class INTERFACE MODEL_SUBCKT : public COMPONENT {
 private:
   explicit	MODEL_SUBCKT(const MODEL_SUBCKT&p);

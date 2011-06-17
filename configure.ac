@@ -260,6 +260,8 @@ if test "X$enable_modules" = "Xyes"; then
 	AC_OUTPUT([ modules/Makefile ])
 fi
 
+AM_CONDITIONAL(MODULES, test x$enable_modules != xno )
+
 
 AC_MSG_RESULT([
 ** Configuration summary for $PACKAGE $VERSION:

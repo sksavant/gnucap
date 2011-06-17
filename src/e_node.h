@@ -29,6 +29,7 @@
 #include "e_base.h"
 /*--------------------------------------------------------------------------*/
 class MODEL_LOGIC;
+class CARD_LIST;
 /*--------------------------------------------------------------------------*/
 enum {
   OUT1 = 0,
@@ -84,6 +85,8 @@ public:
 /*--------------------------------------------------------------------------*/
 // necessary?
 class NODE_BASE : public CKT_BASE {
+  private:
+    CARD_LIST* _parent;
   protected:
     explicit NODE_BASE();
     explicit NODE_BASE(const NODE_BASE& p);
@@ -93,14 +96,14 @@ class NODE_BASE : public CKT_BASE {
     //int	_matrix_number;
   public:
     explicit NODE_BASE(const NODE_BASE* p);
-    explicit NODE_BASE(const std::string& s, int n);
+    explicit NODE_BASE(const std::string& s, int n, CARD_LIST* p=0);
     virtual ~NODE_BASE() {}
-    NODE_BASE&	set_user_number(int n)	{_user_number = n; return *this;}
+    NODE_BASE&	set_user_number(uint_t n){_user_number = n; return *this;}
   public: // virtuals
     virtual double	tr_probe_num(const std::string&)const;
     virtual double	tt_probe_num(const std::string&)const;
     virtual XPROBE	ac_probe_ext(const std::string&)const;
-
+    const std::string  long_label()const;
 };
 /*--------------------------------------------------------------------------*/
 class NODE : public NODE_BASE {
@@ -110,11 +113,11 @@ private: // inhibited
   explicit NODE(const NODE& p);
 public:
   explicit NODE(const NODE* p); // u_nodemap.cc:49 (deep copy)
-  explicit NODE(const std::string& s, int n);
+  explicit NODE(const std::string& s, int n, CARD_LIST* p=0);
   ~NODE() {}
-
 public: // raw data access (rvalues)
   uint_t	user_number()const	{return _user_number;}
+  //void hack_back(int i){_user_number=i;}
   //int	flat_number()const	{itested();return _flat_number;}
 public: // simple calculated data access (rvalues)
   uint_t	matrix_number()const	{return _sim->_nm[_user_number];}
@@ -293,6 +296,7 @@ public:
   void	new_node(const std::string&, const CARD*);
   void	new_model_node(const std::string& n, CARD* d);
   void	map_subckt_node(uint_t* map_array, const CARD* d);
+  void	hack_subckt_node(NODE*, int );
   bool	is_grounded()const {return (e_() == 0);}
   bool	is_connected()const {return (e_() != INVALID_NODE);}
 
@@ -368,7 +372,7 @@ public:
   }
 };
 /*--------------------------------------------------------------------------*/
-INTERFACE double volts_limited(const node_t& n1, const node_t& n2);
+INTERFACE voltage_t volts_limited(const node_t& n1, const node_t& n2);
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 #endif

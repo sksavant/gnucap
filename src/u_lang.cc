@@ -109,7 +109,7 @@ void LANGUAGE::new__instance(CS& cmd, MODEL_SUBCKT* owner, CARD_LIST* Scope)
       if (x) {
 	assert(Scope);
 	Scope->push_back(x);
-        trace0(("LANGUAGE::new__instance pushback "));
+        trace0("LANGUAGE::new__instance pushback "+x->long_label());
       }else{
       }
     }else{

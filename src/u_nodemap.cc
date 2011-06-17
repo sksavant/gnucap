@@ -1,4 +1,5 @@
 /*$Id: u_nodemap.cc,v 1.1 2009-10-23 12:01:45 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2002 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -55,6 +56,7 @@ NODE_MAP::NODE_MAP(const NODE_MAP& p)
 /*--------------------------------------------------------------------------*/
 NODE_MAP::~NODE_MAP()
 {
+  trace0("NODE_MAP::~NODE_MAP");
   for (iterator i = _node_map.begin(); i != _node_map.end(); ++i) {
     if (i->first != "0") {
       assert(i->second);
@@ -83,8 +85,9 @@ NODE* NODE_MAP::operator[](std::string s)
 /* return a pointer to a node given a string
  * creates a new one if it isn't already there.
  */
-NODE* NODE_MAP::new_node(std::string s)
+NODE* NODE_MAP::new_node(std::string s, CARD_LIST* p)
 {  
+  trace0("NODE_MAP::new_node " +s);
   if (OPT::case_insensitive) {
     notstd::to_lower(&s);
   }else{
@@ -93,7 +96,7 @@ NODE* NODE_MAP::new_node(std::string s)
 
   // increments how_many() when lookup fails (new s)  
   if (!node) {
-    node = new NODE(s, how_many());
+    node = new NODE(s, how_many(), p);
     //                 ^^^^ is really the map number of the new node
     _node_map[s] = node;
   }

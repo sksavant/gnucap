@@ -48,19 +48,18 @@
 class hp{
 	int p;
 	public:
-	hp(void* x){
-		p = static_cast<int>( (intptr_t)x %30011 );
+	hp(const void* x){
+		p = (intptr_t)x %30011;
 	}
-	hp(intptr_t x){
-		p = static_cast<int>( x%2001 );
-	}
+	//hp(intptr_t x){
+//		p = x%2001;
+//	}
 	operator int(){
 		return p;
 	}
 };
 
 #endif
-
 
 
 #define trace_line() (fprintf(stderr, "@@#\n@#@:%s:%u:%s\n", \

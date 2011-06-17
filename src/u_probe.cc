@@ -113,15 +113,14 @@ const std::string PROBE::label(void)const
 {
   if (_brh) {
     if ( _override_label.compare("")!=0 ) {
-    return _override_label;
+      return _override_label;
     } else {
-    return _what + '(' + _brh->long_label() + ')';
+      return _what + '(' + _brh->long_label() + ')';
     }
   }else{
     return _what + "(0)";
   }
 }
-
 /*--------------------------------------------------------------------------*/
 double PROBE::value(void)const
 {

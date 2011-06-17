@@ -35,3 +35,4 @@
 - hacked TRANSIENT:
   - last step handler added
   - moved clear-queue loop to accept()
+- internal subckt nodes accessible for probes

@@ -158,10 +158,9 @@ void PROBELIST::remove_one(CKT_BASE *brh)
  * but not "v(r4) v(r5)" which has two parameters.
  * It also takes care of setting the range for plot or alarm.
  */
-// FIXME: add add_probe (single probe only)
-PROBE* PROBELIST::add_list(CS& cmd)
+// FIXME: add add_probe (single probe only)?
+PROBE* PROBELIST::add_list(CS& cmd, const CARD_LIST* scope)
 {
-  CARD_LIST* scope = &CARD_LIST::card_list;
   trace0("PROBELIST::add_list() ");
   PROBE* found_something = NULL;
   int oldcount = size();
@@ -189,10 +188,10 @@ PROBE* PROBELIST::add_list(CS& cmd)
     paren -= cmd.skip1b(')');
 
   } else if( ( paren = cmd.skip1b('(')) ) {
-    trace1( ( "PROBELIST::add_list "), paren );
+    trace1("PROBELIST::add_list " + what, paren );
     if (cmd.umatch("nodes ")) {
       // all nodes
-      add_all_nodes(what);
+      add_all_nodes(what, &CARD_LIST::card_list);
     }else if (what == "meas") {
       std::string meas_descr;
       cmd >> meas_descr ; 
@@ -223,7 +222,7 @@ PROBE* PROBELIST::add_list(CS& cmd)
         }
         unsigned here2 = cmd.cursor();
         trace0("add_list found_something2");
-        found_something = add_branches(cmd.ctos(),what,&CARD_LIST::card_list);
+        found_something = add_branches(cmd.ctos(), what, scope);
         if (!found_something) {itested();
           cmd.reset(here2);
           break;
@@ -266,17 +265,15 @@ void PROBELIST::push_probe( PROBE* p )
 /*--------------------------------------------------------------------------*/
 void PROBELIST::merge_probe( PROBE* m )
 {
-
-   for( iterator p = begin(); p!=end(); p++) {
-         if(  (*m) == (**p) ) return;
-   }
-
+  for( iterator p = begin(); p!=end(); p++) {
+    if(  (*m) == (**p) ) return;
+  }
   bag.push_back(m);
 }
 /*--------------------------------------------------------------------------*/
 PROBE* PROBELIST::push_new_probe(const std::string& param,const CKT_BASE* object)
 {
-  trace0("PROBELIST::push_new_probe");
+  trace0("PROBELIST::push_new_probe " + param + " for " + object->long_label());
   if (param=="V?") {
     cerr << "warning V? not supported" << std::endl;
   }
@@ -285,17 +282,18 @@ PROBE* PROBELIST::push_new_probe(const std::string& param,const CKT_BASE* object
   return p;
 }
 /*--------------------------------------------------------------------------*/
-void PROBELIST::add_all_nodes(const std::string& what)
+void PROBELIST::add_all_nodes(const std::string& what, const CARD_LIST* scope)
 {
   untested();
   for (NODE_MAP::const_iterator
-       i = CARD_LIST::card_list.nodes()->begin();
-       i != CARD_LIST::card_list.nodes()->end();
+       i = scope->nodes()->begin();
+       //i != CARD_LIST::card_list.nodes()->end();
+       i != scope->nodes()->end();
        ++i) {
     if ((i->first != "0") ) {
       NODE* node = i->second;
       assert (node);
-      //      cerr << "Allnodes adding " << what << " i " << i->second << std::endl;
+      trace0("PROBELIST::add_all_nodes " + what + " i " + i->second->long_label() );
       push_new_probe(what, node);
     }else{
     }
@@ -369,8 +367,7 @@ PROBE* PROBELIST::add_branches(const std::string&device,
                                const std::string&param,
                                const CARD_LIST* scope)
 {
-  //  fprintf(stderr, ("PROBELIST::add_branches " + device + "->" + param + " \n" ).c_str());
-  trace0( ( "PROBELIST::add_branches " + device + "->" + param + " \n" ).c_str());
+  trace0( "PROBELIST::add_branches " + param + " for " + device  );
   assert(scope);
   PROBE* found_something = NULL;
 
@@ -389,12 +386,14 @@ PROBE* PROBELIST::add_branches(const std::string&device,
         if (card->is_device()
             && card->subckt()
             && wmatch(card->short_label(), container)) {
-          //          cerr << " Found " << std::endl;
+          trace0( "PROBELIST::add_branches dot cont: " + container + " dev " + dev + " " +
+              card->long_label());
           found_something = add_branches(dev, param, card->subckt());
         }else{
         }
       }
     }
+#if 0  // disabled by felix (for some reason)
     { // reverse (ACS style)
       dotplace = device.find_last_of(".");
       std::string container = device.substr(dotplace+1, std::string::npos);
@@ -414,17 +413,20 @@ PROBE* PROBELIST::add_branches(const std::string&device,
         }
       }
     }
-  }else{
-    // no dots, look here
-    if (device.find_first_of("*?") != std::string::npos) {
+#endif
+  }else{ // no dots, look here
+    if ( device == "nodes") {
+      trace0("PROBELIST::add_branches " + param + "( nodes )" );
+      add_all_nodes(param, scope);
+    } else if (device.find_first_of("*?") != std::string::npos) {
       // there's a wild card.  do linear search for all
       { // nodes
-//         cerr << "searching for nodes in " << scope << std::endl;
         for (NODE_MAP::const_iterator 
                i = scope->nodes()->begin();
              i != scope->nodes()->end();
              ++i) {
-//           cerr << "node  " << i->first << " sec" << i->second->long_label() << std::endl;
+          trace0("PROBELIST::add_branches node " + i->first + " sec" +
+              i->second->long_label());
         
           if (i->first != "0") {
             NODE* node = i->second;
@@ -506,10 +508,10 @@ PROBE* PROBELIST::add_branches(const std::string&device,
                 }
               }
             }
-          }            
+          } // param==V
           if (wmatch(card->short_label(), device)) {
-            //            cerr << " Components dev "<< card << " param " << param << std::endl;
             if (param=="V?")
+            // nodes of type v2(R1)
             { 
               for(uint_t ip=1;ip<=card->net_nodes();ip++) {
                 char str[10];
@@ -528,11 +530,13 @@ PROBE* PROBELIST::add_branches(const std::string&device,
     }else{
       // no wild card.  do fast search for one
       { // nodes
-        NODE* node = (*scope->nodes())[device];
+        trace0("PROBELIST::add_branches looking up node "+device );
+        NODE* node = (*scope).node(device);
         if (node) {
-          //          cerr << " Node dev "<< node << " param " << param << std::endl;
-          found_something =   push_new_probe(param, node);
+          found_something = push_new_probe(param, node);
         }else{
+          trace0("PROBELIST::add_branches not found "+device );
+
         }
       }
       { //components
@@ -549,7 +553,7 @@ PROBE* PROBELIST::add_branches(const std::string&device,
               found_something =     push_new_probe(paramipn, *i);
             }
           }else {
-              found_something =     push_new_probe(param, *i);
+            found_something =     push_new_probe(param, *i);
           }
           // found_something = 	  push_new_probe(param, *i);
         }else{

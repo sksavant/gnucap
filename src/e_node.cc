@@ -95,7 +95,8 @@ LOGIC_NODE::LOGIC_NODE()
  */
 NODE_BASE::NODE_BASE() 
   : CKT_BASE(),
-   _user_number(INVALID_NODE)
+  _parent(0),
+  _user_number(INVALID_NODE)
 {
 }
 NODE::NODE()
@@ -106,8 +107,9 @@ NODE::NODE()
 /* copy constructor : user data only
  */
 NODE_BASE::NODE_BASE(const NODE_BASE& p)
-  :CKT_BASE(p),
-   _user_number(p._user_number)
+  : CKT_BASE(p),
+  _parent(0),
+  _user_number(p._user_number)
    //_flat_number(p._flat_number)
    //_matrix_number(INVALID_NODE)
 {
@@ -130,17 +132,19 @@ NODE::NODE(const NODE* p)
 /*--------------------------------------------------------------------------*/
 /* usual initializing constructor : name and index
  */
-NODE::NODE(const std::string& s, int n)
-  :NODE_BASE(s,n)
+NODE::NODE(const std::string& s, int n, CARD_LIST*p)
+  :NODE_BASE(s,n,p)
 {
 }
 /*--------------------------------------------------------------------------*/
-NODE_BASE::NODE_BASE(const std::string& s, int n)
+NODE_BASE::NODE_BASE(const std::string& s, int n, CARD_LIST* p)
   :CKT_BASE(s),
+   _parent(p),
    _user_number(n)
    //_flat_number(n)
    //_matrix_number(INVALID_NODE)
 {
+  trace1("NODE_BASE::NODE_BASE()" + s, n);
 }
 /*--------------------------------------------------------------------------*/
 node_t::node_t()
@@ -148,21 +152,27 @@ node_t::node_t()
    _ttt(INVALID_NODE),
    _m(INVALID_NODE)
 {
+  trace0("node_t::node_t()");
 }
+/*--------------------------------------------------------------------------*/
 node_t::node_t(const node_t& p)
   :_nnn(p._nnn),
    _ttt(p._ttt),
    _m(p._m)
 {
+  trace0("node_t::node_t cloning" + _nnn->long_label());
   //assert(_ttt == _nnn->flat_number());
 }
+/*--------------------------------------------------------------------------*/
 node_t::node_t(NODE* n)
   :_nnn(n),
    _ttt(n->user_number()),
    _m(to_internal(n->user_number()))
 {
+  trace0("node_t::node_t(NODE*) " + _nnn->long_label());
   //assert(_ttt == _nnn->flat_number());
 }
+/*--------------------------------------------------------------------------*/
 node_t& node_t::operator=(const node_t& p)
 {
   if (p._nnn) {
@@ -237,6 +247,17 @@ double LOGIC_NODE::tr_probe_num(const std::string& x)const
   }else{
     return NODE_BASE::tr_probe_num(x);
   }
+}
+/*--------------------------------------------------------------------------*/
+const std::string  NODE_BASE::long_label()const
+{
+  string ret(short_label());
+  if (_parent){
+    if( _parent->owner()){
+      ret=_parent->owner()->long_label() + "." + ret;
+    }
+  }
+  return ret;
 }
 /*--------------------------------------------------------------------------*/
 XPROBE NODE::ac_probe_ext(const std::string& x)const
@@ -549,10 +570,21 @@ void node_t::new_model_node(const std::string& node_name, CARD* d)
   //assert(_ttt == _nnn->flat_number());
 }
 /*--------------------------------------------------------------------------*/
+void node_t::hack_subckt_node(NODE* n, int i )
+{
+  if(_nnn){
+    trace0("node_t::hack_subckt_node " + _nnn->short_label() + " " 
+        + n->short_label());
+  }
+  _nnn = n;
+  _nnn->set_user_number(i);
+}
+/*--------------------------------------------------------------------------*/
 void node_t::map_subckt_node(uint_t* m, const CARD* d)
 {
   assert(m);
   assert(e_() !=INVALID_NODE);
+  trace2("node_t::map_subckt_node", m[e_()], hp(_nnn));
   if (node_is_valid(m[e_()])) {
     _ttt = m[e_()];
   }else{untested();
@@ -565,4 +597,5 @@ void node_t::map_subckt_node(uint_t* m, const CARD* d)
 double	NODE_BASE::tr_probe_num(const std::string&)const{return NAN;}
 double	NODE_BASE::tt_probe_num(const std::string& x)const{return tr_probe_num(x);}
 XPROBE	NODE_BASE::ac_probe_ext(const std::string&)const{ return XPROBE(0);}
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

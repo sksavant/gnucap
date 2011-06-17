@@ -1,4 +1,5 @@
 /*$Id: e_cardlist.h,v 1.10 2010-08-26 09:07:17 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -33,6 +34,7 @@ class CARD_LIST;
 class CARD;
 class PARAM_LIST;
 class NODE_MAP;
+class NODE;
 class LANGUAGE;
 class TIME_PAIR;
 /*--------------------------------------------------------------------------*/
@@ -43,35 +45,37 @@ private:
   mutable PARAM_LIST* _params;
   LANGUAGE* _language;
   std::list<CARD*> _cl;
+  const CARD* _owner;       // stupid hack
+  const CARD_LIST* _origin; // stupid hack
 public:
   // internal types
   typedef std::list<CARD*>::iterator iterator;
   typedef std::list<CARD*>::const_iterator const_iterator;
   class fat_iterator {
-  private:
-    CARD_LIST* _list;
-    iterator   _iter;
-  private:
-    explicit	  fat_iterator()	{unreachable();}
-  public:
-		  fat_iterator(const fat_iterator& p)
-			: _list(p._list), _iter(p._iter) {}
-    explicit	  fat_iterator(CARD_LIST* l, iterator i)
-			: _list(l), _iter(i) {}
-    bool	  is_end()const		{return _iter == _list->end();}
-    CARD*	  operator*()		{return (is_end()) ? NULL : *_iter;}
-    fat_iterator& operator++()	{assert(!is_end()); ++_iter; return *this;}
-    fat_iterator  operator++(int)
-		{assert(!is_end()); fat_iterator t(*this); ++_iter; return t;}
-    bool	  operator==(const fat_iterator& x)const
-    	     {unreachable(); assert(_list==x._list); return (_iter==x._iter);}
-    bool	  operator!=(const fat_iterator& x)const
-			{assert(_list==x._list); return (_iter!=x._iter);}
-    iterator	  iter()const		{return _iter;}
-    CARD_LIST*	  list()const		{return _list;}
-    fat_iterator  end()const	{return fat_iterator(_list, _list->end());}
+    private:
+      CARD_LIST* _list;
+      iterator   _iter;
+    private:
+      explicit	  fat_iterator()	{unreachable();}
+    public:
+      fat_iterator(const fat_iterator& p)
+        : _list(p._list), _iter(p._iter) {}
+      explicit	  fat_iterator(CARD_LIST* l, iterator i)
+        : _list(l), _iter(i) {}
+      bool	  is_end()const		{return _iter == _list->end();}
+      CARD*	  operator*()		{return (is_end()) ? NULL : *_iter;}
+      fat_iterator& operator++()	{assert(!is_end()); ++_iter; return *this;}
+      fat_iterator  operator++(int)
+      {assert(!is_end()); fat_iterator t(*this); ++_iter; return t;}
+      bool	  operator==(const fat_iterator& x)const
+      {unreachable(); assert(_list==x._list); return (_iter==x._iter);}
+      bool	  operator!=(const fat_iterator& x)const
+      {assert(_list==x._list); return (_iter!=x._iter);}
+      iterator	  iter()const		{return _iter;}
+      CARD_LIST*	  list()const		{return _list;}
+      fat_iterator  end()const	{return fat_iterator(_list, _list->end());}
 
-    void	  insert(CARD* c)	{list()->insert(iter(),c);}
+      void	  insert(CARD* c)	{list()->insert(iter(),c);}
   };
 
   // status queries
@@ -113,12 +117,15 @@ public:
   CARD_LIST& stress_calc();   // calculate stress parameters
   CARD_LIST& stress_apply();  // apply stress parameters to components.
   CARD_LIST& set_owner(CARD* owner);
+  CARD_LIST& set_origin(CARD_LIST* origin);
+  const CARD* owner()const {return _owner;}
   CARD_LIST& set_slave();
   CARD_LIST& precalc_first();
   CARD_LIST& expand();
   CARD_LIST& precalc_last();
   CARD_LIST& tt_next();
   CARD_LIST& map_nodes();
+  void rewire_nodenames(const CARD_LIST*); //temporary hack
   CARD_LIST& tr_iwant_matrix();
   CARD_LIST& tr_begin();
   CARD_LIST& tr_restore();
@@ -142,6 +149,7 @@ public:
   CARD_LIST& ac_load();
 
   NODE_MAP*   nodes()const {assert(_nm); return _nm;}
+  NODE*       node(std::string)const;
   PARAM_LIST* params();
   PARAM_LIST* params()const;
 
