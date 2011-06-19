@@ -161,6 +161,20 @@ TIME_PAIR EVAL_BM_PWL::tr_review(COMPONENT* d)
     std::vector<DPAIR>::iterator upper = upper_bound(begin, end, here);
     std::vector<DPAIR>::iterator lower = upper - 1;
     assert(x > lower->first);
+//     if (x > 0.1 ) {
+//        x=x+1E-20;
+//      }
+//      if (upper > end) {
+//       fprintf(stderr,"upper after end\n");
+//     } else {
+//       fprintf(stderr," %x upf %f \n",upper,upper->first);      
+//       if (upper->first > 0.4 ) {
+//         x=x+1E-20;
+//       }
+//     }
+    // fprintf(stderr,"x %f \n",x);
+
+    
     d->_time_by.min_event((x < upper->first) ? upper->first : NEVER);
   }else{untested();
     // index (x) is input
