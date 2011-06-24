@@ -103,8 +103,9 @@ e_base.cc e_card.cc e_node.cc e_model.cc e_compon.cc \
 e_homebrew.cc \
 e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc e_adplist.cc\
 bm_value.cc bm.cc \
-c__cmd.cc c_attach.cc c_file.cc c_genrat.cc \
-findbr.cc plot.cc globals.cc e_adp.cc 
+c__cmd.cc c_attach.cc c_file.cc c_genrat.cc c_debug.cc \
+findbr.cc plot.cc globals.cc e_adp.cc \
+m_matrix.cc 
 #------------------------------------------------------------------------
 RAW_HDRS = \
 md.h ap.h mode.h constant.h declare.h patchlev.h \
@@ -124,7 +125,7 @@ bm.h \
 c_comand.h globals.h extlib.h
 
 if IVERILOG
-RAW_HDRS += d_vvp.h
+RAW_HDRS += d_vvp.h d_ivl.h
 # doesnt work (?)
 # dvvp_lo_CFLAGS = -I$(IVERILOG_PATH)/include
 endif

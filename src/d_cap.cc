@@ -198,10 +198,28 @@ bool DEV_CAPACITANCE::do_tr()
   store_values();
   q_load();
 
-  trace3("q", _y[0].x, _y[0].f0, _y[0].f1);
-  _i[0] = differentiate(_y, _i, _time, _method_a);
-  trace3("i", _i[0].x, _i[0].f0, _i[0].f1);
+  if(_sim->more_uic_now()){
+    assert(_time[0] == 0.);
+
+    trace1("DEV_CAPACITANCE::do_tr: desired capacitance is ", _y[0].f1);
+    trace1("DEV_CAPACITANCE::do_tr: desired charge is      ", _y[0].f0);
+    trace1("DEV_CAPACITANCE::do_tr: desired voltage is     ", _y[0].x);
+
+    // was felix gemacht hat (aus d_vs)
+    _i[0] = FPOLY1( CPOLY1( 0., -_y[0].x  / (OPT::shortckt),         1/(OPT::shortckt)  ) ); 
+    trace2("2 quotienten", ( -_y[0].f0 / (OPT::shortckt*factor)  ) /-_y[0].x  / (OPT::shortckt) ,
+			         (_y[0].f1 / (OPT::shortckt*factor))/    1/(OPT::shortckt)  );
+
+    // was tut das eigentlich?
+    _loss1 = _loss0 = 1./OPT::shortckt; // 1e6
+
+  }else{
+    trace3("q", _y[0].x, _y[0].f0, _y[0].f1);
+    _i[0] = differentiate(_y, _i, _time, _method_a);
+    trace3("i", _i[0].x, _i[0].f0, _i[0].f1);
+  }
   _m0 = CPOLY1(_i[0]);
+  trace3("DEV_CAPACITANCE::do_tr", _m0.x, _m0.c0, _m0.c1);
   return converged();
 }
 /*--------------------------------------------------------------------------*/

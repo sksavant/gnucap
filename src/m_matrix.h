@@ -94,7 +94,7 @@
  *	Changing it will corrupt the matrix.
  *	All others have no bounds checking.
  * m(r,c) -- "matrix" -- known to be within the allocated band
- * u(r,c) -- "upper" -- known to be in the upper triangle. (c>=r)
+ * r,c) -- "upper" -- known to be in the upper triangle. (c>=r)
  * l(r,c) -- "lower" -- known to be in the lower triangle. (r>=c)
  * d(r,c) -- "diagonal" -- known to be on the diagonal. (r==c)
  * Using s() will always work, but will be slower than the other methods.
@@ -155,7 +155,7 @@ public:
   int		size()const		{return _size;}
   double 	density();
   T 	d(int r, int  )const	{return *(_diaptr[r]);}
-  const T& s(int r, int c)const; // for python?
+  T     s(int r, int c)const; // for python?
 private:
   T 	u(int r, int c)const	{return _colptr[c][r];}
   T 	l(int r, int c)const	{return _rowptr[r][-c];}
@@ -167,6 +167,8 @@ private:
 public:
   template <class X>
   friend ostream& operator<< ( ostream &o, const BSMATRIX<X>& m);
+  template <class X>
+  friend OMSTREAM& operator<< ( OMSTREAM &o, const BSMATRIX<X>& m);
   void		load_diagonal_point(int i, T value);
   void		load_point(int i, int j, T value);
   void		load_couple(int i, int j, T value);
@@ -467,7 +469,7 @@ T& BSMATRIX<T>::m(int r, int c)
  */
 #if 1
 template <class T>
-const T& BSMATRIX<T>::s(int row, int col)const
+T BSMATRIX<T>::s(int row, int col)const
 {
   assert(_lownode);
   assert(0 <= col);
@@ -745,28 +747,11 @@ void BSMATRIX<T>::fbsub(T* x, const T* b, T* c) const
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-template <class T>
-inline ostream& operator<<( ostream& o, const BSMATRIX<T> &m)
-{
-  std::string s;
-  s = "Matrix of size ";
-  int size=m.size();
-  o << s << m.size();
-  o << " space " << m._nzcount;
-  o << "\n";
-  int i,j;
-  double x;
+template <class X>
+ostream& operator<< ( ostream &o, const BSMATRIX<X>& m);
 
-  for(i = 1; i <=size ; i++ ){
-    for(j = 1; j <=size ; j++ ){
-      x = ((m).s(i,j));
-      o << x << " ";
-    }
-    if (i<size ) o << "\n";
-  }
+template <class X>
+OMSTREAM& operator<< ( OMSTREAM &o, const BSMATRIX<X>& m);
 
-
-  return o;
-}
 #endif
 

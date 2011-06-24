@@ -72,6 +72,7 @@ struct INTERFACE SIM_DATA {
   double _vmax;
   double _vmin;
   bool _uic;		/* flag: use initial conditions (spice-like) */
+  bool _more_uic;       /* flag: also do storage initial cond */
   TRI_STATE _inc_mode;	/* flag: make incremental changes (3 state) */
   SIM_MODE _mode;	/* simulation type (AC, DC, ...) */
   SIM_PHASE _phase;	/* phase of simulation (iter, init-dc,) */
@@ -170,7 +171,7 @@ struct INTERFACE SIM_DATA {
   //bool command_is_fourier() {return _mode == s_FOURIER;}
   bool analysis_is_ac()      {return _mode == s_AC;}
   bool analysis_is_dcop()    {return _mode == s_DC || _mode == s_OP;}
-  bool analysis_is_static()  {return _phase == p_INIT_DC || _phase == p_DC_SWEEP;}
+  bool analysis_is_static()const  {return _phase == p_INIT_DC || _phase == p_DC_SWEEP;}
   bool analysis_is_restore() {return _phase == p_RESTORE;}
   bool analysis_is_tran()    {return _mode == s_TRAN || _mode == s_FOURIER || _mode == s_TTT;}
   bool analysis_is_tt()      {return _mode == s_TTT;}
@@ -191,7 +192,8 @@ struct INTERFACE SIM_DATA {
   bool is_second_iteration()const    {assert(_iter[iSTEP] > 0); return (_iter[iSTEP] == 2);}
   bool is_iteration_number(int n)const    {return (_iter[iSTEP] == n);}
   bool exceeds_iteration_limit(OPT::ITL itlnum)const {return(_iter[iSTEP] > OPT::itl[itlnum]);}
-  bool uic_now() {return _uic && analysis_is_static() && _time0==0.;}
+  bool uic_now() const {return _uic && analysis_is_static() && _time0==0.;}
+  bool more_uic_now()const  {return _more_uic && analysis_is_static() && _time0==0.;}
 
   private:
   uint_t _tt_order;
