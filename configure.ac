@@ -215,6 +215,42 @@ if test "x$GCC" = "xyes" -a "$enable_debug" = "yes"; then
 				;;
 		esac
 	done
+# remove additional added  -OX
+    FOUNDOX="no"
+    NEWCXXFLAGS=""
+	for flag in ${CXXFLAGS} ; do
+        case " -O0 -O1 -O2 -O3 " in 
+			*\ ${flag}\ *)
+              if test "${FOUNDOX}" = "no"; then
+                  NEWCXXFLAGS="${NEWCXXFLAGS} ${flag}" 
+              fi
+              FOUNDOX="yes"
+              ;;
+            *) 
+              NEWCXXFLAGS="${NEWCXXFLAGS} ${flag}" 
+              ;;
+        esac
+    done
+    CXXFLAGS=${NEWCXXFLAGS}
+#    echo "CXXFLAGS: ${CXXFLAGS}"
+    FOUNDOX="no"
+    NEWCFLAGS=""
+	for flag in ${CFLAGS} ; do
+        case " -O0 -O1 -O2 -O3 " in 
+			*\ ${flag}\ *)
+              if test "${FOUNDOX}" = "no"; then
+                  NEWCFLAGS="${NEWCFLAGS} ${flag}" 
+              fi
+              FOUNDOX="yes"
+              ;;
+            *) 
+              NEWCFLAGS="${NEWCFLAGS} ${flag}" 
+              ;;
+        esac
+    done
+    CFLAGS=${NEWCFLAGS}
+#    echo "CFLAGS: ${CFLAGS}"
+
 fi
 
 # exports symbols to plugins
