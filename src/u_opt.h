@@ -155,6 +155,7 @@ public:
   static double vmax;	    // + voltage limit for nonlinear calculations
   static double vmin;	    // - voltage limit for nonlinear calculations
   static double dtmin;	    // smallest internal step in transient analysis
+  static double dtddc;      // very small time step used for ddc analysis
   static double dTmin;	    // smallest internal step in transient analysis
   static double dtratio;    // ratio of max / min dt in transient analysis
   static bool rstray;	    // include stray resistors in models

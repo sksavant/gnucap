@@ -54,7 +54,7 @@ protected: // override virtual
   void	   tr_iwant_matrix()	{tr_iwant_matrix_passive();}
   bool	   do_tr();
   void	   tr_load()		{tr_load_passive();}
-  void	   tr_init(double )		;
+  void	   foo_tr_init(double )		;
   void	   tr_unload()		{tr_unload_passive();}
   hp_float_t   tr_involts()const	{
     if(_n[OUT1].v0() != _n[OUT1].v0()){
@@ -71,8 +71,6 @@ protected: // override virtual
   void	   do_ac();
   void	   ac_load()		{ac_load_passive();}
   COMPLEX  ac_involts()const	{itested();return ac_outvolts();}
-
-  void set_iv();
 
   std::string port_name(uint_t i)const {
     assert(i != INVALID_NODE);
@@ -145,7 +143,7 @@ private: // override virtual
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-void DEV_CAPACITANCE::tr_init( double charge )
+void DEV_CAPACITANCE::foo_tr_init( double charge )
 {
 //  tr_unload();
   untested();
@@ -207,8 +205,8 @@ bool DEV_CAPACITANCE::do_tr()
 
     // was felix gemacht hat (aus d_vs)
     _i[0] = FPOLY1( CPOLY1( 0., -_y[0].x  / (OPT::shortckt),         1/(OPT::shortckt)  ) ); 
-    trace2("2 quotienten", ( -_y[0].f0 / (OPT::shortckt*factor)  ) /-_y[0].x  / (OPT::shortckt) ,
-			         (_y[0].f1 / (OPT::shortckt*factor))/    1/(OPT::shortckt)  );
+    trace2("2 quotienten", ( -_y[0].f0 / (OPT::shortckt)  ) /-_y[0].x  / (OPT::shortckt) ,
+			         (_y[0].f1 / (OPT::shortckt))/    1/(OPT::shortckt)  );
 
     // was tut das eigentlich?
     _loss1 = _loss0 = 1./OPT::shortckt; // 1e6
@@ -255,16 +253,15 @@ double DEV_CAPACITANCE::tr_probe_num(const std::string& x)const
 /*--------------------------------------------------------------------------*/
 bool DEV_VCCAP::do_tr()
 {
-  FPOLY1* q=_y;
-  q[0].x = tr_input_limited();
+  _y[0].x = tr_input_limited();
   tr_eval();
 
   store_values();
   q_load();
 
-  q[0].x = tr_outvolts();
-  q[0].f1 = q[0].f0;		 // self capacitance
-  q[0].f0 = q[0].x * _y[0].f1; // charge
+  _y[0].x = tr_outvolts();
+  _y[0].f1 = _y[0].f0;		 // self capacitance
+  _y[0].f0 = _y[0].x * _y[0].f1; // charge
 
   _i[0] = differentiate(_y, _i, _time, _method_a);
   _m0.x  = _i[0].x;

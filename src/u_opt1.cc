@@ -101,6 +101,7 @@ bool	OPT::trage = false;
 double	OPT::vmax =  5;
 double	OPT::vmin = -5;
 double	OPT::dtmin = 1e-12;
+double	OPT::dtddc = 1e-8;
 double	OPT::dtratio = 1e9;
 bool	OPT::rstray = true;
 bool	OPT::cstray = true;

@@ -163,7 +163,7 @@ private:
   T&	u(int r, int c);
   T&	l(int r, int c);
   T&	m(int r, int c);
-//  T&	s(int r, int c);
+  T&	s(int r, int c);
 public:
   template <class X>
   friend ostream& operator<< ( ostream &o, const BSMATRIX<X>& m);
@@ -500,6 +500,38 @@ T BSMATRIX<T>::s(int row, int col)const
   }
   unreachable();
 }
+template <class T>
+T& BSMATRIX<T>::s(int row, int col)
+{
+  assert(_lownode);
+  assert(0 <= col);
+  assert(col <= size());
+  assert(0 <= row);
+  assert(row <= size());
+  assert(_zero == 0.);
+
+  if (col == row) {
+    return d(row,col);
+  }else if (col > row) {	/* above the diagonal */
+    if (row == 0) {
+      return _trash;
+    }else if (row < _lownode[col]) {
+      return _zero;
+    }else{
+      return (u(row,col));
+    }
+  }else{			/* below the diagonal */
+    assert(col < row);
+    if (col == 0) {
+      return _trash;
+    }else if (col < _lownode[row]) {
+      return _zero;
+    }else{
+      return (l(row,col));
+    }
+  }
+  unreachable();
+}
 #endif
 /*--------------------------------------------------------------------------*/
 template <class T>
@@ -747,11 +779,11 @@ void BSMATRIX<T>::fbsub(T* x, const T* b, T* c) const
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-template <class X>
-ostream& operator<< ( ostream &o, const BSMATRIX<X>& m);
+// template <class X, class Y>
+//Y& operator<< ( Y &o, const BSMATRIX<X>& m);
 
-template <class X>
-OMSTREAM& operator<< ( OMSTREAM &o, const BSMATRIX<X>& m);
+//template <class X>
+//OMSTREAM& operator<< ( OMSTREAM &o, const BSMATRIX<X>& m);
 
 #endif
 

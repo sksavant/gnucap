@@ -46,16 +46,13 @@
 #define hashpointer_
 
 class hp{
-	int p;
+	intptr_t p;
 	public:
 	hp(const void* x){
 		p = (intptr_t)x %30011;
 	}
-	//hp(intptr_t x){
-//		p = x%2001;
-//	}
 	operator int(){
-		return p;
+		return static_cast<int>(p);
 	}
 };
 

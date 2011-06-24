@@ -30,7 +30,7 @@
 #include "globals.h"
 #include "e_node.h"
 #include "u_nodemap.h"
-#include "m_matrix.h"
+#include "io_matrix.h"
 #include "u_sim_data.h"
 #include <iostream>
 #include <fstream>
@@ -76,11 +76,11 @@ void volts_load( fstream *in, CARD_LIST* )
   }
 }
 /*--------------------------------------------------------------------------*/
-void volts_save(CS&, OMSTREAM out, CARD_LIST*)
+void volts_save(CS&, OMSTREAM _out, CARD_LIST*)
 {
   CARD_LIST::card_list.precalc_first();
 
-  //out.setfloatwidth(7);
+  //_out.setfloatwidth(7);
   switch (ENV::run_mode) {
   case rPRE_MAIN:
     unreachable();
@@ -103,29 +103,29 @@ void volts_save(CS&, OMSTREAM out, CARD_LIST*)
   if (! CKT_BASE::_sim->_nstat ) return;
   trace2( "save",  CKT_BASE::_sim->_total_nodes , CKT_BASE::_sim->_adp_nodes );
   
-  out <<  CKT_BASE::_sim->_last_Time << "\n";
+  _out <<  CKT_BASE::_sim->_last_Time << "\n";
 
   for ( uint_t i = 1;  CKT_BASE::_sim->_total_nodes + 1 + CKT_BASE::_sim->_adp_nodes > i ; ++i){
-    out <<  CKT_BASE::_sim->_vdc[i] << "\n";
+    _out <<  CKT_BASE::_sim->_vdc[i] << "\n";
   }
   const NODE_MAP * nm = CARD_LIST::card_list.nodes();
   for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
     untested();
     if (i->first != "0") {
-      out << "Node     :" << i->second->long_label() << " vector position " << 
+      _out << "Node     :" << i->second->long_label() << " vector position " << 
         ", m_ " << i->second->m_() << " , matrix " << i->second->matrix_number() 
           << ", use " << i->second->user_number() << 
          " x-Entry " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
     }else{
-      out << "Zero Node  "  << "\n";
+      _out << "Zero Node  "  << "\n";
     }
   }
 
-  cout << CKT_BASE::_sim->_aa << "\n";
-  cout << CKT_BASE::_sim->_lu << "\n";
+  _out << CKT_BASE::_sim->_aa << "\n";
+  _out << CKT_BASE::_sim->_lu << "\n";
   // cout << CKT_BASE::_sim->_acx << "\n";
 
-  out << "----------------------------------------- \n";
+  _out << "----------------------------------------- \n";
   //  out << CKT_BASE::_sim->_acx;
 
 }
@@ -154,7 +154,7 @@ public:
   void do_it(CS& cmd, CARD_LIST* Scope)
   {
     OMSTREAM out = IO::mstdout;
-    out.setfloatwidth(30);
+    out.setfloatwidth(3);
     out.outset(cmd);
     volts_save(cmd, out, Scope);
     out.outreset();
@@ -167,16 +167,96 @@ public:
   void do_it(CS& cmd, CARD_LIST* )
   {
     OMSTREAM out = IO::mstdout;
-    out.setfloatwidth(30);
+    out.setfloatwidth(3);
     out.outset(cmd);
 
     // volts_save(cmd, out, Scope);
     //
-    out << CKT_BASE::_sim->_aa;
+    out << CKT_BASE::_sim->_aa << "\n";
     out.outreset();
   }
 } p3;
 DISPATCHER<CMD>::INSTALL d3(&command_dispatcher, "aa", &p3);
+/*--------------------------------------------------------------------------*/
+class CMD_LU : public CMD {
+public:
+  void do_it(CS& cmd, CARD_LIST* )
+  {
+    OMSTREAM out = IO::mstdout;
+    out.setfloatwidth(3);
+    out.outset(cmd);
+
+    // volts_save(cmd, out, Scope);
+    //
+    out << CKT_BASE::_sim->_lu << "\n";
+    out.outreset();
+  }
+} p4;
+DISPATCHER<CMD>::INSTALL d4(&command_dispatcher, "lu", &p4);
+/*--------------------------------------------------------------------------*/
+class CMD_ACX: public CMD {
+public:
+  void do_it(CS& cmd, CARD_LIST* )
+  {
+    OMSTREAM out = IO::mstdout;
+    out.setfloatwidth(30);
+    out.outset(cmd);
+
+    out <<  "this doesnt make sense. run .ac with \"dm\" flag instead\n";
+    out.outreset();
+  }
+} p5;
+DISPATCHER<CMD>::INSTALL d5(&command_dispatcher, "acx", &p5);
+/*--------------------------------------------------------------------------*/
+class CMD_NL : public CMD {
+public:
+  void do_it(CS& cmd, CARD_LIST* )
+  {
+    OMSTREAM _out = IO::mstdout;
+    _out.setfloatwidth(3);
+    _out.outset(cmd);
+
+    _out << "listing nodes...\n";
+
+    const NODE_MAP * nm = CARD_LIST::card_list.nodes();
+    for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
+      if (i->first != "0") {
+        _out << "Node     :" << i->second->long_label() << " vector position " << 
+          ", m_ " << i->second->m_() << " , matrix " << i->second->matrix_number() 
+          << ", use " << i->second->user_number() << 
+          " x-Entry " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
+      }else{
+        _out << "Zero Node  "  << "\n";
+      }
+    }
+
+    _out << "listing nodes done\n";
+    _out.outreset();
+  }
+} p6;
+DISPATCHER<CMD>::INSTALL d6(&command_dispatcher, "nodelist", &p6);
+/*--------------------------------------------------------------------------*/
+class CMD_I : public CMD {
+public:
+  void do_it(CS& cmd, CARD_LIST* )
+  {
+    OMSTREAM _out = IO::mstdout;
+    _out.setfloatwidth(3);
+    _out.outset(cmd);
+    _out << "listing i\n";
+    if(_sim->_i){
+
+    for ( uint_t i = 1;  CKT_BASE::_sim->_total_nodes + 1 + CKT_BASE::_sim->_adp_nodes > i ; ++i){
+      _out << i;
+      _out <<  CKT_BASE::_sim->_i[i] << "\n";
+    }
+    }else{
+      _out<< " there are no currents\n";
+    }
+    _out.outreset();
+  }
+} p7;
+DISPATCHER<CMD>::INSTALL d7(&command_dispatcher, "i", &p7);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/

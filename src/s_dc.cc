@@ -1,4 +1,5 @@
 /*$Id: s_dc.cc,v 1.3 2009-12-13 17:55:02 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

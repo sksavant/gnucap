@@ -1,4 +1,5 @@
 /*$Id: s_ac.cc,v 1.2 2009-12-13 17:55:02 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -27,6 +28,7 @@
 #include "u_parameter.h"
 #include "u_prblst.h"
 #include "s__.h"
+#include "io_matrix.h"
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
@@ -42,7 +44,8 @@ public:
     _step(0.),
     _linswp(false),
     _prevopppoint(false),
-    _stepmode(ONE_PT)
+    _stepmode(ONE_PT),
+    _dump_matrix(0)
   {}
 
   ~AC() {}
@@ -62,6 +65,7 @@ private:
   bool	_linswp;		// flag: use linear sweep (vs log sweep)
   bool	_prevopppoint;  	// flag: use previous op point
   enum {ONE_PT, LIN_STEP, LIN_PTS, TIMES, OCTAVE, DECADE} _stepmode;
+  bool _dump_matrix; // dump matrix after ac
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -147,6 +151,7 @@ void AC::setup(CS& Cmd)
       || Get(Cmd, "pr{evoppoint}",&_prevopppoint)
       || Get(Cmd, "sta{rt}",	  &_start)
       || Get(Cmd, "sto{p}",	  &_stop)
+      || Get(Cmd, "dm",	          &_dump_matrix)
       || Get(Cmd, "te{mperature}",&_sim->_temp_c)
       || outset(Cmd,&_out)
       ;
@@ -245,6 +250,9 @@ void AC::sweep()
     _sim->_jomega = COMPLEX(0., _sim->_freq * M_TWO_PI);
     solve();
     outdata(_sim->_freq);
+    if (_dump_matrix){
+      _out << _sim->_acx << "\n";
+    }
   } while (next());
 }
 /*--------------------------------------------------------------------------*/

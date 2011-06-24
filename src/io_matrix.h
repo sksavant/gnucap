@@ -1,8 +1,11 @@
 
 #include "m_matrix.h"
 #include "io_.h"
+#include <complex>
 
-template <>
+using namespace std;
+
+/* template <>
 ostream& operator<<( ostream& o, const BSMATRIX<double> &m)
 {
   std::string s;
@@ -46,11 +49,14 @@ OMSTREAM& operator<<( OMSTREAM& o, const BSMATRIX<double> &m)
   return o;
 }
 
+*/
 
-/// why doesnt this work??
+//inline OMSTREAM& operator<<( OMSTREAM& o, const std::complex<double> &c){
+//	return (o << c.real() << "+" << c.imag() << "I"  );
+//}
 
-template <class T>
-ostream& operator<<( ostream& o, const BSMATRIX<T> &m)
+template <class T, class S>
+inline S& operator<<( S& o, const BSMATRIX<T> &m)
 {
   std::string s;
   s = "Matrix of size ";
@@ -71,8 +77,9 @@ ostream& operator<<( ostream& o, const BSMATRIX<T> &m)
   return o;
 }
 
+
 template <class T>
- OMSTREAM& operator<<( OMSTREAM& o, const BSMATRIX<T> &m)
+inline OMSTREAM& operator<<( OMSTREAM& o, const BSMATRIX<T> &m)
 {
   std::string s;
   s = "Matrix of size ";
@@ -81,7 +88,7 @@ template <class T>
   o << " space " << m._nzcount;
   o << "\n";
   int i,j;
-  double x;
+  T x;
 
   for(i = 1; i <=size ; i++ ){
     for(j = 1; j <=size ; j++ ){

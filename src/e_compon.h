@@ -122,6 +122,7 @@ public:
   virtual void  tr_accept(COMPONENT*)	{}
   virtual bool	has_tr_eval()const	{untested0( name().c_str() ); return false;}
   virtual bool	has_ac_eval()const	{untested(); return false;}
+  virtual void set_ic(double){}
 
 public:
   virtual bool	has_tt_eval()const	{untested(); return false;}
