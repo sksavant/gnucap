@@ -29,6 +29,7 @@
 #include "c_comand.h"
 #include "globals.h"
 #include "e_node.h"
+#include "e_subckt.h"
 #include "u_nodemap.h"
 #include "io_matrix.h"
 #include "u_sim_data.h"
@@ -208,8 +209,10 @@ public:
 } p5;
 DISPATCHER<CMD>::INSTALL d5(&command_dispatcher, "acx", &p5);
 /*--------------------------------------------------------------------------*/
+/*----*/
 class CMD_NL : public CMD {
 public:
+  void print(OMSTREAM, const CARD_LIST*);
   void do_it(CS& cmd, CARD_LIST* )
   {
     OMSTREAM _out = IO::mstdout;
@@ -218,6 +221,7 @@ public:
 
     _out << "listing nodes...\n";
 
+#if 0
     const NODE_MAP * nm = CARD_LIST::card_list.nodes();
     for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
       if (i->first != "0") {
@@ -229,12 +233,40 @@ public:
         _out << "Zero Node  "  << "\n";
       }
     }
+#endif
+    print(_out, &CARD_LIST::card_list);
 
     _out << "listing nodes done\n";
     _out.outreset();
   }
 } p6;
 DISPATCHER<CMD>::INSTALL d6(&command_dispatcher, "nodelist", &p6);
+/*--------------------------------------------------------------------------*/
+void CMD_NL::print( OMSTREAM _out, const CARD_LIST* scope){
+
+
+    const NODE_MAP * nm = scope->nodes();
+    for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
+      if (i->first != "0") {
+        _out << "Node     :" << i->second->long_label() << " vector position " << 
+          ", m_ " << i->second->m_() << " , matrix " << i->second->matrix_number() 
+          << ", use " << i->second->user_number() << 
+          " x-Entry " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
+      }else{
+        // _out << "Zero Node  "  << "\n";
+      }
+    }
+      
+    for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
+      const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i);
+      if (s) {
+        // _out << "BASE_SUBCKT " << s->long_label() << "\n";
+        print(_out,s->subckt());
+      }
+    }
+
+}
+
 /*--------------------------------------------------------------------------*/
 class CMD_I : public CMD {
 public:
