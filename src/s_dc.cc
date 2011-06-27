@@ -356,6 +356,7 @@ void DCOP::sweep()
 /*--------------------------------------------------------------------------*/
 void DCOP::sweep_recursive(int Nest)
 {
+  trace1("DCOP::sweep_recursive", Nest);
   --Nest;
   assert(Nest >= 0);
   assert(Nest < DCNEST);
@@ -386,6 +387,7 @@ void DCOP::sweep_recursive(int Nest)
 /*--------------------------------------------------------------------------*/
 void DCOP::first(int Nest)
 {
+  trace2("DCOP::first", Nest, _start[Nest]);
   assert(Nest >= 0);
   assert(Nest < DCNEST);
   assert(_start);

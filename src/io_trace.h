@@ -63,7 +63,7 @@ class hp{
 			   __FILE__, __LINE__, __func__))
 #define trace0(s) ( cerr << "@#@" << s << "\n")   
 // #define trace0(s) (fprintf(stderr, "@#@%s\n", s )) // needs c_str()...
-#define trace1(s,x) ( cerr <<  "@#@" << s << "  " << #x << "=" << (double)(x) << endl )
+#define trace1(s,x) ( cerr <<  "@#@" << s << "  " << #x << "=" << (x) << endl )
 // #define trace1(s,x) (fprintf(stderr, "@#@%s  %s=%g\n", s, #x, (double)(x)))
 #define trace2(s,x,y) ( cerr <<  "@#@" << s << "  " << #x << "=" << (double)(x)  \
 		                                      << "  " << #y << "=" << (double)(y)  \

@@ -229,6 +229,7 @@ void DEV_CAPACITANCE::do_ac()
     assert(_ev == _y[0].f1);
     assert(has_tr_eval() || _ev == hp_float_t(value()));
   }
+  trace1("DEV_CAPACITANCE::do_ac", _sim->_jomega);
   _acg =  (COMPLEX)_ev * _sim->_jomega;
 }
 /*--------------------------------------------------------------------------*/

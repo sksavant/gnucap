@@ -252,6 +252,10 @@ void AC::sweep()
     outdata(_sim->_freq);
     if (_dump_matrix){
       _out << _sim->_acx << "\n";
+      //for(unsigned i=0; i++<_sim->_total_nodes;){
+      //  _out << i << _sim->_i[i] ;
+      //}
+      _out << "\n";
     }
   } while (next());
 }

@@ -34,8 +34,10 @@
 #include "io_matrix.h"
 #include "u_sim_data.h"
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <string>
+using namespace std;
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
@@ -113,9 +115,9 @@ void volts_save(CS&, OMSTREAM _out, CARD_LIST*)
   for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
     untested();
     if (i->first != "0") {
-      _out << "Node     :" << i->second->long_label() << " vector position " << 
+      _out << i->second->long_label() << " vector position " << 
         ", m_ " << i->second->m_() << " , matrix " << i->second->matrix_number() 
-          << ", use " << i->second->user_number() << 
+          << ", use number " << i->second->user_number() << 
          " x-Entry " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
     }else{
       _out << "Zero Node  "  << "\n";
@@ -219,24 +221,8 @@ public:
     _out.setfloatwidth(3);
     _out.outset(cmd);
 
-    _out << "listing nodes...\n";
-
-#if 0
-    const NODE_MAP * nm = CARD_LIST::card_list.nodes();
-    for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
-      if (i->first != "0") {
-        _out << "Node     :" << i->second->long_label() << " vector position " << 
-          ", m_ " << i->second->m_() << " , matrix " << i->second->matrix_number() 
-          << ", use " << i->second->user_number() << 
-          " x-Entry " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
-      }else{
-        _out << "Zero Node  "  << "\n";
-      }
-    }
-#endif
+    _out << "name   ...\n";
     print(_out, &CARD_LIST::card_list);
-
-    _out << "listing nodes done\n";
     _out.outreset();
   }
 } p6;
@@ -248,10 +234,12 @@ void CMD_NL::print( OMSTREAM _out, const CARD_LIST* scope){
     const NODE_MAP * nm = scope->nodes();
     for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
       if (i->first != "0") {
-        _out << "Node     :" << i->second->long_label() << " vector position " << 
+        stringstream s;
+        s << setw(8) << i->second->long_label() << " vector position " << 
           ", m_ " << i->second->m_() << " , matrix " << i->second->matrix_number() 
           << ", use " << i->second->user_number() << 
           " x-Entry " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
+        _out << s.str();
       }else{
         // _out << "Zero Node  "  << "\n";
       }
@@ -260,7 +248,6 @@ void CMD_NL::print( OMSTREAM _out, const CARD_LIST* scope){
     for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
       const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i);
       if (s) {
-        // _out << "BASE_SUBCKT " << s->long_label() << "\n";
         print(_out,s->subckt());
       }
     }

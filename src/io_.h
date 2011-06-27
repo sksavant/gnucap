@@ -83,10 +83,16 @@ public:
     {  // trace1("op<< " ,x );
 		 return (*this)<<ftos(x,_fltwid,_fltdig,_format);}
   OMSTREAM& operator<<(COMPLEX c)
-    { 
-	return (*this << c.real() << "+" << c.imag() << "I"  );
-//		 return (*this)<<ftos(double(arg(x)),_fltwid,_fltdig,_format);
-	 }
+  { 
+	  *this << c.real();
+	  if(c.imag() <0){
+		  *this << "-" << -c.imag();
+	  }
+	  else{
+		  *this << "+" << c.imag();
+	  }
+     return 	  *this	<< "* i";
+  }
   OMSTREAM& operator<<(bool x)		{return form("%d", x);}
   OMSTREAM& operator<<(int x)		{return form("%d", x);}
   OMSTREAM& operator<<(long int x)	{return form("%li", x);}
