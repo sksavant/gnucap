@@ -6,48 +6,6 @@
 using namespace std;
 
 /* template <>
-ostream& operator<<( ostream& o, const BSMATRIX<double> &m)
-{
-  std::string s;
-  s = "Matrix of size ";
-  int size=m.size();
-  o << s << m.size();
-  o << " space " << m._nzcount;
-  o << "\n";
-  int i,j;
-  double x;
-
-  for(i = 1; i <=size ; i++ ){
-    for(j = 1; j <=size ; j++ ){
-      x = ((m).s(i,j));
-      o << x << " ";
-    }
-    if (i<size ) o << "\n";
-  }
-  return o;
-}
-
-template <>
-OMSTREAM& operator<<( OMSTREAM& o, const BSMATRIX<double> &m)
-{
-  std::string s;
-  s = "Matrix of size ";
-  int size=m.size();
-  o << s << m.size();
-  o << " space " << m._nzcount;
-  o << "\n";
-  int i,j;
-  double x;
-
-  for(i = 1; i <=size ; i++ ){
-    for(j = 1; j <=size ; j++ ){
-      x = ((m).s(i,j));
-      o << x << " ";
-    }
-    if (i<size ) o << "\n";
-  }
-  return o;
-}
 
 */
 
@@ -58,13 +16,8 @@ OMSTREAM& operator<<( OMSTREAM& o, const BSMATRIX<double> &m)
 template <class T, class S>
 inline S& operator<<( S& o, const BSMATRIX<T> &m)
 {
-  std::string s;
-  s = "Matrix of size ";
-  int size=m.size();
-  o << s << m.size();
-  o << " space " << m._nzcount;
-  o << "\n";
-  int i,j;
+  unsigned size=m.size();
+  unsigned i,j;
   T x;
 
   for(i = 1; i <=size ; i++ ){
@@ -77,17 +30,18 @@ inline S& operator<<( S& o, const BSMATRIX<T> &m)
   return o;
 }
 
+#if 1 // why is this needed??
 
 template <class T>
 inline OMSTREAM& operator<<( OMSTREAM& o, const BSMATRIX<T> &m)
 {
   std::string s;
   s = "Matrix of size ";
-  int size=m.size();
+  unsigned size=m.size();
   o << s << m.size();
   o << " space " << m._nzcount;
   o << "\n";
-  int i,j;
+  unsigned i,j;
   T x;
 
   for(i = 1; i <=size ; i++ ){
@@ -99,3 +53,26 @@ inline OMSTREAM& operator<<( OMSTREAM& o, const BSMATRIX<T> &m)
   }
   return o;
 }
+
+template <class T>
+inline ostream& operator<<( ostream& o, const BSMATRIX<T> &m)
+{
+  std::string s;
+  s = "Matrix of size ";
+  unsigned size=m.size();
+  o << s << m.size();
+  o << " space " << m._nzcount;
+  o << "\n";
+  unsigned i,j;
+  T x;
+
+  for(i = 1; i <=size ; i++ ){
+    for(j = 1; j <=size ; j++ ){
+      x = ((m).s(i,j));
+      o << x << " ";
+    }
+    if (i<size ) o << "\n";
+  }
+  return o;
+}
+#endif

@@ -32,7 +32,7 @@ T port_impedance(const node_t& n1, const node_t& n2,
 {
   T* zapit = new T[mat.size()+2];
 
-  for (int ii = 0;  ii < mat.size()+2;  ++ii) {
+  for (unsigned ii = 0;  ii < mat.size()+2;  ++ii) {
     zapit[ii] = 0.;
   }
   if (n1.m_() != 0) {

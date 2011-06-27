@@ -44,12 +44,14 @@ d_trln.cc d_vcg.cc d_vcr.cc d_vcvs.cc d_vs.cc d_vcvs2.cc \
 d_rcd.cc d_bti.cc
 
 gnucap_LDADD = libgnucap.la
+matrix_example_LDADD = libgnucap.la
 
 if IVERILOG
 D_SRCS += d_vvp.cc extlib.cc
 #	libvvpg_la_SOURCES = vvp_main.cc
 #  bin_PROGRAMS += libvvpg
 gnucap_LDADD += @IVERILOG@
+matrix_example_LDADD += @IVERILOG@
 endif
 
 
@@ -143,6 +145,7 @@ MODELOBJS= ${MODELS:.model=.${OBJEXT}}
 # nodist_gnucap_SOURCES= ${SRCS1} ${MODELSRCS} ${SRCS2}
 # henjo:
 nodist_gnucap_SOURCES= main.cc
+nodist_matrix_example_SOURCES= m_matrix_example.cc
 
 
 # gibsnich
@@ -170,7 +173,7 @@ Make2.g++ Make2.Debug Make2.mingw32 \
 Makefile.am
 
 
-bin_PROGRAMS= gnucap
+bin_PROGRAMS= gnucap matrix_example
 
 ## gnucap as a shared library
 lib_LTLIBRARIES = libgnucap.la

@@ -121,18 +121,18 @@ template <class T>
 class BSMATRIX {
 private:
   mutable bool* _changed;// flag: this node changed value
-  int*	_lownode;	// lowest node connecting to this one
+  unsigned*	_lownode;	// lowest node connecting to this one
   T*	_space;		// ptr to actual memory space used
   T**	_rowptr;	// ptrs to col 0 of every row
   T**	_colptr;	// ptrs to row 0 of every col
   T**	_diaptr;	// ptrs to diagonal
-  int	_nzcount;	// count of non-zero elements
-  int	_size;		// # of rows and columns
+  unsigned _nzcount;	// count of non-zero elements
+  unsigned _size;	// # of rows and columns
   T	_zero;		// always 0 but not const
   T	_trash;		// depository for row and col 0, write only
   T	_min_pivot;	// minimum pivot value
 private:
-  explicit	BSMATRIX(const BSMATRIX<T>&) {incomplete();unreachable();}
+  explicit	BSMATRIX(const BSMATRIX<T>&);
   void		uninit();
   void		init(int s=0);
   T&		subtract_dot_product(int r, int c, int d);
@@ -145,6 +145,8 @@ public:
   		~BSMATRIX()		{uninit();}
   void		reinit(int ss=0)	{uninit(); init(ss);}
   //void	clone(const BSMATRIX<T>&);
+  BSMATRIX<T>*  copy()const // also copy contents
+  { return new BSMATRIX(*this); }
   void		iwant(int, int);
   void		unallocate();
   void		allocate();
@@ -155,15 +157,15 @@ public:
   int		size()const		{return _size;}
   double 	density();
   T 	d(int r, int  )const	{return *(_diaptr[r]);}
-  T     s(int r, int c)const; // for python?
+  T     s(unsigned r, unsigned c)const; 
 private:
   T 	u(int r, int c)const	{return _colptr[c][r];}
   T 	l(int r, int c)const	{return _rowptr[r][-c];}
   T&	d(int r, int c);
   T&	u(int r, int c);
   T&	l(int r, int c);
-  T&	m(int r, int c);
-  T&	s(int r, int c);
+  T&	m(unsigned r, unsigned c);
+  T&	s(unsigned r, unsigned c);
 public:
   template <class X>
   friend ostream& operator<< ( ostream &o, const BSMATRIX<X>& m);
@@ -206,7 +208,7 @@ void BSMATRIX<T>::init(int ss)
   _min_pivot = _trash = 0.;
   _nzcount = 0;
   _size = ss;
-  _lownode = new int[size()+1];
+  _lownode = new unsigned[size()+1];
   assert(_lownode);
   for (int ii = 0;  ii <= size();  ++ii) {
     _lownode[ii] = ii;
@@ -335,7 +337,7 @@ void BSMATRIX<T>::allocate()
   assert(!_space);
 
   _nzcount = 0;
-  for (int ii = 0;   ii <= size();   ++ii) {
+  for (unsigned ii = 0;   ii <= size();   ++ii) {
     _nzcount += 2 * (ii - _lownode[ii]) + 1;
   }
 
@@ -450,7 +452,7 @@ T& BSMATRIX<T>::l(int r, int c)
  * but it is not known whether lower, upper, or diagonal
  */
 template <class T>
-T& BSMATRIX<T>::m(int r, int c)
+T& BSMATRIX<T>::m(unsigned r, unsigned c)
 {
   return (c>=r) ? u(r,c) : l(r,c);
 }
@@ -469,7 +471,7 @@ T& BSMATRIX<T>::m(int r, int c)
  */
 #if 1
 template <class T>
-T BSMATRIX<T>::s(int row, int col)const
+T BSMATRIX<T>::s(unsigned row, unsigned col)const
 {
   assert(_lownode);
   assert(0 <= col);
@@ -501,7 +503,7 @@ T BSMATRIX<T>::s(int row, int col)const
   unreachable();
 }
 template <class T>
-T& BSMATRIX<T>::s(int row, int col)
+T& BSMATRIX<T>::s(unsigned row, unsigned col)
 {
   assert(_lownode);
   assert(0 <= col);
@@ -758,7 +760,7 @@ void BSMATRIX<T>::fbsub(T* x, const T* b, T* c) const
 
     int first_nz = ii;
     for (   ; ii <= size(); ++ii) {		/* forward substitution */
-      int low_node = std::max(_lownode[ii], first_nz);
+      int low_node = std::max((int)_lownode[ii], first_nz);
       c[ii] = b[ii];
       for (int jj = low_node; jj < ii; ++jj) {
 	c[ii] -= l(ii,jj) * c[jj];
