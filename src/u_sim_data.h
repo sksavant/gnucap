@@ -38,7 +38,7 @@ class LOGIC_NODE;
 enum TRI_STATE {tsNO=0, tsYES=1, tsBAD=-1};
 /*--------------------------------------------------------------------------*/
 struct INTERFACE SIM_DATA {
-  double _dt0;	/* time now */
+  double _dt0;
   double _time0;	/* time now */
   double _Time0;	/* Time now */
   double _dT0;	
@@ -81,6 +81,7 @@ struct INTERFACE SIM_DATA {
   double *_v0;		/* dc-tran voltage, new			*/
   double *_vt1;		/* dc-tran voltage, 1 time ago		*/
 			/*  used to restore after rejected step	*/
+  double *_vt2;		/* dc-tran voltage, 1 time step after dc    necessary??*/ 
   COMPLEX *_ac;		/* ac right side			*/
   double *_tr;
   double *_tr1;
@@ -121,6 +122,7 @@ struct INTERFACE SIM_DATA {
   void set_limit(double v);
   void clear_limit();
   void keep_voltages();
+  void put_v1_to_v0(); /// temporary hack to buffer voltages
   void restore_voltages();
   void zero_voltages();
   void zero_dc_voltages();

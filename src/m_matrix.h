@@ -194,7 +194,7 @@ public:
   void		lu_decomp();
   void		fbsub(T* v) const;
   void		fbsub(T* x, const T* b, T* c ) const;
-  void		fbsub(T* x, const T* b ) const { fbsub(x,b,x); }
+  T*		fbsub(T* x, const T* b ) const { fbsub(x,b,x); return x; }
 };
 /*--------------------------------------------------------------------------*/
 // private implementations

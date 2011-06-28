@@ -36,11 +36,7 @@ template <class T>
 inline OMSTREAM& operator<<( OMSTREAM& o, const BSMATRIX<T> &m)
 {
   std::string s;
-  s = "Matrix of size ";
   unsigned size=m.size();
-  o << s << m.size();
-  o << " space " << m._nzcount;
-  o << "\n";
   unsigned i,j;
   T x;
 
@@ -58,11 +54,7 @@ template <class T>
 inline ostream& operator<<( ostream& o, const BSMATRIX<T> &m)
 {
   std::string s;
-  s = "Matrix of size ";
   unsigned size=m.size();
-  o << s << m.size();
-  o << " space " << m._nzcount;
-  o << "\n";
   unsigned i,j;
   T x;
 

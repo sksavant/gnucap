@@ -36,7 +36,7 @@ inline OMSTREAM& operator<<(OMSTREAM& o, smode_t t) {
 }
 
 enum SIM_MODE { // simulation types
-  s_NONE,	/* not doing anything, reset by cmd interpreter	*/
+  s_NONE = 0,	/* not doing anything, reset by cmd interpreter	*/
   s_AC,  	/* AC analysis					*/
   s_OP,  	/* op command					*/
   s_DC,  	/* dc sweep command				*/

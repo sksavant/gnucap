@@ -198,6 +198,8 @@ double NODE::tr_probe_num(const std::string& x)const
   if (Umatch(x, "v ")) {
     // return v0(); denoised
     return floor(v0()/OPT::vfloor + .5) * OPT::vfloor;
+  }else if (Umatch(x, "v1 ")) {
+    return floor(vt1()/OPT::vfloor + .5) * OPT::vfloor;
   }else if (Umatch(x, "z ")) {
     return port_impedance(node_t(const_cast<NODE*>(this)), node_t(&ground_node), _sim->_lu, 0.);
   }else if (Umatch(x, "l{ogic} |la{stchange} |fi{naltime} |di{ter} |ai{ter} |count ")) {
@@ -222,6 +224,14 @@ double NODE::tr_probe_num(const std::string& x)const
     // fake probe -1/0 .. negative divide by zero = -Infinity
     double z1 = tr_probe_num("zero ");
     return -1.0/z1;
+  }else if (Umatch(x, "dv ")) { // differential of v
+      return ( vt1() );
+  }else if (Umatch(x, "ddv ")) { // divided difference v
+    double val = 0.; 
+    if(_sim->more_uic_now()){
+      val = ( vdc() -  v0() ) / OPT::dtddc;
+    }
+   return floor(val/OPT::vfloor + .5) * OPT::vfloor;
   }else if (Umatch(x, "nan ")) {
     // fake probe 0/0 = NaN
     double z1 = tr_probe_num("zero ");
