@@ -114,20 +114,6 @@ void DDC::do_it(CS& Cmd, CARD_LIST* Scope)
   ::status.ddc.stop();
 }
 /*--------------------------------------------------------------------------*/
-/*
-void DOP::do_it(CS& Cmd, CARD_LIST* Scope)
-{
-  _scope = Scope;
-  _sim->_time0 = 0.;
-  _sim->set_command_op();
-  _sim->_phase = p_INIT_DC;
-  ::status.op.reset().start();
-  _sim->_temp_c = temp_c_in;
-  command_base(Cmd);
-  ::status.op.stop();
-}
-*/
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 DDCOP::DDCOP()
   :SIM(),
@@ -468,10 +454,10 @@ void DDCOP::sweep_recursive(int Nest)
       }
 
       BSMATRIX<double> G = _sim->_acx.real();
-      cerr << "G\n" << G << "\n" ;
+      trace1("ddc \n", G );
 
       BSMATRIX<double> C = _sim->_acx.imag();
-      cerr << "C\n" << C << "\n" ;
+      trace1("ddc C\n", C );
 
       double Gu[_sim->_total_nodes];
 
@@ -523,7 +509,7 @@ void DDCOP::sweep_recursive(int Nest)
        
       // if more_uic is set, do a little tr-step for ddc-analysis
       //if(_sim->more_uic_now())
-      { // do some AC hacks.
+      { // solve a transient step
         _sim->_time0 = _sim->_dt0 = OPT::dtddc;
         _sim->_bypass_ok = false;
         //_sim->_genout = gen();
@@ -542,7 +528,7 @@ void DDCOP::sweep_recursive(int Nest)
 
         _sim->_time0 = _sim->_dt0 = 0.0;
 
-        _sim->_mode=s_DC;
+        _sim->_mode = s_DC;
         _sim->_phase = p_RESTORE;
         //_sim->restore_voltages(); ????
         _sim->keep_voltages();
@@ -556,7 +542,6 @@ void DDCOP::sweep_recursive(int Nest)
         _sim->_vt1[a] = dv[a];
       }
        
-      //_out.reset(); // needed?
       outdata(_sweepval[Nest]);
       CARD_LIST::card_list.tr_regress();
       //_sim->zero_currents(); // nonsense

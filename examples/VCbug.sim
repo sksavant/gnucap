@@ -2,10 +2,10 @@
 
 *.options abstol=1e-5
 *.options reltol=1e-16
-.options short=1e-9
-.options vntol=1e-14
-.options dtmin=1e-11
-.options cmin=1e-12
+*.options short=1e-9
+*.options vntol=1e-14
+*.options dtmin=1e-11
+*.options cmin=1e-12
 
 * fake spannungsquelle
 
