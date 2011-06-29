@@ -330,7 +330,6 @@ inline void ELEMENT::tr_load_passive()
 {
   // untested0( long_label().c_str() );
   if( _m0.c1 != _m0.c1 ){
-    std::cerr << "ELEMENT::tr_load_passive: " << long_label() << "\n";
     exit(30);
   }
   double d = dampdiff(&_m0.c1, _m1.c1);
