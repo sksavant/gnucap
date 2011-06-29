@@ -1,0 +1,31 @@
+*versuch ein VF zu malen
+
+*.options abstol=1e-5
+*.options reltol=1e-16
+.options short=1e-9
+.options vntol=1e-14
+.options dtmin=1e-11
+
+* fake spannungsquelle
+
+* bug! hier muss IC=x stehen
+C0 1 0 1m IC=1
+R1 1 2 1k
+C1 2 0 5m IC=0.2
+
+*     _R1
+* 1--[_]--2
+* |       |
+* = C0    = C1
+* |       |
+* V       V
+
+.options numdgt=10
+
+.PRINT ddc  v(1) v(2) dv(2) i(R1) ddv(2)
+*v(C1) v1(1) v1(2)
+
+.DDC C1 0.2 1 0.1 C0 .5 1.5 0.1 basic > vektorfeldtest.dat
+
+.nodelist > vf.nodes
+

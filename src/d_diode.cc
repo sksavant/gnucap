@@ -447,9 +447,9 @@ bool COMMON_BUILT_IN_DIODE::operator==(const COMMON_COMPONENT& x)const
     && COMMON_COMPONENT::operator==(x));
 }
 /*--------------------------------------------------------------------------*/
-void COMMON_BUILT_IN_DIODE::set_param_by_index(int I, std::string& Value, int Offset)
+void COMMON_BUILT_IN_DIODE::set_param_by_index(int i, std::string& Value, int Offset)
 {
-  switch (COMMON_BUILT_IN_DIODE::param_count() - 1 - I) {
+  switch (COMMON_BUILT_IN_DIODE::param_count() - 1 - i) {
   case 0:  area = Value; break;
   case 1:  perim = Value; break;
   case 2:  off = Value; break;
@@ -459,7 +459,7 @@ void COMMON_BUILT_IN_DIODE::set_param_by_index(int I, std::string& Value, int Of
   case 6:  cj_raw = Value; break;
   case 7:  cjsw_raw = Value; break;
   case 8:  gparallel_raw = Value; break;
-  default: COMMON_COMPONENT::set_param_by_index(I, Value, Offset);
+  default: COMMON_COMPONENT::set_param_by_index(i, Value, Offset);
   }
 }
 /*--------------------------------------------------------------------------*/

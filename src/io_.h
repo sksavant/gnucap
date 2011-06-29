@@ -27,6 +27,7 @@
 #ifndef IO_H
 #define IO_H
 #include "l_lib.h"
+#include <complex>
 /*--------------------------------------------------------------------------*/
 class CS;
 const int MAXHANDLE = CHAR_BIT*sizeof(int)-1;
@@ -81,6 +82,17 @@ public:
   OMSTREAM& operator<<(double x)
     {  // trace1("op<< " ,x );
 		 return (*this)<<ftos(x,_fltwid,_fltdig,_format);}
+  OMSTREAM& operator<<(COMPLEX c)
+  { 
+	  *this << c.real();
+	  if(c.imag() <0){
+		  *this << "-" << -c.imag();
+	  }
+	  else{
+		  *this << "+" << c.imag();
+	  }
+     return 	  *this	<< "* i";
+  }
   OMSTREAM& operator<<(bool x)		{return form("%d", x);}
   OMSTREAM& operator<<(int x)		{return form("%d", x);}
   OMSTREAM& operator<<(long int x)	{return form("%li", x);}

@@ -36,6 +36,7 @@ public:
   TIMER get;
   TIMER op;
   TIMER dc;
+  TIMER ddc;
   TIMER tran;
   TIMER ttt;
   TIMER four;

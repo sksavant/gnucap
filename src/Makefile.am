@@ -44,12 +44,14 @@ d_trln.cc d_vcg.cc d_vcr.cc d_vcvs.cc d_vs.cc d_vcvs2.cc \
 d_rcd.cc d_bti.cc
 
 gnucap_LDADD = libgnucap.la
+matrix_example_LDADD = libgnucap.la
 
 if IVERILOG
 D_SRCS += d_vvp.cc extlib.cc
 #	libvvpg_la_SOURCES = vvp_main.cc
 #  bin_PROGRAMS += libvvpg
 gnucap_LDADD += @IVERILOG@
+matrix_example_LDADD += @IVERILOG@
 endif
 
 
@@ -70,7 +72,7 @@ c_sweep.cc c_sim.cc c_system.cc c_for.cc
 # simulation commands, usually multiple files for one command
 S_SRCS = \
 s_ac.cc s_dc.cc s_fo.cc \
-s_ttt.cc s_tt_set.cc \
+s_ddc.cc s_ttt.cc s_tt_set.cc \
 s_tr.cc s_tr_set.cc s_tr_swp.cc
 
 # netlist languages
@@ -103,8 +105,8 @@ e_base.cc e_card.cc e_node.cc e_model.cc e_compon.cc \
 e_homebrew.cc \
 e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc e_adplist.cc\
 bm_value.cc bm.cc \
-c__cmd.cc c_attach.cc c_file.cc c_genrat.cc \
-findbr.cc plot.cc globals.cc e_adp.cc 
+c__cmd.cc c_attach.cc c_file.cc c_genrat.cc c_debug.cc \
+findbr.cc plot.cc globals.cc e_adp.cc
 #------------------------------------------------------------------------
 RAW_HDRS = \
 md.h ap.h mode.h constant.h declare.h patchlev.h \
@@ -112,7 +114,7 @@ l_compar.h l_dispatcher.h l_denoise.h \
 l_lib.h l_stlextra.h l_timer.h \
 m_cpoly.h m_divdiff.h m_interp.h m_matrix.h m_spline.h m_wave.h \
 m_base.h m_expression.h m_phase.h \
-io_.h io_error.h io_trace.h \
+io_.h io_error.h io_trace.h io_matrix.h \
 u_cardst.h u_function.h u_lang.h u_limit.h u_nodemap.h u_opt.h u_parameter.h \
 u_prblst.h u_probe.h u_sim_data.h u_sdp.h u_status.h u_time_pair.h u_xprobe.h \
 s__.h s_tr.h e_adp.h s_tt.h\
@@ -124,7 +126,7 @@ bm.h \
 c_comand.h globals.h extlib.h
 
 if IVERILOG
-RAW_HDRS += d_vvp.h
+RAW_HDRS += d_vvp.h d_ivl.h
 # doesnt work (?)
 # dvvp_lo_CFLAGS = -I$(IVERILOG_PATH)/include
 endif
@@ -143,6 +145,7 @@ MODELOBJS= ${MODELS:.model=.${OBJEXT}}
 # nodist_gnucap_SOURCES= ${SRCS1} ${MODELSRCS} ${SRCS2}
 # henjo:
 nodist_gnucap_SOURCES= main.cc
+nodist_matrix_example_SOURCES= m_matrix_example.cc
 
 
 # gibsnich
@@ -170,7 +173,7 @@ Make2.g++ Make2.Debug Make2.mingw32 \
 Makefile.am
 
 
-bin_PROGRAMS= gnucap
+bin_PROGRAMS= gnucap matrix_example
 
 ## gnucap as a shared library
 lib_LTLIBRARIES = libgnucap.la

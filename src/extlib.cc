@@ -30,6 +30,7 @@
 #include "s_tr.h"
 #include "extlib.h"
 #include "bm.h"
+//#include "vvp.h"
 #include "d_vvp.h"
 
 # include  "vvp/compile.h"

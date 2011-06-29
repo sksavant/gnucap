@@ -90,6 +90,7 @@ public:
   static bool node;	    // flag: print node table
   static bool opts;	    // flag: print options
   static double gmin;	    // minimum conductance allowed
+  static double cmin;	    // minimum capacity allowed
   static double bypasstol;  // bypass tolerance multiplier
   static double loadtol;    // trace load tolerance multiplier
   static double reltol;	    // relative error tolerance
@@ -155,6 +156,7 @@ public:
   static double vmax;	    // + voltage limit for nonlinear calculations
   static double vmin;	    // - voltage limit for nonlinear calculations
   static double dtmin;	    // smallest internal step in transient analysis
+  static double dtddc;      // very small time step used for ddc analysis
   static double dTmin;	    // smallest internal step in transient analysis
   static double dtratio;    // ratio of max / min dt in transient analysis
   static bool rstray;	    // include stray resistors in models

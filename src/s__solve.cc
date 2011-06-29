@@ -166,6 +166,7 @@ void SIM::advance_time(void)
       CARD_LIST::card_list.tr_regress();
     }
   }else{
+    trace1("SIM::advance_time dc_adv.", _sim->_time0);
     CARD_LIST::card_list.dc_advance();
   }
   last_iter_time = _sim->_time0;

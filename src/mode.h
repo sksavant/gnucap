@@ -36,7 +36,7 @@ inline OMSTREAM& operator<<(OMSTREAM& o, smode_t t) {
 }
 
 enum SIM_MODE { // simulation types
-  s_NONE,	/* not doing anything, reset by cmd interpreter	*/
+  s_NONE = 0,	/* not doing anything, reset by cmd interpreter	*/
   s_AC,  	/* AC analysis					*/
   s_OP,  	/* op command					*/
   s_DC,  	/* dc sweep command				*/
@@ -46,12 +46,13 @@ enum SIM_MODE { // simulation types
 };
 const int sSTART = s_NONE;
 const int sCOUNT = s_FOURIER + 1;
+const std::string SIM_MODE_label[] = {"ALL", "AC", "OP", "DC", "TRAN", "TTT",
+  "FOURIER"};
 inline OMSTREAM& operator<<(OMSTREAM& o, SIM_MODE t) {
   trace0( "mode stream" );
-  const std::string s[] = {"ALL", "AC", "OP", "DC", "TRAN", "TTT", "FOURIER"};
   assert(t >= int(s_NONE));
   assert(t <= int(s_FOURIER));
-  return (o << s[t]);
+  return (o << SIM_MODE_label[t]);
 }
 
 enum SIM_PHASE { // which of the many steps...
@@ -61,6 +62,8 @@ enum SIM_PHASE { // which of the many steps...
   p_TRAN, 	/* transient, in progress			*/
   p_RESTORE	/* transient restore after stop			*/
 };
+const std::string SIM_PHASE_label[] = {"NONE", "INIT_DC", "DC_SWEEP", "TRAN",
+  "RESTORE"};
 
 
 enum PROBE_INDEX { // iter probes (continue after SIM_MODE)

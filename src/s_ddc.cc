@@ -1,4 +1,4 @@
-/*$Id: s_dc.cc,v 1.3 2009-12-13 17:55:02 felix Exp $ -*- C++ -*-
+/*$Id: s_dc.cc,v 26.132 2009/11/24 04:26:37 al Exp $ -*- C++ -*-
  * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
@@ -27,11 +27,14 @@
 #include "u_prblst.h"
 #include "u_cardst.h"
 #include "e_elemnt.h"
+#include "e_storag.h"
 #include "s__.h"
+#include "io_matrix.h"
+#include "m_matrix_extra.h"
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class DCOP : public SIM {
+class DDCOP : public SIM {
 public:
   void	finish();
 protected:
@@ -42,10 +45,12 @@ private:
   void	sweep_recursive(int);
   void	first(int);
   bool	next(int);
-  explicit DCOP(const DCOP&): SIM() {unreachable(); incomplete();}
+  void do_time_step();
+  void undo_time_step();
+  explicit DDCOP(const DDCOP&): SIM() {unreachable(); incomplete();}
 protected:
-  explicit DCOP();
-  ~DCOP() {}
+  explicit DDCOP();
+  ~DDCOP() {}
   
 protected:
   enum {DCNEST = 4};
@@ -55,7 +60,9 @@ protected:
   PARAMETER<double> _step_in[DCNEST];
   double _step[DCNEST];
   bool _linswp[DCNEST];
-  double* (_sweepval[DCNEST]);	/* pointer to thing to sweep, dc command */
+  double _sweepval[DCNEST];	/* pointer to thing to sweep, dc command */
+//  typedef void (*p)(double);
+  ELEMENT* (_pushel[DCNEST]);	/* pointer to thing to sweep, dc command */
   ELEMENT* (_zap[DCNEST]);	/* to branch to zap, for re-expand */
   CARDSTASH _stash[DCNEST];	/* store std values of elements being swept */
   bool _loop[DCNEST];		/* flag: do it again backwards */
@@ -67,42 +74,48 @@ protected:
   static double temp_c_in;	/* ambient temperature, input and sweep variable */
 };
 /*--------------------------------------------------------------------------*/
-double	DCOP::temp_c_in = 0.;
+double	DDCOP::temp_c_in = 0.;
 /*--------------------------------------------------------------------------*/
-class DC : public DCOP {
+class DDC : public DDCOP {
 public:
-  explicit DC(): DCOP() {}
-  ~DC() {}
+  explicit DDC(): DDCOP() {}
+  ~DDC() {}
   void	do_it(CS&, CARD_LIST*);
 private:
   void	setup(CS&);
-  explicit DC(const DC&): DCOP() {unreachable(); incomplete();}
+  explicit DDC(const DDC&): DDCOP() {unreachable(); incomplete();}
 };
 /*--------------------------------------------------------------------------*/
-class OP : public DCOP {
+/*
+class DOP : public DDCOP {
 public:
-  explicit OP(): DCOP() {}
-  ~OP() {}
+  explicit DOP(): DDCOP() {}
+  ~DOP() {}
   void	do_it(CS&, CARD_LIST*);
 private:
   void	setup(CS&);
-  explicit OP(const OP&): DCOP() {unreachable(); incomplete();}
+  explicit DOP(const DOP&): DDCOP() {unreachable(); incomplete();}
 };
+*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-void DC::do_it(CS& Cmd, CARD_LIST* Scope)
+void DDC::do_it(CS& Cmd, CARD_LIST* Scope)
 {
+  trace0("doing ddc");
   _scope = Scope;
   _sim->_time0 = 0.;
+  //_sim->set_command_ddc();
   _sim->set_command_dc();
   _sim->_phase = p_INIT_DC;
-  ::status.dc.reset().start();
+  //_sim->_ddc = true;
+  ::status.ddc.reset().start();
   _sim->_temp_c = temp_c_in;
   command_base(Cmd);
-  ::status.dc.stop();
+  ::status.ddc.stop();
 }
 /*--------------------------------------------------------------------------*/
-void OP::do_it(CS& Cmd, CARD_LIST* Scope)
+/*
+void DOP::do_it(CS& Cmd, CARD_LIST* Scope)
 {
   _scope = Scope;
   _sim->_time0 = 0.;
@@ -113,21 +126,23 @@ void OP::do_it(CS& Cmd, CARD_LIST* Scope)
   command_base(Cmd);
   ::status.op.stop();
 }
+*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-DCOP::DCOP()
+DDCOP::DDCOP()
   :SIM(),
    _n_sweeps(1),
    _cont(false),
    _trace(tNONE)
 {
+
   for (int ii = 0; ii < DCNEST; ++ii) {
     _loop[ii] = false;
     _reverse_in[ii] = false;
     _reverse[ii] = false;
     _step[ii]=0.;
     _linswp[ii]=true;
-    _sweepval[ii]=&_sim->_genout;
+    _sweepval[ii]=_sim->_genout;
     _zap[ii]=NULL; 
     _stepmode[ii] = ONE_PT;
   }
@@ -136,11 +151,12 @@ DCOP::DCOP()
   _sim->_genout=0.;
   temp_c_in=OPT::temp_c;
   _out=IO::mstdout;
-  _sim->_uic=false;
+  _sim->_uic=_sim->_more_uic=false;
 }
 /*--------------------------------------------------------------------------*/
-void DCOP::finish(void)
+void DDCOP::finish(void)
 {
+
   for (int ii = 0;  ii < _n_sweeps;  ++ii) {
     if (exists(_zap[ii])) { // component
       _stash[ii].restore();
@@ -152,13 +168,15 @@ void DCOP::finish(void)
   }
 }
 /*--------------------------------------------------------------------------*/
-void OP::setup(CS& Cmd)
+/*
+void DOP::setup(CS& Cmd)
 {
+
   _sim->_temp_c = temp_c_in;
   _cont = false;
   _trace = tNONE;
   _out = IO::mstdout;
-  _out.reset(); //BUG// don't know why this is needed */
+  _out.reset(); //BUG// don't know why this is needed 
   bool ploton = IO::plotset  &&  plotlist().size() > 0;
 
   _zap[0] = NULL;
@@ -189,8 +207,9 @@ void OP::setup(CS& Cmd)
   _start[0].e_val(OPT::temp_c, _scope);
   fix_args(0);
 }
+*/
 /*--------------------------------------------------------------------------*/
-void DC::setup(CS& Cmd)
+void DDC::setup(CS& Cmd)
 {
   _cont = false;
   _trace = tNONE;
@@ -204,6 +223,7 @@ void DC::setup(CS& Cmd)
       if (!ci.is_end()) {			// sweep a component
 	if (ELEMENT* c = dynamic_cast<ELEMENT*>(*ci)) {
 	  _zap[_n_sweeps] = c;
+          trace0("DDC::setup " + _zap[_n_sweeps]->long_label());
 	}else{untested();
 	  throw Exception("dc/op: can't sweep " + (**ci).long_label() + '\n');
 	}
@@ -231,6 +251,8 @@ void DC::setup(CS& Cmd)
   }
   Cmd.check(bWARNING, "what's this?");
 
+  _sim->_uic = _sim->_more_uic = true;
+
   IO::plotout = (ploton) ? IO::mstdout : OMSTREAM();
   initio(_out);
 
@@ -240,20 +262,39 @@ void DC::setup(CS& Cmd)
     fix_args(ii);
 
     if (exists(_zap[ii])) { // component
+      trace1("zap" + _zap[ii]->long_label(), ii );
       _stash[ii] = _zap[ii];			// stash the std value
       _zap[ii]->inc_probes();			// we need to keep track of it
-      _zap[ii]->set_value(_zap[ii]->value(),0);	// zap out extensions
-      _zap[ii]->set_constant(false);		// so it will be updated
-      _sweepval[ii] = _zap[ii]->set__value();	// point to value to patch
+
+
+//      urghs. hack
+      STORAGE* s = dynamic_cast<STORAGE*>(_zap[ii]);
+      if(s != 0){
+        _zap[ii]->set_constant(false);		   // so it will be updated
+        _pushel[ii] = _zap[ii];	           // point to value to patch
+      }else{
+        _zap[ii]->set_value(_zap[ii]->value(),0);  // zap out extensions
+        _zap[ii]->set_constant(false);		   // so it will be updated
+        _pushel[ii] = _zap[ii];	                   // element to patch
+      }
+      _sweepval[ii] = 0;	        
+      
+      //_zap[ii]->set_value(_zap[ii]->value(),0);	// zap out extensions
+      //_zap[ii]->set_constant(false);		// so it will be updated
+      //_sweepval[ii] = _zap[ii]->set__value();	// point to value to patch
+      //_sweepval[ii] = _zap[ii]->set__ic();	// point to value to patch
     }else{ // generator
-      _sweepval[ii] = &_sim->_genout;			// point to value to patch
+      _sweepval[ii] = 0;
+      incomplete();
+      _pushel[ii] = NULL; //&_sim->set_gen;			// point to value to patch
     }
   }
   _sim->_freq = 0;
 }
 /*--------------------------------------------------------------------------*/
-void DCOP::fix_args(int Nest)
+void DDCOP::fix_args(int Nest)
 {
+
   _stop[Nest].e_val(_start[Nest], _scope);
   _step_in[Nest].e_val(0., _scope);
   _step[Nest] = _step_in[Nest];
@@ -302,9 +343,11 @@ void DCOP::fix_args(int Nest)
   }
 }
 /*--------------------------------------------------------------------------*/
-void DCOP::options(CS& Cmd, int Nest)
+void DDCOP::options(CS& Cmd, int Nest)
 {
+
   _sim->_uic = _loop[Nest] = _reverse_in[Nest] = false;
+  _sim->_more_uic = true;
   unsigned here = Cmd.cursor();
   do{
     ONE_OF
@@ -323,6 +366,8 @@ void DCOP::options(CS& Cmd, int Nest)
       || Get(Cmd, "lo{op}", 	  &_loop[Nest])
       || Get(Cmd, "re{verse}",	  &_reverse_in[Nest])
       || Get(Cmd, "te{mperature}",&temp_c_in)
+      //|| Get(Cmd, "uic",	   &_sim->_uic)
+      //|| Get(Cmd, "more_uic",	   &_sim->_more_uic)
       || (Cmd.umatch("tr{ace} {=}") &&
 	  (ONE_OF
 	   || Set(Cmd, "n{one}",      &_trace, tNONE)
@@ -337,9 +382,12 @@ void DCOP::options(CS& Cmd, int Nest)
       || outset(Cmd,&_out)
       ;
   }while (Cmd.more() && !Cmd.stuck(&here));
+
+  //_sim->_uic|=_sim->_more_uic;
+
 }
 /*--------------------------------------------------------------------------*/
-void DCOP::sweep()
+void DDCOP::sweep()
 {
   head(_start[0], _stop[0], " ");
   _sim->_bypass_ok = false;
@@ -354,9 +402,9 @@ void DCOP::sweep()
   sweep_recursive(_n_sweeps);
 }
 /*--------------------------------------------------------------------------*/
-void DCOP::sweep_recursive(int Nest)
+void DDCOP::sweep_recursive(int Nest)
 {
-  trace1("DCOP::sweep_recursive", Nest);
+  trace1("DDCOP::sweep_recursive", Nest);
   --Nest;
   assert(Nest >= 0);
   assert(Nest < DCNEST);
@@ -365,8 +413,12 @@ void DCOP::sweep_recursive(int Nest)
   
   first(Nest);
   do {
+    trace0("DDCOP::sweep_recursive loopstart");
     _sim->_temp_c = temp_c_in;
     if (Nest == 0) {
+      _sim->_time0 = _sim->_dt0 = 0.0;
+      _sim->_last_time = 0.0;
+      // _sim->zero_currents();
       int converged = solve_with_homotopy(itl,_trace);
       if (!converged) {itested();
 	error(bWARNING, "did not converge\n");
@@ -376,8 +428,138 @@ void DCOP::sweep_recursive(int Nest)
       _sim->set_limit();
       CARD_LIST::card_list.tr_accept();
       ::status.accept.stop();
-      _sim->keep_voltages();
-      outdata(*_sweepval[Nest]);
+      _sim->keep_voltages(); // vdc = v0
+
+      SIM_PHASE old_phase = _sim->_phase;
+
+      _sim->init();
+      //_sim->alloc_vectors();
+      _sim->_acx.reallocate();
+      _sim->_jomega = COMPLEX(0., 1.0);
+      _sim->_mode=s_AC;
+      // _sim->_acx.set_min_pivot(OPT::pivtol);
+      {// AC::sweep
+        CARD_LIST::card_list.ac_begin();
+        //...
+      }
+
+      // if verbose
+      cerr << "v0 = ( " << _sim->_v0[0];
+      for(unsigned a=1;a <= _sim->_total_nodes; ++a){
+        cerr << " " <<  _sim->_v0[a];
+      }
+      cerr << ") \n";
+      cerr << "i = ( " << _sim->_i[0];
+      for(unsigned a=1;a <= _sim->_total_nodes; ++a){
+        cerr << " " <<  _sim->_i[a];
+      }
+      cerr << ") \n";
+
+      if(1){ // AC::solve
+        trace0("AC::solve");
+        _sim->_acx.zero();
+        std::fill_n(_sim->_ac, _sim->_total_nodes+1, 0.);
+
+        ::status.load.start();
+        _sim->count_iterations(iTOTAL);
+        CARD_LIST::card_list.do_ac();
+        CARD_LIST::card_list.ac_load();
+        ::status.load.stop();
+      }
+
+      BSMATRIX<double> G = _sim->_acx.real();
+      cerr << "G\n" << G << "\n" ;
+
+      BSMATRIX<double> C = _sim->_acx.imag();
+      cerr << "C\n" << C << "\n" ;
+
+      double Gu[_sim->_total_nodes];
+
+      G.rmul(Gu, _sim->_v0);
+      cerr << "Gu= ( " << Gu[0];
+      for(unsigned a=1; a <= _sim->_total_nodes; ++a){
+        cerr << " " << Gu[a];
+      }
+      cerr << ") \n";
+
+      for(unsigned a=0;a <= _sim->_total_nodes; ++a){
+          Gu[a] = - Gu[a] +  _sim->_ac[a].real() ;
+           // Gu[a] = Gu[a] -  _sim->_i[a] ;
+      }
+
+      cerr << "_i= ( " << _sim->_i[0];
+      for(unsigned a=1; a <= _sim->_total_nodes; ++a){
+        cerr << " " <<  _sim->_i[a];
+      }
+      cerr << ") \n";
+
+      cerr << "_ac = ( " << _sim->_ac[0];
+      for(unsigned a=1; a <= _sim->_total_nodes; ++a){
+        cerr << " " <<  _sim->_ac[a];
+      }
+      cerr << ") \n";
+
+      cerr << "RS= ( " << Gu[0];
+      for(unsigned a=1; a <= _sim->_total_nodes; ++a){
+        cerr << " " << Gu[a];
+      }
+      cerr << ") \n";
+
+      C.dezero( OPT::cmin ); 
+      C.lu_decomp();
+
+      double dv[_sim->_total_nodes];
+      C.fbsub( dv, Gu , dv );
+
+      cerr << " solution = ( " << dv[0];
+      for(unsigned a=1; a <= _sim->_total_nodes; ++a){
+        cerr << " " << dv[a];
+      }
+      cerr << ") \n";
+
+
+      _sim->_phase = p_TRAN;
+      _sim->_mode=s_TRAN;
+       
+      // if more_uic is set, do a little tr-step for ddc-analysis
+      //if(_sim->more_uic_now())
+      { // do some AC hacks.
+        _sim->_time0 = _sim->_dt0 = OPT::dtddc;
+        _sim->_bypass_ok = false;
+        //_sim->_genout = gen();
+
+        assert(_sim->analysis_is_tran());
+        int tr_converged = solve(OPT::TRHIGH, _trace);
+
+        if (!tr_converged) {
+          error(bWARNING, "did not converge\n");
+        }else{
+        }
+        ::status.accept.start();
+        _sim->set_limit();
+        CARD_LIST::card_list.tr_accept();
+        ::status.accept.stop();
+
+        _sim->_time0 = _sim->_dt0 = 0.0;
+
+        _sim->_mode=s_DC;
+        _sim->_phase = p_RESTORE;
+        //_sim->restore_voltages(); ????
+        _sim->keep_voltages();
+        _sim->put_v1_to_v0();
+        // CARD_LIST::card_list.tr_restore(); // what does this do?
+        _sim->_phase = old_phase;
+
+      } 
+      for(unsigned a=0; a <= _sim->_total_nodes; ++a){
+        // stash hack
+        _sim->_vt1[a] = dv[a];
+      }
+       
+      //_out.reset(); // needed?
+      outdata(_sweepval[Nest]);
+      CARD_LIST::card_list.tr_regress();
+      //_sim->zero_currents(); // nonsense
       itl = OPT::DCXFER;
     }else{
       sweep_recursive(Nest);
@@ -385,16 +567,19 @@ void DCOP::sweep_recursive(int Nest)
   } while (next(Nest));
 }
 /*--------------------------------------------------------------------------*/
-void DCOP::first(int Nest)
+void DDCOP::first(int Nest)
 {
-  trace2("DCOP::first", Nest, _start[Nest]);
+  trace2("DDCOP::first", Nest, _start[Nest]);
   assert(Nest >= 0);
   assert(Nest < DCNEST);
   assert(_start);
   assert(_sweepval);
-  assert(_sweepval[Nest]);
+// assert(_pushel[Nest]);
 
-  *_sweepval[Nest] = _start[Nest];
+  _sweepval[Nest] = _start[Nest];
+  // here? (hack...)
+  if(_pushel[Nest])
+     _pushel[Nest]->set_ic(_start[Nest]);
   _reverse[Nest] = false;
   if (_reverse_in[Nest]) {itested();
     while (next(Nest)) {itested();
@@ -407,8 +592,9 @@ void DCOP::first(int Nest)
   _sim->_phase = p_INIT_DC;
 }
 /*--------------------------------------------------------------------------*/
-bool DCOP::next(int Nest)
+bool DDCOP::next(int Nest)
 {
+
   bool ok = false;
   if (_linswp[Nest]) {
     double fudge = _step[Nest] / 10.;
@@ -416,9 +602,11 @@ bool DCOP::next(int Nest)
       ok = false;
     }else{
       if (!_reverse[Nest]) {
-	*(_sweepval[Nest]) += _step[Nest];
+	_sweepval[Nest] += _step[Nest];
 	fixzero(_sweepval[Nest], _step[Nest]);
-	ok=in_order(_start[Nest]-fudge,*(_sweepval[Nest]),_stop[Nest]+fudge);
+	ok=in_order(_start[Nest]-fudge,_sweepval[Nest],_stop[Nest]+fudge);
+        _pushel[Nest]->set_ic(_sweepval[Nest]);
+        trace1("DDCOP::next " + _pushel[Nest]->long_label(), _sweepval[Nest]);
 	if (!ok  &&  _loop[Nest]) {
 	  _reverse[Nest] = true;
 	}else{
@@ -426,9 +614,10 @@ bool DCOP::next(int Nest)
       }else{
       }
       if (_reverse[Nest]) {
-	*(_sweepval[Nest]) -= _step[Nest];
+	_sweepval[Nest] -= _step[Nest];
 	fixzero(_sweepval[Nest], _step[Nest]);
-	ok=in_order(_start[Nest]-fudge,*(_sweepval[Nest]),_stop[Nest]+fudge);
+	ok=in_order(_start[Nest]-fudge,_sweepval[Nest],_stop[Nest]+fudge);
+        _pushel[Nest]->set_ic(_sweepval[Nest]);
       }else{
       }
     }
@@ -438,8 +627,9 @@ bool DCOP::next(int Nest)
       ok = false;
     }else{
       if (!_reverse[Nest]) {
-	*(_sweepval[Nest]) *= _step[Nest];
-	ok=in_order(_start[Nest]/fudge,*(_sweepval[Nest]),_stop[Nest]*fudge);
+	_sweepval[Nest] *= _step[Nest];
+	ok=in_order(_start[Nest]/fudge,_sweepval[Nest],_stop[Nest]*fudge);
+        _pushel[Nest]->set_ic(_sweepval[Nest]);
 	if (!ok  &&  _loop[Nest]) {untested();
 	  _reverse[Nest] = true;
 	}else{
@@ -447,8 +637,9 @@ bool DCOP::next(int Nest)
       }else{
       }
       if (_reverse[Nest]) {untested();
-	*(_sweepval[Nest]) /= _step[Nest];
-	ok=in_order(_start[Nest]/fudge,*(_sweepval[Nest]),_stop[Nest]*fudge);
+	_sweepval[Nest] /= _step[Nest];
+	ok=in_order(_start[Nest]/fudge,_sweepval[Nest],_stop[Nest]*fudge);
+        _pushel[Nest]->set_ic(_sweepval[Nest]);
       }else{
       }
     }
@@ -457,10 +648,10 @@ bool DCOP::next(int Nest)
   return ok;
 }
 /*--------------------------------------------------------------------------*/
-static DC p2;
-static OP p4;
-static DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "dc", &p2);
-static DISPATCHER<CMD>::INSTALL d4(&command_dispatcher, "op", &p4);
+static DDC p2;
+//static DOP p4;
+static DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "ddc", &p2);
+//static DISPATCHER<CMD>::INSTALL d4(&command_dispatcher, "dop", &p4);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

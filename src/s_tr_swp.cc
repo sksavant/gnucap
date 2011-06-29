@@ -79,7 +79,20 @@ void TRANSIENT::sweep()
   _sim->_genout = gen();
   
   // assert (_sim->_loadq.empty());
-  if (_sim->uic_now() || _inside_tt ) {
+  if (_sim->more_uic_now()) {
+    trace0("TRAN: more UIC now ");
+    advance_time();
+    _sim->zero_voltages();
+    CARD_LIST::card_list.do_tr();    //evaluate_models
+    while (!_sim->_late_evalq.empty()) {itested(); //BUG// encapsulation violation
+      _sim->_late_evalq.front()->do_tr_last();
+      _sim->_late_evalq.pop_front();
+    }
+//    _converged = true;
+    _converged = solve_with_homotopy(OPT::DCBIAS,_trace);
+
+
+  }else if (_sim->uic_now() || _inside_tt ) {
     trace3("TRANSIENT::sweep uic_now solve", time1, _sim->_time0, _inside_tt);
     advance_time();
     if (!_inside_tt) {

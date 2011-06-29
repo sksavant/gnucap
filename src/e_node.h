@@ -140,12 +140,18 @@ public: // virtuals
     assert(m_() <= _sim->_total_nodes);
     return _sim->_vt1[m_()];
   }
+
+  // needed??
+  double      vt2()const {
+    assert(m_() <= _sim->_total_nodes);
+    return _sim->_vt2[m_()];
+  }
   COMPLEX     vac()const {
     assert(m_() != INVALID_NODE );
     assert(m_() <= _sim->_total_nodes);
     return _sim->_ac [m_()];
   }
-  //double      vdc()const		{untested();return _sim->_vdc[m_()];}
+  double      vdc()const		{untested();return _sim->_vdc[m_()];}
 
   //double&     i()	{untested();return SIM::i[m_()];}  /* lvalues */
   COMPLEX&    iac() {

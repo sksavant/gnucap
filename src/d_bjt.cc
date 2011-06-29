@@ -1053,15 +1053,15 @@ bool COMMON_BUILT_IN_BJT::operator==(const COMMON_COMPONENT& x)const
     && COMMON_COMPONENT::operator==(x));
 }
 /*--------------------------------------------------------------------------*/
-void COMMON_BUILT_IN_BJT::set_param_by_index(int I, std::string& Value, int Offset)
+void COMMON_BUILT_IN_BJT::set_param_by_index(int i, std::string& Value, int Offset)
 {
-  switch (COMMON_BUILT_IN_BJT::param_count() - 1 - I) {
+  switch (COMMON_BUILT_IN_BJT::param_count() - 1 - i) {
   case 0:  area = Value; break;
   case 1:  off = Value; break;
   case 2:  icvbe = Value; break;
   case 3:  icvce = Value; break;
   case 4:  temp_c = Value; break;
-  default: COMMON_COMPONENT::set_param_by_index(I, Value, Offset);
+  default: COMMON_COMPONENT::set_param_by_index(i, Value, Offset);
   }
 }
 /*--------------------------------------------------------------------------*/

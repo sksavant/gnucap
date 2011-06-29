@@ -159,6 +159,9 @@ FPOLY1 differentiate(const FPOLY1* q, const FPOLY1* i, double* time, METHOD meth
     assert(time[0] > 0);
     return i[0];
   }else{
+    trace1("differentiate " + SIM_MODE_label[CKT_BASE::_sim->_mode],
+        CKT_BASE::_sim->_mode);
+    assert(CKT_BASE::_sim->analysis_is_tran());
     assert(CKT_BASE::_sim->analysis_is_tran_dynamic());
     if (time[1] == 0) {
       method = mEULER;	// Bogus current in previous step.  Force Euler.
@@ -243,5 +246,12 @@ double STORAGE::tr_probe_num(const std::string& x)const
     return ELEMENT::tr_probe_num(x);
   }
 }
+/*--------------------------------------------------------------------------*/
+void STORAGE::set_ic( double x ){
+  if(has_common()){
+    trace1("STORAGE::set_ic "+long_label(), x);
+    mutable_common()->set_ic(x);
+  }
+} 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

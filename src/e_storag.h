@@ -74,6 +74,8 @@ protected:
   FPOLY1   _i[OPT::_keep_time_steps]; /* deriv of _q */
 protected:
   static METHOD method_select[meNUM_METHODS][meNUM_METHODS];
+   void set_ic(double);
+
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
