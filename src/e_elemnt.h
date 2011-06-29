@@ -41,7 +41,9 @@ protected:
 public:
   double*  set__value()			{return _value.pointer_hack();}
 //  void  set_value(double x)		{ *(_value.pointer_hack()) = x;}
-  virtual void  set_ic(double x)		{ *(_value.pointer_hack()) = x;}
+  virtual void  set_ic(double x);
+//  { 
+  //  *(_value.pointer_hack()) = x;}
 
   bool	   skip_dev_type(CS&);
 

@@ -564,6 +564,17 @@ double ELEMENT::tr_review_check_and_convert(double timestep)
   return time_future;
 }
 /*--------------------------------------------------------------------------*/
+void ELEMENT::set_ic(double x)
+{ 
+  // tr_unload();
+  trace1("ELEMENT::set_ic " + long_label(), x);
+  *(_value.pointer_hack()) = x;
+  // do_tr();
+  // tr_load();
+  q_eval();
+  // q_load();
+}
+/*--------------------------------------------------------------------------*/
 void ELEMENT::tt_next()
 {
   // das tut das hier?

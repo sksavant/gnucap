@@ -33,6 +33,7 @@ bool	OPT::page = false;
 bool	OPT::node = false;
 bool	OPT::opts = false;
 double	OPT::gmin = 1e-12;
+double	OPT::cmin = 1e-12;
 double	OPT::bypasstol = .1;
 double	OPT::loadtol = .1;
 double	OPT::reltol = .001;
