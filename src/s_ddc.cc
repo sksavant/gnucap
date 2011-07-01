@@ -536,8 +536,11 @@ void DDCOP::sweep_recursive(int Nest)
         cerr << ") \n";
 
         if(_dump_matrix){
-          _out  << "RS\n";
-          //_out << vector<voltage_t>(Gu,_sim->_total_nodes) << "\n";
+          _out << "RS\n( " << Gu[0];
+          for(unsigned a=1; a <= _sim->_total_nodes; ++a){
+            _out << " " <<  Gu[a];
+          }
+          _out  << ") \n";
         }
 
         cerr << ") \n";
