@@ -89,11 +89,36 @@ BSMATRIX<double>::BSMATRIX(BSMATRIX<double>::IMAG, const BSMATRIX<complex<double
 	}
 }
 /*-----------------------------------*/
+template<>
+BSMATRIX<double>::BSMATRIX(BSMATRIX<double>::SUM, const BSMATRIX<complex<double> >& m ) :
+	_changed(new bool[m.size()+1]),
+	_lownode(new unsigned[m.size()+1]),
+	_space(new double[m._nzcount]),
+	_rowptr(new double*[m._size+1]),
+	_colptr(new double*[m._size+1]),
+	_diaptr(new double*[m._size+1]),
+	_nzcount(m._nzcount),
+	_size(m._size),
+	_zero(0.)
+{
+	memcpy(_changed,m._changed, (_size+1) * sizeof(bool) );
+	memcpy(_lownode,m._lownode, (_size+1) * sizeof(unsigned) );
 
-//template<>
-//BSMATRIX<double>::BSMATRIX(REAL, const BSMATRIX<COMPLEX>&)
-//{}
-//BSMATRIX<double>::BSMATRIX(IMAG, const BSMATRIX<COMPLEX>&)
+	_trash = abs (m._trash);
+	_min_pivot = abs(m._min_pivot) ;
+	_space = new double[_nzcount];
+	for(unsigned i=0; i<_nzcount; i++ ){
+		_space[i]= (m._space[i]).real() + (m._space[i]).imag() ;
+	}
+
+	for(unsigned i=0; i<_size+1; i++){
+		_rowptr[i]= _space - intptr_t(m._space - m._rowptr[i]);
+		_colptr[i]= _space - intptr_t(m._space - m._colptr[i]);
+		_diaptr[i]= _space - intptr_t(m._space - m._diaptr[i]);
+	}
+}
+/*-----------------------------------*/
+
 //{}
 template<class T>
 inline T*  BSMATRIX<T>::rmul(T* b, const T* x)const{

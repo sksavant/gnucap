@@ -137,10 +137,12 @@ private:
 public:
   enum REAL {_REAL};
   enum IMAG {_IMAG};
+  enum SUM {_SUM};
   BSMATRIX(const BSMATRIX<T>&);
 private:
   explicit	BSMATRIX(REAL, const BSMATRIX<complex<double> >&);
   explicit	BSMATRIX(IMAG, const BSMATRIX<complex<double> >&);
+  explicit	BSMATRIX(SUM, const BSMATRIX<complex<double> >&);
   void		uninit();
   void		init(int s=0);
   T&		subtract_dot_product(int r, int c, int d);
@@ -159,6 +161,8 @@ public:
   { return( BSMATRIX<double>(BSMATRIX< double >::_REAL, *this) ) ; }
   BSMATRIX<double> imag()const
   { return( BSMATRIX<double>(BSMATRIX< double >::_IMAG, *this) ) ; }
+  BSMATRIX<double> sum()const
+  { return( BSMATRIX<double>(BSMATRIX< double >::_SUM, *this) ) ; }
   void		iwant(unsigned, unsigned);
   void		unallocate();
   void		allocate();

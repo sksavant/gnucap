@@ -183,24 +183,12 @@ void DDCOP::do_tran_step()
     cerr << " " <<  _sim->_v0[a];
   } cerr << ") \n";
 
-  cerr << "DDCOP vt1 = ( " << _sim->_vt1[0];
-  for(unsigned a=1;a <= _sim->_total_nodes; ++a){
-    cerr << " " <<  _sim->_vt1[a];
-  } cerr << ") \n";
-  cerr << "i = ( " << _sim->_i[0];
-  for(unsigned a=1;a <= _sim->_total_nodes; ++a){
-    cerr << " " <<  _sim->_i[a];
-  }
   cerr << ") \n";
   _sim->set_limit();
 
 
   CARD_LIST::card_list.tr_accept();
   trace0("DDCOP::sweep_recursive itr_accepted");
-  cerr << "_i= ( " << _sim->_i[0];
-  for(unsigned a=1; a <= _sim->_total_nodes; ++a){
-    cerr << " " <<  _sim->_i[a];
-  } cerr << ") \n";
 
   ::status.accept.stop();
 
@@ -417,6 +405,9 @@ void DDCOP::sweep_recursive(int Nest)
   assert(Nest >= 0);
   assert(Nest < DCNEST);
 
+  double iddc[_sim->_total_nodes];
+  double dv[_sim->_total_nodes];
+
   OPT::ITL itl = OPT::DCBIAS;
   
   first(Nest);
@@ -435,6 +426,19 @@ void DDCOP::sweep_recursive(int Nest)
       }
       ::status.accept.start();
       _sim->set_limit();
+
+      if(_dump_matrix){
+        _out << "iddc ( " << _sim->_i[0];
+        for(unsigned a=1; a <= _sim->_total_nodes; ++a){
+          _out << " " <<  _sim->_i[a];
+        }
+        _out  << ") \n";
+      }
+
+      for(unsigned a=0; a <= _sim->_total_nodes; ++a){
+        iddc[a]=_sim->_i[a];
+      }
+
 
       CARD_LIST::card_list.tr_accept();
       ::status.accept.stop();
@@ -455,6 +459,13 @@ void DDCOP::sweep_recursive(int Nest)
       }
 
       trace0("solved with homotopy");
+      if(_dump_matrix){
+        _out << "i ( " << _sim->_i[0];
+        for(unsigned a=1; a <= _sim->_total_nodes; ++a){
+          _out << " " <<  _sim->_i[a];
+        }
+        _out  << ") \n";
+      }
 
       // if verbose
       cerr << "v0 = ( " << _sim->_v0[0];
@@ -489,35 +500,28 @@ void DDCOP::sweep_recursive(int Nest)
 
       BSMATRIX<double> G = _sim->_acx.real();
       BSMATRIX<double> C = _sim->_acx.imag();
+      BSMATRIX<double> S = _sim->_acx.sum();
 
       if(_dump_matrix){
         _out << "G\n" << G << "\n";
         _out << "C\n" << C << "\n";
+        _out << "S\n" << S << "\n";
       }
 
       double Gu[_sim->_total_nodes];
 
       G.rmul(Gu, _sim->_v0);
-
       for(unsigned a=0;a <= _sim->_total_nodes; ++a){
-        // Gu[a] = - Gu[a] +  _sim->_ac[a].real() ;
         Gu[a] = - Gu[a] +  _sim->_i[a] ;
+        // Gu[a] = - Gu[a] + 2* _sim->_i[a] -  iddc[a] ;
+//        Gu[a] = - Gu[a] + iddc[a] ;
       }
-      cerr << "Gu= ( " << Gu[0];
-      for(unsigned a=1; a <= _sim->_total_nodes; ++a){
-        cerr << " " << Gu[a];
-      }
-      cerr << ") \n";
-
-      cerr << "_i= ( " << _sim->_i[0];
-      for(unsigned a=1; a <= _sim->_total_nodes; ++a){
-        cerr << " " <<  _sim->_i[a];
-      }
-      cerr << ") \n";
 
 
       C.dezero( OPT::cmin ); 
       C.lu_decomp();
+      S.lu_decomp();
+
 
       _sim->_bypass_ok = false;
 
@@ -528,24 +532,17 @@ void DDCOP::sweep_recursive(int Nest)
 
       { // some more AC stuff
 
-
-        cerr << "_ac = ( " << _sim->_ac[0];
-        for(unsigned a=1; a <= _sim->_total_nodes; ++a){
-          cerr << " " <<  _sim->_ac[a];
-        }
-        cerr << ") \n";
-
         if(_dump_matrix){
-          _out << "RS\n( " << Gu[0];
+          _out << "RS ( " << Gu[0];
           for(unsigned a=1; a <= _sim->_total_nodes; ++a){
             _out << " " <<  Gu[a];
           }
           _out  << ") \n";
         }
 
-        cerr << ") \n";
-        double dv[_sim->_total_nodes];
+//        irgendwoher di/du holen...
         C.fbsub( dv, Gu , dv );
+        //S.fbsub( dv, Gu , dv );
 
         cerr << " solution = ( " << dv[0];
         for(unsigned a=1; a <= _sim->_total_nodes; ++a){
