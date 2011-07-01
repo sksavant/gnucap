@@ -1,9 +1,11 @@
+
+spice
 *versuch ein VF zu malen
 
-*.options abstol=1e-5
-*.options reltol=1e-16
-*.options short=1e-9
-*.options vntol=1e-14
+.options abstol=1e-5
+.options reltol=1e-16
+.options short=1e-9
+.options vntol=1e-14
 *.options dtmin=1e-11
 *.options cmin=1e-12
 
@@ -28,9 +30,8 @@ C1 2 0 5m IC=0.2
 .PRINT ddc  v(V1) v(C1) dv(1) dv(2)  ddv(1) ddv(2)
 *v(C1) v1(1) v1(2)
 
-*.DDC V1 .5 0.7 0.1  C1 0.2 0.4 0.1 basic > VCbug.dat
-.DDC V1 .5 1 0.1  C1 0.5 0.6 0.1 basic > VCbug.dat
-*.DDC C1 0.2 1 0.1 V1 .5 1.5 0.1 basic > vektorfeldtest2.dat
+.DDC V1 .5 1 0.1  C1 0.5 0.6 0.1 basic tr  > VCbug.dat
 
 .nodelist > vf.nodes
 
+.end

@@ -65,17 +65,17 @@ class hp{
 // #define trace0(s) (fprintf(stderr, "@#@%s\n", s )) // needs c_str()...
 #define trace1(s,x) ( cerr <<  "@#@" << s << "  " << #x << "=" << (x) << endl )
 // #define trace1(s,x) (fprintf(stderr, "@#@%s  %s=%g\n", s, #x, (double)(x)))
-#define trace2(s,x,y) ( cerr <<  "@#@" << s << "  " << #x << "=" << (double)(x)  \
-		                                      << "  " << #y << "=" << (double)(y)  \
+#define trace2(s,x,y) ( cerr <<  "@#@" << s << "  " << #x << "=" << (x)  \
+		                                      << "  " << #y << "=" << (y)  \
 		                                      << endl )
-#define trace3(s,x,y,z) ( cerr <<  "@#@" << s << "  " << #x << "=" << (double)(x)  \
-		                                      << "  " << #y << "=" << (double)(y)  \
-		                                      << "  " << #z << "=" << (double)(z)  \
+#define trace3(s,x,y,z) ( cerr <<  "@#@" << s << "  " << #x << "=" << (x)  \
+		                                      << "  " << #y << "=" << (y)  \
+		                                      << "  " << #z << "=" << z  \
 		                                      << endl )
-#define trace4(s,w,x,y,z) ( cerr <<  "@#@" << s << "  " << #w << "=" << (double)(w)  \
-		                                          << "  " << #x << "=" << (double)(x)  \
-		                                          << "  " << #y << "=" << (double)(y)  \
-		                                          << "  " << #z << "=" << (double)(z)  \
+#define trace4(s,w,x,y,z) ( cerr <<  "@#@" << s << "  " << #w << "=" << w  \
+		                                          << "  " << #x << "=" << x  \
+		                                          << "  " << #y << "=" << y  \
+		                                          << "  " << #z << "=" << z  \
 		                                          << endl )
 #define trace5(s,v,w,x,y,z)\
 	(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g\n",\

@@ -45,7 +45,7 @@ private:
   void	sweep_recursive(int);
   void	first(int);
   bool	next(int);
-  void do_time_step();
+  void do_tran_step();
   void undo_time_step();
   explicit DDCOP(const DDCOP&): SIM() {unreachable(); incomplete();}
 protected:
@@ -72,6 +72,8 @@ protected:
   TRACE _trace;			/* enum: show extended diagnostics */
   enum {ONE_PT, LIN_STEP, LIN_PTS, TIMES, OCTAVE, DECADE} _stepmode[DCNEST];
   static double temp_c_in;	/* ambient temperature, input and sweep variable */
+  bool _do_tran_step;
+  bool _dump_matrix;
 };
 /*--------------------------------------------------------------------------*/
 double	DDCOP::temp_c_in = 0.;
@@ -110,6 +112,8 @@ void DDC::do_it(CS& Cmd, CARD_LIST* Scope)
   //_sim->_ddc = true;
   ::status.ddc.reset().start();
   _sim->_temp_c = temp_c_in;
+  _do_tran_step=0;
+  _dump_matrix=0;
   command_base(Cmd);
   ::status.ddc.stop();
 }
@@ -154,46 +158,61 @@ void DDCOP::finish(void)
   }
 }
 /*--------------------------------------------------------------------------*/
-/*
-void DOP::setup(CS& Cmd)
+void DDCOP::do_tran_step()
 {
 
-  _sim->_temp_c = temp_c_in;
-  _cont = false;
-  _trace = tNONE;
-  _out = IO::mstdout;
-  _out.reset(); //BUG// don't know why this is needed 
-  bool ploton = IO::plotset  &&  plotlist().size() > 0;
+  SIM_PHASE old_phase = _sim->_phase;
+  trace1("DDCOP::do_tran_step", OPT::dtddc);
+  _sim->_phase = p_TRAN;
+  _sim->_mode=s_TRAN;
+  _sim->_time0 = _sim->_dt0 = OPT::dtddc;
+  //_sim->_genout = gen();
 
-  _zap[0] = NULL;
-  _sweepval[0] = &temp_c_in;
+  assert(_sim->analysis_is_tran());
+  int tr_converged = solve(OPT::TRHIGH, _trace);
 
-  if (Cmd.match1("'\"({") || Cmd.is_float()) {
-    Cmd >> _start[0];
-    if (Cmd.match1("'\"({") || Cmd.is_float()) {
-      Cmd >> _stop[0];
-    }else{
-      _stop[0] = _start[0];
-    }
+  if (!tr_converged) {
+    error(bWARNING, "did not converge\n");
   }else{
   }
-  
-  _step[0] = 0.;
-  _sim->_genout = 0.;
+  ::status.accept.start();
+  trace0("DDCOP::sweep_recursive solved a transient step");
 
-  options(Cmd,0);
+  cerr << "DDCOP v0 = ( " << _sim->_v0[0];
+  for(unsigned a=1;a <= _sim->_total_nodes; ++a){
+    cerr << " " <<  _sim->_v0[a];
+  } cerr << ") \n";
 
-  _n_sweeps = 1;
-  Cmd.check(bWARNING, "what's this?");
-  _sim->_freq = 0;
+  cerr << "DDCOP vt1 = ( " << _sim->_vt1[0];
+  for(unsigned a=1;a <= _sim->_total_nodes; ++a){
+    cerr << " " <<  _sim->_vt1[a];
+  } cerr << ") \n";
+  cerr << "i = ( " << _sim->_i[0];
+  for(unsigned a=1;a <= _sim->_total_nodes; ++a){
+    cerr << " " <<  _sim->_i[a];
+  }
+  cerr << ") \n";
+  _sim->set_limit();
 
-  IO::plotout = (ploton) ? IO::mstdout : OMSTREAM();
-  initio(_out);
 
-  _start[0].e_val(OPT::temp_c, _scope);
-  fix_args(0);
+  CARD_LIST::card_list.tr_accept();
+  trace0("DDCOP::sweep_recursive itr_accepted");
+  cerr << "_i= ( " << _sim->_i[0];
+  for(unsigned a=1; a <= _sim->_total_nodes; ++a){
+    cerr << " " <<  _sim->_i[a];
+  } cerr << ") \n";
+
+  ::status.accept.stop();
+
+  _sim->_time0 = _sim->_dt0 = 0.0;
+
+  _sim->_mode = s_DC;
+  _sim->_phase = p_RESTORE;
+  //_sim->restore_voltages(); ????
+  _sim->keep_voltages(); //  vdc  = v0
+  _sim->put_v1_to_v0(); // v0 = vt1
+  _sim->_phase = old_phase;
 }
-*/
 /*--------------------------------------------------------------------------*/
 void DDC::setup(CS& Cmd)
 {
@@ -348,10 +367,13 @@ void DDCOP::options(CS& Cmd, int Nest)
       || (Get(Cmd, "lin",	  &_step_in[Nest]) && (_stepmode[Nest] = LIN_PTS))
       || (Get(Cmd, "o{ctave}",	  &_step_in[Nest]) && (_stepmode[Nest] = OCTAVE))
       || Get(Cmd, "c{ontinue}",   &_cont)
+      || Get(Cmd, "tr{s}",        &_do_tran_step)
+      || Get(Cmd, "dm",           &_dump_matrix)
       || Get(Cmd, "dt{emp}",	  &temp_c_in,   mOFFSET, OPT::temp_c)
       || Get(Cmd, "lo{op}", 	  &_loop[Nest])
       || Get(Cmd, "re{verse}",	  &_reverse_in[Nest])
       || Get(Cmd, "te{mperature}",&temp_c_in)
+      // FIXME
       //|| Get(Cmd, "uic",	   &_sim->_uic)
       //|| Get(Cmd, "more_uic",	   &_sim->_more_uic)
       || (Cmd.umatch("tr{ace} {=}") &&
@@ -405,21 +427,24 @@ void DDCOP::sweep_recursive(int Nest)
       _sim->_time0 = _sim->_dt0 = 0.0;
       _sim->_last_time = 0.0;
       // _sim->zero_currents();
+      _sim->_uic=_sim->_more_uic=true;
       int converged = solve_with_homotopy(itl,_trace);
       if (!converged) {itested();
 	error(bWARNING, "did not converge\n");
-      }else{
+        throw(Exception("foobar"));
       }
       ::status.accept.start();
       _sim->set_limit();
+
       CARD_LIST::card_list.tr_accept();
       ::status.accept.stop();
       _sim->keep_voltages(); // vdc = v0
 
-      SIM_PHASE old_phase = _sim->_phase;
+      _sim->_uic=_sim->_more_uic=false;
+
 
       _sim->init();
-      //_sim->alloc_vectors();
+
       _sim->_acx.reallocate();
       _sim->_jomega = COMPLEX(0., 1.0);
       _sim->_mode=s_AC;
@@ -428,6 +453,8 @@ void DDCOP::sweep_recursive(int Nest)
         CARD_LIST::card_list.ac_begin();
         //...
       }
+
+      trace0("solved with homotopy");
 
       // if verbose
       cerr << "v0 = ( " << _sim->_v0[0];
@@ -440,6 +467,13 @@ void DDCOP::sweep_recursive(int Nest)
         cerr << " " <<  _sim->_i[a];
       }
       cerr << ") \n";
+      _sim->_uic=_sim->_more_uic=false;
+
+      trace0(" done tr");
+      cerr << "_i= ( " << _sim->_i[0];
+      for(unsigned a=1; a <= _sim->_total_nodes; ++a){
+        cerr << " " <<  _sim->_i[a];
+      } cerr << ") \n";
 
       if(1){ // AC::solve
         trace0("AC::solve");
@@ -454,24 +488,26 @@ void DDCOP::sweep_recursive(int Nest)
       }
 
       BSMATRIX<double> G = _sim->_acx.real();
-      trace1("ddc \n", G );
-
       BSMATRIX<double> C = _sim->_acx.imag();
-      trace1("ddc C\n", C );
+
+      if(_dump_matrix){
+        _out << "G\n" << G << "\n";
+        _out << "C\n" << C << "\n";
+      }
 
       double Gu[_sim->_total_nodes];
 
       G.rmul(Gu, _sim->_v0);
+
+      for(unsigned a=0;a <= _sim->_total_nodes; ++a){
+        // Gu[a] = - Gu[a] +  _sim->_ac[a].real() ;
+        Gu[a] = - Gu[a] +  _sim->_i[a] ;
+      }
       cerr << "Gu= ( " << Gu[0];
       for(unsigned a=1; a <= _sim->_total_nodes; ++a){
         cerr << " " << Gu[a];
       }
       cerr << ") \n";
-
-      for(unsigned a=0;a <= _sim->_total_nodes; ++a){
-          Gu[a] = - Gu[a] +  _sim->_ac[a].real() ;
-           // Gu[a] = Gu[a] -  _sim->_i[a] ;
-      }
 
       cerr << "_i= ( " << _sim->_i[0];
       for(unsigned a=1; a <= _sim->_total_nodes; ++a){
@@ -479,72 +515,52 @@ void DDCOP::sweep_recursive(int Nest)
       }
       cerr << ") \n";
 
-      cerr << "_ac = ( " << _sim->_ac[0];
-      for(unsigned a=1; a <= _sim->_total_nodes; ++a){
-        cerr << " " <<  _sim->_ac[a];
-      }
-      cerr << ") \n";
-
-      cerr << "RS= ( " << Gu[0];
-      for(unsigned a=1; a <= _sim->_total_nodes; ++a){
-        cerr << " " << Gu[a];
-      }
-      cerr << ") \n";
 
       C.dezero( OPT::cmin ); 
       C.lu_decomp();
 
-      double dv[_sim->_total_nodes];
-      C.fbsub( dv, Gu , dv );
+      _sim->_bypass_ok = false;
 
-      cerr << " solution = ( " << dv[0];
-      for(unsigned a=1; a <= _sim->_total_nodes; ++a){
-        cerr << " " << dv[a];
-      }
-      cerr << ") \n";
-
-
-      _sim->_phase = p_TRAN;
-      _sim->_mode=s_TRAN;
-       
-      // if more_uic is set, do a little tr-step for ddc-analysis
-      //if(_sim->more_uic_now())
-      { // solve a transient step
-        _sim->_time0 = _sim->_dt0 = OPT::dtddc;
-        _sim->_bypass_ok = false;
-        //_sim->_genout = gen();
-
-        assert(_sim->analysis_is_tran());
-        int tr_converged = solve(OPT::TRHIGH, _trace);
-
-        if (!tr_converged) {
-          error(bWARNING, "did not converge\n");
-        }else{
-        }
-        ::status.accept.start();
-        _sim->set_limit();
-        CARD_LIST::card_list.tr_accept();
-        ::status.accept.stop();
-
-        _sim->_time0 = _sim->_dt0 = 0.0;
-
-        _sim->_mode = s_DC;
-        _sim->_phase = p_RESTORE;
-        //_sim->restore_voltages(); ????
-        _sim->keep_voltages();
-        _sim->put_v1_to_v0();
-        // CARD_LIST::card_list.tr_restore(); // what does this do?
-        _sim->_phase = old_phase;
-
+      if (_do_tran_step) { 
+        do_tran_step();
       } 
-      for(unsigned a=0; a <= _sim->_total_nodes; ++a){
-        // stash hack
-        _sim->_vt1[a] = dv[a];
+        _sim->_mode = s_DC;
+
+      { // some more AC stuff
+
+
+        cerr << "_ac = ( " << _sim->_ac[0];
+        for(unsigned a=1; a <= _sim->_total_nodes; ++a){
+          cerr << " " <<  _sim->_ac[a];
+        }
+        cerr << ") \n";
+
+        if(_dump_matrix){
+          _out  << "RS\n";
+          //_out << vector<voltage_t>(Gu,_sim->_total_nodes) << "\n";
+        }
+
+        cerr << ") \n";
+        double dv[_sim->_total_nodes];
+        C.fbsub( dv, Gu , dv );
+
+        cerr << " solution = ( " << dv[0];
+        for(unsigned a=1; a <= _sim->_total_nodes; ++a){
+          cerr << " " << dv[a];
+        }
+        cerr << ") \n";
+
+
+        for(unsigned a=0; a <= _sim->_total_nodes; ++a){
+          // stash hack
+          _sim->_vt1[a] = dv[a];
+        }
       }
        
       outdata(_sweepval[Nest]);
+
+      // here??
       CARD_LIST::card_list.tr_regress();
-      //_sim->zero_currents(); // nonsense
       itl = OPT::DCXFER;
     }else{
       sweep_recursive(Nest);

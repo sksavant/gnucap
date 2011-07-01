@@ -53,8 +53,9 @@ protected: // override virtual
   CARD*	   clone()const		{return new DEV_CAPACITANCE(*this);}
   void	   tr_iwant_matrix()	{tr_iwant_matrix_passive();}
   bool	   do_tr();
+  void	   tr_accept(); // uic. possibly a hack
   void	   tr_load()		{tr_load_passive();}
-  void	   foo_tr_init(double )		;
+//  void	   tr_init(double )		;
   void	   tr_unload()		{tr_unload_passive();}
   hp_float_t   tr_involts()const	{
     if(_n[OUT1].v0() != _n[OUT1].v0()){
@@ -130,6 +131,7 @@ private: // override virtual
   CARD*	   clone()const		{return new DEV_VCCAP(*this);}
   void	   tr_iwant_matrix()	{tr_iwant_matrix_extended();}
   bool     do_tr();
+  void uic_clanup();
   hp_float_t   tr_involts()const	{return dn_diff(_n[IN1].v0(),_n[IN2].v0());}
   hp_float_t   tr_involts_limited()const {return volts_limited(_n[IN1],_n[IN2]);}
   void	    ac_iwant_matrix()	{ac_iwant_matrix_extended();}
@@ -141,43 +143,6 @@ private: // override virtual
     return names[i];
   }
 };
-/*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-void DEV_CAPACITANCE::foo_tr_init( double charge )
-{
-//  tr_unload();
-  untested();
-  _y[0].x = charge/value(); // forced voltage.
-  assert(_y[0].f1 == value()); // farads.
-  _y[0].f0 = _y[0].x * _y[0].f1; // charge.
-  assert(converged());
-  store_values();
-
-  // q_load();
-  trace3("uic q", _y[0].x, _y[0].f0, _y[0].f1);
-  trace3("uic d", _i[0].x, _i[1].x, *_time );
-  return;
-  // nonsense:
-   // _i[0] = differentiate(_y, _i, _time, mEULER);
-//                      ^ charge
-  // _i[0] = FPOLY1(_y[0].x, 0., 0.);
-  _i[0] = FPOLY1(_y[0].x , 0, 0);
-  trace3("i", _i[0].x, _i[0].f0, _i[0].f1);
-  _m0 = CPOLY1(_i[0]);
-  // _m1 = _m1; //CPOLY1(0,0,0); // CPOLY1(_i[0]);
-  _m0.x  = 0;
-  _m0.c1 = 0;
-  _m0.c0 = 0;
-//  _m1.x  = 0;
-//  _m1.c1 = 0;
-//  _m1.c0 = 0;
-  assert( converged() ); 
-  double h=0.01;
-  _i[0] = differentiate(_y, _i, &h, _method_a);
-  trace3("i", _i[0].x, _i[0].f0, _i[0].f1);
-  _m0 = CPOLY1(_i[0]);
-  q_load();
-}
 /*--------------------------------------------------------------------------*/
 bool DEV_CAPACITANCE::do_tr()
 {
@@ -196,14 +161,19 @@ bool DEV_CAPACITANCE::do_tr()
   store_values();
   q_load();
 
+
+    _i[0] = differentiate(_y, _i, _time, _method_a);
+    trace1("DEV_CAPACITANCE::do_tr m0 as if", _y[0]);
+
   if(_sim->more_uic_now()){
+    // BUG. only treat caps with _ic
     assert(_time[0] == 0.);
 
     trace1("DEV_CAPACITANCE::do_tr: desired capacitance is ", _y[0].f1);
     trace1("DEV_CAPACITANCE::do_tr: desired charge is      ", _y[0].f0);
     trace1("DEV_CAPACITANCE::do_tr: desired voltage is     ", _y[0].x);
 
-    // was felix gemacht hat (aus d_vs)
+    // imitate voltage source... (d_vs.cc)
     _i[0] = FPOLY1( CPOLY1( 0., -_y[0].x  / (OPT::shortckt),         1/(OPT::shortckt)  ) ); 
     trace2("2 quotienten", ( -_y[0].f0 / (OPT::shortckt)  ) /-_y[0].x  / (OPT::shortckt) ,
 			         (_y[0].f1 / (OPT::shortckt))/    1/(OPT::shortckt)  );
@@ -217,8 +187,34 @@ bool DEV_CAPACITANCE::do_tr()
     trace3("i", _i[0].x, _i[0].f0, _i[0].f1);
   }
   _m0 = CPOLY1(_i[0]);
-  trace3("DEV_CAPACITANCE::do_tr", _m0.x, _m0.c0, _m0.c1);
+  trace2("DEV_CAPACITANCE::do_tr", _m0, _m1);
   return converged();
+}
+/*--------------------------------------------------------------------------*/
+void DEV_CAPACITANCE::tr_accept()
+{
+  ELEMENT::tr_accept();
+  // sources might have been abused to enforce initial conditions
+  //
+  trace2("DEV_CAPACITANCE::tr_accept              " + long_label(), _m0, _m1 );
+
+  if(_loss0){
+    FPOLY1 m(_m0);
+
+    //_m0.x = 0.;
+    //_m0.c0 = 0.;
+    m.f1 = 0.;
+    m.x = tr_input();
+    m.f0 = 0;
+    _m0 = CPOLY1(m);
+
+    _loss0 = _loss1 = 0.;
+    trace2("DEV_CAPACITANCE::tr_accept messed with m" + long_label(), _m0, _m1 );
+    _sim->mark_inc_mode_bad();
+    tr_load_source();
+    q_eval();
+  }
+
 }
 /*--------------------------------------------------------------------------*/
 void DEV_CAPACITANCE::do_ac()
@@ -280,5 +276,5 @@ DISPATCHER<CARD>::INSTALL
   d2(&device_dispatcher, "tcap|tcapacitor", &p2),
   d3(&device_dispatcher, "vccap",	    &p3);
 }
-/*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------
+--------------------------------------------------------------------------*/

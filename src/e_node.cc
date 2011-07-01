@@ -228,10 +228,8 @@ double NODE::tr_probe_num(const std::string& x)const
       return ( vt1() );
   }else if (Umatch(x, "ddv ")) { // divided difference v
     double val = 0.; 
-    if(_sim->more_uic_now()){
-      val = ( vdc() -  v0() ) / OPT::dtddc;
-    }
-   return floor(val/OPT::vfloor + .5) * OPT::vfloor;
+    val = ( vdc() - v0() ) / OPT::dtddc;
+    return floor(val/OPT::vfloor + .5) * OPT::vfloor;
   }else if (Umatch(x, "nan ")) {
     // fake probe 0/0 = NaN
     double z1 = tr_probe_num("zero ");
