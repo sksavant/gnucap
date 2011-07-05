@@ -101,10 +101,10 @@ public:
  */
 template<>
 inline
- OMSTREAM & OMSTREAM::operator<< <>(const char *str)
+OMSTREAM & OMSTREAM::operator<< <>(const char *str)
 {
   assert(str);
-  ostream_const_char_p(str);
+  return ostream_const_char_p(str);
 }
 /*--------------------------------------------------------------------------*/
 /* mputc: multiple putc

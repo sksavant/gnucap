@@ -163,6 +163,8 @@ public:
   { return( BSMATRIX<double>(BSMATRIX< double >::_IMAG, *this) ) ; }
   BSMATRIX<double> sum()const
   { return( BSMATRIX<double>(BSMATRIX< double >::_SUM, *this) ) ; }
+  T* row(T*, unsigned);
+  T* col(T*, unsigned);
   void		iwant(unsigned, unsigned);
   void		unallocate();
   void		allocate();
@@ -535,9 +537,9 @@ template <class T>
 T& BSMATRIX<T>::s(unsigned row, unsigned col)
 {
   assert(_lownode);
-  assert(0 <= col);
+// assert(0 <= col);
   assert(col <= size());
-  assert(0 <= row);
+//  assert(0 <= row);
   assert(row <= size());
   assert(_zero == 0.);
 

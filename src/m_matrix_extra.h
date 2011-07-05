@@ -118,6 +118,22 @@ BSMATRIX<double>::BSMATRIX(BSMATRIX<double>::SUM, const BSMATRIX<complex<double>
 	}
 }
 /*-----------------------------------*/
+template<class T>
+inline T* BSMATRIX<T>::row(T* x, unsigned n)
+{
+	for(unsigned i=0; i<=_size; ++i)
+	  x[i]=s(n,i);	
+	return x;
+}
+/*-----------------------------------*/
+template<class T>
+inline T* BSMATRIX<T>::col(T* x, unsigned n)
+{
+	for(unsigned i=0; i<=_size; ++i)
+	  x[i]=s(i,n);	
+	return x;
+}
+/*-----------------------------------*/
 
 //{}
 template<class T>

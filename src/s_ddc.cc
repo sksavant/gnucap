@@ -31,6 +31,21 @@
 #include "s__.h"
 #include "io_matrix.h"
 #include "m_matrix_extra.h"
+extern "C" {
+#include "atlas/clapack.h"
+
+int dgelss_(int *m, int *n, int *nrhs, double *a, int *lda, double *b, int *ldb, double *s, double *rcond, int *rank, double *work, int *lwork, int *info);
+
+void dgels_(const char *trans, const int *M, const int *N, const int *nrhs,
+    double *A, const int *lda, double *b, const int *ldb, double *work, const
+    int * lwork, int *info);
+}
+
+//
+//extern "C" int clapack_dgesv(const enum CBLAS_ORDER Order, const int N, const int NRHS,
+  //                    double *A, const int lda, int *ipiv,
+    //                                    double *B, const int ldb);
+
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
@@ -74,6 +89,9 @@ protected:
   static double temp_c_in;	/* ambient temperature, input and sweep variable */
   bool _do_tran_step;
   bool _dump_matrix;
+  double* U;
+  double* CU;
+  double* CUTCU;
 };
 /*--------------------------------------------------------------------------*/
 double	DDCOP::temp_c_in = 0.;
@@ -178,12 +196,7 @@ void DDCOP::do_tran_step()
   ::status.accept.start();
   trace0("DDCOP::sweep_recursive solved a transient step");
 
-  cerr << "DDCOP v0 = ( " << _sim->_v0[0];
-  for(unsigned a=1;a <= _sim->_total_nodes; ++a){
-    cerr << " " <<  _sim->_v0[a];
-  } cerr << ") \n";
 
-  cerr << ") \n";
   _sim->set_limit();
 
 
@@ -392,6 +405,11 @@ void DDCOP::sweep()
     _sim->restore_voltages();
   }else{
   }
+
+  unsigned d = _sim->_total_nodes; // 3
+  U = new double[d*d];
+  CU = new double[d*d];
+  CUTCU = new double[d*d];
   
   _sim->clear_limit();
   CARD_LIST::card_list.tr_begin();
@@ -400,12 +418,14 @@ void DDCOP::sweep()
 /*--------------------------------------------------------------------------*/
 void DDCOP::sweep_recursive(int Nest)
 {
+  unsigned d = _sim->_total_nodes; // 3
+
   trace1("DDCOP::sweep_recursive", Nest);
   --Nest;
   assert(Nest >= 0);
   assert(Nest < DCNEST);
 
-  double iddc[_sim->_total_nodes];
+  double iddc[d];
   double dv[_sim->_total_nodes];
 
   OPT::ITL itl = OPT::DCBIAS;
@@ -428,8 +448,9 @@ void DDCOP::sweep_recursive(int Nest)
       _sim->set_limit();
 
       if(_dump_matrix){
-        _out << "iddc ( " << _sim->_i[0];
-        for(unsigned a=1; a <= _sim->_total_nodes; ++a){
+        _out << " ======================== \n";
+        _out << "iddc ( " << _sim->_i[1];
+        for(unsigned a=2; a <= d; ++a){
           _out << " " <<  _sim->_i[a];
         }
         _out  << ") \n";
@@ -460,31 +481,21 @@ void DDCOP::sweep_recursive(int Nest)
 
       trace0("solved with homotopy");
       if(_dump_matrix){
-        _out << "i ( " << _sim->_i[0];
-        for(unsigned a=1; a <= _sim->_total_nodes; ++a){
+        _out << "i ( " << _sim->_i[1];
+        for(unsigned a=2; a <= _sim->_total_nodes; ++a){
           _out << " " <<  _sim->_i[a];
         }
         _out  << ") \n";
+        _out << "v0 = ( " << _sim->_v0[1];
+        for(unsigned a=2;a <= _sim->_total_nodes; ++a){
+          _out << " " <<  _sim->_v0[a];
+        }
+        _out << ") \n";
       }
 
       // if verbose
-      cerr << "v0 = ( " << _sim->_v0[0];
-      for(unsigned a=1;a <= _sim->_total_nodes; ++a){
-        cerr << " " <<  _sim->_v0[a];
-      }
-      cerr << ") \n";
-      cerr << "i = ( " << _sim->_i[0];
-      for(unsigned a=1;a <= _sim->_total_nodes; ++a){
-        cerr << " " <<  _sim->_i[a];
-      }
-      cerr << ") \n";
       _sim->_uic=_sim->_more_uic=false;
 
-      trace0(" done tr");
-      cerr << "_i= ( " << _sim->_i[0];
-      for(unsigned a=1; a <= _sim->_total_nodes; ++a){
-        cerr << " " <<  _sim->_i[a];
-      } cerr << ") \n";
 
       if(1){ // AC::solve
         trace0("AC::solve");
@@ -500,28 +511,160 @@ void DDCOP::sweep_recursive(int Nest)
 
       BSMATRIX<double> G = _sim->_acx.real();
       BSMATRIX<double> C = _sim->_acx.imag();
-      BSMATRIX<double> S = _sim->_acx.sum();
+  //    BSMATRIX<double> S = _sim->_acx.sum();
 
       if(_dump_matrix){
         _out << "G\n" << G << "\n";
         _out << "C\n" << C << "\n";
-        _out << "S\n" << S << "\n";
       }
 
-      double Gu[_sim->_total_nodes];
+      double Gul[d+1];
+      double* Gu = Gul+1;
 
-      G.rmul(Gu, _sim->_v0);
-      for(unsigned a=0;a <= _sim->_total_nodes; ++a){
-        Gu[a] = - Gu[a] +  _sim->_i[a] ;
-        // Gu[a] = - Gu[a] + 2* _sim->_i[a] -  iddc[a] ;
-//        Gu[a] = - Gu[a] + iddc[a] ;
+      // Gu = G * v0
+      G.rmul(Gul, _sim->_v0);
+
+      G.lu_decomp();
+
+      double col[d+1];
+      double CU[d*d];
+
+      // U = G^{-1} C (column-major)
+      for( unsigned i=0; i<d; ++i){
+        C.col(col,1+i);
+        double buf[d+1];
+
+        // compute ith column of U
+        G.fbsub(buf, col);
+        for (unsigned k=0; k<d; ++k ){
+            U[k+i*d] = buf[k+1];
+        }
+        if(_dump_matrix){
+          _out << "U row " << i << ":  " << U[0 + i*d];
+          for(unsigned a=1; a < d; ++a){
+            _out << " " <<  U[a + i*d ];
+          }
+          _out  << ") \n";
+        }
+      }
+
+      // CU=C*U (col maj)
+      for(unsigned i=0; i < d; ++i){
+        for(unsigned j=0; j < d; ++j){
+          CU[i+j*d] = 0;
+          for(unsigned k=0;k < d; ++k){
+            CU[i+j*d] += ((const BSMATRIX<double>)C).s(i+1,k+1) * U[k+j*d];
+          }
+        }
+      }
+
+      double RS[d];
+      double X[d];
+      // fetch rhs
+      for(unsigned a = 0; a < d; ++a){
+        RS[a] = - Gu[a] + _sim->_i[a+1] ;
+        X[a] = - Gu[a] + _sim->_i[a+1] ;
+      }
+
+      if(_dump_matrix){
+        _out << "RS ( " << RS[0];
+        for(unsigned a=1; a < d; ++a){
+          _out << " " <<  RS[a];
+        }
+        _out  << ") \n";
+      }
+
+      // X = CU.trans * App
+      //cblas_dgemv(CblasColMajor, 
+      //    CblasTrans, d, d,
+      //    1.0, 
+      //    CU, d,
+      //    RS, 1, 0,
+      //    X,1);
+
+      if(_dump_matrix){
+        _out << "X ( " << X[0];
+        for(unsigned a=1; a < d; ++a){
+          _out << " " <<  X[a];
+        }
+        _out  << ") \n";
+      }
+
+      // U = G^{-1} C
+      // want to solve C x = i - Gu, and G x = C y <=> x = U y
+      // solving C U y = i - Gu
+      
+      double alpha=1;
+      double wurk;
+      int rank;
+      int lwork=-1;
+      int info=0;
+      double rcond=0;
+      int D=d;
+      int one=1;
+
+      // does not work (no full rank)
+      // clapack_dgesv(CblasColMajor, d, 1,
+      //             CU, d, ipiv, X, d);
+
+
+
+//void dgels_(const char *trans, const int *M, const int *N, const int *nrhs,
+//    double *A, const int *lda, double *b, const int *ldb, double *work, const
+//    int * lwork, int *info);
+/*
+      dgels_("No transpose", &D,&D,&one, CU, &D, RS, &D, &wurk, &lwork, &info );
+      assert(!info);
+      lwork = (int)wurk;
+      double work[lwork];
+      dgels_("No transpose", &D,&D,&one, CU, &D, RS, &D, work, &lwork, &info );
+
+      */
+       double S[d]; //singular values
+       dgelss_(&D,&D,&one,CU, &D, RS, &D, S, &rcond, &rank, &wurk, &lwork, &info );
+       assert(!info);
+       lwork = (int)wurk;
+       double work[lwork];
+       dgelss_(&D,&D,&one,CU, &D, RS, &D, S, &rcond, &rank, work, &lwork, &info );
+      
+
+      if(info){
+        cout<<info << "\n";
+        exit(info);
+      }
+
+      if(_dump_matrix){
+        _out << "after dgels " << lwork  << " ( " << RS[0];
+        for(unsigned a=1; a < d; ++a){
+          _out << " " <<  RS[a];
+        }
+        _out  << ") \n";
+      }
+
+      // dv = U * app 
+      cblas_dgemv(CblasColMajor, 
+          CblasNoTrans, d, d,
+          1.0/alpha, 
+          U, d,
+          RS, 1, 0,
+          dv,1);
+
+
+      if(_dump_matrix){
+        _out << "Gu ( " << Gu[0];
+        for(unsigned a=1; a < d; ++a){
+          _out << " " <<  Gu[a];
+        }
+        _out  << ") \n";
+      }
+
+      for(unsigned a=0; a < d; ++a){
+        Gu[a] = - Gu[a] +  _sim->_i[a+1] ;
       }
 
 
       C.dezero( OPT::cmin ); 
       C.lu_decomp();
-      S.lu_decomp();
-
 
       _sim->_bypass_ok = false;
 
@@ -534,26 +677,18 @@ void DDCOP::sweep_recursive(int Nest)
 
         if(_dump_matrix){
           _out << "RS ( " << Gu[0];
-          for(unsigned a=1; a <= _sim->_total_nodes; ++a){
+          for(unsigned a=1; a < d; ++a){
             _out << " " <<  Gu[a];
           }
           _out  << ") \n";
         }
 
 //        irgendwoher di/du holen...
-        C.fbsub( dv, Gu , dv );
-        //S.fbsub( dv, Gu , dv );
+        //C.fbsub( dv, Gu , dv );
 
-        cerr << " solution = ( " << dv[0];
-        for(unsigned a=1; a <= _sim->_total_nodes; ++a){
-          cerr << " " << dv[a];
-        }
-        cerr << ") \n";
-
-
-        for(unsigned a=0; a <= _sim->_total_nodes; ++a){
+        for(unsigned a=0; a < d; ++a){
           // stash hack
-          _sim->_vt1[a] = dv[a];
+          _sim->_vt1[a+1] = dv[a];
         }
       }
        

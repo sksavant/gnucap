@@ -156,6 +156,8 @@ AC_CHECK_LIB([m], [cos])
 
 # probably unneeded.
 AC_CHECK_LIB([gslcblas], [cblas_dgemm])
+AC_CHECK_LIB([lapack_atlas], [clapack_dgesv])
+AC_CHECK_LIB([lapack], [dgels_])
 AC_CHECK_LIB([gsl], [gsl_blas_dgemm])
 AC_CHECK_LIB([gsl], [gsl_fit_linear])
 AC_CHECK_FUNCS([sqrt])
