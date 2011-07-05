@@ -146,7 +146,6 @@ void PrintInst(FILE *fp,struct __vpiScope *scope)
 }
 /*-----------------------------------------------------*/
 
-
 bool have_ivl_version = true;
 
 double vvp::SimTimeD     = 0.0;
@@ -168,7 +167,6 @@ void vvp::vvp_vpi_init()
 {
   trace0("not doing anything");
 }
-/*------------------------------------------------*/
 /*------------------------------------------------*/
 // replacement for main...
 int vvp::init(const char* design_path)
@@ -206,9 +204,9 @@ int vvp::init(const char* design_path)
     }
   }
 
-//   vpip_mcd_init(logfile); // not shared yet.
-    vpip_mcd_init(logfile);
-//
+  //   vpip_mcd_init(logfile); // not shared yet.
+  vpip_mcd_init(logfile);
+  //
   // 	 
   trace0( "Init VVP ...\n");
   vvp_vpi_init();
@@ -219,11 +217,8 @@ int vvp::init(const char* design_path)
   trace0( "Compiling VVP "+(string)design_path);
   compile_init();
 
-
   // for m in modules...
   // vpip_load_module("bindsigs2");
-
-
   int ret_cd = compile_design(design_path);
 
   trace1( " ...\n", ret_cd);
@@ -305,7 +300,7 @@ enum sim_mode {SIM_ALL,
 --------------------------------------------------------------------*/
 sim_mode vvp::schedule_simulate_m(sim_mode mode)
 {
-  trace3("schedule_simulate_m", mode, SimTimeA,SimTimeD);
+  trace3("schedule_simulate_m", mode, SimTimeA, SimTimeD);
   struct event_s      *cur  = 0;
   struct event_time_s *ctim = 0;
   double               d_dly;
