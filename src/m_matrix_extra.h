@@ -33,7 +33,8 @@ BSMATRIX<T>::BSMATRIX(const BSMATRIX<T>& m) :
 
 /*-----------------------------------*/
 template<>
-BSMATRIX<double>::BSMATRIX(BSMATRIX<double>::REAL, const BSMATRIX<complex<double> >& m ) :
+inline BSMATRIX<double>::BSMATRIX(BSMATRIX<double>::REAL, const
+		BSMATRIX<complex<double> >& m ) :
 	_changed(new bool[m.size()+1]),
 	_lownode(new unsigned[m.size()+1]),
 	_space(new double[m._nzcount]),
@@ -62,7 +63,8 @@ BSMATRIX<double>::BSMATRIX(BSMATRIX<double>::REAL, const BSMATRIX<complex<double
 }
 /*-----------------------------------*/
 template<>
-BSMATRIX<double>::BSMATRIX(BSMATRIX<double>::IMAG, const BSMATRIX<complex<double> >& m ) :
+inline BSMATRIX<double>::BSMATRIX(BSMATRIX<double>::IMAG, const
+		BSMATRIX<complex<double> >& m ) :
 	_changed(new bool[m.size()+1]),
 	_lownode(new unsigned[m.size()+1]),
 	_rowptr(new double*[m._size+1]),
@@ -90,7 +92,8 @@ BSMATRIX<double>::BSMATRIX(BSMATRIX<double>::IMAG, const BSMATRIX<complex<double
 }
 /*-----------------------------------*/
 template<>
-BSMATRIX<double>::BSMATRIX(BSMATRIX<double>::SUM, const BSMATRIX<complex<double> >& m ) :
+inline BSMATRIX<double>::BSMATRIX(BSMATRIX<double>::SUM, const
+		BSMATRIX<complex<double> >& m ) :
 	_changed(new bool[m.size()+1]),
 	_lownode(new unsigned[m.size()+1]),
 	_space(new double[m._nzcount]),

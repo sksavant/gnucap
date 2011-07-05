@@ -73,6 +73,7 @@ c_sweep.cc c_sim.cc c_system.cc c_for.cc
 S_SRCS = \
 s_ac.cc s_dc.cc s_fo.cc \
 s_ddc.cc s_ttt.cc s_tt_set.cc \
+s_sock.cc \
 s_tr.cc s_tr_set.cc s_tr_swp.cc
 
 # netlist languages
@@ -193,6 +194,9 @@ SUFFIXES= .model
 MODELGEN= @MODELGEN@
 
 MAKEDEPEND = gcc -M $(CPPFLAGS) -o $*.d $<
+
+%.cc : %.v
+	iverilog -tgc $< -o $@
 
 %.cc : %.model %.h ${MODELGEN}${EXEEXT}
 	${MODELGEN} -cc $<

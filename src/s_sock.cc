@@ -34,7 +34,6 @@
 extern "C" {
 #include "atlas/clapack.h"
 
-// FIXME: external header (where?)
 int dgelss_(int *m, int *n, int *nrhs, double *a, int *lda, double *b, int
     *ldb, double *s, double *rcond, int *rank, double *work, int *lwork, int
     *info);
@@ -44,13 +43,19 @@ void dgels_(const char *trans, const int *M, const int *N, const int *nrhs,
     int * lwork, int *info);
 }
 
+//
+//extern "C" int clapack_dgesv(const enum CBLAS_ORDER Order, const int N, const int NRHS,
+  //                    double *A, const int lda, int *ipiv,
+    //                                    double *B, const int ldb);
 
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class DDCOP : public SIM {
+class SOCK : public SIM {
 public:
   void	finish();
+  explicit SOCK();
+  ~SOCK() {}
 protected:
   void	fix_args(int);
   void	options(CS&, int);
@@ -61,10 +66,8 @@ private:
   bool	next(int);
   void do_tran_step();
   void undo_time_step();
-  explicit DDCOP(const DDCOP&): SIM() {unreachable(); incomplete();}
+  explicit SOCK(const SOCK&): SIM() {unreachable(); incomplete();}
 protected:
-  explicit DDCOP();
-  ~DDCOP() {}
   
 protected:
   enum {DCNEST = 4};
@@ -91,34 +94,16 @@ protected:
   double* U;
   double* CU;
   double* CUTCU;
-};
-/*--------------------------------------------------------------------------*/
-double	DDCOP::temp_c_in = 0.;
-/*--------------------------------------------------------------------------*/
-class DDC : public DDCOP {
 public:
-  explicit DDC(): DDCOP() {}
-  ~DDC() {}
   void	do_it(CS&, CARD_LIST*);
 private:
   void	setup(CS&);
-  explicit DDC(const DDC&): DDCOP() {unreachable(); incomplete();}
 };
 /*--------------------------------------------------------------------------*/
-/*
-class DOP : public DDCOP {
-public:
-  explicit DOP(): DDCOP() {}
-  ~DOP() {}
-  void	do_it(CS&, CARD_LIST*);
-private:
-  void	setup(CS&);
-  explicit DOP(const DOP&): DDCOP() {unreachable(); incomplete();}
-};
-*/
+double	SOCK::temp_c_in = 0.;
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-void DDC::do_it(CS& Cmd, CARD_LIST* Scope)
+void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
 {
   trace0("doing ddc");
   _scope = Scope;
@@ -136,7 +121,7 @@ void DDC::do_it(CS& Cmd, CARD_LIST* Scope)
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-DDCOP::DDCOP()
+SOCK::SOCK()
   :SIM(),
    _n_sweeps(1),
    _cont(false),
@@ -161,7 +146,7 @@ DDCOP::DDCOP()
   _sim->_uic=_sim->_more_uic=false;
 }
 /*--------------------------------------------------------------------------*/
-void DDCOP::finish(void)
+void SOCK::finish(void)
 {
 
   for (int ii = 0;  ii < _n_sweeps;  ++ii) {
@@ -175,11 +160,11 @@ void DDCOP::finish(void)
   }
 }
 /*--------------------------------------------------------------------------*/
-void DDCOP::do_tran_step()
+void SOCK::do_tran_step()
 {
 
   SIM_PHASE old_phase = _sim->_phase;
-  trace1("DDCOP::do_tran_step", OPT::dtddc);
+  trace1("SOCK::do_tran_step", OPT::dtddc);
   _sim->_phase = p_TRAN;
   _sim->_mode=s_TRAN;
   _sim->_time0 = _sim->_dt0 = OPT::dtddc;
@@ -193,14 +178,14 @@ void DDCOP::do_tran_step()
   }else{
   }
   ::status.accept.start();
-  trace0("DDCOP::sweep_recursive solved a transient step");
+  trace0("SOCK::sweep_recursive solved a transient step");
 
 
   _sim->set_limit();
 
 
   CARD_LIST::card_list.tr_accept();
-  trace0("DDCOP::sweep_recursive itr_accepted");
+  trace0("SOCK::sweep_recursive itr_accepted");
 
   ::status.accept.stop();
 
@@ -214,7 +199,7 @@ void DDCOP::do_tran_step()
   _sim->_phase = old_phase;
 }
 /*--------------------------------------------------------------------------*/
-void DDC::setup(CS& Cmd)
+void SOCK::setup(CS& Cmd)
 {
   _cont = false;
   _trace = tNONE;
@@ -228,7 +213,7 @@ void DDC::setup(CS& Cmd)
       if (!ci.is_end()) {			// sweep a component
 	if (ELEMENT* c = dynamic_cast<ELEMENT*>(*ci)) {
 	  _zap[_n_sweeps] = c;
-          trace0("DDC::setup " + _zap[_n_sweeps]->long_label());
+          trace0("SOCK::setup " + _zap[_n_sweeps]->long_label());
 	}else{untested();
 	  throw Exception("dc/op: can't sweep " + (**ci).long_label() + '\n');
 	}
@@ -297,7 +282,7 @@ void DDC::setup(CS& Cmd)
   _sim->_freq = 0;
 }
 /*--------------------------------------------------------------------------*/
-void DDCOP::fix_args(int Nest)
+void SOCK::fix_args(int Nest)
 {
 
   _stop[Nest].e_val(_start[Nest], _scope);
@@ -348,7 +333,7 @@ void DDCOP::fix_args(int Nest)
   }
 }
 /*--------------------------------------------------------------------------*/
-void DDCOP::options(CS& Cmd, int Nest)
+void SOCK::options(CS& Cmd, int Nest)
 {
 
   _sim->_uic = _loop[Nest] = _reverse_in[Nest] = false;
@@ -395,7 +380,7 @@ void DDCOP::options(CS& Cmd, int Nest)
 
 }
 /*--------------------------------------------------------------------------*/
-void DDCOP::sweep()
+void SOCK::sweep()
 {
   head(_start[0], _stop[0], " ");
   _sim->_bypass_ok = false;
@@ -415,11 +400,11 @@ void DDCOP::sweep()
   sweep_recursive(_n_sweeps);
 }
 /*--------------------------------------------------------------------------*/
-void DDCOP::sweep_recursive(int Nest)
+void SOCK::sweep_recursive(int Nest)
 {
   unsigned d = _sim->_total_nodes; // 3
 
-  trace1("DDCOP::sweep_recursive", Nest);
+  trace1("SOCK::sweep_recursive", Nest);
   --Nest;
   assert(Nest >= 0);
   assert(Nest < DCNEST);
@@ -431,7 +416,7 @@ void DDCOP::sweep_recursive(int Nest)
   
   first(Nest);
   do {
-    trace0("DDCOP::sweep_recursive loopstart");
+    trace0("SOCK::sweep_recursive loopstart");
     _sim->_temp_c = temp_c_in;
     if (Nest == 0) {
       _sim->_time0 = _sim->_dt0 = 0.0;
@@ -702,9 +687,9 @@ void DDCOP::sweep_recursive(int Nest)
   } while (next(Nest));
 }
 /*--------------------------------------------------------------------------*/
-void DDCOP::first(int Nest)
+void SOCK::first(int Nest)
 {
-  trace2("DDCOP::first", Nest, _start[Nest]);
+  trace2("SOCK::first", Nest, _start[Nest]);
   assert(Nest >= 0);
   assert(Nest < DCNEST);
   assert(_start);
@@ -727,7 +712,7 @@ void DDCOP::first(int Nest)
   _sim->_phase = p_INIT_DC;
 }
 /*--------------------------------------------------------------------------*/
-bool DDCOP::next(int Nest)
+bool SOCK::next(int Nest)
 {
 
   bool ok = false;
@@ -741,7 +726,7 @@ bool DDCOP::next(int Nest)
 	fixzero(_sweepval[Nest], _step[Nest]);
 	ok=in_order(_start[Nest]-fudge,_sweepval[Nest],_stop[Nest]+fudge);
         _pushel[Nest]->set_ic(_sweepval[Nest]);
-        trace1("DDCOP::next " + _pushel[Nest]->long_label(), _sweepval[Nest]);
+        trace1("SOCK::next " + _pushel[Nest]->long_label(), _sweepval[Nest]);
 	if (!ok  &&  _loop[Nest]) {
 	  _reverse[Nest] = true;
 	}else{
@@ -783,10 +768,8 @@ bool DDCOP::next(int Nest)
   return ok;
 }
 /*--------------------------------------------------------------------------*/
-static DDC p2;
-//static DOP p4;
-static DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "ddc", &p2);
-//static DISPATCHER<CMD>::INSTALL d4(&command_dispatcher, "dop", &p4);
+static SOCK p2;
+static DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "sock", &p2);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
