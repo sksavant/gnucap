@@ -84,6 +84,7 @@ AS_IF([ test "x$with_iverilog" != xno],
 					CPPFLAGS+=-I$with_iverilog
 					AC_SUBST([IVERILOG], ["-lvvp"])
 					AC_SUBST([IVERILOG_SO], ["$with_iverilog/lib/libvvp.so"])
+					AC_SUBST([IVERILOG_PATH], ["$with_iverilog"])
 					AC_SUBST([IVERILOG_INCLUDE], ["-I$with_iverilog"])
 					AC_DEFINE([HAVE_IVERILOG], [1], [Define if you have ivl])
 				  ],
@@ -103,7 +104,6 @@ AC_CHECK_HEADERS(vvp/schedule.h, [ ],
 
 AM_CONDITIONAL(IVERILOG, test x$with_iverilog != xno )
 
-AC_SUBST(IVERILOG_PATH)
 AC_SUBST(IVERILOG_INCLUDE)
 
 dnl debugging
