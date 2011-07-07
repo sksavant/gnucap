@@ -193,8 +193,5 @@ class ExtControl{
 void PrintInst(FILE *fp,struct __vpiScope *scope);
 
 /*------------------------------------------------------------*/
-enum sim_mode {SIM_ALL,
-               SIM_INIT,SIM_CONT0,SIM_CONT1,
-               SIM_PREM,SIM_DONE};
 
 #endif

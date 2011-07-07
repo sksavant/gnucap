@@ -215,11 +215,12 @@ int vvp::init(const char* design_path)
   vpi_set_vlog_info(0, argv );
 
   trace0( "Compiling VVP "+(string)design_path);
-  compile_init();
+  COMPILE*c=new COMPILE();
+  c->init();
 
   // for m in modules...
   // vpip_load_module("bindsigs2");
-  int ret_cd = compile_design(design_path);
+  int ret_cd = c->design(design_path);
 
   trace1( " ...\n", ret_cd);
 
@@ -228,20 +229,20 @@ int vvp::init(const char* design_path)
   if (ret_cd) return ret_cd;
 
   if (!have_ivl_version) {
-    if (verbose_flag) vpi_mcd_printf(1, "... ");
+    if (c->verbose_flag) vpi_mcd_printf(1, "... ");
     vpi_mcd_printf(1, "Warning: vvp input file may not be correct "
         "version!\n");
   }
 
   vpi_mcd_printf(1, "Compile cleanup...\n");
 
-  compile_cleanup();
+  c->cleanup();
 
-  if (compile_errors > 0) {
+  if (c->errors > 0) {
     vpi_mcd_printf(1, "%s: Program not runnable, %u errors.\n",
-        design_path, compile_errors);
+        design_path, c->errors);
     load_module_delete(); 
-    return compile_errors;
+    return c->errors;
   }
 
 #ifdef DO_TRACE

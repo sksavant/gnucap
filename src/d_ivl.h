@@ -37,7 +37,7 @@
 //#include "bm.h"
 //#include "l_lib.h"
 //#include "io_trace.h"
-using namespace std;
+// using namespace std;
 /*--------------------------------------------------------------------------*/
 enum {PORTS_PER_IVL = 100};
 enum direction_t {pIN=0, pOUT, pBUS};
@@ -49,6 +49,8 @@ struct port_info_t {
 class MODEL_LOGIC_IVL;
 class COMMON_LOGIC_IVL;
 class DEV_IVL_BASE;
+
+class ExtLib; // obsolete (vvp?)
 /*--------------------------------------------------------------------------*/
 class COMMON_LOGIC_IVL : public COMMON_COMPONENT {
   public:
@@ -117,26 +119,20 @@ public:
   PARAMETER<string> output;
 };
 /*--------------------------------------------------------------------------*/
-class ExtLib : public ExtAPI , public COMPONENT {
+class ExtLib : public COMPONENT {
   public:
     std::list<class ExtRef*> refs;
     std::string name;
     void *handle;
     double now;
     ExtLib(const char *_nm,void *_hndl) : name(_nm), handle(_hndl), now(-1) {
-      El=this;
+      // El=this;
     }
     int init(const char *);
     static void SetActive(void *dl,void *handle,double time);
     void        set_active(void *handle,double time);
     virtual std::string value_name() const {return name;}
     virtual bool print_type_in_spice() const {return false;}
-    static ExtLib *Sdd2El(SpcDllData *spd) {
-      return (ExtLib*) spd->El;
-      //intptr_t p = (intptr_t)spd;
-      //p -= offsetof(ExtLib,active);   
-      //return (ExtLib *)p;
-    }
   private:
     ExtLib();
 
@@ -164,6 +160,7 @@ class DEV_IVL_BASE : public BASE_SUBCKT  {
     CARD* clone()const { return new DEV_IVL_BASE(*this); }
     void precalc_first();
     void expand();
+    void expand_nodes();
     void precalc_last();
     void tr_accept();
     bool do_tr();
@@ -194,6 +191,9 @@ class DEV_IVL_BASE : public BASE_SUBCKT  {
     ExtLib* extlib()const; //{return (((COMMON_LOGIC_IVL*) common())->_extlib);}
 };
 /*------------------------------------------------------------*/
+enum sim_mode {SIM_ALL,
+               SIM_INIT,SIM_CONT0,SIM_CONT1,
+               SIM_PREM,SIM_DONE};
 class vvp{
   public:
   static double SimTimeD;
@@ -227,12 +227,12 @@ class vvp{
 
 /*--------------------------------------------------------------------*/
 
-inline void DEV_LOGIC_IVL::tr_begin()
+inline void DEV_IVL_BASE::tr_begin()
 {
   const COMMON_LOGIC_IVL* c = prechecked_cast<const COMMON_LOGIC_IVL*>(common());
   assert(c);
 
-  trace1("DEV_LOGIC_IVL::tr_begin " + short_label(), status);
+  trace1("DEV_IVL_BASE::tr_begin " + short_label(), status);
   vvp::startsim("TRAN");
   vvp::contsim("TRAN",0);
 
@@ -244,7 +244,7 @@ inline void DEV_LOGIC_IVL::tr_begin()
   q_eval();
 }
 /*--------------------------------------------------------------------------*/
-inline void DEV_LOGIC_IVL::precalc_first()
+inline void DEV_IVL_BASE::precalc_first()
 {
   COMPONENT::precalc_first();
   assert(common());
@@ -254,14 +254,14 @@ inline void DEV_LOGIC_IVL::precalc_first()
   }
 }
 /*--------------------------------------------------------------------------*/
-inline void DEV_LOGIC_IVL::precalc_last()
+inline void DEV_IVL_BASE::precalc_last()
 {
   COMPONENT::precalc_last();
   if (subckt()) {subckt()->precalc_last();}
   assert(common()->model());
 }
 /*--------------------------------------------------------------------------*/
-inline void DEV_LOGIC_IVL::expand()
+inline void DEV_IVL_BASE::expand()
 {
   BASE_SUBCKT::expand();
   assert(_n);
@@ -316,7 +316,7 @@ inline void DEV_LOGIC_IVL::expand()
     assert(net_iterator);
     CARD* logicdevice;
     node_t* x;
-    trace1("DEV_LOGIC_IVL::expand "+ short_label() + " entering loop", net_nodes());
+    trace1("DEV_IVL_BASE::expand "+ short_label() + " entering loop", net_nodes());
 
     expand_nodes();
 
