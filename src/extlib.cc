@@ -101,8 +101,8 @@ int ExtLib::init(const char *args) {
   assert(activate);
 #else
   startsim = &vvp::startsim;
-  bindnet = &vvp::bindnet;
-  assert(bindnet);
+  //bindnet = &vvp::bindnet;
+  //assert(bindnet);
   assert(startsim);
   endsim   = &vvp::endsim;
   assert(endsim);

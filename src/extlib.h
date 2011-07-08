@@ -82,7 +82,7 @@ struct SpcDllData {
 class ExtAPI : public SpcDllData {
  public:
 
-  void    *(*bindnet)(const char *,char,int *,void *,void (*)(void *,void *,double));
+  //void    *(*bindnet)(const char *,char,int *,void *,void (*)(void *,void *,double));
   double   (*startsim)(const char *);
   void     (*endsim)();
   double   (*contsim)(const char *,double);
@@ -93,7 +93,7 @@ class ExtAPI : public SpcDllData {
   ExtAPI() {
     startsim = (typeof(startsim))ExtBase::null_call;
     endsim   = (typeof(endsim))ExtBase::null_call;
-    bindnet  = (typeof(bindnet))ExtBase::null_call;
+    //bindnet  = (typeof(bindnet))ExtBase::null_call;
     contsim  = (typeof(contsim))ExtBase::null_call;
     activate = (typeof(activate))ExtBase::null_call;
     so_main  = (typeof(so_main))ExtBase::null_call;

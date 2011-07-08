@@ -47,7 +47,7 @@ gnucap_LDADD = libgnucap.la
 matrix_example_LDADD = libgnucap.la
 
 if IVERILOG
-D_SRCS += d_vvp.cc extlib.cc
+D_SRCS += d_vvp.cc extlib.cc d_invert.cc d_ivl_base.cc
 #	libvvpg_la_SOURCES = vvp_main.cc
 #  bin_PROGRAMS += libvvpg
 gnucap_LDADD += @IVERILOG@
@@ -197,7 +197,7 @@ MAKEDEPEND = gcc -M $(CPPFLAGS) -o $*.d $<
 
 IVL=`which iverilog`
 
-%.cc : %.v $(IVERILOG_PATH)/compile_wrap.h
+%.cc : %.v $(IVERILOG_PATH)/compile_wrap.h # $(IVERILOG_PREFIX)/lib/ivl/gc.tgt
 	$(IVL) -tgc $< -o $@
 
 %.cc : %.model %.h ${MODELGEN}${EXEEXT}
