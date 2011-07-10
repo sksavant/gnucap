@@ -424,7 +424,7 @@ DEV_LOGIC_VVP::DEV_LOGIC_VVP()
   status(0)
 {
   trace0("DEV_LOGIC_VVP::DEV_LOGIC_VVP attaching...");
-  attach_common(&Default_Logic_Params); // as in mos.cc
+  attach_common(&Default_Logic_Params);
   trace0("DEV_LOGIC_VVP::DEV_LOGIC_VVP nodes");
   _n = _nodes;
   ++_count;

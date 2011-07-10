@@ -516,6 +516,7 @@ void COMPONENT::set_port_to_ground(uint_t num)
 /*--------------------------------------------------------------------------*/
 void COMPONENT::set_dev_type(const std::string& new_type)
 {
+  trace0("COMPONENT::set_dev_type " + new_type);
   if (common()) {
     if (new_type != dev_type()) {
       COMMON_COMPONENT* c = common()->clone();

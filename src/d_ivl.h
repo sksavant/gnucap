@@ -112,7 +112,7 @@ class COMMON_IVL : public COMMON_COMPONENT {
     //private:?
    void* vvpso;
      // dlopen("libvvpg.so",RTLD_LAZY|RTLD_GLOBAL);
-    ExtLib* _extlib;
+//    ExtLib* _extlib;
   public: // input parameters
     int		incount; //?
     PARAMETER<std::string> vvpfile;
@@ -173,27 +173,29 @@ class COMMON_IVL : public COMMON_COMPONENT {
 
 };
 /*--------------------------------------------------------------------------*/
-class MODEL_IVL_BASE : public MODEL_LOGIC {
+class MODEL_IVL_BASE : public MODEL_CARD {
   protected:
     explicit	MODEL_IVL_BASE(const MODEL_IVL_BASE& p);
+    explicit	MODEL_IVL_BASE(const BASE_SUBCKT* p);
   public:
     explicit MODEL_IVL_BASE(const DEV_IVL_BASE* );
     ~MODEL_IVL_BASE()		{ --_count; }
-  private: // override virtuals
+  private:
     static int _count;
-    std::string	dev_type()const		{return "logic_vvp";}
-    CARD*	clone()const		{return new MODEL_IVL_BASE(*this);}
+  public: // override virtuals
+    virtual std::string	dev_type()const		{return "none_yet";}
+    // virtual CARD*	clone()const	{return new MODEL_IVL_BASE(*this);}
     void precalc_first();
     void precalc_last();
-    void set_param_by_index(int, std::string&, int);
-    bool param_is_printable(int)const;
-    std::string	param_name(int)const;
-    std::string	param_name(int,int)const;
-    std::string	param_value(int)const;
-    int		param_count()const	{return (3 + MODEL_LOGIC::param_count());}
+    //void set_param_by_index(int, std::string&, int);
+    //bool param_is_printable(int)const;
+    //std::string	param_name(int)const;
+    //std::string	param_name(int,int)const;
+    //std::string	param_value(int)const;
+    //int		param_count()const	{return (3 + MODEL_LOGIC::param_count());}
   public:
-    static int	count()			{return _count;}
-    std::string port_name(uint_t)const;
+    //static int	count()			{return _count;}
+    virtual std::string port_name(uint_t)const;
   public:
   PARAMETER<string> file;
   PARAMETER<string> input;

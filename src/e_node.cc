@@ -557,10 +557,13 @@ void node_t::new_node(const std::string& node_name, const CARD* d)
 {
   //assert(!_nnn); //BUG// fails on MUTUAL_L::expand after clone
   assert(d);
+  assert(d->scope());
 
   NODE_MAP* Map = d->scope()->nodes();
   assert(Map);
+  trace0("node_t::new_node " + node_name + " " + d->long_label());
   _nnn = Map->new_node(node_name);
+  trace0("node_t::new_node ...");
   _ttt = _nnn->user_number();
   assert(_nnn);
 }

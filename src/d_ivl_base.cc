@@ -30,15 +30,27 @@
 // #include "vvp/vvp_net.h"
 
 // COMMON_IVL::~COMMON_IVL(){}
+int DEV_IVL_BASE::_count;
 
 // enum smode_t   {moUNKNOWN=0, moANALOG=1, moDIGITAL, moMIXED};
 
-DEV_IVL_BASE::DEV_IVL_BASE(): BASE_SUBCKT() {}
-DEV_IVL_BASE::DEV_IVL_BASE(const DEV_IVL_BASE& p): BASE_SUBCKT(p){}
+DEV_IVL_BASE::DEV_IVL_BASE(): BASE_SUBCKT() 
+{
+  _n = _nodes;
+  ++_count;
+}
+DEV_IVL_BASE::DEV_IVL_BASE(const DEV_IVL_BASE& p): BASE_SUBCKT(p){
+  for (uint_t ii = 0;  ii < max_nodes();  ++ii) {
+    _nodes[ii] = p._nodes[ii];
+  }
+  _n = _nodes;
+  ++_count;
+}
 
-
-//bug
-DEV_IVL_BASE::~DEV_IVL_BASE(){}
+//bug?
+DEV_IVL_BASE::~DEV_IVL_BASE(){
+  --_count;
+}
 
 void DEV_IVL_BASE::tr_accept(){
   static double lastaccept;
@@ -145,7 +157,7 @@ void DEV_IVL_BASE::expand()
     precalc_last();
     uint_t n=2;
 
-    ExtLib*el=((const COMMON_IVL*) common())->_extlib;
+    void*el=((const COMMON_IVL*) common())->vvpso;
     assert(el);
 
     // else Icarus wont let me rigister callbacks 
@@ -296,13 +308,27 @@ TIME_PAIR  DEV_IVL_BASE::tr_review(){
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 int COMMON_IVL::_count = -1;
+/*--------------------------------------------------------------------------*/
+COMMON_IVL::COMMON_IVL(int c)
+      :COMMON_COMPONENT(c), 
+      vvpso(0),
+      incount(0),
+      vvpfile(""),
+      module(""),
+      status(0),
+      _logic_none(0)
+{
+  trace1("COMMON_IVL::COMMON_IVL", c);
+  ++_count;
+}
 /*--------------------------------------------------------------------------*/
 typeof(COMMON_IVL::_commons) COMMON_IVL::_commons;
 /*--------------------------------------------------------------------------*/
 COMMON_IVL::COMMON_IVL(const COMMON_IVL& p)
       :COMMON_COMPONENT(p),
-      _extlib(p._extlib),
+      vvpso(0), // correct?
       incount(p.incount),
       vvpfile(p.vvpfile),
       module(p.module),
@@ -512,3 +538,31 @@ COMMON_COMPONENT* COMMON_IVL::deflate()
   return this;
 }
 /*--------------------------------------------------------------------------*/
+std::string MODEL_IVL_BASE::port_name(uint_t i)const{
+  stringstream a;
+  a << "port" << i;
+  return a.str();
+}
+/*--------------------------------------------------------------------------*/
+void MODEL_IVL_BASE::precalc_first(){
+  MODEL_CARD::precalc_first();
+}
+/*--------------------------------------------------------------------------*/
+void MODEL_IVL_BASE::precalc_last(){
+  MODEL_CARD::precalc_last();
+}
+/*--------------------------------------------------------------------------*/
+MODEL_IVL_BASE::MODEL_IVL_BASE(const BASE_SUBCKT* p)
+  :MODEL_CARD((const COMPONENT*) p){
+    trace0("MODEL_IVL_BASE::MODEL_IVL_BASE");
+  }
+/*--------------------------------------------------------------------------*/
+MODEL_IVL_BASE::MODEL_IVL_BASE(const MODEL_IVL_BASE& p)
+  :MODEL_CARD(p){
+    file=p.file;
+    output=p.output;
+    input=p.input;
+    trace0("MODEL_IVL_BASE::MODEL_IVL_BASE");
+}
+/*--------------------------------------------------------------------------*/
+int MODEL_IVL_BASE::_count = -1;
