@@ -56,8 +56,10 @@ const CARD* LANGUAGE::find_proto(const std::string& Name, const CARD* Scope)
   }else if ((p = command_dispatcher[Name])) {
     return new DEV_DOT;	//BUG// memory leak
   }else if ((p = device_dispatcher[Name])) {
+    trace0("LANGUAGE::find_proto found device " +Name);
     return p;
   }else if ((p = model_dispatcher[Name])) {
+    trace0("LANGUAGE::find_proto found model " +Name);
     return p;
   }else{
     assert(!p);

@@ -155,7 +155,7 @@ template<class T>
 inline OMSTREAM& OMSTREAM::operator<< (T t){
 	stringstream a;
 	a << t;
-	untested();
+//	untested();
 	return *this<<a.str().c_str();
 }
 /*--------------------------------------------------------------------------*/

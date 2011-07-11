@@ -210,6 +210,8 @@ IVL=`which iverilog`
 d_vvp.lo extlib.lo: CPPFLAGS+= @IVERILOG_INCLUDE@
 
 
+.DELETE_ON_ERROR: *.cc
+
 # include $(srcdir)/depend
 #
 # %.o: .deps/%.

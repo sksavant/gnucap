@@ -116,6 +116,7 @@ void DEV_IVL_BASE::tr_begin()
 /*--------------------------------------------------------------------------*/
 void DEV_IVL_BASE::precalc_first()
 {
+  trace0("DEV_IVL_BASE::precalc_first");
   COMPONENT::precalc_first();
   assert(common());
 
@@ -132,18 +133,21 @@ void DEV_IVL_BASE::precalc_last()
 }
 /*--------------------------------------------------------------------------*/
 std::string DEV_IVL_BASE::port_name(uint_t i)const{
-  stringstream a;
-  a << "port" << i;
-  return a.str();
+  const COMMON_IVL* c = prechecked_cast<const COMMON_IVL*>(common());
+  assert(c);
+  const MODEL_IVL_BASE* m = prechecked_cast<const MODEL_IVL_BASE*>(c->model());
+  assert(m);
+  return m->port_name(i);
 }
 /*--------------------------------------------------------------------------*/
 void DEV_IVL_BASE::expand()
 {
+  trace0("DEV_IVL_BASE::expand " + short_label());
   BASE_SUBCKT::expand();
   assert(_n);
   const COMMON_IVL* c = prechecked_cast<const COMMON_IVL*>(common());
   assert(c);
-  const MODEL_LOGIC* m = prechecked_cast<const MODEL_LOGIC*>(c->model());
+  const MODEL_IVL_BASE* m = prechecked_cast<const MODEL_IVL_BASE*>(c->model());
   assert(m);
 
   if (!subckt()) {
@@ -152,7 +156,7 @@ void DEV_IVL_BASE::expand()
   }
   
   if (_sim->is_first_expand()) {
-    trace1 ("first expanding " +long_label(), net_nodes());
+    trace1 ("First expanding " +long_label(), net_nodes());
     precalc_first();
     precalc_last();
     uint_t n=2;
@@ -161,20 +165,27 @@ void DEV_IVL_BASE::expand()
     assert(el);
 
     // else Icarus wont let me rigister callbacks 
+    //
+    COMPILE* comp = c->get_compiler();
+    // c->init();
+    c->compile_design(comp, this);
+
+
     assert(vpi_mode_flag == VPI_MODE_NONE);
     vpi_mode_flag = VPI_MODE_COMPILETF;
 
     vpiHandle item;
-    const char* modulename = ((string) c->module).c_str();
 
-    vpiHandle module = (c->vhbn)(modulename,NULL);
+    trace0("looking up in vhbn");
+    vpiHandle module = (c->vhbn)(short_label().c_str(),NULL);
     assert(module);
 
     vpiHandle vvp_device = (c->vhbn)(short_label().c_str(),module);
     assert(vvp_device);
 
-    vpiHandle vvp_device_module = vpi_handle(vpiModule,vvp_device);
-    assert(vvp_device_module);
+    vvp_device=module;
+
+    /// old code from d_vvp
 
     assert ((_n[0].n_()));
     assert ((_n[1].n_()));
@@ -188,25 +199,31 @@ void DEV_IVL_BASE::expand()
     string name;
     // not implemented
     // vpiHandle net_iterator = vpi_iterate(vpiPorts,vvp_device);
-    vpiHandle net_iterator = vpi_iterate(vpiScope,vvp_device);
-    assert(net_iterator);
+
     CARD* logicdevice;
     node_t* x;
     trace1("DEV_IVL_BASE::expand "+ short_label() + " entering loop", net_nodes());
 
-    expand_nodes();
+    // expand_nodes(); ?
 
-    // old
-    while ((item = vpi_scan(net_iterator))) {
+    // vpiHandle net_iterator = vpi_iterate(vpiScope,vvp_device);
+    //while ((item = vpi_scan(net_iterator))) {
+    //
+    while ( n < m->net_nodes() ) {
+      item = vpi_handle_by_name( port_name(n).c_str() , vvp_device );
+
       int type = vpi_get(vpiType,item);
       name = vpi_get_str(vpiName,item);
       COMPONENT* P;
 
-      trace2("==> "+ short_label() + " " + string(name), item->vpi_type->type_code, n );
+
+      trace2("==> "+ short_label() + " item name: " + string(name), item->vpi_type->type_code, n );
+      trace0("==>  looking for " + port_name(n));
 
       switch(type){
         case vpiNet: // <- ivl
           {
+          trace0("  ==> Net: " + string(name) );
           src='V';
           logic_common = c->_logic_none;
           x = new node_t();
@@ -236,6 +253,7 @@ void DEV_IVL_BASE::expand()
           }
         case vpiReg: // -> ivl
           src='I';
+          trace0("  ==> Reg: " + string(name) );
           x = new node_t();
           x->new_model_node("i_"+name, this);
           lnodes[0] = *x;
@@ -288,6 +306,7 @@ void DEV_IVL_BASE::expand()
 }
 /*---------------------*/
 bool DEV_IVL_BASE::do_tr(){
+  trace0("DEV_IVL_BASE::do_tr");
   assert(status);
   //q_accept();
   return BASE_SUBCKT::do_tr();
@@ -341,25 +360,33 @@ COMMON_IVL::COMMON_IVL(const COMMON_IVL& p)
 /*--------------------------------------------------------------------------*/
 int COMMON_IVL::vvpinit() {
 
-  trace0("ExtLib::init");
+  trace0("COMMON_IVL::vvpinit");
 
-  void* handle=vvpso;
 
 #if 1
   // const char* e;
-  vhbn  = (typeof(vhbn))dlsym(handle,"vpi_handle_by_name");
+  vhbn  = (typeof(vhbn))dlsym(vvpso,"vpi_handle_by_name");
+  if(!vhbn){
+     error(bDANGER, "so: %s\n", dlerror());
+  }
   assert(vhbn);
-  bindnet  = (typeof(bindnet))dlsym(handle,"bindnet");
-  assert(bindnet);
-  startsim = (typeof(startsim))dlsym(handle,"startsim");
-  assert(startsim);
-  endsim   = (typeof(endsim))dlsym(handle,"endsim");
-  assert(endsim);
-  contsim  = (typeof(contsim))dlsym(handle,"contsim");
-  assert(contsim);
-  get_compiler  = (typeof(get_compiler))dlsym(handle,"get_compiler");
+  //bindnet  = (typeof(bindnet))dlsym(vvpso,"bindnet");
+  //assert(bindnet);
+  //startsim = (typeof(startsim))dlsym(vvpso,"startsim");
+  //assert(startsim);
+  //endsim   = (typeof(endsim))dlsym(vvpso,"endsim");
+  //assert(endsim);
+  //contsim  = (typeof(contsim))dlsym(vvpso,"contsim");
+  //ssert(contsim);
+  get_compiler  = (typeof(get_compiler))dlsym(vvpso,"get_compiler");
+  if(!get_compiler){
+     error(bDANGER, "so: %s\n", dlerror());
+   }
   assert(get_compiler);
-//  so_main =  (typeof(so_main))dlsym(handle,"so_main");
+
+
+  
+//  so_main =  (typeof(so_main))dlsym(vvpso,"so_main");
 //   if(!so_main){
 //     error(bDANGER, "so: %s\n", dlerror());
 //   }
@@ -399,13 +426,21 @@ void COMMON_IVL::precalc_first(const CARD_LIST* par_scope)
   //something hosed here.
 }
 /*--------------------------------------------------------------------------*/
+    
+int COMMON_IVL::compile_design(COMPILE*c, COMPONENT* p)const{
+  const MODEL_IVL_BASE* m = dynamic_cast<const MODEL_IVL_BASE*>(model());
+
+  //c->init();
+  return m->compile_design(c, p->short_label());
+}
+/*--------------------------------------------------------------------------*/
 void COMMON_IVL::expand(const COMPONENT* dev ){
   trace1("COMMON_IVL::expand" + dev->long_label(), (intptr_t) dev % PRIME);
 
   COMMON_COMPONENT::expand(dev);
   attach_model(dev);
 
-  const MODEL_LOGIC* m = dynamic_cast<const MODEL_LOGIC*>(model());
+  const MODEL_IVL_BASE* m = dynamic_cast<const MODEL_IVL_BASE*>(model());
   if (!m) {
     throw Exception_Model_Type_Mismatch(dev->long_label(), modelname(), name());
   }
@@ -430,9 +465,9 @@ void COMMON_IVL::precalc_last(const CARD_LIST* par_scope)
   if(!vvpso){
 #if 1
     /// dlopen has been overwritten!!1
-    vvpso = dlopen("libvvpg.so",RTLD_LAZY|RTLD_GLOBAL);
+    vvpso = dlopen("libvvp.so",RTLD_LAZY); //|RTLD_GLOBAL);
     if(vvpso == NULL) throw Exception("cannot open libvvp: %s: ", dlerror());
-    trace0("=========== LOADED libvvpg.so ==========");
+    trace0("=========== LOADED libvvp.so ==========");
     dlerror();
 #else
     void* h = NULL;
@@ -451,6 +486,7 @@ void COMMON_IVL::precalc_last(const CARD_LIST* par_scope)
     trace0("COMMON_IVL::precalc_last already done extlib");
   }
   status++;
+  trace0("COMMON_IVL::precalc_last done");
 }
 /*--------------------------------------------------------------------------*/
 COMMON_IVL::~COMMON_IVL()	{
@@ -545,20 +581,20 @@ std::string MODEL_IVL_BASE::port_name(uint_t i)const{
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_IVL_BASE::precalc_first(){
-  MODEL_CARD::precalc_first();
+  MODEL_LOGIC::precalc_first();
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_IVL_BASE::precalc_last(){
-  MODEL_CARD::precalc_last();
+  MODEL_LOGIC::precalc_last();
 }
 /*--------------------------------------------------------------------------*/
 MODEL_IVL_BASE::MODEL_IVL_BASE(const BASE_SUBCKT* p)
-  :MODEL_CARD((const COMPONENT*) p){
+  :MODEL_LOGIC((const COMPONENT*) p){
     trace0("MODEL_IVL_BASE::MODEL_IVL_BASE");
   }
 /*--------------------------------------------------------------------------*/
 MODEL_IVL_BASE::MODEL_IVL_BASE(const MODEL_IVL_BASE& p)
-  :MODEL_CARD(p){
+  :MODEL_LOGIC(p){
     file=p.file;
     output=p.output;
     input=p.input;

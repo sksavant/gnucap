@@ -81,8 +81,6 @@ enum sim_mode {SIM_ALL,
                SIM_INIT,SIM_CONT0,SIM_CONT1,
                SIM_PREM,SIM_DONE};
 /*------------------------------------------------------------*/
-// should be part of COMMON_IVL
-/*------------------------------------------------------------*/
 class COMMON_IVL : public COMMON_COMPONENT {
   public:
     explicit	COMMON_IVL(int c=0);
@@ -99,7 +97,7 @@ class COMMON_IVL : public COMMON_COMPONENT {
     void precalc_first(const CARD_LIST*);
     void expand(const COMPONENT* d);
     void precalc_last(const CARD_LIST*);
-    std::string name()const {itested();return "logic_vvp";}
+    std::string name()const {itested();return "common_ivl";}
     static  int	count()	{return _count;}
     COMMON_COMPONENT* deflate();
   private:
@@ -141,7 +139,7 @@ class COMMON_IVL : public COMMON_COMPONENT {
     //from vvp_vpi.cc
     static void vvp_vpi_init();
     static int init(const char* design_path);
-    int compile_design();
+    int compile_design(COMPILE* c, COMPONENT*) const;
 
     static void signals_capture(void);
     static void signals_revert(void);
@@ -173,7 +171,7 @@ class COMMON_IVL : public COMMON_COMPONENT {
 
 };
 /*--------------------------------------------------------------------------*/
-class MODEL_IVL_BASE : public MODEL_CARD {
+class MODEL_IVL_BASE : public MODEL_LOGIC {
   protected:
     explicit	MODEL_IVL_BASE(const MODEL_IVL_BASE& p);
     explicit	MODEL_IVL_BASE(const BASE_SUBCKT* p);
@@ -196,10 +194,11 @@ class MODEL_IVL_BASE : public MODEL_CARD {
   public:
     //static int	count()			{return _count;}
     virtual std::string port_name(uint_t)const;
+    virtual int compile_design(COMPILE* c, const string) const = 0;
   public:
-  PARAMETER<string> file;
-  PARAMETER<string> input;
-  PARAMETER<string> output;
+    PARAMETER<string> file;
+    PARAMETER<string> input;
+    PARAMETER<string> output;
 };
 /*--------------------------------------------------------------------------
 class ExtLib : public COMPONENT {
@@ -273,7 +272,7 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     void register_port(vpiHandle); // data from ivl
 
     bool has_common()const {return true;}
-    std::string port_name(uint_t)const ;
+    virtual std::string port_name(uint_t)const ;
     void tr_begin();
     ExtLib* extlib()const; //{return (((COMMON_IVL*) common())->_extlib);}
 };
