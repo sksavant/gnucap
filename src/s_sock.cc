@@ -773,3 +773,775 @@ static DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "sock", &p2);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+
+#if 0
+ 
+
+
+typedef union
+{
+  double double_val;
+  int    int_val;
+} di_union_t;
+
+
+
+// Treiber zum Einlesen der Daten aus Maple               
+//		          vera_nl
+// Er formt die TParameter in C-Datentypen um. Dabei werden auch
+// die Nummern der Variablen neu vergeben von 0-1000
+// Die Nummern der Parmeter werden ebenfalls neu vergeben von 1000- 
+// Die Variablen werden dann in dieser Reihenfolge in Felder geschrieben.
+//                              
+// Parameter:  TParameter: Liste der Parameter in der Reihenfolge:
+//                         A_Variablennamensliste,
+//                         A_Gleichungen,
+//                         A_Jacobimatrix,
+//                         A_symbolisches,linearisiertes Gleichungssystem
+//                         A_Startvektor
+//                           
+// Rueckgabewert : TParamter: NULL
+//   
+// L.Hedrich 2002
+
+#define BUFSIZE 256
+
+
+TParameter *vera_titan_ak(TParameter *parameter)
+{
+  data *A;                    // Zeiger auf globale Datenklasse
+                              // in ihr werden alle globalen Daten gehalten
+  gls *dc_sysA;               // Zeiger auf das DC-Gleichungsystem
+  gls *kons_sysA;
+
+  double *dc_werteA,*dc_loesungA,*kons_loesungA,*kons_residuumA;
+
+  get_tpara *para_obj;        // Zeiger auf ein Parameterobjekt
+
+  int  i,k;
+
+  int channel;
+  int n_bytes=0;
+  int frame_number=0;
+  FILE * outfile;
+  int port = titan_ak_port;   // kommt ueber die Uebergabeparamter -p als
+                              // globale Variable daher (default: port=1400)
+  int reuseaddr = 1;
+  struct sockaddr_in sin;
+
+  int iswitch;
+  int error;
+  int n_inputs;
+  int n_vars;
+  int length;
+  int verbose;
+  int total;
+
+  double *matrixg, *matrixc,*vectorq;
+
+  double x_neu[BUFSIZE];
+  double x_schaetz[BUFSIZE];
+  double q_punkt[BUFSIZE];
+  double G[BUFSIZE*BUFSIZE];
+  double C[BUFSIZE*BUFSIZE];
+
+  char input_namen[BUFSIZE*128];
+  char var_names[BUFSIZE*128];
+ 
+  di_union_t buffer[3*BUFSIZE*BUFSIZE];
+  // werden beneotigt um im DC-OP ein Hold node bzw
+  // Schalten eines Transistors fuer z.B. den VCO zu bewirken
+  // dazu im Gl-System einen Parameter init_sw so einbauen,
+  // dass er im DC-OP auf 1 einen stabilen OP ergibt
+  // und sonst im kons_op auf 0 das instabile System hervorruft. 
+  double *init_sw=(double*)malloc(sizeof(double)*1);
+  char **init_sw_name;
+  init_sw_name=(char **)malloc(1*sizeof(char*));
+  init_sw_name[0]=(char*)"init_sw";
+
+
+  if (printlevel >= 3)
+  {
+    outfile=fopen("call_c.log","w");
+  }
+  else
+  {
+    outfile=stderr;
+  }
+
+  // Daten einlesen
+  para_obj=new get_tpara(parameter);   // Objekt vom Typ Parameter anlegen
+
+  // Hier erfolgt der Aufruf eines Objektes welches die globale Datenstruktur
+  // enthaelt. Der Konstruktor erhaelt die Paramerter und arbeitet sie ab.
+
+  A=new data(&para_obj);         // Daten fuer die Schaltung A einlesen
+
+  //printlevel=3;
+  delete para_obj;              // letztes PArameterobjekt zerstoeren
+
+
+  dc_sysA=A->make_dc_system();
+
+  // Gleichungssystem erstellen
+  kons_sysA=A->make_dc_system();
+
+
+  if (printlevel >= 3)
+  {
+    userinfo(3,"vera_titan_ak","Jetzt das DC-System:\n");
+    dc_sysA->print();
+  }
+
+  matrixg=(double*)malloc(sizeof(double)*A->n_var*A->n_var);
+  matrixc=(double*)malloc(sizeof(double)*A->n_var*A->n_var);
+  vectorq=(double*)malloc(sizeof(double)*A->n_var*A->n_eingaenge);
+
+
+
+  sleep(1);
+  if (printlevel >= 2)
+  {
+    double *dc_werteA=(double*)malloc(sizeof(double)*A->n_eingaenge);
+    dc_werteA[0]=0.1;     
+
+    // DC-Arbeitspunkt berechnen
+    dc_loesungA=dcop(A, dc_sysA ,dc_werteA);
+
+    // Die Variablenwerte stehen schon durch solve_system in var_werte
+    // in dc_sysA und muessen noch nach A kopiert werden:
+    A->var_werte=dc_loesungA;
+
+    A->eval_lin_gl(dc_werteA,&matrixg,&matrixc,&vectorq);
+    if (printlevel >= 1) 
+    {
+      userinfo(1,"vera_titan_ak","G und C und q Matrizen:");  
+      print_array_name (stderr,matrixg,A->n_var,A->n_var,(char*)"G");
+      print_array_name (stderr,matrixc,A->n_var,A->n_var,(char*)"C");
+      print_array_name (stderr,vectorq,A->n_var,A->n_eingaenge,(char*)"q");
+    }       
+
+    // Nun auch den konsistenten Arbeitspunkt testen:
+    for (i=0; i < A->n_var; i++)
+    {
+      x_schaetz[i] = dc_loesungA[i]+0.01*i;
+    }
+
+
+    kons_loesungA=konsop(A, kons_sysA,dc_werteA,x_schaetz,&kons_residuumA);
+
+
+    // jetzt noch G,C und q wie bei DC-Loesung
+
+    // Die Variablenwerte stehen schon durch solve_system in var_werte
+    // in dc_sysA und muessen noch nach A kopiert werden:
+    A->var_werte=kons_loesungA;
+    A->eval_lin_gl(dc_werteA,&matrixg,&matrixc,&vectorq);
+    if (printlevel >= 1) 
+    {
+      userinfo(1,"vera_titan_ak","G und C und q Matrizen:");  
+      print_array_name (stderr,matrixg,A->n_var,A->n_var,(char*)"G");
+      print_array_name (stderr,matrixc,A->n_var,A->n_var,(char*)"C");
+      print_array_name (stderr,vectorq,A->n_var,A->n_eingaenge,(char*)"q");
+    }          
+  } // if printlevel >= 2
+
+
+
+  /* Socket generieren */
+  if ((channel = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+  {
+    printf("Error, cannot create Socket\n");
+    exit(1);
+  }
+
+  /* Wiederverwendung der lokalen Adresse erlauben */
+  if (setsockopt(channel, SOL_SOCKET, SO_REUSEADDR, (void *) &reuseaddr, 
+		 sizeof(reuseaddr)) == -1)
+  {
+    printf("Error, cannot set Socketoptions\n");
+    exit(1);
+  }
+
+  /* Socket einem Port zuweisen. */
+  memset(&sin, 0, sizeof(sin));
+  sin.sin_family = AF_INET;
+  sin.sin_port   = htons(port);
+  if (connect(channel, (struct sockaddr *) &sin, sizeof(sin)) == -1)
+  {
+    printf("Error, cannot connet to Socket\n");
+    exit(1);
+  }
+
+
+  /* Serverbetrieb starten */
+  while (1) 
+  {
+    n_bytes=read(channel, buffer, sizeof(buffer));
+    //printlevel=2;
+    if (n_bytes < 0)
+    {
+      iswitch = -1;
+    }
+    else
+    {
+      iswitch = buffer[0].int_val; 
+    }
+
+    userinfo(1,"vera_titan_ak","Bearbeite: %i mit %i bytes \n",iswitch,n_bytes);
+    if (printlevel >= 3)
+    {
+      fwrite(buffer,1,n_bytes,outfile);
+      fprintf(outfile,"\n Naechste Anforderung \n");
+    }
+
+    switch (iswitch)  
+    {
+      case 51: /* verainit */
+      {
+	verbose = buffer[1].int_val;
+	n_inputs = buffer[2].int_val;
+	length = buffer[3].int_val;
+
+        printlevel=verbose+4; 
+	userinfo(0,"vera_titan_ak","Printlevel set to %d \n", printlevel);
+	userinfo(4,"vera_titan_ak","Inputs %d \n", n_inputs);
+
+        for (i=0; i < length; i++)
+	{
+	  input_namen[i] = (char) buffer[i+4].int_val;
+                                               // Namen braucht man nicht, 
+                                               // deshalb hier ignoriert
+	}
+	input_namen[length] = '\0';
+	userinfo(4,"vera_titan_ak","Inputnamen: %s\n", input_namen);
+	total = length+4;
+        assert(3*BUFSIZE*BUFSIZE >= total);
+ 
+        if (n_bytes != total * (int) sizeof(di_union_t))
+	{
+	  printf("Error in Verainit! no of bytes received %i <> expected %i\n",
+		 n_bytes, (int)(total*sizeof(di_union_t)));
+	  exit(1);
+	}
+
+	error = 0; /* verainit(v_flag, n_inputs, &n_vars, charbuf, &length); */
+	n_vars = A->n_var;
+	strcpy(var_names,"");
+        for (i=0; i < n_vars; i++)
+	{  
+	  strcat(var_names, A->var_namen[i]);
+	  strcat(var_names, "\t");
+	}
+	length = strlen(var_names);
+	userinfo(1,"vera_titan_ak","Variablennamen %s\n",var_names);
+	break;
+      }
+      case 52: /* veraop */
+      {
+	total = A->n_eingaenge+1;
+        assert(3*BUFSIZE*BUFSIZE >= total);
+
+        if (n_bytes != total * (int) sizeof(di_union_t))
+	{
+	  printf("Error in Veraop! no of bytes received %i <> expected"
+                 " %i #inputs: %d \n",
+		 n_bytes, (int)(total*sizeof(di_union_t)),total-1);
+	  exit(1);
+	}
+	
+
+        dc_werteA= (double*) malloc(sizeof(double)*A->n_eingaenge);
+        for (i=0; i < A->n_eingaenge; i++)
+	{
+	  dc_werteA[i] = buffer[1+i].double_val; // Die Werte werden
+	                                         // tatsaechlich verwendet
+	}
+
+	error = 0; /* veraop(sweep_val, x_new, G, C); */
+        n_vars = A->n_var;
+
+
+        init_sw[0]=1.0;  // ueberschreibt die im par_satz gegebenen Werte.
+       
+        dc_sysA->par_werte=insert_value(dc_sysA->par_namen,
+				    dc_sysA->par_werte,dc_sysA->n_par,
+				    init_sw_name,init_sw,1);
+        assert(dc_sysA->par_werte!=NULL);
+
+
+        dc_loesungA=dc_sysA->solve_system(A->eingaenge,dc_werteA,
+					  A->n_eingaenge);  
+	if (dc_loesungA == NULL)
+	{
+	  fprintf(stderr,"vera_titan_ak: Fehler bei DC-Loesung von A\n");
+	  error=1;
+	}
+	else 
+	{
+	  for (i=0; i < dc_sysA->n_var; i++)
+	  {
+	    dc_sysA->start_vek[i]=dc_loesungA[i];
+	    x_neu[i] = dc_loesungA[i];
+	  }
+	  if (printlevel >= 1)
+	  {
+	    dc_sysA->print_var();
+	    print_array(stderr,dc_loesungA,1,A->n_var);
+	  }
+	}
+        // Die Variablenwerte stehen schon durch solve_system in var_werte
+        // in dc_sysA und muessen noch nach A kopiert werden:
+        A->var_werte = x_neu;
+        free(dc_loesungA);
+//        A->var_werte = dc_loesungA;
+	// diff_werte, par_werte muessen auch gesetzt sein!
+	// in diesem Falle sind sie per default = 0
+        A->eval_lin_gl(dc_werteA,&matrixg,&matrixc,&vectorq);
+        if (printlevel >= 1) 
+	{
+	  userinfo(1,"vera_titan_ak","G und C Matrizen:\n");  
+	  print_array (stderr,matrixg,n_vars,n_vars);
+	  print_array (stderr,matrixc,n_vars,n_vars);
+	}
+        for (i=0; i < n_vars; i++)
+	{
+          for (k=0; k < n_vars; k++)
+	  {  
+	    // muessen transponiert werden
+	    G[i+n_vars*k]=matrixg[k+n_vars*i];
+	    C[i+n_vars*k]=matrixc[k+n_vars*i];
+	  }
+	}
+	break;
+      }
+
+      case 53: /* verakons */
+# endif
+      void SOCK::verakons()
+      {
+
+	total =  A->n_eingaenge + A->n_var + 1;
+        assert(3*BUFSIZE*BUFSIZE >= total);
+
+        if (n_bytes != total * (int) sizeof(di_union_t))
+	{
+	  printf("Error in Verakons! no of bytes received %i <> expected %i\n",
+		 n_bytes, (int)(total*sizeof(di_union_t)));
+	  exit(1);
+	}	
+
+
+        dc_werteA= (double*) malloc(sizeof(double)*A->n_eingaenge);
+        for (i=0; i < A->n_eingaenge; i++)
+	{
+	  dc_werteA[i] = buffer[1+i].double_val; // Die Werte werden
+	                                         // tatsaechlich verwendet
+	}
+
+	for (i=0; i < A->n_var; i++)
+	{
+	  x_schaetz[i] = buffer[i+A->n_eingaenge+1].double_val; 
+	}
+
+	if (printlevel >= 3)
+	{
+	  frame_number=buffer[i+1].int_val;
+	  userinfo(3,"vera_titan_ak","Bearbeite %i Frame Number %i mit %i bytes \n",
+		  iswitch,frame_number,n_bytes);
+	}
+ 
+	error = 0; /* verakons(Dwork, x_new, q_dot, G, C); */
+	n_vars = A->n_var;
+
+        // Konsistenten Arbeitspunkt und q_punkt  berechnen
+        // Es wird davon ausgegangen, das dc_werteA noch stimmt
+	kons_loesungA=konsop(A,kons_sysA,dc_werteA,
+			     x_schaetz,&kons_residuumA);
+	if (kons_loesungA == NULL)
+	{
+	  fprintf(stderr,"vera_titan_ak: Fehler bei konsistenter Abp.-Loesung von A\n");
+	  error=1;
+	}
+	else 
+	{
+	  for (i=0; i < n_vars; i++)
+	  {
+	    x_neu[i]=kons_loesungA[i];
+	    q_punkt[i]=kons_residuumA[i];
+	  }
+	  if (printlevel >= 2)
+	  {
+	    kons_sysA->print_var();
+	    print_array(stderr,kons_loesungA,1,A->n_var);
+	  }
+	}
+    
+
+	A->var_werte=x_neu;
+        free(kons_loesungA); // Speicherplatz sparenm wird von 
+	                    // Solve_system allokiert
+	// diff_werte, par_werte muessen auch gesetzt sein!
+	// in diesem Falle sind sie per default = 0
+        A->eval_lin_gl(dc_werteA,&matrixg,&matrixc,&vectorq);
+
+        if (printlevel >= 1) 
+	{
+	  userinfo(1,"vera_titan_ak","G-Matrix:\n");  
+	  print_array (stderr,matrixg,n_vars,n_vars);
+	  userinfo(1,"vera_titan_ak","C-Matrix:\n");  
+	  print_array (stderr,matrixc,n_vars,n_vars);
+	}
+        for (i=0; i < n_vars; i++)
+	{
+          for (k=0; k < n_vars; k++)
+	  {  
+	    // muessen transponiert werden
+	    G[i+n_vars*k]=matrixg[k+n_vars*i];
+	    C[i+n_vars*k]=matrixc[k+n_vars*i];
+	  }
+	}
+	break;
+      }
+#if 0
+      default: 
+      {
+	// Ende Serverbetrieb
+	close(channel);
+
+	if (printlevel >= 3)
+	{
+	  fclose(outfile);
+	}
+
+        free(matrixg);
+        free(matrixc);
+        free(vectorq);
+
+	return NULL;
+      }  
+    }
+
+    if (iswitch == 51)                   /* Verainit */
+    {
+      buffer[0].int_val = error;         /* Fehlerflag */
+      buffer[1].int_val = n_vars;        /* Anzahl der Variablen */
+      buffer[2].int_val = length;        /* Laenge des Namen Feldes */
+      for (i=0; i < length; i++)         /* Variablen-Namen Feld */
+      {
+	buffer[i+3].int_val = (int) var_names[i];
+      }
+
+      total = length+3;
+      assert(3*BUFSIZE*BUFSIZE >= total);
+      if (printlevel >= 1)
+      {
+	userinfo(1,"vera_titan_ak","Sende: Error %i Framenumber %i, Laenge %i\n",
+		 error,frame_number,total);
+      }
+      n_bytes = write(channel, buffer, total*sizeof(di_union_t));
+      if (n_bytes != total * (int) sizeof(di_union_t))
+      {
+	userinfo(1,"vera_titan_ak","Fehler beim Senden:%i Framenumber %i, "
+		 "returnwert von write %i, errno %i\n",
+		 frame_number,n_bytes,errno); 
+      }
+    }
+    else if (iswitch == 52)              /* Veraop */
+    {
+      buffer[0].int_val = error;         /* Fehlerflag */
+      for (i=0; i < n_vars; i++)         /* Variablen-Werte */
+      {
+	buffer[i+1].double_val = x_neu[i];
+      }
+      for (i=0; i < sqr(n_vars); i++)    /* G-Matrix */
+      {
+	buffer[i+n_vars+1].double_val = G[i];
+      }
+      for (i=0; i < sqr(n_vars); i++)    /* C-Matrix */
+      {
+	buffer[i+sqr(n_vars)+n_vars+1].double_val = C[i];
+      }
+
+      total = 2*sqr(n_vars)+n_vars+1;
+      assert(3*BUFSIZE*BUFSIZE >= total);
+      if (printlevel >= 1)
+      {
+	userinfo(1,"vera_titan_ak","Sende: Error %i Framenumber %i, Laenge %i\n",
+		 error,frame_number,total); 
+      }
+      n_bytes = write(channel, buffer, total*sizeof(di_union_t));
+      if (n_bytes != total * (int) sizeof(di_union_t))
+      {
+	userinfo(1,"vera_titan_ak","Fehler beim Senden:%i Framenumber %i, "
+		 "returnwert von write %i, errno %i\n",
+		 frame_number,n_bytes,errno); 
+      }
+    }
+
+    else if (iswitch == 53)              /* Verakons */
+#endif 
+    void SOCK::verakons_tail()
+    {
+      buffer[0].int_val = error;         /* Fehlerflag */
+      for (i=0; i < n_vars; i++)         /* Variablen-Werte */
+      {
+	buffer[i+1].double_val = x_neu[i];
+      }
+      for (i=0; i < n_vars; i++)         /* Q-Punkt */
+      {
+	buffer[i+n_vars+1].double_val = q_punkt[i];
+      }
+      for (i=0; i < sqr(n_vars); i++)    /* G-Matrix */
+      {
+	buffer[i+2*n_vars+1].double_val = G[i];
+      }
+      for (i=0; i < sqr(n_vars); i++)    /* C-Matrix */
+      {
+	buffer[i+sqr(n_vars)+2*n_vars+1].double_val = C[i];
+      }
+
+      total = 2*sqr(n_vars)+2*n_vars+1;
+      assert(3*BUFSIZE*BUFSIZE >= total);
+      if (printlevel >= 1)
+      {
+	userinfo(1,"vera_titan_ak","Sende: Error %i Framenumber %i, Laenge %i\n",
+		 error,frame_number,total); 
+      }
+      n_bytes = write(channel, buffer, total*sizeof(di_union_t));
+      if (n_bytes != total * (int) sizeof(di_union_t))
+      {
+	userinfo(1,"vera_titan_ak","Fehler beim Senden:%i Framenumber %i, "
+		 "returnwert von write %i, errno %i\n",
+		 frame_number,n_bytes,errno); 
+      }
+    }
+
+#if 0
+  } // while true
+}
+
+
+
+double* dcop(data *A, gls *dc_sysA,double* dc_werteA)
+{
+  double * dc_loesungA=dc_sysA->solve_system(A->eingaenge,dc_werteA,
+				    A->n_eingaenge);  
+  if (dc_loesungA == NULL)
+  {
+    fprintf(stderr,"dcop: Fehler bei DC-Loesung von A\n");
+  }
+  else if (printlevel >= 1)
+  {
+    userinfo(1,"dcop","DC-Loesung:");            
+    dc_sysA->print_var();
+  }
+
+  return dc_loesungA;
+}
+
+
+//-------------------------------------------
+// Konsistenten Arbeitspunkt berechnen
+// liefert konsistentes x zurueck und schreibt in A_mal_qpunkt
+// das residuum
+// Bei keiner Loesung liefert er NULL zurueck
+//-------------------------------------------
+
+double* konsop(data *A, gls *kons_sysA,double* dc_werteA,
+	       double* x_schaetz,double **A_mal_q_punkt)
+{
+  int i;
+  static int initial=0;
+  static char **x_schaetz_namen;
+  static char **s_namen;
+  static double *s_werte;
+  static double *iq_werte;
+  static double *iq_zero_werte;
+  static char **q_namen;
+  static char **iq_namen;
+  double *kons_residuum;
+  double *kons_loesungA;
+
+  if (initial == 0) // Initialisieren der globalen Bloecke und Felder
+  {
+    x_schaetz_namen=(char **)malloc(A->n_var*sizeof(char*));
+    for (i=0; i < A->n_var; i++)
+    {
+      x_schaetz_namen[i]=(char *)malloc(250*sizeof(char));
+      sprintf(x_schaetz_namen[i],"%s_schaetz",A->var_namen[i]);
+    } 
+    s_namen=(char **)malloc(2*sizeof(char*));
+    s_namen[0]=(char*)"siq";
+    s_namen[1]=(char*)"sko";
+    s_werte=(double *)malloc(2*sizeof(double));
+
+    iq_werte=(double*)malloc(kons_sysA->n_diff*sizeof(double));
+    iq_zero_werte=(double*)malloc(kons_sysA->n_diff*sizeof(double));
+    q_namen=(char**)malloc(kons_sysA->n_diff*sizeof(char*));
+    iq_namen=(char**)malloc(kons_sysA->n_diff*sizeof(char*));
+    for (i=0; i < kons_sysA->n_diff ; i++)
+    {
+      q_namen[i]=mstrcpy((kons_sysA->diff_namen[i])+2);
+      // ersten beiden Buchstaben D_ abschneiden	  
+      iq_namen[i]=mstrcpy(kons_sysA->diff_namen[i]);
+      iq_namen[i][0]='i';
+      iq_namen[i][1]='q';
+      // ersten beiden Buchstaben ersetzen 
+      userinfo(1,"konsop","IQ NAmen: %s %s \n",
+	       q_namen[i],iq_namen[i]);                        
+      iq_zero_werte[i]=0.0;
+      // braucht man zum spaeteren 0 setzen  
+    }      
+
+    initial=1; // nur einmal initialisieren
+  }
+
+  if (printlevel >= 1)
+  { 
+    userinfo(1,"konsop","Konsistenten Abp berechnen\n");
+    userinfo(1,"konsop","X-Schaetz:");
+    print_var_werte(kons_sysA->var_namen,x_schaetz,A->n_var);
+  }
+      
+  // X_schaetz als Startvektor vorgeben:
+  array_copy(kons_sysA->start_vek,x_schaetz,1,kons_sysA->n_var);
+
+  // X-Schaetzwerte in den Parametervektor eintragen:
+  kons_sysA->par_werte=insert_value(kons_sysA->par_namen,
+				    kons_sysA->par_werte,kons_sysA->n_par,
+				    x_schaetz_namen,x_schaetz,A->n_var);
+  assert(kons_sysA->par_werte!=NULL);
+  // Schalter siq auf 1 setzen
+  s_werte[0]=1.0; // siq
+  s_werte[1]=0.0; // sko
+  kons_sysA->par_werte=insert_value(kons_sysA->par_namen,
+				    kons_sysA->par_werte,kons_sysA->n_par,
+				    s_namen,s_werte,2);
+  assert(kons_sysA->par_werte!=NULL);
+      
+  if (printlevel >= 5)
+  {
+    userinfo(5,"konsop"," %d mal %d UPNs der Jacobimatrix\n\n",
+	     A->n_var,A->n_var);
+    upn_arr_iter(A->jac_arr,A->n_var,A->n_var,&upn_print);
+    kons_sysA->print();
+  }
+  // Eingabe xschaetz
+  // Gleichungssystem A*iq+f(x)=0             (3.a)
+  //                      fq(xschaetz)=fq(x)  (3.b)
+  // nach x,iq loesen daraus folgen die Ladungen
+  // es wuerde reichen nur den unteren Teil zu loesen, dass
+  // kann aber niligs nicht. 
+  // durch (3.b) wird x in dem Teil neu vorgegeben der zur Ladung gehoert
+  //printlevel=2;
+  // Ausgabe iqs, xkons
+  kons_loesungA=kons_sysA->solve_system(A->eingaenge,dc_werteA,
+					A->n_eingaenge);  
+  //printlevel=1;
+
+  // Die iqs stehen in den Variablen der q's 
+  // diese Loesung als Stroeme merken
+  if (kons_loesungA == NULL)
+  {
+    if (printlevel >= 1)
+    {
+      userinfo(1,"konsop","Fehler bei Pre Kons-Loesung von A\n");
+      userinfo(1,"konsop","X-Schaetz:");            
+      print_var_werte(kons_sysA->var_namen,x_schaetz,A->n_var);
+    }
+    return NULL;
+  }
+  else if (printlevel >= 1)
+  {
+    userinfo(1,"konsop","Pre Kons-Loesung mit qs als iqs:\n");            
+    print_var_werte(kons_sysA->var_namen,kons_loesungA,kons_sysA->n_var);
+  }
+
+  // Guten Startvektor vorgeben:
+  array_copy(kons_sysA->start_vek,kons_loesungA,1,kons_sysA->n_var);
+
+
+  // iq's Speichern und deren Namen generieren:
+  iq_werte=insert_value_sel(q_namen,iq_werte,kons_sysA->n_diff,
+			    kons_sysA->var_namen,kons_loesungA,
+			    kons_sysA->n_var);
+
+  if (printlevel >= 1)
+  {
+    userinfo(1,"konsop","IQ-Stroeme:\n");
+    print_var_werte(iq_namen,iq_werte,kons_sysA->n_diff);
+  }
+ 
+  // Nun iqs als Parameter in kons-System einsetzen und Schalter sko umlegen
+  kons_sysA->par_werte=insert_value(kons_sysA->par_namen,
+				    kons_sysA->par_werte,kons_sysA->n_par,
+				    iq_namen,iq_werte,A->n_diff);
+  assert(kons_sysA->par_werte!=NULL);
+
+  s_werte[0]=0.0;  // siq
+  s_werte[1]=1.0;  // sko
+  kons_sysA->par_werte=insert_value(kons_sysA->par_namen,
+				    kons_sysA->par_werte,kons_sysA->n_par,
+				    s_namen,s_werte,2);
+  assert(kons_sysA->par_werte!=NULL);
+  // Eingabe iqs
+  // Gleichungssystem A*iq+f(xkons)=0 
+  //                      q=fq(xkons) loesen
+  // nun werden die kons_loesungen ueberschrieben
+  // und darin stehen dann tatsaechlich die konsistenten 
+  // Loesungen : 
+  // Asugabe: xkons, q 
+  kons_loesungA=kons_sysA->solve_system(A->eingaenge,dc_werteA,
+					A->n_eingaenge);  
+  if (kons_loesungA == NULL)
+  {
+    fprintf(stderr,"konsop: Fehler bei Kons Loesung von A\n");
+  }
+  else if (printlevel >= 1)
+  {
+    userinfo(1,"konsop","Kons-Loesung:");            
+    print_var_werte(kons_sysA->var_namen,kons_loesungA,kons_sysA->n_var);
+  }
+      
+      
+  // Nun noch A*qpunkt berechnen  
+  // dazu zuerst die iqs wieder auf 0 setzen
+  // Gleichungssytem ist dann  A*0+f(xkons)=0
+  //                            q=fq(xkons)
+  // das aufgeloest nach A*iq bedeutet: A*iq=-residuum(Gleichungssystem)
+      
+
+  kons_sysA->par_werte=insert_value(kons_sysA->par_namen,
+				    kons_sysA->par_werte,kons_sysA->n_par,
+				    iq_namen,iq_zero_werte,A->n_diff);
+  assert(kons_sysA->par_werte!=NULL);
+
+ 
+  // Residuum des Gleichungssystemsberechnen
+  
+  kons_residuum=kons_sysA->residuum(A->eingaenge,dc_werteA,
+					    A->n_eingaenge);  
+  if (kons_residuum == NULL)
+  {
+    fprintf(stderr,"konsop: Fehler bei Residuum-Loesung von A\n");
+  }
+  else if (printlevel >= 1)
+  {
+    userinfo(1,"konsop","Residuum:");            
+    print_array(stderr,kons_residuum,1,kons_sysA->n_var);
+  }
+
+  for (i=0; i < kons_sysA->n_var; i++)
+  {
+    kons_residuum[i]*=-1.0;
+  }
+
+
+  *A_mal_q_punkt=kons_residuum;
+  // A*q_punkt-Ergebnis ablegen 
+  return kons_loesungA;
+}
+
+
+#endif
