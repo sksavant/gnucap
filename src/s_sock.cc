@@ -712,6 +712,39 @@ void SOCK::first(int Nest)
   _sim->_phase = p_INIT_DC;
 }
 /*--------------------------------------------------------------------------*/
+void SOCK::fillnames( const CARD_LIST* scope){
+
+  CKT_BASE::_sim->init();
+
+  const NODE_MAP * nm = scope->nodes();
+  for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
+    if (i->first != "0") {
+      stringstream s;
+      s << setw(8) << i->second->long_label() << " vector position " << 
+        ", m_ " << i->second->m_() << " , matrix " << i->second->matrix_number() 
+        << ", use " << i->second->user_number() << 
+        " x-Entry " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
+      _out << s.str();
+      unsigned position;
+      assert( var_namen[position]==null );
+      string* myname=new string(i->second->long_label());
+      var_namen[position] = myname;
+
+
+    }else{
+      // _out << "Zero Node  "  << "\n";
+    }
+  }
+
+  for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
+    const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i);
+    if (s) {
+      fillnames( s->subckt() );
+    }
+  }
+
+}
+/*--------------------------------------------------------------------------*/
 bool SOCK::next(int Nest)
 {
 
@@ -998,14 +1031,14 @@ TParameter *vera_titan_ak(TParameter *parameter)
     switch (iswitch)  
     {
       case 51: /* verainit */
-      {
+#endif
+
+      SOCK::verainit(){
 	verbose = buffer[1].int_val;
 	n_inputs = buffer[2].int_val;
 	length = buffer[3].int_val;
 
-        printlevel=verbose+4; 
-	userinfo(0,"vera_titan_ak","Printlevel set to %d \n", printlevel);
-	userinfo(4,"vera_titan_ak","Inputs %d \n", n_inputs);
+	trace3("verainit", verbose, n_inputs, length );
 
         for (i=0; i < length; i++)
 	{
@@ -1014,7 +1047,8 @@ TParameter *vera_titan_ak(TParameter *parameter)
                                                // deshalb hier ignoriert
 	}
 	input_namen[length] = '\0';
-	userinfo(4,"vera_titan_ak","Inputnamen: %s\n", input_namen);
+
+        trace0("input_namen " + string(input_namen) );
 	total = length+4;
         assert(3*BUFSIZE*BUFSIZE >= total);
  
@@ -1022,21 +1056,22 @@ TParameter *vera_titan_ak(TParameter *parameter)
 	{
 	  printf("Error in Verainit! no of bytes received %i <> expected %i\n",
 		 n_bytes, (int)(total*sizeof(di_union_t)));
-	  exit(1);
+          throw Exception("bloed\n");
 	}
 
 	error = 0; /* verainit(v_flag, n_inputs, &n_vars, charbuf, &length); */
-	n_vars = A->n_var;
+	n_vars = _sim->_total_nodes; // A->n_var;
 	strcpy(var_names,"");
         for (i=0; i < n_vars; i++)
 	{  
-	  strcat(var_names, A->var_namen[i]);
+	  strcat(var_names, var_namen[i]);
 	  strcat(var_names, "\t");
 	}
 	length = strlen(var_names);
 	userinfo(1,"vera_titan_ak","Variablennamen %s\n",var_names);
 	break;
       }
+#if 0
       case 52: /* veraop */
       {
 	total = A->n_eingaenge+1;
@@ -1223,31 +1258,36 @@ TParameter *vera_titan_ak(TParameter *parameter)
     }
 
     if (iswitch == 51)                   /* Verainit */
-    {
-      buffer[0].int_val = error;         /* Fehlerflag */
-      buffer[1].int_val = n_vars;        /* Anzahl der Variablen */
-      buffer[2].int_val = length;        /* Laenge des Namen Feldes */
-      for (i=0; i < length; i++)         /* Variablen-Namen Feld */
+#endif
+      SOCK::verainit_tail()
       {
-	buffer[i+3].int_val = (int) var_names[i];
+        buffer[0].int_val = error;         /* Fehlerflag */
+        buffer[1].int_val = n_vars;        /* Anzahl der Variablen */
+        buffer[2].int_val = length;        /* Laenge des Namen Feldes */
+        for (i=0; i < length; i++)         /* Variablen-Namen Feld */
+        {
+          buffer[i+3].int_val = (int) var_names[i];
+        }
+
+        total = length+3;
+        assert(3*BUFSIZE*BUFSIZE >= total);
+        if (printlevel >= 1)
+        {
+          userinfo(1,"vera_titan_ak","Sende: Error %i Framenumber %i, Laenge %i\n",
+              error,frame_number,total);
+        }
+        n_bytes = write(channel, buffer, total*sizeof(di_union_t));
+        if (n_bytes != total * (int) sizeof(di_union_t))
+        {
+          userinfo(1,"vera_titan_ak","Fehler beim Senden:%i Framenumber %i, "
+              "returnwert von write %i, errno %i\n",
+              frame_number,n_bytes,errno); 
+        }
       }
 
-      total = length+3;
-      assert(3*BUFSIZE*BUFSIZE >= total);
-      if (printlevel >= 1)
-      {
-	userinfo(1,"vera_titan_ak","Sende: Error %i Framenumber %i, Laenge %i\n",
-		 error,frame_number,total);
-      }
-      n_bytes = write(channel, buffer, total*sizeof(di_union_t));
-      if (n_bytes != total * (int) sizeof(di_union_t))
-      {
-	userinfo(1,"vera_titan_ak","Fehler beim Senden:%i Framenumber %i, "
-		 "returnwert von write %i, errno %i\n",
-		 frame_number,n_bytes,errno); 
-      }
-    }
-    else if (iswitch == 52)              /* Veraop */
+    // else if (iswitch == 52)              /* Veraop */
+
+    SOCK::veraop_tail()
     {
       buffer[0].int_val = error;         /* Fehlerflag */
       for (i=0; i < n_vars; i++)         /* Variablen-Werte */
@@ -1278,6 +1318,8 @@ TParameter *vera_titan_ak(TParameter *parameter)
 		 frame_number,n_bytes,errno); 
       }
     }
+
+#if 0
 
     else if (iswitch == 53)              /* Verakons */
 #endif 
