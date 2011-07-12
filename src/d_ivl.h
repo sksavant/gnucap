@@ -25,7 +25,6 @@
 #ifndef D_IVL_H__
 #define D_IVL_H__
 #define DLINKED 1
-//testing=script,sparse 2006.07.17
 #include "e_subckt.h"
 //#include "u_xprobe.h"
 // #include "d_vvp.h"
@@ -40,6 +39,10 @@
 //#include "l_lib.h"
 //#include "io_trace.h"
 // using namespace std;
+inline double getdtime(struct event_time_s *et)
+{
+  return (double) et->delay * pow(10.0,vpip_get_time_precision());
+}
 /*--------------------------------------------------------------------------*/
 inline double event_(struct event_time_s *et)
 {
@@ -127,11 +130,11 @@ class COMMON_IVL : public COMMON_COMPONENT {
 
     // VVP things...
   public:
-    static double SimTimeD;
-    static double SimTimeA; 
-    static double SimTimeDlast;
-    static double SimDelayD;
-    static sim_mode SimState;
+    mutable double SimTimeD;
+    mutable double SimTimeA; 
+    mutable double SimTimeDlast;
+    mutable double SimDelayD;
+    mutable sim_mode SimState;
     // Provide dummies
     inline static void my_getrusage(struct rusage *);
     inline static void print_rusage(struct rusage *, struct rusage *);
@@ -146,8 +149,8 @@ class COMMON_IVL : public COMMON_COMPONENT {
     /*--------------------------------------------------------------------*/
     /*--------------------------------------------------------------------*/
     /*--------------------------------------------------------------------*/
-    static double getdtime(struct event_time_s *et);
-    static sim_mode schedule_simulate_m(sim_mode mode);
+    //static double getdtime(struct event_time_s *et);
+    sim_mode schedule_simulate_m(sim_mode mode) const;
     /*--------------------------------------------------------------------*/
 
 #if 0
@@ -162,9 +165,15 @@ class COMMON_IVL : public COMMON_COMPONENT {
 
     // former extlib.h
     void    *(*bindnet)(const char *,char,int *,void *,void (*)(void *,void *,double));
-    double   (*startsim)(const char *);
+
+    // double   (*startsim)(const char *);
+    double   startsim() const;
+
     void     (*endsim)();
-    double   (*contsim)(const char *,double);
+    //double   (*contsim)(const char *,double);
+    double   contsim(const char *,double) const;
+
+
     void     (*activate)(void *,void *,double);
     vpiHandle(*vhbn)(const char *name, vpiHandle scope);
     COMPILE* (*get_compiler)();
