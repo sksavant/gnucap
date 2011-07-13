@@ -862,7 +862,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
   int reuseaddr = 1;
   struct sockaddr_in sin;
 
-  int iswitch;
+  int opcode;
   int error;
   int n_inputs;
   int n_vars;
@@ -1012,23 +1012,23 @@ TParameter *vera_titan_ak(TParameter *parameter)
   {
     n_bytes=read(channel, buffer, sizeof(buffer));
     //printlevel=2;
-    if (n_bytes < 0)
+    if (n_bytes <= 0)
     {
-      iswitch = -1;
+      opcode -1;
     }
     else
     {
-      iswitch = buffer[0].int_val; 
+      opcode = buffer[0].int_val; 
     }
 
-    userinfo(1,"vera_titan_ak","Bearbeite: %i mit %i bytes \n",iswitch,n_bytes);
+    userinfo(1,"vera_titan_ak","Bearbeite: %i mit %i bytes \n",opcode,n_bytes);
     if (printlevel >= 3)
     {
       fwrite(buffer,1,n_bytes,outfile);
       fprintf(outfile,"\n Naechste Anforderung \n");
     }
 
-    switch (iswitch)  
+    switch (opcode)  
     {
       case 51: /* verainit */
 #endif
@@ -1183,7 +1183,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
 	{
 	  frame_number=buffer[i+1].int_val;
 	  userinfo(3,"vera_titan_ak","Bearbeite %i Frame Number %i mit %i bytes \n",
-		  iswitch,frame_number,n_bytes);
+		  opcode,frame_number,n_bytes);
 	}
  
 	error = 0; /* verakons(Dwork, x_new, q_dot, G, C); */
@@ -1257,7 +1257,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
       }  
     }
 
-    if (iswitch == 51)                   /* Verainit */
+    if (opcode == 51)                   /* Verainit */
 #endif
       SOCK::verainit_tail()
       {
@@ -1285,7 +1285,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
         }
       }
 
-    // else if (iswitch == 52)              /* Veraop */
+    // else if (opcode == 52)              /* Veraop */
 
     SOCK::veraop_tail()
     {
@@ -1321,7 +1321,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
 
 #if 0
 
-    else if (iswitch == 53)              /* Verakons */
+    else if (opcode == 53)              /* Verakons */
 #endif 
     void SOCK::verakons_tail()
     {
