@@ -32,9 +32,10 @@
 #include "e_model.h"
 #include "e_elemnt.h"
 #include "d_logic.h"
-#include "vvp/vpi_priv.h"
+// #include "vvp/vpi_priv.h"
+#include "vpi_user.h"
 /*--------------------------------------------------------------------------*/
-class DEV_LOGIC_OUT : public DEV_LOGIC {
+class DEV_LOGIC_AD : public DEV_LOGIC {
 public:
   enum {OUTNODE=0,GND_NODE=1,PWR_NODE=2,ENABLE=3,BEGIN_IN=4}; //node labels
 private:
@@ -46,9 +47,9 @@ private:
   static int	_count;
   node_t	nodes[5];	/* PORTS_PER_GATE <= PORTSPERSUBCKT */
 public:
-  explicit	DEV_LOGIC_OUT();
-  explicit	DEV_LOGIC_OUT(const DEV_LOGIC_OUT& p);
-		~DEV_LOGIC_OUT() {--_count; }
+  explicit	DEV_LOGIC_AD();
+  explicit	DEV_LOGIC_AD(const DEV_LOGIC_AD& p);
+		~DEV_LOGIC_AD() {--_count; }
 private: // override virtuals
   char	   id_letter()const	{return '\0';}
   std::string value_name()const	{return "#";}
@@ -60,7 +61,7 @@ private: // override virtuals
   uint_t	   min_nodes()const	{return 5;}
   virtual uint_t matrix_nodes()const	{return 2;} // for OUTPORT...
   uint_t	   net_nodes()const	{return 5;}
-  CARD*	   clone()const		{return new DEV_LOGIC_OUT(*this);}
+  CARD*	   clone()const		{return new DEV_LOGIC_AD(*this);}
   void	   precalc_first() {ELEMENT::precalc_first(); if (subckt()) {subckt()->precalc_first();}}
   void	   expand();
   void	   precalc_last() {ELEMENT::precalc_last(); if (subckt()) {subckt()->precalc_last();}}
@@ -109,7 +110,7 @@ private:
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-class DEV_LOGIC_IN : public DEV_LOGIC {
+class DEV_LOGIC_DA : public DEV_LOGIC {
 public:
   enum {OUTNODE=0,GND_NODE=1,PWR_NODE=2,ENABLE=3,BEGIN_IN=4}; //node labels
 private:
@@ -121,10 +122,10 @@ private:
   static int	_count;
   node_t	nodes[5];	/* PORTS_PER_GATE <= PORTSPERSUBCKT */
 public:
-  explicit	DEV_LOGIC_IN();
-  explicit	DEV_LOGIC_IN(const DEV_LOGIC_IN& p);
-		~DEV_LOGIC_IN()		{--_count;
-                trace0("~DEV_LOGIC_IN");
+  explicit	DEV_LOGIC_DA();
+  explicit	DEV_LOGIC_DA(const DEV_LOGIC_DA& p);
+		~DEV_LOGIC_DA()		{--_count;
+                trace0("~DEV_LOGIC_DA");
                 }
 private: // override virtuals
   char	   id_letter()const	{return '\0';}
@@ -137,7 +138,7 @@ private: // override virtuals
   uint_t	   min_nodes()const	{return 5;}
   virtual uint_t matrix_nodes()const	{return 2;} // for OUTPORT...
   uint_t	   net_nodes()const	{return 5;}
-  CARD*	   clone()const		{return new DEV_LOGIC_IN(*this);}
+  CARD*	   clone()const		{return new DEV_LOGIC_DA(*this);}
   void	   precalc_first() {ELEMENT::precalc_first(); if (subckt()) {subckt()->precalc_first();}}
   void	   expand();
   void	   precalc_last() {ELEMENT::precalc_last(); if (subckt()) {subckt()->precalc_last();}}

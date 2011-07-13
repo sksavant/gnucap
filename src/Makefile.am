@@ -46,8 +46,13 @@ d_rcd.cc d_bti.cc
 gnucap_LDADD = libgnucap.la
 matrix_example_LDADD = libgnucap.la
 
+#old/unused
+if IVERILOG_VVP
+D_SRCS += d_vvp.cc extlib.cc
+endif
+
 if IVERILOG
-D_SRCS += d_vvp.cc extlib.cc d_invert.cc d_ivl_base.cc
+D_SRCS += d_invert.cc d_ivl_base.cc d_ivl_ports.cc
 #	libvvpg_la_SOURCES = vvp_main.cc
 #  bin_PROGRAMS += libvvpg
 gnucap_LDADD += @IVERILOG@

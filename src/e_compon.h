@@ -78,6 +78,9 @@ private:
 public:
   static void attach_common(COMMON_COMPONENT* c, COMMON_COMPONENT** to);
   static void detach_common(COMMON_COMPONENT** from);
+#ifdef DO_TRACE
+  int attach_count(){return		_attach_count;}
+#endif
 private:
   COMMON_COMPONENT& operator=(const COMMON_COMPONENT&)
 			      {unreachable(); return *this;}
@@ -142,8 +145,7 @@ public:
     trace1("COMMON_COMPONENT::attach_count ", hp(this));
     return _attach_count;
   }
-  std::string	      modelname()const	{
-    return _modelname;}
+  std::string	      modelname()const	{ return _modelname;}
   const MODEL_CARD*   model()const	{
     if(!_model) { 
         trace1((" model name : " + _modelname) + " but no model", hp(this) );

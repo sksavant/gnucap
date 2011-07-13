@@ -1,8 +1,12 @@
+`timescale 10ps/1ps 
+
 module invert (out,in);
    input in;
    output reg out;
 
- 	parameter delay = 1900; // inverter delay.
+ 	parameter inv_delay = 1900; // inverter delay.
+	parameter bar =1;
+	parameter baz =3;
 	// parameters for AD and DA conversion. 
 	// parameter vhigh=3;   
 	// parameter vlow=0;   
@@ -11,7 +15,7 @@ module invert (out,in);
 	// parameter output_low=13;
 
    always @(in) begin
-      out <= #delay !in;
+      out <= #inv_delay !in;
 		// not implemented.
 		//$display($realtime, " inverter sees ", in);
    end

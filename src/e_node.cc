@@ -160,7 +160,7 @@ node_t::node_t(const node_t& p)
    _ttt(p._ttt),
    _m(p._m)
 {
-  trace0("node_t::node_t cloning" + _nnn->long_label());
+  trace0("node_t::node_t cloning " + _nnn->long_label());
   //assert(_ttt == _nnn->flat_number());
 }
 /*--------------------------------------------------------------------------*/

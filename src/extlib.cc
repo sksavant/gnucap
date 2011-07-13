@@ -335,7 +335,8 @@ sim_mode vvp::schedule_simulate_m(sim_mode mode)
 
       if (schedule_stopped()) {
         schedule_start();
-        stop_handler(0);
+        incomplete();
+//        stop_handler(0);
         // You can finish from the debugger without a time change.
         if (!schedule_runnable()) break;
         goto cycle_done;

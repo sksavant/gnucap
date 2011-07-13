@@ -21,7 +21,16 @@
  *------------------------------------------------------------------
  *
  *
+
+DEV_IVL_name has a dummy COMMON_IVL with a MODEL_IVL_name
+it expands to a subnet of DEV_LOGIC_AD/DA devices with a common EVAL_IVL
+(derived from COMMON_LOGIC), which has a MODEL derived from MODEL_LOGIC.
+
+EVAL_IVL contains the vvp-stuff. it would be nice to have a static vvp, this
+would need a way to clone/reallocate the device instances within the runtime...
+
  */
+
 #ifndef D_IVL_H__
 #define D_IVL_H__
 #define DLINKED 1
@@ -38,35 +47,28 @@
 //#include "bm.h"
 //#include "l_lib.h"
 //#include "io_trace.h"
-// using namespace std;
-inline double getdtime(struct event_time_s *et)
-{
-  return (double) et->delay * pow(10.0,vpip_get_time_precision());
-}
+#include "vvp/schedule.h" // event_time_s
+#include "vvp/compile.h" // vpi_mode_t
+# include  <iostream> 
+//# include  <cstdio>
+
+// #include "vvp/config.h"// vvp_time64_t etc.
+//#include "vvp/vvp_net.h"// vvp_sub_pointer_t ?
+using namespace std;
+//
 /*--------------------------------------------------------------------------*/
-inline double event_(struct event_time_s *et)
-{
-  return  double ( et->delay * (long double)
-      pow(10.0,vpip_get_time_precision()) );
-}
-inline double event_absolute(struct event_time_s *et)
-{
-  return  double ( (et->delay+schedule_simtime() )  
-      * (long double) pow(10.0,vpip_get_time_precision()) );
-}
-inline double digital_time(void)
-{
-  return double(schedule_simtime() * (long double)
-      pow(10.0,vpip_get_time_precision())) ;
-}
-inline double prec(){
-  return double(pow(10.0,vpip_get_time_precision()));
-}
+// to make libvvp happy
+void yyerror(const char*msg);
+extern ofstream debug_file;
+/*--------------------------------------------------------------------------*/
+
+class COMMON_IVL;
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 enum {PORTS_PER_IVL = 100};
 enum direction_t {pIN=0, pOUT, pBUS};
 
-PLI_INT32 callback(t_cb_data*x);
+// PLI_INT32 callback(t_cb_data*x);
 
 struct port_info_t {
   string name;
@@ -81,50 +83,69 @@ class VVP;
 class COMPILE;
 /*--------------------------------------------------------------------------*/
 enum sim_mode {SIM_ALL,
-               SIM_INIT,SIM_CONT0,SIM_CONT1,
+               SIM_INIT,
+               SIM_CONT0,SIM_CONT1,
                SIM_PREM,SIM_DONE};
 /*------------------------------------------------------------*/
-class COMMON_IVL : public COMMON_COMPONENT {
+class EVAL_IVL : public COMMON_COMPONENT {
   public:
-    explicit	COMMON_IVL(int c=0);
-    explicit	COMMON_IVL(const COMMON_IVL& p);
-    ~COMMON_IVL();
+    explicit	EVAL_IVL(int c=0);
+    explicit	EVAL_IVL(const EVAL_IVL& p);
+    ~EVAL_IVL();
     bool operator==(const COMMON_COMPONENT&)const; 
-    COMMON_COMPONENT* clone()const; //  { return new COMMON_IVL(*this);}
-    void set_param_by_index(int, std::string&, int);
-    bool param_is_printable(int)const;
-    string param_name(int)const;
-    string param_name(int,int)const;
-    string param_value(int)const;
-    int	param_count()const	{return (2 + COMMON_COMPONENT::param_count());}
+    COMMON_COMPONENT* clone()const  { return new EVAL_IVL(*this);}
+    //void set_param_by_index(int, std::string&, int);
+    //bool param_is_printable(int)const;
+    //string param_name(int)const;
+    //string param_name(int,int)const;
+    //string param_value(int)const;
+    //int	param_count()const	{return (2 + COMMON_COMPONENT::param_count());}
     void precalc_first(const CARD_LIST*);
     void expand(const COMPONENT* d);
     void precalc_last(const CARD_LIST*);
-    std::string name()const {itested();return "common_ivl";}
+    std::string name()const {itested();return "eval_ivl";}
     static  int	count()	{return _count;}
     COMMON_COMPONENT* deflate();
   private:
     static int _count;
     static list<const COMMON_COMPONENT*> _commons;
-    int vvpinit();
   public:
+    int vvpinit(COMPILE*, void* vvpso);
     // virtual LOGICVAL logic_eval(const node_t*)const	= 0;
     // void startsim();
     //private:?
-   void* vvpso;
-     // dlopen("libvvpg.so",RTLD_LAZY|RTLD_GLOBAL);
-//    ExtLib* _extlib;
+    void* vvpso;
+    // dlopen("libvvpg.so",RTLD_LAZY|RTLD_GLOBAL);
+    //    ExtLib* _extlib;
   public: // input parameters
     int		incount; //?
     PARAMETER<std::string> vvpfile;
     PARAMETER<std::string> module;
   private:
     uint_t status;
+    vvp_time64_t (*s_s)();
+    void (*s_t)(vvp_time64_t);
+    event_time_s* (*s_l)();
+    vpi_mode_t& (*_vpi_mode)();
+    void (*s_a_p_v) (vvp_sub_pointer_t<vvp_net_t>,vvp_time64_t,vvp_vector4_t,int, int);
+
+    void (*s_st)();
+    void (*n_s)();
+    void (*r_r)(event_time_s*);
+    void (*s_e)(event_time_s*);
+    void (*e_c)();
+    void (*e_i)();
+    void (*v_s)();
+    void (*v_p)();
+    bool (*s_x)();
+    bool (*s_r)();
+    void (*v_t)(int);
+
 
   public:
     // doesnt make sense probably
     std::vector< COMMON_COMPONENT* > _subcommons;
-    COMMON_COMPONENT* _logic_none;
+    // COMMON_COMPONENT* _logic_none;
   protected:
     COMPILE* compile;
 
@@ -135,9 +156,73 @@ class COMMON_IVL : public COMMON_COMPONENT {
     mutable double SimTimeDlast;
     mutable double SimDelayD;
     mutable sim_mode SimState;
+    unsigned _time_prec;
     // Provide dummies
     inline static void my_getrusage(struct rusage *);
     inline static void print_rusage(struct rusage *, struct rusage *);
+
+    double event_absolute(struct event_time_s *et) const;
+
+   public: // vvp stuff. eventually obsolete.
+    event_time_s* schedule_list() const 
+    { assert(s_l); return (*s_l)(); }
+    vvp_time64_t schedule_time() const
+    { assert(s_s); return (*s_s)(); }
+    void schedule_time( vvp_time64_t x ) const
+    { trace1("IVL::schedule_time", x);
+      assert(s_t); return (*s_t)(x); }
+    vpi_mode_t& vpi_mode_flag() const 
+    { assert(_vpi_mode); return (*_vpi_mode)(); }
+    void vpiNextSimTime() const 
+    { assert(n_s); return(n_s)(); }
+    void schedule_start() const 
+    { assert(s_st); return (*s_st)(); }
+    void run_rosync(struct event_time_s*ctim) const
+    { assert(r_r); return (*r_r)(ctim); }
+    void schedule_enlist(event_time_s*t) const
+    { assert(s_e); return (*s_e)(t); }
+    void vpiEndOfCompile(void) const
+    { assert(e_c); return (*e_c)(); }
+    void exec_init_list() const 
+    { assert(e_i); return (*e_i)(); }
+    void vpiStartOfSim(void) const
+    { assert(v_s); return (*v_s)(); }
+    void vpiPostsim(void) const
+    { assert(v_p); return (*v_p)(); }
+    bool schedule_stopped(void) const
+    { assert(s_x); return (*s_x)(); }
+    bool schedule_runnable(void) const
+    { assert(s_r); return (*s_r)(); }
+    void vpip_set_time_precision(int pres) const
+    { assert(v_t); (*v_t)(pres); }
+    unsigned vpip_get_time_precision()const
+    { return _time_prec; }
+
+   public: // some helpers... cleanup needed :|
+
+
+
+    void schedule_assign_plucked_vector(vpiHandle H,  vvp_time64_t  dly,
+        vvp_vector4_t val, int a, int b)const;
+
+    inline double getdtime(struct event_time_s *et) const
+    {
+      return (double) et->delay * pow(10.0,this->vpip_get_time_precision());
+    }
+    inline double event_(struct event_time_s *et) const
+    {
+      return  double ( et->delay * (long double)
+          pow(10.0,this->vpip_get_time_precision()) );
+    }
+    inline double digital_time(void) const
+    {
+      return double(this->schedule_time() * (long double)
+          pow(10.0,this->vpip_get_time_precision())) ;
+    }
+    inline double prec() const {
+      return double(pow(10.0,vpip_get_time_precision()));
+    }
+
 
     //from vvp_vpi.cc
     static void vvp_vpi_init();
@@ -172,6 +257,87 @@ class COMMON_IVL : public COMMON_COMPONENT {
     void     (*endsim)();
     //double   (*contsim)(const char *,double);
     double   contsim(const char *,double) const;
+    void   contsim_set(double) const;
+
+
+    void     (*activate)(void *,void *,double);
+    vpiHandle(*vhbn)(const char *name, vpiHandle scope);
+    COMPILE* (*get_compiler)();
+
+};
+/*--------------------------------------------------------------------------*/
+class COMMON_IVL : public COMMON_COMPONENT {
+  public:
+    explicit	COMMON_IVL(int c=0);
+    explicit	COMMON_IVL(const COMMON_IVL& p);
+    ~COMMON_IVL();
+    bool operator==(const COMMON_COMPONENT&)const; 
+    COMMON_COMPONENT* clone()const; //  { return new COMMON_IVL(*this);}
+    void set_param_by_index(int, std::string&, int);
+    bool param_is_printable(int)const;
+    string param_name(int)const;
+    string param_name(int,int)const;
+    string param_value(int)const;
+    int	param_count()const	{return (2 + COMMON_COMPONENT::param_count());}
+    void precalc_first(const CARD_LIST*);
+    void expand(const COMPONENT* d);
+    void precalc_last(const CARD_LIST*);
+    std::string name()const {itested();return "common_ivl";}
+    static  int	count()	{return _count;}
+    COMMON_COMPONENT* deflate();
+  private:
+    static int _count;
+    static list<const COMMON_COMPONENT*> _commons;
+     // int vvpinit();
+  public:
+    // virtual LOGICVAL logic_eval(const node_t*)const	= 0;
+    // void startsim();
+    //private:?
+    void* vvpso;
+    // dlopen("libvvpg.so",RTLD_LAZY|RTLD_GLOBAL);
+    //    ExtLib* _extlib;
+  public: // input parameters
+    int		incount; //?
+    PARAMETER<std::string> vvpfile;
+    PARAMETER<std::string> module;
+  private:
+    uint_t status;
+
+  public:
+    // doesnt make sense probably
+    std::vector< COMMON_COMPONENT* > _subcommons;
+    COMMON_COMPONENT* _eval_ivl;
+  protected:
+    COMPILE* compile;
+
+    // VVP things...
+  public:
+    unsigned _time_prec;
+    // Provide dummies
+    inline static void my_getrusage(struct rusage *);
+    inline static void print_rusage(struct rusage *, struct rusage *);
+
+
+    //from vvp_vpi.cc
+    static void vvp_vpi_init();
+    static int init(const char* design_path);
+    int compile_design(COMPILE* c, COMPONENT*) const;
+
+    static void signals_capture(void);
+    static void signals_revert(void);
+    /*--------------------------------------------------------------------*/
+    /*--------------------------------------------------------------------*/
+    /*--------------------------------------------------------------------*/
+    /*--------------------------------------------------------------------*/
+
+#if 0
+#else
+    // not implemented...
+#endif
+
+    // double   (*startsim)(const char *);
+
+    void     (*endsim)();
 
 
     void     (*activate)(void *,void *,double);
@@ -189,9 +355,13 @@ class MODEL_IVL_BASE : public MODEL_LOGIC {
     ~MODEL_IVL_BASE()		{ --_count; }
   private:
     static int _count;
+    CARD* _logic_model;
   public: // override virtuals
     virtual std::string	dev_type()const		{return "none_yet";}
+    // no need to (virtual class)
     // virtual CARD*	clone()const	{return new MODEL_IVL_BASE(*this);}
+    CARD* logic_model() const
+    { assert(_logic_model); return( _logic_model ); }
     void precalc_first();
     void precalc_last();
     //void set_param_by_index(int, std::string&, int);
@@ -257,9 +427,15 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     bool do_tr();
     bool tr_needs_eval()const{return true;}
     TIME_PAIR tr_review();
+    const COMMON_COMPONENT* subcommon()const{ return _subcommon; }
   private:
    // VVP* vvp; // common??
    //
+   //
+    // move to EVAL_IVL?
+    void init_vvp();
+    void* vvpso;
+    const COMMON_COMPONENT* _subcommon;
 
 
   public:
@@ -277,6 +453,7 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     vector<vpiHandle> _inport;
 
   public:
+    void compile_design(COMPILE* c);
     //void qe() { q_eval(); }
     void register_port(vpiHandle); // data from ivl
 
@@ -286,5 +463,11 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     ExtLib* extlib()const; //{return (((COMMON_IVL*) common())->_extlib);}
 };
 
+/*--------------------------------------------------------------------*/
+inline double EVAL_IVL::event_absolute(struct event_time_s *et) const
+{
+  return  double ( (et->delay+this->schedule_time() )  
+      * (long double) pow(10.0,this->vpip_get_time_precision()) );
+}
 /*--------------------------------------------------------------------*/
 #endif

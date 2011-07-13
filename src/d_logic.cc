@@ -100,7 +100,7 @@ void DEV_LOGIC::expand()
     }
   }catch (Exception_Cant_Find&) {
     error(((!_sim->is_first_expand()) ? (bDEBUG) : (bWARNING)), 
-	  long_label() + ": can't find subckt: " + subckt_name + ", forcing digital\n");
+	  long_label() + ": can't find subckt: \"" + subckt_name + "\", forcing digital\n");
   }
   
   assert(!is_constant()); /* is a BUG */
