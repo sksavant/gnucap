@@ -4,7 +4,7 @@ module invert (out,in);
    input in;
    output reg out;
 
- 	parameter inv_delay = 1900; // inverter delay.
+ 	parameter inv_delay = 17; // inverter delay.
 	parameter bar =1;
 	parameter baz =3;
 	// parameters for AD and DA conversion. 

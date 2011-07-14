@@ -111,21 +111,16 @@ class EVAL_IVL : public COMMON_COMPONENT {
     static list<const COMMON_COMPONENT*> _commons;
   public:
     int vvpinit(COMPILE*, void* vvpso);
-    // virtual LOGICVAL logic_eval(const node_t*)const	= 0;
-    // void startsim();
-    //private:?
     void* vvpso;
-    // dlopen("libvvpg.so",RTLD_LAZY|RTLD_GLOBAL);
-    //    ExtLib* _extlib;
   public: // input parameters
     int		incount; //?
-    PARAMETER<std::string> vvpfile;
-    PARAMETER<std::string> module;
   private:
     uint_t status;
-    vvp_time64_t (*s_s)();
-    void (*s_t)(vvp_time64_t);
-    event_time_s* (*s_l)();
+    vvp_time64_t (*g_s_t)();
+    void (*s_s_t)(vvp_time64_t);
+
+    event_time_s* (*g_s_l)();
+    void (*s_s_l)(event_time_s*);
     vpi_mode_t& (*_vpi_mode)();
     void (*s_a_p_v) (vvp_sub_pointer_t<vvp_net_t>,vvp_time64_t,vvp_vector4_t,int, int);
 
@@ -140,6 +135,9 @@ class EVAL_IVL : public COMMON_COMPONENT {
     bool (*s_x)();
     bool (*s_r)();
     void (*v_t)(int);
+    void (*s_l)();
+
+    void do_some_precalc_last_stuff()const;
 
 
   public:
@@ -163,14 +161,30 @@ class EVAL_IVL : public COMMON_COMPONENT {
 
     double event_absolute(struct event_time_s *et) const;
 
-   public: // vvp stuff. eventually obsolete.
+
+  private: // for now, move everything to the external vars
+    event_time_s* my_schedule_list;
+    vvp_time64_t my_schedule_time;
+
+  public: // potentially local?
     event_time_s* schedule_list() const 
-    { assert(s_l); return (*s_l)(); }
-    vvp_time64_t schedule_time() const
-    { assert(s_s); return (*s_s)(); }
+    { assert(g_s_l); return (*g_s_l)(); }
+    vvp_time64_t schedule_time( ) const
+    { assert(g_s_t); return (*g_s_t)(); }
+    unsigned vpip_get_time_precision()const
+    { return _time_prec; }
+
+  private: // vvp stuff. eventually obsolete.
+
+    void schedule_list(event_time_s* x) const
+    { trace0("writing schedule_list");
+      assert(s_s_l); return (*s_s_l)(x); }
+
     void schedule_time( vvp_time64_t x ) const
     { trace1("IVL::schedule_time", x);
-      assert(s_t); return (*s_t)(x); }
+      assert(g_s_t); return (*s_s_t)(x); }
+
+
     vpi_mode_t& vpi_mode_flag() const 
     { assert(_vpi_mode); return (*_vpi_mode)(); }
     void vpiNextSimTime() const 
@@ -195,8 +209,6 @@ class EVAL_IVL : public COMMON_COMPONENT {
     { assert(s_r); return (*s_r)(); }
     void vpip_set_time_precision(int pres) const
     { assert(v_t); (*v_t)(pres); }
-    unsigned vpip_get_time_precision()const
-    { return _time_prec; }
 
    public: // some helpers... cleanup needed :|
 
@@ -207,20 +219,21 @@ class EVAL_IVL : public COMMON_COMPONENT {
 
     inline double getdtime(struct event_time_s *et) const
     {
-      return (double) et->delay * pow(10.0,this->vpip_get_time_precision());
+      return (double) et->delay * pow(10.0,_time_prec);
     }
     inline double event_(struct event_time_s *et) const
     {
       return  double ( et->delay * (long double)
-          pow(10.0,this->vpip_get_time_precision()) );
+          pow(10.0,_time_prec) );
     }
     inline double digital_time(void) const
     {
+      trace1("",_time_prec);
       return double(this->schedule_time() * (long double)
-          pow(10.0,this->vpip_get_time_precision())) ;
+          pow(10.0,_time_prec)) ;
     }
     inline double prec() const {
-      return double(pow(10.0,vpip_get_time_precision()));
+      return double(pow(10.0,_time_prec));
     }
 
 
@@ -252,7 +265,7 @@ class EVAL_IVL : public COMMON_COMPONENT {
     void    *(*bindnet)(const char *,char,int *,void *,void (*)(void *,void *,double));
 
     // double   (*startsim)(const char *);
-    double   startsim() const;
+    double   tr_begin() const;
 
     void     (*endsim)();
     //double   (*contsim)(const char *,double);
@@ -428,6 +441,9 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     bool tr_needs_eval()const{return true;}
     TIME_PAIR tr_review();
     const COMMON_COMPONENT* subcommon()const{ return _subcommon; }
+  public:
+
+    double tr_probe_num(const std::string& x)const;
   private:
    // VVP* vvp; // common??
    //
@@ -467,7 +483,17 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
 inline double EVAL_IVL::event_absolute(struct event_time_s *et) const
 {
   return  double ( (et->delay+this->schedule_time() )  
-      * (long double) pow(10.0,this->vpip_get_time_precision()) );
+      * (long double) pow(10.0,_time_prec ));
 }
 /*--------------------------------------------------------------------*/
+inline void trace_queue(event_time_s* x, int depth = 0){
+    cerr << ":::";
+  if(x){
+    for(int i=0;i++<=depth;cerr<< " ");
+    cerr << x->delay << "("<< hp(x)<< ")\n";
+    trace_queue(x->next,depth+1);
+  }else{
+    cerr<<"\n";
+  }
+}
 #endif
