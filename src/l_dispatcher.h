@@ -183,6 +183,7 @@ public:
       _d(d),
       _p(p)
     {
+      trace0("INSTALL " + _name);
       assert(_d);
       assert(p);
       _d->install(_name, p);

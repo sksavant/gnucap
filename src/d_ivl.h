@@ -126,6 +126,7 @@ class EVAL_IVL : public COMMON_COMPONENT {
   public:
     int vvpinit(COMPILE*, void* vvpso);
     void* vvpso;
+    COMPILE* comp;
   public: // input parameters
     int		incount; //?
   private:
@@ -465,7 +466,7 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
    //
     // move to EVAL_IVL?
     void init_vvp();
-    void* vvpso;
+    void* _vvpso;
     COMPILE* _comp;
     const COMMON_COMPONENT* _subcommon;
 

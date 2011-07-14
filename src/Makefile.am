@@ -52,8 +52,9 @@ D_SRCS += d_vvp.cc extlib.cc
 endif
 
 if IVERILOG
-D_SRCS += d_invert.cc d_ivl_base.cc d_ivl_ports.cc \
-			 d_clock.cc d_latch.cc d_lfsr.cc 
+D_SRCS +=  d_ivl_base.cc d_ivl_ports.cc \
+			 d_invert.cc d_clock.cc \
+		  	 d_latch.cc d_lfsr.cc 
 
 #	libvvpg_la_SOURCES = vvp_main.cc
 #  bin_PROGRAMS += libvvpg

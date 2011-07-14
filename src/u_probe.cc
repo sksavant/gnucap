@@ -177,7 +177,7 @@ double PROBE::probe_node(void)const
   }else if (Umatch(_what, "time ")) {untested();
     return _sim->_time0;
   }else if (Umatch(_what, "event ")) {
-    return (_sim->_eq.top());
+    return ((_sim->_eq.empty())? -1.: _sim->_eq.top());
   }else{
     return NOT_VALID;
   }
