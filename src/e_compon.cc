@@ -556,16 +556,19 @@ void COMPONENT::expand()
 {
   trace0("COMPONENT::expand");
   CARD::expand();
-  trace0("COMPONENT::expand, CARD done");
+  trace1("COMPONENT::expand, CARD done", hp(common()));
   if (has_common()) {
     assert(common());
     COMMON_COMPONENT* new_common = common()->clone();
     new_common->expand(this);
 
     COMMON_COMPONENT* deflated_common = new_common->deflate();
-    if (deflated_common != common()) {
+    trace2("COMMON_COMPONENT more commons", hp(deflated_common), hp(new_common));
+
+    if ( deflated_common != common()) {
+      trace0("COMMON_COMPONENT unequal deflated common");
       attach_common(deflated_common);
-    }else if (deflated_common != new_common ) {
+    }else if ( deflated_common != new_common )  {
       untested();
       trace1("COMPONENT::expand: deleting new unused common", hp(new_common));
       delete new_common;

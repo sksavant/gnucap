@@ -1,6 +1,6 @@
 `timescale 10ps/1ps 
 
-module invert (out,in);
+module latch (out,in);
    input in;
    output reg out;
 

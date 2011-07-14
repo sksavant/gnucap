@@ -61,6 +61,20 @@ using namespace std;
 void yyerror(const char*msg);
 extern ofstream debug_file;
 /*--------------------------------------------------------------------------*/
+#ifdef DO_TRACE
+inline void trace_queue(event_time_s* x, int depth = 0){
+    cerr << ":::";
+  if(x){
+    for(int i=0;i++<=depth;cerr<< " ");
+    cerr << x->delay << "("<< hp(x)<< ")\n";
+    trace_queue(x->next,depth+1);
+  }else{
+    cerr<<"\n";
+  }
+}
+#else
+#define trace_queue(a) 
+#endif
 
 class COMMON_IVL;
 /*--------------------------------------------------------------------------*/
@@ -154,7 +168,7 @@ class EVAL_IVL : public COMMON_COMPONENT {
     mutable double SimTimeDlast;
     mutable double SimDelayD;
     mutable sim_mode SimState;
-    unsigned _time_prec;
+    int _time_prec;
     // Provide dummies
     inline static void my_getrusage(struct rusage *);
     inline static void print_rusage(struct rusage *, struct rusage *);
@@ -171,13 +185,16 @@ class EVAL_IVL : public COMMON_COMPONENT {
     { assert(g_s_l); return (*g_s_l)(); }
     vvp_time64_t schedule_time( ) const
     { assert(g_s_t); return (*g_s_t)(); }
-    unsigned vpip_get_time_precision()const
+    int log_time_precision()const
     { return _time_prec; }
+    double time_precision()const
+    { return  pow(10,_time_prec); }
 
   private: // vvp stuff. eventually obsolete.
 
     void schedule_list(event_time_s* x) const
     { trace0("writing schedule_list");
+      trace_queue(schedule_list());
       assert(s_s_l); return (*s_s_l)(x); }
 
     void schedule_time( vvp_time64_t x ) const
@@ -275,7 +292,6 @@ class EVAL_IVL : public COMMON_COMPONENT {
 
     void     (*activate)(void *,void *,double);
     vpiHandle(*vhbn)(const char *name, vpiHandle scope);
-    COMPILE* (*get_compiler)();
 
 };
 /*--------------------------------------------------------------------------*/
@@ -355,7 +371,6 @@ class COMMON_IVL : public COMMON_COMPONENT {
 
     void     (*activate)(void *,void *,double);
     vpiHandle(*vhbn)(const char *name, vpiHandle scope);
-    COMPILE* (*get_compiler)();
 
 };
 /*--------------------------------------------------------------------------*/
@@ -440,8 +455,8 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     bool do_tr();
     bool tr_needs_eval()const{return true;}
     TIME_PAIR tr_review();
-    const COMMON_COMPONENT* subcommon()const{ return _subcommon; }
   public:
+    const COMMON_COMPONENT* subcommon()const{ return _subcommon; }
 
     double tr_probe_num(const std::string& x)const;
   private:
@@ -451,6 +466,7 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     // move to EVAL_IVL?
     void init_vvp();
     void* vvpso;
+    COMPILE* _comp;
     const COMMON_COMPONENT* _subcommon;
 
 
@@ -482,18 +498,10 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
 /*--------------------------------------------------------------------*/
 inline double EVAL_IVL::event_absolute(struct event_time_s *et) const
 {
-  return  double ( (et->delay+this->schedule_time() )  
-      * (long double) pow(10.0,_time_prec ));
+  trace1("", _time_prec);
+  assert(is_number(  pow(10.0, _time_prec ))) ;
+  return  double ( (et->delay + this->schedule_time() )  
+      * (long double) pow(10.0, _time_prec ));
 }
 /*--------------------------------------------------------------------*/
-inline void trace_queue(event_time_s* x, int depth = 0){
-    cerr << ":::";
-  if(x){
-    for(int i=0;i++<=depth;cerr<< " ");
-    cerr << x->delay << "("<< hp(x)<< ")\n";
-    trace_queue(x->next,depth+1);
-  }else{
-    cerr<<"\n";
-  }
-}
 #endif

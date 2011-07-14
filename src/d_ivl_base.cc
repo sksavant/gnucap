@@ -32,33 +32,6 @@
 #include "vvp/compile.h"
 //
 //
-/// CALLBACK STUFF. not here? ///
-// including headers, not #including vpi_priv.
-/*
-struct __vpiHandle {
-        const struct __vpirt *vpi_type;
-};
-
-struct __vpiSignal {
-      struct __vpiHandle base;
-#ifdef CHECK_WITH_VALGRIND
-      struct __vpiSignal *pool;
-#endif
-      union { // The scope or parent array that contains me.
-	    vpiHandle parent;
-	    struct __vpiScope* scope;
-      } within;
-      union { // The name of this reg/net, or the index for array words.
-            const char*name;
-            vpiHandle index;
-      } id;
-	// The indices that define the width and access offset. 
-      int msb, lsb;
-      unsigned signed_flag  : 1;
-      unsigned is_netarray  : 1; // This is word of a net array
-      vvp_net_t*node;
-};
-*/
 #define DLLINK(a,b)  a = (typeof(a))dlsym(vvpso, b);  \
                         if((e=dlerror())) error(bDANGER, "so: %s\n", e); \
                            assert(a);
@@ -67,14 +40,16 @@ struct __vpiSignal {
 // move to ivl_ports!
 static PLI_INT32 callback(t_cb_data*x){
   assert(x);
-  DEV_LOGIC_DA* c= reinterpret_cast<DEV_LOGIC_DA*>(x->user_data);
-  assert(c);
-  const COMPONENT* o = prechecked_cast<const COMPONENT*>(c->owner());
-  const COMMON_IVL* oc = prechecked_cast<const COMMON_IVL*>(o->common());
-  assert(oc);
-  const EVAL_IVL* sc = prechecked_cast<const EVAL_IVL*>(c->common());
+  DEV_LOGIC_DA* port= reinterpret_cast<DEV_LOGIC_DA*>(x->user_data);
+  assert(port);
+  const DEV_IVL_BASE* o = prechecked_cast<const DEV_IVL_BASE*>(port->owner());
+
+  const EVAL_IVL* sc = prechecked_cast<const EVAL_IVL*>(port->common());
   assert(sc);
-  trace1("EVAL CALLBACK", hp(sc));
+  trace2("EVAL CALLBACK", hp(sc),  CKT_BASE::_sim->_time0 );
+  assert( x->value);
+
+  assert(sc==o->subcommon());
 
   __vpiSignal* signal = (__vpiSignal*) x->obj;
   assert(signal);
@@ -85,13 +60,17 @@ static PLI_INT32 callback(t_cb_data*x){
   vpi_get_value(x->obj, &argval); // static member of vpi_priv.cc
   const vvp_vector4_t bit(1,(vvp_bit4_t)argval.value.integer);
 
-  trace5("callback called", bit.value(0), sc->digital_time() ,
-      x->value->value.integer, c->lvfromivl, CKT_BASE::_sim->_time0);
+  trace2("callback called",  sc->digital_time(), CKT_BASE::_sim->_time0);
+  trace4("callback called", bit.value(0), sc->digital_time(),
+      port->lvfromivl,
+      CKT_BASE::_sim->_time0);
+  trace1("callback called",  sc->time_precision());
+
   assert(bit.value(0)==0 || bit.value(0)==1);
 
-  if (c->lvfromivl == lvUNKNOWN){
+  if (port->lvfromivl == lvUNKNOWN){
     trace0("CALLBack init.");
-    c->lvfromivl  = _LOGICVAL(3*bit.value(0)) ;
+    port->lvfromivl  = _LOGICVAL(3*bit.value(0)) ;
     assert(CKT_BASE::_sim->_time0 == 0 );
     return 0 ;
   }
@@ -100,14 +79,14 @@ static PLI_INT32 callback(t_cb_data*x){
   CKT_BASE::_sim->new_event( double( sc->digital_time()) );
 
   switch (bit.value(0)) {
-    case 0: c->lvfromivl = lvFALLING; break;
-    case 1: c->lvfromivl = lvRISING;  break;
+    case 0: port->lvfromivl = lvFALLING; break;
+    case 1: port->lvfromivl = lvRISING;  break;
     default: 
              error(bDANGER, "got bogus value %i from ivl\n", bit.value(0));
              break;
   }
-  trace1("callback done ", c->lvfromivl);
-  c->qe();
+  trace1("callback done ", port->lvfromivl);
+  port->qe();
   return 0;
 }
 /*------------------------------------------------------------------*/
@@ -123,7 +102,9 @@ int COMMON_IVL::_count = -1;
 
 // enum smode_t   {moUNKNOWN=0, moANALOG=1, moDIGITAL, moMIXED};
 
-DEV_IVL_BASE::DEV_IVL_BASE(): BASE_SUBCKT() , vvpso(0)
+DEV_IVL_BASE::DEV_IVL_BASE(): BASE_SUBCKT() ,
+  vvpso(0),
+  _comp(0)
 {
   debug_file.open( "/tmp/fooh" ); // make vvp happy.
   _n = _nodes;
@@ -132,7 +113,9 @@ DEV_IVL_BASE::DEV_IVL_BASE(): BASE_SUBCKT() , vvpso(0)
 }
 /*-------------------------------------------*/
 DEV_IVL_BASE::DEV_IVL_BASE(const DEV_IVL_BASE& p):
-  BASE_SUBCKT(p),vvpso(0){
+  BASE_SUBCKT(p),
+  vvpso(0),
+  _comp(p._comp){
   for (uint_t ii = 0;  ii < max_nodes();  ++ii) {
     _nodes[ii] = p._nodes[ii];
   }
@@ -274,6 +257,7 @@ void DEV_IVL_BASE::expand()
     uint_t n=2;
 
     COMPILE* comp = new COMPILE();
+    _comp=comp;
     assert(comp);
     trace0("compiling...");
     //comp->ca();
@@ -305,7 +289,6 @@ void DEV_IVL_BASE::expand()
     assert ((_n[2].n_()));
     assert ((_n[3].n_()));
     char src;
-    EVAL_IVL* logic_common = 0;
 
     node_t lnodes[] = {_n[n], _n[0], _n[1], _n[1], _n[0]};
 //  vpiParameter  holds fall, rise etc.
@@ -332,8 +315,6 @@ void DEV_IVL_BASE::expand()
 
       trace2("==> "+ short_label() + " item name: " + string(name), item->vpi_type->type_code, n );
       trace0("==>  looking for " + port_name(n));
-      logic_common = (EVAL_IVL*) c->_eval_ivl;
-      assert(logic_common);
 
       switch(type){
         case vpiNet: // <- ivl
@@ -385,16 +366,14 @@ void DEV_IVL_BASE::expand()
           continue;
       }
 
-      trace2("DEV_LOGIC_IVL::expand "+ name + " " + short_label(), n, (intptr_t)logic_common);
       assert(_n[n].n_());
 
       assert(P);
       subckt()->push_front(P);
 
-      trace3("setting parameters", intptr_t(logic_common), logic_common->attach_count(), n );
-      trace0("modelname: " + logic_common->modelname());
+      trace0("modelname: " + c->_eval_ivl->modelname());
 
-      COMMON_LOGIC* L = (COMMON_LOGIC*) logic_common;
+      COMMON_LOGIC* L = (COMMON_LOGIC*) c->_eval_ivl;
       if (src=='I'){
         // to ivl
         P->set_parameters(name, this, L, 0, 0, NULL, 5 , lnodes);
@@ -403,17 +382,13 @@ void DEV_IVL_BASE::expand()
         P->set_parameters(name, this, L, 0, 0, NULL, 5 , lnodes);
       }
 
-      assert(logic_common);
+      assert(c->_eval_ivl);
 
       trace1("loop end for "+name, n);
       n++;
     } 
 
-    for (CARD_LIST::const_iterator i = subckt()->begin(); i != subckt()->end(); ++i) {
-      const     COMMON_COMPONENT* com = ((const COMPONENT*)(*i))->common() ;
-      _subcommon = com;
-      trace2("have subdevice ", (*i)->long_label(), hp(com));
-    }
+//    trace2("have ivl subcommon ", (*i)->long_label(), hp(com));
 
     comp->vpi_mode_flag(VPI_MODE_NONE);
 
@@ -422,9 +397,7 @@ void DEV_IVL_BASE::expand()
     trace2("DEV_LOGIC_IVL::expand called init_vvp", hp(vvpso), n);
 
     // copies stuff to dlmopened sim... (for now)
-    assert(logic_common);
     assert(vvpso);
-    logic_common->vvpinit(comp, vvpso);
 
   } // 1st expand
 
@@ -434,6 +407,19 @@ void DEV_IVL_BASE::expand()
 // is this an option?
 // subckt()->set_slave();
   subckt()->expand();
+
+  trace1("had ivl subcommon ", hp(c->_eval_ivl));
+
+  for (CARD_LIST::const_iterator i = subckt()->begin(); i != subckt()->end(); ++i) {
+    _subcommon = ((const COMPONENT*)(*i))->common() ;
+    trace2("have ivl subcommon ", (*i)->long_label(), hp(_subcommon));
+
+    //assert(all_equal...)
+  }
+
+  // fixme!!!
+  ((EVAL_IVL*) _subcommon)->vvpinit(_comp, vvpso);
+
 }
 /*---------------------*/
 bool DEV_IVL_BASE::do_tr(){
@@ -447,7 +433,7 @@ double DEV_IVL_BASE::tr_probe_num(const std::string& x)const
   const EVAL_IVL* sc = prechecked_cast<const EVAL_IVL*>(subcommon());
   assert(sc);
   if (Umatch(x, "delay ")) {
-    return ( sc->schedule_list() )?  sc->schedule_list()->delay : -1 ;
+    return ( sc->schedule_list() )?  sc->schedule_list()->delay : -1.0 ;
   }else if (Umatch(x, "st ")) {
     return ( sc->schedule_time() );
   }else{
@@ -463,12 +449,14 @@ TIME_PAIR DEV_IVL_BASE::tr_review(){
    _time_by =  BASE_SUBCKT::tr_review();
 
   event_time_s* ctim = sc->schedule_list();
-  trace4("DEV_IVL_BASE::tr_review", ctim->delay, hp(sc), hp(ctim), _sim->_time0 );
 
   if (ctim){
+    trace4("DEV_IVL_BASE::tr_review", ctim->delay, hp(sc), hp(ctim), _sim->_time0 );
     double delay = sc->event_absolute(ctim);
     trace1("DEV_LOGIC_VVP::tr_review", delay );
     _time_by.min_event(delay + _sim->_time0);
+  } else {
+    trace0("no event");
   }
   q_accept();
   return _time_by;
@@ -505,6 +493,8 @@ COMMON_IVL::COMMON_IVL(const COMMON_IVL& p)
 void EVAL_IVL::contsim_set(double time) const
 {
   trace1("EVAL contsim_set", time);
+  contsim("",time);
+  return;
   SimTimeA  = time;
   SimDelayD = -1;
 }
@@ -515,7 +505,7 @@ double EVAL_IVL::contsim(const char *analysis,double time) const
   SimTimeA  = time;
   SimDelayD = -1;
 
-  assert(!strcmp("TRAN",analysis));
+//   assert(!strcmp("TRAN",analysis)); not in use
 
   SimState = SIM_CONT0;
   while (SimTimeDlast < time) {
@@ -565,7 +555,7 @@ void EVAL_IVL::do_some_precalc_last_stuff() const {
 
   // Execute initialization events.
   sim->exec_init_list();
-  trace0("Done init events...");
+  trace0("Done init events..."); //  + long_label());
 
   // Execute start of simulation callbacks
 
@@ -601,19 +591,8 @@ sim_mode EVAL_IVL::schedule_simulate_m(sim_mode mode) const
   trace1("EVAL schedule_list?", sim->schedule_runnable() );
   assert(sim->schedule_runnable());
   assert(! sim->schedule_stopped());
-  if (sim->schedule_runnable())
     while (sim->schedule_list()) {
       trace0("EVAL schedule_list");
-
-      if (sim->schedule_stopped()) {
-        assert(false);
-        sim->schedule_start();
-        incomplete();
-        // stop_handler(0);
-        // You can finish from the debugger without a time change.
-        if (!sim->schedule_runnable()) break;
-        goto cycle_done;
-      }
 
       /* ctim is the current time step. */
       ctim = sim->schedule_list();
@@ -647,7 +626,7 @@ sim_cont0:
         }
 
         trace2("EVAL simulate", sim->schedule_runnable(), ctim->delay );
-        if (!sim->schedule_runnable()) break;
+        assert (sim->schedule_runnable());
         sim->schedule_time(sim->schedule_time() + ctim->delay);
         ctim->delay = 0;
 
@@ -674,6 +653,7 @@ sim_cont0:
             trace0("EVAL rosync");
             sim->run_rosync( ctim );
             trace0("EVAL pop  schedule_list");
+            trace_queue(ctim );
             sim->schedule_list( ctim->next );
             switch (mode) {
               case SIM_CONT0:
@@ -781,7 +761,7 @@ EVAL_IVL::~EVAL_IVL()	{
 // (is this possible?)
 COMMON_COMPONENT* EVAL_IVL::deflate()
 {
-  trace1("EVAL_IVL::deflate", _commons.size());
+  trace2("EVAL_IVL::deflate", _commons.size(), hp(this));
   // return this;
   for( list<const COMMON_COMPONENT*>::iterator i = _commons.begin();
       i != _commons.end(); ++i ){
@@ -845,9 +825,12 @@ bool EVAL_IVL::operator==(const COMMON_COMPONENT& x )const{
 
   bool ret = (vvpso == p->vvpso) && cr;
   if (ret){
-    trace2("these are equal ", hp(this), hp(&x) );
+    trace2("EVAL_IVL these are equal ", hp(this), hp(&x) );
+  } else {
+    trace2("EVAL_IVL these are unequal ", hp(this), hp(&x) );
   }
 
+  return(ret);
 
 }
 /*--------------------------------------------------------------------------*/
@@ -858,34 +841,23 @@ int EVAL_IVL::vvpinit(COMPILE* compile, void* _vvpso) {
   SimTimeDlast = 0;
   SimDelayD = -1;
   if(vvpso){
-    trace0("already done??");
-    return -1;
+    trace0("EVAL_IVL::vvpinit already done??");
+    return -10;
   }
   vvpso=_vvpso;
   char* e;
   assert(vvpso);
 
-
-#if 1
-  // const char* e;
-  vhbn  = (typeof(vhbn))dlsym(vvpso,"vpi_handle_by_name");
-  if((e=dlerror())) error(bDANGER, "so: %s\n", e);
-  assert(vhbn);
-
+  DLLINK(vhbn,"vpi_handle_by_name");
   DLLINK(r_r,"run_rosync");
-  // DLLINK(s_e,"schedule_enlist");
   DLLINK(g_s_t,"get_schedule_time");
   DLLINK(s_s_t,"set_schedule_time");
   DLLINK(g_s_l,"get_schedule_list");
   DLLINK(s_s_l,"set_schedule_list");
   DLLINK(_vpi_mode,"vpi_mode_flag");
+  DLLINK(n_s,"vpiNextSimTime");
+  DLLINK(s_a_p_v,"schedule_assign_plucked_vector");
 
-  s_a_p_v = (typeof(s_a_p_v))dlsym(vvpso,"schedule_assign_plucked_vector");
-  if((e=dlerror())) error(bDANGER, "so: %s\n", e);
-  assert(s_a_p_v);
-  //contsim  = (typeof(contsim))dlsym(vvpso,"contsim");
-  //ssert(contsim);
-  //
   void (*s_s_i_l)(event_s*);
 
   DLLINK(s_s_i_l,"set_schedule_init_list");
@@ -903,11 +875,8 @@ int EVAL_IVL::vvpinit(COMPILE* compile, void* _vvpso) {
 
   //memcpy( sched_list, compile->schedule_list(), sizeof(event_time_s));
 
-  trace0("EVAL copying simdata");
-  trace_queue(my_sched_list);
-  (*s_s_i_l)(compile->schedule_init_list());
-  compile->dump_stuff();
-  this->schedule_time(0);
+
+
   
 
   // fetching time prec. probably not necessary (we have dtmin)
@@ -919,24 +888,24 @@ int EVAL_IVL::vvpinit(COMPILE* compile, void* _vvpso) {
    //vvp_time64_t (*s_s)();
   _time_prec = (*gtp)();
 
-  if(!_time_prec){
-    error(bDANGER,"no time precision?\n");
-    this->vpip_set_time_precision(10);
+  if(_time_prec>-1 || _time_prec<-12){
+    error(bDANGER,"no time precision %i?\n", _time_prec);
+    this->vpip_set_time_precision(-12); // FIXME
     _time_prec = (*gtp)();
   }
-  trace1("vvp init", _time_prec);
+  trace2("vvp init", _time_prec, hp(this));
 
-  assert( _time_prec );
+  assert( -12<=_time_prec && _time_prec<=0 );
 
+  trace0("EVAL copying simdata");
+  trace_queue(my_sched_list);
+  (*s_s_i_l)(compile->yank_init_list());
+  compile->dump_stuff();
+  this->schedule_time(0);
 
-  //  so_main =  (typeof(so_main))dlsym(vvpso,"so_main");
-  //   if(!so_main){
-  //     error(bDANGER, "so: %s\n", dlerror());
-  //   }
-  //activate = (typeof(activate))SetActive;
-  //assert(activate);
-#else
-#endif
+  //cleaning up compiler.
+  compile->yank_codespace();
+  compile->reset();
 
   return 0;
   //return( (*so_main)(args) );
@@ -965,18 +934,21 @@ void COMMON_IVL::expand(const COMPONENT* dev ){
     throw Exception_Model_Type_Mismatch(dev->long_label(), modelname(), name());
   }
 
-  COMMON_LOGIC* eval = (COMMON_LOGIC*) new EVAL_IVL();
+  COMMON_COMPONENT* eval = (COMMON_COMPONENT*) new EVAL_IVL();
   trace1("COMMON_IVL::expand model "+ modelname(), hp(eval));
   eval->set_modelname(modelname());
 
   //eval->attach(model());
   //
-  eval->attach(
+  eval->attach( 
       (MODEL_CARD*) (
         ((const MODEL_IVL_BASE*)model())->logic_model()
         )
       );
+
+  trace1("COMMON_IVL attaching original eval common", hp(eval));
   attach_common(eval, &_eval_ivl);
+  trace2("COMMON_IVL attached original eval common", hp(eval), hp(_eval_ivl));
 }
 /*--------------------------------------------------------------------------*/
 void COMMON_IVL::precalc_last(const CARD_LIST* par_scope)
@@ -1034,11 +1006,11 @@ COMMON_IVL::~COMMON_IVL()	{
   trace1("COMMON_IVL::~ detaching ", hp(_eval_ivl));
   detach_common(&_eval_ivl);
 
-  for( vector<COMMON_COMPONENT*>::iterator i = _subcommons.begin();
-      i!=_subcommons.end(); ++i){
-    trace1("COMMON_IVL::~ deleting ", hp((*i)));
-    delete (&(*i));
-  }
+//  for( vector<COMMON_COMPONENT*>::iterator i = _subcommons.begin();
+//      i!=_subcommons.end(); ++i){
+//    trace1("COMMON_IVL::~ deleting ", hp((*i)));
+//    delete (&(*i));
+//  }
 }
 /*--------------------------------------------------------------------------*/
 std::string COMMON_IVL::param_name(int i) const{

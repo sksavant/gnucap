@@ -142,7 +142,6 @@ public:
 
   bool operator!=(const COMMON_COMPONENT& x)const {return !(*this == x);}
   int attach_count()const{
-    trace1("COMMON_COMPONENT::attach_count ", hp(this));
     return _attach_count;
   }
   std::string	      modelname()const	{ return _modelname;}
