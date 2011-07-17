@@ -54,7 +54,8 @@ endif
 if IVERILOG
 D_SRCS +=  d_ivl_base.cc d_ivl_ports.cc \
 			 d_invert.cc d_clock.cc \
-		  	 d_latch.cc d_lfsr.cc 
+		  	 d_latch.cc d_lfsr.cc  \
+			 e_ivl_compile.cc
 
 #	libvvpg_la_SOURCES = vvp_main.cc
 #  bin_PROGRAMS += libvvpg
@@ -135,7 +136,7 @@ bm.h \
 c_comand.h globals.h extlib.h
 
 if IVERILOG
-RAW_HDRS += d_vvp.h d_ivl.h
+RAW_HDRS += d_vvp.h d_ivl.h e_ivl_compile.h
 # doesnt work (?)
 # dvvp_lo_CFLAGS = -I$(IVERILOG_PATH)/include
 endif

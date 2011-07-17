@@ -48,7 +48,7 @@ would need a way to clone/reallocate the device instances within the runtime...
 //#include "l_lib.h"
 //#include "io_trace.h"
 #include "vvp/schedule.h" // event_time_s
-#include "vvp/compile.h" // vpi_mode_t
+#include "e_ivl_compile.h" // vpi_mode_t
 # include  <iostream> 
 //# include  <cstdio>
 
@@ -94,7 +94,7 @@ class DEV_IVL_BASE;
 
 class ExtLib; // obsolete (vvp?)
 class VVP;
-class COMPILE;
+class COMPILE_WRAP;
 /*--------------------------------------------------------------------------*/
 enum sim_mode {SIM_ALL,
                SIM_INIT,
@@ -124,21 +124,21 @@ class EVAL_IVL : public COMMON_COMPONENT {
     static int _count;
     static list<const COMMON_COMPONENT*> _commons;
   public:
-    int vvpinit(COMPILE*, void* vvpso);
-    void* vvpso;
-    COMPILE* comp;
+    int vvpinit(COMPILE_WRAP*);
+    COMPILE_WRAP* comp;
   public: // input parameters
     int		incount; //?
-  private:
+  private: // simulator stuff
     uint_t status;
+
     vvp_time64_t (*g_s_t)();
     void (*s_s_t)(vvp_time64_t);
 
+#ifdef SOME_OLD_STUFF
     event_time_s* (*g_s_l)();
     void (*s_s_l)(event_time_s*);
     vpi_mode_t& (*_vpi_mode)();
     void (*s_a_p_v) (vvp_sub_pointer_t<vvp_net_t>,vvp_time64_t,vvp_vector4_t,int, int);
-
     void (*s_st)();
     void (*n_s)();
     void (*r_r)(event_time_s*);
@@ -151,6 +151,7 @@ class EVAL_IVL : public COMMON_COMPONENT {
     bool (*s_r)();
     void (*v_t)(int);
     void (*s_l)();
+#endif
 
     void do_some_precalc_last_stuff()const;
 
@@ -160,7 +161,7 @@ class EVAL_IVL : public COMMON_COMPONENT {
     std::vector< COMMON_COMPONENT* > _subcommons;
     // COMMON_COMPONENT* _logic_none;
   protected:
-    COMPILE* compile;
+    COMPILE_WRAP* compile;
 
     // VVP things...
   public:
@@ -182,10 +183,19 @@ class EVAL_IVL : public COMMON_COMPONENT {
     vvp_time64_t my_schedule_time;
 
   public: // potentially local?
+#ifdef OLD_SUTUF
     event_time_s* schedule_list() const 
     { assert(g_s_l); return (*g_s_l)(); }
     vvp_time64_t schedule_time( ) const
     { assert(g_s_t); return (*g_s_t)(); }
+
+#else
+    event_time_s* schedule_list() const 
+    { return get_schedule_list(); }
+    vvp_time64_t schedule_time( ) const
+    { return get_schedule_time(); }
+#endif
+
     int log_time_precision()const
     { return _time_prec; }
     double time_precision()const
@@ -193,16 +203,13 @@ class EVAL_IVL : public COMMON_COMPONENT {
 
   private: // vvp stuff. eventually obsolete.
 
-    void schedule_list(event_time_s* x) const
-    { trace0("writing schedule_list");
-      trace_queue(schedule_list());
-      assert(s_s_l); return (*s_s_l)(x); }
 
+#ifdef SOME_OLD_APPROACH
+    void schedule_list(event_time_s* x) const
+    { assert(s_s_l); return (*s_s_l)(x); }
     void schedule_time( vvp_time64_t x ) const
     { trace1("IVL::schedule_time", x);
       assert(g_s_t); return (*s_s_t)(x); }
-
-
     vpi_mode_t& vpi_mode_flag() const 
     { assert(_vpi_mode); return (*_vpi_mode)(); }
     void vpiNextSimTime() const 
@@ -227,13 +234,18 @@ class EVAL_IVL : public COMMON_COMPONENT {
     { assert(s_r); return (*s_r)(); }
     void vpip_set_time_precision(int pres) const
     { assert(v_t); (*v_t)(pres); }
+#else
+
+    void schedule_time( vvp_time64_t x ) const
+    { set_schedule_time( x); }
+#endif
 
    public: // some helpers... cleanup needed :|
 
 
 
     void schedule_assign_plucked_vector(vpiHandle H,  vvp_time64_t  dly,
-        vvp_vector4_t val, int a, int b)const;
+       vvp_vector4_t val, int a, int b)const;
 
     inline double getdtime(struct event_time_s *et) const
     {
@@ -258,7 +270,7 @@ class EVAL_IVL : public COMMON_COMPONENT {
     //from vvp_vpi.cc
     static void vvp_vpi_init();
     static int init(const char* design_path);
-    int compile_design(COMPILE* c, COMPONENT*) const;
+    int compile_design(COMPILE_WRAP* c, COMPONENT*) const;
 
     static void signals_capture(void);
     static void signals_revert(void);
@@ -338,7 +350,7 @@ class COMMON_IVL : public COMMON_COMPONENT {
     std::vector< COMMON_COMPONENT* > _subcommons;
     COMMON_COMPONENT* _eval_ivl;
   protected:
-    COMPILE* compile;
+    COMPILE_WRAP* compile;
 
     // VVP things...
   public:
@@ -351,7 +363,7 @@ class COMMON_IVL : public COMMON_COMPONENT {
     //from vvp_vpi.cc
     static void vvp_vpi_init();
     static int init(const char* design_path);
-    int compile_design(COMPILE* c, COMPONENT*) const;
+    int compile_design(COMPILE_WRAP* c, COMPONENT*) const;
 
     static void signals_capture(void);
     static void signals_revert(void);
@@ -402,7 +414,7 @@ class MODEL_IVL_BASE : public MODEL_LOGIC {
   public:
     //static int	count()			{return _count;}
     virtual std::string port_name(uint_t)const;
-    virtual int compile_design(COMPILE* c, const string) const = 0;
+    virtual int compile_design(COMPILE_WRAP* c, const string) const = 0;
   public:
     PARAMETER<string> file;
     PARAMETER<string> input;
@@ -460,14 +472,11 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     const COMMON_COMPONENT* subcommon()const{ return _subcommon; }
 
     double tr_probe_num(const std::string& x)const;
-  private:
-   // VVP* vvp; // common??
-   //
-   //
-    // move to EVAL_IVL?
+  private: // COMPILE_WRAP stuff
     void init_vvp();
     void* _vvpso;
-    COMPILE* _comp;
+    COMPILE_WRAP* _comp;
+    COMPILE_WRAP* (*g_c)();
     const COMMON_COMPONENT* _subcommon;
 
 
@@ -486,7 +495,7 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     vector<vpiHandle> _inport;
 
   public:
-    void compile_design(COMPILE* c);
+    void compile_design(COMPILE_WRAP* c);
     //void qe() { q_eval(); }
     void register_port(vpiHandle); // data from ivl
 
