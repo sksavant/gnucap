@@ -115,6 +115,7 @@ public:
   enum {OUTNODE=0,GND_NODE=1,PWR_NODE=2,ENABLE=3,BEGIN_IN=4}; //node labels
 private:
   int		_lastchangenode;
+  unsigned	_lastchangeiter;
   int		_quality;
   std::string	_failuremode;
   smode_t	_oldgatemode;
@@ -172,8 +173,9 @@ private: // override virtuals
   }
 public:
   static int count()			{return _count;}
-  vpiHandle H;
+//  vpiHandle H; // ?
   LOGICVAL lvfromivl;
+  void edge(int);
   void	   qe(); //{tr_queue_eval();}
 private:
   bool	   tr_eval_digital();

@@ -151,9 +151,7 @@ node_t::node_t()
   :_nnn(0),
    _ttt(INVALID_NODE),
    _m(INVALID_NODE)
-{
-  trace0("node_t::node_t()");
-}
+{ }
 /*--------------------------------------------------------------------------*/
 node_t::node_t(const node_t& p)
   :_nnn(p._nnn),
@@ -318,7 +316,7 @@ void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
   }
   set_process(f);
 
-  if (is_analog() &&  d_iter() < a_iter()) {
+  if (is_analog() && d_iter() < a_iter()) {
     if (_sim->analysis_is_restore()) {untested();
     }else if (_sim->analysis_is_static()) {
     }else{
@@ -436,7 +434,7 @@ void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
 				/* a transition state.		   */
     set_d_iter();
     set_last_change_time();
-    // trace3(_failure_mode, _lastchange, _quality, _lv);
+    trace3(_failure_mode, _lastchange, _quality, _lv);
   }
 }
 /*--------------------------------------------------------------------------*/

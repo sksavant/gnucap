@@ -386,6 +386,7 @@ void DEV_LOGIC::tr_accept()
   }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */  
   if (want_analog()) {
+    assert(false); // probably we don't need this...
     if (_gatemode == moDIGITAL) {untested();
       error(bTRACE, "%s:%u:%g switch to analog, %s\n", long_label().c_str(),
 	    _sim->iteration_tag(), _sim->_time0, _failuremode.c_str());

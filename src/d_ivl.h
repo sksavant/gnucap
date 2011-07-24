@@ -235,6 +235,8 @@ class EVAL_IVL : public COMMON_COMPONENT {
     void vpip_set_time_precision(int pres) const
     { assert(v_t); (*v_t)(pres); }
 #else
+    void schedule_list(event_time_s* x) const
+    { set_schedule_list(x); }
 
     void schedule_time( vvp_time64_t x ) const
     { set_schedule_time( x); }
@@ -325,8 +327,10 @@ class COMMON_IVL : public COMMON_COMPONENT {
     void expand(const COMPONENT* d);
     void precalc_last(const CARD_LIST*);
     std::string name()const {itested();return "common_ivl";}
-    static  int	count()	{return _count;}
-    COMMON_COMPONENT* deflate();
+    static  int	count()	{return _count;}\
+
+    // no deflate...
+    COMMON_COMPONENT* no_deflate();
   private:
     static int _count;
     static list<const COMMON_COMPONENT*> _commons;
@@ -447,7 +451,7 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     explicit	DEV_IVL_BASE(const DEV_IVL_BASE& p);
   public:
     explicit	DEV_IVL_BASE();
-    ~DEV_IVL_BASE();// {--_count;}
+    ~DEV_IVL_BASE();
   private: // override virt.
     char	   id_letter()const	{return '\0';}
     bool print_type_in_spice()const {return true;}

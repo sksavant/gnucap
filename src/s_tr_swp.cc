@@ -131,7 +131,13 @@ void TRANSIENT::sweep()
     }
   }
 
+  assert(_tstep > OPT::dtmin ); // == wont work because of CAUSE
+                                // we do only increase _time_by_user_request if
+                                // CAUSE == user.
+                                // the second step is always caused by initial guess...
+                                // BUG?
   while (next()) {
+    trace2("TRANSIENT::sweep next ... ", step_cause(), _sim->_time0);
     _sim->_bypass_ok = false;
     _sim->_phase = p_TRAN;
     _sim->_genout = gen();
@@ -140,6 +146,7 @@ void TRANSIENT::sweep()
     _accepted = _converged && review();
 
     if (_accepted) {
+      trace1("TRANSIENT::sweep accepted", step_cause());
       assert(_converged);
       assert(_sim->_time0 <= _time_by_user_request);
       accept();
@@ -148,12 +155,14 @@ void TRANSIENT::sweep()
 	assert( up_order(_sim->_time0-_sim->_dtmin, _time_by_user_request, _sim->_time0+_sim->_dtmin)
             || _sim->_time0 == _tstop );
 	++(_sim->_stepno);
+        trace1("TRANSIENT::sweep delivered req", _time_by_user_request);
 	_time_by_user_request += _tstep;	/* advance user time */
         // _time_by_user_request = min(_time_by_user_request, (double)_tstop);
       }else{
       }
       assert(_sim->_time0 <= _time_by_user_request);
     }else{
+      trace0("TRANSIENT::sweep NOT accepted");
       reject();
       assert(time1 < _time_by_user_request);
     }
@@ -316,6 +325,7 @@ bool TRANSIENT::next()
     new_control = scUSER;
     double fixed_time = newtime;
     double almost_fixed_time = newtime;
+    trace2("TRANSIENT::next", _time_by_user_request, newtime);
     check_consistency();
     
     // event queue, events that absolutely will happen

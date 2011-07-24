@@ -11,17 +11,27 @@
 using namespace std;
 // #include <iostream>
 #define sd(a) strdup(a)
+#define none (const char*)0
 
 class ARG_BASE{
 	public:
 		virtual operator string() const=0;
-		ARG_BASE* operator &(){
-			trace1("deref", hp(this));
-			return(this);
-							      }
-
+		// needed to circumvent temporary address warning
+		ARG_BASE* operator &(){ return(this); }
 };
-
+/*-----------------------------------------------------*/
+class ARG_I : public ARG_BASE{
+	private:
+		intptr_t i;
+	public:
+		ARG_I(intptr_t x): ARG_BASE(),i(x){}
+		operator string() const{
+			stringstream x;
+			x << hex << i;
+			return x.str();
+		}
+};
+/*-----------------------------------------------------*/
 class ARG_E : public ARG_BASE{
 	private:
 		intptr_t i;
@@ -29,11 +39,11 @@ class ARG_E : public ARG_BASE{
 		ARG_E(intptr_t x): ARG_BASE(),i(x){}
 		operator string() const{
 			stringstream x;
-			x << "E_" << i;
+			x << "E_0x" << hex << i;
 			return x.str();
 		}
 };
-
+/*-----------------------------------------------------*/
 class ARG_O : public ARG_BASE{
 	private:
 		intptr_t i;
@@ -41,7 +51,7 @@ class ARG_O : public ARG_BASE{
 		ARG_O(intptr_t x): ARG_BASE(),i(x){}
 		operator string() const;
 };
-
+/*-----------------------------------------------------*/
 class ARG_RAW : public ARG_BASE{
 	private:
 		string s;
@@ -55,7 +65,7 @@ class ARG_RAW : public ARG_BASE{
 			return x.str();
 		}
 };
-
+/*-----------------------------------------------------*/
 class ARG_S : public ARG_BASE{
 	private:
 		intptr_t i;
@@ -63,7 +73,7 @@ class ARG_S : public ARG_BASE{
 		ARG_S(intptr_t x): ARG_BASE(),i(x){}
 		operator string() const;
 };
-
+/*-----------------------------------------------------*/
 class ARG_C4 : public ARG_BASE{
 	private:
 		unsigned i;
@@ -80,7 +90,7 @@ class ARG_C4 : public ARG_BASE{
 
 		operator string() const;
 };
-
+/*------------------------------------------------*/
 class ARG_V : public ARG_BASE{
 	private:
 		intptr_t i;
@@ -89,10 +99,11 @@ class ARG_V : public ARG_BASE{
 		ARG_V(intptr_t x, int y): ARG_BASE(),i(x), app(y){}
 		operator string() const{
 			stringstream x;
-			x << "v" << i << "_" << app;
+			x << "v0x" << hex << i << "_" << app;
 			return x.str();
 		}
 };
+/*------------------------------------------------*/
 
 // compile iverilogish argument list from ARG_BASE va_list...
 
@@ -103,7 +114,6 @@ inline symb_s* arg_symbols( unsigned argc, va_list argv ){
    symbv_init(&obj);
 	for(unsigned i=0; i<argc; i++){
 		ARG_BASE* w = va_arg ( argv, ARG_BASE* );
-		trace1("arg_symbols", hp(w));
 		assert(w);
 		symb_s s;
 		string sw = string(*w);
@@ -114,7 +124,6 @@ inline symb_s* arg_symbols( unsigned argc, va_list argv ){
 		s.idx=0;
 		symbv_add(&obj, s);
 	//	delete[]ww;
-
 	}
 
 	trace0("wrapped " + string(obj.vect[0].text));
@@ -243,7 +252,9 @@ class COMPILE_WRAP : public COMPILE{
 		}
 
 
-		inline void code( const char *label, const char *mnem, unsigned long l, unsigned long m){
+		inline void code( const char *label, const char *mnem,
+			  	unsigned long l,
+			  	unsigned long m){
 			comp_operands_s *opa = (comp_operands_t) calloc(1, sizeof(comp_operands_s));
 			opa->argc = 2;
 
@@ -256,7 +267,10 @@ class COMPILE_WRAP : public COMPILE{
 			COMPILE::code(label?sd(label):0, sd(mnem), opa);
 		}
 
-		inline void code( const char *label, const char *mnem, unsigned long l, const char* m, unsigned long n){
+		/*inline void code( const char *label, const char *mnem,
+			  	unsigned long l,
+			  	const char* m,
+			  	unsigned long n){
 			comp_operands_s *opa = (comp_operands_t) calloc(1, sizeof(comp_operands_s));
 			opa->argc = 3;
 			symb_s M;
@@ -271,10 +285,12 @@ class COMPILE_WRAP : public COMPILE{
 			opa->argv[2].numb = n;
 
 			COMPILE::code(label?sd(label):0, sd(mnem), opa);
-		}
+		}*/
 
 		inline void code( const char *label, const char *mnem,
-				unsigned long l, unsigned long m, unsigned long n){
+				unsigned long l,
+			  	unsigned long m,
+			  	unsigned long n){
 			comp_operands_s *opa = (comp_operands_t) calloc(1, sizeof(comp_operands_s));
 			opa->argc = 3;
 
@@ -288,11 +304,19 @@ class COMPILE_WRAP : public COMPILE{
 			COMPILE::code(label?sd(label):0, sd(mnem), opa);
 		}
 
-		inline void code( const char *label, const char *mnem, const char * l, unsigned long m, unsigned long n){
+//	compile->code( 0, "\%set/v", &ARG_V(0,0), 0, 32);
+		inline void code( const char *label, const char *mnem,
+			  	const ARG_BASE* l,
+			  	unsigned long m,
+			  	unsigned long n){
+			assert(l);
+			trace0("COMPILE_WRAP::code " + string(*l) );
+			char *ll = strdup(string(*l).c_str());
+			assert(ll);
 			comp_operands_s *opa = (comp_operands_t) calloc(1, sizeof(comp_operands_s));
 			symb_s L;
 			opa->argc = 3;
-			L.text = strdup(l);
+			L.text = ll;
 			L.idx = 0;
 
 			opa->argv[0].ltype = L_SYMB;
@@ -311,12 +335,25 @@ class COMPILE_WRAP : public COMPILE{
 		}
 
 		void code( const char*label, const char *mnem,
-			  	unsigned long l, ARG_BASE* m, unsigned long n){
-			return code (label, mnem, l, string(*m).c_str(), n);
-		}
-		void code( const char*label, const char *mnem,
-			  	ARG_BASE* l, unsigned long m, unsigned long n){
-			return code (label, mnem, string(*l).c_str(), m, n);
+			  	unsigned long l,
+			  	const ARG_BASE* m,
+			  	unsigned long n){
+			char *mm = strdup(string(*m).c_str());
+
+			comp_operands_s *opa = (comp_operands_t) calloc(1, sizeof(comp_operands_s));
+			opa->argc = 3;
+			symb_s M;
+			M.text = mm;
+			M.idx = 0;
+
+			opa->argv[0].ltype = L_NUMB;
+			opa->argv[0].numb = l;
+			opa->argv[1].ltype = L_SYMB;
+			opa->argv[1].symb = M;
+			opa->argv[2].ltype = L_NUMB;
+			opa->argv[2].numb = n;
+
+			COMPILE::code(label?sd(label):0, sd(mnem), opa);
 		}
 
 

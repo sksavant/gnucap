@@ -22,7 +22,7 @@ ARG_C4::operator string() const{
 /*-----------------------------------------------*/
 ARG_S::operator string() const{
 	stringstream x;
-	x << "O" << hex << i;
+	x << "S_0x" << hex << i;
 	return x.str();
 }
 /*-----------------------------------------------*/
@@ -47,7 +47,7 @@ void COMPILE_WRAP::param_logic(intptr_t label, char* name, char*value, bool sign
 	param_top = max(param_top,label);
 
 	char* buf = (char*)malloc(64*sizeof(char));
-	snprintf(buf, sizeof buf, "P_%lx", label+param_offset);
+	snprintf(buf, 64*sizeof(char), "P_0x%lx", label+param_offset);
 
 	COMPILE::param_logic(buf, name, value, signed_flag,
 			file_idx,  lineno);
@@ -60,8 +60,8 @@ void COMPILE_WRAP::variable(intptr_t label, int app, char*name,
 	signal_top = max(signal_top,label);
 
 	char* buf = (char*)malloc(64*sizeof(char));
-	snprintf(buf, sizeof buf, "v%lx_%i", label+signal_offset, app);
-
+	snprintf(buf, 64*sizeof(char), "v0x%lx_%i", label+signal_offset, app);
+	trace3("COMPILE_WRAP::variable "+string(buf), label, signal_offset, app);
 
 	COMPILE::variable(buf, name, msb, lsb, vpi_type_code, signed_flag, local_flag);
 }
@@ -76,7 +76,7 @@ void COMPILE_WRAP::net( intptr_t label, int app, char*name, int msb, int lsb,
 	va_start(args, argc);
 
 	char* buf = (char*)malloc(64*sizeof(char));
-	snprintf(buf, sizeof buf, "v%lx_%i", label+signal_offset, app);
+	snprintf(buf, 64*sizeof(char), "v0x%lx_%i", label+signal_offset, app);
 
 	COMPILE::net( buf, name,  msb,  lsb,
 			vpi_type_code, signed_flag, local_flag,

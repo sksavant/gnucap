@@ -54,11 +54,12 @@ COMMON_COMPONENT::COMMON_COMPONENT(int c)
    _model(0),
    _attach_count(c)
 {
-  trace2("initializing COMMON_COMPONENT"+ _modelname, c, hp(this));
+  trace2("COMMON_COMPONENT::COMMON_COMPONENT"+ _modelname, c, hp(this));
 }
 /*--------------------------------------------------------------------------*/
 COMMON_COMPONENT::~COMMON_COMPONENT()
 {
+  trace1("~COMMON_COMPONENT" , hp(this));
   trace3("~COMMON_COMPONENT " + modelname(), _attach_count, CC_STATIC, hp(this));
   assert(_attach_count == 0 || _attach_count == CC_STATIC);
 }
@@ -69,6 +70,8 @@ COMMON_COMPONENT::~COMMON_COMPONENT()
 void COMMON_COMPONENT::attach_common(COMMON_COMPONENT*c, COMMON_COMPONENT**to)
 {
   trace2("COMMON_COMPONENT::attach_common", hp(c), hp(*to));
+  //bad idea. modelname segfaults.
+  //trace0("COMMON_COMPONENT::attach_common" + c->modelname());
   assert(to);
   if (c == *to) {
     itested();
@@ -112,11 +115,13 @@ void COMMON_COMPONENT::detach_common(COMMON_COMPONENT** from)
     assert((**from)._attach_count > 0);
     //assert((**from)._attach_count != CC_STATIC );
     --((**from)._attach_count);
+    trace0("COMMON_COMPONENT::detach_common ??");
     if ((**from)._attach_count == 0) {
       trace1("COMMON_COMPONENT::detach_common deleting", hp(*from));
       delete *from;
     }else{
-      trace1(("nodelete " + (*from)->modelname()).c_str(),
+      trace0("nodelete");
+      trace1(("nodelete " + (*from)->modelname()),
           (**from)._attach_count);
     }
     *from = NULL;
@@ -419,7 +424,7 @@ COMPONENT::COMPONENT()
    _amps_new(0),
    _adp(0)
 {
-  trace0("COMPONENT::COMPONENT");
+  trace0("COMPONENT::COMPONENT " + long_label() + ", " + dev_type() );
   _sim->uninit();
 }
 /*--------------------------------------------------------------------------*/
@@ -446,7 +451,7 @@ COMPONENT::~COMPONENT()
 {
   if (_amps)     free (_amps);
   if (_amps_new) free (_amps_new);
-  trace0("COMPONENT::~COMPONENT deconstruct " + long_label() + " " + short_label());
+  trace0("COMPONENT::~COMPONENT " + long_label() + " " + short_label());
   detach_common();
   _sim->uninit();
 }
@@ -1098,7 +1103,7 @@ void COMPONENT::tr_do_behaviour(){
 void COMPONENT::tt_prepare(){
 
   if(_amps==NULL){
-    _amps = (double*) malloc(sizeof (double) * net_nodes() * TRANSIENT::total_outsteps() );
+    _amps = (double*) malloc(sizeof (double) * net_nodes() * TRANSIENT::steps_total_out() );
     _amps[0]=8888;
     trace0( "COMPON::tt_accept amps " + short_label() );
   }
