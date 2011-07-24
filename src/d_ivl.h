@@ -98,8 +98,10 @@ class COMPILE_WRAP;
 /*--------------------------------------------------------------------------*/
 enum sim_mode {SIM_ALL,
                SIM_INIT,
-               SIM_CONT0,SIM_CONT1,
-               SIM_PREM,SIM_DONE};
+               SIM_CONT0,
+               SIM_CONT1,
+               SIM_PREM,
+               SIM_DONE};
 /*------------------------------------------------------------*/
 class EVAL_IVL : public COMMON_COMPONENT {
   public:
