@@ -283,6 +283,8 @@ class EVAL_IVL : public COMMON_COMPONENT {
     /*--------------------------------------------------------------------*/
     //static double getdtime(struct event_time_s *et);
     sim_mode schedule_simulate_m(sim_mode mode) const;
+    sim_mode schedule_cont0() const;
+    sim_mode schedule_cont1() const;
     /*--------------------------------------------------------------------*/
 
 #if 0

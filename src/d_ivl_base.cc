@@ -504,7 +504,7 @@ double EVAL_IVL::tr_begin()const
   trace0("startsim -> schedule_simulate_m(SIM_INIT)");
   SimDelayD  = -1;
   // SimState = schedule_simulate_m(SIM_INIT);
-  do_some_precalc_last_stuff()
+  do_some_precalc_last_stuff();
   SimState = schedule_cont0();
   SimTimeDlast = SimTimeD;
 
@@ -537,6 +537,19 @@ void EVAL_IVL::do_some_precalc_last_stuff() const {
   vpiStartOfSim();
   assert(schedule_runnable());
   assert(! schedule_stopped());
+}
+/*--------------------------------------------------------------------------*/
+void run_fifo_run( event_s* q ){
+  while (q) {
+    struct event_s*cur = q->next;
+    if (q == cur) {
+      q = 0;
+    } else {
+      q->next = cur->next;
+    }
+    cur->run_run();
+    delete (cur);
+  }
 }
 /*--------------------------------------------------------------------------*/
 #if 0
@@ -722,7 +735,7 @@ sim_mode EVAL_IVL::schedule_simulate_m(sim_mode mode) const
   assert(false); 
   do_some_precalc_last_stuff();
 
-    while (ctim = schedule_list()) {
+    while ( ( ctim = schedule_list())) {
       trace0("EVAL_IVL schedule_list");
 
       /* If the time is advancing, then first run the
@@ -762,17 +775,9 @@ sim_cont0:
         vpiNextSimTime(); // execute queued callbacks 
 
         // Process the cbAtStartOfSimTime callbacks.
-        while (ctim->start) {
-          trace0("EVAL_IVL cbAtStartOfSimTime callback");
-          struct event_s*cur = ctim->start->next;
-          if (cur->next == cur) {
-            ctim->start = 0;
-          } else {
-            ctim->start->next = cur->next;
-          }
-          cur->run_run();
-          delete (cur);
-        }
+        trace0("EVAL_IVL cbAtStartOfSimTime callback");
+        run_fifo_run( ctim->start );
+
       } else  {
         trace0("EVAL_IVL delay == 0" );
       }
@@ -863,6 +868,7 @@ sim_mode EVAL_IVL::schedule_cont0() const
   struct event_s      *cur  = 0;
   struct event_time_s *ctim = 0;
   double               d_dly;
+  sim_mode mode = SIM_CONT0;
 
   if ((ctim = schedule_list())) goto sim_cont0;
                       goto done;
@@ -956,7 +962,6 @@ sim_cont0:
                   SimDelayD = d_dly;
                   delete ctim;
                   return SIM_CONT1;
-sim_cont1:
                   // SimTimeD += ???;
                   goto cycle_done;
                 }
@@ -1021,6 +1026,7 @@ sim_mode EVAL_IVL::schedule_cont1() const
   struct event_time_s *ctim = 0;
   double               d_dly;
 
+  sim_mode mode = SIM_CONT1;
 
   while ((ctim = schedule_list())) {
     trace0("EVAL_IVL schedule_list");
@@ -1038,7 +1044,6 @@ sim_mode EVAL_IVL::schedule_cont1() const
           if (d_dly > 0) {
             trace5("EVAL_IVL ", d_dly, CKT_BASE::_sim->_time0, ctim->delay, hp(this), hp(ctim));
             SimDelayD = d_dly; return SIM_CONT0; 
-sim_cont0:
             double dly = getdtime(ctim),
                    te  = SimTimeDlast + dly;
             if (te > SimTimeA) {
@@ -1110,7 +1115,6 @@ sim_cont0:
                 SimDelayD = d_dly;
                 delete ctim;
                 return SIM_CONT1;
-sim_cont1:
                 // SimTimeD += ???;
                 goto cycle_done;
               }
@@ -1152,7 +1156,6 @@ sim_cont1:
 cycle_done:;
   }
 
-done:
   return SIM_DONE;
 }
 #endif
