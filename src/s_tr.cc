@@ -25,9 +25,24 @@
 #include "u_sim_data.h"
 #include "u_status.h"
 #include "s_tr.h"
+#include "io_tr.h"
 static TRANSIENT p5;
 DISPATCHER<CMD>::INSTALL      d5(&command_dispatcher, "transient", &p5);
 DISPATCHER<CKT_BASE>::INSTALL d6(&status_dispatcher,  "transient", &p5);
+/*--------------------------------------------------------------------------*/
+const std::string SIM_CAUSE_label[] = {"user",
+                                      	"event",
+												  	"skip",
+												  	"iter_r",
+												  	"iter_a",
+												  	"trunc",
+                                       "ambiguous",
+                                       "adt",
+                                       "initial",
+                                       "reject",
+                                       "zero",
+                                       "small",
+                                       "no advance"};
 /*--------------------------------------------------------------------------*/
 int TRANSIENT::steps_accepted_;
 int TRANSIENT::steps_rejected_;

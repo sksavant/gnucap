@@ -73,7 +73,6 @@ AC_ARG_WITH([iverilog],
   [],
   [with_iverilog=no])
 
-
 # BUG. does not check $with_iverilog for correctness
 IVERILOG=
 AS_IF([ test "x$with_iverilog" != xno],
@@ -82,7 +81,10 @@ AS_IF([ test "x$with_iverilog" != xno],
 		AC_CHECK_LIB([vvp], [main],
 				  [
 					CPPFLAGS+=-I$with_iverilog
-					AC_SUBST([IVERILOG], ["-lvvp"])
+#					AC_SUBST([IVERILOG], ["-lvvp"])
+# using dlmopen for now.
+					#AC_SUBST([IVERILOG], ["-lvvp_compile"]) 
+					AC_SUBST([IVERILOG], ["-lvvp"]) 
 					AC_SUBST([IVERILOG_SO], ["$with_iverilog/lib/libvvp.so"])
 					AC_SUBST([IVERILOG_PATH], ["$with_iverilog"])
 					AC_SUBST([IVERILOG_INCLUDE], ["-I$with_iverilog"])
@@ -103,6 +105,7 @@ AC_CHECK_HEADERS(vvp/schedule.h, [ ],
 
 
 AM_CONDITIONAL(IVERILOG, test x$with_iverilog != xno )
+AM_CONDITIONAL(IVERILOG_VVP, test x$iverilog_vvp_old = xyes )
 
 AC_SUBST(IVERILOG_INCLUDE)
 

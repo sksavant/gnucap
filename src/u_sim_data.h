@@ -207,6 +207,8 @@ struct INTERFACE SIM_DATA {
   uint_t get_tt_order() const;
   void invalidate_tt();
   void force_tt_order(uint_t i){ untested(); _tt_order = i;}
+  unsigned total_outsteps()const;
+
   public:
 };
 /*--------------------------------------------------------------------------*/

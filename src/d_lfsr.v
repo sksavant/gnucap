@@ -1,6 +1,7 @@
 `timescale 10ps/1ps 
 
-module invert (out,in);
+// NOT YET
+module lfsr (out,in);
    input in;
    output reg out;
 

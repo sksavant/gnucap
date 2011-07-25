@@ -41,10 +41,12 @@ protected:
     scADT       =  8,	/* by iter count limited by max(rdt, 2*adt)	*/
     scINITIAL   =  9,	/* initial guess				*/
     scREJECT    = 10,	/* rejected previous time step			*/
-    scZERO      = 20,	/* fixed zero time step				*/
-    scSMALL     = 30,	/* time step too small				*/
-    scNO_ADVANCE= 100	/* after all that it still didn't advance	*/
+    scZERO      = 11,	/* fixed zero time step				*/
+    scSMALL     = 12,	/* time step too small				*/
+    scNO_ADVANCE= 13	/* after all that it still didn't advance	*/
   };
+
+  static std::string STEP_CAUSE_label[];
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
 public:
   explicit TRANSIENT():
@@ -63,7 +65,6 @@ public:
     _converged(false),
     _accepted(false)
   {
-	  steps_total_out_ = (int) ceil( ( (_tstop - _tstart ) / _tstep ) );
 	  trace4( "TRANSIENT()",  steps_total_out_, _tstep , _tstop, _tstart );
   }
   ~TRANSIENT() {}
@@ -85,7 +86,6 @@ private:
   void	set_step_cause(STEP_CAUSE);
 public:
   int stepno(){return _sim->_stepno;}		// count of visible (saved) steps
-  static int total_outsteps(){return steps_total_out_  ;}		// count of visible (saved) steps
   int	step_cause()const;
   void	first();
   bool	next();
@@ -131,7 +131,10 @@ public:
   static int steps_accepted() {return steps_accepted_;}
   static int steps_rejected() {return steps_rejected_;}
   static int steps_total()    {return steps_total_;}
+  static int steps_total_out()    {return steps_total_out_;}
 };
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 #endif

@@ -272,7 +272,7 @@ void PROBELIST::merge_probe( PROBE* m )
 /*--------------------------------------------------------------------------*/
 PROBE* PROBELIST::push_new_probe(const std::string& param,const CKT_BASE* object)
 {
-  trace0("PROBELIST::push_new_probe " + param + " for " + object->long_label());
+  trace0("PROBELIST::push_new_probe " + param + " for " + (object?object->long_label():"0"));
   if (param=="V?") {
     cerr << "warning V? not supported" << std::endl;
   }
