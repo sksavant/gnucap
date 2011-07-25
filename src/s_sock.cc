@@ -26,11 +26,15 @@
 #include "u_status.h"
 #include "u_prblst.h"
 #include "u_cardst.h"
+#include "u_nodemap.h"
 #include "e_elemnt.h"
 #include "e_storag.h"
+#include "e_subckt.h"
 #include "s__.h"
 #include "io_matrix.h"
 #include "m_matrix_extra.h"
+#include <iomanip>
+using namespace std;
 extern "C" {
 #include "atlas/clapack.h"
 
@@ -50,6 +54,12 @@ void dgels_(const char *trans, const int *M, const int *N, const int *nrhs,
 
 /*--------------------------------------------------------------------------*/
 namespace {
+/*--------------------------------------------------------------------------*/
+typedef union
+{
+  double double_val;
+  int    int_val;
+} di_union_t;
 /*--------------------------------------------------------------------------*/
 class SOCK : public SIM {
 public:
@@ -98,6 +108,37 @@ public:
   void	do_it(CS&, CARD_LIST*);
 private:
   void	setup(CS&);
+  void fillnames( const CARD_LIST* scope);
+  vector<string> var_namen;
+
+private: //vera stuff.
+  void main_loop();
+  void verainit();
+  void verakons();
+  void verainit_tail();
+  void verakons_tail();
+
+  char* var_names_buf;
+
+  unsigned verbose;
+  unsigned total;
+  unsigned n_inputs;
+  unsigned n_vars;
+  unsigned n_eingaenge;
+  size_t length;
+
+  di_union_t* buffer;
+  unsigned BUFSIZE;
+  unsigned n_bytes;
+  unsigned error;
+
+  double *dc_werteA,*dc_loesungA,*kons_loesungA,*kons_residuumA;
+
+  double*x_neu;
+  double*x_schaetz;
+  double*q_punkt;
+  double*G;
+  double*C;
 };
 /*--------------------------------------------------------------------------*/
 double	SOCK::temp_c_in = 0.;
@@ -116,6 +157,15 @@ void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
   _sim->_temp_c = temp_c_in;
   _do_tran_step=0;
   _dump_matrix=0;
+
+
+  // later... FIXME
+  BUFSIZE = 128; 
+  x_neu = new double[BUFSIZE];
+  x_schaetz = new double[BUFSIZE];
+  q_punkt = new double[BUFSIZE];
+  G = new double[BUFSIZE*BUFSIZE];
+  C = new double[BUFSIZE*BUFSIZE];
   command_base(Cmd);
   ::status.ddc.stop();
 }
@@ -174,7 +224,7 @@ void SOCK::do_tran_step()
   int tr_converged = solve(OPT::TRHIGH, _trace);
 
   if (!tr_converged) {
-    error(bWARNING, "did not converge\n");
+    ::error(bWARNING, "did not converge\n");
   }else{
   }
   ::status.accept.start();
@@ -425,7 +475,7 @@ void SOCK::sweep_recursive(int Nest)
       _sim->_uic=_sim->_more_uic=true;
       int converged = solve_with_homotopy(itl,_trace);
       if (!converged) {itested();
-	error(bWARNING, "did not converge\n");
+	::error(bWARNING, "did not converge\n");
         throw(Exception("foobar"));
       }
       ::status.accept.start();
@@ -712,6 +762,7 @@ void SOCK::first(int Nest)
   _sim->_phase = p_INIT_DC;
 }
 /*--------------------------------------------------------------------------*/
+// fetch names from circuit recursively. fill into local vector.
 void SOCK::fillnames( const CARD_LIST* scope){
 
   CKT_BASE::_sim->init();
@@ -725,10 +776,10 @@ void SOCK::fillnames( const CARD_LIST* scope){
         << ", use " << i->second->user_number() << 
         " x-Entry " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
       _out << s.str();
-      unsigned position;
-      assert( var_namen[position]==null );
-      string* myname=new string(i->second->long_label());
-      var_namen[position] = myname;
+      string myname(i->second->long_label());
+
+      // FIXME. sort names!!
+      var_namen.push_back( myname );
 
 
     }else{
@@ -811,11 +862,6 @@ static DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "sock", &p2);
  
 
 
-typedef union
-{
-  double double_val;
-  int    int_val;
-} di_union_t;
 
 
 
@@ -872,11 +918,6 @@ TParameter *vera_titan_ak(TParameter *parameter)
 
   double *matrixg, *matrixc,*vectorq;
 
-  double x_neu[BUFSIZE];
-  double x_schaetz[BUFSIZE];
-  double q_punkt[BUFSIZE];
-  double G[BUFSIZE*BUFSIZE];
-  double C[BUFSIZE*BUFSIZE];
 
   char input_namen[BUFSIZE*128];
   char var_names[BUFSIZE*128];
@@ -932,6 +973,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
 
 
 
+#if 0
   sleep(1);
   if (printlevel >= 2)
   {
@@ -939,7 +981,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
     dc_werteA[0]=0.1;     
 
     // DC-Arbeitspunkt berechnen
-    dc_loesungA=dcop(A, dc_sysA ,dc_werteA);
+    dc_loesungA = dcop(A, dc_sysA ,dc_werteA);
 
     // Die Variablenwerte stehen schon durch solve_system in var_werte
     // in dc_sysA und muessen noch nach A kopiert werden:
@@ -978,7 +1020,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
       print_array_name (stderr,vectorq,A->n_var,A->n_eingaenge,(char*)"q");
     }          
   } // if printlevel >= 2
-
+#endif
 
 
   /* Socket generieren */
@@ -1008,69 +1050,80 @@ TParameter *vera_titan_ak(TParameter *parameter)
 
 
   /* Serverbetrieb starten */
-  while (1) 
-  {
-    n_bytes=read(channel, buffer, sizeof(buffer));
-    //printlevel=2;
-    if (n_bytes <= 0)
-    {
-      opcode -1;
-    }
-    else
-    {
-      opcode = buffer[0].int_val; 
-    }
 
-    userinfo(1,"vera_titan_ak","Bearbeite: %i mit %i bytes \n",opcode,n_bytes);
-    if (printlevel >= 3)
-    {
-      fwrite(buffer,1,n_bytes,outfile);
-      fprintf(outfile,"\n Naechste Anforderung \n");
-    }
-
-    switch (opcode)  
-    {
-      case 51: /* verainit */
 #endif
 
-      SOCK::verainit(){
-	verbose = buffer[1].int_val;
-	n_inputs = buffer[2].int_val;
-	length = buffer[3].int_val;
+  void SOCK::main_loop(){
 
-	trace3("verainit", verbose, n_inputs, length );
-
-        for (i=0; i < length; i++)
-	{
-	  input_namen[i] = (char) buffer[i+4].int_val;
-                                               // Namen braucht man nicht, 
-                                               // deshalb hier ignoriert
-	}
-	input_namen[length] = '\0';
-
-        trace0("input_namen " + string(input_namen) );
-	total = length+4;
-        assert(3*BUFSIZE*BUFSIZE >= total);
- 
-        if (n_bytes != total * (int) sizeof(di_union_t))
-	{
-	  printf("Error in Verainit! no of bytes received %i <> expected %i\n",
-		 n_bytes, (int)(total*sizeof(di_union_t)));
-          throw Exception("bloed\n");
-	}
-
-	error = 0; /* verainit(v_flag, n_inputs, &n_vars, charbuf, &length); */
-	n_vars = _sim->_total_nodes; // A->n_var;
-	strcpy(var_names,"");
-        for (i=0; i < n_vars; i++)
-	{  
-	  strcat(var_names, var_namen[i]);
-	  strcat(var_names, "\t");
-	}
-	length = strlen(var_names);
-	userinfo(1,"vera_titan_ak","Variablennamen %s\n",var_names);
-	break;
+    while (1) 
+    {
+      n_bytes = read(channel, buffer, sizeof(buffer));
+      //printlevel=2;
+      if (n_bytes <= 0) {
+        opcode -1;
+      } else {
+        opcode = buffer[0].int_val; 
       }
+
+      trace1("SOCK::main_loop", opcode);
+      if (printlevel >= 3)
+      {
+        fwrite(buffer,1,n_bytes,outfile);
+        fprintf(outfile,"\n Naechste Anforderung \n");
+      }
+
+      switch (opcode)  
+      {
+        case 51: 
+          verainit();
+          verainit_tail();
+          break;
+
+
+      }
+    }
+
+  }
+
+  void SOCK::verainit(){
+    verbose = buffer[1].int_val;
+    n_inputs = buffer[2].int_val;
+    length = buffer[3].int_val;
+
+    trace3("verainit", verbose, n_inputs, length );
+
+    for (unsigned i=0; i < length; i++)
+    {
+      // input_namen[i] = (char) buffer[i+4].int_val;
+      // Namen braucht man nicht, 
+      // deshalb hier ignoriert
+    }
+    // input_namen[length] = '\0';
+
+    trace0("input_namen " + string(input_namen) );
+    total = (unsigned) (length+4);
+    assert(3*BUFSIZE*BUFSIZE >= total);
+
+    if (n_bytes != total * (int) sizeof(di_union_t))
+    {
+      printf("Error in Verainit! no of bytes received %i <> expected %i\n",
+          n_bytes, (int)(total*sizeof(di_union_t)));
+      throw Exception("bloed\n");
+    }
+
+    error = 0; /* verainit(v_flag, n_inputs, &n_vars, charbuf, &length); */
+    n_vars = _sim->_total_nodes; // A->n_var;
+    assert(!var_names_buf);
+    var_names_buf = (char*) malloc( BUFSIZE * sizeof(char));
+    strcpy(var_names_buf,"");
+    for (unsigned i=0; i < n_vars; i++)
+    {  
+      strcat(var_names_buf, var_namen[i].c_str());
+      strcat(var_names_buf, "\t");
+    }
+    length = strlen(var_names_buf);
+    // userinfo(1,"vera_titan_ak","Variablennamen %s\n",var_names_buf);
+  }
 #if 0
       case 52: /* veraop */
       {
@@ -1155,8 +1208,8 @@ TParameter *vera_titan_ak(TParameter *parameter)
 # endif
       void SOCK::verakons()
       {
-
-	total =  A->n_eingaenge + A->n_var + 1;
+//        n_eingaenge == #caps?
+	total =  n_eingaenge + n_vars + 1;
         assert(3*BUFSIZE*BUFSIZE >= total);
 
         if (n_bytes != total * (int) sizeof(di_union_t))
@@ -1167,76 +1220,86 @@ TParameter *vera_titan_ak(TParameter *parameter)
 	}	
 
 
-        dc_werteA= (double*) malloc(sizeof(double)*A->n_eingaenge);
-        for (i=0; i < A->n_eingaenge; i++)
+        dc_werteA= (double*) malloc(sizeof(double)*n_eingaenge);
+        for (unsigned i=0; i < n_eingaenge; i++)
 	{
 	  dc_werteA[i] = buffer[1+i].double_val; // Die Werte werden
 	                                         // tatsaechlich verwendet
 	}
 
-	for (i=0; i < A->n_var; i++)
+	for (unsigned i=0; i < n_vars; i++)
 	{
-	  x_schaetz[i] = buffer[i+A->n_eingaenge+1].double_val; 
+	  x_schaetz[i] = buffer[i+n_eingaenge+1].double_val; 
 	}
 
-	if (printlevel >= 3)
-	{
-	  frame_number=buffer[i+1].int_val;
-	  userinfo(3,"vera_titan_ak","Bearbeite %i Frame Number %i mit %i bytes \n",
-		  opcode,frame_number,n_bytes);
-	}
+//	if (printlevel >= 3)
+//	{
+//	  frame_number=buffer[i+1].int_val;
+//	  userinfo(3,"vera_titan_ak","Bearbeite %i Frame Number %i mit %i bytes \n",
+//		  opcode,frame_number,n_bytes);
+//	}
  
 	error = 0; /* verakons(Dwork, x_new, q_dot, G, C); */
-	n_vars = A->n_var;
+//	n_vars = A->n_var;
 
         // Konsistenten Arbeitspunkt und q_punkt  berechnen
         // Es wird davon ausgegangen, das dc_werteA noch stimmt
-	kons_loesungA=konsop(A,kons_sysA,dc_werteA,
-			     x_schaetz,&kons_residuumA);
+        //
+        
+        // caps festhalten und AP finden.
+        
+//        for z in zap
+  //        z->keep_voltage() // fetch voltages from nodes.
+  //
+//        do_ddc
+
+        incomplete();
+//	kons_loesungA=konsop(A,kons_sysA,dc_werteA, x_schaetz,&kons_residuumA);
+
+
 	if (kons_loesungA == NULL)
 	{
-	  fprintf(stderr,"vera_titan_ak: Fehler bei konsistenter Abp.-Loesung von A\n");
+	  ::error(bDANGER,"vera_titan_ak: Fehler bei konsistenter Abp.-Loesung von A\n");
 	  error=1;
 	}
 	else 
 	{
-	  for (i=0; i < n_vars; i++)
+	  for (unsigned i=0; i < n_vars; i++)
 	  {
 	    x_neu[i]=kons_loesungA[i];
 	    q_punkt[i]=kons_residuumA[i];
 	  }
-	  if (printlevel >= 2)
-	  {
-	    kons_sysA->print_var();
-	    print_array(stderr,kons_loesungA,1,A->n_var);
-	  }
+	 // if (printlevel >= 2)
+	 // {
+	 //   kons_sysA->print_var();
+	 //   print_array(stderr,kons_loesungA,1,A->n_var);
+	 // }
 	}
     
 
-	A->var_werte=x_neu;
+	var_werte = x_neu;
         free(kons_loesungA); // Speicherplatz sparenm wird von 
 	                    // Solve_system allokiert
 	// diff_werte, par_werte muessen auch gesetzt sein!
 	// in diesem Falle sind sie per default = 0
         A->eval_lin_gl(dc_werteA,&matrixg,&matrixc,&vectorq);
 
-        if (printlevel >= 1) 
-	{
-	  userinfo(1,"vera_titan_ak","G-Matrix:\n");  
-	  print_array (stderr,matrixg,n_vars,n_vars);
-	  userinfo(1,"vera_titan_ak","C-Matrix:\n");  
-	  print_array (stderr,matrixc,n_vars,n_vars);
-	}
+//        if (printlevel >= 1) 
+//	{
+//	  userinfo(1,"vera_titan_ak","G-Matrix:\n");  
+//	  print_array (stderr,matrixg,n_vars,n_vars);
+//	  userinfo(1,"vera_titan_ak","C-Matrix:\n");  
+//	  print_array (stderr,matrixc,n_vars,n_vars);
+//	}
         for (i=0; i < n_vars; i++)
 	{
           for (k=0; k < n_vars; k++)
 	  {  
 	    // muessen transponiert werden
-	    G[i+n_vars*k]=matrixg[k+n_vars*i];
-	    C[i+n_vars*k]=matrixc[k+n_vars*i];
+	    G[i+n_vars*k] = matrixg[k+n_vars*i];
+	    C[i+n_vars*k] = matrixc[k+n_vars*i];
 	  }
 	}
-	break;
       }
 #if 0
       default: 
@@ -1259,7 +1322,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
 
     if (opcode == 51)                   /* Verainit */
 #endif
-      SOCK::verainit_tail()
+      void SOCK::verainit_tail()
       {
         buffer[0].int_val = error;         /* Fehlerflag */
         buffer[1].int_val = n_vars;        /* Anzahl der Variablen */
