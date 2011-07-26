@@ -539,15 +539,16 @@ bool LOGIC_NODE::in_transit()const
   return (final_time() < NEVER) ; // || (final_time_a() < NEVER);
 }
 /*--------------------------------------------------------------------------*/
-void LOGIC_NODE::set_event(double delay, LOGICVAL v)
+/*--------------------------------------------------------------------------*/
+void LOGIC_NODE::set_event_abs(double time, LOGICVAL v)
 {
-  trace2("LOGIC_NODE::set_event", delay, v);
+  trace2("LOGIC_NODE::set_event_abs", time, v);
   _lv.set_in_transition(v);
   if (_sim->analysis_is_tran_dynamic()  &&  in_transit()) {untested();
     set_bad_quality("race");
   }
   set_d_iter();
-  set_final_time(_sim->_time0 + delay);
+  set_final_time(time);
 
   /*
   double del=0;

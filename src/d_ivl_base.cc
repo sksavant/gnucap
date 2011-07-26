@@ -30,8 +30,7 @@
 //
 //
 
-
-// move to ivl_ports!
+// move to ivl_ports?
 static PLI_INT32 callback(t_cb_data*x){
   assert(x);
   DEV_LOGIC_DA* port= reinterpret_cast<DEV_LOGIC_DA*>(x->user_data);
@@ -67,17 +66,20 @@ static PLI_INT32 callback(t_cb_data*x){
     trace0("CALLBack init."); // ??
     port->lvfromivl  = _LOGICVAL(3*bit.value(0)) ;
     assert(CKT_BASE::_sim->_time0 == 0 );
-    return 0 ;
+    return 0;
   }
 
   trace1("CALLB new_event",   sc->digital_time() );
-  CKT_BASE::_sim->new_event( double( sc->digital_time()) );
 
-  port->edge(bit.value(0)); // name?
+//   port->edge(bit.value(0)); // name?
 
-  trace1("callback done ", port->lvfromivl);
-  port->qe();
   return 0;
+}
+/*------------------------------------------------------------------*/
+inline vvp_time64_t EVAL_IVL::discrete_floor(double abs_t) const
+{
+  assert(is_number(  pow(10.0, _time_prec ))) ;
+  return static_cast<vvp_time64_t>( abs_t / pow(10.0, _time_prec ));
 }
 /*------------------------------------------------------------------*/
 int DEV_IVL_BASE::_count = -1;
@@ -132,13 +134,21 @@ void DEV_IVL_BASE::tr_accept(){
   trace3("DEV_IVL_BASE::tr_accept", _sim->_time0,  lastaccept, hp(sc));
   lastaccept = _sim->_time0;
 
+  sc->catch_up(_sim->_time0);
+
   // first queue events.
   // FIXME: just outports.
   subckt()->tr_accept();
 
   // then execute anything until now.
   trace2("DEV_LOGIC_VVP::tr_accept calling cont", _sim->_time0, hp(sc));
-  sc->contsim_set(_sim->_time0);
+  // sc->contsim_set(_sim->_time0);
+
+  // lookahead is the minimum number of ticks the fastest signal needs to
+  // travel through ivl ( good idea? )
+  vvp_time64_t lookahead = 10;
+
+  sc->contsim( lookahead );
 
   // accept again (the other nodes might have changed.)
   // FIXME: just inports
@@ -211,13 +221,13 @@ std::string DEV_IVL_BASE::port_name(uint_t i)const{
   return m->port_name(i);
 }
 /*--------------------------------------------------------------------------*/
-void DEV_IVL_BASE::compile_design(COMPILE_WRAP* compile){
+void DEV_IVL_BASE::compile_design(COMPILE_WRAP* compile, COMPONENT** da){
   const COMMON_COMPONENT* c = prechecked_cast<const COMMON_COMPONENT*>(common());
   assert(c);
   const MODEL_IVL_BASE* m = dynamic_cast<const MODEL_IVL_BASE*>(c->model());
   trace0("COMMON_IVL::compile_design");
 
-  m->compile_design(compile, short_label());
+  m->compile_design(compile, short_label(), da);
 }
 /*--------------------------------------------------------------------------*/
 void DEV_IVL_BASE::expand()
@@ -242,16 +252,22 @@ void DEV_IVL_BASE::expand()
     init_vvp(); // also fetches COMPILE_WRAP
 
     precalc_first();
+
+    COMPONENT* daports[m->da_nodes()];
+    CARD* logicdevice;
+    logicdevice = device_dispatcher["port_from_ivl"];
+    for ( unsigned i=0 ; i < m->da_nodes(); i++ ) {
+      daports[i] = dynamic_cast<COMPONENT*>(logicdevice->clone());
+    }
     precalc_last();
     uint_t n=2;
 
-    //COMPILE* _comp = new COMPILE();
     assert(_comp);
     //comp->ca();
     //
     // c->init();
     trace0("compiling...");
-    compile_design(_comp);
+    compile_design(_comp, daports);
     trace0("cleanup...");
 
     _comp->cleanup();
@@ -284,8 +300,8 @@ void DEV_IVL_BASE::expand()
     // not implemented
     // vpiHandle net_iterator = vpi_iterate(vpiPorts,vvp_device);
 
-    CARD* logicdevice;
     node_t* x;
+    unsigned daportno = 0;
 
     ((EVAL_IVL*)c->_eval_ivl)->comp = _comp;
 
@@ -298,7 +314,6 @@ void DEV_IVL_BASE::expand()
       int type = vpi_get(vpiType,item);
       name = vpi_get_str(vpiName,item);
       COMPONENT* P;
-
 
       trace2("DEV_IVL ==> "+ short_label() + " item name: " + string(name), item->vpi_type->type_code, n );
       trace0("DEV_IVL ==>  looking for " + port_name(n));
@@ -314,9 +329,9 @@ void DEV_IVL_BASE::expand()
           lnodes[2] = _n[1];
           lnodes[3] = _n[1];
           lnodes[4] = *x;
-          logicdevice = device_dispatcher["port_from_ivl"];
 
-          P = dynamic_cast<COMPONENT*>(logicdevice->clone());
+          P = daports[daportno];
+          daportno++;
 
           {
             t_cb_data cbd = {
@@ -429,7 +444,7 @@ TIME_PAIR DEV_IVL_BASE::tr_review(){
   event_time_s* ctim = schedule_list();
 
   if (ctim){
-    trace4("DEV_IVL_BASE::tr_review", ctim->delay, hp(sc), hp(ctim), _sim->_time0 );
+    trace3("DEV_IVL_BASE::tr_review", sc->schedule_time(), ctim->delay, _sim->_time0 );
     double delay = sc->event_absolute(ctim);
     trace1("DEV_LOGIC_VVP::tr_review", delay );
     _time_by.min_event(delay + _sim->_time0);
@@ -482,6 +497,91 @@ enum sim_mode {SIM_ALL,
                SIM_PREM,
                SIM_DONE};
 --------------------------------------------------------------------------*/
+void EVAL_IVL::catch_up(double time) const
+{
+  vvp_time64_t discrete_time = discrete_floor(time);
+  vvp_time64_t delta = discrete_time - schedule_time();
+
+
+  struct event_time_s* ctim = schedule_list();
+  if (ctim) {
+    assert(ctim->delay >= delta);
+    ctim->delay -= delta;
+  }
+  schedule_time(discrete_time);
+
+}
+/*-------------------------------------------------------------*/
+vvp_time64_t EVAL_IVL::contsim(vvp_time64_t until_rel) const
+{
+  vvp_time64_t time0 = schedule_time();
+  vvp_time64_t until_abs = until_rel + schedule_time();
+  // ivl events before 'until_abs' might be changed by analogue transitions.
+  // so execute only until then.
+  //
+  struct event_time_s* ctim;
+  while( ( ctim = schedule_list() ) ) {
+
+    /* If the time is advancing, then first run the
+       postponed sync events. Run them all. */
+    if (ctim->delay > 0) {
+
+      if (ctim->delay + schedule_time() > until_abs){
+        return time0 - schedule_time()+ctim->delay;
+      }
+
+      assert (schedule_runnable_flag);
+      schedule_time( schedule_time() + ctim->delay );
+      /* When the design is being traced (we are emitting
+       * file/line information) also print any time changes. */
+      ctim->delay = 0;
+
+      vpiNextSimTime();
+      // Process the cbAtStartOfSimTime callbacks.
+      assert (!ctim->start);
+    }
+
+    /* If there are no more active events, advance the event
+       queues. If there are not events at all, then release
+       the event_time object. */
+    if (ctim->active == 0) {
+      ctim->active = ctim->nbassign;
+      ctim->nbassign = 0;
+
+      if (ctim->active == 0) {
+        ctim->active = ctim->rwsync;
+        ctim->rwsync = 0;
+
+        /* If out of rw events, then run the rosync
+           events and delete this time step. This also
+           deletes threads as needed. */
+        if (ctim->active == 0) {
+          run_rosync(ctim);
+          schedule_list( ctim->next );
+          delete ctim;
+          continue;
+        }
+      }
+    }
+
+    /* Pull the first item off the list. If this is the last
+       cell in the list, then clear the list. Execute that
+       event type, and delete it. */
+    struct event_s*cur = ctim->active->next;
+    if (cur->next == cur) {
+      ctim->active = 0;
+    } else {
+      ctim->active->next = cur->next;
+    }
+
+      cur->single_step_display();
+    cur->run_run();
+
+    delete (cur);
+  }
+  return -1;
+} 
+/*--------------------------------------------------------------------------*/
 double EVAL_IVL::contsim(const char *,double time) const
 {
   trace2("EVAL_IVL::contsim", time, SimTimeDlast);
@@ -511,7 +611,7 @@ double EVAL_IVL::tr_begin()const
   return SimDelayD;
 } 
 /*--------------------------------------------------------------------------*/
-void EVAL_IVL::schedule_assign_plucked_vector(vpiHandle H,
+void EVAL_IVL::schedule_transition(vpiHandle H,
     vvp_time64_t  dly, vvp_vector4_t val, int a, int b)const
 {
   trace3("EVAL_IVL::schedule_assign_plucked_vector ", dly, a,b);
@@ -617,7 +717,8 @@ sim_mode EVAL_IVL::schedule_simulate_m(sim_mode mode) const {
             if (d_dly > 0) {
               trace0("skip ExtPWL");
               //doExtPwl(sched_list->nbassign,ctim);
-              SimDelayD = d_dly; return SIM_CONT0; 
+              SimDelayD = d_dly;
+              return SIM_CONT0; 
 sim_cont0:
               double dly = getdtime(ctim),
                      te  = SimTimeDlast + dly;
@@ -692,6 +793,7 @@ sim_cont1:
         ctim->active->next = cur->next;
       }
 
+      cur->single_step_display();
       cur->run_run();
 
       delete (cur);
@@ -847,10 +949,9 @@ sim_cont1:
       }
       assert(cur);
 
-      trace0("EVAL_IVL active run_run");
+      cur->single_step_display();
       cur->run_run();
       trace_queue(ctim);
-      trace0("EVAL_IVL done run_run");
 
       delete (cur);
 
@@ -913,17 +1014,7 @@ sim_cont0:
         vpiNextSimTime(); // execute queued callbacks 
 
         // Process the cbAtStartOfSimTime callbacks.
-        while (ctim->start) {
-          trace0("EVAL_IVL cbAtStartOfSimTime callback");
-          struct event_s*cur = ctim->start->next;
-          if (cur->next == cur) {
-            ctim->start = 0;
-          } else {
-            ctim->start->next = cur->next;
-          }
-          cur->run_run();
-          delete (cur);
-        }
+        assert (!ctim->start);
 
       } else  {
         trace0("EVAL_IVL delay <= 0" );
@@ -995,7 +1086,7 @@ sim_cont0:
       }
       assert(cur);
 
-      trace0("EVAL_IVL active run_run");
+      cur->single_step_display();
       cur->run_run();
       trace_queue(ctim);
       trace0("EVAL_IVL done run_run");
@@ -1066,17 +1157,7 @@ sim_mode EVAL_IVL::schedule_cont1() const
       vpiNextSimTime(); // execute queued callbacks 
 
       // Process the cbAtStartOfSimTime callbacks.
-      while (ctim->start) {
-        trace0("EVAL_IVL cbAtStartOfSimTime callback");
-        struct event_s*cur = ctim->start->next;
-        if (cur->next == cur) {
-          ctim->start = 0;
-        } else {
-          ctim->start->next = cur->next;
-        }
-        cur->run_run();
-        delete (cur);
-      }
+      assert (!ctim->start);
 
     } else  {
       trace0("EVAL_IVL delay <= 0" );
@@ -1147,6 +1228,7 @@ sim_mode EVAL_IVL::schedule_cont1() const
     assert(cur);
 
     trace0("EVAL_IVL active run_run");
+    cur->single_step_display();
     cur->run_run();
     trace_queue(ctim);
     trace0("EVAL_IVL done run_run");
@@ -1408,13 +1490,13 @@ void COMMON_IVL::precalc_last(const CARD_LIST* par_scope)
   module.e_val("UNSET" , par_scope);
 }
 /*--------------------------------------------------------------------------*/
-int COMMON_IVL::compile_design(COMPILE_WRAP*c, COMPONENT* p)const{
+int COMMON_IVL::compile_design(COMPILE_WRAP*c, COMPONENT* p, COMPONENT** da)const{
   const MODEL_IVL_BASE* m = dynamic_cast<const MODEL_IVL_BASE*>(model());
   trace0("COMMON_IVL::compile_design");
 
   //c->init();
   // c->ca();
-  return m->compile_design(c, p->short_label());
+  return m->compile_design(c, p->short_label(), da);
 }
 /*--------------------------------------------------------------------------*/
 void DEV_IVL_BASE::init_vvp() // const CARD_LIST* par_scope)

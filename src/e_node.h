@@ -245,7 +245,10 @@ public: // other internal
   }
 
 public: // action, used by logic
-  void	      set_event(double delay, LOGICVAL v);
+  void	      set_event_abs(double delay, LOGICVAL v);
+  void set_event(double delay, LOGICVAL v){
+    return set_event_abs(delay+_sim->_time0,v);
+  }
   void	      force_initial_value(LOGICVAL v);
   void	      propagate();
   double      to_analog(const MODEL_LOGIC*);

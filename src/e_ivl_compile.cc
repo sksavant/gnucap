@@ -5,6 +5,8 @@
 
 #include "e_ivl_compile.h"
 
+intptr_t ARG_E::offset = 0;
+intptr_t ARG_V::offset = 0;
 
 /*-----------------------------------------------*/
 ARG_O::operator string() const{
@@ -53,6 +55,7 @@ void COMPILE_WRAP::param_logic(intptr_t label, char* name, char*value, bool sign
 			file_idx,  lineno);
 };
 /*-----------------------------------------------*/
+//depr.
 void COMPILE_WRAP::variable(intptr_t label, int app, char*name,
 			     int msb, int lsb, int vpi_type_code,
 			     bool signed_flag, bool local_flag){
@@ -65,13 +68,34 @@ void COMPILE_WRAP::variable(intptr_t label, int app, char*name,
 
 	COMPILE::variable(buf, name, msb, lsb, vpi_type_code, signed_flag, local_flag);
 }
+void COMPILE_WRAP::variable(ARG_BASE* label,  char*name,
+			     int msb, int lsb, int vpi_type_code,
+			     bool signed_flag, bool local_flag){
+
+	char* buf = strdup(string(*label).c_str());
+
+	COMPILE::variable(buf, name, msb, lsb, vpi_type_code, signed_flag, local_flag);
+}
+/*-----------------------------------------------*/
+void COMPILE_WRAP::net( ARG_BASE* l, char*name, int msb, int lsb,
+				int vpi_type_code, bool signed_flag, bool local_flag,
+				unsigned argc, ... ){
+
+	va_list args;
+	va_start(args, argc);
+
+	char* buf = strdup(string(*l).c_str());
+
+	COMPILE::net( buf, name,  msb,  lsb,
+			vpi_type_code, signed_flag, local_flag,
+			argc, arg_symbols(argc,args) );
+}
 /*-----------------------------------------------*/
 void COMPILE_WRAP::net( intptr_t label, int app, char*name, int msb, int lsb,
 				int vpi_type_code, bool signed_flag, bool local_flag,
 				unsigned argc, ... ){
 
 	assert(label>=0);
-	signal_top = max(signal_top,label);
 	va_list args;
 	va_start(args, argc);
 

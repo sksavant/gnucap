@@ -36,10 +36,12 @@ class ARG_E : public ARG_BASE{
 	private:
 		intptr_t i;
 	public:
-		ARG_E(intptr_t x): ARG_BASE(),i(x){}
+		static intptr_t offset;
+		ARG_E(intptr_t x): ARG_BASE(),i(x)
+		{ assert(x>=0);}
 		operator string() const{
 			stringstream x;
-			x << "E_0x" << hex << i;
+			x << "E_0x" << hex << i-offset;
 			return x.str();
 		}
 };
@@ -48,6 +50,7 @@ class ARG_O : public ARG_BASE{
 	private:
 		intptr_t i;
 	public:
+		static intptr_t offset;
 		ARG_O(intptr_t x): ARG_BASE(),i(x){}
 		operator string() const;
 };
@@ -96,10 +99,11 @@ class ARG_V : public ARG_BASE{
 		intptr_t i;
 		int app;
 	public:
+		static intptr_t offset;
 		ARG_V(intptr_t x, int y): ARG_BASE(),i(x), app(y){}
 		operator string() const{
 			stringstream x;
-			x << "v0x" << hex << i << "_" << app;
+			x << "v0x" << hex << i - offset << "_" << app;
 			return x.str();
 		}
 };
@@ -154,6 +158,9 @@ class COMPILE_WRAP : public COMPILE{
 		void variable(intptr_t, int app, char*name,
 				int msb, int lsb, int vpi_type_code,
 				bool signed_flag, bool local_flag);
+		void variable(ARG_BASE* label, char*name,
+				int msb, int lsb, int vpi_type_code,
+				bool signed_flag, bool local_flag);
 
 
 		/*
@@ -175,7 +182,11 @@ class COMPILE_WRAP : public COMPILE{
 	   void vpi_call( const char* label, const char* cmd, bool b0, bool
 		b1, long l0, long l1, ... );
 
+		//deprecated.
 		void net( intptr_t label, int app, char*name, int msb, int lsb,
+				int vpi_type_code, bool signed_flag, bool local_flag,
+				unsigned argc, ... );
+		void net( ARG_BASE* label, char*name, int msb, int lsb,
 				int vpi_type_code, bool signed_flag, bool local_flag,
 				unsigned argc, ... );
 
@@ -221,6 +232,11 @@ class COMPILE_WRAP : public COMPILE{
 			va_list argv;
 			va_start(argv,argc);
 			COMPILE::event(strdup(string(ARG_E(l)).c_str()), t, argc, arg_symbols(argc, argv));
+		}
+		void event(ARG_BASE* l, char* t, int argc, ... ){
+			va_list argv;
+			va_start(argv,argc);
+			COMPILE::event(strdup(string(*l).c_str()), t, argc, arg_symbols(argc, argv));
 		}
 
 		/*---------------------------*/
@@ -355,6 +371,32 @@ class COMPILE_WRAP : public COMPILE{
 
 			COMPILE::code(label?sd(label):0, sd(mnem), opa);
 		}
+
+		void notify( const ARG_BASE* l,
+			  	unsigned long m,
+			  	unsigned long n, void* daport){
+
+			trace0("COMPILE_WRAP::notify");
+			assert(l);
+			char *ll = strdup(string(*l).c_str());
+			assert(ll);
+			comp_operands_s *opa = (comp_operands_t) calloc(1, sizeof(comp_operands_s));
+			symb_s L;
+			opa->argc = 3;
+			L.text = ll;
+			L.idx = 0;
+
+			opa->argv[0].ltype = L_SYMB;
+			opa->argv[0].symb = L;
+			opa->argv[1].ltype = L_NUMB;
+			opa->argv[1].numb = m;
+			opa->argv[2].ltype = L_NUMB;
+			opa->argv[2].numb = n;
+
+			notify( opa, daport );
+		}
+
+		void notify ( comp_operands_t opa, void* daport);
 
 
 }; // COMPILE_WRAP

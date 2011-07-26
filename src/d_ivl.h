@@ -178,6 +178,7 @@ class EVAL_IVL : public COMMON_COMPONENT {
     inline static void print_rusage(struct rusage *, struct rusage *);
 
     double event_absolute(struct event_time_s *et) const;
+    vvp_time64_t discrete_floor(double abs_t) const;
 
 
   private: // for now, move everything to the external vars
@@ -248,7 +249,7 @@ class EVAL_IVL : public COMMON_COMPONENT {
 
 
 
-    void schedule_assign_plucked_vector(vpiHandle H,  vvp_time64_t  dly,
+    void schedule_transition(vpiHandle H,  vvp_time64_t  dly,
        vvp_vector4_t val, int a, int b)const;
 
     inline double getdtime(struct event_time_s *et) const
@@ -274,7 +275,7 @@ class EVAL_IVL : public COMMON_COMPONENT {
     //from vvp_vpi.cc
     static void vvp_vpi_init();
     static int init(const char* design_path);
-    int compile_design(COMPILE_WRAP* c, COMPONENT*) const;
+    int compile_design(COMPILE_WRAP* c, COMPONENT*, COMPONENT**) const;
 
     static void signals_capture(void);
     static void signals_revert(void);
@@ -299,18 +300,17 @@ class EVAL_IVL : public COMMON_COMPONENT {
 
     // former extlib.h
     void    *(*bindnet)(const char *,char,int *,void *,void (*)(void *,void *,double));
-
-    // double   (*startsim)(const char *);
     double   tr_begin() const;
 
     void     (*endsim)();
-    //double   (*contsim)(const char *,double);
     double   contsim(const char *,double) const;
     void   contsim_set(double) const;
+    vvp_time64_t contsim(vvp_time64_t until_rel) const;
 
+    void catch_up(double time) const;
 
-    void     (*activate)(void *,void *,double);
-    vpiHandle(*vhbn)(const char *name, vpiHandle scope);
+//    void     (*activate)(void *,void *,double);
+//    vpiHandle(*vhbn)(const char *name, vpiHandle scope);
 
 };
 /*--------------------------------------------------------------------------*/
@@ -371,7 +371,7 @@ class COMMON_IVL : public COMMON_COMPONENT {
     //from vvp_vpi.cc
     static void vvp_vpi_init();
     static int init(const char* design_path);
-    int compile_design(COMPILE_WRAP* c, COMPONENT*) const;
+    int compile_design(COMPILE_WRAP* c, COMPONENT*, COMPONENT**da) const;
 
     static void signals_capture(void);
     static void signals_revert(void);
@@ -422,7 +422,8 @@ class MODEL_IVL_BASE : public MODEL_LOGIC {
   public:
     //static int	count()			{return _count;}
     virtual std::string port_name(uint_t)const;
-    virtual int compile_design(COMPILE_WRAP* c, const string) const = 0;
+    virtual int compile_design(COMPILE_WRAP* c, const string, COMPONENT** da) const = 0;
+    virtual unsigned da_nodes()const = 0;
   public:
     PARAMETER<string> file;
     PARAMETER<string> input;
@@ -503,7 +504,7 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     vector<vpiHandle> _inport;
 
   public:
-    void compile_design(COMPILE_WRAP* c);
+    void compile_design(COMPILE_WRAP* c, COMPONENT** da);
     //void qe() { q_eval(); }
     void register_port(vpiHandle); // data from ivl
 
@@ -516,7 +517,7 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
 /*--------------------------------------------------------------------*/
 inline double EVAL_IVL::event_absolute(struct event_time_s *et) const
 {
-  trace1("", _time_prec);
+  trace1("event_absolute", _time_prec);
   assert(is_number(  pow(10.0, _time_prec ))) ;
   return  double ( (et->delay + this->schedule_time() )  
       * (long double) pow(10.0, _time_prec ));
