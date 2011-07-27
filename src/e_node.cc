@@ -489,15 +489,14 @@ double LOGIC_NODE::to_analog(const MODEL_LOGIC* f)
   assert(risefall != NOT_VALID);
 
   if (_sim->_time0 <= (final_time_a()-risefall)) {
-    //cout <<"ta b" <<final_time_a()-risefall << "\n";
     return start;
   }else if (_sim->_time0 >= final_time_a()) {
-    //cout <<"ta d\n";
     return end;
   }else{
-    trace3("to_analog", _sim->_time0, final_time(), risefall );
-    double ret = end - ((end-start) * (final_time_a() - _sim->_time0) / risefall);
-    cout <<"ta " << (final_time_a()-_sim->_time0)/risefall  << " " << ret << " \n";
+    double share = (final_time_a() - _sim->_time0) / risefall;
+    trace4("LOGIC_NODE::to_analog in between", _sim->_time0, final_time(),
+        risefall, share );
+    double ret = end - (end-start) * share;
     return ret;
   }
 }

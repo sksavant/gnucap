@@ -38,8 +38,7 @@ COMMON_COMPONENT::COMMON_COMPONENT(const COMMON_COMPONENT& p)
    _model(p._model),
    _attach_count(0)
 {
-  trace1(("COMMON_COMPONENT copy, modelname: "+p._modelname),
-      (intptr_t)_model %PRIME );
+  trace1(("COMMON_COMPONENT copy, modelname: "+p._modelname), hp(_model) );
 }
 /*--------------------------------------------------------------------------*/
 COMMON_COMPONENT::COMMON_COMPONENT(int c)
@@ -829,7 +828,7 @@ const MODEL_CARD* COMPONENT::find_model(const std::string& modelname)const
 	// start here, looking out
 	try {
 	  c = Scope->find_in_my_scope(modelname);
-          trace1("COMPONENT::find_model found model in scope", ((intptr_t) c)%PRIME);
+          trace1("COMPONENT::find_model found model in scope", hp(c));
 	}catch (Exception_Cant_Find& e1) {
 	  // didn't find plain model.  try binned models
 	  bin_count = 0;
@@ -906,9 +905,9 @@ double COMPONENT::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "event{time} ")) {
     return (_time_by._event < BIGBIG) ? _time_by._event : 0;
   }else if (Umatch(x, "_m ")) {
-    return double((intptr_t) ( _common->model() ) % PRIME );
+    return double(hp( _common->model() ) );
   }else if (Umatch(x, "_c ")) {
-    return double((intptr_t) (_common) % PRIME );
+    return double(  hp(_common) );
   }
 
   return CARD::tr_probe_num(x);

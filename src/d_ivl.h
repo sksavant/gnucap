@@ -125,9 +125,14 @@ class EVAL_IVL : public COMMON_COMPONENT {
   private:
     static int _count;
     static list<const COMMON_COMPONENT*> _commons;
+    static COMPILE_WRAP* _comp;
   public:
+    static COMPILE_WRAP* get_comp(){
+      if (_comp) return _comp;
+      return _comp= new COMPILE_WRAP();
+    }
+
     int vvpinit(COMPILE_WRAP*);
-    COMPILE_WRAP* comp;
   public: // input parameters
     int		incount; //?
   private: // simulator stuff
@@ -155,7 +160,7 @@ class EVAL_IVL : public COMMON_COMPONENT {
     void (*s_l)();
 #endif
 
-    void do_some_precalc_last_stuff()const;
+    void some_tr_begin_stuff()const;
 
 
   public:
@@ -478,7 +483,8 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     bool tr_needs_eval()const{return true;}
     TIME_PAIR tr_review();
   public:
-    const COMMON_COMPONENT* subcommon()const{ return _subcommon; }
+    const COMMON_COMPONENT* subcommon()const{
+     assert(_subcommon); return _subcommon; }
 
     double tr_probe_num(const std::string& x)const;
   private: // COMPILE_WRAP stuff
