@@ -48,9 +48,7 @@ COMMON_COMPONENT::COMMON_COMPONENT(int c)
    _temp_c(NOT_INPUT),
    _mfactor(1),
    _value(0),
-   _modelname("unset"),
-  // _modelname(0),
-   // _modelname(""),
+   _modelname(""), // !
    _model(0),
    _attach_count(c)
 {

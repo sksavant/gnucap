@@ -227,7 +227,7 @@ std::string PARAMETER<std::string>::e_val(const std::string& def, const CARD_LIS
     // blank string means to use default value
     _v = def;
     if (recursion > 1) {
-      error(bWARNING, "parameter " + *first_name + " has no value\n");
+      error(bWARNING, " parameter " + *first_name + " has no value\n");
     }else{
     }
   }else if (_s == "{") {
