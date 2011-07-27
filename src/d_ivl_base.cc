@@ -30,6 +30,7 @@
 //
 //
 
+#ifdef USE_CALLBACK
 // move to ivl_ports?
 static PLI_INT32 callback(t_cb_data*x){
   assert(x);
@@ -73,6 +74,7 @@ static PLI_INT32 callback(t_cb_data*x){
   port->edge(bit.value(0)); // name?
   return 0;
 }
+#endif
 /*------------------------------------------------------------------*/
 inline vvp_time64_t EVAL_IVL::discrete_floor(double abs_t) const
 {
@@ -331,6 +333,8 @@ void DEV_IVL_BASE::expand()
           P = daports[daportno];
           daportno++;
 
+#ifdef USE_CALLBACK
+          // obsolete. using notify
           {
             t_cb_data cbd = {
               cbValueChange, //reason
@@ -342,8 +346,9 @@ void DEV_IVL_BASE::expand()
               (char*)P //user_data
             };
             trace0("DEV_IVL_BASE::expand attaching callback to " +name);
-            // vpi_register_cb(&cbd); obsolete. using notify
+            vpi_register_cb(&cbd);
           }
+#endif
 
           break;
         case vpiNet: // -> ivl
