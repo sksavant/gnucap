@@ -12,6 +12,7 @@ using namespace std;
 // #include <iostream>
 #define sd(a) strdup(a)
 #define none (const char*)0
+class COMPONENT;
 
 class ARG_BASE{
 	public:
@@ -374,7 +375,7 @@ class COMPILE_WRAP : public COMPILE{
 
 		void notify( const ARG_BASE* l,
 			  	unsigned long m,
-			  	unsigned long n, void* daport){
+			  	unsigned long n, COMPONENT* daport){
 
 			trace0("COMPILE_WRAP::notify");
 			assert(l);
@@ -396,7 +397,7 @@ class COMPILE_WRAP : public COMPILE{
 			notify( opa, daport );
 		}
 
-		void notify ( comp_operands_t opa, void* daport);
+		void notify ( comp_operands_t opa, COMPONENT* daport);
 
 
 }; // COMPILE_WRAP

@@ -459,13 +459,11 @@ void DDCOP::sweep_recursive(int Nest)
         iddc[a]=_sim->_i[a];
       }
 
-
       CARD_LIST::card_list.tr_accept();
       ::status.accept.stop();
       _sim->keep_voltages(); // vdc = v0
 
       _sim->_uic=_sim->_more_uic=false;
-
 
       _sim->init();
 
@@ -519,14 +517,13 @@ void DDCOP::sweep_recursive(int Nest)
 
       double Gul[d+1];
       double* Gu = Gul+1;
+      double col[d+1];
+      double CU[d*d];
 
       // Gu = G * v0
       G.rmul(Gul, _sim->_v0);
-
       G.lu_decomp();
 
-      double col[d+1];
-      double CU[d*d];
 
       // U = G^{-1} C (column-major)
       for( unsigned i=0; i<d; ++i){

@@ -70,9 +70,7 @@ static PLI_INT32 callback(t_cb_data*x){
   }
 
   trace1("CALLB new_event",   sc->digital_time() );
-
-//   port->edge(bit.value(0)); // name?
-
+  port->edge(bit.value(0)); // name?
   return 0;
 }
 /*------------------------------------------------------------------*/
@@ -344,7 +342,7 @@ void DEV_IVL_BASE::expand()
               (char*)P //user_data
             };
             trace0("DEV_IVL_BASE::expand attaching callback to " +name);
-            vpi_register_cb(&cbd);
+            // vpi_register_cb(&cbd); obsolete. using notify
           }
 
           break;
