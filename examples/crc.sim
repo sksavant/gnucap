@@ -26,9 +26,9 @@ C0 1 0 5m IC=0.2
 
 .options numdgt=10
 
-.PRINT ddc  v(nodes) dv(nodes) dv(2)  ddv(1) ddv(2)
+.PRINT ddc  v(nodes) dv(nodes)  ddv(1) ddv(2)
 
-.DDC C0 0 1 0.25  C1 0.0 1 0.25      basic tr > crc.dat
+.DDC C0 0 1 0.25  C1 0.0 1 0.25        basic tr > crc.dat
 * macht noch den schritt und rechnet ddc aus ^^
 
 .echo done.
