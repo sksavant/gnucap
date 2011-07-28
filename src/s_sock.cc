@@ -65,7 +65,7 @@ typedef union
 } di_union_t;
 
 /*--------------------------------------------------------------------------*/
-class SOCK : public SIM {
+class SOCK : public DDC_BASE {
 public:
   void	finish();
   explicit SOCK();
@@ -80,7 +80,7 @@ private:
   bool	next(int);
   void do_tran_step();
   void undo_time_step();
-  explicit SOCK(const SOCK&): SIM() {unreachable(); incomplete();}
+  explicit SOCK(const SOCK&): DDC_BASE() {unreachable(); incomplete();}
 protected:
   
 protected:
@@ -105,6 +105,7 @@ protected:
   static double temp_c_in;	/* ambient temperature, input and sweep variable */
   bool _do_tran_step;
   bool _dump_matrix;
+  unsigned port;
   double* U;
   double* CU;
   double* CUTCU;
@@ -135,7 +136,7 @@ private: //vera stuff.
   size_t length;
 
   di_union_t* buffer;
-  SocketStream stream;
+  Socket stream;
   unsigned BUFSIZE;
   unsigned n_bytes;
   unsigned error;
@@ -162,8 +163,7 @@ private: //vera stuff.
 
   int channel;
   int frame_number;
-  FILE * outfile;
-  unsigned port;   // kommt ueber die Uebergabeparamter -p als
+  unsigned _port;   // kommt ueber die Uebergabeparamter -p als
                               // globale Variable daher (default: port=1400)
   int reuseaddr;
   struct sockaddr_in sin;
@@ -211,7 +211,7 @@ void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-SOCK::SOCK() :SIM(),
+SOCK::SOCK() :DDC_BASE(),
    _n_sweeps(1),
    _cont(false),
    _trace(tNONE)
@@ -427,6 +427,7 @@ void SOCK::options(CS& Cmd, int Nest)
 
   _sim->_uic = _loop[Nest] = _reverse_in[Nest] = false;
   _sim->_more_uic = true;
+  _port = 1400;
   unsigned here = Cmd.cursor();
   do{
     ONE_OF
@@ -434,13 +435,9 @@ void SOCK::options(CS& Cmd, int Nest)
       || (Cmd.is_float()	&& ((Cmd >> _step_in[Nest]), (_stepmode[Nest] = LIN_STEP)))
       || (Get(Cmd, "*",		  &_step_in[Nest]) && (_stepmode[Nest] = TIMES))
       || (Get(Cmd, "+",		  &_step_in[Nest]) && (_stepmode[Nest] = LIN_STEP))
-      || (Get(Cmd, "by",	  &_step_in[Nest]) && (_stepmode[Nest] = LIN_STEP))
-      || (Get(Cmd, "step",	  &_step_in[Nest]) && (_stepmode[Nest] = LIN_STEP))
-      || (Get(Cmd, "d{ecade}",	  &_step_in[Nest]) && (_stepmode[Nest] = DECADE))
-      || (Get(Cmd, "ti{mes}",	  &_step_in[Nest]) && (_stepmode[Nest] = TIMES))
-      || (Get(Cmd, "lin",	  &_step_in[Nest]) && (_stepmode[Nest] = LIN_PTS))
-      || (Get(Cmd, "o{ctave}",	  &_step_in[Nest]) && (_stepmode[Nest] = OCTAVE))
       || Get(Cmd, "c{ontinue}",   &_cont)
+      || Get(Cmd, "port" ,        &_port)
+      || Get(Cmd, "listen{port}", &_port)
       || Get(Cmd, "tr{s}",        &_do_tran_step)
       || Get(Cmd, "dm",           &_dump_matrix)
       || Get(Cmd, "dt{emp}",	  &temp_c_in,   mOFFSET, OPT::temp_c)
@@ -1068,7 +1065,6 @@ TParameter *vera_titan_ak(TParameter *parameter)
     while (1) 
     {
       n_bytes = (unsigned) read(channel, buffer, sizeof(buffer));
-      //printlevel=2;
       if (n_bytes <= 0) {
         opcode = -1;
       } else {
@@ -1076,7 +1072,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
       }
 
       trace1("SOCK::main_loop", opcode);
-      fwrite(buffer,1,n_bytes,outfile);
+//      fwrite(buffer,1,n_bytes,outfile);
       trace1(" Naechste Anforderung \n",n_bytes);
 
       switch (opcode)  
@@ -1401,19 +1397,23 @@ TParameter *vera_titan_ak(TParameter *parameter)
       buffer[0].int_val = error;         /* Fehlerflag */
       for (unsigned i=0; i < n_vars; i++)         /* Variablen-Werte */
       {
-	buffer[i+1].double_val = x_neu[i];
+//	buffer[i+1].double_val = x_neu[i];
+	stream << x_neu[i];
       }
       for (unsigned i=0; i < n_vars; i++)         /* Q-Punkt */
       {
-	buffer[i+n_vars+1].double_val = q_punkt[i];
+	//buffer[i+n_vars+1].double_val = q_punkt[i];
+	stream << q_punkt[i];
       }
       for (unsigned i=0; i < n_vars_square; i++)    /* G-Matrix */
       {
-	buffer[i+2*n_vars+1].double_val = G[i];
+	//buffer[i+2*n_vars+1].double_val = G[i];
+        stream << G[i];
       }
       for (unsigned i=0; i < n_vars_square; i++)    /* C-Matrix */
       {
-	buffer[i+n_vars_square+2*n_vars+1].double_val = C[i];
+	// buffer[i+n_vars_square+2*n_vars+1].double_val = C[i];
+        stream << C[i];
       }
 
       total = 2*n_vars_square+2*n_vars+1;

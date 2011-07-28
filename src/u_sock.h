@@ -1,3 +1,29 @@
+/*$Id: s_dc.cc,v 26.132 2009/11/24 04:26:37 al Exp $ -*- C++ -*-
+ * Copyright (C) 2011 Felix Salfelder
+ * Authors: Felix Salfelder, 
+ *          Markus Meissner
+ *
+ * This file is part of "Gnucap", the Gnu Circuit Analysis Package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
+ *------------------------------------------------------------------
+ * TCP socket stream stuff.
+ * don't know how to do this right.
+ * 
+ */
 #ifndef XSOCKET_H
 #define XSOCKET_H
 
@@ -47,6 +73,7 @@ DEFINE_EXCEPTION(SocketException, Exception);
  */
 class SocketStream : public ios {
   public:
+    enum EOL {eol};
     int fd;
 
     SocketStream() :  ios() {}
@@ -61,11 +88,17 @@ class SocketStream : public ios {
     const std::string get(int len);
     const std::string operator>>(int len);
 
+    void flush();
     void send(const std::string& data);
     void send(const std::string& data, int len);
-    void operator<<(const std::string& data);
-    void operator<<(const char* data);
-    void operator<<(const int data);
+    SocketStream& operator<<(const std::string& data);
+    SocketStream& operator<<(const char* data);
+    SocketStream& operator<<(const int data);
+    SocketStream& operator<<(const double data);
+    SocketStream& operator<<(const EOL){
+      flush();
+      return *this;
+    }
 };
 /**
  * @brief the Socket, is an abstract OO approach
@@ -76,14 +109,30 @@ class Socket {
     int fd;
     uint16_t port;
     struct sockaddr_in addr;
-    SOCKET_TYPE type;
+    SOCKET_TYPE type; // ??
+    SocketStream* stream;
 
   public:
-    SocketStream* stream;
+    enum EOL {eol};
+    Socket(): fd(0), port(0), stream(0){}
 
     Socket(SOCKET_TYPE type, short unsigned port);
     virtual ~Socket();
+    template<class T>
+      SocketStream& operator<<(const T& data);
 };
+
+template<>
+SocketStream& Socket::operator<<(const Socket::EOL& ){
+  assert(stream);
+  return *stream << SocketStream::eol;
+}
+
+template<class T>
+SocketStream& Socket::operator<<(const T& data){
+  assert(stream);
+  return *stream << data;
+}
 /**
  * @brief ServerSocket does the obvious, it sets up a server
  *        socket, which then can be used to listen to and recive connections
@@ -129,19 +178,16 @@ SocketStream::~SocketStream() {
   close(fd);
 }
 
-inline void SocketStream::operator<<(const std::string& data) {
-  send(data);
-}
-
-inline void SocketStream::send(const std::string& data) {
-  send(data, (int)data.length());
-}
-
-void SocketStream::send(const std::string& data, int len) {
+inline SocketStream& SocketStream::operator<<(const std::string& data) {
+  size_t len = data.length();
   ssize_t n = ::write(fd, data.c_str(), len);
   if(n < 0)
     throw SocketException("Could not write to socket");
-  //flush(fd);
+  return *this;
+}
+
+void SocketStream::flush() {
+//   ::flush(fd);
 }
 
 inline const std::string SocketStream::get(int len) {
@@ -173,6 +219,7 @@ inline Socket::Socket(SOCKET_TYPE type, short unsigned port) : fd(0), port(port)
 }
 
 inline Socket::~Socket() {
+  delete stream;
   // hmmm no fd because SocketStream does the job
 }
 
@@ -229,37 +276,6 @@ inline ClientSocket::ClientSocket(SOCKET_TYPE type, short unsigned port, const
 #pragma GCC diagnostic warning "-Wconversion"
 
 ClientSocket::~ClientSocket() { }
-
-
-inline void StreamSelecter::add_stream(SocketStream* stream) {
-  streams.push_back(stream);
-}
-
-inline SocketStream* StreamSelecter::select() {
-  return this->select(250000);
-}
-
-inline SocketStream* StreamSelecter::select(unsigned int usecs) {
-  FD_ZERO(&socks);
-  for(vector<SocketStream*>::iterator i=streams.begin(); i!=streams.end(); ++i)
-    FD_SET((*i)->fd, &socks);
-
-  struct timeval timeout;
-  timeout.tv_sec = 0;
-  timeout.tv_usec = usecs;
-
-  int readsocks = ::select(sizeof(socks)*8, &socks, (fd_set*) 0,
-                           (fd_set*) 0, &timeout);
-
-  if(readsocks == 0)
-    return NULL;
-
-  for(vector<SocketStream*>::iterator i=streams.begin(); i!=streams.end(); ++i)
-    if(FD_ISSET((*i)->fd, &socks))
-      return (*i);
-
-  return NULL;
-}
 
 #endif
 // vim:ts=8:sw=2:et:
