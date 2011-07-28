@@ -12,6 +12,7 @@ using namespace std;
 // #include <iostream>
 #define sd(a) strdup(a)
 #define none (const char*)0
+class COMPONENT;
 
 class ARG_BASE{
 	public:
@@ -36,10 +37,13 @@ class ARG_E : public ARG_BASE{
 	private:
 		intptr_t i;
 	public:
-		ARG_E(intptr_t x): ARG_BASE(),i(x){}
+		static intptr_t offset;
+		static intptr_t top;
+		ARG_E(intptr_t x): ARG_BASE(),i(x)
+		{ assert(x>=0);}
 		operator string() const{
 			stringstream x;
-			x << "E_0x" << hex << i;
+			x << "E_0x" << hex << i-offset;
 			return x.str();
 		}
 };
@@ -48,6 +52,8 @@ class ARG_O : public ARG_BASE{
 	private:
 		intptr_t i;
 	public:
+		static intptr_t offset;
+		static intptr_t top;
 		ARG_O(intptr_t x): ARG_BASE(),i(x){}
 		operator string() const;
 };
@@ -70,8 +76,29 @@ class ARG_S : public ARG_BASE{
 	private:
 		intptr_t i;
 	public:
+		static intptr_t offset;
+		static intptr_t top;
 		ARG_S(intptr_t x): ARG_BASE(),i(x){}
 		operator string() const;
+};
+/*-----------------------------------------------------*/
+class ARG_T : public ARG_BASE{
+	private:
+		intptr_t i;
+		unsigned app;
+		bool apped;
+	public:
+		static intptr_t offset;
+		static intptr_t top;
+		ARG_T(intptr_t x): ARG_BASE(),i(x),apped(false){}
+		ARG_T(intptr_t x, unsigned y): ARG_BASE(),i(x),app(y),apped(true){}
+		operator string() const{
+			stringstream x;
+			x << "T_" << i - offset;
+			if (apped)
+				x<<"." << app;
+			return x.str();
+		}
 };
 /*-----------------------------------------------------*/
 class ARG_C4 : public ARG_BASE{
@@ -91,15 +118,31 @@ class ARG_C4 : public ARG_BASE{
 		operator string() const;
 };
 /*------------------------------------------------*/
+class ARG_P : public ARG_BASE{
+	private:
+		intptr_t i;
+	public:
+		static intptr_t offset;
+		static intptr_t top;
+		ARG_P(intptr_t x): ARG_BASE(),i(x){}
+		operator string() const{
+			stringstream x;
+			x << "P_" << hex << i - offset;
+			return x.str();
+		}
+};
+/*------------------------------------------------*/
 class ARG_V : public ARG_BASE{
 	private:
 		intptr_t i;
 		int app;
 	public:
+		static intptr_t offset;
+		static intptr_t top;
 		ARG_V(intptr_t x, int y): ARG_BASE(),i(x), app(y){}
 		operator string() const{
 			stringstream x;
-			x << "v0x" << hex << i << "_" << app;
+			x << "v0x" << hex << i - offset << "_" << app;
 			return x.str();
 		}
 };
@@ -149,9 +192,12 @@ class COMPILE_WRAP : public COMPILE{
 		COMPILE_WRAP();
 		void flush();
 
-		void param_logic(intptr_t label, char* name, char*value, bool signed_flag,
+		void param_logic(ARG_BASE* label, char* name, char*value, bool signed_flag,
 				long file_idx, long lineno);
 		void variable(intptr_t, int app, char*name,
+				int msb, int lsb, int vpi_type_code,
+				bool signed_flag, bool local_flag);
+		void variable(ARG_BASE* label, char*name,
 				int msb, int lsb, int vpi_type_code,
 				bool signed_flag, bool local_flag);
 
@@ -175,7 +221,11 @@ class COMPILE_WRAP : public COMPILE{
 	   void vpi_call( const char* label, const char* cmd, bool b0, bool
 		b1, long l0, long l1, ... );
 
+		//deprecated.
 		void net( intptr_t label, int app, char*name, int msb, int lsb,
+				int vpi_type_code, bool signed_flag, bool local_flag,
+				unsigned argc, ... );
+		void net( ARG_BASE* label, char*name, int msb, int lsb,
 				int vpi_type_code, bool signed_flag, bool local_flag,
 				unsigned argc, ... );
 
@@ -221,6 +271,11 @@ class COMPILE_WRAP : public COMPILE{
 			va_list argv;
 			va_start(argv,argc);
 			COMPILE::event(strdup(string(ARG_E(l)).c_str()), t, argc, arg_symbols(argc, argv));
+		}
+		void event(ARG_BASE* l, char* t, int argc, ... ){
+			va_list argv;
+			va_start(argv,argc);
+			COMPILE::event(strdup(string(*l).c_str()), t, argc, arg_symbols(argc, argv));
 		}
 
 		/*---------------------------*/
@@ -329,9 +384,15 @@ class COMPILE_WRAP : public COMPILE{
 			COMPILE::code(label?sd(label):0, sd(mnem), opa);
 		}
 
+		void thread( const ARG_BASE* l, char* c ){
+			return COMPILE::thread ( strdup(string(*l).c_str()), c);
+		}
+		void scope_recall( const ARG_BASE* l ){
+			return COMPILE::scope_recall ( strdup(string(*l).c_str()));
+		}
 		void code( const char*label, const char *mnem,
 			  	const ARG_BASE* l ){
-			return code (label, mnem, string(*l).c_str());
+			return code (label, mnem, strdup(string(*l).c_str()));
 		}
 
 		void code( const char*label, const char *mnem,
@@ -355,6 +416,47 @@ class COMPILE_WRAP : public COMPILE{
 
 			COMPILE::code(label?sd(label):0, sd(mnem), opa);
 		}
+
+		void scope_decl(ARG_BASE*typ, char*lab, char*nam, char*tnam,
+				char*par, long file_idx, long lineno,
+				long def_file_idx, long def_lineno,
+				long is_cell){
+
+			return
+				COMPILE::scope_decl(strdup(string(*typ).c_str()), lab, nam, tnam,
+						par, file_idx, lineno,
+						def_file_idx, def_lineno,
+						is_cell);
+
+
+		}
+
+		void notify( const ARG_BASE* l,
+			  	unsigned long m,
+			  	unsigned long n, COMPONENT* daport){
+
+			trace0("COMPILE_WRAP::notify");
+			assert(l);
+			char *ll = strdup(string(*l).c_str());
+			assert(ll);
+			comp_operands_s *opa = (comp_operands_t) calloc(1, sizeof(comp_operands_s));
+			symb_s L;
+			opa->argc = 3;
+			L.text = ll;
+			L.idx = 0;
+
+			opa->argv[0].ltype = L_SYMB;
+			opa->argv[0].symb = L;
+			opa->argv[1].ltype = L_NUMB;
+			opa->argv[1].numb = m;
+			opa->argv[2].ltype = L_NUMB;
+			opa->argv[2].numb = n;
+
+			notify( opa, daport );
+		}
+
+		void notify ( comp_operands_t opa, COMPONENT* daport);
+		void codelabel( ARG_BASE* label);
 
 
 }; // COMPILE_WRAP

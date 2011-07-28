@@ -200,7 +200,7 @@ public: // raw data access (rvalues)
 public: // simple calculated data access (rvalues)
   bool	 lv_future()const	{return lv().lv_future();}
   bool	 is_unknown()const	{return lv().is_unknown();}
-  bool	 in_transit()const;//	{return final_time() < NEVER || final_time_a() < NEVER;}
+  bool	 in_transit()const;
   bool	 is_digital()const	{return _mode == moDIGITAL;}
   bool	 is_analog()const	{return _mode == moANALOG;}
   double annotated_logic_value()const;
@@ -245,7 +245,10 @@ public: // other internal
   }
 
 public: // action, used by logic
-  void	      set_event(double delay, LOGICVAL v);
+  void	      set_event_abs(double delay, LOGICVAL v);
+  void set_event(double delay, LOGICVAL v){
+    return set_event_abs(delay+_sim->_time0,v);
+  }
   void	      force_initial_value(LOGICVAL v);
   void	      propagate();
   double      to_analog(const MODEL_LOGIC*);

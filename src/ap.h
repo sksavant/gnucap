@@ -81,6 +81,8 @@ public:
   const std::string substr(unsigned i)const {return ((_cmd.length()>=i) ? _cmd.substr(i) : "");}
   const std::string substr(unsigned i, unsigned n)const	{return _cmd.substr(i,n);}
   const std::string tail()const			{return substr(_cnt);}
+  unsigned tailsize()const
+   { assert( _cmd.length()>=_cnt); return unsigned(_cmd.length()-_cnt); }
   char		    peek()const			{return _cmd[_cnt];}
 
   // status - may consume whitespace only
@@ -114,6 +116,7 @@ public:
 		{untested(); return (match1("0123456789abcdefABCDEF"));}
   bool	      is_digit()const	{return (match1("0123456789"));}
   bool	      is_pfloat()const	{return (match1(".0123456789"));}
+  bool	      eat_lines();
   // inf support is a hack, but hackish anyway
   bool	      is_float()const	{return (match1("+-.0123456789") || match1("iI") );}
   bool	      is_argsym()const	{return (match1("*?$%_&@"));}

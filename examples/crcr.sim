@@ -1,0 +1,43 @@
+
+spice
+* RC twice. to check ddc
+
+*.options abstol=1e-5
+.options reltol=1e-16
+*.options short=1e-9
+.options vntol=1e-14
+*.options dtmin=1e-11
+*.options cmin=1e-12
+.options numdgt=3
+
+* fake spannungsquelle
+
+* bug! hier muss IC=x stehen
+C1 n3 0 50m IC=0.2
+R1 n3 n2 1k
+C2 n2 n1 50m IC=0.2
+R2 n1 0 1k
+
+.nodelist
+
+*     _R1
+* 3--[_]--2
+* |       |
+* = C1    = C2
+* |       |
+* V       1
+*         |
+*        [ ] R2
+*         |
+*         V
+
+.options numdgt=10
+
+.PRINT ddc  V(C*) v(nodes) dv(nodes) ddv(nodes)
+*v(C1) v1(1) v1(2)
+
+.DDC C2 0 1 0.5  C1 0 1 0.1 tr  > crcr.dat
+
+.nodelist > vf.nodes
+
+.end

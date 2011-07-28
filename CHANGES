@@ -47,5 +47,6 @@
    - minor stuff
 - s_ddc.cc: dynamic dc simulation
 - debug helpers in c_debug.cc
-- header for ivl tgt-gc output
+- header/supplement for ivl tgt-gc output
 - logic node analog transitions delayed
+- added line eater for verilog parser.

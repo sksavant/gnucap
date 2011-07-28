@@ -175,7 +175,7 @@ public:
   static int count()			{return _count;}
 //  vpiHandle H; // ?
   LOGICVAL lvfromivl;
-  void edge(int);
+  unsigned edge(int, unsigned delay=0);
   void	   qe(); //{tr_queue_eval();}
 private:
   bool	   tr_eval_digital();

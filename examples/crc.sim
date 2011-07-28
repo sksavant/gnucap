@@ -1,0 +1,36 @@
+
+spice
+*versuch ein VF zu malen
+
+.options abstol=1e-5
+.options reltol=1e-16
+*.options short=1e-9
+.options vntol=1e-14
+*.options dtddc=1e-6
+*.options cmin=1e-12
+
+* fake spannungsquelle
+
+* bug! hier muss IC=x stehen
+R1 1 2 1k
+C1 2 0 5m IC=0.2
+C0 1 0 5m IC=0.2
+
+
+*     _R1
+* 1--[_]--2
+* |       |
+* = C0    = C1
+* |       |
+* V       V
+
+.options numdgt=10
+
+.PRINT ddc  v(nodes) dv(nodes)  ddv(1) ddv(2)
+
+.DDC C0 0 1 0.25  C1 0.0 1 0.25        basic tr > crc.dat
+* macht noch den schritt und rechnet ddc aus ^^
+
+.echo done.
+
+.end

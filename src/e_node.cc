@@ -493,9 +493,11 @@ double LOGIC_NODE::to_analog(const MODEL_LOGIC* f)
   }else if (_sim->_time0 >= final_time_a()) {
     return end;
   }else{
-    trace3("to_analog", _sim->_time0, final_time(), risefall );
-//    untested(); // seems to do the right thing...
-    return end - ((end-start) * (final_time_a() - _sim->_time0) / risefall);
+    double share = (final_time_a() - _sim->_time0) / risefall;
+    trace4("LOGIC_NODE::to_analog in between", _sim->_time0, final_time(),
+        risefall, share );
+    double ret = end - (end-start) * share;
+    return ret;
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -539,15 +541,16 @@ bool LOGIC_NODE::in_transit()const
   return (final_time() < NEVER) ; // || (final_time_a() < NEVER);
 }
 /*--------------------------------------------------------------------------*/
-void LOGIC_NODE::set_event(double delay, LOGICVAL v)
+/*--------------------------------------------------------------------------*/
+void LOGIC_NODE::set_event_abs(double time, LOGICVAL v)
 {
-  trace2("LOGIC_NODE::set_event", delay, v);
+  trace2("LOGIC_NODE::set_event_abs", time, v);
   _lv.set_in_transition(v);
   if (_sim->analysis_is_tran_dynamic()  &&  in_transit()) {untested();
     set_bad_quality("race");
   }
   set_d_iter();
-  set_final_time(_sim->_time0 + delay);
+  set_final_time(time);
 
   /*
   double del=0;

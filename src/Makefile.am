@@ -136,7 +136,7 @@ bm.h \
 c_comand.h globals.h extlib.h
 
 if IVERILOG
-RAW_HDRS += d_vvp.h d_ivl.h e_ivl_compile.h
+RAW_HDRS += d_vvp.h d_ivl.h e_ivl_compile.h d_ivl_ports.h
 # doesnt work (?)
 # dvvp_lo_CFLAGS = -I$(IVERILOG_PATH)/include
 endif
