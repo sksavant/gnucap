@@ -41,9 +41,9 @@
 #undef incomplete
 /*--------------------------------------------------------------------------*/
 // using namespace std;
-#ifdef DO_TRACE
+
 #ifndef hashpointer_
-#define hashpointer_
+# define hashpointer_
 
 class hp{
 	intptr_t p;
@@ -56,8 +56,9 @@ class hp{
 	}
 };
 
-#endif
+#endif 
 
+#ifdef DO_TRACE
 
 #define trace_line() (fprintf(stderr, "@@#\n@#@:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))

@@ -143,6 +143,7 @@ public:
   PARAMETER<double> over;	/* overshoot limit - as fraction of range */
 public: // calculated parameters
   double range;			/* vmax - vmin */
+  double margin; // safety margin for analog transitions. under construction.
   intptr_t logic_hash()const {return _hash;}
   void hash_logic();
 private:

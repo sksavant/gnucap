@@ -200,7 +200,7 @@ public: // raw data access (rvalues)
 public: // simple calculated data access (rvalues)
   bool	 lv_future()const	{return lv().lv_future();}
   bool	 is_unknown()const	{return lv().is_unknown();}
-  bool	 in_transit()const;//	{return final_time() < NEVER || final_time_a() < NEVER;}
+  bool	 in_transit()const;
   bool	 is_digital()const	{return _mode == moDIGITAL;}
   bool	 is_analog()const	{return _mode == moANALOG;}
   double annotated_logic_value()const;

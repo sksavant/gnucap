@@ -88,6 +88,7 @@ void MODEL_LOGIC::precalc_first()
   mf.e_val(5., par_scope);
   over.e_val(.1, par_scope);
 
+  margin = max(rise*(1-th1),fall*th0);
   range = vmax - vmin;
   hash_logic();
 }

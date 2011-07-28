@@ -77,6 +77,7 @@ static PLI_INT32 callback(t_cb_data*x){
 #endif
 
 COMPILE_WRAP* EVAL_IVL::_comp;
+int EVAL_IVL::_time_prec;
 /*------------------------------------------------------------------*/
 inline vvp_time64_t EVAL_IVL::discrete_floor(double abs_t) const
 {
@@ -303,6 +304,7 @@ void DEV_IVL_BASE::expand()
     assert ((_n[0].n_())); // gnd
     assert ((_n[1].n_())); // vdd
     assert ((_n[2].n_())); // wouldnt make sense to have no i/o pin
+    // FIXME: theres no warning, if a port has been forgotten :( (why?)
     char src;
 
     node_t lnodes[] = {_n[n], _n[0], _n[1], _n[1], _n[0]};
@@ -505,7 +507,7 @@ void EVAL_IVL::catch_up(double time) const
 
   struct event_time_s* ctim = schedule_list();
   if (ctim) {
-    assert(ctim->delay >= delta);
+    //assert(ctim->delay >= delta);
     ctim->delay -= delta;
   }
   schedule_time(discrete_time);
@@ -574,7 +576,7 @@ vvp_time64_t EVAL_IVL::contsim(vvp_time64_t until_rel) const
       ctim->active->next = cur->next;
     }
 
-      cur->single_step_display();
+    cur->single_step_display();
     cur->run_run();
 
     delete (cur);
@@ -601,12 +603,12 @@ double EVAL_IVL::contsim(const char *,double time) const
 /*--------------------------------------------------------------------------*/
 double EVAL_IVL::tr_begin()const
 {
+  trace0("EVAL_IVL::tr_begin");
   static int done;
   if(done) return 0;
   done=1;
   _comp->cleanup();
 
-  trace0("startsim -> schedule_simulate_m(SIM_INIT)");
   SimDelayD  = -1;
   // SimState = schedule_simulate_m(SIM_INIT);
   some_tr_begin_stuff();
@@ -775,7 +777,7 @@ sim_cont1:
           trace0("EVAL_IVL inactive 2");
         }
       } else {
-        trace0("EVAL_IVL inactive 1");
+        trace0("EVAL_IVL 3 inactive 1");
       }
 
       /* Pull the first item off the list. If this is the last
@@ -830,12 +832,14 @@ sim_mode EVAL_IVL::schedule_cont0() const
             d_dly = getdtime(ctim);
             if (d_dly > 0) {
               trace5("EVAL_IVL ", d_dly, CKT_BASE::_sim->_time0, ctim->delay, hp(this), hp(ctim));
-              SimDelayD = d_dly; return SIM_CONT0; 
+              SimDelayD = d_dly;
+              return SIM_CONT0; 
 sim_cont0:
               double dly = getdtime(ctim),
                      te  = SimTimeDlast + dly;
-              if (te > SimTimeA) {
+              if (te > CKT_BASE::_sim->_time0 ) {
                 SimDelayD = te - SimTimeA;
+                trace0("EVAL_IVL PREM");
                 return SIM_PREM; 
               }
               SimTimeD = SimTimeDlast + dly;
@@ -912,12 +916,14 @@ sim_cont0:
         }
       } else {
         // ctim->active != 0
-        trace0("EVAL_IVL inactive 1");
+        trace0("EVAL_IVL ... inactive 1");
+        trace_queue(schedule_list());
       }
 
       /* Pull the first item off the list. If this is the last
          cell in the list, then clear the list. Execute that
          event type, and delete it. */
+      trace0("EVAL_IVL ... pull");
       cur = ctim->active->next;
       if (cur->next == cur) {
         ctim->active = 0;
@@ -925,8 +931,10 @@ sim_cont0:
         ctim->active->next = cur->next;
       }
       assert(cur);
+      trace0("EVAL_IVL ssd");
 
       cur->single_step_display();
+      trace0("EVAL_IVL runrun");
       cur->run_run();
       trace_queue(ctim);
       trace0("EVAL_IVL done run_run");
@@ -936,16 +944,10 @@ sim_cont0:
 cycle_done:;
     }
 
-  if (SIM_ALL == mode) {
-
-        assert(false);
-    // signals_revert();
-
-    // Execute post-simulation callbacks
-    vpiPostsim();
-  }
-
 done:
+
+  trace0("EVAL_IVL done");
+  trace_queue(schedule_list());
   return SIM_DONE;
 }
 /*--------------------------------------------------------------------------*/
@@ -1053,7 +1055,8 @@ sim_mode EVAL_IVL::schedule_cont1() const
         trace0("EVAL_IVL inactive 2");
       }
     } else {
-      trace0("EVAL_IVL inactive 1");
+      trace0("EVAL_IVL 2 inactive 1");
+      trace_queue(schedule_list());
     }
 
     /* Pull the first item off the list. If this is the last
@@ -1141,12 +1144,6 @@ void EVAL_IVL::expand(const COMPONENT* dev )
   COMMON_COMPONENT::expand(dev);
   attach_model(dev);
 
-  //fetch simulator from device (good idea?)
-  //needed to tell commons apart.
- // const DEV_IVL_BASE* c = dynamic_cast<const DEV_IVL_BASE*>(dev);
-//  assert(c->vvpso());
-//  vvpso = c->vvpso();
-
   assert(_comp);
   vvpinit(_comp);
 
@@ -1185,7 +1182,7 @@ bool EVAL_IVL::operator==(const COMMON_COMPONENT& x )const{
 
 }
 /*--------------------------------------------------------------------------*/
-int EVAL_IVL::vvpinit(COMPILE_WRAP* compile) {
+int EVAL_IVL::vvpinit(COMPILE_WRAP* ) {
   static int foo;
   if (foo) return 1;
   foo = 1;
@@ -1203,7 +1200,7 @@ int EVAL_IVL::vvpinit(COMPILE_WRAP* compile) {
   }
   trace2("vvp init", _time_prec, hp(this));
 
-  assert( -12<=_time_prec && _time_prec<=0 );
+  assert( -12<=_time_prec && _time_prec<0 ); 
 
 //  compile->flush(); //??
 

@@ -27,6 +27,7 @@
 #include "u_lang.h"
 #include "e_model.h"
 #include "e_elemnt.h"
+#include "io_trace.h"
 /*--------------------------------------------------------------------------*/
 COMMON_COMPONENT::COMMON_COMPONENT(const COMMON_COMPONENT& p)
   :_tnom_c(p._tnom_c),
