@@ -30,6 +30,9 @@
 #include "e_elemnt.h"
 #include "e_storag.h"
 #include "e_subckt.h"
+#include "u_sock.h"
+#include "io_error.h"
+#include "resolv.h"
 #include "s__.h"
 #include "io_matrix.h"
 #include "m_matrix_extra.h"
@@ -58,7 +61,7 @@ namespace {
 typedef union
 {
   double double_val;
-  int    int_val;
+  int32_t   int_val;
 } di_union_t;
 /*--------------------------------------------------------------------------*/
 class SOCK : public SIM {
@@ -115,8 +118,10 @@ private: //vera stuff.
   void main_loop();
   void verainit();
   void verakons();
+  void veraop();
   void verainit_tail();
   void verakons_tail();
+  void veraop_tail();
 
   char* var_names_buf;
 
@@ -124,6 +129,7 @@ private: //vera stuff.
   unsigned total;
   unsigned n_inputs;
   unsigned n_vars;
+  unsigned n_vars_square;
   unsigned n_eingaenge;
   size_t length;
 
@@ -139,6 +145,34 @@ private: //vera stuff.
   double*q_punkt;
   double*G;
   double*C;
+
+//from vera_titan_ak()
+//  data *A;                    // Zeiger auf globale Datenklasse
+                              // in ihr werden alle globalen Daten gehalten
+//  gls *dc_sysA;               // Zeiger auf das DC-Gleichungsystem
+//  gls *kons_sysA;
+
+//  double *dc_werteA,*dc_loesungA,*kons_loesungA,*kons_residuumA;
+
+//  get_tpara *para_obj;        // Zeiger auf ein Parameterobjekt
+
+  int  i,k;
+
+  int channel;
+  int frame_number;
+  FILE * outfile;
+  unsigned port;   // kommt ueber die Uebergabeparamter -p als
+                              // globale Variable daher (default: port=1400)
+  int reuseaddr;
+  struct sockaddr_in sin;
+
+  int opcode;
+
+  double *matrixg, *matrixc,*vectorq;
+
+  static const int printlevel=0;
+#define userinfo( a,b,c,d,e,f ) 
+
 };
 /*--------------------------------------------------------------------------*/
 double	SOCK::temp_c_in = 0.;
@@ -157,9 +191,13 @@ void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
   _sim->_temp_c = temp_c_in;
   _do_tran_step=0;
   _dump_matrix=0;
-
+  reuseaddr=0;
+  port = 1400;   // kommt ueber die Uebergabeparamter -p als
 
   // later... FIXME
+  //
+  frame_number=0;
+  n_bytes = 0;
   BUFSIZE = 128; 
   x_neu = new double[BUFSIZE];
   x_schaetz = new double[BUFSIZE];
@@ -888,35 +926,6 @@ static DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "sock", &p2);
 
 TParameter *vera_titan_ak(TParameter *parameter)
 {
-  data *A;                    // Zeiger auf globale Datenklasse
-                              // in ihr werden alle globalen Daten gehalten
-  gls *dc_sysA;               // Zeiger auf das DC-Gleichungsystem
-  gls *kons_sysA;
-
-  double *dc_werteA,*dc_loesungA,*kons_loesungA,*kons_residuumA;
-
-  get_tpara *para_obj;        // Zeiger auf ein Parameterobjekt
-
-  int  i,k;
-
-  int channel;
-  int n_bytes=0;
-  int frame_number=0;
-  FILE * outfile;
-  int port = titan_ak_port;   // kommt ueber die Uebergabeparamter -p als
-                              // globale Variable daher (default: port=1400)
-  int reuseaddr = 1;
-  struct sockaddr_in sin;
-
-  int opcode;
-  int error;
-  int n_inputs;
-  int n_vars;
-  int length;
-  int verbose;
-  int total;
-
-  double *matrixg, *matrixc,*vectorq;
 
 
   char input_namen[BUFSIZE*128];
@@ -1066,11 +1075,8 @@ TParameter *vera_titan_ak(TParameter *parameter)
       }
 
       trace1("SOCK::main_loop", opcode);
-      if (printlevel >= 3)
-      {
-        fwrite(buffer,1,n_bytes,outfile);
-        fprintf(outfile,"\n Naechste Anforderung \n");
-      }
+      fwrite(buffer,1,n_bytes,outfile);
+      trace1(" Naechste Anforderung \n",n_bytes);
 
       switch (opcode)  
       {
@@ -1100,7 +1106,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
     }
     // input_namen[length] = '\0';
 
-    trace0("input_namen " + string(input_namen) );
+    //trace0("input_namen " + string(input_namen) );
     total = (unsigned) (length+4);
     assert(3*BUFSIZE*BUFSIZE >= total);
 
@@ -1113,6 +1119,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
 
     error = 0; /* verainit(v_flag, n_inputs, &n_vars, charbuf, &length); */
     n_vars = _sim->_total_nodes; // A->n_var;
+    n_vars_square = n_vars * n_vars;
     assert(!var_names_buf);
     var_names_buf = (char*) malloc( BUFSIZE * sizeof(char));
     strcpy(var_names_buf,"");
@@ -1275,14 +1282,12 @@ TParameter *vera_titan_ak(TParameter *parameter)
 	 //   print_array(stderr,kons_loesungA,1,A->n_var);
 	 // }
 	}
-    
 
-	var_werte = x_neu;
-        free(kons_loesungA); // Speicherplatz sparenm wird von 
-	                    // Solve_system allokiert
-	// diff_werte, par_werte muessen auch gesetzt sein!
-	// in diesem Falle sind sie per default = 0
-        A->eval_lin_gl(dc_werteA,&matrixg,&matrixc,&vectorq);
+        incomplete();
+//	var_werte = x_neu; 
+
+        //  do a ddc here?
+//        A->eval_lin_gl(dc_werteA,&matrixg,&matrixc,&vectorq);
 
 //        if (printlevel >= 1) 
 //	{
@@ -1291,13 +1296,16 @@ TParameter *vera_titan_ak(TParameter *parameter)
 //	  userinfo(1,"vera_titan_ak","C-Matrix:\n");  
 //	  print_array (stderr,matrixc,n_vars,n_vars);
 //	}
-        for (i=0; i < n_vars; i++)
+        const BSMATRIX<double> R = _sim->_acx.real();
+        const BSMATRIX<double> I = _sim->_acx.imag();
+        for (unsigned i=0; i < n_vars; i++)
 	{
-          for (k=0; k < n_vars; k++)
+          for (unsigned k=0; k < n_vars; k++)
 	  {  
 	    // muessen transponiert werden
-	    G[i+n_vars*k] = matrixg[k+n_vars*i];
-	    C[i+n_vars*k] = matrixc[k+n_vars*i];
+            // i=zeile,k=spalte
+	    G[i+n_vars*k] = R.s(i,k);
+	    C[i+n_vars*k] = I.s(i,k);
 	  }
 	}
       }
@@ -1329,44 +1337,42 @@ TParameter *vera_titan_ak(TParameter *parameter)
         buffer[2].int_val = length;        /* Laenge des Namen Feldes */
         for (i=0; i < length; i++)         /* Variablen-Namen Feld */
         {
-          buffer[i+3].int_val = (int) var_names[i];
+         // socket << var_names;
         }
 
         total = length+3;
         assert(3*BUFSIZE*BUFSIZE >= total);
-        if (printlevel >= 1)
-        {
-          userinfo(1,"vera_titan_ak","Sende: Error %i Framenumber %i, Laenge %i\n",
+        trace3( "vera_titan_ak Sende",
               error,frame_number,total);
-        }
         n_bytes = write(channel, buffer, total*sizeof(di_union_t));
         if (n_bytes != total * (int) sizeof(di_union_t))
         {
-          userinfo(1,"vera_titan_ak","Fehler beim Senden:%i Framenumber %i, "
+          ::error(bWARNING ,"vera_titan_ak Fehler beim Senden:%i Framenumber %i, "
               "returnwert von write %i, errno %i\n",
               frame_number,n_bytes,errno); 
+          throw Exception("");
         }
       }
 
     // else if (opcode == 52)              /* Veraop */
 
-    SOCK::veraop_tail()
+    void SOCK::veraop_tail()
     {
       buffer[0].int_val = error;         /* Fehlerflag */
       for (i=0; i < n_vars; i++)         /* Variablen-Werte */
       {
 	buffer[i+1].double_val = x_neu[i];
       }
-      for (i=0; i < sqr(n_vars); i++)    /* G-Matrix */
+      for (i=0; i < n_vars_square; i++)    /* G-Matrix */
       {
 	buffer[i+n_vars+1].double_val = G[i];
       }
-      for (i=0; i < sqr(n_vars); i++)    /* C-Matrix */
+      for (i=0; i < n_vars_square; i++)    /* C-Matrix */
       {
-	buffer[i+sqr(n_vars)+n_vars+1].double_val = C[i];
+	buffer[i+n_vars_square+n_vars+1].double_val = C[i];
       }
 
-      total = 2*sqr(n_vars)+n_vars+1;
+      total = 2*n_vars_square+n_vars+1;
       assert(3*BUFSIZE*BUFSIZE >= total);
       if (printlevel >= 1)
       {
@@ -1397,16 +1403,16 @@ TParameter *vera_titan_ak(TParameter *parameter)
       {
 	buffer[i+n_vars+1].double_val = q_punkt[i];
       }
-      for (i=0; i < sqr(n_vars); i++)    /* G-Matrix */
+      for (i=0; i < n_vars_square; i++)    /* G-Matrix */
       {
 	buffer[i+2*n_vars+1].double_val = G[i];
       }
-      for (i=0; i < sqr(n_vars); i++)    /* C-Matrix */
+      for (i=0; i < n_vars_square; i++)    /* C-Matrix */
       {
-	buffer[i+sqr(n_vars)+2*n_vars+1].double_val = C[i];
+	buffer[i+n_vars_square+2*n_vars+1].double_val = C[i];
       }
 
-      total = 2*sqr(n_vars)+2*n_vars+1;
+      total = 2*n_vars_square+2*n_vars+1;
       assert(3*BUFSIZE*BUFSIZE >= total);
       if (printlevel >= 1)
       {
