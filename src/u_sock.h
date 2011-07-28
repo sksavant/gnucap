@@ -45,12 +45,17 @@ DEFINE_EXCEPTION(SocketException, Exception);
  * @brief the SocketStream handles the actual data
  *        writing and reading from the socket.
  */
-class SocketStream : public iostream {
+class SocketStream : public ios {
   public:
     int fd;
 
-    SocketStream(int fd) : fd(fd) {}
-    SocketStream(const SocketStream& obj) : fd(obj.fd) {}
+    SocketStream() :  ios() {}
+    SocketStream(int fd) : 
+      ios(),
+      fd(fd) {}
+    SocketStream(const SocketStream& obj) :
+      ios(),
+      fd(obj.fd) {}
     virtual ~SocketStream();
 
     const std::string get(int len);
@@ -68,14 +73,15 @@ class SocketStream : public iostream {
  */
 class Socket {
   protected:
-    int fd, port;
+    int fd;
+    uint16_t port;
     struct sockaddr_in addr;
     SOCKET_TYPE type;
 
   public:
     SocketStream* stream;
 
-    Socket(SOCKET_TYPE type, int port);
+    Socket(SOCKET_TYPE type, short unsigned port);
     virtual ~Socket();
 };
 /**
@@ -84,7 +90,7 @@ class Socket {
  */
 class ServerSocket : public Socket {
   public:
-    ServerSocket(SOCKET_TYPE type, int port);
+    ServerSocket(SOCKET_TYPE type, short unsigned port);
     virtual ~ServerSocket();
 
     SocketStream* listen();
@@ -94,7 +100,7 @@ class ServerSocket : public Socket {
  */
 class ClientSocket : public Socket {
   public:
-    ClientSocket(SOCKET_TYPE type, int port, const std::string& target);
+    ClientSocket(SOCKET_TYPE type, short unsigned port, const std::string& target);
     virtual ~ClientSocket();
 };
 /**
@@ -128,11 +134,11 @@ inline void SocketStream::operator<<(const std::string& data) {
 }
 
 inline void SocketStream::send(const std::string& data) {
-  send(data, data.length());
+  send(data, (int)data.length());
 }
 
 void SocketStream::send(const std::string& data, int len) {
-  int n = ::write(fd, data.c_str(), len);
+  ssize_t n = ::write(fd, data.c_str(), len);
   if(n < 0)
     throw SocketException("Could not write to socket");
   //flush(fd);
@@ -142,7 +148,7 @@ inline const std::string SocketStream::get(int len) {
   char buf[len+1];
   bzero(&buf, len+1);
 
-  int n = ::read(fd, &buf, len);
+  ssize_t n = ::read(fd, &buf, len);
   if(n < 0)
     throw SocketException("Could not read from socket");
   return buf;
@@ -152,7 +158,7 @@ inline const std::string SocketStream::operator>>(int len) {
   return get(len);
 }
 
-inline Socket::Socket(SOCKET_TYPE type, int port) : fd(0), port(port), type(type), stream(0) {
+inline Socket::Socket(SOCKET_TYPE type, short unsigned port) : fd(0), port(port), type(type), stream(0) {
   bzero((char*) &addr, sizeof(addr));
 
   if(type == TCP)
@@ -170,7 +176,10 @@ inline Socket::~Socket() {
   // hmmm no fd because SocketStream does the job
 }
 
-inline ServerSocket::ServerSocket(SOCKET_TYPE type, int port) : Socket(type, port) {
+
+// glib bug in htons!
+#pragma GCC diagnostic ignored "-Wconversion"
+inline ServerSocket::ServerSocket(SOCKET_TYPE type, uint16_t port) : Socket(type, port) {
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = INADDR_ANY;
   addr.sin_port = htons(port);
@@ -180,6 +189,7 @@ inline ServerSocket::ServerSocket(SOCKET_TYPE type, int port) : Socket(type, por
 
   stream = new SocketStream(fd);
 }
+#pragma GCC diagnostic warning "-Wconversion"
 
 inline ServerSocket::~ServerSocket() {
   if(stream != NULL)
@@ -193,13 +203,16 @@ inline SocketStream* ServerSocket::listen() {
   bzero((char*) &client_addr, client_addr_len);
   ::listen(fd, MAX_LISTEN_QUEUE);
 
-  int client_fd = accept(fd, (struct sockaddr*) &client_addr, (socklen_t*) &client_addr_len);
+  int client_fd = accept(fd, (struct sockaddr*) &client_addr, (socklen_t*)
+      &client_addr_len);
   if(client_fd < 0)
     throw SocketException("Error during accaptance of remote client");
   return new SocketStream(client_fd);
 }
 
-inline ClientSocket::ClientSocket(SOCKET_TYPE type, int port, const std::string& target) : Socket(type, port) {
+#pragma GCC diagnostic ignored "-Wconversion"
+inline ClientSocket::ClientSocket(SOCKET_TYPE type, short unsigned port, const
+    std::string& target) : Socket(type, port) {
   addr.sin_port = htons((unsigned short int) port);
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = inet_addr(target.c_str());
@@ -213,6 +226,7 @@ inline ClientSocket::ClientSocket(SOCKET_TYPE type, int port, const std::string&
 
   stream = new SocketStream(fd);
 }
+#pragma GCC diagnostic warning "-Wconversion"
 
 ClientSocket::~ClientSocket() { }
 

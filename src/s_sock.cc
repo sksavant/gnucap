@@ -1,5 +1,4 @@
 /*$Id: s_dc.cc,v 26.132 2009/11/24 04:26:37 al Exp $ -*- C++ -*-
- * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -31,6 +30,7 @@
 #include "e_storag.h"
 #include "e_subckt.h"
 #include "u_sock.h"
+#include "s_ddc.h"
 #include "io_error.h"
 #include "resolv.h"
 #include "s__.h"
@@ -63,6 +63,7 @@ typedef union
   double double_val;
   int32_t   int_val;
 } di_union_t;
+
 /*--------------------------------------------------------------------------*/
 class SOCK : public SIM {
 public:
@@ -126,7 +127,7 @@ private: //vera stuff.
   char* var_names_buf;
 
   unsigned verbose;
-  unsigned total;
+  size_t total;
   unsigned n_inputs;
   unsigned n_vars;
   unsigned n_vars_square;
@@ -134,6 +135,7 @@ private: //vera stuff.
   size_t length;
 
   di_union_t* buffer;
+  SocketStream stream;
   unsigned BUFSIZE;
   unsigned n_bytes;
   unsigned error;
@@ -156,7 +158,7 @@ private: //vera stuff.
 
 //  get_tpara *para_obj;        // Zeiger auf ein Parameterobjekt
 
-  int  i,k;
+//  int  i,k;
 
   int channel;
   int frame_number;
@@ -209,8 +211,7 @@ void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-SOCK::SOCK()
-  :SIM(),
+SOCK::SOCK() :SIM(),
    _n_sweeps(1),
    _cont(false),
    _trace(tNONE)
@@ -1066,10 +1067,10 @@ TParameter *vera_titan_ak(TParameter *parameter)
 
     while (1) 
     {
-      n_bytes = read(channel, buffer, sizeof(buffer));
+      n_bytes = (unsigned) read(channel, buffer, sizeof(buffer));
       //printlevel=2;
       if (n_bytes <= 0) {
-        opcode -1;
+        opcode = -1;
       } else {
         opcode = buffer[0].int_val; 
       }
@@ -1084,6 +1085,9 @@ TParameter *vera_titan_ak(TParameter *parameter)
           verainit();
           verainit_tail();
           break;
+
+        default:
+          trace0("unknown opcode");
 
 
       }
@@ -1332,10 +1336,10 @@ TParameter *vera_titan_ak(TParameter *parameter)
 #endif
       void SOCK::verainit_tail()
       {
-        buffer[0].int_val = error;         /* Fehlerflag */
-        buffer[1].int_val = n_vars;        /* Anzahl der Variablen */
-        buffer[2].int_val = length;        /* Laenge des Namen Feldes */
-        for (i=0; i < length; i++)         /* Variablen-Namen Feld */
+        stream << (int32_t) error;         /* Fehlerflag */
+        stream << (int32_t) n_vars;        /* Anzahl der Variablen */
+        stream << (int32_t) length;        /* Laenge des Namen Feldes */
+        for (unsigned i=0; i < length; i++)         /* Variablen-Namen Feld */
         {
          // socket << var_names;
         }
@@ -1344,7 +1348,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
         assert(3*BUFSIZE*BUFSIZE >= total);
         trace3( "vera_titan_ak Sende",
               error,frame_number,total);
-        n_bytes = write(channel, buffer, total*sizeof(di_union_t));
+        n_bytes = (unsigned) write(channel, buffer, total*sizeof(di_union_t));
         if (n_bytes != total * (int) sizeof(di_union_t))
         {
           ::error(bWARNING ,"vera_titan_ak Fehler beim Senden:%i Framenumber %i, "
@@ -1359,15 +1363,15 @@ TParameter *vera_titan_ak(TParameter *parameter)
     void SOCK::veraop_tail()
     {
       buffer[0].int_val = error;         /* Fehlerflag */
-      for (i=0; i < n_vars; i++)         /* Variablen-Werte */
+      for (unsigned i=0; i < n_vars; i++)         /* Variablen-Werte */
       {
 	buffer[i+1].double_val = x_neu[i];
       }
-      for (i=0; i < n_vars_square; i++)    /* G-Matrix */
+      for (unsigned i=0; i < n_vars_square; i++)    /* G-Matrix */
       {
 	buffer[i+n_vars+1].double_val = G[i];
       }
-      for (i=0; i < n_vars_square; i++)    /* C-Matrix */
+      for (unsigned i=0; i < n_vars_square; i++)    /* C-Matrix */
       {
 	buffer[i+n_vars_square+n_vars+1].double_val = C[i];
       }
@@ -1379,7 +1383,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
 	userinfo(1,"vera_titan_ak","Sende: Error %i Framenumber %i, Laenge %i\n",
 		 error,frame_number,total); 
       }
-      n_bytes = write(channel, buffer, total*sizeof(di_union_t));
+      n_bytes = (unsigned) write(channel, buffer, total*sizeof(di_union_t));
       if (n_bytes != total * (int) sizeof(di_union_t))
       {
 	userinfo(1,"vera_titan_ak","Fehler beim Senden:%i Framenumber %i, "
@@ -1395,19 +1399,19 @@ TParameter *vera_titan_ak(TParameter *parameter)
     void SOCK::verakons_tail()
     {
       buffer[0].int_val = error;         /* Fehlerflag */
-      for (i=0; i < n_vars; i++)         /* Variablen-Werte */
+      for (unsigned i=0; i < n_vars; i++)         /* Variablen-Werte */
       {
 	buffer[i+1].double_val = x_neu[i];
       }
-      for (i=0; i < n_vars; i++)         /* Q-Punkt */
+      for (unsigned i=0; i < n_vars; i++)         /* Q-Punkt */
       {
 	buffer[i+n_vars+1].double_val = q_punkt[i];
       }
-      for (i=0; i < n_vars_square; i++)    /* G-Matrix */
+      for (unsigned i=0; i < n_vars_square; i++)    /* G-Matrix */
       {
 	buffer[i+2*n_vars+1].double_val = G[i];
       }
-      for (i=0; i < n_vars_square; i++)    /* C-Matrix */
+      for (unsigned i=0; i < n_vars_square; i++)    /* C-Matrix */
       {
 	buffer[i+n_vars_square+2*n_vars+1].double_val = C[i];
       }
@@ -1419,7 +1423,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
 	userinfo(1,"vera_titan_ak","Sende: Error %i Framenumber %i, Laenge %i\n",
 		 error,frame_number,total); 
       }
-      n_bytes = write(channel, buffer, total*sizeof(di_union_t));
+      n_bytes = (unsigned) write(channel, buffer, total*sizeof(di_union_t));
       if (n_bytes != total * (int) sizeof(di_union_t))
       {
 	userinfo(1,"vera_titan_ak","Fehler beim Senden:%i Framenumber %i, "
@@ -1656,3 +1660,4 @@ double* konsop(data *A, gls *kons_sysA,double* dc_werteA,
 
 
 #endif
+// vim:ts=8:sw=2:et:

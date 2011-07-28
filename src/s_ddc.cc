@@ -29,93 +29,26 @@
 #include "e_elemnt.h"
 #include "e_storag.h"
 #include "s__.h"
+#include "s_ddc.h"
 #include "io_matrix.h"
 #include "m_matrix_extra.h"
-extern "C" {
-#include "atlas/clapack.h"
-
-// FIXME: external header (where?)
-int dgelss_(int *m, int *n, int *nrhs, double *a, int *lda, double *b, int
-    *ldb, double *s, double *rcond, int *rank, double *work, int *lwork, int
-    *info);
-
-void dgels_(const char *trans, const int *M, const int *N, const int *nrhs,
-    double *A, const int *lda, double *b, const int *ldb, double *work, const
-    int * lwork, int *info);
-}
-
+#include "u_atlas.h"
 
 /*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+
 namespace {
 /*--------------------------------------------------------------------------*/
-class DDCOP : public SIM {
-public:
-  void	finish();
-protected:
-  void	fix_args(int);
-  void	options(CS&, int);
-private:
-  void	sweep();
-  void	sweep_recursive(int);
-  void	first(int);
-  bool	next(int);
-  void do_tran_step();
-  void undo_time_step();
-  explicit DDCOP(const DDCOP&): SIM() {unreachable(); incomplete();}
-protected:
-  explicit DDCOP();
-  ~DDCOP() {}
-  
-protected:
-  enum {DCNEST = 4};
-  int _n_sweeps;
-  PARAMETER<double> _start[DCNEST];
-  PARAMETER<double> _stop[DCNEST];
-  PARAMETER<double> _step_in[DCNEST];
-  double _step[DCNEST];
-  bool _linswp[DCNEST];
-  double _sweepval[DCNEST];	/* pointer to thing to sweep, dc command */
-//  typedef void (*p)(double);
-  ELEMENT* (_pushel[DCNEST]);	/* pointer to thing to sweep, dc command */
-  ELEMENT* (_zap[DCNEST]);	/* to branch to zap, for re-expand */
-  CARDSTASH _stash[DCNEST];	/* store std values of elements being swept */
-  bool _loop[DCNEST];		/* flag: do it again backwards */
-  bool _reverse_in[DCNEST];	/* flag: sweep backwards, input */
-  bool _reverse[DCNEST];	/* flag: sweep backwards, working */
-  bool _cont;			/* flag: continue from previous run */
-  TRACE _trace;			/* enum: show extended diagnostics */
-  enum {ONE_PT, LIN_STEP, LIN_PTS, TIMES, OCTAVE, DECADE} _stepmode[DCNEST];
-  static double temp_c_in;	/* ambient temperature, input and sweep variable */
-  bool _do_tran_step;
-  bool _dump_matrix;
-  double* U;
-  double* CU;
-  double* CUTCU;
-};
 /*--------------------------------------------------------------------------*/
-double	DDCOP::temp_c_in = 0.;
-/*--------------------------------------------------------------------------*/
-class DDC : public DDCOP {
+class DDC : public DDC_BASE {
 public:
-  explicit DDC(): DDCOP() {}
+  explicit DDC(): DDC_BASE() {}
   ~DDC() {}
   void	do_it(CS&, CARD_LIST*);
 private:
   void	setup(CS&);
-  explicit DDC(const DDC&): DDCOP() {unreachable(); incomplete();}
+  explicit DDC(const DDC&): DDC_BASE() {unreachable(); incomplete();}
 };
-/*--------------------------------------------------------------------------*/
-/*
-class DOP : public DDCOP {
-public:
-  explicit DOP(): DDCOP() {}
-  ~DOP() {}
-  void	do_it(CS&, CARD_LIST*);
-private:
-  void	setup(CS&);
-  explicit DOP(const DOP&): DDCOP() {unreachable(); incomplete();}
-};
-*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 void DDC::do_it(CS& Cmd, CARD_LIST* Scope)
@@ -135,84 +68,6 @@ void DDC::do_it(CS& Cmd, CARD_LIST* Scope)
   ::status.ddc.stop();
 }
 /*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-DDCOP::DDCOP()
-  :SIM(),
-   _n_sweeps(1),
-   _cont(false),
-   _trace(tNONE)
-{
-
-  for (int ii = 0; ii < DCNEST; ++ii) {
-    _loop[ii] = false;
-    _reverse_in[ii] = false;
-    _reverse[ii] = false;
-    _step[ii]=0.;
-    _linswp[ii]=true;
-    _sweepval[ii]=_sim->_genout;
-    _zap[ii]=NULL; 
-    _stepmode[ii] = ONE_PT;
-  }
-  
-  //BUG// in SIM.  should be initialized there.
-  _sim->_genout=0.;
-  temp_c_in=OPT::temp_c;
-  _out=IO::mstdout;
-  _sim->_uic=_sim->_more_uic=false;
-}
-/*--------------------------------------------------------------------------*/
-void DDCOP::finish(void)
-{
-
-  for (int ii = 0;  ii < _n_sweeps;  ++ii) {
-    if (exists(_zap[ii])) { // component
-      _stash[ii].restore();
-      _zap[ii]->dec_probes();
-      _zap[ii]->precalc_first();
-      _zap[ii]->precalc_last();
-    }else{
-    }
-  }
-}
-/*--------------------------------------------------------------------------*/
-void DDCOP::do_tran_step()
-{
-
-  SIM_PHASE old_phase = _sim->_phase;
-  trace1("DDCOP::do_tran_step", OPT::dtddc);
-  _sim->_phase = p_TRAN;
-  _sim->_mode=s_TRAN;
-  _sim->_time0 = _sim->_dt0 = OPT::dtddc;
-  //_sim->_genout = gen();
-
-  assert(_sim->analysis_is_tran());
-  int tr_converged = solve(OPT::TRHIGH, _trace);
-
-  if (!tr_converged) {
-    error(bWARNING, "did not converge\n");
-  }else{
-  }
-  ::status.accept.start();
-  trace0("DDCOP::sweep_recursive solved a transient step");
-
-
-  _sim->set_limit();
-
-
-  CARD_LIST::card_list.tr_accept();
-  trace0("DDCOP::sweep_recursive itr_accepted");
-
-  ::status.accept.stop();
-
-  _sim->_time0 = _sim->_dt0 = 0.0;
-
-  _sim->_mode = s_DC;
-  _sim->_phase = p_RESTORE;
-  //_sim->restore_voltages(); ????
-  _sim->keep_voltages(); //  vdc  = v0
-  _sim->put_v1_to_v0(); // v0 = vt1
-  _sim->_phase = old_phase;
-}
 /*--------------------------------------------------------------------------*/
 void DDC::setup(CS& Cmd)
 {
@@ -297,7 +152,90 @@ void DDC::setup(CS& Cmd)
   _sim->_freq = 0;
 }
 /*--------------------------------------------------------------------------*/
-void DDCOP::fix_args(int Nest)
+static DDC p2;
+static DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "ddc", &p2);
+}// namespace
+/*--------------------------------------------------------------------------*/
+double	DDC_BASE::temp_c_in = 0.;
+/*--------------------------------------------------------------------------*/
+DDC_BASE::DDC_BASE()
+  :SIM(),
+   _n_sweeps(1),
+   _cont(false),
+   _trace(tNONE)
+{
+
+  for (int ii = 0; ii < DCNEST; ++ii) {
+    _loop[ii] = false;
+    _reverse_in[ii] = false;
+    _reverse[ii] = false;
+    _step[ii]=0.;
+    _linswp[ii]=true;
+    _sweepval[ii]=_sim->_genout;
+    _zap[ii]=NULL; 
+    _stepmode[ii] = ONE_PT;
+  }
+  
+  //BUG// in SIM.  should be initialized there.
+  _sim->_genout=0.;
+  temp_c_in=OPT::temp_c;
+  _out=IO::mstdout;
+  _sim->_uic=_sim->_more_uic=false;
+}
+/*--------------------------------------------------------------------------*/
+void DDC_BASE::finish(void)
+{
+
+  for (int ii = 0;  ii < _n_sweeps;  ++ii) {
+    if (exists(_zap[ii])) { // component
+      _stash[ii].restore();
+      _zap[ii]->dec_probes();
+      _zap[ii]->precalc_first();
+      _zap[ii]->precalc_last();
+    }else{
+    }
+  }
+}
+/*--------------------------------------------------------------------------*/
+void DDC_BASE::do_tran_step()
+{
+
+  SIM_PHASE old_phase = _sim->_phase;
+  trace1("DDC_BASE::do_tran_step", OPT::dtddc);
+  _sim->_phase = p_TRAN;
+  _sim->_mode=s_TRAN;
+  _sim->_time0 = _sim->_dt0 = OPT::dtddc;
+  //_sim->_genout = gen();
+
+  assert(_sim->analysis_is_tran());
+  int tr_converged = solve(OPT::TRHIGH, _trace);
+
+  if (!tr_converged) {
+    error(bWARNING, "did not converge\n");
+  }else{
+  }
+  ::status.accept.start();
+  trace0("DDC_BASE::sweep_recursive solved a transient step");
+
+
+  _sim->set_limit();
+
+
+  CARD_LIST::card_list.tr_accept();
+  trace0("DDC_BASE::sweep_recursive itr_accepted");
+
+  ::status.accept.stop();
+
+  _sim->_time0 = _sim->_dt0 = 0.0;
+
+  _sim->_mode = s_DC;
+  _sim->_phase = p_RESTORE;
+  //_sim->restore_voltages(); ????
+  _sim->keep_voltages(); //  vdc  = v0
+  _sim->put_v1_to_v0(); // v0 = vt1
+  _sim->_phase = old_phase;
+}
+void DDC_BASE::fix_args(int Nest)
 {
 
   _stop[Nest].e_val(_start[Nest], _scope);
@@ -348,7 +286,7 @@ void DDCOP::fix_args(int Nest)
   }
 }
 /*--------------------------------------------------------------------------*/
-void DDCOP::options(CS& Cmd, int Nest)
+void DDC_BASE::options(CS& Cmd, int Nest)
 {
 
   _sim->_uic = _loop[Nest] = _reverse_in[Nest] = false;
@@ -395,7 +333,7 @@ void DDCOP::options(CS& Cmd, int Nest)
 
 }
 /*--------------------------------------------------------------------------*/
-void DDCOP::sweep()
+void DDC_BASE::sweep()
 {
   head(_start[0], _stop[0], " ");
   _sim->_bypass_ok = false;
@@ -415,11 +353,13 @@ void DDCOP::sweep()
   sweep_recursive(_n_sweeps);
 }
 /*--------------------------------------------------------------------------*/
-void DDCOP::sweep_recursive(int Nest)
+
+//here?? -> DDC
+void DDC_BASE::sweep_recursive(int Nest)
 {
   unsigned d = _sim->_total_nodes; // 3
 
-  trace1("DDCOP::sweep_recursive", Nest);
+  trace1("DDC_BASE::sweep_recursive", Nest);
   --Nest;
   assert(Nest >= 0);
   assert(Nest < DCNEST);
@@ -431,7 +371,7 @@ void DDCOP::sweep_recursive(int Nest)
   
   first(Nest);
   do {
-    trace0("DDCOP::sweep_recursive loopstart");
+    trace0("DDC_BASE::sweep_recursive loopstart");
     _sim->_temp_c = temp_c_in;
     if (Nest == 0) {
       _sim->_time0 = _sim->_dt0 = 0.0;
@@ -699,9 +639,9 @@ void DDCOP::sweep_recursive(int Nest)
   } while (next(Nest));
 }
 /*--------------------------------------------------------------------------*/
-void DDCOP::first(int Nest)
+void DDC_BASE::first(int Nest)
 {
-  trace2("DDCOP::first", Nest, _start[Nest]);
+  trace2("DDC_BASE::first", Nest, _start[Nest]);
   assert(Nest >= 0);
   assert(Nest < DCNEST);
   assert(_start);
@@ -724,7 +664,7 @@ void DDCOP::first(int Nest)
   _sim->_phase = p_INIT_DC;
 }
 /*--------------------------------------------------------------------------*/
-bool DDCOP::next(int Nest)
+bool DDC_BASE::next(int Nest)
 {
 
   bool ok = false;
@@ -738,7 +678,7 @@ bool DDCOP::next(int Nest)
 	fixzero(_sweepval[Nest], _step[Nest]);
 	ok=in_order(_start[Nest]-fudge,_sweepval[Nest],_stop[Nest]+fudge);
         _pushel[Nest]->set_ic(_sweepval[Nest]);
-        trace1("DDCOP::next " + _pushel[Nest]->long_label(), _sweepval[Nest]);
+        trace1("DDC_BASE::next " + _pushel[Nest]->long_label(), _sweepval[Nest]);
 	if (!ok  &&  _loop[Nest]) {
 	  _reverse[Nest] = true;
 	}else{
@@ -780,10 +720,5 @@ bool DDCOP::next(int Nest)
   return ok;
 }
 /*--------------------------------------------------------------------------*/
-static DDC p2;
-//static DOP p4;
-static DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "ddc", &p2);
-//static DISPATCHER<CMD>::INSTALL d4(&command_dispatcher, "dop", &p4);
-}
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
