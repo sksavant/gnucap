@@ -396,7 +396,8 @@ class MODEL_IVL_BASE : public MODEL_LOGIC {
   public:
     //static int	count()			{return _count;}
     virtual std::string port_name(uint_t)const;
-    virtual int compile_design(COMPILE_WRAP* c, const string, COMPONENT** da) const = 0;
+    virtual int compile_design(COMPILE_WRAP* c, const string, COMPONENT** da, 
+        const COMMON_COMPONENT*) const = 0;
     virtual unsigned da_nodes()const = 0;
   public:
     PARAMETER<string> file;

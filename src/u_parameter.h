@@ -108,6 +108,9 @@ public:
   //  return !(*this == v);
   //}
   T*	pointer_hack()	 {return &_v;}
+
+  // is this NOT a hack, since it is const.
+  const T*	pointer()const	 {return &_v;}
 private:
   T lookup_solve(const T& def, const CARD_LIST* scope)const;
 };

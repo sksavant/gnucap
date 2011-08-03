@@ -120,3 +120,19 @@ void COMPILE_WRAP::codelabel( ARG_BASE* label) {
 	char* buf = strdup(string(*label).c_str());
 	COMPILE::codelabel(buf);
 }
+/*-----------------------------------------------*/
+// taken from compile.c
+// FIXME: propagate *double instead of double ( not needed for now. )
+void COMPILE_WRAP::param_real( ARG_BASE* l, char*name, const double*dvp,
+                        long file_idx, long lineno)
+{
+		char* label = strdup(string(*l).c_str());
+      // double dvalue = crstring_to_double(value);
+      vpiHandle obj = vpip_make_real_param(name, *dvp, file_idx, lineno);
+		           //             FIXME            ^^
+      vpi_symbol(label, obj);
+      vpip_attach_to_current_scope(obj);
+
+      delete[](label);
+      // free(value);
+}

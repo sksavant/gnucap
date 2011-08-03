@@ -235,12 +235,11 @@ std::string DEV_IVL_BASE::port_name(uint_t i)const{
 }
 /*--------------------------------------------------------------------------*/
 void DEV_IVL_BASE::compile_design(COMPILE_WRAP* compile, COMPONENT** da){
-  const COMMON_COMPONENT* c = prechecked_cast<const COMMON_COMPONENT*>(common());
-  assert(c);
-  const MODEL_IVL_BASE* m = dynamic_cast<const MODEL_IVL_BASE*>(c->model());
+  const COMMON_IVL* c = prechecked_cast<const COMMON_IVL*>(common());
+  const MODEL_IVL_BASE* m = prechecked_cast<const MODEL_IVL_BASE*>(c->model());
   trace0("COMMON_IVL::compile_design");
 
-  m->compile_design(compile, short_label(), da);
+  m->compile_design(compile, short_label(), da, common());
 }
 /*--------------------------------------------------------------------------*/
 void DEV_IVL_BASE::expand()
@@ -532,7 +531,6 @@ vvp_time64_t EVAL_IVL::contsim(vvp_time64_t until_rel) const
         return time0 - schedule_time()+ctim->delay;
       }
 
-      assert (schedule_runnable_flag);
       schedule_time( schedule_time() + ctim->delay );
       /* When the design is being traced (we are emitting
        * file/line information) also print any time changes. */
@@ -1263,7 +1261,7 @@ int COMMON_IVL::compile_design(COMPILE_WRAP*c, COMPONENT* p, COMPONENT** da)cons
   const MODEL_IVL_BASE* m = dynamic_cast<const MODEL_IVL_BASE*>(model());
   trace0("COMMON_IVL::compile_design");
 
-  return m->compile_design(c, p->short_label(), da);
+  return m->compile_design(c, p->short_label(), da, this);
 }
 /*--------------------------------------------------------------------------*/
 void DEV_IVL_BASE::init_vvp() // const CARD_LIST* par_scope)

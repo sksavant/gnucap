@@ -194,6 +194,11 @@ class COMPILE_WRAP : public COMPILE{
 
 		void param_logic(ARG_BASE* label, char* name, char*value, bool signed_flag,
 				long file_idx, long lineno);
+
+		// this is a READ ONLY pointer. so it is ok.
+		void param_real(ARG_BASE*label, char*name, const double* value,
+											 long file_idx, long lineno);
+
 		void variable(intptr_t, int app, char*name,
 				int msb, int lsb, int vpi_type_code,
 				bool signed_flag, bool local_flag);

@@ -204,7 +204,7 @@ MODELGEN= @MODELGEN@
 
 MAKEDEPEND = gcc -M $(CPPFLAGS) -o $*.d $<
 
-IVL=`which iverilog`
+IVL=`which iverilog` -v
 
 %.cc : %.v $(IVERILOG_PATH)/compile_wrap.h # $(IVERILOG_PREFIX)/lib/ivl/gc.tgt
 	$(IVL) -tgc $< -o $@
