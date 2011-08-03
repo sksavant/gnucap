@@ -1,17 +1,17 @@
 
 .spice
 R1 1 2 1
-V1 1 2 1
+V1 2 1 1
+R2 0 1 1
 
-.store tran v(*)
-.print tran v(1)
+.print tran v(r1)
+
 .print tw 
 + meas({max( probe="V(1)" )})
 + meas({max( probe="V(2)" )})
 
 .tw 0.1 1 10 10
 
-.store tran v(*)
 .tw 10 20
 
 

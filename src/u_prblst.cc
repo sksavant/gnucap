@@ -158,6 +158,7 @@ void PROBELIST::remove_one(CKT_BASE *brh)
  * but not "v(r4) v(r5)" which has two parameters.
  * It also takes care of setting the range for plot or alarm.
  */
+// FIXME: add add_probe (single probe only)?
 PROBE* PROBELIST::add_list(CS& cmd, const CARD_LIST* scope)
 {
   trace0("PROBELIST::add_list() ");

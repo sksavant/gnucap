@@ -233,7 +233,11 @@ double MATH_PROBE::value(void)const
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-MEAS_PROBE::MEAS_PROBE(const MEAS_PROBE& p) : PROBE(p) {  untested(); }
+MEAS_PROBE::MEAS_PROBE(const MEAS_PROBE& p) : 
+  PROBE(p),
+  f(f),
+  w(w)
+{  untested(); }
 /*--------------------------------------------------------------------------*/
 MEAS_PROBE::MEAS_PROBE(const std::string& cmd)
 { 
@@ -250,35 +254,45 @@ MEAS_PROBE::MEAS_PROBE(const std::string& cmd, const CARD_LIST* scope )
   _scope = scope;
 } 
 /*--------------------------------------------------------------------------*/
-double MEAS_PROBE::value(void)const
-{ 
+void MEAS_PROBE::expand(){
   trace0(("MEAS_PROBE::value()"+_what).c_str());
-  CS Cmd(CS::_STRING, _cmd);
+  CS* Cmd = new CS(CS::_STRING, _cmd);
   std::string function;
 
-  Cmd >> function >> '(';
-  FUNCTION* f = measure_dispatcher[function];
+  *Cmd >> function >> '(';
+  f = dynamic_cast<WAVE_FUNCTION*>(( measure_dispatcher[function] )->clone() );
 
-  //trace1("MEAS_PROBE::value mode " ,  (double)CKT_BASE::_sim->sim_mode);
-
-  SIM_MODE oldmode=CKT_BASE::_sim->_mode;
-  CKT_BASE::_sim->_mode=s_TRAN;
-  // argh stupid string
-  fun_t value = f->eval(Cmd, _scope);
-  CKT_BASE::_sim->_mode=oldmode;
-
-
-  if (!Cmd.skip1b(')')) {
-    Cmd.warn(bWARNING, "MEAS_PROBE::value need )");
-  }else{
-    // BUG kills n.
-    //std::istringstream st(value);
-    //double out;
-    //st >> out;
-    return value;
+  if(!f) { 
+    untested(); 
+  } else {
+    f->expand( *Cmd, _scope );
+    probe_name=f->probe_name;
+    // _what=probe_name;
+    trace0("MEAS_PROBE::expand " + probe_name);
   }
 
-  return 888;
+  if (!Cmd->skip1b(')')) {
+    Cmd->warn(bWARNING, "MEAS_PROBE::value need )");
+    f=0;
+  }
+
+  delete Cmd;
+}
+/*--------------------------------------------------------------------------*/
+double MEAS_PROBE::value(void)const
+{ 
+  if (!f){
+    untested();
+    return 0;
+  }
+  trace1("MEAS_PROBE::value() ", hp(w));
+
+  SIM_MODE oldmode=CKT_BASE::_sim->_mode;
+  CKT_BASE::_sim->_mode = s_TRAN;
+  fun_t value = f->wave_eval();
+  CKT_BASE::_sim->_mode = oldmode;
+
+  return value;
 }
 /*--------------------------------------------------------------------------*/
 MEAS_PROBE& MEAS_PROBE::operator=(const MEAS_PROBE& p)
@@ -291,8 +305,27 @@ MEAS_PROBE& MEAS_PROBE::operator=(const MEAS_PROBE& p)
 /*--------------------------------------------------------------------------*/
 const std::string MEAS_PROBE::label(void)const
 {
-  trace0("MEAS_PROBE::label()");
-  return _what;
+  trace1("MEAS_PROBE::label()" + probe_name, hp(f));
+  // FIXME
+  return "meas("+probe_name+")";
+}
+/*--------------------------------------------------------------------------*/
+void MEAS_PROBE::precalc_last()
+{
+  trace0("MEAS_PROBE::precalc_last() " + probe_name);
+
+  if(f){
+    WAVE* w = CKT_BASE::find_wave(probe_name);
+    if(w) {
+      f->set_wave( w );
+    }else{
+    trace0("MEAS_PROBE::precalc_last() no wave...");
+    }
+
+  } else {
+    untested();
+  }
+
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
