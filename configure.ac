@@ -165,6 +165,41 @@ AC_CHECK_LIB([gsl], [gsl_blas_dgemm])
 AC_CHECK_LIB([gsl], [gsl_fit_linear])
 AC_CHECK_FUNCS([sqrt])
 
+
+# some more checks. some should depend on switches. but the switches arent
+# there yet
+AC_CHECK_HEADER([atlas/clapack.h],
+                [AC_DEFINE([HAVE_CLAPACK_H], [1],
+                           [Define to 1 if you have atlas/clapack.h])],
+                [AC_MSG_ERROR([please install package libatlas-dev])])
+
+AC_CHECK_HEADER([boost/algorithm/string.hpp],
+                [AC_DEFINE([HAVE_STRING_HPP], [1],
+                           [Define to 1 if there is boost/algorithm/string.hpp])],
+                [AC_MSG_ERROR([please install the boost package])])
+
+AC_CHECK_HEADER([boost/algorithm/string/split.hpp],
+                [AC_DEFINE([HAVE_SPLIT_HPP], [1],
+                           [Define to 1 if there is boost/algorithm/string/split.hpp])],
+                [AC_MSG_ERROR([please install the boost package])])
+
+AC_CHECK_HEADER([readline/readline.h],
+                [AC_DEFINE([HAVE_READLINE_H], [1],
+                           [Define to 1 if you have readline/readline.h])],
+                [AC_MSG_ERROR([please install the libreadline-dev package])])
+
+AC_CHECK_HEADER([readline/history.h],
+                [AC_DEFINE([HAVE_HISTORY_H], [1],
+                           [Define to 1 if you have readline/history.h])],
+                [AC_MSG_ERROR([please install the libreadline-dev package])])
+
+AC_CHECK_HEADER([gsl/gsl_fit.h],
+                [AC_DEFINE([HAVE_GSL_FIT_H], [1],
+                           [Define to 1 if you have gsl/gsl_fit.h])],
+                [AC_MSG_ERROR([please install the libgsl0-dev package])])
+
+
+
 AC_ARG_WITH([readline],
 [AS_HELP_STRING([--with-readline],
   [support command line editing @<:@default=yes@:>@])],
