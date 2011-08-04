@@ -78,12 +78,19 @@ class SocketStream : public iostream {
       fd(fd) {}
 
     SocketStream(const SocketStream& obj) :
-      iostream()//, fd(obj.fd) 
-        {fd=obj.fd;}
+      ios(),      iostream()//, fd(obj.fd) 
+        {fd = obj.fd;}
     virtual ~SocketStream();
 
     const std::string get(int len);
     const std::string operator>>(int len);
+
+
+    SocketStream operator=(const SocketStream& p ){
+        fd=p.fd;
+        return *this;
+    }
+
 
     void flush();
     void send(const string& data);
@@ -120,7 +127,7 @@ class Socket {
     enum EOL {eol};
     Socket(): fd(0), port(0), stream(0){}
 
-    Socket(SOCKET_TYPE type, short unsigned port);
+    Socket(SOCKET_TYPE type, short unsigned port, short unsigned tries);
     virtual ~Socket();
     template<class T>
       SocketStream& operator<<(const T& data);
@@ -143,7 +150,7 @@ SocketStream& Socket::operator<<(const T& data){
  */
 class ServerSocket : public Socket {
   public:
-    ServerSocket(SOCKET_TYPE type, short unsigned port);
+    ServerSocket(SOCKET_TYPE type, short unsigned port, short unsigned tries);
     virtual ~ServerSocket();
 
     SocketStream listen();
@@ -230,7 +237,7 @@ inline const std::string SocketStream::operator>>(int len) {
   return get(len);
 }
 
-inline Socket::Socket(SOCKET_TYPE type, short unsigned port) : fd(0), port(port), type(type), stream(0) {
+inline Socket::Socket(SOCKET_TYPE type, short unsigned port, short unsigned tries) : fd(0), port(port), type(type), stream(0) {
   bzero((char*) &addr, sizeof(addr));
 
   if(type == TCP)
@@ -252,13 +259,27 @@ inline Socket::~Socket() {
 
 // glib bug in htons!
 #pragma GCC diagnostic ignored "-Wconversion"
-inline ServerSocket::ServerSocket(SOCKET_TYPE type, uint16_t port) : Socket(type, port) {
+inline ServerSocket::ServerSocket(SOCKET_TYPE type, uint16_t port, short
+    unsigned port_tries=1) : Socket(type, port, port_tries) {
+  if (port_tries == 0) return;
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = INADDR_ANY;
+
   addr.sin_port = htons(port);
 
-  if(bind(fd, (struct sockaddr*) &addr, sizeof(addr)) < 0)
-    throw SocketException("Could not bind to address/port");
+  unsigned b;
+  for( short unsigned p = port; p<port+port_tries; p++ ){
+    trace1("ServerSocket::ServerSocket", p);
+    addr.sin_port = htons(p);
+    b= bind(fd, (struct sockaddr*) &addr, sizeof(addr));
+    if (b >= 0) {
+      trace1("listening", p);
+      break;
+    }
+  }
+  if (b<0)
+      throw SocketException("Could not bind to address/port");
+  trace1("ServerSocket", port);
 
   stream = new SocketStream(fd);
 }
@@ -272,6 +293,7 @@ inline ServerSocket::~ServerSocket() {
 inline SocketStream ServerSocket::listen() {
   struct sockaddr_in client_addr;
   int client_addr_len = sizeof(client_addr);
+  trace0("ServerSocket::listen");
 
   bzero((char*) &client_addr, client_addr_len);
   ::listen(fd, MAX_LISTEN_QUEUE);
@@ -285,7 +307,7 @@ inline SocketStream ServerSocket::listen() {
 
 #pragma GCC diagnostic ignored "-Wconversion"
 inline ClientSocket::ClientSocket(SOCKET_TYPE type, short unsigned port, const
-    std::string& target) : Socket(type, port) {
+    std::string& target) : Socket(type, port, 1) {
   addr.sin_port = htons((unsigned short int) port);
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = inet_addr(target.c_str());

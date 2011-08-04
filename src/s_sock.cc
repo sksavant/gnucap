@@ -72,7 +72,7 @@ public:
   ~SOCK() {}
 protected:
   void	fix_args(int);
-  void	options(CS&, int);
+  void	options(CS&, int x=0);
 private:
   void	sweep();
   void	sweep_recursive(int);
@@ -136,7 +136,7 @@ private: //vera stuff.
   size_t length;
 
   di_union_t* buffer;
-  Socket stream;
+  SocketStream stream;
   unsigned BUFSIZE;
   unsigned n_bytes;
   unsigned error;
@@ -163,7 +163,8 @@ private: //vera stuff.
 
   int channel;
   int frame_number;
-  Socket* socket;
+  ServerSocket* socket;
+  short unsigned _port_range;
   short unsigned _port;   // kommt ueber die Uebergabeparamter port
                               // globale Variable daher (default: port=1400)
   int reuseaddr;
@@ -183,7 +184,6 @@ double	SOCK::temp_c_in = 0.;
 /*--------------------------------------------------------------------------*/
 void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
 {
-  trace0("doing ddc");
   _scope = Scope;
   _sim->_time0 = 0.;
   //_sim->set_command_ddc();
@@ -195,7 +195,11 @@ void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
   _do_tran_step=0;
   _dump_matrix=0;
   reuseaddr=0;
-  port = 1400;   // kommt ueber die Uebergabeparamter -p als
+  _port = 1400;   // kommt ueber die Uebergabeparamter -p als
+  _port_range = 10;
+
+  trace0("commb");
+  command_base(Cmd);
 
   // later... FIXME
   //
@@ -207,8 +211,31 @@ void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
   q_punkt = new double[BUFSIZE];
   G = new double[BUFSIZE*BUFSIZE];
   C = new double[BUFSIZE*BUFSIZE];
-  command_base(Cmd);
-  ::status.ddc.stop();
+  trace1("SOCK::do_it", _port);
+
+  if ((socket = new ServerSocket(Socket::TCP, _port, _port_range)))
+  {
+  }else {
+    ::error(bDANGER,"Error, cannot create Socket\n");
+    throw Exception("foo");
+  }
+
+  /* Wiederverwendung der lokalen Adresse erlauben */
+//  if (setsockopt(channel, SOL_SOCKET, SO_REUSEADDR, (void *) &reuseaddr, 
+//		 sizeof(reuseaddr)) == -1)
+//  {
+//    printf("Error, cannot set Socketoptions\n");
+//    exit(1);
+//  }
+
+
+  //setup(Cmd);
+
+  trace0("SOCK::do_it waiting");
+  stream = socket->listen();
+  trace0("SOCK::do_it have stream");
+
+  main_loop();
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -291,42 +318,16 @@ void SOCK::do_tran_step()
 /*--------------------------------------------------------------------------*/
 void SOCK::setup(CS& Cmd)
 {
+  trace0("SOCK::setup");
   _cont = false;
   _trace = tNONE;
   _out = IO::mstdout;
   _out.reset(); //BUG// don't know why this is needed */
   bool ploton = IO::plotset  &&  plotlist().size() > 0;
 
+  options(Cmd);
+
   if (Cmd.more()) {
-    for (_n_sweeps = 0; Cmd.more() && _n_sweeps < DCNEST; ++_n_sweeps) {
-      CARD_LIST::fat_iterator ci = findbranch(Cmd, &CARD_LIST::card_list);
-      if (!ci.is_end()) {			// sweep a component
-	if (ELEMENT* c = dynamic_cast<ELEMENT*>(*ci)) {
-	  _zap[_n_sweeps] = c;
-          trace0("SOCK::setup " + _zap[_n_sweeps]->long_label());
-	}else{untested();
-	  throw Exception("dc/op: can't sweep " + (**ci).long_label() + '\n');
-	}
-      }else if (Cmd.is_float()) {		// sweep the generator
-	_zap[_n_sweeps] = NULL;
-      }else{
-	// leave as it was .. repeat Cmd with no args
-      }
-      
-      if (Cmd.match1("'\"({") || Cmd.is_float()) {	// set up parameters
-	_start[_n_sweeps] = "NA";
-	_stop[_n_sweeps] = "NA";
-	Cmd >> _start[_n_sweeps] >> _stop[_n_sweeps];
-	_step[_n_sweeps] = 0.;
-      }else{
-	// leave it as it was .. repeat Cmd with no args
-      }
-      
-      _sim->_genout = 0.;
-      temp_c_in = OPT::temp_c;
-      _sim->_temp_c = temp_c_in;
-      options(Cmd,_n_sweeps);
-    }
   }else{ 
   }
   Cmd.check(bWARNING, "what's this?");
@@ -349,32 +350,14 @@ void SOCK::setup(CS& Cmd)
       trace0("name: " + var_namen_arr[i]);
 #endif
 
-  if ((socket = new Socket(Socket::TCP, _port)))
-  {
-  }else {
-    ::error(bDANGER,"Error, cannot create Socket\n");
-    throw Exception("foo");
-  }
-
-  /* Wiederverwendung der lokalen Adresse erlauben */
-//  if (setsockopt(channel, SOL_SOCKET, SO_REUSEADDR, (void *) &reuseaddr, 
-//		 sizeof(reuseaddr)) == -1)
-//  {
-//    printf("Error, cannot set Socketoptions\n");
-//    exit(1);
-//  }
 
   assert(_n_sweeps > 0);
   _sim->_freq = 0;
 
-  trace0("waiting for conn");
-
-  main_loop();
 }
 /*--------------------------------------------------------------------------*/
 void SOCK::fix_args(int Nest)
 {
-
   _stop[Nest].e_val(_start[Nest], _scope);
   _step_in[Nest].e_val(0., _scope);
   _step[Nest] = _step_in[Nest];
@@ -425,6 +408,7 @@ void SOCK::fix_args(int Nest)
 /*--------------------------------------------------------------------------*/
 void SOCK::options(CS& Cmd, int Nest)
 {
+  trace0("SOCK::options");
 
   _sim->_uic = _loop[Nest] = _reverse_in[Nest] = false;
   _sim->_more_uic = true;
@@ -1050,12 +1034,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
 
     while (1) 
     {
-      n_bytes = (unsigned) read(channel, buffer, sizeof(buffer));
-      if (n_bytes <= 0) {
-        opcode = -1;
-      } else {
-        opcode = buffer[0].int_val; 
-      }
+      stream >> opcode;
 
       trace1("SOCK::main_loop", opcode);
 //      fwrite(buffer,1,n_bytes,outfile);
