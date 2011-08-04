@@ -60,6 +60,7 @@ public:
   //bool has_soft_value()const {untested(); return (has_good_value() && !has_hard_value());}
 
   operator T()const {return _v;}
+  const T*	pointer()const	 {return &_v;}
   T	e_val(const T& def, const CARD_LIST* scope)const;
   void	parse(CS& cmd);
 
@@ -109,8 +110,6 @@ public:
   //}
   T*	pointer_hack()	 {return &_v;}
 
-  // is this NOT a hack, since it is const.
-  const T*	pointer()const	 {return &_v;}
 private:
   T lookup_solve(const T& def, const CARD_LIST* scope)const;
 };

@@ -80,7 +80,7 @@ private:
   bool	next(int);
   void do_tran_step();
   void undo_time_step();
-  explicit SOCK(const SOCK&): DDC_BASE() {unreachable(); incomplete();}
+  // explicit SOCK(const SOCK&): DDC_BASE() {unreachable(); incomplete();}
 protected:
   
 protected:

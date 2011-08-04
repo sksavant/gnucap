@@ -69,21 +69,36 @@ DEFINE_EXCEPTION(SocketException, Exception);
 class SocketStream : public iostream {
 
     int fd;
+    const unsigned bufsize;
+    char* buf;
+    unsigned cur;
   public:
+    SocketStream() :  iostream(), fd(0), bufsize(64) {}
     enum EOL {eol};
 
-    SocketStream() :  iostream() {}
-    SocketStream(int fd) : 
+
+    SocketStream(int fd, unsigned bs=64) : 
       iostream(),
-      fd(fd) {}
+      fd(fd),
+      bufsize(bs)
+    {}
 
     SocketStream(const SocketStream& obj) :
-      ios(),      iostream()//, fd(obj.fd) 
-        {fd = obj.fd;}
+      ios(),  iostream(), fd(obj.fd), bufsize(obj.bufsize)
+    {
+      buf = (char*)malloc(sizeof(char)*bufsize);
+    }
     virtual ~SocketStream();
+  private:
+    void read();
+
+  public:
+    void flush();
 
     const std::string get(int len);
     const std::string operator>>(int len);
+    SocketStream operator>>(double&);
+    SocketStream operator>>(char&);
 
 
     SocketStream operator=(const SocketStream& p ){
@@ -92,7 +107,6 @@ class SocketStream : public iostream {
     }
 
 
-    void flush();
     void send(const string& data);
     void send(const double& data);
     void send(const string& data, int len);
@@ -104,6 +118,7 @@ class SocketStream : public iostream {
       flush();
       return *this;
     }
+    
 };
 /**
  * @brief the Socket, is an abstract OO approach
@@ -123,14 +138,14 @@ class Socket {
     SOCKET_TYPE type; // ??
     SocketStream* stream;
 
-  public:
-    enum EOL {eol};
     Socket(): fd(0), port(0), stream(0){}
 
-    Socket(SOCKET_TYPE type, short unsigned port, short unsigned tries);
+    Socket(SOCKET_TYPE type, short unsigned port );
     virtual ~Socket();
+  public:
+    enum EOL {eol};
     template<class T>
-      SocketStream& operator<<(const T& data);
+      SocketStream& operator<<(const T data);
 };
 
 template<>
@@ -140,7 +155,7 @@ SocketStream& Socket::operator<<(const Socket::EOL& ){
 }
 
 template<class T>
-SocketStream& Socket::operator<<(const T& data){
+SocketStream& Socket::operator<<(const T data){
   assert(stream);
   return *stream << data;
 }
@@ -149,12 +164,13 @@ SocketStream& Socket::operator<<(const T& data){
  *        socket, which then can be used to listen to and recive connections
  */
 class ServerSocket : public Socket {
+  private: 
+    short unsigned port_tries;
   public:
     ServerSocket(SOCKET_TYPE type, short unsigned port, short unsigned tries);
     virtual ~ServerSocket();
 
     SocketStream listen();
-    SocketStream* otherlisten();
 };
 /**
  * @brief ClientSocket does the obvious, it can connect to any socket
@@ -178,6 +194,7 @@ class ClientSocket : public Socket {
 
 SocketStream::~SocketStream() {
   close(fd);
+  free(buf);
 }
 
 inline SocketStream& SocketStream::operator<<(const std::string& data) {
@@ -237,7 +254,28 @@ inline const std::string SocketStream::operator>>(int len) {
   return get(len);
 }
 
-inline Socket::Socket(SOCKET_TYPE type, short unsigned port, short unsigned tries) : fd(0), port(port), type(type), stream(0) {
+inline SocketStream SocketStream::operator>>(double& d) {
+  union { 
+    char c[DL];
+    double d;
+  } convert;
+  for(unsigned i=0; i<DL; ++i){
+    *this >> convert.c[i];
+  }
+  d = convert.d;
+  return *this;
+}
+
+inline SocketStream SocketStream::operator>>(char& c) {
+  if( cur == bufsize ){
+        read();
+  }
+  c = buf[cur++];
+  return *this;
+}
+
+inline Socket::Socket(SOCKET_TYPE type, short unsigned port ) :
+  fd(0), port(port), type(type), stream(0) {
   bzero((char*) &addr, sizeof(addr));
 
   if(type == TCP)
@@ -260,25 +298,25 @@ inline Socket::~Socket() {
 // glib bug in htons!
 #pragma GCC diagnostic ignored "-Wconversion"
 inline ServerSocket::ServerSocket(SOCKET_TYPE type, uint16_t port, short
-    unsigned port_tries=1) : Socket(type, port, port_tries) {
+    unsigned port_tries=1) : Socket(type, port ), port_tries(port_tries) {
   if (port_tries == 0) return;
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = INADDR_ANY;
 
   addr.sin_port = htons(port);
 
-  unsigned b;
+  int b = -1;
   for( short unsigned p = port; p<port+port_tries; p++ ){
     trace1("ServerSocket::ServerSocket", p);
     addr.sin_port = htons(p);
-    b= bind(fd, (struct sockaddr*) &addr, sizeof(addr));
+    b = bind(fd, (struct sockaddr*) &addr, sizeof(addr));
     if (b >= 0) {
       trace1("listening", p);
       break;
     }
   }
   if (b<0)
-      throw SocketException("Could not bind to address/port");
+    throw SocketException("Could not bind to address/port");
   trace1("ServerSocket", port);
 
   stream = new SocketStream(fd);
@@ -307,7 +345,7 @@ inline SocketStream ServerSocket::listen() {
 
 #pragma GCC diagnostic ignored "-Wconversion"
 inline ClientSocket::ClientSocket(SOCKET_TYPE type, short unsigned port, const
-    std::string& target) : Socket(type, port, 1) {
+    std::string& target) : Socket(type, port) {
   addr.sin_port = htons((unsigned short int) port);
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = inet_addr(target.c_str());
