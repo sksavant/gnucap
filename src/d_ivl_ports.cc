@@ -1285,6 +1285,7 @@ struct opcode_table_s {
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 extern bool of_NOTIFY(vthread_t thr, vvp_code_t code);
+extern bool of_LRI(vthread_t thr, vvp_code_t code);
 /*--------------------------------------------------------------------------*/
 // too complicated. opa not needed...
 //void COMPILE_WRAP::notify ( uint32_t lo, uint32_t hi, void* daport)
@@ -1308,10 +1309,24 @@ void COMPILE_WRAP::notify ( comp_operands_t opa, COMPONENT* daport)
   free(opa);
 }  
 /* --------------------------------- */
-// truncated, just need bits4
+void COMPILE_WRAP::load_real_immediate( const double* d, unsigned reg )
+{
+  vvp_code_t cod = codespace_allocate();
+  cod->opcode = of_LRI;
+  cod->dp = d;
+  cod->bit_idx[0] = static_cast<uint32_t>(reg);
+}
+/* --------------------------------- */
+// vthread.cc
 struct vthread_s {
   vvp_code_t pc;
   vvp_vector4_t bits4;
+  union {                                                                                                    
+    int64_t  w_int;                                                                                      
+    uint64_t w_uint;                                                                                     
+    double   w_real;                                                                                     
+  } words[16];
+  // truncated
   // ... 
   // ...
 };
@@ -1366,6 +1381,13 @@ bool of_NOTIFY(vthread_t thr, vvp_code_t cp)
     ex_schedule_event_(E, try_again_in, SEQ_ACTIVE);
   }
 
+  return true;
+}
+/*------------------*/
+bool of_LRI(vthread_t thr, vvp_code_t cp)
+{
+  const double* d = cp->dp;
+  thr->words[cp->bit_idx[0]].w_real = *d;
   return true;
 }
 /*------------------*/

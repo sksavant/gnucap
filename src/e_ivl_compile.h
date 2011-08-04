@@ -180,7 +180,7 @@ inline symb_s* arg_symbols( unsigned argc, ... ){
 }
 
 
-class COMPILE_WRAP : public COMPILE{
+class COMPILE_WRAP : public COMPILE {
 	private:
 		intptr_t param_offset;
 		intptr_t param_top;
@@ -460,7 +460,8 @@ class COMPILE_WRAP : public COMPILE{
 			notify( opa, daport );
 		}
 
-		void notify ( comp_operands_t opa, COMPONENT* daport);
+		void notify( comp_operands_t opa, COMPONENT* daport );
+		void load_real_immediate( const double*, unsigned reg );
 		void codelabel( ARG_BASE* label);
 
 
