@@ -114,7 +114,7 @@ public:
 private:
   void	setup(CS&);
   void fillnames( const CARD_LIST* scope);
-  vector<string> var_namen;
+  vector<string> var_namen_arr;
 
 private: //vera stuff.
   void main_loop();
@@ -163,7 +163,8 @@ private: //vera stuff.
 
   int channel;
   int frame_number;
-  unsigned _port;   // kommt ueber die Uebergabeparamter -p als
+  Socket* socket;
+  short unsigned _port;   // kommt ueber die Uebergabeparamter port
                               // globale Variable daher (default: port=1400)
   int reuseaddr;
   struct sockaddr_in sin;
@@ -331,44 +332,44 @@ void SOCK::setup(CS& Cmd)
   Cmd.check(bWARNING, "what's this?");
 
   _sim->_uic = _sim->_more_uic = true;
+  CKT_BASE::_sim->init();
 
   IO::plotout = (ploton) ? IO::mstdout : OMSTREAM();
   initio(_out);
 
-  assert(_n_sweeps > 0);
-  for (int ii = 0;  ii < _n_sweeps;  ++ii) {
-    _start[ii].e_val(0., _scope);
-    fix_args(ii);
+  error = 0; /* verainit(v_flag, n_inputs, &n_vars, charbuf, &length); */
+  n_vars = _sim->_total_nodes + 1 ; // _sim->total_nodes doesnt include gnd
+  var_namen_arr.resize( n_vars, string("unset"));
+  var_namen_arr[0]="0";
+  fillnames( &CARD_LIST::card_list );
+  n_vars_square = n_vars * n_vars;
 
-    if (exists(_zap[ii])) { // component
-      trace1("zap" + _zap[ii]->long_label(), ii );
-      _stash[ii] = _zap[ii];			// stash the std value
-      _zap[ii]->inc_probes();			// we need to keep track of it
+#ifndef NDEBUG
+    for (unsigned i=0; i < n_vars; i++)
+      trace0("name: " + var_namen_arr[i]);
+#endif
 
-
-//      urghs. hack
-      STORAGE* s = dynamic_cast<STORAGE*>(_zap[ii]);
-      if(s != 0){
-        _zap[ii]->set_constant(false);		   // so it will be updated
-        _pushel[ii] = _zap[ii];	           // point to value to patch
-      }else{
-        _zap[ii]->set_value(_zap[ii]->value(),0);  // zap out extensions
-        _zap[ii]->set_constant(false);		   // so it will be updated
-        _pushel[ii] = _zap[ii];	                   // element to patch
-      }
-      _sweepval[ii] = 0;	        
-      
-      //_zap[ii]->set_value(_zap[ii]->value(),0);	// zap out extensions
-      //_zap[ii]->set_constant(false);		// so it will be updated
-      //_sweepval[ii] = _zap[ii]->set__value();	// point to value to patch
-      //_sweepval[ii] = _zap[ii]->set__ic();	// point to value to patch
-    }else{ // generator
-      _sweepval[ii] = 0;
-      incomplete();
-      _pushel[ii] = NULL; //&_sim->set_gen;			// point to value to patch
-    }
+  if ((socket = new Socket(Socket::TCP, _port)))
+  {
+  }else {
+    ::error(bDANGER,"Error, cannot create Socket\n");
+    throw Exception("foo");
   }
+
+  /* Wiederverwendung der lokalen Adresse erlauben */
+//  if (setsockopt(channel, SOL_SOCKET, SO_REUSEADDR, (void *) &reuseaddr, 
+//		 sizeof(reuseaddr)) == -1)
+//  {
+//    printf("Error, cannot set Socketoptions\n");
+//    exit(1);
+//  }
+
+  assert(_n_sweeps > 0);
   _sim->_freq = 0;
+
+  trace0("waiting for conn");
+
+  main_loop();
 }
 /*--------------------------------------------------------------------------*/
 void SOCK::fix_args(int Nest)
@@ -800,8 +801,7 @@ void SOCK::first(int Nest)
 /*--------------------------------------------------------------------------*/
 // fetch names from circuit recursively. fill into local vector.
 void SOCK::fillnames( const CARD_LIST* scope){
-
-  CKT_BASE::_sim->init();
+  trace0("SOCK::fillnames");
 
   const NODE_MAP * nm = scope->nodes();
   for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
@@ -814,8 +814,7 @@ void SOCK::fillnames( const CARD_LIST* scope){
       _out << s.str();
       string myname(i->second->long_label());
 
-      // FIXME. sort names!!
-      var_namen.push_back( myname );
+      var_namen_arr[i->second->matrix_number()] = myname;
 
 
     }else{
@@ -1031,19 +1030,6 @@ TParameter *vera_titan_ak(TParameter *parameter)
 
 
   /* Socket generieren */
-  if ((channel = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-  {
-    printf("Error, cannot create Socket\n");
-    exit(1);
-  }
-
-  /* Wiederverwendung der lokalen Adresse erlauben */
-  if (setsockopt(channel, SOL_SOCKET, SO_REUSEADDR, (void *) &reuseaddr, 
-		 sizeof(reuseaddr)) == -1)
-  {
-    printf("Error, cannot set Socketoptions\n");
-    exit(1);
-  }
 
   /* Socket einem Port zuweisen. */
   memset(&sin, 0, sizeof(sin));
@@ -1117,15 +1103,14 @@ TParameter *vera_titan_ak(TParameter *parameter)
       throw Exception("bloed\n");
     }
 
-    error = 0; /* verainit(v_flag, n_inputs, &n_vars, charbuf, &length); */
-    n_vars = _sim->_total_nodes; // A->n_var;
-    n_vars_square = n_vars * n_vars;
+
     assert(!var_names_buf);
     var_names_buf = (char*) malloc( BUFSIZE * sizeof(char));
     strcpy(var_names_buf,"");
     for (unsigned i=0; i < n_vars; i++)
     {  
-      strcat(var_names_buf, var_namen[i].c_str());
+      trace0("name: " + var_namen_arr[i]);
+      strcat(var_names_buf, var_namen_arr[i].c_str());
       strcat(var_names_buf, "\t");
     }
     length = strlen(var_names_buf);
@@ -1358,6 +1343,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
 
     void SOCK::veraop_tail()
     {
+      trace0("veraop tail");
       buffer[0].int_val = error;         /* Fehlerflag */
       for (unsigned i=0; i < n_vars; i++)         /* Variablen-Werte */
       {

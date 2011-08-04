@@ -47,11 +47,6 @@
 
 
 using namespace std;
-enum SOCKET_TYPE {
-  UNIX,
-  TCP,
-  UDP
-};
 #define MAX_LISTEN_QUEUE 256
 
 
@@ -71,26 +66,29 @@ DEFINE_EXCEPTION(SocketException, Exception);
  * @brief the SocketStream handles the actual data
  *        writing and reading from the socket.
  */
-class SocketStream : public ios {
+class SocketStream : public iostream {
+
+    int fd;
   public:
     enum EOL {eol};
-    int fd;
 
-    SocketStream() :  ios() {}
+    SocketStream() :  iostream() {}
     SocketStream(int fd) : 
-      ios(),
+      iostream(),
       fd(fd) {}
+
     SocketStream(const SocketStream& obj) :
-      ios(),
-      fd(obj.fd) {}
+      iostream()//, fd(obj.fd) 
+        {fd=obj.fd;}
     virtual ~SocketStream();
 
     const std::string get(int len);
     const std::string operator>>(int len);
 
     void flush();
-    void send(const std::string& data);
-    void send(const std::string& data, int len);
+    void send(const string& data);
+    void send(const double& data);
+    void send(const string& data, int len);
     SocketStream& operator<<(const std::string& data);
     SocketStream& operator<<(const char* data);
     SocketStream& operator<<(const int data);
@@ -105,6 +103,12 @@ class SocketStream : public ios {
  *        to handle (actually wrap the C functions) sockets
  */
 class Socket {
+  public:
+    enum SOCKET_TYPE {
+      UNIX,
+      TCP,
+      UDP
+    };
   protected:
     int fd;
     uint16_t port;
@@ -142,7 +146,8 @@ class ServerSocket : public Socket {
     ServerSocket(SOCKET_TYPE type, short unsigned port);
     virtual ~ServerSocket();
 
-    SocketStream* listen();
+    SocketStream listen();
+    SocketStream* otherlisten();
 };
 /**
  * @brief ClientSocket does the obvious, it can connect to any socket
@@ -156,16 +161,6 @@ class ClientSocket : public Socket {
  * @brief StreamSelecter wants an arbitrary number of (Socket)Streams as
  *        input - it wraps the select() mechanism.
  */
-class StreamSelecter {
-  private:
-    fd_set socks;
-    std::vector<SocketStream*> streams;
-
-  public:
-    void add_stream(SocketStream* stream);
-    SocketStream* select();
-    SocketStream* select(unsigned int usecs);
-};
 
 //}
 //}
@@ -186,11 +181,42 @@ inline SocketStream& SocketStream::operator<<(const std::string& data) {
   return *this;
 }
 
+inline SocketStream& SocketStream::operator<<(const double data) {
+#define  DL  (sizeof(double)/sizeof(char))
+  union { 
+    char c[DL];
+    double d;
+  } convert;
+
+  convert.d=data;
+
+  ssize_t n = ::write(fd, convert.c, DL);
+  if(n < 0)
+    throw SocketException("Could not write to socket");
+  return *this;
+}
+
+inline SocketStream& SocketStream::operator<<(const int data) {
+  const int len =  (sizeof(int)/sizeof(char));
+  union { 
+    char c[len];
+    int d;
+  } convert;
+
+  convert.d=data;
+
+  ssize_t n = ::write(fd, convert.c, len);
+  if(n < 0)
+    throw SocketException("Could not write to socket");
+  return *this;
+}
+
+
 void SocketStream::flush() {
 //   ::flush(fd);
 }
 
-inline const std::string SocketStream::get(int len) {
+inline const string SocketStream::get(int len) {
   char buf[len+1];
   bzero(&buf, len+1);
 
@@ -243,7 +269,7 @@ inline ServerSocket::~ServerSocket() {
     delete stream;
 }
 
-inline SocketStream* ServerSocket::listen() {
+inline SocketStream ServerSocket::listen() {
   struct sockaddr_in client_addr;
   int client_addr_len = sizeof(client_addr);
 
@@ -254,7 +280,7 @@ inline SocketStream* ServerSocket::listen() {
       &client_addr_len);
   if(client_fd < 0)
     throw SocketException("Error during accaptance of remote client");
-  return new SocketStream(client_fd);
+  return SocketStream(client_fd);
 }
 
 #pragma GCC diagnostic ignored "-Wconversion"
