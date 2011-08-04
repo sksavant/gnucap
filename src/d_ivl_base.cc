@@ -28,7 +28,10 @@
 #include <dlfcn.h>
 #include "e_ivl_compile.h"
 //
-//
+#ifndef NDEBUG
+#define USE_CALLBACK
+#endif
+
 
 #ifdef USE_CALLBACK
 // this is an old hack.
@@ -428,6 +431,8 @@ double DEV_IVL_BASE::tr_probe_num(const std::string& x)const
   if (Umatch(x, "delay ")) {
     return ( schedule_list() )?
       static_cast<double>(schedule_list()->delay) : -1.0 ;
+  }else if (Umatch(x, "prec ")) {
+    return ( sc->time_precision() );
   }else if (Umatch(x, "st ")) {
     return  static_cast<double> ( sc->schedule_time() );
   }else{
