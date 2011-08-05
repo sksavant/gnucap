@@ -143,25 +143,6 @@ class EVAL_IVL : public COMMON_COMPONENT {
     vvp_time64_t (*g_s_t)();
     void (*s_s_t)(vvp_time64_t);
 
-#ifdef SOME_OLD_STUFF
-    event_time_s* (*g_s_l)();
-    void (*s_s_l)(event_time_s*);
-    vpi_mode_t& (*_vpi_mode)();
-    void (*s_a_p_v) (vvp_sub_pointer_t<vvp_net_t>,vvp_time64_t,vvp_vector4_t,int, int);
-    void (*s_st)();
-    void (*n_s)();
-    void (*r_r)(event_time_s*);
-    void (*s_e)(event_time_s*);
-    void (*e_c)();
-    void (*e_i)();
-    void (*v_s)();
-    void (*v_p)();
-    bool (*s_x)();
-    bool (*s_r)();
-    void (*v_t)(int);
-    void (*s_l)();
-#endif
-
     void some_tr_begin_stuff()const;
 
 
@@ -180,6 +161,7 @@ class EVAL_IVL : public COMMON_COMPONENT {
     mutable double SimDelayD;
     mutable sim_mode SimState;
     static int _time_prec;
+    static double timescale;
     static int _log_time_prec;
     // Provide dummies
     inline static void my_getrusage(struct rusage *);
@@ -323,8 +305,7 @@ class COMMON_IVL : public COMMON_COMPONENT {
     void* vvpso;
   public: // input parameters
     int		incount; //?
-    PARAMETER<std::string> vvpfile;
-    PARAMETER<std::string> module;
+    const double* timescale() const;
   private:
     uint_t status;
 
@@ -399,10 +380,14 @@ class MODEL_IVL_BASE : public MODEL_LOGIC {
     virtual int compile_design(COMPILE_WRAP* c, const string, COMPONENT** da, 
         const COMMON_COMPONENT*) const = 0;
     virtual unsigned da_nodes()const = 0;
+
+    // COMMON_IVL
+    //virtual double* timescale();
+    
   public:
-    PARAMETER<string> file;
-    PARAMETER<string> input;
-    PARAMETER<string> output;
+    //PARAMETER<string> file;
+    //PARAMETER<string> input;
+    //PARAMETER<string> output;
 };
 /*--------------------------------------------------------------------------*/
 class DEV_IVL_BASE : public BASE_SUBCKT {

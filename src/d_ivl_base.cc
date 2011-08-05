@@ -29,7 +29,7 @@
 #include "e_ivl_compile.h"
 //
 #ifndef NDEBUG
-#define USE_CALLBACK
+//#define USE_CALLBACK
 #endif
 
 
@@ -81,6 +81,7 @@ static PLI_INT32 callback(t_cb_data*x){
 
 COMPILE_WRAP* EVAL_IVL::_comp;
 int EVAL_IVL::_time_prec;
+double EVAL_IVL::timescale;
 /*------------------------------------------------------------------*/
 inline vvp_time64_t EVAL_IVL::discrete_floor(double abs_t) const
 {
@@ -262,6 +263,8 @@ void DEV_IVL_BASE::expand()
   }else{
   }
 
+  
+
   if (_sim->is_first_expand()) {
     trace1 ("First expanding " +long_label(), net_nodes());
   //  FIXME EVAL_IVL has to do the compiler...
@@ -269,39 +272,41 @@ void DEV_IVL_BASE::expand()
 
     precalc_first();
 
-    COMPONENT* daports[m->da_nodes()];
     CARD* logicdevice;
     logicdevice = device_dispatcher["port_from_ivl"];
+    COMPONENT* daports[m->da_nodes()];
     for ( unsigned i=0 ; i < m->da_nodes(); i++ ) {
       daports[i] = dynamic_cast<COMPONENT*>(logicdevice->clone());
+    }
+    logicdevice = device_dispatcher["port_to_ivl"];
+    unsigned ad_nodes = net_nodes()-m->da_nodes();
+    trace1("expand", ad_nodes);
+    COMPONENT* adports[ad_nodes];
+    for ( unsigned i=0 ; i < ad_nodes; i++ ) {
+      adports[i] = dynamic_cast<COMPONENT*>(logicdevice->clone());
     }
     precalc_last();
     uint_t n=2;
 
     assert(_comp);
-    //comp->ca();
-    //
-    // c->init();
+
+
+        // stupid:
+        // expand needs ports, 
+        // ports need compile
+        // compile needs timescale
+        // timescale needs expand,
+        //
+        // --> integer delay=realdelay/$timescale doesnt make sense.
+
     trace0("compiling...");
     compile_design(_comp, daports);
-    trace0("no cleanup...");
-
-    //precalc_last! probably...
+    trace0("compile done...");
 
     assert(_comp->vpi_mode_flag() == VPI_MODE_NONE);
-    trace1("vpimode...", _comp->vpi_mode_flag() );
     _comp->vpi_mode_flag(VPI_MODE_COMPILETF);
-
-    vpiHandle item;
-
-    trace0("looking up in vhbn");
     vpiHandle module = (_comp->vpi_handle_by_name)(short_label().c_str(),NULL);
     assert(module);
-
-    vpiHandle vvp_device = (_comp->vpi_handle_by_name)(short_label().c_str(),module);
-    assert(vvp_device);
-
-    vvp_device = module;
 
     assert ((_n[0].n_())); // gnd
     assert ((_n[1].n_())); // vdd
@@ -310,25 +315,20 @@ void DEV_IVL_BASE::expand()
     char src;
 
     node_t lnodes[] = {_n[n], _n[0], _n[1], _n[1], _n[0]};
-//  vpiParameter  holds fall, rise etc.
     string name;
 
     node_t* x;
     unsigned daportno = 0;
-
-//    assert(((EVAL_IVL*)c->_eval_ivl)->_comp ==  _comp);
+    unsigned adportno = 0;
 
     while ( n < net_nodes() ) {
-      item = _comp->vpi_handle_by_name( port_name(n).c_str() , vvp_device );
+      vpiHandle item = _comp->vpi_handle_by_name( port_name(n).c_str(), module );
 
       int type = vpi_get(vpiType,item);
       name = vpi_get_str(vpiName,item);
       COMPONENT* P;
 
-      trace2("DEV_IVL ==> "+ short_label() + " item name: " + string(name), item->vpi_type->type_code, n );
-      trace0("DEV_IVL ==>  looking for " + port_name(n));
-
-      switch(type){
+      switch(type) {
         case vpiReg: // <- ivl
           trace0("DEV_IVL  ==> Net: " + string(name) + " placing DEV_LOGIC_DA");
           src='V';
@@ -340,26 +340,7 @@ void DEV_IVL_BASE::expand()
           lnodes[3] = _n[1];
           lnodes[4] = *x;
 
-          P = daports[daportno];
-          daportno++;
-
-#ifdef USE_CALLBACK
-          // obsolete. using notify
-          {
-            t_cb_data cbd = {
-              cbValueChange, //reason
-              callback, //cb_rtn
-              item, //obj
-              0, //time
-              0, //value
-              0, //index
-              (char*)P //user_data
-            };
-            trace0("DEV_IVL_BASE::expand attaching callback to " +name);
-            vpi_register_cb(&cbd);
-          }
-#endif
-
+          P = daports[daportno++];
           break;
         case vpiNet: // -> ivl
           src='I';
@@ -371,9 +352,8 @@ void DEV_IVL_BASE::expand()
           lnodes[2] = _n[1];
           lnodes[3] = _n[1];
           lnodes[4] = _n[n];
-          logicdevice = device_dispatcher["port_to_ivl"];
-          ((DEV_LOGIC_AD*) logicdevice)->H = item;
-          P = dynamic_cast<COMPONENT*>(logicdevice->clone());
+          P = adports[adportno++];
+          ((DEV_LOGIC_AD*) P)->H = item;
           break;
 
         default:
@@ -399,9 +379,10 @@ void DEV_IVL_BASE::expand()
 
     _comp->vpi_mode_flag(VPI_MODE_NONE);
 
+    trace1 ("First expanding done" +long_label(), net_nodes());
   } // 1st expand
 
-  std::string subckt_name(c->modelname()+"."+string(c->vvpfile));
+//  std::string subckt_name(c->modelname()+"."+string(c->vvpfile));
   assert(!is_constant());
 // is this an option?
 // subckt()->set_slave();
@@ -520,6 +501,7 @@ void EVAL_IVL::catch_up(double time) const
 /*-------------------------------------------------------------*/
 vvp_time64_t EVAL_IVL::contsim(vvp_time64_t until_rel) const
 {
+  trace1("EVAL_IVL::contsim", until_rel);
   vvp_time64_t time0 = schedule_time();
   vvp_time64_t until_abs = until_rel + schedule_time();
   // ivl events before 'until_abs' might be changed by analogue transitions.
@@ -1204,6 +1186,9 @@ int EVAL_IVL::vvpinit(COMPILE_WRAP* ) {
   trace2("vvp init", _time_prec, hp(this));
 
   assert( -12<=_time_prec && _time_prec<0 ); 
+  timescale = pow(10.,_time_prec);
+
+        trace2("set timescale", timescale, _time_prec);
 
 //  compile->flush(); //??
 
@@ -1213,12 +1198,11 @@ int EVAL_IVL::vvpinit(COMPILE_WRAP* ) {
 /*--------------------------------------------------------------------------*/
 void COMMON_IVL::precalc_first(const CARD_LIST* par_scope)
 {
-  trace0("COMMON_IVL::precalc_first " + (string) module + " " + (string) vvpfile );
   assert(par_scope);
 
   COMMON_COMPONENT::precalc_first(par_scope);
-  vvpfile.e_val("UNSET", par_scope);
-  module.e_val("UNSET", par_scope);
+  //vvpfile.e_val("UNSET", par_scope);
+  //module.e_val("UNSET", par_scope);
 
   //something hosed here.
 }
@@ -1258,8 +1242,6 @@ void COMMON_IVL::expand(const COMPONENT* dev ){
 void COMMON_IVL::precalc_last(const CARD_LIST* par_scope)
 {
   COMMON_COMPONENT::precalc_last(par_scope);
-  vvpfile.e_val("UNSET" , par_scope);
-  module.e_val("UNSET" , par_scope);
 }
 /*--------------------------------------------------------------------------*/
 int COMMON_IVL::compile_design(COMPILE_WRAP*c, COMPONENT* p, COMPONENT** da)const{
@@ -1322,8 +1304,6 @@ std::string COMMON_IVL::param_name(int i, int j)const
 std::string COMMON_IVL::param_value(int i)const
 {
   switch (COMMON_COMPONENT::param_count() - 1 - i) {
-    case 0: return vvpfile.string();
-    case 1: return module.string();
     default: return COMMON_COMPONENT::param_value(i);
   }
 }
@@ -1331,10 +1311,6 @@ std::string COMMON_IVL::param_value(int i)const
 void COMMON_IVL::set_param_by_index(int i, std::string& value, int offset)
 {
   switch (COMMON_COMPONENT::param_count() - 1 - i) {
-    case 0: vvpfile = value; 
-            break;
-    case 1: module = value;
-            break;
     default: COMMON_COMPONENT::set_param_by_index(i, value, offset); break;
   }
 }
@@ -1365,7 +1341,6 @@ bool COMMON_IVL::operator==(const COMMON_COMPONENT& x )const
   //trace2("COMMON_IVL::operator==", hp(this), hp(&x) );
 
   return(p
-      &&  (vvpfile==p->vvpfile) 
       && COMMON_COMPONENT::operator==(x)
       );
 
@@ -1389,6 +1364,12 @@ COMMON_COMPONENT* COMMON_IVL::no_deflate()
   _commons.push_back(this);
   return this;
 }
+/*--------------------------------------------------------------------------*/
+const double* COMMON_IVL::timescale()const{ 
+  return &EVAL_IVL::timescale; // for now, lets timescale be const.
+}
+/*--------------------------------------------------------------------------*/
+/*--MODEL-------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 std::string MODEL_IVL_BASE::port_name(uint_t i)const{
   stringstream a;
@@ -1414,13 +1395,11 @@ MODEL_IVL_BASE::MODEL_IVL_BASE(const BASE_SUBCKT* p)
 /*--------------------------------------------------------------------------*/
 MODEL_IVL_BASE::MODEL_IVL_BASE(const MODEL_IVL_BASE& p)
   :MODEL_LOGIC(p){
-    file=p.file;
-    output=p.output;
-    input=p.input;
     _logic_model=p._logic_model;
     trace0("MODEL_IVL_BASE::MODEL_IVL_BASE");
   }
 /*--------------------------------------------------------------------------*/
+//const double* MODEL_IVL_BASE::timescale()const{ }
 /*--------------------------------------------------------------------------*/
 
 void yyerror(const char*msg){

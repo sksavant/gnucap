@@ -314,8 +314,7 @@ inline SocketStream &SocketStream::operator>>(char& c) {
   return *this;
 }
 
-inline Socket::Socket(SOCKET_TYPE type, short unsigned port ) :
-  fd(0), port(port), type(type), stream(0) {
+inline Socket::Socket(SOCKET_TYPE type, short unsigned port ) : fd(0), port(port), type(type), stream(0) {
   bzero((char*) &addr, sizeof(addr));
 
   if(type == TCP)

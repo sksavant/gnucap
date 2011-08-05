@@ -1311,6 +1311,7 @@ void COMPILE_WRAP::notify ( comp_operands_t opa, COMPONENT* daport)
 /* --------------------------------- */
 void COMPILE_WRAP::load_real_immediate( const double* d, unsigned reg )
 {
+  trace2("loading immediately, ", hp(d), *d);
   vvp_code_t cod = codespace_allocate();
   cod->opcode = of_LRI;
   cod->dp = d;
