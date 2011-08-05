@@ -70,6 +70,7 @@ class SocketStream : public iostream {
 
     int fd;
     const unsigned bufsize;
+    unsigned chunksize;
     char* buf;
     unsigned cur;
   public:
@@ -96,9 +97,11 @@ class SocketStream : public iostream {
     void flush();
 
     const std::string get(int len);
-    const std::string operator>>(int len);
-    SocketStream operator>>(double&);
-    SocketStream operator>>(char&);
+//    const std::string operator>>(int len);
+    SocketStream& operator>>(double&);
+    SocketStream& operator>>(char&);
+    SocketStream& operator>>(int16_t&);
+    SocketStream& operator>>(int32_t&);
 
 
     SocketStream operator=(const SocketStream& p ){
@@ -240,6 +243,16 @@ void SocketStream::flush() {
 //   ::flush(fd);
 }
 
+inline void SocketStream::read() {
+  assert(chunksize == cur);
+
+  cur = 0;
+  ssize_t n = ::read(fd, &buf, bufsize);
+  if(n < 0)
+    throw SocketException("Could not read from socket");
+  chunksize = static_cast<unsigned>(n);
+}
+
 inline const string SocketStream::get(int len) {
   char buf[len+1];
   bzero(&buf, len+1);
@@ -250,11 +263,37 @@ inline const string SocketStream::get(int len) {
   return buf;
 }
 
-inline const std::string SocketStream::operator>>(int len) {
-  return get(len);
+//inline const std::string &SocketStream::operator>>(int len) {
+//  return get(len);
+//}
+
+inline SocketStream &SocketStream::operator>>(int32_t& d) {
+  const uint_t len=4;
+  union { 
+    char c[len];
+    uint16_t d;
+  } convert;
+  for(unsigned i=0; i<len; ++i){
+    *this >> convert.c[i];
+  }
+  d = convert.d;
+  return *this;
 }
 
-inline SocketStream SocketStream::operator>>(double& d) {
+inline SocketStream &SocketStream::operator>>(int16_t& d) {
+  const uint_t len=2;
+  union { 
+    char c[len];
+    uint16_t d;
+  } convert;
+  for(unsigned i=0; i<len; ++i){
+    *this >> convert.c[i];
+  }
+  d = convert.d;
+  return *this;
+}
+
+inline SocketStream &SocketStream::operator>>(double& d) {
   union { 
     char c[DL];
     double d;
@@ -266,8 +305,9 @@ inline SocketStream SocketStream::operator>>(double& d) {
   return *this;
 }
 
-inline SocketStream SocketStream::operator>>(char& c) {
-  if( cur == bufsize ){
+// this is inefficient, but so what?
+inline SocketStream &SocketStream::operator>>(char& c) {
+  if( cur == chunksize ){
         read();
   }
   c = buf[cur++];
