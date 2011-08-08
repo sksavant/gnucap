@@ -417,6 +417,7 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     bool tr_needs_eval()const{return true;}
     TIME_PAIR tr_review();
   public:
+    virtual std::string	dev_type()const=0; // {return "ERROR"; unreachable();}
     const COMMON_COMPONENT* subcommon()const{
      assert(_subcommon); return _subcommon; }
 
@@ -428,7 +429,6 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     const COMMON_COMPONENT* _subcommon;
     COMPILE_WRAP* _comp; // REMOVE
 
-    // virtual int foo()=0;
 
   public:
     static int count()			{return _count;}

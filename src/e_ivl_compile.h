@@ -462,6 +462,7 @@ class COMPILE_WRAP : public COMPILE {
 
 		void notify( comp_operands_t opa, COMPONENT* daport );
 		void load_real_immediate( const double*, unsigned reg );
+		void load_number_immediate( const int64_t*, unsigned reg );
 		void codelabel( ARG_BASE* label);
 
 

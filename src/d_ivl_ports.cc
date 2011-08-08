@@ -1286,6 +1286,7 @@ struct opcode_table_s {
 /*--------------------------------------------------------------------------*/
 extern bool of_NOTIFY(vthread_t thr, vvp_code_t code);
 extern bool of_LRI(vthread_t thr, vvp_code_t code);
+extern bool of_LNI(vthread_t thr, vvp_code_t code);
 /*--------------------------------------------------------------------------*/
 // too complicated. opa not needed...
 //void COMPILE_WRAP::notify ( uint32_t lo, uint32_t hi, void* daport)
@@ -1308,6 +1309,15 @@ void COMPILE_WRAP::notify ( comp_operands_t opa, COMPONENT* daport)
 
   free(opa);
 }  
+/* --------------------------------- */
+void COMPILE_WRAP::load_number_immediate( const int64_t* d, unsigned reg )
+{
+  trace2("loading immediately, ", hp(d), *d);
+  vvp_code_t cod = codespace_allocate();
+  cod->opcode = of_LNI;
+  cod->ip = d;
+  cod->bit_idx[0] = static_cast<uint32_t>(reg);
+}
 /* --------------------------------- */
 void COMPILE_WRAP::load_real_immediate( const double* d, unsigned reg )
 {
@@ -1389,6 +1399,13 @@ bool of_LRI(vthread_t thr, vvp_code_t cp)
 {
   const double* d = cp->dp;
   thr->words[cp->bit_idx[0]].w_real = *d;
+  return true;
+}
+/*------------------*/
+bool of_LNI(vthread_t thr, vvp_code_t cp)
+{
+  const int64_t* d = cp->ip;
+  thr->words[cp->bit_idx[0]].w_int = *d;
   return true;
 }
 /*------------------*/

@@ -89,6 +89,7 @@ void COMPILE_WRAP::variable(ARG_BASE* label,  char*name,
 void COMPILE_WRAP::net( ARG_BASE* l, char*name, int msb, int lsb,
 				int vpi_type_code, bool signed_flag, bool local_flag,
 				unsigned argc, ... ){
+	trace1("COMPILE_WRAP::net "+ name);
 
 	va_list args;
 	va_start(args, argc);
