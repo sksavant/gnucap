@@ -43,7 +43,7 @@ class ARG_E : public ARG_BASE{
 		{ assert(x>=0);}
 		operator string() const{
 			stringstream x;
-			x << "E_0x" << hex << i-offset;
+			x << "E_0x" << hex << (i-offset);
 			return x.str();
 		}
 };
@@ -55,7 +55,12 @@ class ARG_O : public ARG_BASE{
 		static intptr_t offset;
 		static intptr_t top;
 		ARG_O(intptr_t x): ARG_BASE(),i(x){}
-		operator string() const;
+		operator string() const{
+			stringstream x;
+			x << "oo" << hex  << (void*)(i-offset);
+			return x.str();
+}
+/*-----------------------------------------------*/
 };
 /*-----------------------------------------------------*/
 class ARG_RAW : public ARG_BASE{
@@ -149,31 +154,10 @@ class ARG_V : public ARG_BASE{
 /*------------------------------------------------*/
 
 // compile iverilogish argument list from ARG_BASE va_list...
+symb_s* arg_symbols( unsigned argc, va_list argv );
 
-inline symb_s* arg_symbols( unsigned argc, va_list argv ){
-	assert (argc>0);
-
-	struct symbv_s obj;
-   symbv_init(&obj);
-	for(unsigned i=0; i<argc; i++){
-		ARG_BASE* w = va_arg ( argv, ARG_BASE* );
-		assert(w);
-		symb_s s;
-		string sw = string(*w);
-		assert(string(*w).c_str());
-		char* ww = strdup(string(*w).c_str());
-		trace0("wrapping" + string(*w));
-		s.text=ww;
-		s.idx=0;
-		symbv_add(&obj, s);
-	//	delete[]ww;
-	}
-
-	trace0("wrapped " + string(obj.vect[0].text));
-	return (obj.vect);
-
-}
 inline symb_s* arg_symbols( unsigned argc, ... ){
+	trace0("arg_sybbols ... ");
 	va_list arguments;
 	va_start ( arguments, argc );
 	return arg_symbols(argc,arguments);
@@ -423,17 +407,15 @@ class COMPILE_WRAP : public COMPILE {
 		}
 
 		void scope_decl(ARG_BASE*typ, char*lab, char*nam, char*tnam,
-				char*par, long file_idx, long lineno,
+				ARG_BASE* par, long file_idx, long lineno,
 				long def_file_idx, long def_lineno,
 				long is_cell){
-
+			char * p = (par)? strdup(string(*par).c_str()):0;
 			return
 				COMPILE::scope_decl(strdup(string(*typ).c_str()), lab, nam, tnam,
-						par, file_idx, lineno,
+						p, file_idx, lineno,
 						def_file_idx, def_lineno,
 						is_cell);
-
-
 		}
 
 		void notify( const ARG_BASE* l,
@@ -512,71 +494,11 @@ symb_s* operands_wrap( unsigned argc, ... ){
 */
 
 
-inline void compile_vpi_call(COMPILE* c, const char* label, const char* cmd, bool b0, bool
-		b1, long l0, long l1, ... ){
-  	unsigned i=0; char* w;
-	va_list arguments;
-
-	va_start ( arguments, l1 );
-	struct argv_s argv;
-
-	w = va_arg ( arguments, char* );
-	if (!w){
-		argv_init( &argv);
-	} else {
-
-
-		while (1) {
-			i++;
-			cerr << "argument" <<  w << "\n";
-
-			if (w[0]=='\"'){
-
-
-			} else if (1) {
-
-			}
-
-
-			w = va_arg ( arguments, char* );
-			if (!w) break;
-		}
-		// argv_sym_lookup(c, &$2);
-	}
-
-	c->vpi_call(label?sd(label):0, sd(cmd), b0, b1, l0, l1, i, (vpiHandle*)&argv);
-
-}
-/*
-void compile_net(COMPILE* c, char*label, char*name, int msb, int lsb,
-			int vpi_type_code, bool signed_flag, bool local_flag,
-			unsigned argc, ... ){
-	va_list arguments;
-	va_start ( arguments, argc );
-	assert (argc>0);
-
-	struct symbv_s obj;
-   symbv_init(&obj);
-	for(unsigned i=0; i<argc; i++){
-		char* w = va_arg ( arguments, char* );
-		symb_s s;
-		s.text=w;
-		s.idx=0;
-		symbv_add(&obj, s);
-
-	}
-
-	assert(obj.cnt==argc);
-	c->net(label, name, msb, lsb,
-			 vpi_type_code, signed_flag, local_flag,
-			 argc, obj.vect);
-
-}*/
-
-
+void compile_vpi_call(COMPILE* c, const char* label, const char* cmd, bool b0, bool b1, long l0, long l1, ... );
 
 
 inline symb_s* symbols_wrap( unsigned argc, ... ){
+	trace0("symbols_wrap");
 	va_list arguments;
 	va_start ( arguments, argc );
 	assert (argc>0);

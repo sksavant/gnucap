@@ -30,6 +30,22 @@
 //
 #ifndef NDEBUG
 //#define USE_CALLBACK
+//
+void dumpScope(vpiHandle H, int depth ){
+  if (!H) return;
+  for(int i=0; i< depth; i++)
+    fprintf(stdout, "   ");
+  fprintf(stdout, "==> found %s, %i\n",(vpi_get_str(vpiName, H)), H->vpi_type->type_code );
+
+  vpiHandle item;
+
+  vpiHandle iterator = vpi_iterate(vpiScope,H);
+  if(iterator)
+    while ((item = vpi_scan(iterator))) {
+      dumpScope(item, depth+1);
+    }
+
+}
 #endif
 
 
@@ -210,13 +226,14 @@ void DEV_IVL_BASE::tr_begin()
 /*--------------------------------------------------------------------------*/
 void DEV_IVL_BASE::precalc_first()
 {
-  trace0("DEV_IVL_BASE::precalc_first");
   COMPONENT::precalc_first();
+
   assert(common());
 
   if(subckt()){
     subckt()->precalc_first();
   }
+  trace0("DEV_IVL_BASE::precalc_first done");
 }
 /*--------------------------------------------------------------------------*/
 void DEV_IVL_BASE::precalc_last()
@@ -273,13 +290,16 @@ void DEV_IVL_BASE::expand()
     precalc_first();
 
     CARD* logicdevice;
+    trace0("expanding");
+    trace1("expanding", m->da_nodes());
     logicdevice = device_dispatcher["port_from_ivl"];
+    trace1("expanding", m->da_nodes());
     COMPONENT* daports[m->da_nodes()];
     for ( unsigned i=0 ; i < m->da_nodes(); i++ ) {
       daports[i] = dynamic_cast<COMPONENT*>(logicdevice->clone());
     }
     logicdevice = device_dispatcher["port_to_ivl"];
-    unsigned ad_nodes = net_nodes()-m->da_nodes();
+    unsigned ad_nodes = net_nodes() - m->da_nodes();
     trace1("expand", ad_nodes);
     COMPONENT* adports[ad_nodes];
     for ( unsigned i=0 ; i < ad_nodes; i++ ) {
@@ -302,11 +322,20 @@ void DEV_IVL_BASE::expand()
     trace0("compiling...");
     compile_design(_comp, daports);
     trace0("compile done...");
+    //vpiEndOfCompile();
+
+    _comp->cleanup(); // needed to push aliases through
 
     assert(_comp->vpi_mode_flag() == VPI_MODE_NONE);
     _comp->vpi_mode_flag(VPI_MODE_COMPILETF);
     vpiHandle module = (_comp->vpi_handle_by_name)(short_label().c_str(),NULL);
     assert(module);
+
+
+#ifndef NDEBUG
+    // this sould list the ports we need.
+    dumpScope(module,0);
+#endif
 
     assert ((_n[0].n_())); // gnd
     assert ((_n[1].n_())); // vdd
@@ -323,13 +352,19 @@ void DEV_IVL_BASE::expand()
 
     while ( n < net_nodes() ) {
       vpiHandle item = _comp->vpi_handle_by_name( port_name(n).c_str(), module );
+      assert(item);
 
-      int type = vpi_get(vpiType,item);
+      trace0("::expand, fetching type for, "+ port_name(n));
+     // int type = vpi_get(vpiType,item);
+      unsigned type = m->port_type(n);
+      trace0("::expand, fetching name for, "+ port_name(n));
       name = vpi_get_str(vpiName,item);
       COMPONENT* P;
 
+
+
       switch(type) {
-        case vpiReg: // <- ivl
+        case 1: // <- ivl
           trace0("DEV_IVL  ==> Net: " + string(name) + " placing DEV_LOGIC_DA");
           src='V';
           x = new node_t();
@@ -342,7 +377,7 @@ void DEV_IVL_BASE::expand()
 
           P = daports[daportno++];
           break;
-        case vpiNet: // -> ivl
+        case 2: // -> ivl
           src='I';
           trace1("DEV_IVL  ==> Reg: " + string(name) + " placing DEV_LOGIC_AD", n);
           x = new node_t();
@@ -592,11 +627,25 @@ double EVAL_IVL::tr_begin()const
   static int done;
   if(done) return 0;
   done=1;
-  _comp->cleanup();
 
   SimDelayD  = -1;
   // SimState = schedule_simulate_m(SIM_INIT);
-  some_tr_begin_stuff();
+  //some_tr_begin_stuff();
+  assert(schedule_time()==0);
+
+  trace0("Execute end of compile callbacks"); // move away
+  vpiEndOfCompile();
+  trace0("Done EOC");
+
+  trace0("EVAL_IVL:: init events..."); //  + long_label());
+  exec_init_list();
+
+  trace0("calling vpiStartOfSim");
+  vpiStartOfSim();
+  assert(schedule_runnable());
+  assert(! schedule_stopped());
+
+  // ===
   SimState = schedule_cont0();
   SimTimeDlast = SimTimeD;
 
@@ -611,24 +660,6 @@ void EVAL_IVL::schedule_transition(vpiHandle H,
   vvp_sub_pointer_t<vvp_net_t> ptr(HS->node,0);
 
   ::schedule_assign_plucked_vector(ptr,dly,val,a,b);
-}
-/*--------------------------------------------------------------------------*/
-void EVAL_IVL::some_tr_begin_stuff() const {
-  // FIXME: move where it belongs...
-  assert(schedule_time()==0);
-
-  trace0("Execute end of compile callbacks"); // move away
-  vpiEndOfCompile();
-  trace0("Done EOC");
-
-  // Execute initialization events.
-  trace0("EVAL_IVL:: init events..."); //  + long_label());
-  exec_init_list();
-
-  trace0("calling vpiStartOfSim");
-  vpiStartOfSim();
-  assert(schedule_runnable());
-  assert(! schedule_stopped());
 }
 /*--------------------------------------------------------------------------*/
 void run_fifo_run( event_s* q ){
@@ -662,7 +693,6 @@ sim_mode EVAL_IVL::schedule_simulate_m(sim_mode mode) const
 
   unreachable(); //PREM? here?
   assert(false); 
-  some_tr_begin_stuff();
 
     while ( ( ctim = schedule_list())) {
       trace0("EVAL_IVL schedule_list");

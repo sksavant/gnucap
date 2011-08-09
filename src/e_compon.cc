@@ -612,7 +612,7 @@ void COMPONENT::precalc_first()
   }else{
     _mfactor_fixed =  _mfactor;
   } 
-  trace1("COMPONENT::precalc_first " + long_label(), _mfactor_fixed);
+  trace1("COMPONENT::precalc_first done " + long_label(), _mfactor_fixed);
 }
 /*--------------------------------------------------------------------------*/
 void COMPONENT::precalc_last()

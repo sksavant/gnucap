@@ -10,20 +10,15 @@ intptr_t ARG_V::offset = 0;
 intptr_t ARG_T::offset = 0;
 intptr_t ARG_S::offset = 0;
 intptr_t ARG_P::offset = 0;
+intptr_t ARG_O::offset = 0;
 
 intptr_t ARG_E::top = 0;
 intptr_t ARG_V::top = 0;
 intptr_t ARG_T::top = 0;
 intptr_t ARG_S::top = 0;
 intptr_t ARG_P::top = 0;
+intptr_t ARG_O::top = 0;
 
-/*-----------------------------------------------*/
-ARG_O::operator string() const{
-	stringstream x;
-	x << "o" << hex  << i;
-	trace0("ARG_O::operator " + x.str());
-	return x.str();
-}
 /*-----------------------------------------------*/
 ARG_C4::operator string() const{
 	stringstream x;
@@ -89,8 +84,6 @@ void COMPILE_WRAP::variable(ARG_BASE* label,  char*name,
 void COMPILE_WRAP::net( ARG_BASE* l, char*name, int msb, int lsb,
 				int vpi_type_code, bool signed_flag, bool local_flag,
 				unsigned argc, ... ){
-	trace1("COMPILE_WRAP::net "+ name);
-
 	va_list args;
 	va_start(args, argc);
 
@@ -104,7 +97,9 @@ void COMPILE_WRAP::net( ARG_BASE* l, char*name, int msb, int lsb,
 void COMPILE_WRAP::net( intptr_t label, int app, char*name, int msb, int lsb,
 				int vpi_type_code, bool signed_flag, bool local_flag,
 				unsigned argc, ... ){
+	trace1("COMPILE_WRAP::net old "+ string(name), argc);
 
+	assert(false); // old version.
 	assert(label>=0);
 	va_list args;
 	va_start(args, argc);
@@ -136,4 +131,65 @@ void COMPILE_WRAP::param_real( ARG_BASE* l, char*name, const double*dvp,
 
       delete[](label);
       // free(value);
+}
+
+symb_s* arg_symbols( unsigned argc, va_list argv ){
+	trace0("arg_symbols_va");
+	assert (argc>0);
+
+	struct symbv_s obj;
+   symbv_init(&obj);
+	for(unsigned i=0; i<argc; i++){
+		trace1("...",i);
+		ARG_BASE* w = va_arg ( argv, ARG_BASE* );
+		assert(w);
+		symb_s s;
+		string sw = string(*w);
+		assert(string(*w).c_str());
+		char* ww = strdup(string(*w).c_str());
+		trace0("wrapping" + string(*w));
+		s.text=ww;
+		s.idx=0;
+		symbv_add(&obj, s);
+	//	delete[]ww;
+	}
+
+	trace0("wrapped " + string(obj.vect[0].text));
+	return (obj.vect);
+
+}
+
+void compile_vpi_call(COMPILE* c, const char* label, const char* cmd, bool b0, bool b1, long l0, long l1, ... ){
+  	unsigned i=0; char* w;
+	va_list arguments;
+
+	va_start ( arguments, l1 );
+	struct argv_s argv;
+
+	w = va_arg ( arguments, char* );
+	if (!w){
+		argv_init( &argv);
+	} else {
+
+
+		while (1) {
+			i++;
+			cerr << "argument" <<  w << "\n";
+
+			if (w[0]=='\"'){
+
+
+			} else if (1) {
+
+			}
+
+
+			w = va_arg ( arguments, char* );
+			if (!w) break;
+		}
+		// argv_sym_lookup(c, &$2);
+	}
+
+	c->vpi_call(label?sd(label):0, sd(cmd), b0, b1, l0, l1, i, (vpiHandle*)&argv);
+
 }
