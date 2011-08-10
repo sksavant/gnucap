@@ -50,7 +50,7 @@ private:
   std::string _s;
   T my_infty() const;
 public:
-  T _NOT_INPUT();
+  T _NOT_INPUT() const;
 
   explicit PARAMETER() :_v(_NOT_INPUT()), _s() {}
   PARAMETER(const PARAMETER<double>& p) :_v(p._v), _s(p._s) {}
@@ -118,25 +118,28 @@ private:
 };
 /*--------------------------------------------------------------------------*/
 template<>
-inline int64_t PARAMETER<int64_t>::_NOT_INPUT(){ return 0 ;} // BUG.
+inline int64_t PARAMETER<int64_t>::_NOT_INPUT() const { return 0 ;} // BUG.
 /*--------------------------------------------------------------------------*/
 template <class T>
-inline T PARAMETER<T>::_NOT_INPUT(){ return NOT_INPUT ;}
+inline T PARAMETER<T>::_NOT_INPUT() const { return NOT_INPUT ;}
 /*--------------------------------------------------------------------------*/
 template <>
-inline int PARAMETER<int>::_NOT_INPUT(){ untested(); return 0;} //BUG. magic number?
+inline int PARAMETER<int>::_NOT_INPUT()const { untested(); return 0;} //BUG. magic number?
 /*--------------------------------------------------------------------------*/
 template <>
-inline unsigned int PARAMETER<unsigned int>::_NOT_INPUT(){ untested(); return 0;} //BUG. magic number?
+inline unsigned int PARAMETER<unsigned int>::_NOT_INPUT() const{
+  untested(); // stupid();
+  return NOT_INPUT_INT;
+} //BUG. magic number?
 /*--------------------------------------------------------------------------*/
 template <> 
-inline std::vector<double> PARAMETER< std::vector<double> >::_NOT_INPUT(){
+inline std::vector<double> PARAMETER< std::vector<double> >::_NOT_INPUT() const {
   untested();
   return std::vector<double>(0);
 }
 /*--------------------------------------------------------------------------*/
 template <> 
-inline std::list<double> PARAMETER< std::list<double> >::_NOT_INPUT(){
+inline std::list<double> PARAMETER< std::list<double> >::_NOT_INPUT() const {
   untested();
   return std::list<double>(0);
 }
@@ -468,7 +471,7 @@ T PARAMETER<T>::e_val(const T& def, const CARD_LIST* scope)const
     // anything else means look up the value
     if (recursion <= OPT::recursion) {
       _v = lookup_solve(def, scope);
-      if (_v == NOT_INPUT) {untested();itested();
+      if (_v == _NOT_INPUT()) {untested();itested();
 	error(bDANGER, "parameter " + *first_name + " has no value\n");
       }else{
       }

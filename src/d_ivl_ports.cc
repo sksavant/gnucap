@@ -1316,7 +1316,7 @@ void COMPILE_WRAP::notify_i( uint32_t delay, uint32_t bit, COMPONENT* daport)
   trace2( "COMPILE_WRAP::notify ",  cod->bit_idx[0], cod->bit_idx[1] );
 }  
 /* --------------------------------- */
-void COMPILE_WRAP::load_number_immediate( const int64_t* d, unsigned reg )
+void COMPILE_WRAP::load_number_parameter( const int64_t* d, unsigned reg )
 {
   trace2("loading immediately, ", hp(d), *d);
   vvp_code_t cod = codespace_allocate();
@@ -1325,7 +1325,7 @@ void COMPILE_WRAP::load_number_immediate( const int64_t* d, unsigned reg )
   cod->bit_idx[0] = static_cast<uint32_t>(reg);
 }
 /* --------------------------------- */
-void COMPILE_WRAP::load_real_immediate( const double* d, unsigned reg )
+void COMPILE_WRAP::load_real_parameter( const double* d, unsigned reg )
 {
   trace2("loading immediately, ", hp(d), *d);
   vvp_code_t cod = codespace_allocate();

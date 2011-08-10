@@ -428,8 +428,8 @@ class COMPILE_WRAP : public COMPILE {
 
 		void notify_i ( uint32_t delay, uint32_t bit, COMPONENT* daport);
 		void notify ( uint32_t delay, uint32_t bit, COMPONENT* daport);
-		void load_real_immediate( const double*, unsigned reg );
-		void load_number_immediate( const int64_t*, unsigned reg );
+		void load_real_parameter( const double*, unsigned reg );
+		void load_number_parameter( const int64_t*, unsigned reg );
 		void codelabel( ARG_BASE* label);
 
 
