@@ -193,3 +193,18 @@ void compile_vpi_call(COMPILE* c, const char* label, const char* cmd, bool b0, b
 	c->vpi_call(label?sd(label):0, sd(cmd), b0, b1, l0, l1, i, (vpiHandle*)&argv);
 
 }
+/*---------------------------------------------------------*/
+void COMPILE_WRAP::notify(   const ARG_BASE* l,
+		uint32_t delay_index,
+		uint32_t bit, COMPONENT* daport){
+
+
+	notify( delay_index, bit, daport );
+}
+/*---------------------------------------------------------*/
+void COMPILE_WRAP::notify_i(   const ARG_BASE* l,
+		uint32_t delay,
+		uint32_t bit, COMPONENT* daport){
+
+	notify_i( delay, bit, daport );
+}

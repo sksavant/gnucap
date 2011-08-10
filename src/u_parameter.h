@@ -39,6 +39,9 @@ class PARAM_LIST; //unnnec?
 //class MODEL_BUILT_IN_BTI;
 /*--------------------------------------------------------------------------*/
 
+namespace PARM{
+  enum NA_ {NA};
+}
 
 template <class T>
 class PARAMETER {
@@ -113,6 +116,9 @@ public:
 private:
   T lookup_solve(const T& def, const CARD_LIST* scope)const;
 };
+/*--------------------------------------------------------------------------*/
+template<>
+inline int64_t PARAMETER<int64_t>::_NOT_INPUT(){ return 0 ;} // BUG.
 /*--------------------------------------------------------------------------*/
 template <class T>
 inline T PARAMETER<T>::_NOT_INPUT(){ return NOT_INPUT ;}

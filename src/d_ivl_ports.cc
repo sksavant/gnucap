@@ -105,7 +105,7 @@ void DEV_LOGIC_AD::tr_begin()
   assert(m);
   ELEMENT::tr_begin();
   trace5("DEV_LOGIC_AD::tr_begin", lvtoivl, _n[INNODE]->lv(), _n[INNODE]->v0(),
-                                             _n[OUTNODE]->lv(), _n[OUTNODE]->v0());
+                                            _n[OUTNODE]->lv(), _n[OUTNODE]->v0());
   if (!subckt()) {
     _gatemode = moDIGITAL;
     _n[OUTNODE]->set_mode(_gatemode);
@@ -1285,29 +1285,35 @@ struct opcode_table_s {
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 extern bool of_NOTIFY(vthread_t thr, vvp_code_t code);
+extern bool of_NOTIFY_I(vthread_t thr, vvp_code_t code);
 extern bool of_LRI(vthread_t thr, vvp_code_t code);
 extern bool of_LNI(vthread_t thr, vvp_code_t code);
 /*--------------------------------------------------------------------------*/
 // too complicated. opa not needed...
-//void COMPILE_WRAP::notify ( uint32_t lo, uint32_t hi, void* daport)
-void COMPILE_WRAP::notify ( comp_operands_t opa, COMPONENT* daport)
+//void COMPILE_WRAP::notify ( comp_operands_t opa, COMPONENT* daport)
+void COMPILE_WRAP::notify( uint32_t delay, uint32_t bit, COMPONENT* daport)
 {
   assert(daport);
   vvp_code_t cod = codespace_allocate();
   cod->opcode = of_NOTIFY;
-  assert (opa->argv[0].ltype == L_SYMB);
   // pointer hack,
   cod->net =  (vvp_net_t*)  daport; 
-  /////////////////////////
-  assert(opa->argv[1].ltype == L_NUMB);
-  cod->bit_idx[0] = static_cast<uint32_t>(opa->argv[1].numb);
-  /////////////////////////
-  assert(opa->argv[2].ltype == L_NUMB);
-  cod->bit_idx[1] = static_cast<uint32_t>(opa->argv[2].numb);
+  cod->bit_idx[0] = delay;
+  cod->bit_idx[1] = bit;
 
   trace2( "COMPILE_WRAP::notify ",  cod->bit_idx[0], cod->bit_idx[1] );
-
-  free(opa);
+}  
+/*--------------------------------------------------------------------------*/
+void COMPILE_WRAP::notify_i( uint32_t delay, uint32_t bit, COMPONENT* daport)
+{
+  assert(daport);
+  vvp_code_t cod = codespace_allocate();
+  cod->opcode = of_NOTIFY_I;
+  // pointer hack,
+  cod->net =  (vvp_net_t*)  daport; 
+  cod->bit_idx[0] = delay;
+  cod->bit_idx[1] = bit;
+  trace2( "COMPILE_WRAP::notify ",  cod->bit_idx[0], cod->bit_idx[1] );
 }  
 /* --------------------------------- */
 void COMPILE_WRAP::load_number_immediate( const int64_t* d, unsigned reg )
@@ -1364,20 +1370,30 @@ struct notify_event_s : public event_s {
 //  static void* operator new(size_t);
 //  static void operator delete(void*);
 };
+struct notify_i_event_s : public event_s {
+  vthread_t thr;
+  vvp_code_t cp;
+  void run_run(void);
+  void single_step_display(void){}
+
+//  static void* operator new(size_t);
+//  static void operator delete(void*);
+};
 
 //static const size_t NOTIFY_CHUNK_COUNT = 8192 / sizeof(struct notify_event_s);
 
 #define SEQ_ACTIVE 1
 
 /*--------------------------------- */
-bool of_NOTIFY(vthread_t thr, vvp_code_t cp)
+bool of_NOTIFY_I(vthread_t thr, vvp_code_t cp)
 {
   unsigned delay = cp->bit_idx[0];
   unsigned bit = cp->bit_idx[1];
 
   DEV_LOGIC_DA* daport = (DEV_LOGIC_DA*) cp->net;
+  assert(daport);
   unsigned val = thr->bits4.value(bit);
-  trace4("NOTIFY "+ daport->long_label(), bit, delay, val, CKT_BASE::_sim->_time0);
+  trace5("NOTIFY_I "+ daport->long_label(), bit, delay, val, CKT_BASE::_sim->_time0, hp(daport));
 
   unsigned try_again_in = daport->edge(val, delay );
 
@@ -1385,10 +1401,37 @@ bool of_NOTIFY(vthread_t thr, vvp_code_t cp)
 //  then we need to do something smarter.
   if ( try_again_in != 0 ){
     trace2("of_NOTIFY requeue...", try_again_in, CKT_BASE::_sim->_time0);
-    notify_event_s* E = new notify_event_s();
+    notify_i_event_s* E = new notify_i_event_s();
     E->thr = thr;
     E->cp = new vvp_code_s(*cp);
     E->cp->bit_idx[0]-=try_again_in;
+    ex_schedule_event_(E, try_again_in, SEQ_ACTIVE);
+  }
+
+  return true;
+}
+/*--------------------------------- */
+bool of_NOTIFY(vthread_t thr, vvp_code_t cp)
+{
+  unsigned delay_index = cp->bit_idx[0];
+  unsigned delay = thr->bits4.value(delay_index) ;
+  unsigned bit = cp->bit_idx[1];
+
+  DEV_LOGIC_DA* daport = (DEV_LOGIC_DA*) cp->net;
+  assert(daport);
+  unsigned val = thr->bits4.value(bit);
+  trace5("NOTIFY "+ daport->long_label(), bit, delay, val, CKT_BASE::_sim->_time0, hp(daport));
+
+  unsigned try_again_in = daport->edge(val, delay );
+
+//  maybe a transition is not possible,
+//  then we need to do something smarter.
+  if ( try_again_in != 0 ){
+    trace2("of_NOTIFY requeue...", try_again_in, CKT_BASE::_sim->_time0);
+    notify_i_event_s* E = new notify_i_event_s();
+    E->thr = thr;
+    E->cp = new vvp_code_s(*cp);
+    E->cp->bit_idx[0] = delay - try_again_in;
     ex_schedule_event_(E, try_again_in, SEQ_ACTIVE);
   }
 
@@ -1412,5 +1455,11 @@ bool of_LNI(vthread_t thr, vvp_code_t cp)
 void notify_event_s::run_run(){
   trace0("running respawned notify");
   of_NOTIFY(thr,cp);
+  delete cp;
+}
+/*------------------*/
+void notify_i_event_s::run_run(){
+  trace0("running respawned notify");
+  of_NOTIFY_I(thr,cp);
   delete cp;
 }

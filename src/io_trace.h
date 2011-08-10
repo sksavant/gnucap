@@ -78,10 +78,13 @@ class hp{
 		                                          << "  " << #y << "=" << y  \
 		                                          << "  " << #z << "=" << z  \
 		                                          << endl )
-#define trace5(s,v,w,x,y,z)\
-	(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g\n",\
-	s, #v, (double)(v), #w, (double)(w), #x, (double)(x),\
-	#y, (double)(y), #z, (double)(z)))
+#define trace5(s,v,w,x,y,z) ( \
+		cerr <<  "@#@" << s << "  " << #v << "=" << v  \
+		     << "  " << #w << "=" << w  \
+		     << "  " << #x << "=" << x  \
+		     << "  " << #y << "=" << y  \
+		     << "  " << #z << "=" << z  \
+		     << endl )
 #define trace6(s,u,v,w,x,y,z)\
 	(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g\n",\
     s, #u, (double)(u),#v, (double)(v), #w, (double)(w), #x, (double)(x),\

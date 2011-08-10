@@ -418,31 +418,16 @@ class COMPILE_WRAP : public COMPILE {
 						is_cell);
 		}
 
+		void notify_i( const ARG_BASE* l,
+			  	uint32_t m,
+			  	uint32_t n, COMPONENT* daport);
 		void notify( const ARG_BASE* l,
-			  	unsigned long m,
-			  	unsigned long n, COMPONENT* daport){
+			  	uint32_t m,
+			  	uint32_t n, COMPONENT* daport);
 
-			trace0("COMPILE_WRAP::notify");
-			assert(l);
-			char *ll = strdup(string(*l).c_str());
-			assert(ll);
-			comp_operands_s *opa = (comp_operands_t) calloc(1, sizeof(comp_operands_s));
-			symb_s L;
-			opa->argc = 3;
-			L.text = ll;
-			L.idx = 0;
 
-			opa->argv[0].ltype = L_SYMB;
-			opa->argv[0].symb = L;
-			opa->argv[1].ltype = L_NUMB;
-			opa->argv[1].numb = m;
-			opa->argv[2].ltype = L_NUMB;
-			opa->argv[2].numb = n;
-
-			notify( opa, daport );
-		}
-
-		void notify( comp_operands_t opa, COMPONENT* daport );
+		void notify_i ( uint32_t delay, uint32_t bit, COMPONENT* daport);
+		void notify ( uint32_t delay, uint32_t bit, COMPONENT* daport);
 		void load_real_immediate( const double*, unsigned reg );
 		void load_number_immediate( const int64_t*, unsigned reg );
 		void codelabel( ARG_BASE* label);

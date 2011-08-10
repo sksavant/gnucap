@@ -1,5 +1,4 @@
 /*$Id: d_logic.cc,v 1.2 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
- * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *         Felix Salfelder 2011
@@ -24,11 +23,12 @@
 #include "d_subckt.h"
 #include "u_xprobe.h"
 #include "d_ivl.h"
+#include "ivl_target.h"
 #include "d_logic.h"
 #include <dlfcn.h>
 #include "e_ivl_compile.h"
 //
-#ifndef NDEBUG
+#ifdef DO_TRACE
 //#define USE_CALLBACK
 //
 void dumpScope(vpiHandle H, int depth ){
@@ -332,7 +332,7 @@ void DEV_IVL_BASE::expand()
     assert(module);
 
 
-#ifndef NDEBUG
+#ifdef DO_TRACE2
     // this sould list the ports we need.
     dumpScope(module,0);
 #endif
@@ -361,10 +361,10 @@ void DEV_IVL_BASE::expand()
       name = vpi_get_str(vpiName,item);
       COMPONENT* P;
 
-
+  // IVL_SIP_OUTPUT=2
 
       switch(type) {
-        case 1: // <- ivl
+        case IVL_SIP_OUTPUT: // <- ivl
           trace0("DEV_IVL  ==> Net: " + string(name) + " placing DEV_LOGIC_DA");
           src='V';
           x = new node_t();
@@ -377,7 +377,7 @@ void DEV_IVL_BASE::expand()
 
           P = daports[daportno++];
           break;
-        case 2: // -> ivl
+        case IVL_SIP_INPUT: // -> ivl
           src='I';
           trace1("DEV_IVL  ==> Reg: " + string(name) + " placing DEV_LOGIC_AD", n);
           x = new node_t();
@@ -395,6 +395,7 @@ void DEV_IVL_BASE::expand()
           // which other types would make sense?
           continue;
       }
+      trace1("DEV_IVL::expand ", hp(P));
 
       assert(_n[n].n_());
 
@@ -1438,3 +1439,4 @@ void yyerror(const char*msg){
 
 ofstream debug_file;
 
+// vim:ts=8:sw=2:et:
