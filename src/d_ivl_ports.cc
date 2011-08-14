@@ -1203,10 +1203,11 @@ unsigned DEV_LOGIC_DA::edge(int in, unsigned delay)
     case 0: lvfromivl = lvFALLING;
             future_state = lvSTABLE0;
             break;
-  //  case 3:
-    //        trace0("unstable rise?");
     case 1: lvfromivl = lvRISING;
             future_state = lvSTABLE1;
+            break;
+    case 3: lvfromivl = lvUNKNOWN;
+            future_state = lvUNKNOWN;
             break;
     default: 
              error(bDANGER, "got bogus value %i from ivl\n", in);
@@ -1288,6 +1289,7 @@ extern bool of_NOTIFY(vthread_t thr, vvp_code_t code);
 extern bool of_NOTIFY_I(vthread_t thr, vvp_code_t code);
 extern bool of_LRI(vthread_t thr, vvp_code_t code);
 extern bool of_LNI(vthread_t thr, vvp_code_t code);
+extern bool of_LNI_pad(vthread_t thr, vvp_code_t code);
 /*--------------------------------------------------------------------------*/
 // too complicated. opa not needed...
 //void COMPILE_WRAP::notify ( comp_operands_t opa, COMPONENT* daport)
@@ -1316,22 +1318,23 @@ void COMPILE_WRAP::notify_i( uint32_t delay, uint32_t bit, COMPONENT* daport)
   trace2( "COMPILE_WRAP::notify ",  cod->bit_idx[0], cod->bit_idx[1] );
 }  
 /* --------------------------------- */
-void COMPILE_WRAP::load_number_parameter( const int32_t* d, unsigned reg )
+void COMPILE_WRAP::load_number_parameter( const int32_t* d, unsigned reg, unsigned wid )
 {
   trace2("loading immediately, ", hp(d), *d);
   vvp_code_t cod = codespace_allocate();
-  cod->opcode = of_LNI;
+  if (wid==64){
+    cod->opcode = of_LNI_pad;
+  }else{
+    cod->opcode = of_LNI;
+  }
   cod->ip = (const int64_t*) d;
+  
   cod->bit_idx[0] = static_cast<uint32_t>(reg);
 }
 /* --------------------------------- */
-void COMPILE_WRAP::load_number_parameter( const int64_t* d, unsigned reg )
+void COMPILE_WRAP::load_number_parameter( const int64_t* , unsigned  )
 {
-  trace2("loading immediately, ", hp(d), *d);
-  vvp_code_t cod = codespace_allocate();
-  cod->opcode = of_LNI;
-  cod->ip = d;
-  cod->bit_idx[0] = static_cast<uint32_t>(reg);
+  assert(false);
 }
 /* --------------------------------- */
 void COMPILE_WRAP::load_real_parameter( const double* d, unsigned reg )
@@ -1454,12 +1457,47 @@ bool of_LRI(vthread_t thr, vvp_code_t cp)
   return true;
 }
 /*------------------*/
+// ripped from vthread.
+static inline void thr_check_addr(struct vthread_s*thr, unsigned addr)
+{
+        if (thr->bits4.size() <= addr)
+                      thr->bits4.resize(addr+1);
+}
+/*------------------*/
 bool of_LNI(vthread_t thr, vvp_code_t cp)
 {
   const int64_t* d = cp->ip;
-  thr->words[cp->bit_idx[0]].w_int = *d;
+  trace3("LNI", *d, cp->bit_idx[0], cp->bit_idx[1]);
+
+  unsigned dst = cp->bit_idx[0];
+  unsigned wid = 32; // fixme bit_idx[1]
+  // doesnt work. have no arithmetic registers for ints?
+  // thr->words[cp->bit_idx[0]].w_int = *d;
+  //
+  //
+  //taken from MOVI
+  thr_check_addr(thr, dst+wid-1);
+  static unsigned long val[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  val[0] = *d;
+  thr->bits4.setarray(dst, 64, val);
   return true;
 }
+/*------------------*/
+bool of_LNI_pad(vthread_t thr, vvp_code_t cp)
+{
+  const int32_t* d = (int32_t*) cp->ip;
+  trace3("LNI", *d, cp->bit_idx[0], cp->bit_idx[1]);
+
+  unsigned dst = cp->bit_idx[0];
+  unsigned wid = 64;
+
+  thr_check_addr(thr, dst+wid-1);
+  static unsigned long val[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  val[0] = *d;
+  thr->bits4.setarray(dst, 64, val);
+  return true;
+}
+/*------------------*/
 /*------------------*/
 void notify_event_s::run_run(){
   trace0("running respawned notify");

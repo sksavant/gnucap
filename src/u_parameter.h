@@ -307,7 +307,14 @@ void e_val(PARAMETER<T>* p, const T& def, const CARD_LIST* scope)
 }
 
 template <class T>
-void e_val(T* p, const T& def, const CARD_LIST*)
+void e_val(T* p, const T& def, const CARD_LIST* scope)
+{
+  assert(p);
+  *p=def;
+}
+
+template <class T>
+void e_val(T* p, const PARAMETER<T>& def, const CARD_LIST*)
 {
   assert(p);
   *p=def;
