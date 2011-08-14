@@ -194,7 +194,7 @@ void compile_vpi_call(COMPILE* c, const char* label, const char* cmd, bool b0, b
 
 }
 /*---------------------------------------------------------*/
-void COMPILE_WRAP::notify(   const ARG_BASE* l,
+void COMPILE_WRAP::notify(   const ARG_BASE*,
 		uint32_t delay_index,
 		uint32_t bit, COMPONENT* daport){
 
@@ -202,7 +202,7 @@ void COMPILE_WRAP::notify(   const ARG_BASE* l,
 	notify( delay_index, bit, daport );
 }
 /*---------------------------------------------------------*/
-void COMPILE_WRAP::notify_i(   const ARG_BASE* l,
+void COMPILE_WRAP::notify_i(   const ARG_BASE*,
 		uint32_t delay,
 		uint32_t bit, COMPONENT* daport){
 

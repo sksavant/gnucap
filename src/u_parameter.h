@@ -63,6 +63,9 @@ public:
   //bool has_soft_value()const {untested(); return (has_good_value() && !has_hard_value());}
 
   operator T()const {return _v;}
+  // not a good idea:
+  // const T* operator&() const {return &_v;}
+
   const T*	pointer()const	 {return &_v;}
   T	e_val(const T& def, const CARD_LIST* scope)const;
   void	parse(CS& cmd);
@@ -274,6 +277,21 @@ void set_default(T* p, const T& v)
   *p = v;
 }
 
+// making readonly pointer transparent.
+template <class T>
+const T* get_pointer(const PARAMETER<T>& p)
+{
+  assert(p);
+  return p.pointer();
+}
+
+template <class T>
+const T* get_pointer(const T& p)
+{
+  assert(p);
+  return &p;
+}
+
 template <class T>
 void e_val(PARAMETER<T>* p, const PARAMETER<T>& def, const CARD_LIST* scope)
 {
@@ -286,6 +304,13 @@ void e_val(PARAMETER<T>* p, const T& def, const CARD_LIST* scope)
 {
   assert(p);
   p->e_val(def, scope);
+}
+
+template <class T>
+void e_val(T* p, const T& def, const CARD_LIST*)
+{
+  assert(p);
+  *p=def;
 }
 
 //e_val(PARAMETER<MODEL_BUILT_IN_BTI>*, NULL, const CARD_LIST*&)’      
