@@ -78,6 +78,9 @@ private:
 public:
   static void attach_common(COMMON_COMPONENT* c, COMMON_COMPONENT** to);
   static void detach_common(COMMON_COMPONENT** from);
+#ifdef DO_TRACE
+  int attach_count(){return		_attach_count;}
+#endif
 private:
   COMMON_COMPONENT& operator=(const COMMON_COMPONENT&)
 			      {unreachable(); return *this;}
@@ -122,6 +125,8 @@ public:
   virtual void  tr_accept(COMPONENT*)	{}
   virtual bool	has_tr_eval()const	{untested0( name().c_str() ); return false;}
   virtual bool	has_ac_eval()const	{untested(); return false;}
+  virtual void  set_ic(double){}
+  virtual void  keep_ic(){}
 
 public:
   virtual bool	has_tt_eval()const	{untested(); return false;}
@@ -138,10 +143,10 @@ public:
 
   bool operator!=(const COMMON_COMPONENT& x)const {return !(*this == x);}
   int attach_count()const{
-    trace1("COMMON_COMPONENT::attach_count ", hp(this));
     return _attach_count;
   }
   std::string	      modelname()const	{
+    //trace1("COMMON_COMPONENT::modelname", hp(this));
     return _modelname;}
   const MODEL_CARD*   model()const	{
     if(!_model) { 
@@ -255,6 +260,7 @@ public:	// state, aux data
   //--------------------------------------------------------------------
 public:	// type
   void  set_dev_type(const std::string& new_type);
+  virtual std::string dev_type()const	{unreachable(); return "COMPONENT";}
   //--------------------------------------------------------------------
 public:	// ports
   virtual std::string port_name(uint_t)const = 0;
@@ -332,14 +338,15 @@ protected:
   virtual void tt_next() {  }
 
   virtual void tt_init_i(){
-	  std::cerr << short_label() << " COMP:init_i have " << net_nodes() << "nodes "<< TRANSIENT::total_outsteps() << "\n";
+          std::cerr << short_label() << " COMP:init_i have " << net_nodes() <<
+            "nodes "<< TRANSIENT::steps_total_out() << "\n";
 	  // _amps = (double*) malloc(sizeof (double) * net_nodes() * TRANSIENT::total_outsteps() );
 	  _amps=NULL;
 	  // _amps_new = (double*) malloc(sizeof (double) * net_nodes() * TRANSIENT::total_outsteps() );
-          _amps_new = new double[net_nodes() * TRANSIENT::total_outsteps()];
+          _amps_new = new double[net_nodes() * TRANSIENT::steps_total_out()];
 
 	  std::cerr << "COMPONENT::tt_init_i: allocated " 
-                    << net_nodes() * TRANSIENT::total_outsteps() << "doubles  for " << short_label() << ": " << _amps  << "\n";
+                    << net_nodes() * TRANSIENT::steps_total_out() << "doubles  for " << short_label() << ": " << _amps  << "\n";
   }
 
   void tr_dinge(){

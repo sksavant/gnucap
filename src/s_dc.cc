@@ -1,4 +1,5 @@
 /*$Id: s_dc.cc,v 1.3 2009-12-13 17:55:02 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -355,6 +356,7 @@ void DCOP::sweep()
 /*--------------------------------------------------------------------------*/
 void DCOP::sweep_recursive(int Nest)
 {
+  trace1("DCOP::sweep_recursive", Nest);
   --Nest;
   assert(Nest >= 0);
   assert(Nest < DCNEST);
@@ -385,6 +387,7 @@ void DCOP::sweep_recursive(int Nest)
 /*--------------------------------------------------------------------------*/
 void DCOP::first(int Nest)
 {
+  trace2("DCOP::first", Nest, _start[Nest]);
   assert(Nest >= 0);
   assert(Nest < DCNEST);
   assert(_start);

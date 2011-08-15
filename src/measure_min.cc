@@ -27,19 +27,25 @@
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class MEASURE : public FUNCTION {
+class MEASURE : public WAVE_FUNCTION {
+  PARAMETER<double> before;
+  PARAMETER<double> after;
+  bool last;
+  bool arg;
 public:
-  double eval(CS& Cmd, const CARD_LIST* Scope)const
+  MEASURE(): 
+    WAVE_FUNCTION(),
+    before(BIGBIG),
+    after(-BIGBIG),
+    last(false),
+    arg(false)
+  {}
+  virtual FUNCTION* clone()const { return new MEASURE(*this);}
+  void expand(CS& Cmd, const CARD_LIST* Scope)
   {
-    std::string probe_name;
-    PARAMETER<double> before(BIGBIG);
-    PARAMETER<double> after(-BIGBIG);
-    bool last = false;
-    bool arg = false;
-
     unsigned here = Cmd.cursor();
     Cmd >> probe_name;
-    WAVE* w = find_wave(probe_name);
+    w = find_wave(probe_name);
 
     if (!w) {
       Cmd.reset(here);
@@ -64,10 +70,13 @@ public:
       w = find_wave(probe_name);
     }else{
     }
-    
+    before.e_val(BIGBIG, Scope);
+    after.e_val(-BIGBIG, Scope);
+  }
+
+  double wave_eval()const
+  {
     if (w) {
-      before.e_val(BIGBIG, Scope);
-      after.e_val(-BIGBIG, Scope);
 
       double time = (last) ? -BIGBIG : BIGBIG;
       double m = BIGBIG;

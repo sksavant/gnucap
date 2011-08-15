@@ -122,9 +122,9 @@ bool COMMON_BUILT_IN_MOS::operator==(const COMMON_COMPONENT& x)const
     && COMMON_COMPONENT::operator==(x));
 }
 /*--------------------------------------------------------------------------*/
-void COMMON_BUILT_IN_MOS::set_param_by_index(int I, std::string& Value, int Offset)
+void COMMON_BUILT_IN_MOS::set_param_by_index(int i, std::string& Value, int Offset)
 {
-  switch (COMMON_BUILT_IN_MOS::param_count() - 1 - I) {
+  switch (COMMON_BUILT_IN_MOS::param_count() - 1 - i) {
   case 0:  l_in = Value; break;
   case 1:  w_in = Value; break;
   case 2:  ad_in = Value; break;
@@ -133,7 +133,7 @@ void COMMON_BUILT_IN_MOS::set_param_by_index(int I, std::string& Value, int Offs
   case 5:  ps = Value; break;
   case 6:  nrd = Value; break;
   case 7:  nrs = Value; break;
-  default: COMMON_COMPONENT::set_param_by_index(I, Value, Offset);
+  default: COMMON_COMPONENT::set_param_by_index(i, Value, Offset);
   }
 }
 /*--------------------------------------------------------------------------*/

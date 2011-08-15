@@ -500,7 +500,9 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__Edu(long double uin, long double cur, c
   Rc0*Rc0*Rc1*Re0*Re0)*uin)*expl(2.0L*Rc1*uin))*expl(-t*expl(-Rc1*uin)/Rc0 -
   t*uin/Re0)/(Rc0*Rc0*Rc0*Re0*uin*uin*expl(3.0L*Rc1*uin) +
   2.0L*Rc0*Rc0*Re0*Re0*uin*expl(2.0L*Rc1*uin) + Rc0*Re0*Re0*Re0*expl(Rc1*uin));
-  
+  if (!(ret>=0)) {
+    fprintf(stderr,"__Edu: ret is not positive %Lg ",ret);
+  } 
   assert(ret>=0);
   return(ret);
 

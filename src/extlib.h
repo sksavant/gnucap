@@ -82,7 +82,7 @@ struct SpcDllData {
 class ExtAPI : public SpcDllData {
  public:
 
-  void    *(*bindnet)(const char *,char,int *,void *,void (*)(void *,void *,double));
+  //void    *(*bindnet)(const char *,char,int *,void *,void (*)(void *,void *,double));
   double   (*startsim)(const char *);
   void     (*endsim)();
   double   (*contsim)(const char *,double);
@@ -93,7 +93,7 @@ class ExtAPI : public SpcDllData {
   ExtAPI() {
     startsim = (typeof(startsim))ExtBase::null_call;
     endsim   = (typeof(endsim))ExtBase::null_call;
-    bindnet  = (typeof(bindnet))ExtBase::null_call;
+    //bindnet  = (typeof(bindnet))ExtBase::null_call;
     contsim  = (typeof(contsim))ExtBase::null_call;
     activate = (typeof(activate))ExtBase::null_call;
     so_main  = (typeof(so_main))ExtBase::null_call;
@@ -101,38 +101,30 @@ class ExtAPI : public SpcDllData {
 };
 
 class ExtLib : public ExtAPI , public COMPONENT {
- public:
+  public:
+    std::list<class ExtRef*> refs;
+    std::string name;
+    void *handle;
+    double now;
+    ExtLib(const char *_nm,void *_hndl) : name(_nm), handle(_hndl), now(-1) {
+      El=this;
+    }
+    int init(const char *);
+    static void SetActive(void *dl,void *handle,double time);
+    void        set_active(void *handle,double time);
+    virtual std::string value_name() const {return name;}
+    virtual bool print_type_in_spice() const {return false;}
+    static ExtLib *Sdd2El(SpcDllData *spd) {
+      return (ExtLib*) spd->El;
+      //intptr_t p = (intptr_t)spd;
+      //p -= offsetof(ExtLib,active);   
+      //return (ExtLib *)p;
+    }
+  private:
+    ExtLib();
 
-  std::list<class ExtRef*> refs;
-
-  std::string name;
-  void *handle;
-  double now;
-
-  ExtLib(const char *_nm,void *_hndl) : name(_nm), handle(_hndl), now(-1)
-  {
-    El=this;
-  }
-  int init(const char *);
-
-  static void SetActive(void *dl,void *handle,double time);
-  void        set_active(void *handle,double time);
-
-  virtual std::string value_name() const {return name;}
-  virtual bool print_type_in_spice() const {return false;}
-
-  static ExtLib *Sdd2El(SpcDllData *spd) {
-    return (ExtLib*) spd->El;
-    //intptr_t p = (intptr_t)spd;
-    //p -= offsetof(ExtLib,active);   
-    //return (ExtLib *)p;
-  }
-
- private:
-  ExtLib();
-
- public:
-  virtual std::string port_name(uint_t)const {return "";}
+  public:
+    virtual std::string port_name(uint_t)const {return "";}
 };
 
 class ExtSig : public ExtBase {
@@ -201,8 +193,5 @@ class ExtControl{
 void PrintInst(FILE *fp,struct __vpiScope *scope);
 
 /*------------------------------------------------------------*/
-enum sim_mode {SIM_ALL,
-               SIM_INIT,SIM_CONT0,SIM_CONT1,
-               SIM_PREM,SIM_DONE};
 
 #endif

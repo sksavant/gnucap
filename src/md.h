@@ -158,7 +158,7 @@ const double inf = std::numeric_limits<float>::infinity( );
 
 inline void* dlopen(const char* f, int)
 {
-  trace0("Loadlibrary");
+  trace0("Loadlibrary wrapper");
   return LoadLibrary(const_cast<char*>(f));
 }
 

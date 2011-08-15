@@ -166,6 +166,9 @@ class DEV_LOGIC_VVP : public BASE_SUBCKT  {
     ExtLib* extlib()const; //{return (((COMMON_LOGIC_VVP*) common())->_extlib);}
 };
 /*------------------------------------------------------------*/
+enum sim_mode {SIM_ALL,
+               SIM_INIT,SIM_CONT0,SIM_CONT1,
+               SIM_PREM,SIM_DONE};
 class vvp{
   public:
   static double SimTimeD;

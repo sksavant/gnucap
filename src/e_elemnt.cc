@@ -112,7 +112,6 @@ void ELEMENT::tr_restore()
   trace0(("ELEMENT::tr_restore for " + short_label()).c_str());
   if (_time[0] > _sim->_time0) {itested();
     trace0("shift back");
-    std::cout << "* shift " << _time[0] << " > " << _sim->_time0 << "\n";
     for (int i=0  ; i<OPT::_keep_time_steps-1; ++i) {itested();
       _time[i] = _time[i+1];
       _y[i] = _y[i+1];
@@ -124,14 +123,11 @@ void ELEMENT::tr_restore()
   }else{untested();
   }
 
-  if( _time[0] != _sim->_time0 )
-    std::cout << "* BUG . " << short_label() << "\n" ;
+  //if( _time[0] != _sim->_time0 )
 //  assert(_time[0] == _sim->_time0);
   if (_time[0] != _sim->_time0) {itested();
     error(bDANGER, "//BUG// restore time mismatch.  t0=%.12f, s->t=%.12f\n",
 	 _time[0], _sim->_time0);
-    std::cerr << "HACK? " << short_label() <<
-      ": ELEMENT::tr_restore, time mismatch, setting back to " << _sim->_time0 << "\n";
     //BUG// happens when continuing after a ^c,
     // when the last step was not printed
     // _time[0] is the non-printed time.  _sim->_time0 is the printed time.
@@ -482,8 +478,11 @@ XPROBE ELEMENT::ac_probe_ext(const std::string& x)const
 /*--------------------------------------------------------------------------*/
 double ELEMENT::tr_review_trunc_error(const FPOLY1* q)
 {
+  trace1("ELEMENT::tr_review_trunc_error", order());
   int error_deriv = order()+1;
   double timestep;
+  trace1("ELEMENT::tr_review_trunc_error", error_deriv);
+  trace2("ELEMENT::tr_review_trunc_error", _time[0], error_deriv);
   if (_time[0] <= 0.) {
     // DC, I know nothing
     timestep = NEVER;
@@ -563,6 +562,22 @@ double ELEMENT::tr_review_check_and_convert(double timestep)
   assert(time_future > 0.);
   assert(time_future > _time[1]);
   return time_future;
+}
+/*--------------------------------------------------------------------------*/
+void ELEMENT::set_ic(double x)
+{ 
+  // tr_unload();
+  trace1("ELEMENT::set_ic " + long_label(), x);
+  *(_value.pointer_hack()) = x;
+  // do_tr();
+  // tr_load();
+  q_eval();
+  // q_load();
+}
+/*--------------------------------------------------------------------------*/
+void ELEMENT::keep_ic()
+{ 
+  unreachable();
 }
 /*--------------------------------------------------------------------------*/
 void ELEMENT::tt_next()

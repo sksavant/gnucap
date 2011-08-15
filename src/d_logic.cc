@@ -100,7 +100,7 @@ void DEV_LOGIC::expand()
     }
   }catch (Exception_Cant_Find&) {
     error(((!_sim->is_first_expand()) ? (bDEBUG) : (bWARNING)), 
-	  long_label() + ": can't find subckt: " + subckt_name + ", forcing digital\n");
+	  long_label() + ": can't find subckt: \"" + subckt_name + "\", forcing digital\n");
   }
   
   assert(!is_constant()); /* is a BUG */
@@ -189,7 +189,7 @@ void DEV_LOGIC::tr_advance()
     subckt()->tr_advance();
     break;
   case moDIGITAL: 
-    if (_n[OUTNODE]->in_transit()) {
+    if (_n[OUTNODE]->in_transit() || _n[OUTNODE]->final_time_a()  < NEVER ) {
       q_eval();
       if (_sim->_time0 >= _n[OUTNODE]->final_time()) {
 	_n[OUTNODE]->propagate();
@@ -386,6 +386,7 @@ void DEV_LOGIC::tr_accept()
   }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */  
   if (want_analog()) {
+    assert(false); // probably we don't need this...
     if (_gatemode == moDIGITAL) {untested();
       error(bTRACE, "%s:%u:%g switch to analog, %s\n", long_label().c_str(),
 	    _sim->iteration_tag(), _sim->_time0, _failuremode.c_str());

@@ -73,7 +73,6 @@ AC_ARG_WITH([iverilog],
   [],
   [with_iverilog=no])
 
-
 # BUG. does not check $with_iverilog for correctness
 IVERILOG=
 AS_IF([ test "x$with_iverilog" != xno],
@@ -82,8 +81,12 @@ AS_IF([ test "x$with_iverilog" != xno],
 		AC_CHECK_LIB([vvp], [main],
 				  [
 					CPPFLAGS+=-I$with_iverilog
-					AC_SUBST([IVERILOG], ["-lvvp"])
+#					AC_SUBST([IVERILOG], ["-lvvp"])
+# using dlmopen for now.
+					#AC_SUBST([IVERILOG], ["-lvvp_compile"]) 
+					AC_SUBST([IVERILOG], ["-lvvp"]) 
 					AC_SUBST([IVERILOG_SO], ["$with_iverilog/lib/libvvp.so"])
+					AC_SUBST([IVERILOG_PATH], ["$with_iverilog"])
 					AC_SUBST([IVERILOG_INCLUDE], ["-I$with_iverilog"])
 					AC_DEFINE([HAVE_IVERILOG], [1], [Define if you have ivl])
 				  ],
@@ -102,8 +105,8 @@ AC_CHECK_HEADERS(vvp/schedule.h, [ ],
 
 
 AM_CONDITIONAL(IVERILOG, test x$with_iverilog != xno )
+AM_CONDITIONAL(IVERILOG_VVP, test x$iverilog_vvp_old = xyes )
 
-AC_SUBST(IVERILOG_PATH)
 AC_SUBST(IVERILOG_INCLUDE)
 
 dnl debugging
@@ -156,9 +159,46 @@ AC_CHECK_LIB([m], [cos])
 
 # probably unneeded.
 AC_CHECK_LIB([gslcblas], [cblas_dgemm])
+AC_CHECK_LIB([lapack_atlas], [clapack_dgesv])
+AC_CHECK_LIB([lapack], [dgels_])
 AC_CHECK_LIB([gsl], [gsl_blas_dgemm])
 AC_CHECK_LIB([gsl], [gsl_fit_linear])
 AC_CHECK_FUNCS([sqrt])
+
+
+# some more checks. some should depend on switches. but the switches arent
+# there yet
+AC_CHECK_HEADER([atlas/clapack.h],
+                [AC_DEFINE([HAVE_CLAPACK_H], [1],
+                           [Define to 1 if you have atlas/clapack.h])],
+                [AC_MSG_ERROR([please install package libatlas-dev])])
+
+AC_CHECK_HEADER([boost/algorithm/string.hpp],
+                [AC_DEFINE([HAVE_STRING_HPP], [1],
+                           [Define to 1 if there is boost/algorithm/string.hpp])],
+                [AC_MSG_ERROR([please install the boost package])])
+
+AC_CHECK_HEADER([boost/algorithm/string/split.hpp],
+                [AC_DEFINE([HAVE_SPLIT_HPP], [1],
+                           [Define to 1 if there is boost/algorithm/string/split.hpp])],
+                [AC_MSG_ERROR([please install the boost package])])
+
+AC_CHECK_HEADER([readline/readline.h],
+                [AC_DEFINE([HAVE_READLINE_H], [1],
+                           [Define to 1 if you have readline/readline.h])],
+                [AC_MSG_ERROR([please install the libreadline-dev package])])
+
+AC_CHECK_HEADER([readline/history.h],
+                [AC_DEFINE([HAVE_HISTORY_H], [1],
+                           [Define to 1 if you have readline/history.h])],
+                [AC_MSG_ERROR([please install the libreadline-dev package])])
+
+AC_CHECK_HEADER([gsl/gsl_fit.h],
+                [AC_DEFINE([HAVE_GSL_FIT_H], [1],
+                           [Define to 1 if you have gsl/gsl_fit.h])],
+                [AC_MSG_ERROR([please install the libgsl0-dev package])])
+
+
 
 AC_ARG_WITH([readline],
 [AS_HELP_STRING([--with-readline],
@@ -215,6 +255,42 @@ if test "x$GCC" = "xyes" -a "$enable_debug" = "yes"; then
 				;;
 		esac
 	done
+# remove additional added  -OX
+    FOUNDOX="no"
+    NEWCXXFLAGS=""
+	for flag in ${CXXFLAGS} ; do
+        case " -O0 -O1 -O2 -O3 " in 
+			*\ ${flag}\ *)
+              if test "${FOUNDOX}" = "no"; then
+                  NEWCXXFLAGS="${NEWCXXFLAGS} ${flag}" 
+              fi
+              FOUNDOX="yes"
+              ;;
+            *) 
+              NEWCXXFLAGS="${NEWCXXFLAGS} ${flag}" 
+              ;;
+        esac
+    done
+    CXXFLAGS=${NEWCXXFLAGS}
+#    echo "CXXFLAGS: ${CXXFLAGS}"
+    FOUNDOX="no"
+    NEWCFLAGS=""
+	for flag in ${CFLAGS} ; do
+        case " -O0 -O1 -O2 -O3 " in 
+			*\ ${flag}\ *)
+              if test "${FOUNDOX}" = "no"; then
+                  NEWCFLAGS="${NEWCFLAGS} ${flag}" 
+              fi
+              FOUNDOX="yes"
+              ;;
+            *) 
+              NEWCFLAGS="${NEWCFLAGS} ${flag}" 
+              ;;
+        esac
+    done
+    CFLAGS=${NEWCFLAGS}
+#    echo "CFLAGS: ${CFLAGS}"
+
 fi
 
 # exports symbols to plugins

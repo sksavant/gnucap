@@ -814,25 +814,7 @@ void TTT::head_tt(double start, double stop, const std::string& col1)
   trace2("TTT::head_tt", start, stop);
   SIM_MODE oldmode=_sim->_mode;
   _sim->_mode=s_TTT;
-
-  if (!plopen(start, stop, plotlist())) {
-    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    int width = std::min(OPT::numdgt+5, BIGBUFLEN-10);
-    char format[20];
-    //sprintf(format, "%%c%%-%u.%us", width, width);
-    sprintf(format, "%%c%%-%us", width);
-    _out.form(format, '*', col1.c_str());
-
-    for (PROBELIST::const_iterator
-        p=printlist().begin();  p!=printlist().end();  ++p) {
-      _out.form(format, ' ', (*p)->label().c_str());
-      //  _out.flush();
-      // cerr << "S_TTT::head_tt: output label"  << (*p)->label().c_str() << std::endl; 
-    }
-    _out << '\n';
-  }else{
-  }
-  _sim->_mode=s_TRAN;
+  PROBELIST* transtore = &PROBE_LISTS::store[s_TRAN];
 
   // TODO clear store but append probes from measurments
   PROBELIST oldstore;
@@ -845,6 +827,38 @@ void TTT::head_tt(double start, double stop, const std::string& col1)
   }
   PROBE_LISTS::store[s_TRAN].clear();
   //end  hack
+
+  if (!plopen(start, stop, plotlist())) {
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    int width = std::min(OPT::numdgt+5, BIGBUFLEN-10);
+    char format[20];
+    //sprintf(format, "%%c%%-%u.%us", width, width);
+    sprintf(format, "%%c%%-%us", width);
+    _out.form(format, '*', col1.c_str());
+
+
+    for (PROBELIST::const_iterator
+        p=printlist().begin();  p!=printlist().end();  ++p) {
+      MEAS_PROBE* w = dynamic_cast<MEAS_PROBE*>(*p);
+      if(w){
+        w->expand(); // FIXME precalc!
+        string probe_name = w->probe_name;
+        trace0("TTT::head_tt adding " + probe_name + " to transtore");
+        CS* c = new CS(CS::_STRING,probe_name);
+        transtore->add_list(*c);
+        delete c;
+      }
+
+    }
+    for (PROBELIST::const_iterator
+        p=printlist().begin();  p!=printlist().end();  ++p) {
+      _out.form(format, ' ', (*p)->label().c_str());
+    }
+    _out << '\n';
+
+  }else{
+  }
+  _sim->_mode=s_TRAN;
   
 
   print_tr_probe_number = printlist().size();
@@ -859,15 +873,22 @@ void TTT::head_tt(double start, double stop, const std::string& col1)
     PROBE_LISTS::store[s_TRAN].merge_probe((*p)->clone());
   }
 
-  // TODO2
-  //  for p in TTT-probe
-  //    transtore.append(p.needed_probes)
-  //
-
   trace3("TTT::tt_head probe TRAN", printlist().size(), storelist().size(), oldstore.size());
-  _sim->_waves = new WAVE[storelist().size()];
-  _sim->_mode=oldmode;
+  for (PROBELIST::const_iterator p=transtore->begin();
+    p!=transtore->end();  ++p) {
+    trace0("TTT::tt_head transtore " + (*p)->label());
+  }
 
+  _sim->_waves = new WAVE[storelist().size()];
+
+  _sim->_mode=s_TTT;
+  for (PROBELIST::const_iterator
+      p=printlist().begin();  p!=printlist().end();  ++p) {
+    _sim->_mode=s_TRAN;
+    (*p)->precalc_last();
+    _sim->_mode=s_TTT;
+  }
+  _sim->_mode=oldmode;
 }
 /*--------------------------------------------------------------------------*/
 /* SIM::head: initialize waves
@@ -1084,7 +1105,7 @@ void TTT::print_stored_results_tt(double x)
 /*--------------------------------------------------------------------------*/
 void TTT::store_results_tt(double x)
 {
- // trace0("TTT::store_results_tt()");
+  trace0("TTT::store_results_tt()");
   if ( printlist().size() ==0)
   {
     return;
@@ -1105,6 +1126,8 @@ void TTT::store_results_tt(double x)
 /*--------------------------------------------------------------------------*/
 void TTT::print_results_tt(double x)
 {
+  trace0("TTT::print_results_tt()");
+   
   if ( printlist().size() == 0)
   {
     untested0( "no ttprint" );
@@ -1137,7 +1160,7 @@ std::string TTT::status()const
  */
 void TTT::store_results(double x)
 {
-//  trace0("TTT::store_results()");
+  trace0("TTT::store_results()");
   _sim->_mode=s_TRAN;
   int ii = 0;
   for (PROBELIST::const_iterator

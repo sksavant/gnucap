@@ -1,5 +1,5 @@
 /*$Id: io_contr.cc,v 1.1 2009-10-23 12:01:45 felix Exp $ -*- C++ -*-
- * vim:ts=8:tw=2:et
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -104,6 +104,7 @@ void OMSTREAM::outreset(void)
  */
 OMSTREAM* OMSTREAM::outset(CS& cmd)
 {
+  trace0("OMSTREAM::outset" + cmd.fullstring());
   OMSTREAM* out=this;
   bool echo = false;
   for (;;) {

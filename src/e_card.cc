@@ -44,6 +44,15 @@ CARD::CARD()
 {
 }
 /*--------------------------------------------------------------------------*/
+CARD* CARD::clone()const
+{
+	unreachable();
+	error(bDANGER, "CARD::clone, " + dev_type() +" " + long_label() 
+			+ " has no clone()\n");
+	
+	return NULL;
+}
+/*--------------------------------------------------------------------------*/
 CARD::CARD(const CARD& p)
   :CKT_BASE(p),
    _evaliter(-100),

@@ -135,46 +135,49 @@ double PROBE::value(void)const
 /*--------------------------------------------------------------------------*/
 double PROBE::probe_node(void)const
 {
+  SIM_DATA* _sim=CKT_BASE::_sim;
   if (Umatch(_what, "iter ")) {
     assert(iPRINTSTEP - sCOUNT == 0);
     assert(iSTEP      - sCOUNT == 1);
     assert(iTOTAL     - sCOUNT == 2);
     assert(iCOUNT     - sCOUNT == 3);
-    return CKT_BASE::_sim->_iter[sCOUNT];
-  }else if (Umatch(_what, "bdel ") && CKT_BASE::_sim->_mode == s_TTT) {
+    return _sim->_iter[sCOUNT];
+  }else if (Umatch(_what, "bdel ") && _sim->_mode == s_TTT) {
     return CKT_BASE::tt_behaviour_del;
-  }else if (Umatch(_what, "bdel ") && CKT_BASE::_sim->_mode == s_TRAN) {
+  }else if (Umatch(_what, "bdel ") && _sim->_mode == s_TRAN) {
     return CKT_BASE::tr_behaviour_del;
-  }else if (Umatch(_what, "brel ") && CKT_BASE::_sim->_mode == s_TTT) {
+  }else if (Umatch(_what, "brel ") && _sim->_mode == s_TTT) {
     return CKT_BASE::tt_behaviour_rel;
-  }else if (Umatch(_what, "brel ") && CKT_BASE::_sim->_mode == s_TRAN) {
+  }else if (Umatch(_what, "brel ") && _sim->_mode == s_TRAN) {
     return CKT_BASE::tr_behaviour_rel;
-  }else if (Umatch(_what, "rejects ") && CKT_BASE::_sim->_mode == s_TTT) {
-    return CKT_BASE::_sim->_tt_rejects;
-  }else if (Umatch(_what, "dT ") && CKT_BASE::_sim->_mode == s_TTT) {
-    return CKT_BASE::_sim->_dT0;
+  }else if (Umatch(_what, "rejects ") && _sim->_mode == s_TTT) {
+    return _sim->_tt_rejects;
+  }else if (Umatch(_what, "dT ") && _sim->_mode == s_TTT) {
+    return _sim->_dT0;
   }else if (Umatch(_what, "ttorder ")) {untested();
-    return CKT_BASE::_sim->get_tt_order();
+    return _sim->get_tt_order();
   }else if (Umatch(_what, "dtt ")) {untested();
-    return CKT_BASE::_sim->_dT0;
+    return _sim->_dT0;
   }else if (Umatch(_what, "bypass ")) {untested();
-    return OPT::bypass + 10*CKT_BASE::_sim->_bypass_ok;
+    return OPT::bypass + 10*_sim->_bypass_ok;
   }else if (Umatch(_what, "control ")) {
     return ::status.control;
   }else if (Umatch(_what, "damp ")) {untested();
-    return CKT_BASE::_sim->_damp;
+    return _sim->_damp;
   }else if (Umatch(_what, "gen{erator} ")) {untested();
-    return CKT_BASE::_sim->_genout;
+    return _sim->_genout;
   }else if (Umatch(_what, "hidden ")) {untested();
     return ::status.hidden_steps;
   }else if (Umatch(_what, "temp{erature} ")) {untested();
-    return CKT_BASE::_sim->_temp_c;
+    return _sim->_temp_c;
   }else if (Umatch(_what, "gain ")) {
-    return CKT_BASE::_sim->_dT0/CKT_BASE::_sim->_dTmin;
+    return _sim->_dT0/_sim->_dTmin;
   }else if (Umatch(_what, "ttime ")) {untested();
-    return CKT_BASE::_sim->_Time0;
+    return _sim->_Time0;
   }else if (Umatch(_what, "time ")) {untested();
-    return CKT_BASE::_sim->_time0;
+    return _sim->_time0;
+  }else if (Umatch(_what, "event ")) {
+    return ((_sim->_eq.empty())? -1.: _sim->_eq.top());
   }else{
     return NOT_VALID;
   }
@@ -230,7 +233,11 @@ double MATH_PROBE::value(void)const
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-MEAS_PROBE::MEAS_PROBE(const MEAS_PROBE& p) : PROBE(p) {  untested(); }
+MEAS_PROBE::MEAS_PROBE(const MEAS_PROBE& p) : 
+  PROBE(p),
+  f(f),
+  w(w)
+{  untested(); }
 /*--------------------------------------------------------------------------*/
 MEAS_PROBE::MEAS_PROBE(const std::string& cmd)
 { 
@@ -247,35 +254,45 @@ MEAS_PROBE::MEAS_PROBE(const std::string& cmd, const CARD_LIST* scope )
   _scope = scope;
 } 
 /*--------------------------------------------------------------------------*/
-double MEAS_PROBE::value(void)const
-{ 
+void MEAS_PROBE::expand(){
   trace0(("MEAS_PROBE::value()"+_what).c_str());
-  CS Cmd(CS::_STRING, _cmd);
+  CS* Cmd = new CS(CS::_STRING, _cmd);
   std::string function;
 
-  Cmd >> function >> '(';
-  FUNCTION* f = measure_dispatcher[function];
+  *Cmd >> function >> '(';
+  f = dynamic_cast<WAVE_FUNCTION*>(( measure_dispatcher[function] )->clone() );
 
-  //trace1("MEAS_PROBE::value mode " ,  (double)CKT_BASE::_sim->sim_mode);
-
-  SIM_MODE oldmode=CKT_BASE::_sim->_mode;
-  CKT_BASE::_sim->_mode=s_TRAN;
-  // argh stupid string
-  fun_t value = f->eval(Cmd, _scope);
-  CKT_BASE::_sim->_mode=oldmode;
-
-
-  if (!Cmd.skip1b(')')) {
-    Cmd.warn(bWARNING, "MEAS_PROBE::value need )");
-  }else{
-    // BUG kills n.
-    //std::istringstream st(value);
-    //double out;
-    //st >> out;
-    return value;
+  if(!f) { 
+    untested(); 
+  } else {
+    f->expand( *Cmd, _scope );
+    probe_name=f->probe_name;
+    // _what=probe_name;
+    trace0("MEAS_PROBE::expand " + probe_name);
   }
 
-  return 888;
+  if (!Cmd->skip1b(')')) {
+    Cmd->warn(bWARNING, "MEAS_PROBE::value need )");
+    f=0;
+  }
+
+  delete Cmd;
+}
+/*--------------------------------------------------------------------------*/
+double MEAS_PROBE::value(void)const
+{ 
+  if (!f){
+    untested();
+    return 0;
+  }
+  trace1("MEAS_PROBE::value() ", hp(w));
+
+  SIM_MODE oldmode=CKT_BASE::_sim->_mode;
+  CKT_BASE::_sim->_mode = s_TRAN;
+  fun_t value = f->wave_eval();
+  CKT_BASE::_sim->_mode = oldmode;
+
+  return value;
 }
 /*--------------------------------------------------------------------------*/
 MEAS_PROBE& MEAS_PROBE::operator=(const MEAS_PROBE& p)
@@ -288,8 +305,27 @@ MEAS_PROBE& MEAS_PROBE::operator=(const MEAS_PROBE& p)
 /*--------------------------------------------------------------------------*/
 const std::string MEAS_PROBE::label(void)const
 {
-  trace0("MEAS_PROBE::label()");
-  return _what;
+  trace1("MEAS_PROBE::label()" + probe_name, hp(f));
+  // FIXME
+  return "meas("+probe_name+")";
+}
+/*--------------------------------------------------------------------------*/
+void MEAS_PROBE::precalc_last()
+{
+  trace0("MEAS_PROBE::precalc_last() " + probe_name);
+
+  if(f){
+    WAVE* w = CKT_BASE::find_wave(probe_name);
+    if(w) {
+      f->set_wave( w );
+    }else{
+    trace0("MEAS_PROBE::precalc_last() no wave...");
+    }
+
+  } else {
+    untested();
+  }
+
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

@@ -140,12 +140,18 @@ public: // virtuals
     assert(m_() <= _sim->_total_nodes);
     return _sim->_vt1[m_()];
   }
+
+  // needed??
+  double      vt2()const {
+    assert(m_() <= _sim->_total_nodes);
+    return _sim->_vt2[m_()];
+  }
   COMPLEX     vac()const {
     assert(m_() != INVALID_NODE );
     assert(m_() <= _sim->_total_nodes);
     return _sim->_ac [m_()];
   }
-  //double      vdc()const		{untested();return _sim->_vdc[m_()];}
+  double      vdc()const		{untested();return _sim->_vdc[m_()];}
 
   //double&     i()	{untested();return SIM::i[m_()];}  /* lvalues */
   COMPLEX&    iac() {
@@ -162,6 +168,8 @@ private:
   int 	      _d_iter;		/* iteration of last update - digital */
   int 	      _a_iter;		/* iteration of last update - analog */
   double      _final_time;	/* time logic transition attains final state */
+                                /* == "event" time. */
+  double      _final_time_a;	/* time transition attains final state */
   double      _lastchange;	/* time of last change */
   double      _old_lastchange;	/* in case it rejects a step */
   smode_t     _mode;		/* simulation mode (analog or digital)*/
@@ -179,10 +187,11 @@ public: // virtuals
 public: // raw data access (rvalues)
   LOGICVAL lv()const			{return _lv;}
   int	   quality()const		{return _quality;}
-  const std::string& failure_mode()const {return _failure_mode;}
+  const std::string& failure_mode()const{return _failure_mode;}
   int	   d_iter()const		{return _d_iter;}
   int	   a_iter()const		{return _a_iter;}
   double   final_time()const		{return _final_time;}
+  double   final_time_a()const		{return _final_time_a;}
   double   last_change_time()const	{return _lastchange;}
   intptr_t process()const	{return _family;}
   double   old_last_change_time()const	{untested(); return _old_lastchange;}
@@ -191,7 +200,7 @@ public: // raw data access (rvalues)
 public: // simple calculated data access (rvalues)
   bool	 lv_future()const	{return lv().lv_future();}
   bool	 is_unknown()const	{return lv().is_unknown();}
-  bool	 in_transit()const	{return final_time() < NEVER;}
+  bool	 in_transit()const;
   bool	 is_digital()const	{return _mode == moDIGITAL;}
   bool	 is_analog()const	{return _mode == moANALOG;}
   double annotated_logic_value()const;
@@ -203,6 +212,7 @@ public: // raw data access (lvalues)
   void	set_quality(int q)		{_quality = q;}
   void	set_failure_mode(const std::string& f) {_failure_mode = f;}
   void	set_final_time(double t)	{_final_time = t;}
+  void	set_final_time_a(double t)	{_final_time_a = t;}
   
   void	set_d_iter()			{_d_iter = _sim->iteration_tag();}
   void	set_last_change_time()		{_lastchange = _sim->_time0;}
@@ -235,7 +245,10 @@ public: // other internal
   }
 
 public: // action, used by logic
-  void	      set_event(double delay, LOGICVAL v);
+  void	      set_event_abs(double delay, LOGICVAL v);
+  void set_event(double delay, LOGICVAL v){
+    return set_event_abs(delay+_sim->_time0,v);
+  }
   void	      force_initial_value(LOGICVAL v);
   void	      propagate();
   double      to_analog(const MODEL_LOGIC*);

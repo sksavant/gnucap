@@ -40,9 +40,11 @@ protected:
   //void   reject_values()		{ _y0 = _y1;}
 public:
   double*  set__value()			{return _value.pointer_hack();}
+//  void  set_value(double x)		{ *(_value.pointer_hack()) = x;}
+  virtual void  set_ic(double x);
+  virtual void  keep_ic();
 
   bool	   skip_dev_type(CS&);
-
 
   virtual  void tr_save_amps(int n);
 public: // override virtual

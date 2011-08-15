@@ -25,3 +25,5 @@ V2 ne3 0 2
 
 .print tran v(X*.nodes)
 .tran 1 5 
+
+.nodelist

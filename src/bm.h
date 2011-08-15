@@ -26,6 +26,7 @@
 #ifndef E_BM_H
 #define E_BM_H
 #include "e_compon.h"
+#include <complex>
 /*--------------------------------------------------------------------------*/
 class SPLINE;
 class FPOLY1;
@@ -89,6 +90,7 @@ public: // override virtual
   void		precalc_first(const CARD_LIST*);
   void		ac_eval(ELEMENT*)const;
   virtual bool	ac_too()const = 0;
+  void set_ic(double x) {  _ic = x; }
 protected: // override virtual
   bool  	parse_params_obsolete_callback(CS&);
 public:

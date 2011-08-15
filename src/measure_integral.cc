@@ -27,17 +27,22 @@
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class MEASURE : public FUNCTION {
+class MEASURE : public WAVE_FUNCTION {
+  PARAMETER<double> before;
+  PARAMETER<double> after;
 public:
-  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
+  MEASURE():
+    WAVE_FUNCTION(),
+    before(BIGBIG),
+    after(-BIGBIG)
+  {}
+  virtual FUNCTION* clone()const { return new MEASURE(*this);}
+  void expand(CS& Cmd, const CARD_LIST* Scope)
   {
-    std::string probe_name;
-    PARAMETER<double> before(BIGBIG);
-    PARAMETER<double> after(-BIGBIG);
     
     unsigned here = Cmd.cursor();
     Cmd >> probe_name;
-    WAVE* w = find_wave(probe_name);
+    w = find_wave(probe_name);
 
     if (!w) {
       Cmd.reset(here);
@@ -60,9 +65,14 @@ public:
     }else{
     }
 
+    before.e_val(BIGBIG, Scope);
+    after.e_val(-BIGBIG, Scope);
+  }
+
+  fun_t wave_eval()const
+  {
+
     if (w) {
-      before.e_val(BIGBIG, Scope);
-      after.e_val(-BIGBIG, Scope);
 
       WAVE::const_iterator begin = lower_bound(w->begin(), w->end(), DPAIR(after, -BIGBIG));
       WAVE::const_iterator end   = upper_bound(w->begin(), w->end(), DPAIR(before, BIGBIG));

@@ -81,6 +81,8 @@ public:
   const std::string substr(unsigned i)const {return ((_cmd.length()>=i) ? _cmd.substr(i) : "");}
   const std::string substr(unsigned i, unsigned n)const	{return _cmd.substr(i,n);}
   const std::string tail()const			{return substr(_cnt);}
+  unsigned tailsize()const
+   { assert( _cmd.length()>=_cnt); return unsigned(_cmd.length()-_cnt); }
   char		    peek()const			{return _cmd[_cnt];}
 
   // status - may consume whitespace only
@@ -114,6 +116,7 @@ public:
 		{untested(); return (match1("0123456789abcdefABCDEF"));}
   bool	      is_digit()const	{return (match1("0123456789"));}
   bool	      is_pfloat()const	{return (match1(".0123456789"));}
+  bool	      eat_lines();
   // inf support is a hack, but hackish anyway
   bool	      is_float()const	{return (match1("+-.0123456789") || match1("iI") );}
   bool	      is_argsym()const	{return (match1("*?$%_&@"));}
@@ -143,6 +146,7 @@ public:
   CS&	      operator>>(char& x)	 {untested(); x=ctoc();return *this;}
   CS&         operator>>(int& x)	 {x=ctoi();return *this;}
   CS&         operator>>(unsigned& x)	 {x=ctou();return *this;}
+  CS&         operator>>(short unsigned& x)	 {x=ctou();return *this;}
   CS&         operator>>(double& x)	 {x=ctof();return *this;}
   CS&	      operator>>(std::string& x) {x=ctos();return *this;}
 
@@ -167,10 +171,11 @@ public:
 // like the templates to follow
 INTERFACE bool Get(CS& cmd, const std::string&, bool*);
 INTERFACE bool Get(CS& cmd, const std::string&, int*,    AP_MOD=mNONE, int=0);
+// INTERFACE bool Get(CS& cmd, const std::string&, short unsigned int*);
 INTERFACE bool Get(CS& cmd, const std::string&, double*, AP_MOD, double=0.);
 /*--------------------------------------------------------------------------*/
 template <class T>
-bool Get(CS& cmd, const std::string& key, T* val)
+inline bool Get(CS& cmd, const std::string& key, T* val)
 {
   if (cmd.umatch(key + " {=}")) {
     cmd >> *val;

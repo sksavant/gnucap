@@ -1,4 +1,5 @@
 /*$Id: measure_rms.cc,v 1.2 2009-12-13 17:55:01 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -26,17 +27,22 @@
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class MEASURE : public FUNCTION {
+class MEASURE : public WAVE_FUNCTION {
+  PARAMETER<double> before;
+  PARAMETER<double> after;
 public:
-  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
-  {
-    std::string probe_name;
-    PARAMETER<double> before(BIGBIG);
-    PARAMETER<double> after(-BIGBIG);
+  MEASURE():
+    WAVE_FUNCTION(),
+    before(BIGBIG),
+    after(-BIGBIG)
+  {}
+  virtual FUNCTION* clone()const { return new MEASURE(*this);}
+
+  void expand(CS& Cmd, const CARD_LIST* Scope){
     
     unsigned here = Cmd.cursor();
     Cmd >> probe_name;
-    WAVE* w = find_wave(probe_name);
+    w = find_wave(probe_name);
 
     if (!w) {
       Cmd.reset(here);
@@ -58,10 +64,13 @@ public:
       w = find_wave(probe_name);
     }else{
     }
+    before.e_val(BIGBIG, Scope);
+    after.e_val(-BIGBIG, Scope);
+  }
 
+  fun_t wave_eval()const
+  {
     if (w) {
-      before.e_val(BIGBIG, Scope);
-      after.e_val(-BIGBIG, Scope);
 
       WAVE::const_iterator begin = lower_bound(w->begin(), w->end(), DPAIR(after, -BIGBIG));
       WAVE::const_iterator end   = upper_bound(w->begin(), w->end(), DPAIR(before, BIGBIG));

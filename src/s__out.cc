@@ -46,6 +46,7 @@ const PROBELIST& SIM::plotlist()const
 }
 const PROBELIST& SIM::printlist()const
 {
+  trace1("SIM::printlist", _sim->_mode );
   return PROBE_LISTS::print[_sim->_mode];
 }
 const PROBELIST& SIM::storelist()const
@@ -107,6 +108,7 @@ void SIM::head(double start, double stop, const std::string& col1)
  */
 void SIM::print_results(double x)
 {
+  trace1("SIM::print_results", printlist().size());
   if (!IO::plotout.any()) {
     _out.setfloatwidth(OPT::numdgt, OPT::numdgt+6);
     assert(x != NOT_VALID);

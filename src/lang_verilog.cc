@@ -1,4 +1,5 @@
 /*$Id: lang_verilog.cc,v 1.1 2009-12-14 10:40:44 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -109,6 +110,7 @@ static void parse_args_paramset(CS& cmd, MODEL_CARD* x)
     }catch (Exception_No_Match&) {untested();
       cmd.warn(bDANGER, here, x->long_label() + ": bad parameter " + name + " ignored");
     }
+    cmd.eat_lines();
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -230,9 +232,13 @@ MODEL_CARD* LANG_VERILOG::parse_paramset(CS& cmd, MODEL_CARD* x)
   parse_label(cmd, x);
   parse_type(cmd, x);
   cmd >> ';';
+  trace0("LANG_VERILOG::parse_paramset, have ;");
+  cmd.eat_lines();
   parse_args_paramset(cmd, x);
+  cmd.eat_lines();
   cmd >> "endparamset ";
   cmd.check(bWARNING, "what's this?");
+  trace0("done.");
   return x;
 }
 /*--------------------------------------------------------------------------*/
