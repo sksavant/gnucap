@@ -2495,6 +2495,7 @@
 #include "d_subckt.h"
 #include "e_storag.h"
 #include "e_model.h"
+#include "u_parameter.h"
 
 // customization -- must be last
 #include "wrapper.h"
@@ -2580,11 +2581,11 @@ protected: // override virtual
 	char id_letter()const	{untested();return SPICE_LETTER[0];}
 	bool print_type_in_spice()const {return true;}
 	std::string value_name()const {return VALUE_NAME;}
-	int max_nodes()const {return MAX_NET_NODES;}
-	int min_nodes()const {return MIN_NET_NODES;}
-	int matrix_nodes()const {return MATRIX_NODES;}
-	int	net_nodes()const {return _net_nodes;}
-	int	int_nodes()const {return INTERNAL_NODES;}
+	uint_t max_nodes()const {return MAX_NET_NODES;}
+	uint_t min_nodes()const {return MIN_NET_NODES;}
+	uint_t matrix_nodes()const {return MATRIX_NODES;}
+	uint_t net_nodes()const {return _net_nodes;}
+	uint_t int_nodes()const {return INTERNAL_NODES;}
 	CARD* clone()const {return new DEV_ADMS(*this);}
 	
 	void precalc_first();
@@ -2619,10 +2620,11 @@ protected: // override virtual
 	COMPLEX ac_involts()const {unreachable();return NOT_VALID;}
 	COMPLEX ac_amps()const {unreachable();return NOT_VALID;}
 	XPROBE  ac_probe_ext(const std::string&)const {itested(); return XPROBE(NOT_VALID, mtNONE);}
-	int tail_size()const {return TAIL_SIZE;}
+	uint_t tail_size()const {return TAIL_SIZE;}
 	
 public:	// ports
-	std::string port_name(int i)const {itested();assert(i >= 0);assert(i < MAX_NET_NODES);return port_names[i];}
+	std::string port_name(uint_t i)const {itested();assert(i >= 0);assert(i < MAX_NET_NODES);return port_names[i];
+}
 	
 public:	// type
 	void set_dev_type(const std::string& nt);
