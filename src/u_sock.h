@@ -346,17 +346,18 @@ inline ServerSocket::ServerSocket(SOCKET_TYPE type, uint16_t port, short
 
   int b = -1;
   for( short unsigned p = port; p<port+port_tries; p++ ){
-    trace1("ServerSocket::ServerSocket", p);
+    trace2("ServerSocket::ServerSocket", p, port_tries);
     addr.sin_port = htons(p);
     b = bind(fd, (struct sockaddr*) &addr, sizeof(addr));
     if (b >= 0) {
       trace1("listening", p);
       break;
+    } else {
+      trace2("cannot bind to", p, b);
     }
   }
   if (b<0)
     throw SocketException("Could not bind to address/port");
-  trace1("ServerSocket", port);
 
   stream = new SocketStream(fd);
 }

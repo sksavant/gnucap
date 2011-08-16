@@ -196,7 +196,7 @@ void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
   _dump_matrix=0;
   reuseaddr=0;
   _port = 1400;   // kommt ueber die Uebergabeparamter -p als
-  _port_range = 10;
+  _port_range = 1;
 
   trace0("commb");
   command_base(Cmd);

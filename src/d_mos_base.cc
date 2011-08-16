@@ -116,7 +116,7 @@ MODEL_BUILT_IN_MOS_BASE::MODEL_BUILT_IN_MOS_BASE(const BASE_SUBCKT* p)
    egap(NA),
    needs_isub(false)
 {
-  untested();
+  //untested();
   if (ENV::run_mode != rPRE_MAIN) {
     ++_count;
   }else{
