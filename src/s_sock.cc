@@ -116,6 +116,7 @@ private:
   void	setup(CS&);
   void fillnames( const CARD_LIST* scope);
   vector<string> var_namen_arr;
+  uint16_t var_namen_total_size; 
 
 private: //vera stuff.
   void main_loop();
@@ -131,6 +132,8 @@ private: //vera stuff.
   uint16_t verbose;
   size_t total;
   uint16_t n_inputs;
+  vector<string> input_names;
+  vector<CARD*> input_devs;
   uint16_t n_vars;
   uint16_t n_vars_square;
   uint16_t n_eingaenge;
@@ -140,7 +143,7 @@ private: //vera stuff.
   SocketStream stream;
   unsigned BUFSIZE;
   unsigned n_bytes;
-  unsigned error;
+  uint16_t error;
 
   double *dc_werteA,*dc_loesungA,*kons_loesungA,*kons_residuumA;
 
@@ -352,9 +355,9 @@ void SOCK::setup(CS& Cmd)
   initio(_out);
 
   error = 0; /* verainit(v_flag, n_inputs, &n_vars, charbuf, &length); */
-  n_vars = static_cast<uint16_t>( _sim->_total_nodes + 1) ; // _sim->total_nodes doesnt include gnd
+  n_vars = static_cast<uint16_t>( _sim->_total_nodes) ; // _sim->total_nodes doesnt include gnd
   var_namen_arr.resize( n_vars, string("unset"));
-  var_namen_arr[0]="0";
+//  var_namen_arr[0]="0";
   fillnames( &CARD_LIST::card_list );
   n_vars_square = (uint16_t)(n_vars * n_vars);
 
@@ -815,8 +818,8 @@ void SOCK::fillnames( const CARD_LIST* scope){
       _out << s.str();
       string myname(i->second->long_label());
 
-      var_namen_arr[i->second->matrix_number()] = myname;
-
+      var_namen_arr[i->second->matrix_number()-1] = myname;
+      var_namen_total_size = static_cast<uint16_t>( var_namen_total_size + static_cast<uint16_t>(myname.length()) + 1 );
 
     }else{
       // _out << "Zero Node  "  << "\n";
@@ -1036,6 +1039,8 @@ TParameter *vera_titan_ak(TParameter *parameter)
     while (1) 
     {
       stream >> opcode;
+      stream >> 7;
+      bool init_done=false;
 
       trace1("SOCK::main_loop", (int)opcode);
       //trace1(" Naechste Anforderung \n",n_bytes);
@@ -1044,8 +1049,10 @@ TParameter *vera_titan_ak(TParameter *parameter)
       {
         case 51: 
           trace0("opcode");
+          if(init_done) throw Exception("init twice??");
           verainit();
           verainit_tail();
+          init_done=true;
           break;
 
         default:
@@ -1062,25 +1069,46 @@ TParameter *vera_titan_ak(TParameter *parameter)
   }
 
   void SOCK::verainit(){
-    stream >> verbose;
-    stream >> n_inputs;
-    stream >> length;
+    stream >> verbose >> 6;
+    stream >> n_inputs >> 6;
+    stream >> length >> 6;
 
-    trace3("verainit", verbose, n_inputs, length );
+    trace3("SOCK::verainit", verbose, n_inputs, length );
+
+    char input_namen[length+1];
+    unsigned here =0;
+    unsigned n=0;
+    input_names.resize(n_inputs);
+    input_devs.resize(n_inputs);
 
     for (unsigned i=0; i < length; i++)
     {
-      // input_namen[i] = (char) buffer[i+4].int_val;
-      // Namen braucht man nicht, 
-      // deshalb hier ignoriert
+      stream >> input_namen[i] >> 7;
+      trace1( " ... ", input_namen[i]);
+      if(input_namen[i] == '\t'){
+        input_namen[i]=0;
+        input_names[n++]=string(input_namen+here);
+        here = i;
+        trace0(input_names[n-1]);
+
+        try {
+          CARD_LIST::fat_iterator ci = findbranch( input_names[n-1], &CARD_LIST::card_list);
+          input_devs[n-1] = (*ci);
+        } catch( Exception e ) {
+          throw e;
+        }
+
+        trace0("dev found " + input_devs[n-1]->long_label());
+
+      }
     }
-    // input_namen[length] = '\0';
+
 
     //trace0("input_namen " + string(input_namen) );
     total = (unsigned) (length+4);
     assert(3*BUFSIZE*BUFSIZE >= total);
 
-    if (n_bytes != total * (int) sizeof(di_union_t))
+    if (!stream.at_end())
     {
       printf("Error in Verainit! no of bytes received %i <> expected %i\n",
           n_bytes, (int)(total*sizeof(di_union_t)));
@@ -1280,48 +1308,65 @@ TParameter *vera_titan_ak(TParameter *parameter)
       }
 
 
+      // very clever way to transfer strings.
+      static void putstring8(iostream* s, const string x){
+        trace0("put8 " + x);
+        const char* A = x.c_str();
+
+        while(*A){
+          *s << *A;
+          *s << *A;
+          *s << *A;
+          *s << *A;
+          *s << *A;
+          *s << *A;
+          *s << *A;
+          *s << *A;
+          A++;
+        }
+
+      }
+
+
       void SOCK::verainit_tail()
       {
-        stream << (int32_t) error;         /* Fehlerflag */
-        stream << (int32_t) n_vars;        /* Anzahl der Variablen */
-        stream << (int32_t) length;        /* Laenge des Namen Feldes */
-        for (unsigned i=0; i < length; i++)         /* Variablen-Namen Feld */
+        stream << error;   stream.pad(6);        /* Fehlerflag */
+        stream << n_vars;  stream.pad(6);      /* Anzahl der Variablen */
+        stream << var_namen_total_size;  stream.pad(6);     /* Laenge des Namen Feldes */
+        trace3("SOCK::verainit_tail ", error, n_vars, length);
+        for (unsigned i=0; i < n_vars; i++)         /* Variablen-Namen Feld */
         {
-         // socket << var_names;
+          trace1("putting name " +  var_namen_arr[i], i);
+          putstring8( &stream, var_namen_arr[i]);
+          stream << '\t'; stream.pad(7);
         }
 
         total = length+3;
         assert(3*BUFSIZE*BUFSIZE >= total);
-        trace3( "vera_titan_ak Sende",
-              error,frame_number,total);
-        n_bytes = (unsigned) write(channel, buffer, total*sizeof(di_union_t));
-        if (n_bytes != total * (int) sizeof(di_union_t))
-        {
-          ::error(bWARNING ,"vera_titan_ak Fehler beim Senden:%i Framenumber %i, "
-              "returnwert von write %i, errno %i\n",
-              frame_number,n_bytes,errno); 
-          throw Exception("");
-        }
+
+        trace0("done verainit_tail");
       }
 
     // else if (opcode == 52)              /* Veraop */
 
     void SOCK::veraop_tail()
     {
-      trace0("veraop tail");
-      buffer[0].int_val = error;         /* Fehlerflag */
+      trace1("veraop tail", n_vars);
+      stream << error; stream.pad(6);
       for (unsigned i=0; i < n_vars; i++)         /* Variablen-Werte */
       {
-	buffer[i+1].double_val = x_neu[i];
+	stream <<  x_neu[i];
       }
       for (unsigned i=0; i < n_vars_square; i++)    /* G-Matrix */
       {
-	buffer[i+n_vars+1].double_val = G[i];
+	stream << G[i];
       }
       for (unsigned i=0; i < n_vars_square; i++)    /* C-Matrix */
       {
-	buffer[i+n_vars_square+n_vars+1].double_val = C[i];
+	stream << C[i];
       }
+
+      stream << SocketStream::eol;
 
       total = 2*n_vars_square+n_vars+1;
       assert(3*BUFSIZE*BUFSIZE >= total);

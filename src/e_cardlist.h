@@ -26,6 +26,7 @@
 #ifndef E_CARDLIST_H
 #define E_CARDLIST_H
 #include "md.h"
+#include "ap.h"
 /*--------------------------------------------------------------------------*/
 // defined here
 class CARD_LIST;
@@ -174,6 +175,13 @@ inline CARD_LIST::fat_iterator findbranch(CS& cmd, CARD_LIST* cl)
 {
   assert(cl);
   return findbranch(cmd, CARD_LIST::fat_iterator(cl, cl->begin()));
+}
+/*--------------------------------------------------------------------------*/
+inline CARD_LIST::fat_iterator findbranch(const string cmd, CARD_LIST* cl = 0)
+{
+  if (cl==0) cl = &CARD_LIST::card_list;
+  CS c(CS::_STRING,cmd);
+  return findbranch(c, CARD_LIST::fat_iterator(cl, cl->begin()));
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

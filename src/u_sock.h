@@ -114,6 +114,7 @@ class SocketStream : public iostream {
     void read();
 
   public:
+    bool at_end(){return cur==chunksize;}
     void flush();
 
     const std::string get(int len);
@@ -124,6 +125,7 @@ class SocketStream : public iostream {
     SocketStream& operator>>(int16_t&);
     SocketStream& operator>>(uint16_t&);
     SocketStream& operator>>(int32_t&);
+    SocketStream& operator>>(int); // skip chars.
 
 
 //    SocketStream operator=(const SocketStream& p ){
@@ -136,14 +138,18 @@ class SocketStream : public iostream {
     void send(const double& data);
     void send(const string& data, int len);
     SocketStream& operator<<(const std::string& data);
-    SocketStream& operator<<(const char* data);
-    SocketStream& operator<<(const int data);
-    SocketStream& operator<<(const double data);
-    SocketStream& operator<<(const EOL){
-      flush();
-      return *this;
+//    SocketStream& operator<<(const std::string data);
+    SocketStream& operator<<(const char* data); // good idea?
+    SocketStream& operator<<(const char data);
+    SocketStream& operator<<(const EOL){ flush(); return *this; }
+    template<class T>
+    SocketStream& operator<<(const T data);
+    SocketStream& pad(const unsigned i){
+      int j=i;
+      const char x=NULL;
+      while(j-->0)
+        *this<<x;
     }
-    
 };
 /**
  * @brief the Socket, is an abstract OO approach
@@ -238,29 +244,23 @@ inline SocketStream& SocketStream::operator<<(const std::string& data) {
   return *this;
 }
 
-inline SocketStream& SocketStream::operator<<(const double data) {
-#define  DL  (sizeof(double)/sizeof(char))
-  union { 
-    char c[DL];
-    double d;
-  } convert;
+//inline SocketStream& SocketStream::operator<<(const std::string data) {
+//  size_t len = data.length();
+//  ssize_t n = ::write(fd, data.c_str(), len);
+//  if(n < 0)
+//    throw SocketException("Could not write to socket");
+//  return *this;
+//}
 
-  convert.d=data;
-
-  ssize_t n = ::write(fd, convert.c, DL);
-  if(n < 0)
-    throw SocketException("Could not write to socket");
-  return *this;
-}
-
-inline SocketStream& SocketStream::operator<<(const int data) {
-  const int len =  (sizeof(int)/sizeof(char));
+template<class T>
+inline SocketStream& SocketStream::operator<<(const T data) {
+  const int len =  (sizeof(T)/sizeof(char));
   union { 
     char c[len];
-    int d;
+    T d;
   } convert;
 
-  convert.d=data;
+  convert.d = data;
 
   ssize_t n = ::write(fd, convert.c, len);
   if(n < 0)
@@ -268,21 +268,27 @@ inline SocketStream& SocketStream::operator<<(const int data) {
   return *this;
 }
 
+inline SocketStream& SocketStream::operator<<(const char data) {
+
+  ssize_t n = ::write(fd, &data, 1);
+  if(n < 0)
+    throw SocketException("Could not write to socket");
+  return *this;
+}
+
+
 
 void SocketStream::flush() {
-//   ::flush(fd);
+   //::flush(fd);
 }
 
 inline void SocketStream::read() {
   assert(chunksize == cur);
   assert(buf);
-  trace3("SocketStream::read", bufsize, hp(buf), buf[0]);
   cur = 0;
   ssize_t n = ::read(fd, buf, bufsize);
   if(n < 0)
     throw SocketException("SocketStream: Could not read from socket");
-  trace1("SocketStream::read", n);
-  trace2("SocketStream::read", n, buf[0]);
   chunksize = static_cast<unsigned>(n);
 }
 
@@ -299,9 +305,16 @@ inline const string SocketStream::get(int len) {
 //inline const std::string &SocketStream::operator>>(int len) {
 //  return get(len);
 //}
+//
+inline SocketStream &SocketStream::operator>>(int len) {
+  char x;
+  for(unsigned i=0; i<len; ++i){
+    *this >> x;
+  }
+}
 
 inline SocketStream &SocketStream::operator>>(int32_t& d) {
-  const uint_t len=4;
+  const uint_t len=sizeof(int32_t);
   union { 
     char c[len];
     uint16_t d;
@@ -341,10 +354,10 @@ inline SocketStream &SocketStream::operator>>(uint16_t& d) {
 
 inline SocketStream &SocketStream::operator>>(double& d) {
   union { 
-    char c[DL];
+    char c[sizeof(double)];
     double d;
   } convert;
-  for(unsigned i=0; i<DL; ++i){
+  for(unsigned i=0; i<sizeof(double); ++i){
     *this >> convert.c[i];
   }
   d = convert.d;
@@ -365,7 +378,6 @@ inline SocketStream &SocketStream::operator>>(unsigned char& c) {
         read();
   }
   c = buf[cur++];
-  trace2("got unsigned char ", (int)c, cur);
   return *this;
 }
 
