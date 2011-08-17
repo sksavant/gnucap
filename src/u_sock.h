@@ -73,21 +73,41 @@ class SocketStream : public iostream {
     unsigned chunksize;
     char* buf;
     unsigned cur;
+    mutable bool copied; // this is just an expriment. if you dont like it, dont use 
+                         // copy and operator=
   public:
-    SocketStream() :  iostream(), fd(0), bufsize(64) {}
     enum EOL {eol};
+    SocketStream() :  iostream(), fd(0), bufsize(64), copied(false) {
+      buf = (char*)malloc((bufsize+1)*sizeof(char));
+      buf[bufsize]=0;
+    }
 
 
     SocketStream(int fd, unsigned bs=64) : 
       iostream(),
       fd(fd),
-      bufsize(bs)
-    {}
+      bufsize(bs),
+      copied(false)
+    { 
+      assert(bufsize);
+      buf = (char*)malloc((1+bufsize)*sizeof(char));
+      buf[bufsize]=0;
+    }
+
+    void operator=(const SocketStream& obj){
+      fd=obj.fd;
+      obj.copied=true;
+      assert(bufsize==obj.bufsize);
+      buf=obj.buf;
+    }
 
     SocketStream(const SocketStream& obj) :
-      ios(),  iostream(), fd(obj.fd), bufsize(obj.bufsize)
+      ios(),  iostream(), fd(obj.fd), bufsize(obj.bufsize), buf(obj.buf)
     {
-      buf = (char*)malloc(sizeof(char)*bufsize);
+      assert(buf);
+      obj.copied=true;
+      assert(bufsize==obj.bufsize);
+      //FIXME: check bufsize
     }
     virtual ~SocketStream();
   private:
@@ -100,14 +120,16 @@ class SocketStream : public iostream {
 //    const std::string operator>>(int len);
     SocketStream& operator>>(double&);
     SocketStream& operator>>(char&);
+    SocketStream& operator>>(unsigned char&);
     SocketStream& operator>>(int16_t&);
+    SocketStream& operator>>(uint16_t&);
     SocketStream& operator>>(int32_t&);
 
 
-    SocketStream operator=(const SocketStream& p ){
-        fd=p.fd;
-        return *this;
-    }
+//    SocketStream operator=(const SocketStream& p ){
+//        fd=p.fd;
+//        return *this;
+//    }
 
 
     void send(const string& data);
@@ -139,13 +161,16 @@ class Socket {
     uint16_t port;
     struct sockaddr_in addr;
     SOCKET_TYPE type; // ??
-    SocketStream* stream;
+    SocketStream* _stream;
 
-    Socket(): fd(0), port(0), stream(0){}
+    Socket(): fd(0), port(0), _stream(0), port_tries(1){}
 
-    Socket(SOCKET_TYPE type, short unsigned port );
+    Socket(SOCKET_TYPE type, short unsigned port=0 );
     virtual ~Socket();
+  protected: 
+    short unsigned port_tries;
   public:
+    virtual operator SocketStream() = 0;
     enum EOL {eol};
     template<class T>
       SocketStream& operator<<(const T data);
@@ -153,35 +178,37 @@ class Socket {
 
 template<>
 SocketStream& Socket::operator<<(const Socket::EOL& ){
-  assert(stream);
-  return *stream << SocketStream::eol;
+  assert(_stream);
+  return *_stream << SocketStream::eol;
 }
 
 template<class T>
 SocketStream& Socket::operator<<(const T data){
-  assert(stream);
-  return *stream << data;
+  assert(_stream);
+  return *_stream << data;
 }
 /**
- * @brief ServerSocket does the obvious, it sets up a server
+ * @brief ServerSocket sets up a server
  *        socket, which then can be used to listen to and recive connections
  */
 class ServerSocket : public Socket {
-  private: 
-    short unsigned port_tries;
   public:
+    ServerSocket(SOCKET_TYPE, string /*port*/, short unsigned /*tries*/){ assert(false);}
     ServerSocket(SOCKET_TYPE type, short unsigned port, short unsigned tries);
     virtual ~ServerSocket();
 
     SocketStream listen();
+    operator SocketStream(){ assert(false);} // not implemented.
 };
 /**
  * @brief ClientSocket does the obvious, it can connect to any socket
  */
 class ClientSocket : public Socket {
   public:
-    ClientSocket(SOCKET_TYPE type, short unsigned port, const std::string& target);
+    ClientSocket(SOCKET_TYPE type, string port, const std::string& target);
     virtual ~ClientSocket();
+
+    operator SocketStream(){ return*_stream;}
 };
 /**
  * @brief StreamSelecter wants an arbitrary number of (Socket)Streams as
@@ -196,8 +223,11 @@ class ClientSocket : public Socket {
 
 
 SocketStream::~SocketStream() {
-  close(fd);
-  free(buf);
+  if (!copied){
+    trace1("SocketStream::~SocketStream closing", fd);
+    close(fd);
+    free(buf);
+  }
 }
 
 inline SocketStream& SocketStream::operator<<(const std::string& data) {
@@ -245,19 +275,22 @@ void SocketStream::flush() {
 
 inline void SocketStream::read() {
   assert(chunksize == cur);
-
+  assert(buf);
+  trace3("SocketStream::read", bufsize, hp(buf), buf[0]);
   cur = 0;
-  ssize_t n = ::read(fd, &buf, bufsize);
+  ssize_t n = ::read(fd, buf, bufsize);
   if(n < 0)
-    throw SocketException("Could not read from socket");
+    throw SocketException("SocketStream: Could not read from socket");
+  trace1("SocketStream::read", n);
+  trace2("SocketStream::read", n, buf[0]);
   chunksize = static_cast<unsigned>(n);
 }
 
 inline const string SocketStream::get(int len) {
-  char buf[len+1];
-  bzero(&buf, len+1);
+//  char buf[len+1];
+//  bzero(&buf, len+1);
 
-  ssize_t n = ::read(fd, &buf, len);
+  ssize_t n = ::read(fd, buf, len);
   if(n < 0)
     throw SocketException("Could not read from socket");
   return buf;
@@ -281,7 +314,20 @@ inline SocketStream &SocketStream::operator>>(int32_t& d) {
 }
 
 inline SocketStream &SocketStream::operator>>(int16_t& d) {
-  const uint_t len=2;
+  const uint_t len=sizeof(int16_t);
+  union { 
+    char c[len];
+    uint16_t d;
+  } convert;
+  for(unsigned i=0; i<len; ++i){
+    *this >> convert.c[i];
+  }
+  d = convert.d;
+  return *this;
+}
+
+inline SocketStream &SocketStream::operator>>(uint16_t& d) {
+  const uint_t len=sizeof(int16_t);
   union { 
     char c[len];
     uint16_t d;
@@ -314,7 +360,16 @@ inline SocketStream &SocketStream::operator>>(char& c) {
   return *this;
 }
 
-inline Socket::Socket(SOCKET_TYPE type, short unsigned port ) : fd(0), port(port), type(type), stream(0) {
+inline SocketStream &SocketStream::operator>>(unsigned char& c) {
+  if( cur == chunksize ){
+        read();
+  }
+  c = buf[cur++];
+  trace2("got unsigned char ", (int)c, cur);
+  return *this;
+}
+
+inline Socket::Socket(SOCKET_TYPE type, short unsigned port ) : fd(0), port(port), type(type), _stream(0) {
   bzero((char*) &addr, sizeof(addr));
 
   if(type == TCP)
@@ -329,7 +384,7 @@ inline Socket::Socket(SOCKET_TYPE type, short unsigned port ) : fd(0), port(port
 }
 
 inline Socket::~Socket() {
-  delete stream;
+  delete _stream;
   // hmmm no fd because SocketStream does the job
 }
 
@@ -337,7 +392,7 @@ inline Socket::~Socket() {
 // glib bug in htons!
 #pragma GCC diagnostic ignored "-Wconversion"
 inline ServerSocket::ServerSocket(SOCKET_TYPE type, uint16_t port, short
-    unsigned port_tries=1) : Socket(type, port ), port_tries(port_tries) {
+    unsigned port_tries=1) : Socket(type, port ) {
   if (port_tries == 0) return;
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = INADDR_ANY;
@@ -359,13 +414,13 @@ inline ServerSocket::ServerSocket(SOCKET_TYPE type, uint16_t port, short
   if (b<0)
     throw SocketException("Could not bind to address/port");
 
-  stream = new SocketStream(fd);
+  _stream = new SocketStream(fd);
 }
 #pragma GCC diagnostic warning "-Wconversion"
 
 inline ServerSocket::~ServerSocket() {
-  if(stream != NULL)
-    delete stream;
+  if(_stream != NULL)
+    delete _stream;
 }
 
 inline SocketStream ServerSocket::listen() {
@@ -384,20 +439,62 @@ inline SocketStream ServerSocket::listen() {
 }
 
 #pragma GCC diagnostic ignored "-Wconversion"
-inline ClientSocket::ClientSocket(SOCKET_TYPE type, short unsigned port, const
-    std::string& target) : Socket(type, port) {
-  addr.sin_port = htons((unsigned short int) port);
-  addr.sin_family = AF_INET;
-  addr.sin_addr.s_addr = inet_addr(target.c_str());
+inline ClientSocket::ClientSocket(SOCKET_TYPE type, string port, const
+    std::string& host) : Socket(type) {
+  struct addrinfo *result, *rp;
+  struct addrinfo hints;
 
-  //socklen_t addr_len = sizeof(addr);
-  if(connect(fd, (struct sockaddr*) &addr, sizeof(addr))) {
-    perror("connect:");
-    throw SocketException("Could not connect to given target");
+  trace0("ClientSocket::ClientSocket " + host + " " + port );
 
+  memset(&hints, 0, sizeof(struct addrinfo));
+  hints.ai_flags = 0;
+  hints.ai_protocol = 0;          /* Any protocol */
+
+  if(type == TCP) {
+    hints.ai_family = AF_INET;   
+    hints.ai_socktype = SOCK_STREAM; 
+  }    else if(type == UDP) {
+    assert(false); // cleanup;
+  }    else if(type == UNIX){
+    assert(false);
+  } else {
+    assert(false);
+  }
+  trace3("looking up...", hints.ai_family, hints.ai_socktype, hints.ai_protocol );
+
+  int s;
+  s = getaddrinfo(host.c_str(),port.c_str(),&hints,&result);
+  if (s)
+    throw SocketException("Could not resolve "+host );
+
+
+  if(fd)close(fd); // d'oh
+
+  freeaddrinfo(result);
+  for (rp = result; rp != NULL; rp = rp->ai_next) {
+    trace3("connecting...", rp->ai_family, rp->ai_socktype, rp->ai_protocol );
+    rp->ai_family=hints.ai_family;
+
+    fd = socket(rp->ai_family, rp->ai_socktype,0); //        rp->ai_protocol);
+
+    if (fd == -1)
+      continue;
+
+    if (connect(fd, rp->ai_addr, rp->ai_addrlen) != -1) {
+      trace1("ClientSocket::ClientSocket connected to " + host, fd );
+      break; 
+    }
+
+    close(fd);
   }
 
-  stream = new SocketStream(fd);
+
+  if(!rp){
+    perror("connect:");
+    throw SocketException("Could not connect to " + host);
+  }
+
+  _stream = new SocketStream(fd);
 }
 #pragma GCC diagnostic warning "-Wconversion"
 

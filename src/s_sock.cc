@@ -23,6 +23,7 @@
  */
 //testing=script,complete 2006.07.14
 #include "u_status.h"
+#include <unistd.h>
 #include "u_prblst.h"
 #include "u_cardst.h"
 #include "u_nodemap.h"
@@ -127,13 +128,13 @@ private: //vera stuff.
 
   char* var_names_buf;
 
-  unsigned verbose;
+  uint16_t verbose;
   size_t total;
-  unsigned n_inputs;
-  unsigned n_vars;
-  unsigned n_vars_square;
-  unsigned n_eingaenge;
-  size_t length;
+  uint16_t n_inputs;
+  uint16_t n_vars;
+  uint16_t n_vars_square;
+  uint16_t n_eingaenge;
+  uint16_t length;
 
   di_union_t* buffer;
   SocketStream stream;
@@ -163,14 +164,16 @@ private: //vera stuff.
 
   int channel;
   int frame_number;
-  ServerSocket* socket;
+  Socket* socket;
   short unsigned _port_range;
-  short unsigned _port;   // kommt ueber die Uebergabeparamter port
+  string _port;   // kommt ueber die Uebergabeparamter port
                               // globale Variable daher (default: port=1400)
+  bool _client_mode;
+  string _host;
   int reuseaddr;
   struct sockaddr_in sin;
 
-  int opcode;
+  unsigned char opcode;
 
   double *matrixg, *matrixc,*vectorq;
 
@@ -195,10 +198,11 @@ void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
   _do_tran_step=0;
   _dump_matrix=0;
   reuseaddr=0;
-  _port = 1400;   // kommt ueber die Uebergabeparamter -p als
+  _port = "1400";   // kommt ueber die Uebergabeparamter -p als
   _port_range = 1;
+  _client_mode = false;
+  _host = "localhost";
 
-  trace0("commb");
   command_base(Cmd);
 
   // later... FIXME
@@ -213,9 +217,24 @@ void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
   C = new double[BUFSIZE*BUFSIZE];
   trace1("SOCK::do_it", _port);
 
-  if ((socket = new ServerSocket(Socket::TCP, _port, _port_range)))
-  {
-  }else {
+  if (_client_mode){
+    socket = new ClientSocket(Socket::TCP, _port, _host);
+    stream = *socket;
+    trace1("connected to "+ _host, _port );
+
+  } else {
+    stringstream p(_port);
+    uint16_t _port_;
+    p>>_port_;
+    socket = new ServerSocket(Socket::TCP, _port_, _port_range);
+    ServerSocket* sock=prechecked_cast<ServerSocket*>(socket);
+
+    trace0("SOCK::do_it waiting");
+    stream = sock->listen();
+  }
+  trace0("SOCK::do_it have stream");
+    
+  if(!socket){
     ::error(bDANGER,"Error, cannot create Socket\n");
     throw Exception("foo");
   }
@@ -228,13 +247,7 @@ void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
 //    exit(1);
 //  }
 
-
   //setup(Cmd);
-
-  trace0("SOCK::do_it waiting");
-  stream = socket->listen();
-  trace0("SOCK::do_it have stream");
-
   main_loop();
 }
 /*--------------------------------------------------------------------------*/
@@ -339,11 +352,11 @@ void SOCK::setup(CS& Cmd)
   initio(_out);
 
   error = 0; /* verainit(v_flag, n_inputs, &n_vars, charbuf, &length); */
-  n_vars = _sim->_total_nodes + 1 ; // _sim->total_nodes doesnt include gnd
+  n_vars = static_cast<uint16_t>( _sim->_total_nodes + 1) ; // _sim->total_nodes doesnt include gnd
   var_namen_arr.resize( n_vars, string("unset"));
   var_namen_arr[0]="0";
   fillnames( &CARD_LIST::card_list );
-  n_vars_square = n_vars * n_vars;
+  n_vars_square = (uint16_t)(n_vars * n_vars);
 
 #ifndef NDEBUG
     for (unsigned i=0; i < n_vars; i++)
@@ -408,11 +421,11 @@ void SOCK::fix_args(int Nest)
 /*--------------------------------------------------------------------------*/
 void SOCK::options(CS& Cmd, int Nest)
 {
-  trace0("SOCK::options");
+  trace0("SOCK::options... ");
 
   _sim->_uic = _loop[Nest] = _reverse_in[Nest] = false;
   _sim->_more_uic = true;
-  _port = 1400;
+  _port = "1400";
   unsigned here = Cmd.cursor();
   do{
     ONE_OF
@@ -423,15 +436,14 @@ void SOCK::options(CS& Cmd, int Nest)
       || Get(Cmd, "c{ontinue}",   &_cont)
       || Get(Cmd, "port" ,        &_port)
       || Get(Cmd, "listen{port}", &_port)
+      || Get(Cmd, "host" ,        &_host)
       || Get(Cmd, "tr{s}",        &_do_tran_step)
       || Get(Cmd, "dm",           &_dump_matrix)
+      || Get(Cmd, "client",       &_client_mode)
       || Get(Cmd, "dt{emp}",	  &temp_c_in,   mOFFSET, OPT::temp_c)
       || Get(Cmd, "lo{op}", 	  &_loop[Nest])
       || Get(Cmd, "re{verse}",	  &_reverse_in[Nest])
       || Get(Cmd, "te{mperature}",&temp_c_in)
-      // FIXME
-      //|| Get(Cmd, "uic",	   &_sim->_uic)
-      //|| Get(Cmd, "more_uic",	   &_sim->_more_uic)
       || (Cmd.umatch("tr{ace} {=}") &&
 	  (ONE_OF
 	   || Set(Cmd, "n{one}",      &_trace, tNONE)
@@ -453,6 +465,9 @@ void SOCK::options(CS& Cmd, int Nest)
 /*--------------------------------------------------------------------------*/
 void SOCK::sweep()
 {
+  // what am i doing here??
+  return ;
+  assert(false);
   head(_start[0], _stop[0], " ");
   _sim->_bypass_ok = false;
   _sim->set_inc_mode_bad();
@@ -473,6 +488,7 @@ void SOCK::sweep()
 /*--------------------------------------------------------------------------*/
 void SOCK::sweep_recursive(int Nest)
 {
+  assert(false);
   unsigned d = _sim->_total_nodes; // 3
 
   trace1("SOCK::sweep_recursive", Nest);
@@ -760,6 +776,7 @@ void SOCK::sweep_recursive(int Nest)
 /*--------------------------------------------------------------------------*/
 void SOCK::first(int Nest)
 {
+  assert(false);
   trace2("SOCK::first", Nest, _start[Nest]);
   assert(Nest >= 0);
   assert(Nest < DCNEST);
@@ -817,6 +834,8 @@ void SOCK::fillnames( const CARD_LIST* scope){
 /*--------------------------------------------------------------------------*/
 bool SOCK::next(int Nest)
 {
+
+  assert(false);
 
   bool ok = false;
   if (_linswp[Nest]) {
@@ -878,11 +897,6 @@ static DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "sock", &p2);
 /*--------------------------------------------------------------------------*/
 
 #if 0
- 
-
-
-
-
 
 // Treiber zum Einlesen der Daten aus Maple               
 //		          vera_nl
@@ -1013,53 +1027,44 @@ TParameter *vera_titan_ak(TParameter *parameter)
 #endif
 
 
-  /* Socket generieren */
-
-  /* Socket einem Port zuweisen. */
-  memset(&sin, 0, sizeof(sin));
-  sin.sin_family = AF_INET;
-  sin.sin_port   = htons(port);
-  if (connect(channel, (struct sockaddr *) &sin, sizeof(sin)) == -1)
-  {
-    printf("Error, cannot connet to Socket\n");
-    exit(1);
-  }
-
-
-  /* Serverbetrieb starten */
 
 #endif
 
   void SOCK::main_loop(){
+    trace0("SOCK::main_loop");
 
     while (1) 
     {
       stream >> opcode;
 
-      trace1("SOCK::main_loop", opcode);
-//      fwrite(buffer,1,n_bytes,outfile);
-      trace1(" Naechste Anforderung \n",n_bytes);
+      trace1("SOCK::main_loop", (int)opcode);
+      //trace1(" Naechste Anforderung \n",n_bytes);
 
       switch (opcode)  
       {
         case 51: 
+          trace0("opcode");
           verainit();
           verainit_tail();
           break;
 
         default:
-          trace0("unknown opcode");
+          trace0("error");
+          ::error(bDANGER, "unknown opcode %i\n", opcode);
+          assert(false);
+          break;
 
 
       }
+      sleep(1);
     }
 
   }
 
   void SOCK::verainit(){
-    verbose = buffer[1].int_val;
-    n_inputs = buffer[2].int_val;
-    length = buffer[3].int_val;
+    stream >> verbose;
+    stream >> n_inputs;
+    stream >> length;
 
     trace3("verainit", verbose, n_inputs, length );
 
@@ -1092,7 +1097,7 @@ TParameter *vera_titan_ak(TParameter *parameter)
       strcat(var_names_buf, var_namen_arr[i].c_str());
       strcat(var_names_buf, "\t");
     }
-    length = strlen(var_names_buf);
+    length = static_cast<uint16_t>( strlen(var_names_buf) );
     // userinfo(1,"vera_titan_ak","Variablennamen %s\n",var_names_buf);
   }
 #if 0
@@ -1273,27 +1278,8 @@ TParameter *vera_titan_ak(TParameter *parameter)
 	  }
 	}
       }
-#if 0
-      default: 
-      {
-	// Ende Serverbetrieb
-	close(channel);
 
-	if (printlevel >= 3)
-	{
-	  fclose(outfile);
-	}
 
-        free(matrixg);
-        free(matrixc);
-        free(vectorq);
-
-	return NULL;
-      }  
-    }
-
-    if (opcode == 51)                   /* Verainit */
-#endif
       void SOCK::verainit_tail()
       {
         stream << (int32_t) error;         /* Fehlerflag */
