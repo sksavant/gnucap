@@ -23,6 +23,7 @@
  */
 //testing=script,complete 2006.07.14
 #include "u_status.h"
+#include <unistd.h>
 #include "u_prblst.h"
 #include "u_cardst.h"
 #include "u_nodemap.h"
@@ -115,6 +116,7 @@ private:
   void	setup(CS&);
   void fillnames( const CARD_LIST* scope);
   vector<string> var_namen_arr;
+  uint16_t var_namen_total_size; 
 
 private: //vera stuff.
   void main_loop();
@@ -127,19 +129,21 @@ private: //vera stuff.
 
   char* var_names_buf;
 
-  unsigned verbose;
+  uint16_t verbose;
   size_t total;
-  unsigned n_inputs;
-  unsigned n_vars;
-  unsigned n_vars_square;
-  unsigned n_eingaenge;
-  size_t length;
+  uint16_t n_inputs;
+  vector<string> input_names;
+  vector<CARD*> input_devs;
+  uint16_t n_vars;
+  uint16_t n_vars_square;
+  uint16_t n_eingaenge;
+  uint16_t length;
 
   di_union_t* buffer;
   SocketStream stream;
-  unsigned BUFSIZE;
+  //unsigned BUFSIZE;
   unsigned n_bytes;
-  unsigned error;
+  uint16_t error;
 
   double *dc_werteA,*dc_loesungA,*kons_loesungA,*kons_residuumA;
 
@@ -163,14 +167,16 @@ private: //vera stuff.
 
   int channel;
   int frame_number;
-  ServerSocket* socket;
+  Socket* socket;
   short unsigned _port_range;
-  short unsigned _port;   // kommt ueber die Uebergabeparamter port
+  string _port;   // kommt ueber die Uebergabeparamter port
                               // globale Variable daher (default: port=1400)
+  bool _client_mode;
+  string _host;
   int reuseaddr;
   struct sockaddr_in sin;
 
-  int opcode;
+  unsigned char opcode;
 
   double *matrixg, *matrixc,*vectorq;
 
@@ -195,17 +201,17 @@ void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
   _do_tran_step=0;
   _dump_matrix=0;
   reuseaddr=0;
-  _port = 1400;   // kommt ueber die Uebergabeparamter -p als
-  _port_range = 10;
+  _port = "1400";   // kommt ueber die Uebergabeparamter -p als
+  _port_range = 1;
+  _client_mode = false;
+  _host = "localhost";
 
-  trace0("commb");
   command_base(Cmd);
 
   // later... FIXME
   //
   frame_number=0;
   n_bytes = 0;
-  BUFSIZE = 128; 
   x_neu = new double[BUFSIZE];
   x_schaetz = new double[BUFSIZE];
   q_punkt = new double[BUFSIZE];
@@ -213,9 +219,24 @@ void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
   C = new double[BUFSIZE*BUFSIZE];
   trace1("SOCK::do_it", _port);
 
-  if ((socket = new ServerSocket(Socket::TCP, _port, _port_range)))
-  {
-  }else {
+  if (_client_mode){
+    socket = new ClientSocket(Socket::TCP, _port, _host);
+    trace1("connected to "+ _host, _port );
+    stream = *socket;
+
+  } else {
+    stringstream p(_port);
+    uint16_t _port_;
+    p>>_port_;
+    socket = new ServerSocket(Socket::TCP, _port_, _port_range);
+    ServerSocket* sock=prechecked_cast<ServerSocket*>(socket);
+
+    trace0("SOCK::do_it waiting");
+    stream = sock->listen();
+  }
+  trace0("SOCK::do_it have stream");
+    
+  if(!socket){
     ::error(bDANGER,"Error, cannot create Socket\n");
     throw Exception("foo");
   }
@@ -228,13 +249,7 @@ void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
 //    exit(1);
 //  }
 
-
   //setup(Cmd);
-
-  trace0("SOCK::do_it waiting");
-  stream = socket->listen();
-  trace0("SOCK::do_it have stream");
-
   main_loop();
 }
 /*--------------------------------------------------------------------------*/
@@ -339,11 +354,11 @@ void SOCK::setup(CS& Cmd)
   initio(_out);
 
   error = 0; /* verainit(v_flag, n_inputs, &n_vars, charbuf, &length); */
-  n_vars = _sim->_total_nodes + 1 ; // _sim->total_nodes doesnt include gnd
+  n_vars = static_cast<uint16_t>( _sim->_total_nodes) ; // _sim->total_nodes doesnt include gnd
   var_namen_arr.resize( n_vars, string("unset"));
-  var_namen_arr[0]="0";
+//  var_namen_arr[0]="0";
   fillnames( &CARD_LIST::card_list );
-  n_vars_square = n_vars * n_vars;
+  n_vars_square = (uint16_t)(n_vars * n_vars);
 
 #ifndef NDEBUG
     for (unsigned i=0; i < n_vars; i++)
@@ -408,11 +423,11 @@ void SOCK::fix_args(int Nest)
 /*--------------------------------------------------------------------------*/
 void SOCK::options(CS& Cmd, int Nest)
 {
-  trace0("SOCK::options");
+  trace0("SOCK::options... ");
 
   _sim->_uic = _loop[Nest] = _reverse_in[Nest] = false;
   _sim->_more_uic = true;
-  _port = 1400;
+  _port = "1400";
   unsigned here = Cmd.cursor();
   do{
     ONE_OF
@@ -423,15 +438,14 @@ void SOCK::options(CS& Cmd, int Nest)
       || Get(Cmd, "c{ontinue}",   &_cont)
       || Get(Cmd, "port" ,        &_port)
       || Get(Cmd, "listen{port}", &_port)
+      || Get(Cmd, "host" ,        &_host)
       || Get(Cmd, "tr{s}",        &_do_tran_step)
       || Get(Cmd, "dm",           &_dump_matrix)
+      || Get(Cmd, "client",       &_client_mode)
       || Get(Cmd, "dt{emp}",	  &temp_c_in,   mOFFSET, OPT::temp_c)
       || Get(Cmd, "lo{op}", 	  &_loop[Nest])
       || Get(Cmd, "re{verse}",	  &_reverse_in[Nest])
       || Get(Cmd, "te{mperature}",&temp_c_in)
-      // FIXME
-      //|| Get(Cmd, "uic",	   &_sim->_uic)
-      //|| Get(Cmd, "more_uic",	   &_sim->_more_uic)
       || (Cmd.umatch("tr{ace} {=}") &&
 	  (ONE_OF
 	   || Set(Cmd, "n{one}",      &_trace, tNONE)
@@ -453,6 +467,9 @@ void SOCK::options(CS& Cmd, int Nest)
 /*--------------------------------------------------------------------------*/
 void SOCK::sweep()
 {
+  // what am i doing here??
+  return ;
+  assert(false);
   head(_start[0], _stop[0], " ");
   _sim->_bypass_ok = false;
   _sim->set_inc_mode_bad();
@@ -473,6 +490,7 @@ void SOCK::sweep()
 /*--------------------------------------------------------------------------*/
 void SOCK::sweep_recursive(int Nest)
 {
+  assert(false);
   unsigned d = _sim->_total_nodes; // 3
 
   trace1("SOCK::sweep_recursive", Nest);
@@ -760,6 +778,7 @@ void SOCK::sweep_recursive(int Nest)
 /*--------------------------------------------------------------------------*/
 void SOCK::first(int Nest)
 {
+  assert(false);
   trace2("SOCK::first", Nest, _start[Nest]);
   assert(Nest >= 0);
   assert(Nest < DCNEST);
@@ -798,8 +817,8 @@ void SOCK::fillnames( const CARD_LIST* scope){
       _out << s.str();
       string myname(i->second->long_label());
 
-      var_namen_arr[i->second->matrix_number()] = myname;
-
+      var_namen_arr[i->second->matrix_number()-1] = myname;
+      var_namen_total_size = static_cast<uint16_t>( var_namen_total_size + static_cast<uint16_t>(myname.length()) + 1 );
 
     }else{
       // _out << "Zero Node  "  << "\n";
@@ -817,6 +836,8 @@ void SOCK::fillnames( const CARD_LIST* scope){
 /*--------------------------------------------------------------------------*/
 bool SOCK::next(int Nest)
 {
+
+  assert(false);
 
   bool ok = false;
   if (_linswp[Nest]) {
@@ -878,11 +899,6 @@ static DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "sock", &p2);
 /*--------------------------------------------------------------------------*/
 
 #if 0
- 
-
-
-
-
 
 // Treiber zum Einlesen der Daten aus Maple               
 //		          vera_nl
@@ -1013,345 +1029,348 @@ TParameter *vera_titan_ak(TParameter *parameter)
 #endif
 
 
-  /* Socket generieren */
 
-  /* Socket einem Port zuweisen. */
-  memset(&sin, 0, sizeof(sin));
-  sin.sin_family = AF_INET;
-  sin.sin_port   = htons(port);
-  if (connect(channel, (struct sockaddr *) &sin, sizeof(sin)) == -1)
+#endif
+
+void SOCK::main_loop(){
+  trace0("SOCK::main_loop");
+
+  bool init_done=false;
+  while(1) 
   {
-    printf("Error, cannot connet to Socket\n");
+    trace0("SOCK::main_loop waiting for opcode");
+       
+    stream >> opcode;
+    stream >> 7;
+
+    trace1("SOCK::main_loop", (int)opcode);
+    //trace1(" Naechste Anforderung \n",n_bytes);
+
+    switch (opcode)  
+    {
+      case '3':
+        if(init_done) throw Exception("init twice??");
+        verainit();
+        verainit_tail();
+        init_done=true;
+        break;
+      case '4': 
+        veraop();
+        veraop_tail();
+        break;
+
+      default:
+        trace0("error");
+        ::error(bDANGER, "unknown opcode %i\n", opcode);
+        assert(false);
+        break;
+
+    }
+  }
+}
+
+void SOCK::verainit(){
+  trace0("SOCK::verainit");
+  stream >> verbose >> 6;
+  stream >> n_inputs >> 6;
+  stream >> length >> 6;
+
+  trace3("SOCK::verainit", verbose, n_inputs, length );
+
+  char input_namen[length+1];
+  unsigned here =0;
+  unsigned n=0;
+  input_names.resize(n_inputs);
+  input_devs.resize(n_inputs);
+
+  for (unsigned i=0; i < length; i++)
+  {
+    stream >> input_namen[i] >> 7;
+    if(input_namen[i] == '\t'){
+      input_namen[i]=0;
+      input_names[n++]=string(input_namen+here);
+      here = i;
+      trace0(input_names[n-1]);
+
+      try {
+        CARD_LIST::fat_iterator ci = findbranch(input_names[n-1], &CARD_LIST::card_list);
+        input_devs[n-1] = (*ci);
+      } catch( Exception e ) {
+        throw e;
+      }
+
+      trace0("dev found " + input_devs[n-1]->long_label());
+
+    }
+  }
+
+
+  //trace0("input_namen " + string(input_namen) );
+  total = (unsigned) (length+4);
+  assert(3*BUFSIZE*BUFSIZE >= total);
+
+  if (!stream.at_end())
+  {
+    printf("Error in Verainit! no of bytes received %i <> expected %i\n",
+        n_bytes, (int)(total*sizeof(di_union_t)));
+    throw Exception("bloed\n");
+  }
+
+
+  assert(!var_names_buf);
+  var_names_buf = (char*) malloc( BUFSIZE * sizeof(char));
+  strcpy(var_names_buf,"");
+  for (unsigned i=0; i < n_vars; i++)
+  {  
+    trace0("name: " + var_namen_arr[i]);
+    strcat(var_names_buf, var_namen_arr[i].c_str());
+    strcat(var_names_buf, "\t");
+  }
+  //length = static_cast<uint16_t>( strlen(var_names_buf) );
+  // userinfo(1,"vera_titan_ak","Variablennamen %s\n",var_names_buf);
+}
+
+void SOCK::veraop(){
+  total = n_vars;
+  assert(3*BUFSIZE*BUFSIZE >= total);
+
+  if (n_bytes != total * (int) sizeof(di_union_t))
+  {
+    printf("Error in Veraop! no of bytes received %i <> expected"
+        " %i #inputs: %d \n",
+        n_bytes, (int)(total*sizeof(di_union_t)),total-1);
     exit(1);
   }
 
 
-  /* Serverbetrieb starten */
-
-#endif
-
-  void SOCK::main_loop(){
-
-    while (1) 
-    {
-      stream >> opcode;
-
-      trace1("SOCK::main_loop", opcode);
-//      fwrite(buffer,1,n_bytes,outfile);
-      trace1(" Naechste Anforderung \n",n_bytes);
-
-      switch (opcode)  
-      {
-        case 51: 
-          verainit();
-          verainit_tail();
-          break;
-
-        default:
-          trace0("unknown opcode");
-
-
-      }
-    }
-
+  dc_werteA= (double*) malloc(sizeof(double)*n_vars+n_eingaenge);
+  for (unsigned i=0; i < n_eingaenge+n_vars; i++)
+  {
+    stream >> dc_werteA[i];
   }
 
-  void SOCK::verainit(){
-    verbose = buffer[1].int_val;
-    n_inputs = buffer[2].int_val;
-    length = buffer[3].int_val;
+  error = 0; /* veraop(sweep_val, x_new, G, C); */
 
-    trace3("verainit", verbose, n_inputs, length );
 
-    for (unsigned i=0; i < length; i++)
+//  init_sw[0]=1.0;  // ueberschreibt die im par_satz gegebenen Werte.
+                   // ???
+
+  //dc_sysA->par_werte=insert_value(dc_sysA->par_namen,
+   //   dc_sysA->par_werte,dc_sysA->n_par,
+    //  init_sw_name,init_sw,1);
+
+  more_uic=true;
+  homotopy();
+
+  {
+    for (i=0; i < dc_sysA->n_var; i++)
     {
-      // input_namen[i] = (char) buffer[i+4].int_val;
-      // Namen braucht man nicht, 
-      // deshalb hier ignoriert
+      dc_sysA->start_vek[i]=dc_loesungA[i];
+      x_neu[i] = dc_loesungA[i];
     }
-    // input_namen[length] = '\0';
-
-    //trace0("input_namen " + string(input_namen) );
-    total = (unsigned) (length+4);
-    assert(3*BUFSIZE*BUFSIZE >= total);
-
-    if (n_bytes != total * (int) sizeof(di_union_t))
+    if (printlevel >= 1)
     {
-      printf("Error in Verainit! no of bytes received %i <> expected %i\n",
-          n_bytes, (int)(total*sizeof(di_union_t)));
-      throw Exception("bloed\n");
+      dc_sysA->print_var();
+      print_array(stderr,dc_loesungA,1,A->n_var);
     }
+  }
+  // Die Variablenwerte stehen schon durch solve_system in var_werte
+  // in dc_sysA und muessen noch nach A kopiert werden:
+  A->var_werte = x_neu;
+  free(dc_loesungA);
+  //        A->var_werte = dc_loesungA;
+  // diff_werte, par_werte muessen auch gesetzt sein!
+  // in diesem Falle sind sie per default = 0
+  A->eval_lin_gl(dc_werteA,&matrixg,&matrixc,&vectorq);
 
+  trace1("matrix", 1);
 
-    assert(!var_names_buf);
-    var_names_buf = (char*) malloc( BUFSIZE * sizeof(char));
-    strcpy(var_names_buf,"");
-    for (unsigned i=0; i < n_vars; i++)
+  for (i=0; i < n_vars; i++)
+  {
+    for (k=0; k < n_vars; k++)
     {  
-      trace0("name: " + var_namen_arr[i]);
-      strcat(var_names_buf, var_namen_arr[i].c_str());
-      strcat(var_names_buf, "\t");
+      // muessen transponiert werden
+      G[i+n_vars*k]=matrixg[k+n_vars*i];
+      C[i+n_vars*k]=matrixc[k+n_vars*i];
     }
-    length = strlen(var_names_buf);
-    // userinfo(1,"vera_titan_ak","Variablennamen %s\n",var_names_buf);
   }
+  break;
+}
+
 #if 0
-      case 52: /* veraop */
-      {
-	total = A->n_eingaenge+1;
-        assert(3*BUFSIZE*BUFSIZE >= total);
-
-        if (n_bytes != total * (int) sizeof(di_union_t))
-	{
-	  printf("Error in Veraop! no of bytes received %i <> expected"
-                 " %i #inputs: %d \n",
-		 n_bytes, (int)(total*sizeof(di_union_t)),total-1);
-	  exit(1);
-	}
-	
-
-        dc_werteA= (double*) malloc(sizeof(double)*A->n_eingaenge);
-        for (i=0; i < A->n_eingaenge; i++)
-	{
-	  dc_werteA[i] = buffer[1+i].double_val; // Die Werte werden
-	                                         // tatsaechlich verwendet
-	}
-
-	error = 0; /* veraop(sweep_val, x_new, G, C); */
-        n_vars = A->n_var;
-
-
-        init_sw[0]=1.0;  // ueberschreibt die im par_satz gegebenen Werte.
-       
-        dc_sysA->par_werte=insert_value(dc_sysA->par_namen,
-				    dc_sysA->par_werte,dc_sysA->n_par,
-				    init_sw_name,init_sw,1);
-        assert(dc_sysA->par_werte!=NULL);
-
-
-        dc_loesungA=dc_sysA->solve_system(A->eingaenge,dc_werteA,
-					  A->n_eingaenge);  
-	if (dc_loesungA == NULL)
-	{
-	  fprintf(stderr,"vera_titan_ak: Fehler bei DC-Loesung von A\n");
-	  error=1;
-	}
-	else 
-	{
-	  for (i=0; i < dc_sysA->n_var; i++)
-	  {
-	    dc_sysA->start_vek[i]=dc_loesungA[i];
-	    x_neu[i] = dc_loesungA[i];
-	  }
-	  if (printlevel >= 1)
-	  {
-	    dc_sysA->print_var();
-	    print_array(stderr,dc_loesungA,1,A->n_var);
-	  }
-	}
-        // Die Variablenwerte stehen schon durch solve_system in var_werte
-        // in dc_sysA und muessen noch nach A kopiert werden:
-        A->var_werte = x_neu;
-        free(dc_loesungA);
-//        A->var_werte = dc_loesungA;
-	// diff_werte, par_werte muessen auch gesetzt sein!
-	// in diesem Falle sind sie per default = 0
-        A->eval_lin_gl(dc_werteA,&matrixg,&matrixc,&vectorq);
-        if (printlevel >= 1) 
-	{
-	  userinfo(1,"vera_titan_ak","G und C Matrizen:\n");  
-	  print_array (stderr,matrixg,n_vars,n_vars);
-	  print_array (stderr,matrixc,n_vars,n_vars);
-	}
-        for (i=0; i < n_vars; i++)
-	{
-          for (k=0; k < n_vars; k++)
-	  {  
-	    // muessen transponiert werden
-	    G[i+n_vars*k]=matrixg[k+n_vars*i];
-	    C[i+n_vars*k]=matrixc[k+n_vars*i];
-	  }
-	}
-	break;
-      }
-
       case 53: /* verakons */
 # endif
-      void SOCK::verakons()
-      {
-//        n_eingaenge == #caps?
-	total =  n_eingaenge + n_vars + 1;
-        assert(3*BUFSIZE*BUFSIZE >= total);
+void SOCK::verakons() {
+  //        n_eingaenge == #caps?
+  total =  n_eingaenge + n_vars + 1;
+  assert(3*BUFSIZE*BUFSIZE >= total);
 
-        if (n_bytes != total * (int) sizeof(di_union_t))
-	{
-	  printf("Error in Verakons! no of bytes received %i <> expected %i\n",
-		 n_bytes, (int)(total*sizeof(di_union_t)));
-	  exit(1);
-	}	
+  if (n_bytes != total * (int) sizeof(di_union_t))
+  {
+    printf("Error in Verakons! no of bytes received %i <> expected %i\n",
+        n_bytes, (int)(total*sizeof(di_union_t)));
+    exit(1);
+  }	
 
 
-        dc_werteA= (double*) malloc(sizeof(double)*n_eingaenge);
-        for (unsigned i=0; i < n_eingaenge; i++)
-	{
-	  dc_werteA[i] = buffer[1+i].double_val; // Die Werte werden
-	                                         // tatsaechlich verwendet
-	}
+  dc_werteA= (double*) malloc(sizeof(double)*n_eingaenge);
+  for (unsigned i=0; i < n_eingaenge; i++)
+  {
+    dc_werteA[i] = buffer[1+i].double_val; // Die Werte werden
+    // tatsaechlich verwendet
+  }
 
-	for (unsigned i=0; i < n_vars; i++)
-	{
-	  x_schaetz[i] = buffer[i+n_eingaenge+1].double_val; 
-	}
+  for (unsigned i=0; i < n_vars; i++)
+  {
+    x_schaetz[i] = buffer[i+n_eingaenge+1].double_val; 
+  }
 
-//	if (printlevel >= 3)
-//	{
-//	  frame_number=buffer[i+1].int_val;
-//	  userinfo(3,"vera_titan_ak","Bearbeite %i Frame Number %i mit %i bytes \n",
-//		  opcode,frame_number,n_bytes);
-//	}
- 
-	error = 0; /* verakons(Dwork, x_new, q_dot, G, C); */
-//	n_vars = A->n_var;
+  //	if (printlevel >= 3)
+  //	{
+  //	  frame_number=buffer[i+1].int_val;
+  //	  userinfo(3,"vera_titan_ak","Bearbeite %i Frame Number %i mit %i bytes \n",
+  //		  opcode,frame_number,n_bytes);
+  //	}
 
-        // Konsistenten Arbeitspunkt und q_punkt  berechnen
-        // Es wird davon ausgegangen, das dc_werteA noch stimmt
-        //
-        
-        // caps festhalten und AP finden.
-        
-//        for z in zap
+  error = 0; /* verakons(Dwork, x_new, q_dot, G, C); */
+  //	n_vars = A->n_var;
+
+  // Konsistenten Arbeitspunkt und q_punkt  berechnen
+  // Es wird davon ausgegangen, das dc_werteA noch stimmt
+  //
+
+  // caps festhalten und AP finden.
+
+  //        for z in zap
   //        z->keep_voltage() // fetch voltages from nodes.
   //
-//        do_ddc
+  //        do_ddc
 
-        incomplete();
-//	kons_loesungA=konsop(A,kons_sysA,dc_werteA, x_schaetz,&kons_residuumA);
+  incomplete();
+  //	kons_loesungA=konsop(A,kons_sysA,dc_werteA, x_schaetz,&kons_residuumA);
 
 
-	if (kons_loesungA == NULL)
-	{
-	  ::error(bDANGER,"vera_titan_ak: Fehler bei konsistenter Abp.-Loesung von A\n");
-	  error=1;
-	}
-	else 
-	{
-	  for (unsigned i=0; i < n_vars; i++)
-	  {
-	    x_neu[i]=kons_loesungA[i];
-	    q_punkt[i]=kons_residuumA[i];
-	  }
-	 // if (printlevel >= 2)
-	 // {
-	 //   kons_sysA->print_var();
-	 //   print_array(stderr,kons_loesungA,1,A->n_var);
-	 // }
-	}
-
-        incomplete();
-//	var_werte = x_neu; 
-
-        //  do a ddc here?
-//        A->eval_lin_gl(dc_werteA,&matrixg,&matrixc,&vectorq);
-
-//        if (printlevel >= 1) 
-//	{
-//	  userinfo(1,"vera_titan_ak","G-Matrix:\n");  
-//	  print_array (stderr,matrixg,n_vars,n_vars);
-//	  userinfo(1,"vera_titan_ak","C-Matrix:\n");  
-//	  print_array (stderr,matrixc,n_vars,n_vars);
-//	}
-        const BSMATRIX<double> R = _sim->_acx.real();
-        const BSMATRIX<double> I = _sim->_acx.imag();
-        for (unsigned i=0; i < n_vars; i++)
-	{
-          for (unsigned k=0; k < n_vars; k++)
-	  {  
-	    // muessen transponiert werden
-            // i=zeile,k=spalte
-	    G[i+n_vars*k] = R.s(i,k);
-	    C[i+n_vars*k] = I.s(i,k);
-	  }
-	}
-      }
-#if 0
-      default: 
-      {
-	// Ende Serverbetrieb
-	close(channel);
-
-	if (printlevel >= 3)
-	{
-	  fclose(outfile);
-	}
-
-        free(matrixg);
-        free(matrixc);
-        free(vectorq);
-
-	return NULL;
-      }  
-    }
-
-    if (opcode == 51)                   /* Verainit */
-#endif
-      void SOCK::verainit_tail()
-      {
-        stream << (int32_t) error;         /* Fehlerflag */
-        stream << (int32_t) n_vars;        /* Anzahl der Variablen */
-        stream << (int32_t) length;        /* Laenge des Namen Feldes */
-        for (unsigned i=0; i < length; i++)         /* Variablen-Namen Feld */
-        {
-         // socket << var_names;
-        }
-
-        total = length+3;
-        assert(3*BUFSIZE*BUFSIZE >= total);
-        trace3( "vera_titan_ak Sende",
-              error,frame_number,total);
-        n_bytes = (unsigned) write(channel, buffer, total*sizeof(di_union_t));
-        if (n_bytes != total * (int) sizeof(di_union_t))
-        {
-          ::error(bWARNING ,"vera_titan_ak Fehler beim Senden:%i Framenumber %i, "
-              "returnwert von write %i, errno %i\n",
-              frame_number,n_bytes,errno); 
-          throw Exception("");
-        }
-      }
-
-    // else if (opcode == 52)              /* Veraop */
-
-    void SOCK::veraop_tail()
+  if (kons_loesungA == NULL)
+  {
+    ::error(bDANGER,"vera_titan_ak: Fehler bei konsistenter Abp.-Loesung von A\n");
+    error=1;
+  }
+  else 
+  {
+    for (unsigned i=0; i < n_vars; i++)
     {
-      trace0("veraop tail");
-      buffer[0].int_val = error;         /* Fehlerflag */
-      for (unsigned i=0; i < n_vars; i++)         /* Variablen-Werte */
-      {
-	buffer[i+1].double_val = x_neu[i];
-      }
-      for (unsigned i=0; i < n_vars_square; i++)    /* G-Matrix */
-      {
-	buffer[i+n_vars+1].double_val = G[i];
-      }
-      for (unsigned i=0; i < n_vars_square; i++)    /* C-Matrix */
-      {
-	buffer[i+n_vars_square+n_vars+1].double_val = C[i];
-      }
-
-      total = 2*n_vars_square+n_vars+1;
-      assert(3*BUFSIZE*BUFSIZE >= total);
-      if (printlevel >= 1)
-      {
-	userinfo(1,"vera_titan_ak","Sende: Error %i Framenumber %i, Laenge %i\n",
-		 error,frame_number,total); 
-      }
-      n_bytes = (unsigned) write(channel, buffer, total*sizeof(di_union_t));
-      if (n_bytes != total * (int) sizeof(di_union_t))
-      {
-	userinfo(1,"vera_titan_ak","Fehler beim Senden:%i Framenumber %i, "
-		 "returnwert von write %i, errno %i\n",
-		 frame_number,n_bytes,errno); 
-      }
+      x_neu[i]=kons_loesungA[i];
+      q_punkt[i]=kons_residuumA[i];
     }
+    // if (printlevel >= 2)
+    // {
+    //   kons_sysA->print_var();
+    //   print_array(stderr,kons_loesungA,1,A->n_var);
+    // }
+  }
+
+  incomplete();
+  //	var_werte = x_neu; 
+
+  //  do a ddc here?
+  //        A->eval_lin_gl(dc_werteA,&matrixg,&matrixc,&vectorq);
+
+  //        if (printlevel >= 1) 
+  //	{
+  //	  userinfo(1,"vera_titan_ak","G-Matrix:\n");  
+  //	  print_array (stderr,matrixg,n_vars,n_vars);
+  //	  userinfo(1,"vera_titan_ak","C-Matrix:\n");  
+  //	  print_array (stderr,matrixc,n_vars,n_vars);
+  //	}
+  const BSMATRIX<double> R = _sim->_acx.real();
+  const BSMATRIX<double> I = _sim->_acx.imag();
+  for (unsigned i=0; i < n_vars; i++)
+  {
+    for (unsigned k=0; k < n_vars; k++)
+    {  
+      // muessen transponiert werden
+      // i=zeile,k=spalte
+      G[i+n_vars*k] = R.s(i,k);
+      C[i+n_vars*k] = I.s(i,k);
+    }
+  }
+}
+
+
+// very clever way to transfer strings.
+static void putstring8(SocketStream* s, const string x){
+  const char* A = x.c_str();
+
+  while(*A){
+    *s<<*A<<*A<<*A<<*A<<*A<<*A<<*A<<*A;
+    A++;
+  }
+}
+
+void SOCK::verainit_tail()
+{
+  stream << error;   stream.pad(6);        /* Fehlerflag */
+  stream << int32_t(n_inputs+n_vars);  stream.pad(4);      /* Anzahl der Variablen */
+  stream << int32_t(length+var_namen_total_size);  stream.pad(4);     /* Laenge des Namen Feldes */
+
+  trace4("SOCK::verainit_tail ", error, n_vars, length, var_namen_total_size);
+
+  assert(stream.tcur() == 24);
+
+  for (unsigned i = 0; i < n_vars; i++) 
+  {
+    trace1("putting name " +  var_namen_arr[i], i);
+    putstring8( &stream, var_namen_arr[i]);
+    stream << '\t'; stream.pad(7);
+  }
+
+  //good idea??
+  for (unsigned i=0; i < n_inputs; i++)  
+  {
+    trace1("putting name " +  input_names[i], i);
+    putstring8( &stream, input_names[i]);
+    stream << '\t'; stream.pad(7);
+  }
+  stream.flush();
+
+  trace0("done verainit_tail");
+}
+
+
+void SOCK::veraop_tail()
+{
+  trace1("veraop tail", n_vars);
+  stream << error; stream.pad(6);
+  for (unsigned i=0; i < n_vars; i++)         /* Variablen-Werte */
+  {
+    stream << x_neu[i];
+  }
+  for (unsigned i=0; i < n_vars_square; i++)    /* G-Matrix */
+  {
+    stream << G[i];
+  }
+  for (unsigned i=0; i < n_vars_square; i++)    /* C-Matrix */
+  {
+    stream << C[i];
+  }
+
+  stream << SocketStream::eol;
+
+  total = 2*n_vars_square+n_vars+1;
+  assert(3*BUFSIZE*BUFSIZE >= total);
+  if (printlevel >= 1)
+  {
+    userinfo(1,"vera_titan_ak","Sende: Error %i Framenumber %i, Laenge %i\n",
+        error,frame_number,total); 
+  }
+  n_bytes = (unsigned) write(channel, buffer, total*sizeof(di_union_t));
+  if (n_bytes != total * (int) sizeof(di_union_t))
+  {
+    userinfo(1,"vera_titan_ak","Fehler beim Senden:%i Framenumber %i, "
+        "returnwert von write %i, errno %i\n",
+        frame_number,n_bytes,errno); 
+  }
+}
 
 #if 0
 
