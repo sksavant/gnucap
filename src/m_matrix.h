@@ -468,7 +468,6 @@ T& BSMATRIX<T>::l(unsigned r, unsigned c)
   assert(1 <= _lownode[r]);
   assert(_lownode[r] <= c);
 
-  trace2("l",r,c);
   return *(_rowptr[r]-c);
 }
 /*--------------------------------------------------------------------------*/

@@ -100,6 +100,7 @@ bool EVAL_BM_COND::operator==(const COMMON_COMPONENT& x)const
 /*--------------------------------------------------------------------------*/
 void EVAL_BM_COND::parse_common_obsolete_callback(CS& cmd) //used
 {
+  trace1("EVAL_BM_COND::parse_common_obsolete_callback", cmd.tail());
   unsigned here = cmd.cursor();
   cmd.reset().skipbl();
   bool is_source = cmd.match1("viVI") 

@@ -35,12 +35,12 @@ protected:
     :ELEMENT(p), _input_label(p._input_label), _input(p._input) {}
   ~CCSRC_BASE() {}
 protected: // override virtual
-  uint_t	   max_nodes()const	{return 3;}
-  uint_t	   ext_nodes()const	{return 4;}
-  uint_t	   min_nodes()const	{return 3;}
-  uint_t	   matrix_nodes()const	{return 4;}
-  uint_t	   net_nodes()const	{return 2;}
-  uint_t	   num_current_ports()const {return 1;}
+  virtual uint_t	   max_nodes()const	{return 3;} // before: 3
+  virtual uint_t	   ext_nodes()const	{return 4;} // ?
+  virtual uint_t	   min_nodes()const	{return 3;}
+  virtual uint_t	   matrix_nodes()const	{return 4;}
+  virtual uint_t	   net_nodes()const	{return 2;} // before:2
+  virtual uint_t	   num_current_ports()const {return 1;}
   const std::string current_port_value(uint_t)const {return _input_label;};
   //void   precalc_first();	//ELEMENT
   void	   expand_last();

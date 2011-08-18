@@ -160,7 +160,7 @@ bool COMMON_COMPONENT::parse_param_list(CS& cmd)
 /*--------------------------------------------------------------------------*/
 void COMMON_COMPONENT::parse_common_obsolete_callback(CS& cmd) //used
 {
-  trace0(("COMMON_COMPONENT::parse_common_obsolete_callback " + cmd.tail()).c_str() );
+  trace1("COMMON_COMPONENT::parse_common_obsolete_callback ", cmd.tail() );
   if (cmd.skip1b('(')) {
     // start with a paren
     unsigned start = cmd.cursor();
@@ -467,8 +467,8 @@ bool COMPONENT::node_is_connected(uint_t i)const
   assert(_n);
   assert(i != INVALID_NODE);
   if (i >= net_nodes()) {
-    std::cerr << "i < net_nodes() failed: "<<i<< "< "<<net_nodes()<<"\n";
-    exit(4);
+    trace2( "COMPONENT::node_is_connected " , i, net_nodes() );
+    assert(false);
   }
   return _n[i].is_connected();
 }
@@ -633,11 +633,16 @@ void COMPONENT::map_nodes()
 {
   assert(is_device());
   //assert(min_nodes() <= net_nodes());
+  if(net_nodes() > max_nodes()){
+    trace2("COMPONENT::map_nodes", net_nodes(), max_nodes());
+  }
   assert(net_nodes() <= max_nodes());
   //assert(ext_nodes() + int_nodes() == matrix_nodes());
 
   for (uint_t ii = 0; ii < ext_nodes()+int_nodes(); ++ii) {
+    trace2("COMPONENT::map_nodes", ext_nodes()+int_nodes(), ii);
     _n[ii].map();
+    trace2("COMPONENT::map_nodes", ext_nodes()+int_nodes(), _n[ii].m_());
   }
 
   if (subckt()) {
@@ -855,6 +860,7 @@ const MODEL_CARD* COMPONENT::find_model(const std::string& modelname)const
       }
       if (!c) {
 	if (bin_count <= 1) {
+          trace0("Exc");
 	  throw Exception_Cant_Find(long_label(), modelname);
 	}else{
 	  throw Exception(long_label() + ": no bins match: " + modelname);

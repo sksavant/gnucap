@@ -179,7 +179,7 @@ static int count_ports(CS& cmd, int maxnodes, int minnodes, int leave_tail, int 
   //BUG// assert fails on current controlled sources with (node node dev) syntax
   // it's ok with (node node) dev syntax or node node dev syntax
   assert(num_nodes <= maxnodes);
-  trace1("count_ports", num_nodes);
+  trace2("count_ports", num_nodes, cmd.tail());
   return num_nodes;
 }
 /*--------------------------------------------------------------------------*/
@@ -293,6 +293,7 @@ void LANG_SPICE_BASE::parse_ports(CS& cmd, COMPONENT* x, int minnodes,
 /*--------------------------------------------------------------------------*/
 void LANG_SPICE_BASE::parse_element_using_obsolete_callback(CS& cmd, COMPONENT* x)
 {
+  trace1("LANG_SPICE_BASE::parse_element_using_obsolete_callback " , x->long_label());
   assert(x);
   ELEMENT* xx = dynamic_cast<ELEMENT*>(x);
   assert(xx);
