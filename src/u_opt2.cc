@@ -193,7 +193,7 @@ bool OPT::set_values(CS& cmd)
       || Get(cmd, "itl6",	   &itl[6])
       || Get(cmd, "itl7",	   &itl[7])
       || Get(cmd, "itl8",	   &itl[8])
-      || (cmd.check(bWARNING, "what's this?"), cmd.skiparg());
+      || (cmd.check(bWARNING, "opt: what's this?"), cmd.skiparg());
 
     if (!cmd.stuck(&here)) {
       changed = true;

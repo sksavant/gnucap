@@ -514,6 +514,7 @@ DEV_COMMENT* LANG_SPICE_BASE::parse_comment(CS& cmd, DEV_COMMENT* x)
 /*--------------------------------------------------------------------------*/
 DEV_DOT* LANG_SPICE_BASE::parse_command(CS& cmd, DEV_DOT* x)
 {
+  trace0("LANG_SPICE_BASE::parse_command");
   assert(x);
   x->set(cmd.fullstring());
   CARD_LIST* scope = (x->owner()) ? x->owner()->subckt() : &CARD_LIST::card_list;

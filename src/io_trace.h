@@ -73,17 +73,19 @@ class hp{
 		                                      << "  " << #y << "=" << (y)  \
 		                                      << "  " << #z << "=" << z  \
 		                                      << endl )
-#define trace4(s,w,x,y,z) ( cerr <<  "@#@" << s << "  " << #w << "=" << w  \
-		                                          << "  " << #x << "=" << x  \
-		                                          << "  " << #y << "=" << y  \
-		                                          << "  " << #z << "=" << z  \
-		                                          << endl )
-#define trace5(s,v,w,x,y,z) ( \
-		cerr <<  "@#@" << s << "  " << #v << "=" << v  \
-		     << "  " << #w << "=" << w  \
+#define trace4(s,w,x,y,z) ( \
+		cerr <<  "@#@" << s << "  " << #w << "=" << (w)  \
 		     << "  " << #x << "=" << x  \
 		     << "  " << #y << "=" << y  \
 		     << "  " << #z << "=" << z  \
+		     << endl )
+
+#define trace5(s,v,w,x,y,z) ( \
+		cerr <<  "@#@" << s << "  " << #v << "=" << (v)  \
+		     << "  " << #w << "=" << (w)  \
+		     << "  " << #x << "=" << (x)  \
+		     << "  " << #y << "=" << (y)  \
+		     << "  " << #z << "=" << (z)  \
 		     << endl )
 #define trace6(s,u,v,w,x,y,z)\
 	(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g\n",\
