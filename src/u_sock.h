@@ -48,6 +48,7 @@
 
 using namespace std;
 #define MAX_LISTEN_QUEUE 256
+#define BUFSIZE 256
 
 
 //namespace TOOLS {
@@ -71,40 +72,52 @@ class SocketStream : public iostream {
     int fd;
     const unsigned bufsize;
     unsigned chunksize;
-    char* buf;
-    unsigned cur;
+    // how to get these from iostream?
+    char* _rbuf; // receive buffer
+    char* _tbuf; // transmit buffer
+    unsigned _rcur;
+    unsigned _tcur;
     mutable bool copied; // this is just an expriment. if you dont like it, dont use 
                          // copy and operator=
   public:
     enum EOL {eol};
-    SocketStream() :  iostream(), fd(0), bufsize(64), copied(false) {
-      buf = (char*)malloc((bufsize+1)*sizeof(char));
-      buf[bufsize]=0;
+    SocketStream() :  iostream(), fd(0), bufsize(BUFSIZE), copied(false) {
+      _rbuf = (char*)malloc((bufsize)*sizeof(char));
+      _tbuf = (char*)malloc((bufsize)*sizeof(char));
+      _rcur=0;
+      _tcur=0;
     }
 
-
-    SocketStream(int fd, unsigned bs=64) : 
+    SocketStream(int fd, unsigned bs=BUFSIZE) : 
       iostream(),
       fd(fd),
       bufsize(bs),
       copied(false)
     { 
+      trace2("SocketStream",fd,bufsize);
       assert(bufsize);
-      buf = (char*)malloc((1+bufsize)*sizeof(char));
-      buf[bufsize]=0;
+      _rbuf = (char*)malloc((bufsize)*sizeof(char));
+      trace1("SocketStream mallocd",fd);
+      _tbuf = (char*)malloc((bufsize)*sizeof(char));
+      trace1("SocketStream mallocd",fd);
+      _rcur=0;
+      _tcur=0;
     }
 
     void operator=(const SocketStream& obj){
       fd=obj.fd;
       obj.copied=true;
       assert(bufsize==obj.bufsize);
-      buf=obj.buf;
+      _rbuf=obj._rbuf;
+      _tbuf=obj._tbuf;
     }
 
     SocketStream(const SocketStream& obj) :
-      ios(),  iostream(), fd(obj.fd), bufsize(obj.bufsize), buf(obj.buf)
+      ios(),  iostream(), fd(obj.fd), bufsize(obj.bufsize), 
+      _rbuf(obj._rbuf),
+      _tbuf(obj._tbuf)
     {
-      assert(buf);
+      assert(_rbuf);
       obj.copied=true;
       assert(bufsize==obj.bufsize);
       //FIXME: check bufsize
@@ -114,24 +127,15 @@ class SocketStream : public iostream {
     void read();
 
   public:
-    bool at_end(){return cur==chunksize;}
+    bool at_end(){return _rcur==chunksize;}
     void flush();
 
     const std::string get(int len);
 //    const std::string operator>>(int len);
-    SocketStream& operator>>(double&);
     SocketStream& operator>>(char&);
-    SocketStream& operator>>(unsigned char&);
-    SocketStream& operator>>(int16_t&);
-    SocketStream& operator>>(uint16_t&);
-    SocketStream& operator>>(int32_t&);
-    SocketStream& operator>>(int); // skip chars.
-
-
-//    SocketStream operator=(const SocketStream& p ){
-//        fd=p.fd;
-//        return *this;
-//    }
+    template<class T>
+    SocketStream& operator>>(T&);
+    SocketStream& operator>>(unsigned); // skip chars.
 
 
     void send(const string& data);
@@ -144,12 +148,13 @@ class SocketStream : public iostream {
     SocketStream& operator<<(const EOL){ flush(); return *this; }
     template<class T>
     SocketStream& operator<<(const T data);
-    SocketStream& pad(const unsigned i){
-      int j=i;
-      const char x=NULL;
-      while(j-->0)
-        *this<<x;
-    }
+    SocketStream& pad(const unsigned i);
+
+#ifndef NDEBUG
+  public:
+    unsigned rcur()const {return _rcur;}
+    unsigned tcur()const {return _tcur;}
+#endif
 };
 /**
  * @brief the Socket, is an abstract OO approach
@@ -225,6 +230,14 @@ class ClientSocket : public Socket {
 //}
 
 //using namespace TOOLS::NET;
+//
+SocketStream& SocketStream::pad(const unsigned i){
+  int j=i;
+  const char x='\0';
+  while(j-->0)
+    *this<<x;
+  return *this;
+}
 
 
 
@@ -232,11 +245,13 @@ SocketStream::~SocketStream() {
   if (!copied){
     trace1("SocketStream::~SocketStream closing", fd);
     close(fd);
-    free(buf);
+    free(_rbuf);
+    free(_tbuf);
   }
 }
 
 inline SocketStream& SocketStream::operator<<(const std::string& data) {
+  assert(false); // not implemented
   size_t len = data.length();
   ssize_t n = ::write(fd, data.c_str(), len);
   if(n < 0)
@@ -244,120 +259,77 @@ inline SocketStream& SocketStream::operator<<(const std::string& data) {
   return *this;
 }
 
-//inline SocketStream& SocketStream::operator<<(const std::string data) {
-//  size_t len = data.length();
-//  ssize_t n = ::write(fd, data.c_str(), len);
-//  if(n < 0)
-//    throw SocketException("Could not write to socket");
-//  return *this;
-//}
-
 template<class T>
 inline SocketStream& SocketStream::operator<<(const T data) {
-  const int len =  (sizeof(T)/sizeof(char));
+  const unsigned len =  (sizeof(T)/sizeof(char));
   union { 
     char c[len];
     T d;
   } convert;
-
   convert.d = data;
 
-  ssize_t n = ::write(fd, convert.c, len);
-  if(n < 0)
-    throw SocketException("Could not write to socket");
+  // how to do this efficiently?
+  for(unsigned i=0; i<len; i++){
+    *this << convert.c[i];
+  }
   return *this;
 }
 
 inline SocketStream& SocketStream::operator<<(const char data) {
-
-  ssize_t n = ::write(fd, &data, 1);
-  if(n < 0)
-    throw SocketException("Could not write to socket");
+  if(_tcur==bufsize) flush();
+  _tbuf[_tcur++] = data;
   return *this;
 }
+//inline SocketStream& SocketStream::operator<<(char data) {
+//  if(_tcur==bufsize) flush();
+//  _tbuf[_tcur++] = data;
+//  return *this;
+//}
 
 
 
 void SocketStream::flush() {
-   //::flush(fd);
+  ssize_t n = ::write(fd, _tbuf, _tcur);
+  _tcur = 0;
+  if(n < 0)
+    throw SocketException("Could not write to socket");
 }
 
 inline void SocketStream::read() {
-  assert(chunksize == cur);
-  assert(buf);
-  cur = 0;
-  ssize_t n = ::read(fd, buf, bufsize);
+  assert(chunksize == _rcur);
+  assert(_rbuf);
+  assert(_tbuf);
+  _rcur = 0;
+  ssize_t n = ::read(fd, _rbuf, bufsize);
   if(n < 0)
     throw SocketException("SocketStream: Could not read from socket");
   chunksize = static_cast<unsigned>(n);
 }
 
 inline const string SocketStream::get(int len) {
-//  char buf[len+1];
-//  bzero(&buf, len+1);
 
-  ssize_t n = ::read(fd, buf, len);
+  ssize_t n = ::read(fd, _rbuf, len);
   if(n < 0)
     throw SocketException("Could not read from socket");
-  return buf;
+  return _rbuf;
 }
 
-//inline const std::string &SocketStream::operator>>(int len) {
-//  return get(len);
-//}
-//
-inline SocketStream &SocketStream::operator>>(int len) {
+inline SocketStream &SocketStream::operator>>(unsigned len) {
   char x;
   for(unsigned i=0; i<len; ++i){
     *this >> x;
   }
-}
-
-inline SocketStream &SocketStream::operator>>(int32_t& d) {
-  const uint_t len=sizeof(int32_t);
-  union { 
-    char c[len];
-    uint16_t d;
-  } convert;
-  for(unsigned i=0; i<len; ++i){
-    *this >> convert.c[i];
-  }
-  d = convert.d;
   return *this;
 }
 
-inline SocketStream &SocketStream::operator>>(int16_t& d) {
-  const uint_t len=sizeof(int16_t);
+template<class T>
+inline SocketStream &SocketStream::operator>>(T& d) {
+  const uint_t len=sizeof(T);
   union { 
     char c[len];
-    uint16_t d;
+    T d;
   } convert;
   for(unsigned i=0; i<len; ++i){
-    *this >> convert.c[i];
-  }
-  d = convert.d;
-  return *this;
-}
-
-inline SocketStream &SocketStream::operator>>(uint16_t& d) {
-  const uint_t len=sizeof(int16_t);
-  union { 
-    char c[len];
-    uint16_t d;
-  } convert;
-  for(unsigned i=0; i<len; ++i){
-    *this >> convert.c[i];
-  }
-  d = convert.d;
-  return *this;
-}
-
-inline SocketStream &SocketStream::operator>>(double& d) {
-  union { 
-    char c[sizeof(double)];
-    double d;
-  } convert;
-  for(unsigned i=0; i<sizeof(double); ++i){
     *this >> convert.c[i];
   }
   d = convert.d;
@@ -366,22 +338,15 @@ inline SocketStream &SocketStream::operator>>(double& d) {
 
 // this is inefficient, but so what?
 inline SocketStream &SocketStream::operator>>(char& c) {
-  if( cur == chunksize ){
+  if( _rcur == chunksize ){
         read();
   }
-  c = buf[cur++];
+  c = _rbuf[_rcur++];
   return *this;
 }
 
-inline SocketStream &SocketStream::operator>>(unsigned char& c) {
-  if( cur == chunksize ){
-        read();
-  }
-  c = buf[cur++];
-  return *this;
-}
-
-inline Socket::Socket(SOCKET_TYPE type, short unsigned port ) : fd(0), port(port), type(type), _stream(0) {
+inline Socket::Socket(SOCKET_TYPE type, short unsigned port ) : fd(0),
+  port(port), type(type), _stream(0) {
   bzero((char*) &addr, sizeof(addr));
 
   if(type == TCP)
@@ -413,11 +378,9 @@ inline ServerSocket::ServerSocket(SOCKET_TYPE type, uint16_t port, short
 
   int b = -1;
   for( short unsigned p = port; p<port+port_tries; p++ ){
-    trace2("ServerSocket::ServerSocket", p, port_tries);
     addr.sin_port = htons(p);
     b = bind(fd, (struct sockaddr*) &addr, sizeof(addr));
     if (b >= 0) {
-      trace1("listening", p);
       break;
     } else {
       trace2("cannot bind to", p, b);
@@ -438,7 +401,6 @@ inline ServerSocket::~ServerSocket() {
 inline SocketStream ServerSocket::listen() {
   struct sockaddr_in client_addr;
   int client_addr_len = sizeof(client_addr);
-  trace0("ServerSocket::listen");
 
   bzero((char*) &client_addr, client_addr_len);
   ::listen(fd, MAX_LISTEN_QUEUE);
@@ -482,9 +444,8 @@ inline ClientSocket::ClientSocket(SOCKET_TYPE type, string port, const
 
   if(fd)close(fd); // d'oh
 
-  freeaddrinfo(result);
   for (rp = result; rp != NULL; rp = rp->ai_next) {
-    trace3("connecting...", rp->ai_family, rp->ai_socktype, rp->ai_protocol );
+    // trace3("connecting...", rp->ai_family, rp->ai_socktype, rp->ai_protocol );
     rp->ai_family=hints.ai_family;
 
     fd = socket(rp->ai_family, rp->ai_socktype,0); //        rp->ai_protocol);
@@ -499,6 +460,7 @@ inline ClientSocket::ClientSocket(SOCKET_TYPE type, string port, const
 
     close(fd);
   }
+  freeaddrinfo(result);
 
 
   if(!rp){
