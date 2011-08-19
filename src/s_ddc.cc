@@ -483,8 +483,8 @@ void DDCOP::sweep_recursive(int Nest)
       cerr << ") \n";
 
       for(unsigned a=0;a <= _sim->_total_nodes; ++a){
-          Gu[a] = - Gu[a] +  _sim->_ac[a].real() ;
-           // Gu[a] = Gu[a] -  _sim->_i[a] ;
+        // Gu[a] = - Gu[a] +  _sim->_ac[a].real() ;
+        // Gu[a] = Gu[a] -  _sim->_i[a] ;
       }
 
       cerr << "_i= ( " << _sim->_i[0];
