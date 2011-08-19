@@ -159,18 +159,6 @@ private: //vera stuff.
   double*G;
   double*C;
 
-//from vera_titan_ak()
-//  data *A;                    // Zeiger auf globale Datenklasse
-                              // in ihr werden alle globalen Daten gehalten
-//  gls *dc_sysA;               // Zeiger auf das DC-Gleichungsystem
-//  gls *kons_sysA;
-
-//  double *dc_werteA,*dc_loesungA,*kons_loesungA,*kons_residuumA;
-
-//  get_tpara *para_obj;        // Zeiger auf ein Parameterobjekt
-
-//  int  i,k;
-
   int channel;
   int frame_number;
   Socket* socket;
