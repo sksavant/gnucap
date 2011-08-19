@@ -34,6 +34,9 @@ private:
   explicit DEV_VS(const DEV_VS& p) :ELEMENT(p) {}
 public:
   explicit DEV_VS()		:ELEMENT() {}
+private: // state
+  double _one0, _one1;
+  double _source0, _source1;
 private: // override virtual
   char	   id_letter()const	{return '\0';}
   std::string value_name()const {return "dc";}
@@ -58,7 +61,7 @@ private: // override virtual
   hp_float_t   tr_involts()const	{return 0.;}
   hp_float_t   tr_involts_limited()const {unreachable(); return 0.;}
   void	   ac_iwant_matrix()	{ac_iwant_matrix_passive();}
-  void	   ac_begin()	{_loss1 = _loss0 = 1./OPT::shortckt; _acg = _ev = 0.;}
+  void	   ac_begin();//	{_loss1 = _loss0 = 1./OPT::shortckt; _acg = _ev = 0.;}
   void	   do_ac();
   void	   ac_load();//		{ac_load_shunt(); ac_load_source();}
   COMPLEX  ac_involts()const	{return 0.;}
@@ -74,6 +77,11 @@ private: // override virtual
   void expand();
 };
 /*--------------------------------------------------------------------------*/
+inline void DEV_VS::ac_begin()
+{
+  _acg = _ev = 0.;
+}
+/*--------------------------------------------------------------------------*/
 inline void DEV_VS::ac_load()
 {
   trace0("DEV_VS::ac_load");
@@ -85,7 +93,7 @@ inline void DEV_VS::ac_load()
   _sim->_acx.load_point(_n[BR].m_(), _n[OUT2].m_(), -d);
 
   assert (_n[BR].m_() != 0);
-  _n[BR].iac() += 10; // mfactor() * _acg;
+  _n[BR].iac() += _acg; // mfactor() * _acg;
 }
 /*--------------------------------------------------------------------------*/
 void DEV_VS::expand(){
@@ -136,17 +144,18 @@ inline void DEV_VS::tr_load()
 {
   trace1("DEV_VS::tr_load", _sim->_time0);
   trace3("DEV_VS::tr_load", _n[OUT1].m_(), _n[OUT2].m_(), _n[BR].m_());
-  assert(_loss0 == _loss0);
-  double d = 1;
+  assert(_one0 == _one0);
+  double d = _one0 - _one1;
   if (d != 0.) {
     trace1("DEV_VS::tr_load 4 times",d);
     _sim->_aa.load_point(_n[OUT1].m_(), _n[BR].m_(), d);
     _sim->_aa.load_point(_n[OUT2].m_(), _n[BR].m_(), -d);
     _sim->_aa.load_point(_n[BR].m_(), _n[OUT1].m_(), d);
     _sim->_aa.load_point(_n[BR].m_(), _n[OUT2].m_(), -d);
-  }else{
   }
-  _loss1 = _loss0;
+
+  _one1=_one0;
+
 /*--load_source------------------------------------------------------------------------*/
   assert(_m0.c0 == _m0.c0);
   assert (_n[BR].m_() != 0);
@@ -161,6 +170,10 @@ inline void DEV_VS::tr_load()
 /*--------------------------------------------------------------------------*/
 inline void DEV_VS::tr_unload()
 {
+  _m0.c0 = 0; _source0 = 0;
+  _one0 = 0;
+
+  tr_load();
 }
 /*--------------------------------------------------------------------------*/
 void DEV_VS::precalc_last()
@@ -178,6 +191,10 @@ void DEV_VS::tr_begin()
   _m0.x  = 0.;
   _m0.c0 = value() ; //  -_loss0 * _y[0].f1;
   _m0.c1 = 0.;
+  _source0 = value();
+  _source1 = 0;
+  _one0 = 1;
+  _one1 = 0;
   // _m1 = _m0;    
   if (!using_tr_eval()) {
 
@@ -209,8 +226,9 @@ bool DEV_VS::do_tr()
 void DEV_VS::do_ac()
 {
   if (using_ac_eval()) {
+    assert(false); // no common
     ac_eval();
-    _acg = -_loss0 * _ev;
+    _acg = _ev;
   }else{itested();
     assert(_acg == 0.);
   }
