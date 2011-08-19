@@ -133,7 +133,7 @@ e_homebrew.h e_adplist.h \
 e_elemnt.h e_ccsrc.h e_storag.h e_cardlist.h \
 d_coment.h d_dot.h d_logic.h d_subckt.h \
 bm.h \
-c_comand.h globals.h extlib.h
+c_comand.h globals.h extlib.h d_cap.h
 
 if IVERILOG
 RAW_HDRS += d_vvp.h d_ivl.h e_ivl_compile.h d_ivl_ports.h

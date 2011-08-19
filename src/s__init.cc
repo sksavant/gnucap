@@ -49,7 +49,7 @@ void SIM::command_base(CS& cmd)
     case rPRE_MAIN:	unreachable();	break;
     case rBATCH:	itested();
     case rINTERACTIVE:	itested();
-    case rSCRIPT:	 fprintf(stderr, "sweepstart\n");	sweep(); break;
+    case rSCRIPT:	trace0("SIM::command_base calling sweep");	sweep(); break;
     case rPRESET:	/*nothing*/	break;
     }
    }catch (Exception& e) {untested();
@@ -66,7 +66,6 @@ void SIM::command_base(CS& cmd)
 /*--------------------------------------------------------------------------*/
 SIM::~SIM()
 {
-  trace0("~SIM");
   _sim->uninit();
 }
 /*--------------------------------------------------------------------------*/

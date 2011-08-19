@@ -38,9 +38,14 @@
 #include "io_matrix.h"
 #include "m_matrix_extra.h"
 #include <iomanip>
+#include "d_cap.h"
+
+
 using namespace std;
+using namespace SOME_CAP_HACK;
 extern "C" {
 #include "atlas/clapack.h"
+
 
 int dgelss_(int *m, int *n, int *nrhs, double *a, int *lda, double *b, int
     *ldb, double *s, double *rcond, int *rank, double *work, int *lwork, int
@@ -49,7 +54,7 @@ int dgelss_(int *m, int *n, int *nrhs, double *a, int *lda, double *b, int
 void dgels_(const char *trans, const int *M, const int *N, const int *nrhs,
     double *A, const int *lda, double *b, const int *ldb, double *work, const
     int * lwork, int *info);
-}
+} // exC
 
 //
 //extern "C" int clapack_dgesv(const enum CBLAS_ORDER Order, const int N, const int NRHS,
@@ -115,6 +120,7 @@ public:
 private:
   void	setup(CS&);
   void fillnames( const CARD_LIST* scope);
+  void findcaps( CARD_LIST* scope);
   vector<string> var_namen_arr;
   vector<DEV_CAPACITANCE*> cap_list;
   uint16_t var_namen_total_size; 
@@ -191,6 +197,7 @@ double	SOCK::temp_c_in = 0.;
 /*--------------------------------------------------------------------------*/
 void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
 {
+  trace0("SOCK::do_it");
   _scope = Scope;
   _sim->_time0 = 0.;
   //_sim->set_command_ddc();
@@ -209,49 +216,7 @@ void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
 
   command_base(Cmd);
 
-  // later... FIXME
-  //
-  frame_number=0;
-  n_bytes = 0;
-  x_neu = new double[BUFSIZE];
-  x_schaetz = new double[BUFSIZE];
-  q_punkt = new double[BUFSIZE];
-  G = new double[BUFSIZE*BUFSIZE];
-  C = new double[BUFSIZE*BUFSIZE];
-  trace1("SOCK::do_it", _port);
-
-  if (_client_mode){
-    socket = new ClientSocket(Socket::TCP, _port, _host);
-    trace1("connected to "+ _host, _port );
-    stream = *socket;
-
-  } else {
-    stringstream p(_port);
-    uint16_t _port_;
-    p>>_port_;
-    socket = new ServerSocket(Socket::TCP, _port_, _port_range);
-    ServerSocket* sock=prechecked_cast<ServerSocket*>(socket);
-
-    trace0("SOCK::do_it waiting");
-    stream = sock->listen();
-  }
-  trace0("SOCK::do_it have stream");
-    
-  if(!socket){
-    ::error(bDANGER,"Error, cannot create Socket\n");
-    throw Exception("foo");
-  }
-
-  /* Wiederverwendung der lokalen Adresse erlauben */
-//  if (setsockopt(channel, SOL_SOCKET, SO_REUSEADDR, (void *) &reuseaddr, 
-//		 sizeof(reuseaddr)) == -1)
-//  {
-//    printf("Error, cannot set Socketoptions\n");
-//    exit(1);
-//  }
-
-  //setup(Cmd);
-  main_loop();
+  //cleanup
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -468,6 +433,49 @@ void SOCK::options(CS& Cmd, int Nest)
 /*--------------------------------------------------------------------------*/
 void SOCK::sweep()
 {
+  // later... FIXME
+  //
+  frame_number=0;
+  n_bytes = 0;
+  x_neu = new double[BUFSIZE];
+  x_schaetz = new double[BUFSIZE];
+  q_punkt = new double[BUFSIZE];
+  G = new double[BUFSIZE*BUFSIZE];
+  C = new double[BUFSIZE*BUFSIZE];
+  trace1("SOCK::do_it", _port);
+
+  if (_client_mode){
+    socket = new ClientSocket(Socket::TCP, _port, _host);
+    trace1("connected to "+ _host, _port );
+    stream = *socket;
+
+  } else {
+    stringstream p(_port);
+    uint16_t _port_;
+    p>>_port_;
+    socket = new ServerSocket(Socket::TCP, _port_, _port_range);
+    ServerSocket* sock=prechecked_cast<ServerSocket*>(socket);
+
+    trace0("SOCK::do_it waiting");
+    stream = sock->listen();
+  }
+  trace0("SOCK::do_it have stream");
+    
+  if(!socket){
+    ::error(bDANGER,"Error, cannot create Socket\n");
+    throw Exception("foo");
+  }
+
+  /* Wiederverwendung der lokalen Adresse erlauben */
+//  if (setsockopt(channel, SOL_SOCKET, SO_REUSEADDR, (void *) &reuseaddr, 
+//		 sizeof(reuseaddr)) == -1)
+//  {
+//    printf("Error, cannot set Socketoptions\n");
+//    exit(1);
+//  }
+
+  //setup(Cmd);
+  main_loop();
   // what am i doing here??
   return ;
   assert(false);
@@ -544,44 +552,7 @@ void SOCK::sweep_recursive(int Nest)
 
       _sim->init();
 
-      _sim->_acx.reallocate();
-      _sim->_jomega = COMPLEX(0., 1.0);
-      _sim->_mode=s_AC;
-      // _sim->_acx.set_min_pivot(OPT::pivtol);
-      {// AC::sweep
-        CARD_LIST::card_list.ac_begin();
-        //...
-      }
-
-      trace0("solved with homotopy");
-      if(_dump_matrix){
-        _out << "i ( " << _sim->_i[1];
-        for(unsigned a=2; a <= _sim->_total_nodes; ++a){
-          _out << " " <<  _sim->_i[a];
-        }
-        _out  << ") \n";
-        _out << "v0 = ( " << _sim->_v0[1];
-        for(unsigned a=2;a <= _sim->_total_nodes; ++a){
-          _out << " " <<  _sim->_v0[a];
-        }
-        _out << ") \n";
-      }
-
-      // if verbose
-      _sim->_uic=_sim->_more_uic=false;
-
-
-      if(1){ // AC::solve
-        trace0("AC::solve");
-        _sim->_acx.zero();
-        std::fill_n(_sim->_ac, _sim->_total_nodes+1, 0.);
-
-        ::status.load.start();
-        _sim->count_iterations(iTOTAL);
-        CARD_LIST::card_list.do_ac();
-        CARD_LIST::card_list.ac_load();
-        ::status.load.stop();
-      }
+      ac_snapshot();
 
       BSMATRIX<double> G = _sim->_acx.real();
       BSMATRIX<double> C = _sim->_acx.imag();
@@ -811,11 +782,6 @@ void SOCK::fillnames( const CARD_LIST* scope){
   for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
     if (i->first != "0") {
       stringstream s;
-      s << setw(8) << i->second->long_label() << " vector position " << 
-        ", m_ " << i->second->m_() << " , matrix " << i->second->matrix_number() 
-        << ", use " << i->second->user_number() << 
-        " x-Entry " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
-      _out << s.str();
       string myname(i->second->long_label());
 
       var_namen_arr[i->second->matrix_number()-1] = myname;
@@ -826,16 +792,27 @@ void SOCK::fillnames( const CARD_LIST* scope){
     }
   }
 
+  //for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
   for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
-    if (   const BASE_SUBCKT* s = dynamic_cast<const DEV_CAPACITANCE*>(*i) )
-      trace1("found cap", s->long_label());
-      caplist.push_back( s );
-    }
     if (   const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i) )
+    {
       fillnames( s->subckt() );
     }
   }
-
+}
+/*--------------------------------------------------------------------------*/
+void SOCK::findcaps( CARD_LIST* scope){
+  for (CARD_LIST::iterator i = scope->begin(); i != scope->end(); ++i) {
+    if ( DEV_CAPACITANCE* cap = dynamic_cast< DEV_CAPACITANCE*>(*i) )
+    {
+      trace1("found cap", cap->long_label());
+      cap_list.push_back( cap );
+    }
+    if ( BASE_SUBCKT* s = dynamic_cast< BASE_SUBCKT*>(*i) )
+    {
+      findcaps( s->subckt() );
+    }
+  }
 }
 /*--------------------------------------------------------------------------*/
 bool SOCK::next(int Nest)
@@ -1052,21 +1029,25 @@ void SOCK::main_loop(){
 
     switch (opcode)  
     {
-      case '3':
+      case '3': // 51
         if(init_done) throw Exception("init twice??");
         verainit();
         verainit_tail();
         init_done=true;
         break;
-      case '4': 
+      case '4':  // 52
         veraop();
         veraop_tail();
+        break;
+      case '5':  // 52
+        verakons();
+        verakons_tail();
         break;
 
       default:
         trace0("error");
         ::error(bDANGER, "unknown opcode %i\n", opcode);
-        assert(false);
+        throw Exception("unknown opcode");
         break;
 
     }
@@ -1096,14 +1077,14 @@ void SOCK::verainit(){
       here = i;
       trace0(input_names[n-1]);
 
-      try {
-        CARD_LIST::fat_iterator ci = findbranch(input_names[n-1], &CARD_LIST::card_list);
-        input_devs[n-1] = (*ci);
-      } catch( Exception e ) {
-        throw e;
+      trace1("looking out for", input_names[n-1]);
+      CARD_LIST::fat_iterator ci = findbranch(input_names[n-1], &CARD_LIST::card_list);
+      if (ci.is_end()){
+        throw Exception("cannot find voltage source \"" +  input_names[n-1] +"\", giving up");
       }
+      input_devs[n-1] = (*ci);
+      assert(input_devs[n-1]);
 
-      trace0("dev found " + input_devs[n-1]->long_label());
 
     }
   }
@@ -1138,38 +1119,53 @@ void SOCK::veraop(){
   total = n_vars;
   assert(3*BUFSIZE*BUFSIZE >= total);
 
-
-
-  dc_werteA= (double*) malloc(sizeof(double)*n_vars+n_eingaenge);
-  for (unsigned i=0; i < n_eingaenge+n_vars; i++)
+  dc_werteA= (double*) malloc(sizeof(double)*n_vars);
+  trace1("fetching ",n_vars);
+  assert(_sim->_vdc[0] == 0 );
+  for (unsigned i=0; i < n_inputs; i++)
   {
-    stream >> dc_werteA[i];
+    double d;
+    stream >> d;
+    trace2("setting input " + input_devs[i]->long_label(), i, d);
+    asserted_cast<ELEMENT*>(input_devs[i])->set_value(d);
   }
 
   error = 0; /* veraop(sweep_val, x_new, G, C); */
 
 
-//  init_sw[0]=1.0;  // ueberschreibt die im par_satz gegebenen Werte.
-                   // ???
+  //  init_sw[0]=1.0;  // ueberschreibt die im par_satz gegebenen Werte.
+  // ???
 
   //dc_sysA->par_werte=insert_value(dc_sysA->par_namen,
-   //   dc_sysA->par_werte,dc_sysA->n_par,
-    //  init_sw_name,init_sw,1);
+  //   dc_sysA->par_werte,dc_sysA->n_par,
+  //  init_sw_name,init_sw,1);
 
-  //todo
-  //more_uic=true;
-  //homotopy();
+  _sim->_uic = true;
+  _sim->_more_uic = false;
+  OPT::ITL itl = OPT::DCBIAS;
+
+  trace0("SOCK::veraop, hot");
+  _trace=tVERBOSE;
+  CARD_LIST::card_list.tr_begin();
+  solve_with_homotopy(itl,_trace);
+
+  trace0("done hot");
+  trace0("done hot");
+  trace0("done hot");
+
+  _sim->keep_voltages();
+  //outdata();
 
   {
     for (unsigned i=0; i < n_vars; i++)
     {
-//      dc_sysA->start_vek[i]=dc_loesungA[i];
-//      x_neu[i] = dc_loesungA[i];
+      //      dc_sysA->start_vek[i]=dc_loesungA[i];
+      //      x_neu[i] = dc_loesungA[i];
     }
     if (printlevel >= 1)
     {
- //     dc_sysA->print_var();
-  //    print_array(stderr,dc_loesungA,1,A->n_var);
+      //     dc_sysA->print_var();
+      //    print_array(stderr,dc_loesungA,1,A->n_var);
     }
   }
   // Die Variablenwerte stehen schon durch solve_system in var_werte
@@ -1182,21 +1178,21 @@ void SOCK::veraop(){
   // diff_werte, par_werte muessen auch gesetzt sein!
   // in diesem Falle sind sie per default = 0
   //
-//  solve  somthing
-//
-//  A->eval_lin_gl(dc_werteA,&matrixg,&matrixc,&vectorq);
+  //  solve  somthing
+  //
+  //  A->eval_lin_gl(dc_werteA,&matrixg,&matrixc,&vectorq);
 
   trace1("matrix", 1);
 
-//  for (i=0; i < n_vars; i++)
-//  {
-//    for (k=0; k < n_vars; k++)
-//    {  
-//      // muessen transponiert werden
-//      G[i+n_vars*k]=matrixg[k+n_vars*i];
-//      C[i+n_vars*k]=matrixc[k+n_vars*i];
-//    }
-//  }
+  //  for (i=0; i < n_vars; i++)
+  //  {
+  //    for (k=0; k < n_vars; k++)
+  //    {  
+  //      // muessen transponiert werden
+  //      G[i+n_vars*k]=matrixg[k+n_vars*i];
+  //      C[i+n_vars*k]=matrixc[k+n_vars*i];
+  //    }
+  //  }
 }
 
 #if 0
@@ -1286,6 +1282,10 @@ void SOCK::verakons() {
   //	}
   const BSMATRIX<double> R = _sim->_acx.real();
   const BSMATRIX<double> I = _sim->_acx.imag();
+  if(_dump_matrix){
+    _out << "G\n" << G << "\n";
+    _out << "C\n" << C << "\n";
+  }
   for (unsigned i=0; i < n_vars; i++)
   {
     for (unsigned k=0; k < n_vars; k++)
@@ -1312,8 +1312,8 @@ static void putstring8(SocketStream* s, const string x){
 void SOCK::verainit_tail()
 {
   stream << error;   stream.pad(6);        /* Fehlerflag */
-  stream << int32_t(n_inputs+n_vars);  stream.pad(4);      /* Anzahl der Variablen */
-  stream << int32_t(length+var_namen_total_size);  stream.pad(4);     /* Laenge des Namen Feldes */
+  stream << int32_t (n_vars);  stream.pad(4);      /* Anzahl der Variablen */
+  stream << int32_t (var_namen_total_size);  stream.pad(4);     /* Laenge des Namen Feldes */
 
   trace4("SOCK::verainit_tail ", error, n_vars, length, var_namen_total_size);
 
@@ -1342,22 +1342,47 @@ void SOCK::verainit_tail()
 
 void SOCK::veraop_tail()
 {
+  assert(n_vars==_sim->_total_nodes);
   trace1("veraop tail", n_vars);
   stream << error; stream.pad(6);
   for (unsigned i=0; i < n_vars; i++)         /* Variablen-Werte */
   {
-    stream << x_neu[i];
+    stream << _sim->_vdc[i];
   }
-  for (unsigned i=0; i < n_vars_square; i++)    /* G-Matrix */
-  {
-    stream << G[i];
+
+//  for (i=0; i < n_vars; i++)
+//  {
+//    for (k=0; k < n_vars; k++)
+//    {  
+//      // muessen transponiert werden
+//      G[i+n_vars*k]=matrixg[k+n_vars*i];
+//      C[i+n_vars*k]=matrixc[k+n_vars*i];
+//    }
+//  }
+//
+  ac_snapshot();
+  trace0("SOCK::veraop_tail sent voltages");
+  const BSMATRIX<double> G = _sim->_acx.real();
+  const BSMATRIX<double> C = _sim->_acx.imag();
+  if(_dump_matrix){
+    _out << "G\n" << G << "\n";
+    _out << "C\n" << C << "\n";
   }
-  for (unsigned i=0; i < n_vars_square; i++)    /* C-Matrix */
-  {
-    stream << C[i];
+  for (unsigned i=1; i <= n_vars; i++){
+    for (unsigned j=1; j <= n_vars; j++) {
+      trace2("SOCK::veraop_tail", i, j);
+      stream << G.s(j,i);
+    }
+  }
+  for (unsigned i=1; i <= n_vars; i++){
+    for (unsigned j=1; j <= n_vars; j++) {
+      stream << C.s(j,i);
+    }
   }
 
   stream << SocketStream::eol;
+
+  trace0("SOCK::veraop_tail sent");
 
   total = 2*n_vars_square+n_vars+1;
   assert(3*BUFSIZE*BUFSIZE >= total);
