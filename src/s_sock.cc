@@ -1134,13 +1134,6 @@ void SOCK::veraop(){
   total = n_vars;
   assert(3*BUFSIZE*BUFSIZE >= total);
 
-  if (n_bytes != total * (int) sizeof(di_union_t))
-  {
-    printf("Error in Veraop! no of bytes received %i <> expected"
-        " %i #inputs: %d \n",
-        n_bytes, (int)(total*sizeof(di_union_t)),total-1);
-    exit(1);
-  }
 
 
   dc_werteA= (double*) malloc(sizeof(double)*n_vars+n_eingaenge);
@@ -1159,42 +1152,47 @@ void SOCK::veraop(){
    //   dc_sysA->par_werte,dc_sysA->n_par,
     //  init_sw_name,init_sw,1);
 
-  more_uic=true;
-  homotopy();
+  //todo
+  //more_uic=true;
+  //homotopy();
 
   {
-    for (i=0; i < dc_sysA->n_var; i++)
+    for (unsigned i=0; i < n_vars; i++)
     {
-      dc_sysA->start_vek[i]=dc_loesungA[i];
-      x_neu[i] = dc_loesungA[i];
+//      dc_sysA->start_vek[i]=dc_loesungA[i];
+//      x_neu[i] = dc_loesungA[i];
     }
     if (printlevel >= 1)
     {
-      dc_sysA->print_var();
-      print_array(stderr,dc_loesungA,1,A->n_var);
+ //     dc_sysA->print_var();
+  //    print_array(stderr,dc_loesungA,1,A->n_var);
     }
   }
   // Die Variablenwerte stehen schon durch solve_system in var_werte
   // in dc_sysA und muessen noch nach A kopiert werden:
-  A->var_werte = x_neu;
-  free(dc_loesungA);
+  //
+  //A->var_werte = x_neu;
+  //free(dc_loesungA);
+  //
   //        A->var_werte = dc_loesungA;
   // diff_werte, par_werte muessen auch gesetzt sein!
   // in diesem Falle sind sie per default = 0
-  A->eval_lin_gl(dc_werteA,&matrixg,&matrixc,&vectorq);
+  //
+//  solve  somthing
+//
+//  A->eval_lin_gl(dc_werteA,&matrixg,&matrixc,&vectorq);
 
   trace1("matrix", 1);
 
-  for (i=0; i < n_vars; i++)
-  {
-    for (k=0; k < n_vars; k++)
-    {  
-      // muessen transponiert werden
-      G[i+n_vars*k]=matrixg[k+n_vars*i];
-      C[i+n_vars*k]=matrixc[k+n_vars*i];
-    }
-  }
-  break;
+//  for (i=0; i < n_vars; i++)
+//  {
+//    for (k=0; k < n_vars; k++)
+//    {  
+//      // muessen transponiert werden
+//      G[i+n_vars*k]=matrixg[k+n_vars*i];
+//      C[i+n_vars*k]=matrixc[k+n_vars*i];
+//    }
+//  }
 }
 
 #if 0
