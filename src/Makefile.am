@@ -41,7 +41,7 @@ D_SRCS = \
 d_admit.cc d_cap.cc d_cccs.cc d_ccvs.cc d_coil.cc \
 d_cs.cc d_poly_g.cc d_poly_cap.cc d_res.cc d_switch.cc \
 d_trln.cc d_vcg.cc d_vcr.cc d_vcvs.cc d_vs.cc d_vcvs2.cc \
-d_rcd.cc d_bti.cc
+d_rcd.cc d_bti.cc  d_branchvs.cc
 
 gnucap_LDADD = libgnucap.la
 matrix_example_LDADD = libgnucap.la

@@ -66,7 +66,7 @@ void list_save(CS& cmd, OMSTREAM out, CARD_LIST* scope)
       ? CARD_LIST::fat_iterator(scope, scope->begin())
       : findbranch(cmd, scope);
     if (ci.is_end()) {itested();
-      throw Exception_CS("can't find", cmd);
+      throw Exception_CS("list_save: can't find", cmd);
     }else{
     }
     
@@ -80,7 +80,7 @@ void list_save(CS& cmd, OMSTREAM out, CARD_LIST* scope)
 	CARD_LIST::fat_iterator stop = ci;
 	stop = findbranch(cmd, ++stop);
 	if (stop.is_end()) {itested();
-	  throw Exception_CS("can't find", cmd);
+	  throw Exception_CS("list_save:  can't find", cmd);
 	}else{
 	  do {
 	    OPT::language->print_item(out, *ci);
