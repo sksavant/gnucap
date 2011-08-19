@@ -116,6 +116,7 @@ private:
   void	setup(CS&);
   void fillnames( const CARD_LIST* scope);
   vector<string> var_namen_arr;
+  vector<DEV_CAPACITANCE*> cap_list;
   uint16_t var_namen_total_size; 
 
 private: //vera stuff.
@@ -826,8 +827,11 @@ void SOCK::fillnames( const CARD_LIST* scope){
   }
 
   for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
-    const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i);
-    if (s) {
+    if (   const BASE_SUBCKT* s = dynamic_cast<const DEV_CAPACITANCE*>(*i) )
+      trace1("found cap", s->long_label());
+      caplist.push_back( s );
+    }
+    if (   const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i) )
       fillnames( s->subckt() );
     }
   }
@@ -1322,13 +1326,14 @@ void SOCK::verainit_tail()
     stream << '\t'; stream.pad(7);
   }
 
-  //good idea??
-  for (unsigned i=0; i < n_inputs; i++)  
-  {
-    trace1("putting name " +  input_names[i], i);
-    putstring8( &stream, input_names[i]);
-    stream << '\t'; stream.pad(7);
-  }
+  //good idea?? no
+//
+//  for (unsigned i=0; i < n_inputs; i++)  
+//  {
+//    trace1("putting name " +  input_names[i], i);
+//    putstring8( &stream, input_names[i]);
+//    stream << '\t'; stream.pad(7);
+//  }
   stream.flush();
 
   trace0("done verainit_tail");
