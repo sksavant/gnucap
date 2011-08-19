@@ -85,6 +85,7 @@ private:
   void	first(int);
   bool	next(int);
   void do_tran_step();
+  void send_matrix();
   void undo_time_step();
   // explicit SOCK(const SOCK&): DDC_BASE() {unreachable(); incomplete();}
 protected:
@@ -130,9 +131,9 @@ private: //vera stuff.
   void verainit();
   void verakons();
   void veraop();
-  void verainit_tail();
-  void verakons_tail();
-  void veraop_tail();
+  void verainit_send();
+  void verakons_send();
+  void veraop_send();
 
   char* var_names_buf;
 
@@ -146,7 +147,6 @@ private: //vera stuff.
   uint16_t n_eingaenge;
   uint16_t length;
 
-  di_union_t* buffer;
   SocketStream stream;
   //unsigned BUFSIZE;
   unsigned n_bytes;
@@ -154,7 +154,6 @@ private: //vera stuff.
 
   double *dc_werteA,*dc_loesungA,*kons_loesungA,*kons_residuumA;
 
-  double*x_neu;
   double*x_schaetz;
   double*q_punkt;
   double*G;
@@ -437,7 +436,6 @@ void SOCK::sweep()
   //
   frame_number=0;
   n_bytes = 0;
-  x_neu = new double[BUFSIZE];
   x_schaetz = new double[BUFSIZE];
   q_punkt = new double[BUFSIZE];
   G = new double[BUFSIZE*BUFSIZE];
@@ -1032,16 +1030,16 @@ void SOCK::main_loop(){
       case '3': // 51
         if(init_done) throw Exception("init twice??");
         verainit();
-        verainit_tail();
+        verainit_send();
         init_done=true;
         break;
       case '4':  // 52
         veraop();
-        veraop_tail();
+        veraop_send();
         break;
       case '5':  // 52
         verakons();
-        verakons_tail();
+        verakons_send();
         break;
 
       default:
@@ -1053,7 +1051,17 @@ void SOCK::main_loop(){
     }
   }
 }
+//==========================================================
+// very clever way to transfer strings.
+static void putstring8(SocketStream* s, const string x){
+  const char* A = x.c_str();
 
+  while(*A){
+    *s<<*A<<*A<<*A<<*A<<*A<<*A<<*A<<*A;
+    A++;
+  }
+}
+//==========================================================
 void SOCK::verainit(){
   trace0("SOCK::verainit");
   stream >> verbose >> 6;
@@ -1115,6 +1123,8 @@ void SOCK::verainit(){
   // userinfo(1,"vera_titan_ak","Variablennamen %s\n",var_names_buf);
 }
 
+/*-------------------------------------------------------------*/
+
 void SOCK::veraop(){
   total = n_vars;
   assert(3*BUFSIZE*BUFSIZE >= total);
@@ -1132,29 +1142,23 @@ void SOCK::veraop(){
 
   error = 0; /* veraop(sweep_val, x_new, G, C); */
 
-
-  //  init_sw[0]=1.0;  // ueberschreibt die im par_satz gegebenen Werte.
-  // ???
-
-  //dc_sysA->par_werte=insert_value(dc_sysA->par_namen,
-  //   dc_sysA->par_werte,dc_sysA->n_par,
-  //  init_sw_name,init_sw,1);
-
-  _sim->_uic = true;
+  //================do_dc========
+  _sim->_uic = false;
   _sim->_more_uic = false;
   OPT::ITL itl = OPT::DCBIAS;
 
   trace0("SOCK::veraop, hot");
   _trace=tVERBOSE;
   CARD_LIST::card_list.tr_begin();
-  solve_with_homotopy(itl,_trace);
-
-  trace0("done hot");
-  trace0("done hot");
-  trace0("done hot");
+  try{
+    solve_with_homotopy(itl,_trace);
+  }catch( Exception e) {
+    ::error(bDANGER, "hot failed\n");
+    throw e;
+  }
 
   _sim->keep_voltages();
-  //outdata();
+  //========================
 
   {
     for (unsigned i=0; i < n_vars; i++)
@@ -1195,40 +1199,23 @@ void SOCK::veraop(){
   //  }
 }
 
-#if 0
-      case 53: /* verakons */
-# endif
 void SOCK::verakons() {
   //        n_eingaenge == #caps?
   total =  n_eingaenge + n_vars + 1;
-  assert(3*BUFSIZE*BUFSIZE >= total);
 
-  if (n_bytes != total * (int) sizeof(di_union_t))
+
+  for (unsigned i=0; i < n_inputs; i++)
   {
-    printf("Error in Verakons! no of bytes received %i <> expected %i\n",
-        n_bytes, (int)(total*sizeof(di_union_t)));
-    exit(1);
-  }	
-
-
-  dc_werteA= (double*) malloc(sizeof(double)*n_eingaenge);
-  for (unsigned i=0; i < n_eingaenge; i++)
-  {
-    dc_werteA[i] = buffer[1+i].double_val; // Die Werte werden
-    // tatsaechlich verwendet
+    double d;
+    stream >> d;
+    trace2("setting input " + input_devs[i]->long_label(), i, d);
+    asserted_cast<ELEMENT*>(input_devs[i])->set_value(d);
   }
 
   for (unsigned i=0; i < n_vars; i++)
   {
-    x_schaetz[i] = buffer[i+n_eingaenge+1].double_val; 
+    stream >> _sim->_vdc[i];
   }
-
-  //	if (printlevel >= 3)
-  //	{
-  //	  frame_number=buffer[i+1].int_val;
-  //	  userinfo(3,"vera_titan_ak","Bearbeite %i Frame Number %i mit %i bytes \n",
-  //		  opcode,frame_number,n_bytes);
-  //	}
 
   error = 0; /* verakons(Dwork, x_new, q_dot, G, C); */
   //	n_vars = A->n_var;
@@ -1237,96 +1224,81 @@ void SOCK::verakons() {
   // Es wird davon ausgegangen, das dc_werteA noch stimmt
   //
 
-  // caps festhalten und AP finden.
 
-  //        for z in zap
-  //        z->keep_voltage() // fetch voltages from nodes.
+  for( unsigned i = 0; i<cap_list.size(); i++)
+  {
+    cap_list[i]->keep_ic(); // latch voltage applied to _vdc
+  }
   //
-  //        do_ddc
+  //================do_dc========
+  _sim->_uic = true;
+  _sim->_more_uic = true;
+  OPT::ITL itl = OPT::DCBIAS;
 
-  incomplete();
+  trace0("SOCK::verakons, hot");
+  _trace=tVERBOSE;
+  CARD_LIST::card_list.tr_begin();
+  try{
+    solve_with_homotopy(itl,_trace);
+  }catch( Exception e) {
+    ::error(bDANGER, "hot failed\n");
+    throw e;
+  }
+
+  _sim->keep_voltages();
+  //========================
+
   //	kons_loesungA=konsop(A,kons_sysA,dc_werteA, x_schaetz,&kons_residuumA);
 
 
-  if (kons_loesungA == NULL)
+//  incomplete();?
+}
+/*-==========================================================*/
+void SOCK::verakons_send()
+{
+
+  stream << ((uint16_t)error); stream.pad(6);
+
+  for (unsigned i=0; i < n_vars; i++)  
   {
-    ::error(bDANGER,"vera_titan_ak: Fehler bei konsistenter Abp.-Loesung von A\n");
-    error=1;
-  }
-  else 
-  {
-    for (unsigned i=0; i < n_vars; i++)
-    {
-      x_neu[i]=kons_loesungA[i];
-      q_punkt[i]=kons_residuumA[i];
-    }
-    // if (printlevel >= 2)
-    // {
-    //   kons_sysA->print_var();
-    //   print_array(stderr,kons_loesungA,1,A->n_var);
-    // }
+    stream << _sim->_vdc[i];
   }
 
-  incomplete();
-  //	var_werte = x_neu; 
 
-  //  do a ddc here?
-  //        A->eval_lin_gl(dc_werteA,&matrixg,&matrixc,&vectorq);
-
-  //        if (printlevel >= 1) 
-  //	{
-  //	  userinfo(1,"vera_titan_ak","G-Matrix:\n");  
-  //	  print_array (stderr,matrixg,n_vars,n_vars);
-  //	  userinfo(1,"vera_titan_ak","C-Matrix:\n");  
-  //	  print_array (stderr,matrixc,n_vars,n_vars);
-  //	}
-  const BSMATRIX<double> R = _sim->_acx.real();
-  const BSMATRIX<double> I = _sim->_acx.imag();
-  if(_dump_matrix){
-    _out << "G\n" << G << "\n";
-    _out << "C\n" << C << "\n";
-  }
-  for (unsigned i=0; i < n_vars; i++)
+  for (unsigned i=0; i < n_vars; i++)         /* Q-Punkt == I == RS */
   {
-    for (unsigned k=0; k < n_vars; k++)
-    {  
-      // muessen transponiert werden
-      // i=zeile,k=spalte
-      G[i+n_vars*k] = R.s(i,k);
-      C[i+n_vars*k] = I.s(i,k);
-    }
+    //buffer[i+n_vars+1].double_val = q_punkt[i];
+    trace1("sending dqdt\n", _sim->_i[i]);
+    stream << _sim->_i[i];
   }
+
+  ac_snapshot(); // FIXME: to verakons()
+
+  send_matrix();
+
+  assert(3*BUFSIZE*BUFSIZE >= total);
+  stream << SocketStream::eol;
+  trace0("done SOCK::verakons_send");
 }
 
 
-// very clever way to transfer strings.
-static void putstring8(SocketStream* s, const string x){
-  const char* A = x.c_str();
-
-  while(*A){
-    *s<<*A<<*A<<*A<<*A<<*A<<*A<<*A<<*A;
-    A++;
-  }
-}
-
-void SOCK::verainit_tail()
+void SOCK::verainit_send()
 {
   stream << error;   stream.pad(6);        /* Fehlerflag */
   stream << int32_t (n_vars);  stream.pad(4);      /* Anzahl der Variablen */
   stream << int32_t (var_namen_total_size);  stream.pad(4);     /* Laenge des Namen Feldes */
 
-  trace4("SOCK::verainit_tail ", error, n_vars, length, var_namen_total_size);
+  trace4("SOCK::verainit_send ", error, n_vars, length, var_namen_total_size);
 
   assert(stream.tcur() == 24);
 
   for (unsigned i = 0; i < n_vars; i++) 
   {
-    trace1("putting name " +  var_namen_arr[i], i);
     putstring8( &stream, var_namen_arr[i]);
     stream << '\t'; stream.pad(7);
   }
 
-  //good idea?? no
+//good idea?? not yet. vera insists on branch node
 //
 //  for (unsigned i=0; i < n_inputs; i++)  
 //  {
@@ -1336,11 +1308,11 @@ void SOCK::verainit_tail()
 //  }
   stream.flush();
 
-  trace0("done verainit_tail");
+  trace0("done verainit_send");
 }
 
 
-void SOCK::veraop_tail()
+void SOCK::veraop_send()
 {
   assert(n_vars==_sim->_total_nodes);
   trace1("veraop tail", n_vars);
@@ -1350,39 +1322,12 @@ void SOCK::veraop_tail()
     stream << _sim->_vdc[i];
   }
 
-//  for (i=0; i < n_vars; i++)
-//  {
-//    for (k=0; k < n_vars; k++)
-//    {  
-//      // muessen transponiert werden
-//      G[i+n_vars*k]=matrixg[k+n_vars*i];
-//      C[i+n_vars*k]=matrixc[k+n_vars*i];
-//    }
-//  }
-//
   ac_snapshot();
-  trace0("SOCK::veraop_tail sent voltages");
-  const BSMATRIX<double> G = _sim->_acx.real();
-  const BSMATRIX<double> C = _sim->_acx.imag();
-  if(_dump_matrix){
-    _out << "G\n" << G << "\n";
-    _out << "C\n" << C << "\n";
-  }
-  for (unsigned i=1; i <= n_vars; i++){
-    for (unsigned j=1; j <= n_vars; j++) {
-      trace2("SOCK::veraop_tail", i, j);
-      stream << G.s(j,i);
-    }
-  }
-  for (unsigned i=1; i <= n_vars; i++){
-    for (unsigned j=1; j <= n_vars; j++) {
-      stream << C.s(j,i);
-    }
-  }
-
+  trace0("SOCK::veraop_send sent voltages");
+  send_matrix();
   stream << SocketStream::eol;
 
-  trace0("SOCK::veraop_tail sent");
+  trace0("SOCK::veraop_send sent");
 
   total = 2*n_vars_square+n_vars+1;
   assert(3*BUFSIZE*BUFSIZE >= total);
@@ -1391,82 +1336,12 @@ void SOCK::veraop_tail()
     userinfo(1,"vera_titan_ak","Sende: Error %i Framenumber %i, Laenge %i\n",
         error,frame_number,total); 
   }
-  n_bytes = (unsigned) write(channel, buffer, total*sizeof(di_union_t));
-  if (n_bytes != total * (int) sizeof(di_union_t))
-  {
-    userinfo(1,"vera_titan_ak","Fehler beim Senden:%i Framenumber %i, "
-        "returnwert von write %i, errno %i\n",
-        frame_number,n_bytes,errno); 
-  }
 }
 
-#if 0
-
-    else if (opcode == 53)              /* Verakons */
-#endif 
-    void SOCK::verakons_tail()
-    {
-      buffer[0].int_val = error;         /* Fehlerflag */
-      for (unsigned i=0; i < n_vars; i++)         /* Variablen-Werte */
-      {
-//	buffer[i+1].double_val = x_neu[i];
-	stream << x_neu[i];
-      }
-      for (unsigned i=0; i < n_vars; i++)         /* Q-Punkt */
-      {
-	//buffer[i+n_vars+1].double_val = q_punkt[i];
-	stream << q_punkt[i];
-      }
-      for (unsigned i=0; i < n_vars_square; i++)    /* G-Matrix */
-      {
-	//buffer[i+2*n_vars+1].double_val = G[i];
-        stream << G[i];
-      }
-      for (unsigned i=0; i < n_vars_square; i++)    /* C-Matrix */
-      {
-	// buffer[i+n_vars_square+2*n_vars+1].double_val = C[i];
-        stream << C[i];
-      }
-
-      total = 2*n_vars_square+2*n_vars+1;
-      assert(3*BUFSIZE*BUFSIZE >= total);
-      if (printlevel >= 1)
-      {
-	userinfo(1,"vera_titan_ak","Sende: Error %i Framenumber %i, Laenge %i\n",
-		 error,frame_number,total); 
-      }
-      n_bytes = (unsigned) write(channel, buffer, total*sizeof(di_union_t));
-      if (n_bytes != total * (int) sizeof(di_union_t))
-      {
-	userinfo(1,"vera_titan_ak","Fehler beim Senden:%i Framenumber %i, "
-		 "returnwert von write %i, errno %i\n",
-		 frame_number,n_bytes,errno); 
-      }
-    }
 
 #if 0
   } // while true
 }
-
-
-
-double* dcop(data *A, gls *dc_sysA,double* dc_werteA)
-{
-  double * dc_loesungA=dc_sysA->solve_system(A->eingaenge,dc_werteA,
-				    A->n_eingaenge);  
-  if (dc_loesungA == NULL)
-  {
-    fprintf(stderr,"dcop: Fehler bei DC-Loesung von A\n");
-  }
-  else if (printlevel >= 1)
-  {
-    userinfo(1,"dcop","DC-Loesung:");            
-    dc_sysA->print_var();
-  }
-
-  return dc_loesungA;
-}
-
 
 //-------------------------------------------
 // Konsistenten Arbeitspunkt berechnen
@@ -1669,7 +1544,28 @@ double* konsop(data *A, gls *kons_sysA,double* dc_werteA,
   // A*q_punkt-Ergebnis ablegen 
   return kons_loesungA;
 }
-
-
 #endif
+
+void SOCK::send_matrix()
+{
+  const BSMATRIX<double> G = _sim->_acx.real();
+  const BSMATRIX<double> C = _sim->_acx.imag();
+  if(_dump_matrix){
+    _out << "G\n" << G << "\n";
+    _out << "C\n" << C << "\n";
+  }
+  trace0("SOCK::send_matrix G");
+  for (unsigned i=1; i <= n_vars; i++){
+    for (unsigned j=1; j <= n_vars; j++) {
+      stream << G.s(j,i);
+    }
+  }
+  trace0("SOCK::send_matrix C");
+  for (unsigned i=1; i <= n_vars; i++){
+    for (unsigned j=1; j <= n_vars; j++) {
+      stream << C.s(j,i);
+    }
+  }
+}
+
 // vim:ts=8:sw=2:et:
