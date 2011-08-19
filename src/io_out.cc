@@ -90,6 +90,7 @@ OMSTREAM & OMSTREAM::form(const char *fmt, ...)
   return *this;
 }
 /*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 /* mputs: multiple puts.
  * puts to "m" style files.
  * also....
@@ -98,7 +99,7 @@ OMSTREAM & OMSTREAM::form(const char *fmt, ...)
  * (which are not currently handled by .options)
  * and it is possible that current contents of lines may be different
  */
-OMSTREAM & OMSTREAM::operator<<(const char *str)
+OMSTREAM & OMSTREAM::ostream_const_char_p(const char *str)
 {
   assert(str);
 
@@ -159,7 +160,7 @@ OMSTREAM & OMSTREAM::operator<<(const char *str)
  * encripts, if selected
  * keeps track of character count
  */
-OMSTREAM & OMSTREAM::operator<<(char chr)
+OMSTREAM & OMSTREAM::ostream_char(char chr)
 {
   if (_mask & 1) {
     unreachable(); 
@@ -222,6 +223,5 @@ OMSTREAM & OMSTREAM::operator<<(char chr)
   }
   return *this;
 }
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

@@ -83,6 +83,7 @@ void SIM_DATA::restore_voltages()
 
 }
 /*--------------------------------------------------------------------------*/
+// probaly quite stupid thing to do.
 void SIM_DATA::zero_currents()
 {
   for (uint_t ii = 1;  ii <= _total_nodes;  ++ii) {

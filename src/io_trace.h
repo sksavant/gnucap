@@ -65,17 +65,17 @@ class hp{
 // #define trace0(s) (fprintf(stderr, "@#@%s\n", s )) // needs c_str()...
 #define trace1(s,x) ( cerr <<  "@#@" << s << "  " << #x << "=" << (x) << endl )
 // #define trace1(s,x) (fprintf(stderr, "@#@%s  %s=%g\n", s, #x, (double)(x)))
-#define trace2(s,x,y) ( cerr <<  "@#@" << s << "  " << #x << "=" << (double)(x)  \
-		                                      << "  " << #y << "=" << (double)(y)  \
+#define trace2(s,x,y) ( cerr <<  "@#@" << s << "  " << #x << "=" << (x)  \
+		                                      << "  " << #y << "=" << (y)  \
 		                                      << endl )
-#define trace3(s,x,y,z) ( cerr <<  "@#@" << s << "  " << #x << "=" << (double)(x)  \
-		                                      << "  " << #y << "=" << (double)(y)  \
-		                                      << "  " << #z << "=" << (double)(z)  \
+#define trace3(s,x,y,z) ( cerr <<  "@#@" << s << "  " << #x << "=" << (x)  \
+		                                      << "  " << #y << "=" << (y)  \
+		                                      << "  " << #z << "=" << z  \
 		                                      << endl )
-#define trace4(s,w,x,y,z) ( cerr <<  "@#@" << s << "  " << #w << "=" << (double)(w)  \
-		                                          << "  " << #x << "=" << (double)(x)  \
-		                                          << "  " << #y << "=" << (double)(y)  \
-		                                          << "  " << #z << "=" << (double)(z)  \
+#define trace4(s,w,x,y,z) ( cerr <<  "@#@" << s << "  " << #w << "=" << w  \
+		                                          << "  " << #x << "=" << x  \
+		                                          << "  " << #y << "=" << y  \
+		                                          << "  " << #z << "=" << z  \
 		                                          << endl )
 #define trace5(s,v,w,x,y,z)\
 	(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g\n",\
@@ -107,8 +107,14 @@ class hp{
 #define incomplete() (fprintf(stderr, "@@#\n@@@incomplete:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))
 
+#ifdef DO_TRACE
+#define untout stdout
+#else
+#define untout stderr
+#endif
+
 #ifdef TRACE_UNTESTED
-#define untested() (fprintf(stderr, "@@# untested \n@@@:%s:%u:%s\n", \
+#define untested() (fprintf(untout, "@@# untested \n@@@:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))
 #define untested0(s) (fprintf(stderr, "@@#\n@@@:%s:%u:%s: %s\n", \
 			   __FILE__, __LINE__, __func__, s))

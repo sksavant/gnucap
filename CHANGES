@@ -36,3 +36,15 @@
   - last step handler added
   - moved clear-queue loop to accept()
 - internal subckt nodes accessible for probes
+  - added .nodelist command
+- converted io_trace to use streams
+- hacked measurements to allow instanciation etc.
+- templatized OMSTREAM::operator<<
+- added members to BSMATRIX:
+   - real, imaginary part
+   - matrix-vector multiplication
+   - some stream::operator<<
+   - minor stuff
+- s_ddc.cc: dynamic dc simulation
+- debug helpers in c_debug.cc
+- header for ivl tgt-gc output

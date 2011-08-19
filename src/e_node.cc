@@ -151,16 +151,14 @@ node_t::node_t()
   :_nnn(0),
    _ttt(INVALID_NODE),
    _m(INVALID_NODE)
-{
-  trace0("node_t::node_t()");
-}
+{ }
 /*--------------------------------------------------------------------------*/
 node_t::node_t(const node_t& p)
   :_nnn(p._nnn),
    _ttt(p._ttt),
    _m(p._m)
 {
-  trace0("node_t::node_t cloning" + _nnn->long_label());
+  trace0("node_t::node_t cloning " + _nnn->long_label());
   //assert(_ttt == _nnn->flat_number());
 }
 /*--------------------------------------------------------------------------*/
@@ -228,10 +226,8 @@ double NODE::tr_probe_num(const std::string& x)const
       return ( vt1() );
   }else if (Umatch(x, "ddv ")) { // divided difference v
     double val = 0.; 
-    if(_sim->more_uic_now()){
-      val = ( vdc() -  v0() ) / OPT::dtddc;
-    }
-   return floor(val/OPT::vfloor + .5) * OPT::vfloor;
+    val = ( vdc() - v0() ) / OPT::dtddc;
+    return floor(val/OPT::vfloor + .5) * OPT::vfloor;
   }else if (Umatch(x, "nan ")) {
     // fake probe 0/0 = NaN
     double z1 = tr_probe_num("zero ");
@@ -320,7 +316,7 @@ void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
   }
   set_process(f);
 
-  if (is_analog() &&  d_iter() < a_iter()) {
+  if (is_analog() && d_iter() < a_iter()) {
     if (_sim->analysis_is_restore()) {untested();
     }else if (_sim->analysis_is_static()) {
     }else{
@@ -438,7 +434,7 @@ void LOGIC_NODE::to_logic(const MODEL_LOGIC*f)
 				/* a transition state.		   */
     set_d_iter();
     set_last_change_time();
-    // trace3(_failure_mode, _lastchange, _quality, _lv);
+    trace3(_failure_mode, _lastchange, _quality, _lv);
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -559,10 +555,13 @@ void node_t::new_node(const std::string& node_name, const CARD* d)
 {
   //assert(!_nnn); //BUG// fails on MUTUAL_L::expand after clone
   assert(d);
+  assert(d->scope());
 
   NODE_MAP* Map = d->scope()->nodes();
   assert(Map);
+  trace0("node_t::new_node " + node_name + " " + d->long_label());
   _nnn = Map->new_node(node_name);
+  trace0("node_t::new_node ...");
   _ttt = _nnn->user_number();
   assert(_nnn);
 }

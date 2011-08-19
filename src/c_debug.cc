@@ -230,27 +230,28 @@ DISPATCHER<CMD>::INSTALL d6(&command_dispatcher, "nodelist", &p6);
 /*--------------------------------------------------------------------------*/
 void CMD_NL::print( OMSTREAM _out, const CARD_LIST* scope){
 
+  CKT_BASE::_sim->init();
 
-    const NODE_MAP * nm = scope->nodes();
-    for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
-      if (i->first != "0") {
-        stringstream s;
-        s << setw(8) << i->second->long_label() << " vector position " << 
-          ", m_ " << i->second->m_() << " , matrix " << i->second->matrix_number() 
-          << ", use " << i->second->user_number() << 
-          " x-Entry " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
-        _out << s.str();
-      }else{
-        // _out << "Zero Node  "  << "\n";
-      }
+  const NODE_MAP * nm = scope->nodes();
+  for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
+    if (i->first != "0") {
+      stringstream s;
+      s << setw(8) << i->second->long_label() << " vector position " << 
+        ", m_ " << i->second->m_() << " , matrix " << i->second->matrix_number() 
+        << ", use " << i->second->user_number() << 
+        " x-Entry " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
+      _out << s.str();
+    }else{
+      // _out << "Zero Node  "  << "\n";
     }
-      
-    for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
-      const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i);
-      if (s) {
-        print(_out,s->subckt());
-      }
+  }
+
+  for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
+    const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i);
+    if (s) {
+      print(_out,s->subckt());
     }
+  }
 
 }
 

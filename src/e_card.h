@@ -60,7 +60,7 @@ protected: // create and destroy.
   explicit CARD(const CARD&);
 public:
   virtual  ~CARD();
-  virtual CARD*	 clone()const		{unreachable(); return NULL;}
+  virtual CARD*	 clone()const;//		{unreachable(); return NULL;}
   virtual CARD*	 clone_instance()const  {return clone();}
   //--------------------------------------------------------------------
 public:	// "elaborate"

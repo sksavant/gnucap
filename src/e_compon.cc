@@ -48,16 +48,18 @@ COMMON_COMPONENT::COMMON_COMPONENT(int c)
    _temp_c(NOT_INPUT),
    _mfactor(1),
    _value(0),
-   //_modelname("unset"),
-   _modelname(),
+   _modelname("unset"),
+  // _modelname(0),
+   // _modelname(""),
    _model(0),
    _attach_count(c)
 {
-  trace2("initializing COMMON_COMPONENT"+ _modelname, c, hp(this));
+  trace2("COMMON_COMPONENT::COMMON_COMPONENT"+ _modelname, c, hp(this));
 }
 /*--------------------------------------------------------------------------*/
 COMMON_COMPONENT::~COMMON_COMPONENT()
 {
+  trace1("~COMMON_COMPONENT" , hp(this));
   trace3("~COMMON_COMPONENT " + modelname(), _attach_count, CC_STATIC, hp(this));
   assert(_attach_count == 0 || _attach_count == CC_STATIC);
 }
@@ -68,6 +70,8 @@ COMMON_COMPONENT::~COMMON_COMPONENT()
 void COMMON_COMPONENT::attach_common(COMMON_COMPONENT*c, COMMON_COMPONENT**to)
 {
   trace2("COMMON_COMPONENT::attach_common", hp(c), hp(*to));
+  //bad idea. modelname segfaults.
+  //trace0("COMMON_COMPONENT::attach_common" + c->modelname());
   assert(to);
   if (c == *to) {
     itested();
@@ -92,6 +96,7 @@ void COMMON_COMPONENT::attach_common(COMMON_COMPONENT*c, COMMON_COMPONENT**to)
     // The new and old are identical.
     // Use the old one.
     // The new one is not used anywhere, so throw it away.
+    trace1("COMMON_COMPONENT::attach_common, deleting", hp(c));
     delete c;
   }else{
     trace0("COMMON_COMPONENT::attach_common same twice");
@@ -110,11 +115,13 @@ void COMMON_COMPONENT::detach_common(COMMON_COMPONENT** from)
     assert((**from)._attach_count > 0);
     //assert((**from)._attach_count != CC_STATIC );
     --((**from)._attach_count);
+    trace0("COMMON_COMPONENT::detach_common ??");
     if ((**from)._attach_count == 0) {
+      trace1("COMMON_COMPONENT::detach_common deleting", hp(*from));
       delete *from;
-
     }else{
-      trace1(("nodelete " + (*from)->modelname()).c_str(),
+      trace0("nodelete");
+      trace1(("nodelete " + (*from)->modelname()),
           (**from)._attach_count);
     }
     *from = NULL;
@@ -131,8 +138,8 @@ void COMMON_COMPONENT::attach_model(const COMPONENT* d)const
 
   _model = d->find_model(modelname());
   assert(_model);
-  trace2("COMMON_COMPONENT::attach_model attached ", (intptr_t) _model %PRIME,
-      (intptr_t)this%PRIME);
+  trace2("COMMON_COMPONENT::attach_model attached ", hp(_model),
+      hp(this) );
 }
 /*--------------------------------------------------------------------------*/
 void COMMON_COMPONENT::parse_modelname(CS& cmd)
@@ -327,9 +334,6 @@ void COMMON_COMPONENT::ac_eval(ELEMENT*x)const
 /*--------------------------------------------------------------------------*/
 bool COMMON_COMPONENT::operator==(const COMMON_COMPONENT& x)const
 {
-  trace3("COMMON_COMPONENT::operator== model:", _model == x._model,
-      (intptr_t)_model % PRIME, (intptr_t)x._model % PRIME  );
-  trace1("COMMON_COMPONENT::operator== modelname: " + _modelname, _modelname == x._modelname);
   return (_modelname == x._modelname
 	  && _model == x._model
 	  && _tnom_c == x._tnom_c
@@ -420,7 +424,7 @@ COMPONENT::COMPONENT()
    _amps_new(0),
    _adp(0)
 {
-  trace0("COMPONENT::COMPONENT");
+  trace0("COMPONENT::COMPONENT " + long_label() + ", " + dev_type() );
   _sim->uninit();
 }
 /*--------------------------------------------------------------------------*/
@@ -447,7 +451,7 @@ COMPONENT::~COMPONENT()
 {
   if (_amps)     free (_amps);
   if (_amps_new) free (_amps_new);
-  trace0("COMPONENT::~COMPONENT deconstruct " + long_label() + " " + short_label());
+  trace0("COMPONENT::~COMPONENT " + long_label() + " " + short_label());
   detach_common();
   _sim->uninit();
 }
@@ -516,6 +520,7 @@ void COMPONENT::set_port_to_ground(uint_t num)
 /*--------------------------------------------------------------------------*/
 void COMPONENT::set_dev_type(const std::string& new_type)
 {
+  trace0("COMPONENT::set_dev_type " + new_type);
   if (common()) {
     if (new_type != dev_type()) {
       COMMON_COMPONENT* c = common()->clone();
@@ -556,18 +561,21 @@ void COMPONENT::expand()
 {
   trace0("COMPONENT::expand");
   CARD::expand();
-  trace0("COMPONENT::expand, CARD done");
+  trace1("COMPONENT::expand, CARD done", hp(common()));
   if (has_common()) {
     assert(common());
     COMMON_COMPONENT* new_common = common()->clone();
     new_common->expand(this);
 
     COMMON_COMPONENT* deflated_common = new_common->deflate();
-    if (deflated_common != common()) {
+    trace2("COMMON_COMPONENT more commons", hp(deflated_common), hp(new_common));
+
+    if ( deflated_common != common()) {
+      trace0("COMMON_COMPONENT unequal deflated common");
       attach_common(deflated_common);
-    }else if (deflated_common != new_common ) {
+    }else if ( deflated_common != new_common )  {
       untested();
-      trace0("COMPONENT::expand: deleting new unused common");
+      trace1("COMPONENT::expand: deleting new unused common", hp(new_common));
       delete new_common;
     }else{
       untested();
@@ -1095,7 +1103,7 @@ void COMPONENT::tr_do_behaviour(){
 void COMPONENT::tt_prepare(){
 
   if(_amps==NULL){
-    _amps = (double*) malloc(sizeof (double) * net_nodes() * TRANSIENT::total_outsteps() );
+    _amps = (double*) malloc(sizeof (double) * net_nodes() * TRANSIENT::steps_total_out() );
     _amps[0]=8888;
     trace0( "COMPON::tt_accept amps " + short_label() );
   }
@@ -1132,3 +1140,22 @@ void COMPONENT::attach_adp(ADP_CARD* a){
   ADP_LIST::adp_list.push_back( a );
 
 }
+/*--------------------------------------------------------------------------
+ *
+ * need to be careful!
+ * attach_common will delete a new COMMON if its already there, so better not
+ * enqueue it here (somethng like that)
+COMMON_COMPONENT* COMMON_COMPONENT::deflate()
+{
+  for( list<const COMMON_COMPONENT*>::iterator i = _commons.begin();
+      i != _commons.end(); ++i ){
+
+    assert(*i);
+    if (*this == **i){
+      return const_cast<COMMON_COMPONENT*>( *i );
+    }
+  }
+  _commons.push_back(this);
+  return this;
+}
+------------------------*/

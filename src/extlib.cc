@@ -101,8 +101,8 @@ int ExtLib::init(const char *args) {
   assert(activate);
 #else
   startsim = &vvp::startsim;
-  bindnet = &vvp::bindnet;
-  assert(bindnet);
+  //bindnet = &vvp::bindnet;
+  //assert(bindnet);
   assert(startsim);
   endsim   = &vvp::endsim;
   assert(endsim);
@@ -146,7 +146,6 @@ void PrintInst(FILE *fp,struct __vpiScope *scope)
 }
 /*-----------------------------------------------------*/
 
-
 bool have_ivl_version = true;
 
 double vvp::SimTimeD     = 0.0;
@@ -168,7 +167,6 @@ void vvp::vvp_vpi_init()
 {
   trace0("not doing anything");
 }
-/*------------------------------------------------*/
 /*------------------------------------------------*/
 // replacement for main...
 int vvp::init(const char* design_path)
@@ -206,9 +204,9 @@ int vvp::init(const char* design_path)
     }
   }
 
-//   vpip_mcd_init(logfile); // not shared yet.
-    vpip_mcd_init(logfile);
-//
+  //   vpip_mcd_init(logfile); // not shared yet.
+  vpip_mcd_init(logfile);
+  //
   // 	 
   trace0( "Init VVP ...\n");
   vvp_vpi_init();
@@ -217,14 +215,12 @@ int vvp::init(const char* design_path)
   vpi_set_vlog_info(0, argv );
 
   trace0( "Compiling VVP "+(string)design_path);
-  compile_init();
-
+  COMPILE*c=new COMPILE();
+  c->init();
 
   // for m in modules...
   // vpip_load_module("bindsigs2");
-
-
-  int ret_cd = compile_design(design_path);
+  int ret_cd = c->design(design_path);
 
   trace1( " ...\n", ret_cd);
 
@@ -233,20 +229,20 @@ int vvp::init(const char* design_path)
   if (ret_cd) return ret_cd;
 
   if (!have_ivl_version) {
-    if (verbose_flag) vpi_mcd_printf(1, "... ");
+    if (c->verbose_flag) vpi_mcd_printf(1, "... ");
     vpi_mcd_printf(1, "Warning: vvp input file may not be correct "
         "version!\n");
   }
 
   vpi_mcd_printf(1, "Compile cleanup...\n");
 
-  compile_cleanup();
+  c->cleanup();
 
-  if (compile_errors > 0) {
+  if (c->errors > 0) {
     vpi_mcd_printf(1, "%s: Program not runnable, %u errors.\n",
-        design_path, compile_errors);
+        design_path, c->errors);
     load_module_delete(); 
-    return compile_errors;
+    return c->errors;
   }
 
 #ifdef DO_TRACE
@@ -305,7 +301,7 @@ enum sim_mode {SIM_ALL,
 --------------------------------------------------------------------*/
 sim_mode vvp::schedule_simulate_m(sim_mode mode)
 {
-  trace3("schedule_simulate_m", mode, SimTimeA,SimTimeD);
+  trace3("schedule_simulate_m", mode, SimTimeA, SimTimeD);
   struct event_s      *cur  = 0;
   struct event_time_s *ctim = 0;
   double               d_dly;
@@ -339,7 +335,8 @@ sim_mode vvp::schedule_simulate_m(sim_mode mode)
 
       if (schedule_stopped()) {
         schedule_start();
-        stop_handler(0);
+        incomplete();
+//        stop_handler(0);
         // You can finish from the debugger without a time change.
         if (!schedule_runnable()) break;
         goto cycle_done;

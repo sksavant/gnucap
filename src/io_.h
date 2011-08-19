@@ -77,28 +77,89 @@ public:
   OMSTREAM& tab(unsigned);
   OMSTREAM& tab(int p)			{return tab(static_cast<unsigned>(p));}
   OMSTREAM& form(const char*,...);
-  OMSTREAM& operator<<(char c);
-  OMSTREAM& operator<<(const char* s);
-  OMSTREAM& operator<<(double x)
-    {  // trace1("op<< " ,x );
-		 return (*this)<<ftos(x,_fltwid,_fltdig,_format);}
-  OMSTREAM& operator<<(COMPLEX c)
-  { 
-	  *this << c.real();
-	  if(c.imag() <0){
-		  *this << "-" << -c.imag();
-	  }
-	  else{
-		  *this << "+" << c.imag();
-	  }
-     return 	  *this	<< "* i";
-  }
-  OMSTREAM& operator<<(bool x)		{return form("%d", x);}
-  OMSTREAM& operator<<(int x)		{return form("%d", x);}
-  OMSTREAM& operator<<(long int x)	{return form("%li", x);}
-  OMSTREAM& operator<<(unsigned x)	{return form("%u", x);}
-  OMSTREAM& operator<<(const std::string& s) {return operator<<(s.c_str());}
+
+  template<class T>
+	  OMSTREAM& operator<<(T);
+  //
+  //
+//OMSTREAM& operator<< <>(char c);
+//OMSTREAM& operator<<(const char* s);
+  OMSTREAM& ostream_char(char );
+  OMSTREAM& ostream_const_char_p(const char *);
+
 };
+
+
+/*--------------------------------------------------------------------------*/
+/* mputs: multiple puts.
+ * puts to "m" style files.
+ * also....
+ * starts new line, prefixes it with + if it would exceed width
+ * width is handled separately for each file to support different widths
+ * (which are not currently handled by .options)
+ * and it is possible that current contents of lines may be different
+ */
+template<>
+inline
+OMSTREAM & OMSTREAM::operator<< <>(const char *str)
+{
+  assert(str);
+  return ostream_const_char_p(str);
+}
+/*--------------------------------------------------------------------------*/
+/* mputc: multiple putc
+ * multiple putc
+ * also....
+ * crunch spaces, if selected
+ * encripts, if selected
+ * keeps track of character count
+ */
+template<>
+inline OMSTREAM & OMSTREAM::operator<< <>(char chr)
+{
+  return ostream_char(chr);
+}
+/*--------------------------------------------------------------------------*/
+
+template<>
+inline OMSTREAM& OMSTREAM::operator<< <>(double x)
+{
+	return (*this)<<ftos(x,_fltwid,_fltdig,_format);
+}
+
+template<>
+inline OMSTREAM& OMSTREAM::operator<< <>(COMPLEX c)
+{ 
+	*this << c.real();
+	if(c.imag() <0){
+		*this << "-" << -c.imag();
+	}
+	else{
+		*this << "+" << c.imag();
+	}
+	return 	  *this	<< "* i";
+}
+
+template<>
+inline OMSTREAM& OMSTREAM::operator<< <>(bool x)		{return form("%d", x);}
+template<>
+inline OMSTREAM& OMSTREAM::operator<< <>(int x)		{return form("%d", x);}
+template<>
+inline OMSTREAM& OMSTREAM::operator<< <>(long int x)	{return form("%li", x);}
+template<>
+inline OMSTREAM& OMSTREAM::operator<< <>(unsigned x)	{return form("%u", x);}
+template<>
+inline OMSTREAM& OMSTREAM::operator<< <>(const std::string& s) {return operator<<(s.c_str());}
+
+template<class T>
+inline OMSTREAM& OMSTREAM::operator<< (T t){
+	stringstream a;
+	a << t;
+//	untested();
+	return *this<<a.str().c_str();
+}
+/*--------------------------------------------------------------------------*/
+
 const char* octal(int x);
 /*--------------------------------------------------------------------------*/
 class INTERFACE IO {
@@ -118,6 +179,7 @@ public:
 /* findf */	       std::string findfile(const std::string&,const std::string&,int);
 /* xopen */	       void	   xclose(FILE**);
 		       FILE*	   xopen(CS&,const char*,const char*);
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 #endif

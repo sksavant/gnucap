@@ -1,4 +1,5 @@
 /*$Id: lang_verilog.cc,v 1.1 2009-12-14 10:40:44 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et:
  * Copyright (C) 2007 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *

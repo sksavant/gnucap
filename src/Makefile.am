@@ -46,8 +46,17 @@ d_rcd.cc d_bti.cc
 gnucap_LDADD = libgnucap.la
 matrix_example_LDADD = libgnucap.la
 
-if IVERILOG
+#old/unused
+if IVERILOG_VVP
 D_SRCS += d_vvp.cc extlib.cc
+endif
+
+if IVERILOG
+D_SRCS +=  d_ivl_base.cc d_ivl_ports.cc \
+			 d_invert.cc d_clock.cc \
+		  	 d_latch.cc d_lfsr.cc  \
+			 e_ivl_compile.cc
+
 #	libvvpg_la_SOURCES = vvp_main.cc
 #  bin_PROGRAMS += libvvpg
 gnucap_LDADD += @IVERILOG@
@@ -73,6 +82,7 @@ c_sweep.cc c_sim.cc c_system.cc c_for.cc
 S_SRCS = \
 s_ac.cc s_dc.cc s_fo.cc \
 s_ddc.cc s_ttt.cc s_tt_set.cc \
+s_sock.cc \
 s_tr.cc s_tr_set.cc s_tr_swp.cc
 
 # netlist languages
@@ -126,7 +136,7 @@ bm.h \
 c_comand.h globals.h extlib.h
 
 if IVERILOG
-RAW_HDRS += d_vvp.h d_ivl.h
+RAW_HDRS += d_vvp.h d_ivl.h e_ivl_compile.h
 # doesnt work (?)
 # dvvp_lo_CFLAGS = -I$(IVERILOG_PATH)/include
 endif
@@ -194,6 +204,11 @@ MODELGEN= @MODELGEN@
 
 MAKEDEPEND = gcc -M $(CPPFLAGS) -o $*.d $<
 
+IVL=`which iverilog`
+
+%.cc : %.v $(IVERILOG_PATH)/compile_wrap.h # $(IVERILOG_PREFIX)/lib/ivl/gc.tgt
+	$(IVL) -tgc $< -o $@
+
 %.cc : %.model %.h ${MODELGEN}${EXEEXT}
 	${MODELGEN} -cc $<
 
@@ -203,6 +218,8 @@ MAKEDEPEND = gcc -M $(CPPFLAGS) -o $*.d $<
 
 d_vvp.lo extlib.lo: CPPFLAGS+= @IVERILOG_INCLUDE@
 
+
+.DELETE_ON_ERROR: *.cc
 
 # include $(srcdir)/depend
 #

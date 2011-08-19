@@ -185,7 +185,7 @@ public: // virtuals
 public: // raw data access (rvalues)
   LOGICVAL lv()const			{return _lv;}
   int	   quality()const		{return _quality;}
-  const std::string& failure_mode()const {return _failure_mode;}
+  const std::string& failure_mode()const{return _failure_mode;}
   int	   d_iter()const		{return _d_iter;}
   int	   a_iter()const		{return _a_iter;}
   double   final_time()const		{return _final_time;}

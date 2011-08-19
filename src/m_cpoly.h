@@ -37,6 +37,7 @@
 #ifndef M_CPOLY_H
 #define M_CPOLY_H
 #include "constant.h"
+#include "io_.h"
 /*--------------------------------------------------------------------------*/
 struct FPOLY1;
 struct CPOLY1;
@@ -138,5 +139,15 @@ inline FPOLY1 operator-(hp_float_t a, const FPOLY1& b)
   return -b + a;
 }
 /*--------------------------------------------------------------------------*/
+template<class T>
+inline T& operator<<(T& o, const CPOLY1& x)
+{
+  	return o << "C " <<  x.x << " " << x.c0 << " " << x.c1;
+}
 /*--------------------------------------------------------------------------*/
+template<class T>
+inline T& operator<<(T& o, const FPOLY1& x)
+{
+  	return o << "F " << x.x << " " << x.f0 << " " << x.f1;
+}
 #endif
