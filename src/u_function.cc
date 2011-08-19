@@ -23,9 +23,18 @@
 #include "e_base.h"
 #include "u_function.h"
 /*--------------------------------------------------------------------------*/
-WAVE* FUNCTION::find_wave(const std::string& probe_name)const
+WAVE* WAVE_FUNCTION::find_wave(const std::string& probe_name)const
 {
   return CKT_BASE::find_wave(probe_name);
+}
+/*--------------------------------------------------------------------------*/
+void WAVE_FUNCTION::set_wave(WAVE* ww)
+{
+	if (!ww){
+		trace0("WAVE_FUNCTION::set_wave no wave " + probe_name );
+		untested();
+	}
+  	w = ww;
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

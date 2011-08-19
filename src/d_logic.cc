@@ -189,7 +189,7 @@ void DEV_LOGIC::tr_advance()
     subckt()->tr_advance();
     break;
   case moDIGITAL: 
-    if (_n[OUTNODE]->in_transit()) {
+    if (_n[OUTNODE]->in_transit() || _n[OUTNODE]->final_time_a()  < NEVER ) {
       q_eval();
       if (_sim->_time0 >= _n[OUTNODE]->final_time()) {
 	_n[OUTNODE]->propagate();

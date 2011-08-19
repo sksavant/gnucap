@@ -41,7 +41,7 @@ D_SRCS = \
 d_admit.cc d_cap.cc d_cccs.cc d_ccvs.cc d_coil.cc \
 d_cs.cc d_poly_g.cc d_poly_cap.cc d_res.cc d_switch.cc \
 d_trln.cc d_vcg.cc d_vcr.cc d_vcvs.cc d_vs.cc d_vcvs2.cc \
-d_rcd.cc d_bti.cc
+d_rcd.cc d_bti.cc  d_branchvs.cc
 
 gnucap_LDADD = libgnucap.la
 matrix_example_LDADD = libgnucap.la
@@ -133,10 +133,10 @@ e_homebrew.h e_adplist.h \
 e_elemnt.h e_ccsrc.h e_storag.h e_cardlist.h \
 d_coment.h d_dot.h d_logic.h d_subckt.h \
 bm.h \
-c_comand.h globals.h extlib.h
+c_comand.h globals.h extlib.h d_cap.h
 
 if IVERILOG
-RAW_HDRS += d_vvp.h d_ivl.h e_ivl_compile.h
+RAW_HDRS += d_vvp.h d_ivl.h e_ivl_compile.h d_ivl_ports.h
 # doesnt work (?)
 # dvvp_lo_CFLAGS = -I$(IVERILOG_PATH)/include
 endif
@@ -204,7 +204,7 @@ MODELGEN= @MODELGEN@
 
 MAKEDEPEND = gcc -M $(CPPFLAGS) -o $*.d $<
 
-IVL=`which iverilog`
+IVL=`which iverilog` -v
 
 %.cc : %.v $(IVERILOG_PATH)/compile_wrap.h # $(IVERILOG_PREFIX)/lib/ivl/gc.tgt
 	$(IVL) -tgc $< -o $@

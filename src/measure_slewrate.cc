@@ -28,23 +28,31 @@
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class MEASURE : public FUNCTION {
+class MEASURE : public WAVE_FUNCTION {
+  PARAMETER<double> before;
+  PARAMETER<double> after;
+  PARAMETER<double> start_val;
+  PARAMETER<double> stop_val;
+  bool last;
+  bool expression;
 public:
-  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
+  MEASURE() :
+    WAVE_FUNCTION(),
+    before(BIGBIG),
+    after(-BIGBIG),
+    last(false),
+    expression(false)
+  {}
+  virtual FUNCTION* clone()const { return new MEASURE(*this);}
+
+  void expand(CS& Cmd, const CARD_LIST* Scope)
   {
-    std::string probe_name;
-    PARAMETER<double> before(BIGBIG);
-    PARAMETER<double> after(-BIGBIG);
-    PARAMETER<double> start_val;
-    PARAMETER<double> stop_val;
-    bool last = false;
-    bool expression = false;
 
     unsigned here = Cmd.cursor();
     Cmd >> probe_name;
 
     trace0( ("MEASURE::eval probe_name: " + probe_name ).c_str());
-    WAVE* w = find_wave(probe_name);
+    w = find_wave(probe_name);
 
     if (!w) {
       Cmd.reset(here);
@@ -73,12 +81,16 @@ public:
       w = find_wave(probe_name);
     }else{
     }
+    before.e_val(BIGBIG, Scope);
+    after.e_val(-BIGBIG, Scope);
+    start_val.e_val(0., Scope);
+    stop_val.e_val(0., Scope);
+  }
+
+  fun_t wave_eval()const
+  {
     
     if (w) {
-      before.e_val(BIGBIG, Scope);
-      after.e_val(-BIGBIG, Scope);
-      start_val.e_val(0., Scope);
-      stop_val.e_val(0., Scope);
 
       enum STAT {WAITING, READY, IN_RANGE, DONE} stat = WAITING;
       double try_start_time = BIGBIG;

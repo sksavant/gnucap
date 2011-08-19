@@ -126,6 +126,7 @@ public:
   virtual bool	has_tr_eval()const	{untested0( name().c_str() ); return false;}
   virtual bool	has_ac_eval()const	{untested(); return false;}
   virtual void  set_ic(double){}
+  virtual void  keep_ic(){}
 
 public:
   virtual bool	has_tt_eval()const	{untested(); return false;}

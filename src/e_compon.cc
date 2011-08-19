@@ -27,6 +27,7 @@
 #include "u_lang.h"
 #include "e_model.h"
 #include "e_elemnt.h"
+#include "io_trace.h"
 /*--------------------------------------------------------------------------*/
 COMMON_COMPONENT::COMMON_COMPONENT(const COMMON_COMPONENT& p)
   :_tnom_c(p._tnom_c),
@@ -38,8 +39,7 @@ COMMON_COMPONENT::COMMON_COMPONENT(const COMMON_COMPONENT& p)
    _model(p._model),
    _attach_count(0)
 {
-  trace1(("COMMON_COMPONENT copy, modelname: "+p._modelname),
-      (intptr_t)_model %PRIME );
+  trace1(("COMMON_COMPONENT copy, modelname: "+p._modelname), hp(_model) );
 }
 /*--------------------------------------------------------------------------*/
 COMMON_COMPONENT::COMMON_COMPONENT(int c)
@@ -48,9 +48,7 @@ COMMON_COMPONENT::COMMON_COMPONENT(int c)
    _temp_c(NOT_INPUT),
    _mfactor(1),
    _value(0),
-   _modelname("unset"),
-  // _modelname(0),
-   // _modelname(""),
+   _modelname(""), // !
    _model(0),
    _attach_count(c)
 {
@@ -162,7 +160,7 @@ bool COMMON_COMPONENT::parse_param_list(CS& cmd)
 /*--------------------------------------------------------------------------*/
 void COMMON_COMPONENT::parse_common_obsolete_callback(CS& cmd) //used
 {
-  trace0(("COMMON_COMPONENT::parse_common_obsolete_callback " + cmd.tail()).c_str() );
+  trace1("COMMON_COMPONENT::parse_common_obsolete_callback ", cmd.tail() );
   if (cmd.skip1b('(')) {
     // start with a paren
     unsigned start = cmd.cursor();
@@ -469,8 +467,8 @@ bool COMPONENT::node_is_connected(uint_t i)const
   assert(_n);
   assert(i != INVALID_NODE);
   if (i >= net_nodes()) {
-    std::cerr << "i < net_nodes() failed: "<<i<< "< "<<net_nodes()<<"\n";
-    exit(4);
+    trace2( "COMPONENT::node_is_connected " , i, net_nodes() );
+    assert(false);
   }
   return _n[i].is_connected();
 }
@@ -614,7 +612,7 @@ void COMPONENT::precalc_first()
   }else{
     _mfactor_fixed =  _mfactor;
   } 
-  trace1("COMPONENT::precalc_first " + long_label(), _mfactor_fixed);
+  trace1("COMPONENT::precalc_first done " + long_label(), _mfactor_fixed);
 }
 /*--------------------------------------------------------------------------*/
 void COMPONENT::precalc_last()
@@ -635,11 +633,16 @@ void COMPONENT::map_nodes()
 {
   assert(is_device());
   //assert(min_nodes() <= net_nodes());
+  if(net_nodes() > max_nodes()){
+    trace2("COMPONENT::map_nodes", net_nodes(), max_nodes());
+  }
   assert(net_nodes() <= max_nodes());
   //assert(ext_nodes() + int_nodes() == matrix_nodes());
 
   for (uint_t ii = 0; ii < ext_nodes()+int_nodes(); ++ii) {
+    trace2("COMPONENT::map_nodes", ext_nodes()+int_nodes(), ii);
     _n[ii].map();
+    trace2("COMPONENT::map_nodes", ext_nodes()+int_nodes(), _n[ii].m_());
   }
 
   if (subckt()) {
@@ -831,7 +834,7 @@ const MODEL_CARD* COMPONENT::find_model(const std::string& modelname)const
 	// start here, looking out
 	try {
 	  c = Scope->find_in_my_scope(modelname);
-          trace1("COMPONENT::find_model found model in scope", ((intptr_t) c)%PRIME);
+          trace1("COMPONENT::find_model found model in scope", hp(c));
 	}catch (Exception_Cant_Find& e1) {
 	  // didn't find plain model.  try binned models
 	  bin_count = 0;
@@ -857,6 +860,7 @@ const MODEL_CARD* COMPONENT::find_model(const std::string& modelname)const
       }
       if (!c) {
 	if (bin_count <= 1) {
+          trace0("Exc");
 	  throw Exception_Cant_Find(long_label(), modelname);
 	}else{
 	  throw Exception(long_label() + ": no bins match: " + modelname);
@@ -908,9 +912,9 @@ double COMPONENT::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "event{time} ")) {
     return (_time_by._event < BIGBIG) ? _time_by._event : 0;
   }else if (Umatch(x, "_m ")) {
-    return double((intptr_t) ( _common->model() ) % PRIME );
+    return double(hp( _common->model() ) );
   }else if (Umatch(x, "_c ")) {
-    return double((intptr_t) (_common) % PRIME );
+    return double(  hp(_common) );
   }
 
   return CARD::tr_probe_num(x);

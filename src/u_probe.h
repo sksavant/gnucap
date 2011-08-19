@@ -28,6 +28,7 @@
 #include "l_compar.h" // inorder
 #include "e_cardlist.h" // inorder
 #include "m_expression.h" 
+#include "u_function.h" 
 /*--------------------------------------------------------------------------*/
 class CKT_BASE;
 /*--------------------------------------------------------------------------*/
@@ -65,7 +66,7 @@ MATH_OP strtotype( std::string );
 /*--------------------------------------------------------------------------*/
 class INTERFACE PROBE {
   public:
-    PROBE(){_brh=0;_next=0;untested();};
+    PROBE(){_brh=0;_next=0;itested();};
     explicit  PROBE(const std::string& what, const CKT_BASE *brh);
     PROBE(const PROBE& p);
     ~PROBE(){
@@ -81,6 +82,8 @@ class INTERFACE PROBE {
     PROBE* arg() const {return _arg;}
     std::string  override_label() const {return _override_label;}
     virtual PROBE* clone()const { return (new PROBE(*this));}
+    virtual void expand(){}
+    virtual void precalc_last(){}
   private:
     PROBE* _arg;
   protected:
@@ -172,9 +175,15 @@ class MEAS_PROBE: public PROBE {
   private:
     std::string _cmd;
     const CARD_LIST* _scope;
+    WAVE_FUNCTION* f;
+    WAVE* w;
   public:
+    string probe_name;
+    void precalc_first();
+    void expand();
     double value()const;
     const std::string label()const;
+    void precalc_last();
 };
 /*--------------------------------------------------------------------------*/
 #endif

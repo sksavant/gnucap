@@ -37,7 +37,11 @@ public:
     std::string assign_to, function;
     Cmd >> assign_to >> '=' >> function >> '(';
     if (FUNCTION* f = measure_dispatcher[function]) {
-      fun_t value = f->eval(Cmd, Scope);
+      f->expand(Cmd,Scope);
+      WAVE_FUNCTION* ff= dynamic_cast<WAVE_FUNCTION*>(f);
+      assert(f);
+      
+      fun_t value = ff->wave_eval();
       if (!Cmd.skip1b(')')) {
 	Cmd.warn(bWARNING, "need )");
       }else{

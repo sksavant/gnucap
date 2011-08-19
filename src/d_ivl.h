@@ -22,12 +22,14 @@
  *
  *
 
-DEV_IVL_name has a dummy COMMON_IVL with a MODEL_IVL_name
+DEV_IVL_name has a COMMON_IVL with a MODEL_IVL_name
 it expands to a subnet of DEV_LOGIC_AD/DA devices with a common EVAL_IVL
-(derived from COMMON_LOGIC), which has a MODEL derived from MODEL_LOGIC.
+(derived from COMMON_LOGIC), which has a dummy MODEL.
 
-EVAL_IVL contains the vvp-stuff. it would be nice to have a static vvp, this
-would need a way to clone/reallocate the device instances within the runtime...
+MODEL_IVL_name is derived from MODEL_LOGIC, the logic ports need to use
+their parents model, otherwise all devices would have to use the same logic
+model...
+
 
  */
 
@@ -125,9 +127,14 @@ class EVAL_IVL : public COMMON_COMPONENT {
   private:
     static int _count;
     static list<const COMMON_COMPONENT*> _commons;
+    static COMPILE_WRAP* _comp;
   public:
+    static COMPILE_WRAP* get_comp(){
+      if (_comp) return _comp;
+      return _comp= new COMPILE_WRAP();
+    }
+
     int vvpinit(COMPILE_WRAP*);
-    COMPILE_WRAP* comp;
   public: // input parameters
     int		incount; //?
   private: // simulator stuff
@@ -136,26 +143,7 @@ class EVAL_IVL : public COMMON_COMPONENT {
     vvp_time64_t (*g_s_t)();
     void (*s_s_t)(vvp_time64_t);
 
-#ifdef SOME_OLD_STUFF
-    event_time_s* (*g_s_l)();
-    void (*s_s_l)(event_time_s*);
-    vpi_mode_t& (*_vpi_mode)();
-    void (*s_a_p_v) (vvp_sub_pointer_t<vvp_net_t>,vvp_time64_t,vvp_vector4_t,int, int);
-    void (*s_st)();
-    void (*n_s)();
-    void (*r_r)(event_time_s*);
-    void (*s_e)(event_time_s*);
-    void (*e_c)();
-    void (*e_i)();
-    void (*v_s)();
-    void (*v_p)();
-    bool (*s_x)();
-    bool (*s_r)();
-    void (*v_t)(int);
-    void (*s_l)();
-#endif
-
-    void do_some_precalc_last_stuff()const;
+    void some_tr_begin_stuff()const;
 
 
   public:
@@ -172,12 +160,15 @@ class EVAL_IVL : public COMMON_COMPONENT {
     mutable double SimTimeDlast;
     mutable double SimDelayD;
     mutable sim_mode SimState;
-    int _time_prec;
+    static int _time_prec;
+    static double timescale;
+    static int _log_time_prec;
     // Provide dummies
     inline static void my_getrusage(struct rusage *);
     inline static void print_rusage(struct rusage *, struct rusage *);
 
     double event_absolute(struct event_time_s *et) const;
+    vvp_time64_t discrete_floor(double abs_t) const;
 
 
   private: // for now, move everything to the external vars
@@ -199,61 +190,33 @@ class EVAL_IVL : public COMMON_COMPONENT {
 #endif
 
     int log_time_precision()const
-    { return _time_prec; }
+    { assert (_time_prec); 
+      return _time_prec; }
     double time_precision()const
     { return  pow(10,_time_prec); }
 
   private: // vvp stuff. eventually obsolete.
 
 
-#ifdef SOME_OLD_APPROACH
-    void schedule_list(event_time_s* x) const
-    { assert(s_s_l); return (*s_s_l)(x); }
-    void schedule_time( vvp_time64_t x ) const
-    { trace1("IVL::schedule_time", x);
-      assert(g_s_t); return (*s_s_t)(x); }
-    vpi_mode_t& vpi_mode_flag() const 
-    { assert(_vpi_mode); return (*_vpi_mode)(); }
-    void vpiNextSimTime() const 
-    { assert(n_s); return(n_s)(); }
-    void schedule_start() const 
-    { assert(s_st); return (*s_st)(); }
-    void run_rosync(struct event_time_s*ctim) const
-    { assert(r_r); return (*r_r)(ctim); }
-    void schedule_enlist(event_time_s*t) const
-    { assert(s_e); return (*s_e)(t); }
-    void vpiEndOfCompile(void) const
-    { assert(e_c); return (*e_c)(); }
-    void exec_init_list() const 
-    { assert(e_i); return (*e_i)(); }
-    void vpiStartOfSim(void) const
-    { assert(v_s); return (*v_s)(); }
-    void vpiPostsim(void) const
-    { assert(v_p); return (*v_p)(); }
-    bool schedule_stopped(void) const
-    { assert(s_x); return (*s_x)(); }
-    bool schedule_runnable(void) const
-    { assert(s_r); return (*s_r)(); }
-    void vpip_set_time_precision(int pres) const
-    { assert(v_t); (*v_t)(pres); }
-#else
     void schedule_list(event_time_s* x) const
     { set_schedule_list(x); }
 
     void schedule_time( vvp_time64_t x ) const
     { set_schedule_time( x); }
-#endif
 
    public: // some helpers... cleanup needed :|
 
 
 
-    void schedule_assign_plucked_vector(vpiHandle H,  vvp_time64_t  dly,
+    void schedule_transition(vpiHandle H,  vvp_time64_t  dly,
        vvp_vector4_t val, int a, int b)const;
+    inline double prec() const {
+      return double(pow(10.0,_time_prec));
+    }
 
     inline double getdtime(struct event_time_s *et) const
     {
-      return (double) et->delay * pow(10.0,_time_prec);
+      return (double) et->delay * prec();
     }
     inline double event_(struct event_time_s *et) const
     {
@@ -266,15 +229,12 @@ class EVAL_IVL : public COMMON_COMPONENT {
       return double(this->schedule_time() * (long double)
           pow(10.0,_time_prec)) ;
     }
-    inline double prec() const {
-      return double(pow(10.0,_time_prec));
-    }
 
 
     //from vvp_vpi.cc
     static void vvp_vpi_init();
     static int init(const char* design_path);
-    int compile_design(COMPILE_WRAP* c, COMPONENT*) const;
+    int compile_design(COMPILE_WRAP* c, COMPONENT*, COMPONENT**) const;
 
     static void signals_capture(void);
     static void signals_revert(void);
@@ -283,6 +243,8 @@ class EVAL_IVL : public COMMON_COMPONENT {
     /*--------------------------------------------------------------------*/
     //static double getdtime(struct event_time_s *et);
     sim_mode schedule_simulate_m(sim_mode mode) const;
+    sim_mode schedule_cont0() const;
+    sim_mode schedule_cont1() const;
     /*--------------------------------------------------------------------*/
 
 #if 0
@@ -297,18 +259,17 @@ class EVAL_IVL : public COMMON_COMPONENT {
 
     // former extlib.h
     void    *(*bindnet)(const char *,char,int *,void *,void (*)(void *,void *,double));
-
-    // double   (*startsim)(const char *);
     double   tr_begin() const;
 
     void     (*endsim)();
-    //double   (*contsim)(const char *,double);
     double   contsim(const char *,double) const;
     void   contsim_set(double) const;
+    vvp_time64_t contsim(vvp_time64_t until_rel) const;
 
+    void catch_up(double time) const;
 
-    void     (*activate)(void *,void *,double);
-    vpiHandle(*vhbn)(const char *name, vpiHandle scope);
+//    void     (*activate)(void *,void *,double);
+//    vpiHandle(*vhbn)(const char *name, vpiHandle scope);
 
 };
 /*--------------------------------------------------------------------------*/
@@ -342,12 +303,9 @@ class COMMON_IVL : public COMMON_COMPONENT {
     // void startsim();
     //private:?
     void* vvpso;
-    // dlopen("libvvpg.so",RTLD_LAZY|RTLD_GLOBAL);
-    //    ExtLib* _extlib;
   public: // input parameters
     int		incount; //?
-    PARAMETER<std::string> vvpfile;
-    PARAMETER<std::string> module;
+    const double* timescale() const;
   private:
     uint_t status;
 
@@ -360,7 +318,6 @@ class COMMON_IVL : public COMMON_COMPONENT {
 
     // VVP things...
   public:
-    unsigned _time_prec;
     // Provide dummies
     inline static void my_getrusage(struct rusage *);
     inline static void print_rusage(struct rusage *, struct rusage *);
@@ -369,7 +326,7 @@ class COMMON_IVL : public COMMON_COMPONENT {
     //from vvp_vpi.cc
     static void vvp_vpi_init();
     static int init(const char* design_path);
-    int compile_design(COMPILE_WRAP* c, COMPONENT*) const;
+    int compile_design(COMPILE_WRAP* c, COMPONENT*, COMPONENT**da) const;
 
     static void signals_capture(void);
     static void signals_revert(void);
@@ -420,34 +377,20 @@ class MODEL_IVL_BASE : public MODEL_LOGIC {
   public:
     //static int	count()			{return _count;}
     virtual std::string port_name(uint_t)const;
-    virtual int compile_design(COMPILE_WRAP* c, const string) const = 0;
-  public:
-    PARAMETER<string> file;
-    PARAMETER<string> input;
-    PARAMETER<string> output;
-};
-/*--------------------------------------------------------------------------
-class ExtLib : public COMPONENT {
-  public:
-    std::list<class ExtRef*> refs;
-    std::string name;
-    void *handle;
-    double now;
-    ExtLib(const char *_nm,void *_hndl) : name(_nm), handle(_hndl), now(-1) {
-      // El=this;
-    }
-    int init(const char *);
-    static void SetActive(void *dl,void *handle,double time);
-    void        set_active(void *handle,double time);
-    virtual std::string value_name() const {return name;}
-    virtual bool print_type_in_spice() const {return false;}
-  private:
-    ExtLib();
+    virtual unsigned port_type(uint_t)const = 0;
+    virtual int compile_design(COMPILE_WRAP* c, const string, COMPONENT** da, 
+        const COMMON_COMPONENT*) const = 0;
+    virtual unsigned da_nodes()const = 0;
 
+    // COMMON_IVL
+    //virtual double* timescale();
+    
   public:
-    virtual std::string port_name(uint_t)const {return "";}
+    //PARAMETER<string> file;
+    //PARAMETER<string> input;
+    //PARAMETER<string> output;
 };
---------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 class DEV_IVL_BASE : public BASE_SUBCKT {
   protected:
     explicit	DEV_IVL_BASE(const DEV_IVL_BASE& p);
@@ -458,14 +401,14 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     char	   id_letter()const	{return '\0';}
     bool print_type_in_spice()const {return true;}
     string value_name()const	{return "#";}
-    uint_t max_nodes()const     {return 10;}
-    uint_t min_nodes()const     {return 2;}
+    //uint_t max_nodes()const     {return 10;}
+    //uint_t min_nodes()const     {return 2;}
     //int     matrix_nodes()const; //BASE_SUBCKT
 //    uint_t net_nodes()const     {return 5;} //depends...
-    uint_t int_nodes()const     {return 0;}
+    //uint_t int_nodes()const     {return 0;}
     uint_t tail_size()const     {return 1;}
     node_t _nodes[PORTS_PER_IVL];	/* PORTS_PER_IVL <= PORTSPERSUBCKT */
-    CARD* clone()const { return new DEV_IVL_BASE(*this); }
+    // CARD* clone()const { return new DEV_IVL_BASE(*this); }
     void precalc_first();
     void expand();
     void expand_nodes(){ incomplete(); }
@@ -475,15 +418,17 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     bool tr_needs_eval()const{return true;}
     TIME_PAIR tr_review();
   public:
-    const COMMON_COMPONENT* subcommon()const{ return _subcommon; }
+    virtual std::string	dev_type()const=0; // {return "ERROR"; unreachable();}
+    const COMMON_COMPONENT* subcommon()const{
+     assert(_subcommon); return _subcommon; }
 
     double tr_probe_num(const std::string& x)const;
   private: // COMPILE_WRAP stuff
     void init_vvp();
     void* _vvpso;
-    COMPILE_WRAP* _comp;
     COMPILE_WRAP* (*g_c)();
     const COMMON_COMPONENT* _subcommon;
+    COMPILE_WRAP* _comp; // REMOVE
 
 
   public:
@@ -493,7 +438,6 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     static int	_count;
     uint_t status;
     std::vector<port_info_t> _ports;
-    //ExtRef* _extref; //initialized Extlib...
     // std::vector< ExtRef* > ExtRefList;
     std::vector< COMPONENT* > _subdevices;
 
@@ -501,20 +445,19 @@ class DEV_IVL_BASE : public BASE_SUBCKT {
     vector<vpiHandle> _inport;
 
   public:
-    void compile_design(COMPILE_WRAP* c);
+    void compile_design(COMPILE_WRAP* c, COMPONENT** da);
     //void qe() { q_eval(); }
     void register_port(vpiHandle); // data from ivl
 
     bool has_common()const {return true;}
     virtual std::string port_name(uint_t)const ;
     void tr_begin();
-    ExtLib* extlib()const; //{return (((COMMON_IVL*) common())->_extlib);}
 };
 
 /*--------------------------------------------------------------------*/
 inline double EVAL_IVL::event_absolute(struct event_time_s *et) const
 {
-  trace1("", _time_prec);
+  trace1("event_absolute", _time_prec);
   assert(is_number(  pow(10.0, _time_prec ))) ;
   return  double ( (et->delay + this->schedule_time() )  
       * (long double) pow(10.0, _time_prec ));

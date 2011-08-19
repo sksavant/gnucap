@@ -217,6 +217,23 @@ CS& CS::operator=(const CS& p)
 }
 #endif
 /*--------------------------------------------------------------------------*/
+bool CS::eat_lines()
+{
+
+  bool ret=false;
+  
+  skipbl(); 
+  while(_file && !tailsize()){
+    ret=true;
+
+    get_line( string());
+    skipbl(); 
+  }
+
+  return ret;
+
+}
+/*--------------------------------------------------------------------------*/
 CS& CS::get_line(const std::string& prompt)
 {
   ++_line_number;

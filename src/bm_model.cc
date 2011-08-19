@@ -81,6 +81,7 @@ bool EVAL_BM_MODEL::operator==(const COMMON_COMPONENT& x)const
 /*--------------------------------------------------------------------------*/
 void EVAL_BM_MODEL::parse_common_obsolete_callback(CS& cmd) //used
 {
+  trace1("EVAL_BM_MODEL::parse_common_obsolete_callback", cmd.tail());
   assert(!_func);
   assert(!has_model());
   parse_modelname(cmd);

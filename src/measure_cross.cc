@@ -28,20 +28,28 @@
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class MEASURE : public FUNCTION {
+class MEASURE : public WAVE_FUNCTION {
+  PARAMETER<double> before;
+  PARAMETER<double> after;
+  PARAMETER<double> cross;
+  int slope;
+  bool last;
 public:
-  fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
-  {
-    std::string probe_name;
-    PARAMETER<double> before(BIGBIG);
-    PARAMETER<double> after(-BIGBIG);
-    PARAMETER<double> cross(0.);
-    int slope = 1;
-    bool last = false;
-    
+  MEASURE():
+    WAVE_FUNCTION(),
+    before(BIGBIG),
+    after(-BIGBIG),
+    cross(0),
+    slope(1),
+    last(false)
+  {}
+  virtual FUNCTION* clone()const { return new MEASURE(*this);}
+
+  void expand(CS& Cmd, const CARD_LIST* Scope)
+  { 
     unsigned here = Cmd.cursor();
     Cmd >> probe_name;
-    WAVE* w = find_wave(probe_name);
+    w = find_wave(probe_name);
 
     if (!w) {
       Cmd.reset(here);
@@ -69,11 +77,15 @@ public:
     }else{
     }
 
-    if (w) {
-      before.e_val(BIGBIG, Scope);
-      after.e_val(-BIGBIG, Scope);
-      cross.e_val(0., Scope);
+    before.e_val(BIGBIG, Scope);
+    after.e_val(-BIGBIG, Scope);
+    cross.e_val(0., Scope);
+  }
 
+public:
+  fun_t wave_eval()const
+  {
+    if (w) {
       double cross1 = cross * slope;
       enum STAT {WAITING, READY, DONE} stat = WAITING;
       double x_time = (last) ? -BIGBIG : BIGBIG;

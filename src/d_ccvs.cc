@@ -98,7 +98,10 @@ bool DEV_CCVS::do_tr_last()
     _m0.c0 = 0.;
     assert(converged());
   }
-  if (_input->has_inode()) {untested();
+  if (_input->is_source()) {
+	  incomplete();
+
+  } else if (_input->has_inode()) {untested();
     // nothing
   }else if (_input->has_iv_probe()) {
     _m0.c0 += _y[0].f1 * _input->_m0.c0;
@@ -127,6 +130,7 @@ void DEV_CCVS::do_ac()
     assert(has_tr_eval() || (_ev) == hp_float_t(value()));
   }
   if (_input->is_source()) {
+    trace0("DEV_CCVS::do_ac source AC");
     _acg = - (double)_loss0 * (COMPLEX(_ev)) * _input->_acg;
     ac_load_source();
     _acg = -_loss0 * _ev * _input->_loss0;
@@ -144,3 +148,4 @@ DISPATCHER<CARD>::INSTALL d1(&device_dispatcher, "H|ccvs", &p1);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+// vim:ts=8:sw=2:et:

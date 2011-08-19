@@ -171,7 +171,7 @@ void SIM_DATA::order_auto()
 void SIM_DATA::init()
 {
   if (is_first_expand()) {
-    trace0("SIM_DATA::init uninit");
+    trace0("SIM_DATA::init first");
     uninit();
     init_node_count(CARD_LIST::card_list.nodes()->how_many(), 0, 0);
     CARD_LIST::card_list.expand();
@@ -232,6 +232,7 @@ void SIM_DATA::alloc_hold_vectors()
  */
 void SIM_DATA::alloc_vectors()
 {
+  trace1("SIM_DATA::alloc_vectors",  _total_nodes);
   assert(_evalq1.empty());
   assert(_evalq2.empty());
   assert(_evalq != _evalq_uc);
@@ -246,7 +247,7 @@ void SIM_DATA::alloc_vectors()
   _v0  = new double[_total_nodes+1];
   _vt1 = new double[_total_nodes+1];
 	
-  trace0("SIM_DATA::alloc_vectors ADP_NODE");
+  trace1("SIM_DATA::alloc_vectors ", hp(_i));
   _tr  = new double[_adp_nodes];
 
   _tr1 = new double[_adp_nodes];
@@ -276,6 +277,7 @@ void SIM_DATA::invalidate_tt(){
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::unalloc_vectors()
 {
+  trace0("SIM_DATA::unalloc_vectors");
   _evalq1.clear();
   _evalq2.clear();
   delete [] _i;
@@ -321,7 +323,6 @@ void SIM_DATA::uninit()
     assert(!_nstat);
     assert(!_nm);
   }
-  trace0("SIM_DATA::uninit done");
 }
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::update_tt_order()

@@ -39,6 +39,9 @@ class PARAM_LIST; //unnnec?
 //class MODEL_BUILT_IN_BTI;
 /*--------------------------------------------------------------------------*/
 
+namespace PARM{
+  enum NA_ {NA};
+}
 
 template <class T>
 class PARAMETER {
@@ -47,7 +50,7 @@ private:
   std::string _s;
   T my_infty() const;
 public:
-  T _NOT_INPUT();
+  T _NOT_INPUT() const;
 
   explicit PARAMETER() :_v(_NOT_INPUT()), _s() {}
   PARAMETER(const PARAMETER<double>& p) :_v(p._v), _s(p._s) {}
@@ -60,6 +63,10 @@ public:
   //bool has_soft_value()const {untested(); return (has_good_value() && !has_hard_value());}
 
   operator T()const {return _v;}
+  // not a good idea:
+  // const T* operator&() const {return &_v;}
+
+  const T*	pointer()const	 {return &_v;}
   T	e_val(const T& def, const CARD_LIST* scope)const;
   void	parse(CS& cmd);
 
@@ -108,27 +115,34 @@ public:
   //  return !(*this == v);
   //}
   T*	pointer_hack()	 {return &_v;}
+
 private:
   T lookup_solve(const T& def, const CARD_LIST* scope)const;
 };
 /*--------------------------------------------------------------------------*/
+template<>
+inline int64_t PARAMETER<int64_t>::_NOT_INPUT() const { return 0 ;} // BUG.
+/*--------------------------------------------------------------------------*/
 template <class T>
-inline T PARAMETER<T>::_NOT_INPUT(){ return NOT_INPUT ;}
+inline T PARAMETER<T>::_NOT_INPUT() const { return NOT_INPUT ;}
 /*--------------------------------------------------------------------------*/
 template <>
-inline int PARAMETER<int>::_NOT_INPUT(){ untested(); return 0;} //BUG. magic number?
+inline int PARAMETER<int>::_NOT_INPUT()const { return NOT_INPUT_INT;} //BUG. magic number?
 /*--------------------------------------------------------------------------*/
 template <>
-inline unsigned int PARAMETER<unsigned int>::_NOT_INPUT(){ untested(); return 0;} //BUG. magic number?
+inline unsigned int PARAMETER<unsigned int>::_NOT_INPUT() const{
+  untested(); // stupid();
+  return NOT_INPUT_INT;
+} //BUG. magic number?
 /*--------------------------------------------------------------------------*/
 template <> 
-inline std::vector<double> PARAMETER< std::vector<double> >::_NOT_INPUT(){
+inline std::vector<double> PARAMETER< std::vector<double> >::_NOT_INPUT() const {
   untested();
   return std::vector<double>(0);
 }
 /*--------------------------------------------------------------------------*/
 template <> 
-inline std::list<double> PARAMETER< std::list<double> >::_NOT_INPUT(){
+inline std::list<double> PARAMETER< std::list<double> >::_NOT_INPUT() const {
   untested();
   return std::list<double>(0);
 }
@@ -263,6 +277,21 @@ void set_default(T* p, const T& v)
   *p = v;
 }
 
+// making readonly pointer transparent.
+template <class T>
+const T* get_pointer(const PARAMETER<T>& p)
+{
+  assert(p);
+  return p.pointer();
+}
+
+template <class T>
+const T* get_pointer(const T& p)
+{
+  assert(p);
+  return &p;
+}
+
 template <class T>
 void e_val(PARAMETER<T>* p, const PARAMETER<T>& def, const CARD_LIST* scope)
 {
@@ -275,6 +304,20 @@ void e_val(PARAMETER<T>* p, const T& def, const CARD_LIST* scope)
 {
   assert(p);
   p->e_val(def, scope);
+}
+
+template <class T>
+void e_val(T* p, const T& def, const CARD_LIST* scope)
+{
+  assert(p);
+  *p=def;
+}
+
+template <class T>
+void e_val(T* p, const PARAMETER<T>& def, const CARD_LIST*)
+{
+  assert(p);
+  *p=def;
 }
 
 //e_val(PARAMETER<MODEL_BUILT_IN_BTI>*, NULL, const CARD_LIST*&)’      
@@ -460,7 +503,7 @@ T PARAMETER<T>::e_val(const T& def, const CARD_LIST* scope)const
     // anything else means look up the value
     if (recursion <= OPT::recursion) {
       _v = lookup_solve(def, scope);
-      if (_v == NOT_INPUT) {untested();itested();
+      if (_v == _NOT_INPUT()) {untested();itested();
 	error(bDANGER, "parameter " + *first_name + " has no value\n");
       }else{
       }

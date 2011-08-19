@@ -41,9 +41,9 @@
 #undef incomplete
 /*--------------------------------------------------------------------------*/
 // using namespace std;
-#ifdef DO_TRACE
+
 #ifndef hashpointer_
-#define hashpointer_
+# define hashpointer_
 
 class hp{
 	intptr_t p;
@@ -56,8 +56,9 @@ class hp{
 	}
 };
 
-#endif
+#endif 
 
+#ifdef DO_TRACE
 
 #define trace_line() (fprintf(stderr, "@@#\n@#@:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))
@@ -72,15 +73,20 @@ class hp{
 		                                      << "  " << #y << "=" << (y)  \
 		                                      << "  " << #z << "=" << z  \
 		                                      << endl )
-#define trace4(s,w,x,y,z) ( cerr <<  "@#@" << s << "  " << #w << "=" << w  \
-		                                          << "  " << #x << "=" << x  \
-		                                          << "  " << #y << "=" << y  \
-		                                          << "  " << #z << "=" << z  \
-		                                          << endl )
-#define trace5(s,v,w,x,y,z)\
-	(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g\n",\
-	s, #v, (double)(v), #w, (double)(w), #x, (double)(x),\
-	#y, (double)(y), #z, (double)(z)))
+#define trace4(s,w,x,y,z) ( \
+		cerr <<  "@#@" << s << "  " << #w << "=" << (w)  \
+		     << "  " << #x << "=" << x  \
+		     << "  " << #y << "=" << y  \
+		     << "  " << #z << "=" << z  \
+		     << endl )
+
+#define trace5(s,v,w,x,y,z) ( \
+		cerr <<  "@#@" << s << "  " << #v << "=" << (v)  \
+		     << "  " << #w << "=" << (w)  \
+		     << "  " << #x << "=" << (x)  \
+		     << "  " << #y << "=" << (y)  \
+		     << "  " << #z << "=" << (z)  \
+		     << endl )
 #define trace6(s,u,v,w,x,y,z)\
 	(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g\n",\
     s, #u, (double)(u),#v, (double)(v), #w, (double)(w), #x, (double)(x),\

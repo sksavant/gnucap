@@ -248,7 +248,7 @@ double LOGIC_NODE::tr_probe_num(const std::string& x)const
     return final_time();
   }else if (Umatch(x, "di{ter} ")) {
     return static_cast<double>(_d_iter);
-  }else if (Umatch(x, "ai{ter} ")) {untested();
+  }else if (Umatch(x, "ai{ter} ")) {
     return static_cast<double>(_a_iter);
   }else{
     return NODE_BASE::tr_probe_num(x);
@@ -452,38 +452,52 @@ double LOGIC_NODE::to_analog(const MODEL_LOGIC* f)
 
   double start = NOT_VALID;
   double end = NOT_VALID;
+  double del = NOT_VALID; // the analog transition will take this much longer,
+                          // until final_time() + del...
   double risefall = NOT_VALID;
+
   switch (lv()) {
-  case lvSTABLE0:
-    return f->vmin;
   case lvRISING:
+    risefall = f->rise;
+    del = risefall * (1 - f->th1);
+    set_final_time_a(final_time()+ del);
+  case lvSTABLE1:
+    risefall = f->rise;
     start = f->vmin;
     end = f->vmax;
-    risefall = f->rise;
+    //end = f->vmax;
     break;
   case lvFALLING:
+    risefall = f->fall;
+    del = risefall *  f->th0;
+    set_final_time_a(final_time()+ del);
+  case lvSTABLE0:
+    risefall = f->fall;
     start = f->vmax;
     end = f->vmin;
-    risefall = f->fall;
     break;
-  case lvSTABLE1:
-    return f->vmax;
   case lvUNKNOWN:
+    set_final_time_a(NEVER);
     return f->unknown;
   }
+
+  if(_sim->_time0 > final_time_a())
+    return end;
+
   assert(start != NOT_VALID);
-  assert(end   != NOT_VALID);
+  assert(end != NOT_VALID);
   assert(risefall != NOT_VALID);
 
-  if (_sim->_time0 <= (final_time()-risefall)) {
+  if (_sim->_time0 <= (final_time_a()-risefall)) {
     return start;
-  }else if (_sim->_time0 >= final_time()) {
-    untested();
+  }else if (_sim->_time0 >= final_time_a()) {
     return end;
   }else{
-    trace3("to_analog", _sim->_time0, final_time(), risefall );
-//    untested(); // seems to do the right thing...
-    return end - ((end-start) * (final_time()-_sim->_time0) / risefall);
+    double share = (final_time_a() - _sim->_time0) / risefall;
+    trace4("LOGIC_NODE::to_analog in between", _sim->_time0, final_time(),
+        risefall, share );
+    double ret = end - (end-start) * share;
+    return ret;
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -500,7 +514,7 @@ void LOGIC_NODE::propagate()
   set_d_iter();
   set_final_time(NEVER);
   set_last_change_time();
-  assert(!(in_transit()));
+  assert(!(in_transit()) || final_time_a() < NEVER);
 }
 /*--------------------------------------------------------------------------*/
 void LOGIC_NODE::force_initial_value(LOGICVAL v)
@@ -518,18 +532,42 @@ void LOGIC_NODE::force_initial_value(LOGICVAL v)
   set_good_quality("initial dc");
   set_d_iter();
   set_final_time(NEVER);
+  set_final_time_a(0); // analog transition has just ended... (good idea?)
   set_last_change_time();
 }
 /*--------------------------------------------------------------------------*/
-void LOGIC_NODE::set_event(double delay, LOGICVAL v)
+bool LOGIC_NODE::in_transit()const
 {
-  trace2("LOGIC_NODE::set_event", delay, v);
+  return (final_time() < NEVER) ; // || (final_time_a() < NEVER);
+}
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+void LOGIC_NODE::set_event_abs(double time, LOGICVAL v)
+{
+  trace2("LOGIC_NODE::set_event_abs", time, v);
   _lv.set_in_transition(v);
   if (_sim->analysis_is_tran_dynamic()  &&  in_transit()) {untested();
     set_bad_quality("race");
   }
   set_d_iter();
-  set_final_time(_sim->_time0 + delay);
+  set_final_time(time);
+
+  /*
+  double del=0;
+  switch (lv()) {
+  case lvSTABLE1:
+  case lvRISING:
+    del = f->rise * (1 - f->th1);
+    break;
+  case lvSTABLE0:
+  case lvFALLING:
+    del = f->fall * (f->th0);
+    break;
+  default:
+  }
+  */
+
+
   if (OPT::picky <= bTRACE) {untested();
     error(bTRACE, "%s:%u:%g new event\n",
 	  long_label().c_str(), d_iter(), final_time());

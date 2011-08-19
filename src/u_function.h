@@ -1,4 +1,5 @@
 /*$Id: u_function.h,v 1.3 2010-09-07 07:46:26 felix Exp $ -*- C++ -*-
+ * vim:ts=8:sw=2:et
  * Copyright (C) 2008 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
@@ -21,6 +22,8 @@
  *------------------------------------------------------------------
  */
 //testing=none
+#ifndef _U_FUNC
+#define _U_FUNC
 #include "md.h"
 /*--------------------------------------------------------------------------*/
 class CS;
@@ -29,10 +32,26 @@ class WAVE;
 /*--------------------------------------------------------------------------*/
 class FUNCTION {
 public:
-	// ARGH
-  virtual fun_t eval(CS&, const CARD_LIST*)const = 0;
-protected:
-  WAVE* find_wave(const std::string& probe_name)const;
+  virtual FUNCTION* clone()const {unreachable(); return 0;}
+  virtual void expand(CS&, const CARD_LIST*){}
+  virtual fun_t eval(CS&, const CARD_LIST*)const {return 888;}
+};
+/*--------------------------------------------------------------------------*/
+class WAVE_FUNCTION : public FUNCTION{
+  protected:
+    WAVE* w;
+  public:
+    virtual FUNCTION* clone()const {return NULL;}
+    WAVE_FUNCTION():w(0),probe_name("unset"){}
+    virtual fun_t eval(CS&, const CARD_LIST*)const{ incomplete(); return 0; }
+    virtual fun_t wave_eval()const { unreachable(); return 888; }
+    string probe_name;
+    void set_wave(WAVE* ww);// { w=ww; }
+
+  protected:
+    WAVE* find_wave(const std::string& probe_name)const;
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+#endif

@@ -249,11 +249,11 @@ T& BSMATRIX<T>::subtract_dot_product(int rr, int cc, int dd)
   unsigned len = dd - kk;
   T& dot = m(rr, cc);
   if (len > 0) {
-    T* row = &(l(rr,kk));
-    T* col = &(u(kk,cc));
+    T* row_ = &(l(rr,kk));
+    T* col_ = &(u(kk,cc));
     /* for (ii = kk;   ii < dd;   ++ii) */
     for (unsigned ii = 0;   ii < len;   ++ii) {
-      dot -= *(row-ii) * col[ii];
+      dot -= *(row_-ii) * col_[ii];
     }
   }else{
   }
@@ -269,11 +269,11 @@ T& BSMATRIX<T>::subtract_dot_product(int rr, int cc, int dd, const T& in)
   T& dot = m(rr, cc);
   dot = in;
   if (len > 0) {
-    T* row = &(l(rr,kk));
-    T* col = &(u(kk,cc));
+    T* row_ = &(l(rr,kk));
+    T* col_ = &(u(kk,cc));
     /* for (ii = kk;   ii < dd;   ++ii) */
     for (int ii = 0;   ii < len;   ++ii) {
-      dot -= *(row-ii) * col[ii];
+      dot -= *(row_-ii) * col_[ii];
     }
   }else{
   }
@@ -468,7 +468,6 @@ T& BSMATRIX<T>::l(unsigned r, unsigned c)
   assert(1 <= _lownode[r]);
   assert(_lownode[r] <= c);
 
-  trace2("l",r,c);
   return *(_rowptr[r]-c);
 }
 /*--------------------------------------------------------------------------*/
