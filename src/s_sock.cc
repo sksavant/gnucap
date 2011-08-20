@@ -1251,7 +1251,16 @@ void SOCK::verakons_send()
   // _i=0;
   // cap_list->tr_load();
   //
+  // problem: tr_load just cares about differences, 
+  // this call would only add 0
   //
+
+  // this could work:
+  // std::fill_n(_i,  _total_nodes+1, 0);
+  // cap_list->tr_unload();
+  //
+  // now i contains the negative sum of the cap value.
+  // does this break anything?
 
   for (unsigned i=0; i < n_vars; i++)         /* Q-Punkt == I == RS */
   {
