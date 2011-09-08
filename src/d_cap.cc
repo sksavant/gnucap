@@ -129,8 +129,8 @@ bool DEV_CAPACITANCE::do_tr()
 
     // imitate voltage source... (d_vs.cc)
     _i[0] = FPOLY1( CPOLY1( 0., -_y[0].x  / (OPT::shortckt),         1/(OPT::shortckt)  ) ); 
-    trace2("2 quotienten", ( -_y[0].f0 / (OPT::shortckt)  ) /-_y[0].x  / (OPT::shortckt) ,
-			         (_y[0].f1 / (OPT::shortckt))/    1/(OPT::shortckt)  );
+//    trace2("2 quotienten", ( -_y[0].f0 / (OPT::shortckt)  ) /-_y[0].x  / (OPT::shortckt) ,
+//			         (_y[0].f1 / (OPT::shortckt))/    1/(OPT::shortckt)  );
 
     // was tut das eigentlich?
     _loss1 = _loss0 = 1./OPT::shortckt; // 1e6
