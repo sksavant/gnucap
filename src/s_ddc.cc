@@ -719,6 +719,43 @@ bool DDC_BASE::next(int Nest)
   _sim->_phase = p_DC_SWEEP;
   return ok;
 }
+/*-----------------------------------------------------------*/
+void DDC_BASE::ac_snapshot(){
+
+  _sim->_acx.reallocate();
+  _sim->_jomega = COMPLEX(0., 1.0);
+  _sim->_mode=s_AC;
+  // _sim->_acx.set_min_pivot(OPT::pivtol);
+  //
+  CARD_LIST::card_list.ac_begin();
+
+  if(_dump_matrix){
+    _out << "i ( " << _sim->_i[1];
+    for(unsigned a=2; a <= _sim->_total_nodes; ++a){
+      _out << " " <<  _sim->_i[a];
+    }
+    _out  << ") \n";
+    _out << "v0 = ( " << _sim->_v0[1];
+    for(unsigned a=2;a <= _sim->_total_nodes; ++a){
+      _out << " " <<  _sim->_v0[a];
+    }
+    _out << ") \n";
+  }
+
+  // if verbose
+  _sim->_uic=_sim->_more_uic=false;
+
+
+    trace0("AC::solve");
+    _sim->_acx.zero();
+    std::fill_n(_sim->_ac, _sim->_total_nodes+1, 0.);
+
+    ::status.load.start();
+    _sim->count_iterations(iTOTAL);
+    CARD_LIST::card_list.do_ac();
+    CARD_LIST::card_list.ac_load();
+    ::status.load.stop();
+}
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

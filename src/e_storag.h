@@ -75,7 +75,8 @@ protected:
 protected:
   static METHOD method_select[meNUM_METHODS][meNUM_METHODS];
   void set_ic(double); // protected?? bug??
-  void keep_ic(); // protected?? bug??
+public:
+  void keep_ic();
 
 };
 /*--------------------------------------------------------------------------*/

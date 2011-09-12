@@ -105,7 +105,7 @@ void PROBELIST::remove_list(CS& cmd)
   if (paren != 0) {untested();
     cmd.warn(bWARNING, "need )");
   }else if (parameter.empty()) {untested();
-    cmd.warn(bWARNING, "what's this?");
+    cmd.warn(bWARNING, "probelist: what's this?");
   }else{
   }
 

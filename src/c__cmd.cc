@@ -87,7 +87,7 @@ void CMD::cmdproc(CS& cmd, CARD_LIST* scope)
       c->do_it(cmd, scope);
       didsomething = true;
     }else{itested();
-      cmd.warn(bWARNING, here, "what's this?");
+      cmd.warn(bWARNING, here, "cmd: what's this?");
     }
   }else if (!didsomething) {itested();
     cmd.check(bWARNING, "bad command");

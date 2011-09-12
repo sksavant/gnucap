@@ -206,6 +206,9 @@ void SIM::clear_arrays(void)
   if (!_sim->is_inc_mode()) {			/* Clear working array */
     _sim->_aa.zero();
     _sim->_aa.dezero(OPT::gmin);		/* gmin fudge */
+    trace2("SIM::clear_arrays ", _sim->_aa.size(), hp(_sim->_i) );
+    assert(_sim->_i);
+    assert(_sim->_aa.size()<=_sim->_total_nodes);
     std::fill_n(_sim->_i, _sim->_aa.size()+1, 0);
   }
   trace0("loadq clear");

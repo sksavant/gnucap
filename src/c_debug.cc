@@ -276,7 +276,7 @@ public:
     _out.outreset();
   }
 } p7;
-DISPATCHER<CMD>::INSTALL d7(&command_dispatcher, "i", &p7);
+DISPATCHER<CMD>::INSTALL d7(&command_dispatcher, "ii", &p7);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/

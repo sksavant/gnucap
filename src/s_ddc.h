@@ -44,5 +44,6 @@ protected:
   double* U;
   double* CU;
   double* CUTCU;
+  void ac_snapshot();
 };
 #endif

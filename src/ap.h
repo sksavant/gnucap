@@ -73,7 +73,7 @@ public:
   unsigned cursor()const	{return _cnt;}
   bool	stuck(unsigned* last)	{bool ok=*last<_cnt; *last=_cnt; return !ok;}
   bool	gotit(unsigned last)	{return last<_cnt;}
-  operator bool()const	{return _ok;}
+      operator bool()const    {return _ok;}
   operator std::string()const {return _cmd;}
 
   // get -- non-consuming
@@ -118,7 +118,8 @@ public:
   bool	      is_pfloat()const	{return (match1(".0123456789"));}
   bool	      eat_lines();
   // inf support is a hack, but hackish anyway
-  bool	      is_float()const	{return (match1("+-.0123456789") || match1("iI") );}
+  bool	      is_float()const	{return (match1("+-.0123456789") || match1("iI") );} // BUG // FIXME: implement inf as constant global param
+  //bool	      is_float()const	{return (match1("+-.0123456789"));}
   bool	      is_argsym()const	{return (match1("*?$%_&@"));}
   bool	      is_alpha()const	{return !!isalpha(toascii(peek()));}
   bool	      is_alnum()const   {return !!isalnum(toascii(peek()));}
