@@ -5,7 +5,7 @@
 <!-- version: not renamed, load: renamed fname -->
 
 <!-- **************************** global settings ******************************* -->
-<!-- output filename is 1st argument in -D flag in command line-->
+<!-- output filename is 1st argument in -o flag in command line-->
 <admst:variable name="filename" select="%(/module/name)_common"/>
 <admst:variable name="filename_state" select="0"/>
 <admst:for-each select="/argv">
@@ -18,7 +18,7 @@
 		<admst:variable name="filename" select="$arg"/>
 		<admst:variable name="filename_state" select="2"/>
 	</admst:if>
-	<admst:if test="[$(filename_state)='0' and $(arg)='-D']">
+	<admst:if test="[$(filename_state)='0' and $(arg)='-o']">
 		<admst:variable name="filename_state" select="1"/>
 	</admst:if>	
 </admst:for-each>
