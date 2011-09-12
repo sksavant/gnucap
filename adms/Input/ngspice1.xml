@@ -1916,10 +1916,10 @@
       </admst:choose>
     </admst:for-each>
     <admst:choose>
-      <admst:when test="[name='hic0_full']">
+      <admst:when test="[name='d_hicum0']">
         <admst:new datatype="attribute" arguments="ngspicename">
           <admst:push into="../attribute" select="." onduplicate="abort"/>
-          <admst:value-to select="value" value="hicum0"/>
+          <admst:value-to select="value" value="d_hicum0"/>
         </admst:new>
       </admst:when>
       <admst:when test="[name='hic01_full']">

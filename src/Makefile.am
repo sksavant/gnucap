@@ -215,7 +215,7 @@ IVL=`which iverilog` -v
 
 # if adms ...
 %.cc : %.va 
-	admsXml $< -whatnot -o $@
+	admsXml $< -e ../adms/ngspice1.xml -o $@
 
 %.h : %.model ${MODELGEN}${EXEEXT}
 	${MODELGEN} -h $<
