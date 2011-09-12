@@ -2497,11 +2497,27 @@
 #include "e_model.h"
 #include "u_parameter.h"
 
-// customization -- must be last
-#include "wrapper.h"
+// customization - gnucap specific constants
 #define VALUE_NAME "#"
 #define TAIL_SIZE 1
+
+#define SPICE_LETTER "Q"
+#define DEVICE_TYPE "verilog_dev_$module"
+//#define MODEL_TYPE "npnhicum0|pnphicum0|npn7|pnp7"
+#define MODEL_TYPE "verilog_model_$module"
+
+#define MIN_NET_NODES 0
+#define MAX_NET_NODES %(count(node[grounded='no' and location='external']))
+#define INTERNAL_NODES %(count(node[grounded='no' and location='internal']))
 const int MATRIX_NODES = %(count(node[grounded='no']));
+
+<admst:text format="static std::string port_names[] = {"/>
+<admst:join select="node[grounded='no' and location='external']" separator=", ">
+   	<admst:value-of select="name"/>  
+   	<admst:text format="&quot;%s&quot;"/>    
+</admst:join>
+<admst:text format="};"/>
+static std::string state_names[] = {};
 
 #define REMOVE_BEFORE_FLIGHT_1 mutable
 
