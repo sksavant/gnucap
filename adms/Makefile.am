@@ -3,7 +3,7 @@ COMMONS = hicum0 rtest
 DIR_INCLUDE_GNUCAP = gnucap_src
 GNUCAP = gnucap_src/gnucap
 
-all: ngspice1.xml
+all: gnucap.xml
 
 # -Wall -Wextra -fPIC -g -c
 CPP_FLAGS = -DTRACE_UNTESTED -DNGSPICE_17 -DPREDICTOR -DHAS_STDLIB -fPIC -g -shared 
@@ -14,7 +14,7 @@ CPP_FLAGS = -DTRACE_UNTESTED -DNGSPICE_17 -DPREDICTOR -DHAS_STDLIB -fPIC -g -sha
 %_common.cc: ngspice1.xml
 	admsXml $*/$*.va -e $< -D $*_common
 
-%.xml: Input/%.xml convert_symb/convert
+%.xml: %.xml.in convert_symb/convert
 	convert_symb/convert $< -o $@ -addxml
 
 convert_symb/convert:
@@ -25,3 +25,6 @@ clean:
 
 %.out: %.sp %.so
 	$(GNUCAP) -b $< | tee  $@
+
+gnucap.xml.in: Input/ngspice1.xml
+	cp $< $@
