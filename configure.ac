@@ -49,6 +49,7 @@ AC_PREFIX_DEFAULT("/usr/local")
 
 
 
+dnl --------------------------------
 
 AC_MSG_CHECKING([if modules should be compiled in])
 AC_ARG_ENABLE([modules],
@@ -66,16 +67,17 @@ fi
 	enable_modules=no
 ])
 
-dnl --------------------------------
-
+dnl --------------- adms -----------------
+AC_MSG_CHECKING([compile adms va devices])
 AC_ARG_ENABLE([adms],
-[  --enable-adms            Enable building of adms-modules. [[default: disabled]]],
+[  --enable-adms            Enable building of modules. [[default: disabled]]],
 [
 if test "X$enable_adms" = "Xno" ; then
 	AC_MSG_RESULT([no])
 else
 	AC_MSG_RESULT([yes])
 	enable_adms=yes
+	AC_DEFINE([HAVE_ADMS], [1], [make adms devices])
 fi
 ],
 [
@@ -83,8 +85,7 @@ fi
 	enable_adms=no
 ])
 
-dnl --------------------------------
-dnl icarus verilog
+dnl ------------ icarus verilog -------------------
 iverilog=no
 AC_ARG_WITH([iverilog],
   [AS_HELP_STRING([--with-iverilog], [directory where ivl source resides])],
@@ -347,11 +348,17 @@ AC_OUTPUT([
 	Makefile
 	doc/Makefile
 	examples/Makefile
-	modelgen/Makefile
-	src/Makefile])
+	modelgen/Makefile ])
 
 if test "X$enable_modules" = "Xyes"; then
 	AC_OUTPUT([ modules/Makefile ])
+fi
+AM_CONDITIONAL(ADMS, test x$enable_adms != xno )
+
+AC_OUTPUT([	src/Makefile])
+
+if test "X$enable_adms" = "Xyes"; then
+	AC_OUTPUT([ adms/Makefile ])
 fi
 
 AM_CONDITIONAL(MODULES, test x$enable_modules != xno )
@@ -364,6 +371,7 @@ AC_MSG_RESULT([
    exec_prefix:$exec_prefix
    libdir:     $libdir
    Icarus V:   $iverilog
+   admst:      $adms
    CPPFLAGS:   $CPPFLAGS
    CFLAGS:     $CFLAGS
    CXXFLAGS:   $CXXFLAGS
