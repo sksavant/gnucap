@@ -5,6 +5,13 @@ Readme for iverilog module
 3) configure --with-iverilog=$ivlip
 4) install
 
+#### ADMS ####
+if admsXml is in $PATH, some adms-va devices will be compiled.
+
+in any case --enable-adms and --disable-adms override this.
+
+##############
+
 Readme for fucap branch 2010-10:
 
 compiling and use of modules now has become easier.  read
