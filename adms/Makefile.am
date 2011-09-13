@@ -3,7 +3,7 @@ COMMONS = hicum0 rtest
 DIR_INCLUDE_GNUCAP = gnucap_src
 GNUCAP = gnucap_src/gnucap
 
-all: $(COMMONS:=.so)
+all: ngspice1.xml
 
 # -Wall -Wextra -fPIC -g -c
 CPP_FLAGS = -DTRACE_UNTESTED -DNGSPICE_17 -DPREDICTOR -DHAS_STDLIB -fPIC -g -shared 

@@ -42,15 +42,27 @@ AC_PREFIX_DEFAULT("/usr/local")
 
 #sysconfdir='/bar/etc'
 
-#
-
 #AC_SUBST([PREFIX])
 #AC_SUBST([LIBDIR])
 
 
-
-dnl --------------------------------
-
+dnl ----------------- man ------------------
+AC_MSG_CHECKING([man])
+AC_ARG_ENABLE([man],
+[  --enable-man            Enable building of modules. [[default: disabled]]],
+[
+if test "X$enable_man" = "Xno" ; then
+	AC_MSG_RESULT([no])
+else
+	AC_MSG_RESULT([yes])
+	enable_man=yes
+fi
+],
+[
+	AC_MSG_RESULT([no])
+	enable_man=no
+])
+dnl ------------- modules -------------------
 AC_MSG_CHECKING([if modules should be compiled in])
 AC_ARG_ENABLE([modules],
 [  --enable-modules            Enable building of modules. [[default: disabled]]],
@@ -70,20 +82,21 @@ fi
 dnl --------------- adms -----------------
 AC_MSG_CHECKING([compile adms va devices])
 AC_ARG_ENABLE([adms],
-[  --enable-adms            Enable building of modules. [[default: disabled]]],
-[
-if test "X$enable_adms" = "Xno" ; then
-	AC_MSG_RESULT([no])
-else
-	AC_MSG_RESULT([yes])
-	enable_adms=yes
-	AC_DEFINE([HAVE_ADMS], [1], [make adms devices])
-fi
-],
-[
-	AC_MSG_RESULT([no])
-	enable_adms=no
-])
+  [  --enable-adms            Enable adms devices. [[default: disabled]]],
+  [ if test "X$enable_adms" = "Xno" ; then
+	   AC_MSG_RESULT([no])
+    else
+	   AC_MSG_RESULT([yes])
+	   enable_adms=yes
+	   AC_DEFINE([HAVE_ADMS], [1], [make adms devices])
+    fi
+  ],
+  [
+    AC_CHECK_PROG(found_admsxml, admsXml, yes, no)
+	 # FIXME: check version. 2.2.9 works.
+    AC_MSG_RESULT([$found_admsxml])
+	 enable_adms=$found_admsxml
+  ])
 
 dnl ------------ icarus verilog -------------------
 iverilog=no
@@ -316,21 +329,6 @@ fi
 LDFLAGS="$LDFLAGS -rdynamic"
 
 
-#AC_OUTPUT([
-#	Makefile
-#	doc/Makefile
-#	examples/Makefile
-#	man/Makefile
-#	man/Addmodel/Makefile
-#	man/Behavior/Makefile
-#	man/Circuit/Makefile
-#	man/Commands/Makefile
-#	man/Tech/Makefile
-#	modelgen/Makefile
-#	src/Makefile
-#	])
-
-
 # stupid hack.
 if test "x${prefix}" = "xNONE"; then
 		AC_DEFINE_UNQUOTED( PREFIX, "${ac_default_prefix}", "Prefix")
@@ -343,25 +341,41 @@ else
 fi
 
 
-
 AC_OUTPUT([
 	Makefile
-	doc/Makefile
 	examples/Makefile
 	modelgen/Makefile ])
 
-if test "X$enable_modules" = "Xyes"; then
-	AC_OUTPUT([ modules/Makefile ])
-fi
 AM_CONDITIONAL(ADMS, test x$enable_adms != xno )
-
-AC_OUTPUT([	src/Makefile])
 
 if test "X$enable_adms" = "Xyes"; then
 	AC_OUTPUT([ adms/Makefile ])
 fi
 
+AC_OUTPUT( [	src/Makefile])
+
+if test "X$enable_modules" = "Xyes"; then
+	AC_OUTPUT([ modules/Makefile ])
+fi
+
 AM_CONDITIONAL(MODULES, test x$enable_modules != xno )
+
+if test "X$enable_doc" = "Xyes"; then
+	AC_OUTPUT([ doc/Makefile ])
+fi
+
+# todo
+#if test "X$enable_man" = "Xyes"; then
+	#AC_OUTPUT([
+		#man/Makefile
+		#man/Addmodel/Makefile
+		#man/Behavior/Makefile
+		#man/Circuit/Makefile
+		#man/Commands/Makefile
+		#man/Tech/Makefile
+	#])
+#fi
+
 
 
 AC_MSG_RESULT([
@@ -371,7 +385,6 @@ AC_MSG_RESULT([
    exec_prefix:$exec_prefix
    libdir:     $libdir
    Icarus V:   $iverilog
-   admst:      $adms
    CPPFLAGS:   $CPPFLAGS
    CFLAGS:     $CFLAGS
    CXXFLAGS:   $CXXFLAGS
@@ -379,6 +392,7 @@ AC_MSG_RESULT([
    LIBS:       $LIBS
    debug:      $enable_debug
    modules:    $enable_modules
+   admst:      $enable_adms
    shared:     $shared
 
 ])
