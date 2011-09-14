@@ -203,7 +203,7 @@
         end
         
 
-module d_hicum0 (c,b,e,s,tnode);                    
+module hicum0 (c,b,e,s,tnode);                    
 //        ^^ modelname
                                          
                                             
