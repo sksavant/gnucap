@@ -2501,8 +2501,8 @@
 #define VALUE_NAME "#"
 #define TAIL_SIZE 1
 
-#define SPICE_LETTER "Q"
-#define DEVICE_TYPE "verilog_dev_$module"
+#define SPICE_LETTER "\0"
+#define DEVICE_TYPE "$module"
 //#define MODEL_TYPE "npnhicum0|pnphicum0|npn7|pnp7"
 #define MODEL_TYPE "verilog_model_$module"
 
