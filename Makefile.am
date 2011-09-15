@@ -2,16 +2,21 @@
 ##
 ## Top level automake file for gnucap
 
-SUBDIRS=	doc examples modelgen src tests
-
-#obsolete...
-if IVERILOG
-	SUBDIRS+=vvpg
+if ADMS
+  ADMS_DIR = adms
 endif
 
 if MODULES
-	SUBDIRS+=modules
+  MODULES_DIR = modules
 endif
+
+SUBDIRS = doc examples modelgen src tests $(ADMS_DIR) $(MODULES_DIR)
+
+if IVERILOG
+ ##SUBDIRS+=vvpg
+endif
+
+
 
 EXTRA_DIST=	autogen.sh Makefile.template configure.old
 
