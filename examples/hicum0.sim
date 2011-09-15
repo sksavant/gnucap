@@ -1,0 +1,48 @@
+
+
+spice
+*.model my_npn hicum0
+
+.list
+
+V1 ncc 0 5
+V1 nin 0  sin(frequency=1, amplitude=2.5, offset=2.5)
+
+.verilog
+
+paramset myhicum hicum0; 
+ .tnom=20; 
+endparamset
+
+
+hicum0 Q1( C B 0 );
+
+spice
+
+R1 nin B 10k
+R2 ncc c 10k
+
+*    o ncc
+*    |
+*    |
+*    R
+*    |
+*   C|
+*    \  
+*     \|  B  ___
+*   npn|----[___]---o  nin
+*     /|
+*    /   
+*   E|
+*    |
+*    V
+
+
+* I_{CE} = 100* I_{BE}
+
+
+.print tran v(nin) v(c)
+
+.tran .1 1
+
+.end
