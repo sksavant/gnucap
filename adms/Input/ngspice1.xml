@@ -2196,8 +2196,8 @@
       </admst:when>
 
       <admst:otherwise>
-        <admst:value-of select="name"/>
-        <admst:fatal format="%s: device not handled by the adms ngspice interface\n"/>
+        <!--admst:value-of select="name"/>
+        <admst:fatal format="%s: device not handled by the adms ngspice interface\n"/-->
       </admst:otherwise>
     </admst:choose>
   </admst:for-each>
