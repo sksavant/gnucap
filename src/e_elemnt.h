@@ -446,7 +446,7 @@ template <class T>
 inline void ELEMENT::tr_load_point(const node_t& no1, const node_t& no2,
 				   T* new_value, T* old_value)
 {
-  untested();
+  itested();
   T d = dampdiff(new_value, *old_value);
   if (d != 0.) {
     _sim->_aa.load_point(no1.m_(), no2.m_(), d);

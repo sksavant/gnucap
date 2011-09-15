@@ -220,7 +220,7 @@ IVL=`which iverilog` -v
 # if adms ...
 ADMS_GC_XML=../adms/gnucap.xml
 
-%.cc : %.va 
+%.cc : %.va $(ADMS_GC_XML)
 	admsXml $< -e $(ADMS_GC_XML) -o $*
 
 %.h : %.model ${MODELGEN}${EXEEXT}

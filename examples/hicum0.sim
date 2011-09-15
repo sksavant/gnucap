@@ -1,7 +1,6 @@
 
 
 spice
-*.model my_npn hicum0
 
 .list
 
@@ -15,12 +14,12 @@ paramset myhicum hicum0;
 endparamset
 
 
-hicum0 Q1( C B 0 );
+myhicum Q1( C B 0 );
 
 spice
 
 R1 nin B 10k
-R2 ncc c 10k
+R2 ncc C 10k
 
 *    o ncc
 *    |
