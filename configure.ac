@@ -66,7 +66,25 @@ fi
 	enable_modules=no
 ])
 
-dnl Ivl for d_vvp.cc
+dnl --------------------------------
+
+AC_ARG_ENABLE([adms],
+[  --enable-adms            Enable building of adms-modules. [[default: disabled]]],
+[
+if test "X$enable_adms" = "Xno" ; then
+	AC_MSG_RESULT([no])
+else
+	AC_MSG_RESULT([yes])
+	enable_adms=yes
+fi
+],
+[
+	AC_MSG_RESULT([no])
+	enable_adms=no
+])
+
+dnl --------------------------------
+dnl icarus verilog
 iverilog=no
 AC_ARG_WITH([iverilog],
   [AS_HELP_STRING([--with-iverilog], [directory where ivl source resides])],
