@@ -10,7 +10,7 @@ if MODULES
   MODULES_DIR = modules
 endif
 
-SUBDIRS = doc examples modelgen src tests $(ADMS_DIR) $(MODULES_DIR)
+SUBDIRS = doc examples $(ADMS_DIR) modelgen src tests $(MODULES_DIR)
 
 if IVERILOG
  ##SUBDIRS+=vvpg
