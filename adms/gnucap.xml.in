@@ -2502,9 +2502,9 @@
 #define TAIL_SIZE 1
 
 #define SPICE_LETTER "\0"
-#define DEVICE_TYPE "$module"
+#define DEVICE_TYPE "dev_$module"
 //#define MODEL_TYPE "npnhicum0|pnphicum0|npn7|pnp7"
-#define MODEL_TYPE "verilog_model_$module"
+#define MODEL_TYPE "$module"
 
 #define MIN_NET_NODES 0
 #define MAX_NET_NODES %(count(node[grounded='no' and location='external']))
@@ -2530,10 +2530,6 @@ static std::string state_names[] = {};
 class DEV_ADMS;
 class MODEL_ADMS : public MODEL_CARD
 {  
-public:
-	std::string _key;
-	std::string _level;
-	PARAM_LIST  _params;
 	
 protected:
 	explicit MODEL_ADMS(const MODEL_ADMS& p);	// for clone
@@ -2578,6 +2574,11 @@ public:
 			<admst:otherwise><admst:text format="\n\tREMOVE_BEFORE_FLIGHT_1 std::string %(.);"/></admst:otherwise>
 		</admst:choose>
 	</admst:for-each>
+
+public:
+	std::string _key;
+	std::string _level;
+	PARAM_LIST  _params;
 };
 
 class DEV_ADMS : public STORAGE 
@@ -2639,8 +2640,11 @@ protected: // override virtual
 	uint_t tail_size()const {return TAIL_SIZE;}
 	
 public:	// ports
-	std::string port_name(uint_t i)const {itested();assert(i >= 0);assert(i < MAX_NET_NODES);return port_names[i];
-}
+	std::string port_name(uint_t i)const {
+		itested();
+		assert(i < MAX_NET_NODES);
+		return port_names[i];
+	}
 	
 public:	// type
 	void set_dev_type(const std::string& nt);
@@ -2730,7 +2734,8 @@ private:
 static COMMON_SUBCKT Default_Params(CC_STATIC);
 
 static DEV_ADMS p0;
-static DISPATCHER<CARD>::INSTALL d0(&device_dispatcher, std::string(SPICE_LETTER) + "|" + DEVICE_TYPE, &p0);
+//static DISPATCHER<CARD>::INSTALL d0(&device_dispatcher, std::string(SPICE_LETTER) + "|" + DEVICE_TYPE, &p0);
+static DISPATCHER<CARD>::INSTALL d0(&device_dispatcher, DEVICE_TYPE, &p0);
 
 static MODEL_ADMS p1(&p0);
 static DISPATCHER<MODEL_CARD>::INSTALL d1(&model_dispatcher, MODEL_TYPE, &p1);
@@ -2743,7 +2748,7 @@ MODEL_ADMS::MODEL_ADMS(const DEV_ADMS* p)
 	<admst:apply-templates select="default" match="expression:stringify:noprobe"/>
 	%(name)(%s),
 	</admst:for-each>
-	_key(),
+	_key("dev_$model"),
 	_level(),
 	_params()
 {	
@@ -2775,7 +2780,7 @@ int MODEL_ADMS::param_count() const
 	return(%(count(variable[input='yes'])));
 }
 // -------------------------------------------------------------------------- //
-bool MODEL_ADMS::param_is_printable(int i) const
+bool MODEL_ADMS::param_is_printable(int) const
 {	
 	return(true);
 }
@@ -2829,7 +2834,7 @@ void MODEL_ADMS::Set_param_by_name(std::string name, std::string value)
 	throw Exception_No_Match((std::string)__FILE__ + ": set_param_by_name: there is no parameter in MODEL_ADMS with such name:" + name);
 }
 
-bool MODEL_ADMS::IsParamGiven(const char *name) const
+bool MODEL_ADMS::IsParamGiven(const char* ) const
 {
 	return(false);
 }
@@ -2857,6 +2862,7 @@ void MODEL_ADMS::set_dev_type(const std::string& new_type)
 	s.copy(p, std::string::npos);
 	p[s.length()] = '\0';
 	
+	cout << "overwriting dev_type\n";
 	_key = new_type;
 	if (OPT::case_insensitive) 
 		notstd::to_lower(&_key);
@@ -2874,7 +2880,7 @@ DEV_ADMS::DEV_ADMS()
 	attach_common(&Default_Params);
    
 	_n = _nodes;
-	for (int ii = 0; ii < matrix_nodes(); ++ii)
+	for (unsigned ii = 0; ii < matrix_nodes(); ++ii)
 		assert(!(_n[ii].n_()));
 
 	_num_states = %(count(source[dynamic='yes'])*2);
@@ -2894,7 +2900,7 @@ DEV_ADMS::DEV_ADMS(const DEV_ADMS& p)
 	std::fill_n(m_entries, %(count(jacobian)), 0);
 	
 	_n = _nodes;
-  	for (int ii = 0; ii < matrix_nodes(); ++ii)
+  	for (unsigned ii = 0; ii < matrix_nodes(); ++ii)
     	_n[ii] = p._n[ii];
 
 	assert(OPT::_keep_time_steps <= 8);
@@ -2924,6 +2930,7 @@ DEV_ADMS::~DEV_ADMS()
 // -------------------------------------------------------------------------- //
 void DEV_ADMS::set_dev_type(const std::string& new_type)
 {
+   cerr << "setting modelname " << new_type << "\n";
 	_modelname = new_type;
 }
 // -------------------------------------------------------------------------- //
@@ -3248,8 +3255,8 @@ void DEV_ADMS::tr_accept()
     	mode = MODEINITSMSIG;
     	load(mode);
     }
-    else
-    	itested();
+	 else
+	 { itested(); }
 }
 // -------------------------------------------------------------------------- //
 double DEV_ADMS::tr_probe_num(const std::string& x)const

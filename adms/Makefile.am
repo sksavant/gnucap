@@ -11,7 +11,7 @@ CPP_FLAGS = -DTRACE_UNTESTED -DNGSPICE_17 -DPREDICTOR -DHAS_STDLIB -fPIC -g -sha
 %.so: %_common.cc
 	g++ -I. -I$* -I$(DIR_INCLUDE_GNUCAP) $(CPP_FLAGS) $< -o $@
                 
-%_common.cc: ngspice1.xml
+%_common.cc: gnucap.xml
 	admsXml $*/$*.va -e $< -D $*_common
 
 %.xml: %.xml.in convert_symb/convert
@@ -26,5 +26,3 @@ clean:
 %.out: %.sp %.so
 	$(GNUCAP) -b $< | tee  $@
 
-gnucap.xml.in: Input/ngspice1.xml
-	cp $< $@
