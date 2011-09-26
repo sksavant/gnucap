@@ -1,0 +1,57 @@
+
+spice
+* hicum0.gc
+
+* vorsicht: nodenames case-sensitive
+
+Vcc ncc 0 5
+
+.param a=0.3
+
+V1 nin 0  sin(frequency=1, amplitude=2.5, offset=2.5)
+
+.verilog
+
+paramset myhicum hicum0; 
+ .tnom=20;
+ .vds=a;
+endparamset
+
+
+myhicum Q1( c b 0 );
+
+spice
+
+R1 nin b 10k
+R2 ncc c 10k
+
+*    o ncc
+*    |
+*    |
+*    R
+*    |
+*   C|
+*    \  
+*     \|  B  ___
+*   npn|----[___]---o  nin
+*     /|
+*    /   
+*   E|
+*    |
+*    V
+
+
+* I_{CE} = 100* I_{BE}
+
+.list
+
+.print tran v(nodes)
+
+.tran .1 1 
+*trace v
+
+.param a=1
+
+.tran 2
+
+.end

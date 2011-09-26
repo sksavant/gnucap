@@ -140,6 +140,10 @@ RAW_HDRS += d_vvp.h d_ivl.h e_ivl_compile.h d_ivl_ports.h
 # doesnt work (?)
 # dvvp_lo_CFLAGS = -I$(IVERILOG_PATH)/include
 endif
+
+if ADMS
+RAW_SRCS += d_hicum0.cc
+endif
 #------------------------------------------------------------------------ 
 ## The modelgen generated files
 MODELSRCS= ${MODELS:.model=.cc} ${MODELS:.model=.h}
@@ -214,8 +218,10 @@ IVL=`which iverilog` -v
 	${MODELGEN} -cc $<
 
 # if adms ...
-%.cc : %.va 
-	admsXml $< -e ../adms/ngspice1.xml -o $@
+ADMS_GC_XML=../adms/gnucap.xml
+
+%.cc : %.va $(ADMS_GC_XML)
+	admsXml $< -e $(ADMS_GC_XML) -o $*
 
 %.h : %.model ${MODELGEN}${EXEEXT}
 	${MODELGEN} -h $<

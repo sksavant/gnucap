@@ -1038,6 +1038,8 @@ double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
     return  vbs;
   }else if (Umatch(x, "use_bti ")) {
     return  m->use_bti();
+  }else if (Umatch(x, "use_hci ")) {
+    return  m->use_hci();
   }else if (Umatch(x, "vgd ")) {
     return  _n[n_g].v0() - _n[n_d].v0();
   }else if (Umatch(x, "vbd ")) {
