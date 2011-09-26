@@ -46,6 +46,27 @@ AC_PREFIX_DEFAULT("/usr/local")
 #AC_SUBST([LIBDIR])
 
 
+dnl ----------------- doc ------------------
+AC_MSG_CHECKING([doc])
+AC_ARG_ENABLE([doc],
+[  --enable-doc            Enable building of modules. [[default: disabled]]],
+[
+if test "X$enable_doc" = "Xno" ; then
+	AC_MSG_RESULT([no])
+else
+	AC_MSG_RESULT([yes])
+	enable_doc=yes
+fi
+],
+[
+	AC_MSG_RESULT([no])
+	enable_doc=no
+])
+
+if test "X$enable_doc" = "Xyes"; then
+	AC_OUTPUT([ doc/Makefile ])
+fi
+AM_CONDITIONAL([DOC], [test x$enable_doc != xno] )
 dnl ----------------- man ------------------
 AC_MSG_CHECKING([man])
 AC_ARG_ENABLE([man],
@@ -373,10 +394,6 @@ if test "X$enable_modules" = "Xyes"; then
 fi
 
 
-if test "X$enable_doc" = "Xyes"; then
-	AC_OUTPUT([ doc/Makefile ])
-fi
-AM_CONDITIONAL([DOC], [test xno != xno] )
 
 # todo
 #if test "X$enable_man" = "Xyes"; then
@@ -408,6 +425,7 @@ AC_MSG_RESULT([
    modules:    $enable_modules
    admst:      $enable_adms
    shared:     $shared
+	doc:     $enable_doc
 
 ])
 
