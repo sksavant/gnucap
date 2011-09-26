@@ -2,10 +2,13 @@
 spice
 * hicum0.gc
 
+* vorsicht: nodenames case-sensitive
 
 Vcc ncc 0 5
 
-V1 nin 0  sin(frequency=1, amplitude=2.5, offset=2.5)
+.param a=2.5
+
+V1 nin 0  sin(frequency=1, amplitude=a, offset=2.5)
 
 .verilog
 
@@ -45,5 +48,9 @@ R2 ncc c 10k
 
 .tran .1 1 
 *trace v
+
+.param a=1
+
+.tran 2
 
 .end
