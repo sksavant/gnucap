@@ -2,9 +2,9 @@
 spice
 * hicum0.gc
 
-.list
 
-V1 ncc 0 5
+Vcc ncc 0 5
+
 V1 nin 0  sin(frequency=1, amplitude=2.5, offset=2.5)
 
 .verilog
@@ -14,12 +14,12 @@ paramset myhicum hicum0;
 endparamset
 
 
-myhicum Q1( C B 0 );
+myhicum Q1( c b 0 );
 
 spice
 
-R1 nin B 10k
-R2 ncc C 10k
+R1 nin b 10k
+R2 ncc c 10k
 
 *    o ncc
 *    |
@@ -39,10 +39,11 @@ R2 ncc C 10k
 
 * I_{CE} = 100* I_{BE}
 
+.list
 
-.print tran v(nin) v(c)
+.print tran v(nodes)
 
-.tran .0001 .1 
+.tran .1 1 
 *trace v
 
 .end
