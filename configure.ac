@@ -376,6 +376,7 @@ fi
 if test "X$enable_doc" = "Xyes"; then
 	AC_OUTPUT([ doc/Makefile ])
 fi
+AM_CONDITIONAL([DOC], [test xno != xno] )
 
 # todo
 #if test "X$enable_man" = "Xyes"; then

@@ -6,14 +6,15 @@ spice
 
 Vcc ncc 0 5
 
-.param a=2.5
+.param a=0.3
 
-V1 nin 0  sin(frequency=1, amplitude=a, offset=2.5)
+V1 nin 0  sin(frequency=1, amplitude=2.5, offset=2.5)
 
 .verilog
 
 paramset myhicum hicum0; 
- .tnom=20; 
+ .tnom=20;
+ .vds=a;
 endparamset
 
 
