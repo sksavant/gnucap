@@ -42,6 +42,7 @@ R2 ncc C 10k
 
 .print tran v(nin) v(c)
 
-.tran .1 1
+.tran .0001 .1 
+*trace v
 
 .end
