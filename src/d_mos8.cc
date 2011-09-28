@@ -5221,34 +5221,7 @@ void MODEL_BUILT_IN_MOS8::do_tr_stress( const COMPONENT* c ) const
   } // end hci
 }
 /*--------------------------------------------------------------------------*/
-
-double DEV_BUILT_IN_MOS8::tr_probe_num(const std::string& x)const
-{
-  assert(_n);
-  const COMMON_BUILT_IN_MOS* c = prechecked_cast<const COMMON_BUILT_IN_MOS*>(common());
-  assert(c);
-  const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
-  assert(m);
-  const SDP_BUILT_IN_MOS_BASE* s = prechecked_cast<const SDP_BUILT_IN_MOS_BASE*>(c->sdp());
-  assert(s);
-  const ADP_BUILT_IN_MOS8* a = (ADP_BUILT_IN_MOS8*)(adp());
-  assert(a);
-
-  trace0( "MOS8 probe\n" );
-  assert(false); // kommt hier eh nich hin.
-
-  if (Umatch(x, "hci ")) {
-    return 25;
-    return  a->hci_stress->tr_get();
-  }else if (Umatch(x, "str_bti ")) {
-    return  17;
-  }else if (Umatch(x, "vth_hci ")) {
-    return  12.2;
-  }else {
-    return DEV_BUILT_IN_MOS::tr_probe_num(x);
-  }
-}
-/*--------------------------------------------------------------------------*/
+// FIXME: use DEV for hci?
 void ADP_BUILT_IN_MOS8::init(const COMPONENT* d)
 {
   const COMMON_BUILT_IN_MOS* c = prechecked_cast<const COMMON_BUILT_IN_MOS*>(d->common());
@@ -5266,7 +5239,6 @@ void ADP_BUILT_IN_MOS8::init(const COMPONENT* d)
     hci_stress = new ADP_NODE(d, "hci" );
     ADP_NODE_LIST::adp_node_list.push_back( hci_stress );
 
-    trace0( "initin vthdelta\n" );
     vthdelta_hci = 0;
     vthscale_hci = 1;
 
@@ -5369,6 +5341,7 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply(  COMPONENT* brh) const
     assert( -10 <  a->vthdelta_hci &&  a->vthdelta_hci <  10 );
 
     a->delta_vth += a->vthdelta_hci;
+    assert(is_number(a->delta_vth));
 
     // std::cerr << "MODEL_BUILT_IN_MOS_BASE::do_stress_apply " << h0 << "\n";
     // assert (false); incomplete();
