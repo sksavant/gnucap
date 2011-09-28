@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <!DOCTYPE admst SYSTEM "admst.dtd">
-<admst version="2.3.0" xmlns:admst="http://mot-adms.sourceforge.net/xml-files/admst">
+<admst version="2.2.9" xmlns:admst="http://mot-adms.sourceforge.net/xml-files/admst">
 <!-- version: not renamed, load: renamed fname -->
 
 <!-- **************************** global settings ******************************* -->
@@ -2502,9 +2502,8 @@
 #define TAIL_SIZE 1
 
 #define SPICE_LETTER "\0"
-#define DEVICE_TYPE "dev_$module"
-//#define MODEL_TYPE "npnhicum0|pnphicum0|npn7|pnp7"
-#define MODEL_TYPE "$module"
+#define DEVICE_TYPE "dev_$(module)"
+#define MODEL_TYPE "$(module)"
 
 #define MIN_NET_NODES 0
 #define MAX_NET_NODES %(count(node[grounded='no' and location='external']))
@@ -2748,7 +2747,7 @@ MODEL_ADMS::MODEL_ADMS(const DEV_ADMS* p)
 	<admst:apply-templates select="default" match="expression:stringify:noprobe"/>
 	%(name)(%s),
 	</admst:for-each>
-	_key("dev_$model"),
+	_key("dev_$(module)"),
 	_level(),
 	_params()
 {	
@@ -2862,7 +2861,7 @@ void MODEL_ADMS::set_dev_type(const std::string& new_type)
 	s.copy(p, std::string::npos);
 	p[s.length()] = '\0';
 	
-	cout << "overwriting dev_type\n";
+	std::cout << "overwriting dev_type\n";
 	_key = new_type;
 	if (OPT::case_insensitive) 
 		notstd::to_lower(&_key);
@@ -2930,7 +2929,7 @@ DEV_ADMS::~DEV_ADMS()
 // -------------------------------------------------------------------------- //
 void DEV_ADMS::set_dev_type(const std::string& new_type)
 {
-   cerr << "setting modelname " << new_type << "\n";
+   std::cerr << "setting modelname " << new_type << "\n";
 	_modelname = new_type;
 }
 // -------------------------------------------------------------------------- //
