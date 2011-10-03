@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <!DOCTYPE admst SYSTEM "admst.dtd">
-<admst version="2.2.9" xmlns:admst="http://mot-adms.sourceforge.net/xml-files/admst">
+<admst version="2.3.0" xmlns:admst="http://mot-adms.sourceforge.net/xml-files/admst">
 <!-- version: not renamed, load: renamed fname -->
 
 <!-- **************************** global settings ******************************* -->
@@ -543,7 +543,7 @@
           <admst:when test="[$dx='1.0']">
             <admst:choose>
               <admst:when test="[$dy='0.0']">
-                <admst:value-to select="/simulator/ddx" value="(1/$y)"/>
+                <admst:value-to select="/simulator/ddx" value="(1./$y)"/>
               </admst:when>
               <admst:when test="[$dy='1.0']">
                 <admst:value-to select="/simulator/ddx" value="(($y-$x)/($y*$y))"/>
@@ -2933,15 +2933,15 @@ void DEV_ADMS::set_dev_type(const std::string& new_type)
 	_modelname = new_type;
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::Set_param_by_name(std::string Name, std::string new_value)
+void DEV_ADMS::Set_param_by_name(std::string /*Name*/, std::string /*new_value*/)
 {
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::set_param_by_name(std::string Name, std::string Value)
+void DEV_ADMS::set_param_by_name(std::string /*Name*/, std::string /*Value*/)
 {
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::Set_param_by_index(int i, std::string& new_value, int offset)
+void DEV_ADMS::Set_param_by_index(int /*i*/, std::string& /*new_value*/, int /*offset*/)
 {
 }
 // -------------------------------------------------------------------------- //
@@ -2983,12 +2983,12 @@ void DEV_ADMS::expand()
 	// fix up internal nodes
 	if (_sim->is_first_expand()) 
 	{
-		int start_internal = 0;
-		for (int ii = net_nodes(); ii < max_nodes(); ++ii)
+	   // int start_internal = 0;
+		for (unsigned ii = net_nodes(); ii < max_nodes(); ++ii)
 			_n[ii].set_to_ground(this);
 		
 		assert(max_nodes() != 0);		
-		for (int ii = 0; ii < matrix_nodes(); ++ii) 
+		for (unsigned ii = 0; ii < matrix_nodes(); ++ii) 
 			assert(_n[ii].n_());
 	}
 	else
@@ -3120,7 +3120,7 @@ bool DEV_ADMS::tr_needs_eval()const
 			return true;
 	
 	// check the node voltages, reference to each other
-	for (int ii=0; ii<matrix_nodes(); ++ii)
+	for (unsigned ii=0; ii<matrix_nodes(); ++ii)
 		for (int jj=0; jj<ii; ++jj)
 			if (!conchk((_sim->_vt1[_n[ii].m_()] - _sim->_vt1[_n[jj].m_()]), (_n[ii].v0() - _n[jj].v0()), 0, OPT::reltol*OPT::bypasstol)) 
 				return true;
