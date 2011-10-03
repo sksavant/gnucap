@@ -6,9 +6,14 @@ spice
 
 Vcc ncc 0 5
 
+V1 nin 0  sin(frequency=1, amplitude=2.5, offset=2.5)
+
+.list
+
+
 .param a=0.3
 
-V1 nin 0  sin(frequency=1, amplitude=2.5, offset=2.5)
+
 
 .verilog
 
@@ -43,15 +48,13 @@ R2 ncc c 10k
 
 * I_{CE} = 100* I_{BE}
 
-.list
 
 .print tran v(nodes)
 
-.tran .1 1 
-*trace v
+.tran .1 1 trace v
 
 .param a=1
 
-.tran 2
+*.tran 2
 
 .end

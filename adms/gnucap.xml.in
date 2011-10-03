@@ -2875,6 +2875,7 @@ DEV_ADMS::DEV_ADMS()
    _states_1(NULL)
 {
 	std::fill_n(m_entries, %(count(jacobian)), 0);
+	std::fill_n(m_entries_old, %(count(jacobian)), 0);
 
 	attach_common(&Default_Params);
    
@@ -2897,6 +2898,7 @@ DEV_ADMS::DEV_ADMS(const DEV_ADMS& p)
    _num_states(p._num_states)
 {
 	std::fill_n(m_entries, %(count(jacobian)), 0);
+	std::fill_n(m_entries_old, %(count(jacobian)), 0);
 	
 	_n = _nodes;
   	for (unsigned ii = 0; ii < matrix_nodes(); ++ii)
