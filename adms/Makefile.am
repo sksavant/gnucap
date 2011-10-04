@@ -1,4 +1,4 @@
-COMMONS = hicum0 rtest
+COMMONS = hicum0 rtest ota
 
 DIR_INCLUDE_GNUCAP = gnucap_src
 GNUCAP = gnucap_src/gnucap
