@@ -2487,6 +2487,8 @@
 <admst:for-each select="/module">
 <admst:value-of select="attribute[name='ngspicename']/value"/>
 <admst:variable name="module" select="%s"/>
+<admst:variable name="DEV_NAME" select="DEV_%(upper-case(name))"/>
+<admst:variable name="MODEL_NAME" select="MODEL_%(upper-case(name))"/>
 #pragma once
 
 #include <stdio.h>
@@ -2526,17 +2528,17 @@ static std::string state_names[] = {};
 	if(isnan((double) var)) {printf("%%s:%%i:isnan:"#var"\n",__FILE__,__LINE__);exit(1);} \
 	if(isinf((double) var)) {printf("%%s:%%i:isinf:"#var"\n",__FILE__,__LINE__);exit(1);}
 
-class DEV_ADMS;
-class MODEL_ADMS : public MODEL_CARD
+class $(DEV_NAME);
+class $(MODEL_NAME) : public MODEL_CARD
 {  
 	
 protected:
-	explicit MODEL_ADMS(const MODEL_ADMS& p);	// for clone
+	explicit $(MODEL_NAME)(const $(MODEL_NAME)& p);	// for clone
 public:
-	explicit MODEL_ADMS(const DEV_ADMS* p);	// for dispatcher
-~MODEL_ADMS();
+	explicit $(MODEL_NAME)(const $(DEV_NAME)* p);	// for dispatcher
+~$(MODEL_NAME)();
 public: // override virtual
-	MODEL_CARD* clone()const {return new MODEL_ADMS(*this);}
+	MODEL_CARD* clone()const {return new $(MODEL_NAME)(*this);}
 
 	void precalc_first();
 
@@ -2580,18 +2582,18 @@ public:
 	PARAM_LIST  _params;
 };
 
-class DEV_ADMS : public STORAGE 
+class $(DEV_NAME) : public STORAGE 
 {
 private:	
 	std::string _modelname;
-	const MODEL_ADMS* _model;
+	const $(MODEL_NAME)* _model;
 	node_t _nodes[MATRIX_NODES];
 
 private:
-	explicit DEV_ADMS(const DEV_ADMS& p);
+	explicit $(DEV_NAME)(const $(DEV_NAME)& p);
 public:
-	explicit DEV_ADMS();
-	~DEV_ADMS();
+	explicit $(DEV_NAME)();
+	~$(DEV_NAME)();
 
 protected: // override virtual
 	char id_letter()const	{untested();return SPICE_LETTER[0];}
@@ -2602,7 +2604,7 @@ protected: // override virtual
 	uint_t matrix_nodes()const {return MATRIX_NODES;}
 	uint_t net_nodes()const {return _net_nodes;}
 	uint_t int_nodes()const {return INTERNAL_NODES;}
-	CARD* clone()const {return new DEV_ADMS(*this);}
+	CARD* clone()const {return new $(DEV_NAME)(*this);}
 	
 	void precalc_first();
 	void expand();
@@ -2730,17 +2732,18 @@ private:
 <admst:for-each select="/module">
 <admst:value-of select="attribute[name='ngspicename']/value"/>
 <admst:variable name="module" select="%s"/>
+<admst:variable name="DEV_NAME" select="DEV_%(upper-case(name))"/>
+<admst:variable name="MODEL_NAME" select="MODEL_%(upper-case(name))"/>
 static COMMON_SUBCKT Default_Params(CC_STATIC);
 
-static DEV_ADMS p0;
-//static DISPATCHER<CARD>::INSTALL d0(&device_dispatcher, std::string(SPICE_LETTER) + "|" + DEVICE_TYPE, &p0);
+static $(DEV_NAME) p0;
 static DISPATCHER<CARD>::INSTALL d0(&device_dispatcher, DEVICE_TYPE, &p0);
 
-static MODEL_ADMS p1(&p0);
+static $(MODEL_NAME) p1(&p0);
 static DISPATCHER<MODEL_CARD>::INSTALL d1(&model_dispatcher, MODEL_TYPE, &p1);
 
-// ********************************* MODEL_ADMS ********************************* //
-MODEL_ADMS::MODEL_ADMS(const DEV_ADMS* p) 
+// ********************************* $(MODEL_NAME) ********************************* //
+$(MODEL_NAME)::$(MODEL_NAME)(const $(DEV_NAME)* p) 
 	:MODEL_CARD(p),
 	<!-- output='yes' - no matter, parametertype=instance or module - no matter also -->
 	<admst:for-each select="variable[input='yes']">
@@ -2753,7 +2756,7 @@ MODEL_ADMS::MODEL_ADMS(const DEV_ADMS* p)
 {	
 }
 // -------------------------------------------------------------------------- //
-MODEL_ADMS::MODEL_ADMS(const MODEL_ADMS& p)
+$(MODEL_NAME)::$(MODEL_NAME)(const $(MODEL_NAME)& p)
   :MODEL_CARD(p),
   	<admst:for-each select="variable[input='yes']">
 	%(name)(p.%(name)),
@@ -2764,27 +2767,27 @@ MODEL_ADMS::MODEL_ADMS(const MODEL_ADMS& p)
 {
 }
 // -------------------------------------------------------------------------- //
-MODEL_ADMS::~MODEL_ADMS()
+$(MODEL_NAME)::~$(MODEL_NAME)()
 {
   
 }
 // -------------------------------------------------------------------------- //
-int MODEL_ADMS::param_count_dont_print() const 
+int $(MODEL_NAME)::param_count_dont_print() const 
 {
 	return(0);
 }
 // -------------------------------------------------------------------------- //
-int MODEL_ADMS::param_count() const
+int $(MODEL_NAME)::param_count() const
 {
 	return(%(count(variable[input='yes'])));
 }
 // -------------------------------------------------------------------------- //
-bool MODEL_ADMS::param_is_printable(int) const
+bool $(MODEL_NAME)::param_is_printable(int) const
 {	
 	return(true);
 }
 // -------------------------------------------------------------------------- //
-std::string MODEL_ADMS::param_name(int i)const
+std::string $(MODEL_NAME)::param_name(int i)const
 {
 	switch(i)
 	{
@@ -2796,13 +2799,13 @@ std::string MODEL_ADMS::param_name(int i)const
 	return("");
 }
 // -------------------------------------------------------------------------- //
-std::string MODEL_ADMS::param_name(int i, int j)const
+std::string $(MODEL_NAME)::param_name(int i, int j)const
 {
 	if( j == 0 ) return(param_name(i));
 	return("");
 }
 // -------------------------------------------------------------------------- //
-std::string MODEL_ADMS::param_value(int i) const
+std::string $(MODEL_NAME)::param_value(int i) const
 {
 	switch(i)
 	{
@@ -2814,7 +2817,7 @@ std::string MODEL_ADMS::param_value(int i) const
 	return("");
 }
 // -------------------------------------------------------------------------- //
-void MODEL_ADMS::set_param_by_index(int i, std::string& value, int offset)
+void $(MODEL_NAME)::set_param_by_index(int i, std::string& value, int offset)
 {
 	switch(i)
 	{
@@ -2825,20 +2828,20 @@ void MODEL_ADMS::set_param_by_index(int i, std::string& value, int offset)
 	}
 }
 // -------------------------------------------------------------------------- //
-void MODEL_ADMS::Set_param_by_name(std::string name, std::string value)
+void $(MODEL_NAME)::Set_param_by_name(std::string name, std::string value)
 {
 	<admst:for-each select="variable[input='yes']">
 	if( name == "%(name)" ) {%(name)=value;return;}
 	</admst:for-each>
-	throw Exception_No_Match((std::string)__FILE__ + ": set_param_by_name: there is no parameter in MODEL_ADMS with such name:" + name);
+	throw Exception_No_Match((std::string)__FILE__ + ": set_param_by_name: there is no parameter in $(MODEL_NAME) with such name:" + name);
 }
 
-bool MODEL_ADMS::IsParamGiven(const char* ) const
+bool $(MODEL_NAME)::IsParamGiven(const char* ) const
 {
 	return(false);
 }
 // -------------------------------------------------------------------------- //
-void MODEL_ADMS::precalc_first()
+void $(MODEL_NAME)::precalc_first()
 {
 	MODEL_CARD::precalc_first();
 
@@ -2854,7 +2857,7 @@ void MODEL_ADMS::precalc_first()
 	</admst:for-each>
 }
 // -------------------------------------------------------------------------- //
-void MODEL_ADMS::set_dev_type(const std::string& new_type)
+void $(MODEL_NAME)::set_dev_type(const std::string& new_type)
 {
 	std::string s = short_label();
 	char* p = new char[s.length()+1]; //BUG//memory leak
@@ -2866,8 +2869,8 @@ void MODEL_ADMS::set_dev_type(const std::string& new_type)
 	if (OPT::case_insensitive) 
 		notstd::to_lower(&_key);
 }
-// ********************************* DEV_ADMS ********************************* //
-DEV_ADMS::DEV_ADMS()
+// ********************************* $(DEV_NAME) ********************************* //
+$(DEV_NAME)::$(DEV_NAME)()
   :STORAGE(),   
    _modelname(""),
    _model(NULL),
@@ -2889,7 +2892,7 @@ DEV_ADMS::DEV_ADMS()
 		_states[ii] = NULL;  
 }
 // -------------------------------------------------------------------------- //
-DEV_ADMS::DEV_ADMS(const DEV_ADMS& p)
+$(DEV_NAME)::$(DEV_NAME)(const $(DEV_NAME)& p)
   :STORAGE(p),
    _modelname(p._modelname),
    _model(p._model),
@@ -2909,7 +2912,7 @@ DEV_ADMS::DEV_ADMS(const DEV_ADMS& p)
   		_states[ii] = NULL;
 }
 // -------------------------------------------------------------------------- //
-DEV_ADMS::~DEV_ADMS()
+$(DEV_NAME)::~$(DEV_NAME)()
 {
 	if (_states[0]) 
 	{
@@ -2929,30 +2932,30 @@ DEV_ADMS::~DEV_ADMS()
   	}
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::set_dev_type(const std::string& new_type)
+void $(DEV_NAME)::set_dev_type(const std::string& new_type)
 {
    std::cerr << "setting modelname " << new_type << "\n";
 	_modelname = new_type;
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::Set_param_by_name(std::string /*Name*/, std::string /*new_value*/)
+void $(DEV_NAME)::Set_param_by_name(std::string /*Name*/, std::string /*new_value*/)
 {
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::set_param_by_name(std::string /*Name*/, std::string /*Value*/)
+void $(DEV_NAME)::set_param_by_name(std::string /*Name*/, std::string /*Value*/)
 {
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::Set_param_by_index(int /*i*/, std::string& /*new_value*/, int /*offset*/)
+void $(DEV_NAME)::Set_param_by_index(int /*i*/, std::string& /*new_value*/, int /*offset*/)
 {
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::expand()
+void $(DEV_NAME)::expand()
 {
 	STORAGE::expand();
 
 	// attach model
-	_model = dynamic_cast<const MODEL_ADMS*>(find_model(_modelname));
+	_model = dynamic_cast<const $(MODEL_NAME)*>(find_model(_modelname));
 	if (!_model) 
 		throw Exception_Model_Type_Mismatch(long_label(), _modelname, DEVICE_TYPE);
 
@@ -2997,7 +3000,7 @@ void DEV_ADMS::expand()
 		untested();
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::precalc_first()
+void $(DEV_NAME)::precalc_first()
 {
 	STORAGE::precalc_first();
 
@@ -3016,26 +3019,26 @@ void DEV_ADMS::precalc_first()
 			}
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::precalc_last()
+void $(DEV_NAME)::precalc_last()
 {
 	assert(_model);
 	STORAGE::precalc_last();
 	assert(!is_constant());
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::internal_precalc()
+void $(DEV_NAME)::internal_precalc()
 {
 	temperature();
 	set_converged();
 	assert(!is_constant());
 }
 // -------------------------------------------------------------------------- //
-void inline DEV_ADMS::tr_call_iwants(int m_1, int m_2)
+void inline $(DEV_NAME)::tr_call_iwants(int m_1, int m_2)
 {
 	_sim->_aa.iwant(m_1, m_2);
 	_sim->_lu.iwant(m_1, m_2);
 }
-void DEV_ADMS::tr_iwant_matrix()
+void $(DEV_NAME)::tr_iwant_matrix()
 {
 	<admst:for-each select="jacobian">
 		<admst:variable  name="myF_par1" select="%(row/name)"/>
@@ -3063,7 +3066,7 @@ void DEV_ADMS::tr_iwant_matrix()
 	//tr_iwant_matrix_extended();
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::ac_iwant_matrix()
+void $(DEV_NAME)::ac_iwant_matrix()
 {
 	<admst:for-each select="jacobian">
 		<admst:variable  name="myF_par1" select="%(row/name)"/>
@@ -3092,7 +3095,7 @@ void DEV_ADMS::ac_iwant_matrix()
 }
 
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::tr_advance()
+void $(DEV_NAME)::tr_advance()
 {
 	STORAGE::tr_advance();
 	
@@ -3104,12 +3107,12 @@ void DEV_ADMS::tr_advance()
 	notstd::copy_n(_states[1], _num_states, _states[0]);
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::tr_regress()
+void $(DEV_NAME)::tr_regress()
 {
 	ELEMENT::tr_regress();
 }
 // -------------------------------------------------------------------------- //
-bool DEV_ADMS::tr_needs_eval()const
+bool $(DEV_NAME)::tr_needs_eval()const
 {
 	if (is_q_for_eval()) return false;
 	if (!converged()) return true;
@@ -3137,7 +3140,7 @@ bool DEV_ADMS::tr_needs_eval()const
 // MODEINITJCT   = initial guess
 // MODEINITSMSIG = like FLOAT, but setup for small signal, don't load arrays
 // -------------------------------------------------------------------------- //
-bool DEV_ADMS::do_tr()
+bool $(DEV_NAME)::do_tr()
 {
 	assert(_num_states >= 0);
 	assert(OPT::_keep_time_steps <= 8);  
@@ -3203,7 +3206,7 @@ bool DEV_ADMS::do_tr()
 	return converged();
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::tr_load()
+void $(DEV_NAME)::tr_load()
 {
 	<admst:text format="\n\tfor(int i=0; i<%(count(node[grounded='no'])); i++)"/>
 		tr_load_source_point(_n[i], &(it0[i]), &(it1[i]));
@@ -3221,7 +3224,7 @@ void DEV_ADMS::tr_load()
 	</admst:for-each>
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::tr_unload()
+void $(DEV_NAME)::tr_unload()
 {
 	untested();
 	incomplete();
@@ -3229,7 +3232,7 @@ void DEV_ADMS::tr_unload()
 	tr_load();
 }
 // -------------------------------------------------------------------------- //
-TIME_PAIR DEV_ADMS::tr_review()
+TIME_PAIR $(DEV_NAME)::tr_review()
 {
 	assert(_dt == NOT_VALID || conchk(_dt, _time[0] - _time[1]));
 
@@ -3238,7 +3241,7 @@ TIME_PAIR DEV_ADMS::tr_review()
 	<admst:for-each select="source[dynamic='yes']">
 	<admst:value-of select="branch/nnode/name"/>
 	<admst:value-of select="branch/pnode/name"/>
-	CKTterr(DEV_ADMS::state_%s_%s, &timestep);
+	CKTterr($(DEV_NAME)::state_%s_%s, &timestep);
 	</admst:for-each>
     //-----
 
@@ -3247,7 +3250,7 @@ TIME_PAIR DEV_ADMS::tr_review()
     return _time_by;  
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::tr_accept()
+void $(DEV_NAME)::tr_accept()
 {
 	if (_sim->analysis_is_dcop() || _sim->analysis_is_ac()) 
 	{
@@ -3260,7 +3263,7 @@ void DEV_ADMS::tr_accept()
 	 { itested(); }
 }
 // -------------------------------------------------------------------------- //
-double DEV_ADMS::tr_probe_num(const std::string& x)const
+double $(DEV_NAME)::tr_probe_num(const std::string& x)const
 {
 	assert(_dt == NOT_VALID || conchk(_dt, _time[0] - _time[1]));
 
@@ -3273,14 +3276,14 @@ double DEV_ADMS::tr_probe_num(const std::string& x)const
 	return STORAGE::tr_probe_num(x);
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::ac_begin()
+void $(DEV_NAME)::ac_begin()
 {
 	STORAGE::ac_begin();
 	internal_precalc();
 	tr_accept();
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::do_ac()
+void $(DEV_NAME)::do_ac()
 {
     assert(_num_states >= 0);
     assert(OPT::_keep_time_steps <= 8);  
@@ -3296,7 +3299,7 @@ void DEV_ADMS::do_ac()
     //acLoad();
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::ac_load()
+void $(DEV_NAME)::ac_load()
 {
 	for(int i=0; i<%(count(node[grounded='no'])); i++)
 		ac_load_source_point(_n[i], COMPLEX(it0[i], it1[i]));
@@ -3314,7 +3317,7 @@ void DEV_ADMS::ac_load()
 	</admst:for-each>
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::CKTterr(int qcap, double *time_step)
+void $(DEV_NAME)::CKTterr(int qcap, double *time_step)
 {
 	std::valarray<FPOLY1> q(OPT::_keep_time_steps);
 
@@ -3329,7 +3332,7 @@ void DEV_ADMS::CKTterr(int qcap, double *time_step)
 	*time_step = std::min(tr_review_trunc_error(&q[0]), *time_step);
 }
 // -------------------------------------------------------------------------- //
-int DEV_ADMS::NIintegrate(int qcap) // used by DEVload (not DC)
+int $(DEV_NAME)::NIintegrate(int qcap) // used by DEVload (not DC)
 { 
 	assert(_dt != 0.0);
 	METHOD method;
@@ -3364,7 +3367,7 @@ int CKTdltNNum(void*,int)
 // -------------------------------------------------------------------------- //	
 #define _STATIC
 #define _DYNAMIC
-void DEV_ADMS::temperature()
+void $(DEV_NAME)::temperature()
 {
 	<admst:apply-templates select="analog" match="analog:initial_model" required="yes"/>
 	<admst:apply-templates select="analog" match="analog:initial_instance" required="yes"/>
@@ -3390,7 +3393,7 @@ void DEV_ADMS::temperature()
 #define flickernoise_jacobian2p(p,r,s)
 #define flickernoise_jacobian1(p)
 	
-void DEV_ADMS::guesstopology ()
+void $(DEV_NAME)::guesstopology ()
 {
 <admst:template match="evaluate.localvariables">
   <admst:choose>
@@ -3442,7 +3445,7 @@ void DEV_ADMS::guesstopology ()
   </admst:for-each>
 }	
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::acLoad()
+void $(DEV_NAME)::acLoad()
 { 
 <admst:for-each select="jacobian[static='yes']">
 <admst:value-of select="column/name"/>
@@ -3466,7 +3469,7 @@ void DEV_ADMS::acLoad()
 </admst:for-each>
 }	
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::pzLoad(COMPLEX s)
+void $(DEV_NAME)::pzLoad(COMPLEX s)
 {
 <admst:for-each select="jacobian[static='yes']">
 	<admst:value-of select="column/name"/>
@@ -3507,7 +3510,7 @@ void DEV_ADMS::pzLoad(COMPLEX s)
 #define _STATIC
 #define _DYNAMIC
 #define _DERIVATE
-int DEV_ADMS::load(int mode)
+int $(DEV_NAME)::load(int mode)
 {
 	int ChargeComputationNeeded = ( (mode&(MODEAC|MODETRAN|MODEINITSMSIG)) || ((mode&MODETRANOP)&&(mode&MODEUIC)) ) ? 1 : 0;
 	
