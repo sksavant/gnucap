@@ -81,11 +81,12 @@ public:
 		 // void      stress_calc(COMPONENT*)const{   ;} //sollte eval heissen...
 		 //   void      stress_calc( )const{   ;} //sollte eval heissen...?
 		 //
-  virtual ADP_CARD* new_adp( const COMPONENT* d)const
+  virtual ADP_CARD* new_adp( COMPONENT* d)const
   {
+	  d=d;
 	  trace0( ( "MODEL_CARD::new_adp. empty adpcard for " + d->short_label() ).c_str());
-	  // return NULL;
-	  return( new ADP_CARD(d) ); // empty adpcard...
+	  return NULL;
+	  ///return( new ADP_CARD(d) ); // empty adpcard...
   };
 		 //
 		 //

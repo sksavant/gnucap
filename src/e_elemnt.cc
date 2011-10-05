@@ -143,10 +143,13 @@ void ELEMENT::dc_advance()
 {
   assert(_sim->_time0 == 0.); // DC
 
+  bool ass = true;;
+
   for (int i=OPT::_keep_time_steps-1; i>=0; --i) {
     trace2(( "ELEMENT::dc_advance " + long_label()).c_str(), i, _time[i]);
-    assert(_time[i] == 0.);
+    ass &= _time[i] == 0.;
   }
+  assert(ass);
 
   _dt = NOT_VALID;
 }

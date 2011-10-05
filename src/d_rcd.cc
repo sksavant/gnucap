@@ -1171,7 +1171,7 @@ void MODEL_BUILT_IN_RCD::do_tt_prepare(COMPONENT* c)const
   c=c;
 }
 ///*--------------------------------------------------------------------------*/
-ADP_CARD* MODEL_BUILT_IN_RCD::new_adp(const COMPONENT* c)const
+ADP_CARD* MODEL_BUILT_IN_RCD::new_adp( COMPONENT* c)const
 {
   trace0("MODEL_BUILT_IN_RCD::new_adp");
   assert(c);
@@ -1288,7 +1288,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
   long double fill_new  = E_old;
   long double fill_new2 = E_old;
 
-  double ex_time=_sim->_dT0-_sim->_last_time;
+  double ex_time = _sim->_dT0 - _sim->_last_time;
   
   fill_new = c->__step( eff , fill_new, ex_time );
 
@@ -1303,7 +1303,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
   assert(is_number(fill_new2));
 
 
-  fill_new=fill_new2;
+  fill_new = fill_new2;
 
   trace4("DEV_BUILT_IN_RCD::stress_apply ", fill_new, E_old, eff, fill_new-_tr_fill );
 
@@ -1326,7 +1326,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
   } else {
     assert(is_number(fill_new));
     _Ccgfill->tt() = (double) fill_new;
-    _tr_fill=fill_new;
+    _tr_fill = fill_new;
     trace2("DEV_BUILT_IN_RCD::stress_apply done ", fill_new, _tr_fill );
   }
 }
@@ -1511,8 +1511,7 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
     assert(is_number(_tr_fill));
   }
 
-
-  double uin_eff= cap->tr(); 
+  double uin_eff = cap->tr(); 
 
   if ((uin_eff < cap->tr_lo) || (uin_eff > cap->tr_hi ) ){
     error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress_last Time %E \n    "
@@ -1558,8 +1557,7 @@ double COMMON_BUILT_IN_RCD::__tau(double uin)const
   }
 }
 ///*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_RCD::tt_commit()
-{
+void DEV_BUILT_IN_RCD::tt_commit() { unreachable();
   // untested();
   return;
 }

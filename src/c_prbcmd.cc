@@ -51,6 +51,7 @@ void do_probe(CS& cmd, PROBELIST *probes)
   ONE_OF
     || Set(cmd, "tr{ansient}", &simtype, s_TRAN)
     || Set(cmd, "tw{ot}",      &simtype, s_TTT)
+    || Set(cmd, "tt",      &simtype, s_TTT)
     || Set(cmd, "ac",	       &simtype, s_AC)
     || Set(cmd, "dc",	       &simtype, s_DC)
     || Set(cmd, "ddc",         &simtype, s_DC)

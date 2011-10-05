@@ -17,6 +17,7 @@ typedef int adp_region_t;
 class ADP_NODE_LIST;
 class ADP_LIST;
 class ADP_CARD;
+class COMPONENT;
 /*--------------------------------------------------------------------------*/
 // collects transient (stress) data, sometimes extrapolates.
 class ADP_NODE: public CKT_BASE {
@@ -37,7 +38,7 @@ class ADP_NODE: public CKT_BASE {
     std::string label() const  {return long_label();}
     uint_t order() const; 
 
-    uint_t	m_()const		{return _number;}
+    uint_t m_()const {return _number;}
 
     hp_float_t tr(double time)const;
     hp_float_t tr_rel(double time)const;
@@ -70,13 +71,13 @@ class ADP_NODE: public CKT_BASE {
       assert(m_() <= _sim->_adp_nodes);
       return _sim->_tt1[m_()];
     }
-    hp_float_t&     tt()const	{
+    hp_float_t& tt()const	{
       assert(m_() != INVALID_NODE);
       assert(m_() <= _sim->_adp_nodes);
       assert (_sim->_tt);
       return _sim->_tt[m_()];
     }
-    double TR2; //depr.
+    //double TR2; //depr.
   protected:
     int dbg;
 
@@ -184,11 +185,7 @@ class ADP_NODE: public CKT_BASE {
     hp_float_t get_aft_1()const;
     hp_float_t tt_get_sum()const  {return _val_bef[0] + _delta[0]; }
 
-    void tr_add( double x ) const { 
-      assert(is_number(tr())); 
-      tr() += x;
-    }
-
+    void tr_add( double x ) const;
     void add_tr( hp_float_t x ) { tr_add(x);}
     void set_tr( hp_float_t x );
     void set_tt( hp_float_t x );
@@ -246,6 +243,7 @@ class ADP_NODE: public CKT_BASE {
   public: // temporary hacks
     double tr_hi;
     double tr_lo;
+
 };
 /*--------------------------------------------------------------------------*/
 class BTI_ADP : public ADP_NODE {
@@ -261,11 +259,11 @@ class ADP_NODE_UDC : public ADP_NODE {
     double get_udc() const {return udc;}
     void set_udc(double x) {udc=x;}
 
-   void tr_expect_1();
-   void tr_expect_2();
-   void tr_expect_3();
-   virtual std::string type() const {return "rcd";};
-   virtual TIME_PAIR tt_review( );
+    void tr_expect_1();
+    void tr_expect_2();
+    void tr_expect_3();
+    virtual std::string type() const {return "rcd";};
+    virtual TIME_PAIR tt_review( );
   private:
     double udc;
 };
@@ -289,19 +287,22 @@ class ADP_NODE_RCD : public ADP_NODE {
     double udc;
 };
 /*--------------------------------------------------------------------------*/
-// ADP card is only a stub...
-// and stupid...
-// should be merged into COMPONENT
-class ADP_CARD  : public CARD {
+class ADP_CARD : public COMPONENT { // FIXME: SUBCKT_BASE
 // manages stress data and stores device parameters.
   private:
     explicit ADP_CARD(const ADP_CARD&); 
     static int _tt_order;
     double _wdT;
   public:
-    explicit ADP_CARD(const COMPONENT* c): _c(c) {}
-    explicit ADP_CARD(const COMPONENT* c, const std::string n): _c(c) {
-    set_label(n);}
+     virtual std::string port_name(uint_t)const { return "?"; }
+
+    explicit ADP_CARD( COMPONENT* c): _c(c) {
+      set_owner(c);
+    }
+    explicit ADP_CARD( COMPONENT* c, const std::string n): _c(c) {
+    set_label(n);
+    set_owner(c);
+    }
     // explicit ADP_CARD();
     virtual ~ADP_CARD() {}
   protected:
@@ -314,13 +315,15 @@ class ADP_CARD  : public CARD {
     virtual std::string value_name() const{ return "unknown";}
 
 
+    virtual void tt_prepare(){unreachable();}
     virtual void tt_commit_first(){ }
     virtual void tt_commit(){ }
     virtual void tt_last(){ }
     virtual void tt_accept_first(){ }
     virtual void tr_commit_first(){ }
-    virtual void tr_accept(){ }
+    virtual void tr_accept()=0;
     virtual void tt_accept(){ }
+    virtual void stress_apply() {unreachable();}
     virtual double wdT() const {return 999;}
     virtual TIME_PAIR tt_review(){ return TIME_PAIR(); }
     virtual TIME_PAIR tt_preview( ){ unreachable(); return TIME_PAIR(); }

@@ -70,7 +70,7 @@ public: // override virtual
   void      precalc_first();
   void      precalc_last();
   SDP_CARD* new_sdp(COMMON_COMPONENT* c)const;
-  ADP_CARD* new_adp( const COMPONENT* c)const;
+  ADP_CARD* new_adp(COMPONENT* c)const;
   void      set_param_by_index(int, std::string&, int);
   bool      param_is_printable(int)const;
   std::string param_name(int)const;
@@ -248,10 +248,9 @@ private: // node list
 // h_direct
 
 
-class ADP_BUILT_IN_DIODE
-  :public ADP_CARD{
+class ADP_BUILT_IN_DIODE :public ADP_CARD{
 public:
-  explicit ADP_BUILT_IN_DIODE(const COMPONENT* c, const std::string n) :
+  explicit ADP_BUILT_IN_DIODE( COMPONENT* c, const std::string n) :
     ADP_CARD(c,n) 
     {init(c);}
 protected:

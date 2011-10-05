@@ -37,9 +37,11 @@
 class ADP_BUILT_IN_MOS123
   :public ADP_BUILT_IN_MOS{
 public:
-  explicit ADP_BUILT_IN_MOS123(const COMPONENT* c, const std::string n);
+  explicit ADP_BUILT_IN_MOS123( COMPONENT* c, const std::string n);
 public:
   double vto;  // replace m->vto
+
+  void tr_accept();
 };
 /*--------------------------------------------------------------------------*/
 class SDP_BUILT_IN_MOS123
@@ -72,7 +74,7 @@ public: // override virtual
   void      precalc_first();
   void      precalc_last();
   SDP_CARD* new_sdp( COMMON_COMPONENT* c)const;
-  ADP_CARD* new_adp( const COMPONENT* c)const; // COMPONENT nicht const, wegen counter?
+  ADP_CARD* new_adp( COMPONENT* c)const; // COMPONENT nicht const, wegen counter?
   void      set_param_by_index(int, std::string&, int);
   bool      param_is_printable(int)const;
   std::string param_name(int)const;

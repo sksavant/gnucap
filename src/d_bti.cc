@@ -116,7 +116,7 @@ MODEL_BUILT_IN_BTI_SINGLE::MODEL_BUILT_IN_BTI_SINGLE(const
 {
 }
 /*--------------------------------------------------------------------------*/
-ADP_CARD* MODEL_BUILT_IN_BTI::new_adp(const COMPONENT* c)const
+ADP_CARD* MODEL_BUILT_IN_BTI::new_adp( COMPONENT* c)const
 {
   assert(c);
   return MODEL_CARD::new_adp(c);
@@ -904,11 +904,11 @@ void DEV_BUILT_IN_BTI::expand()
   subckt()->expand();
   //subckt()->precalc();
   assert(!is_constant());
-  if ( adp() == NULL ){
-    attach_adp( m->new_adp( (COMPONENT*) this ) );
-  }else{
-  }
-  assert(adp());
+  //if ( adp() == NULL ){
+  //  attach_adp( m->new_adp( (COMPONENT*) this ) );
+  //}else{
+  //}
+  //assert(adp());
   assert(subckt()->size() == size_t (m->rcd_number +1));
 }
 /*--------------------------------------------------------------------------*/
@@ -1028,8 +1028,7 @@ void DEV_BUILT_IN_BTI::tr_stress() {
   subckt()->do_forall( &CARD::tr_stress );
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_BTI::tt_commit() {
-  itested();
+void DEV_BUILT_IN_BTI::tt_commit() { unreachable();
   //FIXME, subckt default
   //        RCD reicht!
   subckt()->do_forall( &CARD::tt_commit ); // sort of tt_prepare?

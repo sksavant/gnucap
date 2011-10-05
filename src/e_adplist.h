@@ -4,7 +4,7 @@
 #ifndef E_ADPLIST_H
 #define E_ADPLIST_H
 #include "md.h"
-#include "e_adp.h"
+//#include "e_adp.h"
 /*--------------------------------------------------------------------------*/
 // defined here
 class ADP_NODE_LIST;

@@ -266,7 +266,7 @@ void MODEL_BUILT_IN_MOS3::precalc_first()
     // final adjust: done
 }
 /*--------------------------------------------------------------------------*/
-ADP_CARD* MODEL_BUILT_IN_MOS3::new_adp( const COMPONENT* c)const
+ADP_CARD* MODEL_BUILT_IN_MOS3::new_adp( COMPONENT* c)const
 {
   return MODEL_BUILT_IN_MOS123::new_adp(c);
 }

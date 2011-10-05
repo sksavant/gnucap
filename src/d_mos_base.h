@@ -74,7 +74,7 @@ public: // override virtual
   void      precalc_first();
   void      precalc_last();
   SDP_CARD* new_sdp(COMMON_COMPONENT* )const; // y !const COMMON_COMPONENT*??
-  virtual ADP_CARD* new_adp( const COMPONENT* )const {unreachable(); return NULL;}
+  virtual ADP_CARD* new_adp( COMPONENT* )const {unreachable(); return NULL;}
   void do_tt_prepare( COMPONENT* c) const;
   void      set_param_by_index(int, std::string&, int);
   bool      param_is_printable(int)const;
@@ -123,8 +123,11 @@ public: // calculated parameters
   virtual bool use_hci()const {return false;}
 public: // other thiongs
   virtual void do_stress_apply( COMPONENT* C ) const;
-  // virtual??
+
   virtual void do_tr_stress( const COMPONENT* C ) const ;
+  virtual void do_tr_stress_last( const COMPONENT*  ) const {
+	  //  MODEL_BUILT_IN_DIODE::do_tr_stress_last( C)
+  }
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

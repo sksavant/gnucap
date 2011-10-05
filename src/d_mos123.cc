@@ -204,7 +204,7 @@ void MODEL_BUILT_IN_MOS123::precalc_first()
     // final adjust: done
 }
 /*--------------------------------------------------------------------------*/
-ADP_BUILT_IN_MOS123::ADP_BUILT_IN_MOS123(const COMPONENT* c, const std::string name_in):
+ADP_BUILT_IN_MOS123::ADP_BUILT_IN_MOS123( COMPONENT* c, const std::string name_in):
      ADP_BUILT_IN_MOS(c,name_in)
 {
   assert(c);
@@ -223,7 +223,7 @@ ADP_BUILT_IN_MOS123::ADP_BUILT_IN_MOS123(const COMPONENT* c, const std::string n
   //
 }
 /*--------------------------------------------------------------------------*/
-ADP_CARD* MODEL_BUILT_IN_MOS123::new_adp(const COMPONENT* c)const
+ADP_CARD* MODEL_BUILT_IN_MOS123::new_adp( COMPONENT* c)const
 {
   assert(c);
   const MODEL_BUILT_IN_MOS123* m = this;
@@ -245,6 +245,11 @@ ADP_CARD* MODEL_BUILT_IN_MOS123::new_adp(const COMPONENT* c)const
   //std::cerr << c << " " << c->adp() << "\n";
 
   return a;
+}
+/*--------------------------------------------------------------------------*/
+void ADP_BUILT_IN_MOS123::tr_accept(){
+incomplete();
+
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_MOS123::precalc_last()
@@ -408,6 +413,7 @@ void MODEL_BUILT_IN_MOS123::do_tr_stress( const COMPONENT* c ) const
   //const DEV_BUILT_IN_MOS* d = (const DEV_BUILT_IN_MOS*)c;
   assert(m == this);
   //ADP_BUILT_IN_MOS123* a = (ADP_BUILT_IN_MOS123*) c->adp();
+  // cout << "stress\n";
 
   incomplete();
  //  a->ids_stress->tr_add(d->ids * d->ids*( _sim->_dt0 ) );

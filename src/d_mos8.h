@@ -46,7 +46,7 @@
 class ADP_BUILT_IN_MOS8
   :public ADP_BUILT_IN_MOS{
 public:
-  explicit ADP_BUILT_IN_MOS8(const COMPONENT* c, const std::string n):
+  explicit ADP_BUILT_IN_MOS8( COMPONENT* c, const std::string n):
     ADP_BUILT_IN_MOS(c,n)
     {init(c);}
 protected:
@@ -58,13 +58,16 @@ public:
 
 //  void tt_stress_apply( );?
 
-  ADP_NODE* hci_stress;
+  ADP_NODE* hci_node;
 
   virtual double tt_probe_num(const std::string& x)const;
   virtual double tr_probe_num(const std::string& x)const;
 
+  virtual void tt_prepare();
   virtual void tt_accept();
   virtual void tt_commit();
+  virtual void tr_accept();
+  virtual void stress_apply();
 };
 /*--------------------------------------------------------------------------*/
 class SDP_BUILT_IN_MOS8
@@ -214,7 +217,7 @@ protected:
 public:
   explicit MODEL_BUILT_IN_MOS8(const BASE_SUBCKT*);
   ~MODEL_BUILT_IN_MOS8() {--_count;}
-  virtual ADP_CARD* new_adp( const COMPONENT* c)const; //alles const. attach vielleicht !const
+  virtual ADP_CARD* new_adp( COMPONENT* c)const; //alles const. attach vielleicht !const
 public: // override virtual
   void do_stress_apply(COMPONENT* c)const;
   void do_tr_stress( const COMPONENT* c ) const;

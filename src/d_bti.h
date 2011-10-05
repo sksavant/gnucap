@@ -85,7 +85,7 @@ public: // override virtual
   virtual void      precalc_first();
   virtual void      precalc_last();
   SDP_CARD* new_sdp(COMMON_COMPONENT* c)const;
-  ADP_CARD* new_adp( const COMPONENT* c)const;
+  ADP_CARD* new_adp(COMPONENT* c)const;
   virtual void      set_param_by_index(int, std::string&, int);
   virtual bool      param_is_printable(int)const;
   virtual std::string param_name(int)const;
@@ -255,7 +255,7 @@ private: // node list
 class ADP_BUILT_IN_BTI
   :public ADP_CARD{
 public:
-  explicit ADP_BUILT_IN_BTI(const COMPONENT* c) : ADP_CARD(c)
+  explicit ADP_BUILT_IN_BTI( COMPONENT* c) : ADP_CARD(c)
   //. Hgone(0),
     {init(c);}
 
