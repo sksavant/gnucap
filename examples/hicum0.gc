@@ -56,8 +56,8 @@ R2 ncc c 10k
 .tran .1 1 
 *trace v
 
-.param a=1
+.param a=1.0e-16
 
-*.tran 2
+.tran 2
 
 .end
