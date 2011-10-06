@@ -327,6 +327,7 @@ public:
   ADP_CARD* adp()const {return(_adp);}
   void attach_adp(ADP_CARD* a);
   virtual void tt_prepare();
+  virtual void tt_next() {  }
 protected:
   double  _tr_amps_diff_cur;
   double  _tr_amps_diff_max;
@@ -338,7 +339,6 @@ protected:
   void tt_behaviour_update();
   void tr_behaviour(){ tt_behaviour_update(); }
   virtual void tt_begin() {  }
-  virtual void tt_next() {  }
 
   virtual void tt_init_i(){
           std::cerr << short_label() << " COMP:init_i have " << net_nodes() <<

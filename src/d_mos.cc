@@ -986,7 +986,7 @@ void DEV_BUILT_IN_MOS::expand()
   trace0(("DEV_BUILT_IN_MOS::expand, ADP things " + long_label()).c_str());
   assert ( adp() == NULL );
   attach_adp( m->new_adp( (COMPONENT*) this ) );
-  _adp->q_accept();
+  adp()->q_accept();
   trace0(("DEV_BUILT_IN_MOS::expanded, ADP things " + long_label()).c_str());
 }
 /*--------------------------------------------------------------------------*/
@@ -1514,33 +1514,41 @@ bool DEV_BUILT_IN_MOS::do_tr()
   _BTI->q_accept();
 #endif
 //  q_accept();
-  _adp->q_accept();
+  adp()->q_accept();
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_stress_last( )
 {
-  const COMMON_COMPONENT* cc = common();
-  const MODEL_BUILT_IN_MOS_BASE* m = ( const MODEL_BUILT_IN_MOS_BASE*)(cc->model());
-  assert(m);
+  BASE_SUBCKT::tr_stress_last();
+  // FIXME (put adp into sckt, or do not call sckt)
+  if(adp()) adp()->tr_stress_last();
 
-  cout << "foo1\n";
+  const COMMON_COMPONENT* cc = common();
+  const MODEL_BUILT_IN_MOS_BASE* m = asserted_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
+
   m->do_tr_stress_last( this );
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_stress( )
 {
-  const COMMON_COMPONENT* cc = common();
-  const MODEL_BUILT_IN_MOS_BASE* m = ( const MODEL_BUILT_IN_MOS_BASE*)(cc->model());
-  assert(m);
+  BASE_SUBCKT::tr_stress();
+  // FIXME (put adp into sckt, or (better) do not call sckt)
+  if(adp()) adp()->tr_stress();
 
-  cout << "foo1\n";
+  const COMMON_COMPONENT* cc = common();
+  const MODEL_BUILT_IN_MOS_BASE* m = asserted_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
+
   m->do_tr_stress( this );
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_MOS::tt_next()
+void DEV_BUILT_IN_MOS::tt_next( )
 {
-  if (_adp)
-    _adp->tt_next();
+  if (adp())
+    adp()->tt_next();
+
+
+  // FIXME (put adp into sckt, or something)
+  BASE_SUBCKT::tt_next();
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -1598,7 +1606,7 @@ void DEV_BUILT_IN_MOS::tt_prepare() // NOT const
 
   m->do_tt_prepare(this);
 
-  _adp->tt_prepare();
+  adp()->tt_prepare();
 }
 /*--------------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS::tt_accept()
@@ -1885,8 +1893,8 @@ void DEV_BUILT_IN_MOS::stress_apply( )
   const MODEL_BUILT_IN_MOS_BASE* m = (const MODEL_BUILT_IN_MOS_BASE*)(c->model());
   assert(m);
   BASE_SUBCKT::stress_apply();
-  if (_adp){
-    _adp->stress_apply(); // not yet part of subckt
+  if (adp()){
+    adp()->stress_apply(); // not yet part of subckt
   }
   m->do_stress_apply(this);
 

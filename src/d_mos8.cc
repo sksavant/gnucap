@@ -5395,7 +5395,12 @@ void ADP_BUILT_IN_MOS8::tt_commit() {
 /*------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS8::stress_apply() {
   // HIER
-  hci_node->tt() = 0;
+  const DEV_BUILT_IN_MOS* d = asserted_cast<const DEV_BUILT_IN_MOS*>(owner());
+  const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
+  const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
+
+  if (m->use_hci())
+    hci_node->tt() = 0;
 }
 /*------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS8::tt_accept() {

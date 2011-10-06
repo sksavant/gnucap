@@ -329,9 +329,8 @@ void TTT::sweep_tt()
     ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_commit );
     CARD_LIST::card_list.do_forall( &CARD::tt_commit ); // ?
     
-    
     trace0("TTT::sweep CARD::stress_apply");
-    CARD_LIST::card_list.do_forall( &CARD::stress_apply );
+    CARD_LIST::card_list.stress_apply();
 
     trace2( "TTT::sweep calling TTT::sweep", _cont, _sim->_Time0 );
     store_results_tt(_sim->_Time0); // first output tt data

@@ -124,30 +124,31 @@ public:
   CARD_LIST& precalc_first();
   CARD_LIST& expand();
   CARD_LIST& precalc_last();
-  CARD_LIST& tt_next();
   CARD_LIST& map_nodes();
   void rewire_nodenames(const CARD_LIST*); //temporary hack
   CARD_LIST& tr_iwant_matrix();
   CARD_LIST& tr_begin();
   CARD_LIST& tr_restore();
-  CARD_LIST& tt_prepare();
-  CARD_LIST& tt_behaviour_commit();
   CARD_LIST& dc_advance();
   CARD_LIST& tr_advance();
-  CARD_LIST& tt_advance();
   CARD_LIST& tr_regress();
   bool	     tr_needs_eval()const;
   CARD_LIST& tr_queue_eval();
   bool	     do_tr();
   CARD_LIST& tr_load();
   TIME_PAIR  tr_review();
-  TIME_PAIR  tt_review();
   CARD_LIST& tr_accept();
   CARD_LIST& tr_unload();
   CARD_LIST& ac_iwant_matrix();
   CARD_LIST& ac_begin();
   CARD_LIST& do_ac();
   CARD_LIST& ac_load();
+  CARD_LIST& tt_begin();
+  TIME_PAIR tt_review();
+  CARD_LIST& tt_advance();
+  CARD_LIST& tt_next();
+  CARD_LIST& tt_prepare();
+  CARD_LIST& tt_behaviour_commit();
 
   NODE_MAP*   nodes()const {assert(_nm); return _nm;}
   NODE*       node(std::string)const;

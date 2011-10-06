@@ -30,7 +30,7 @@ class ADP_NODE: public CKT_BASE {
     ~ADP_NODE( );
     ADP_NODE( const ADP_NODE& );
   private:
-    int	_number;
+    unsigned _number;
   protected:
     void init( const COMPONENT* , std::string name_in2 );//
 
@@ -38,14 +38,14 @@ class ADP_NODE: public CKT_BASE {
     std::string label() const  {return long_label();}
     uint_t order() const; 
 
-    uint_t m_()const {return _number;}
+    uint_t m_()const {assert( _number < _sim->_adp_nodes); return _number;}
 
     hp_float_t tr(double time)const;
     hp_float_t tr_rel(double time)const;
 
     hp_float_t& tr()const	{
       assert(m_() != INVALID_NODE);
-      assert(m_() <= _sim->_adp_nodes);
+      assert(m_() < _sim->_adp_nodes);
       assert (_sim->_tr);
       return _sim->_tr[m_()];
     }
@@ -73,7 +73,7 @@ class ADP_NODE: public CKT_BASE {
     }
     hp_float_t& tt()const	{
       assert(m_() != INVALID_NODE);
-      assert(m_() <= _sim->_adp_nodes);
+      assert(m_() < _sim->_adp_nodes);
       assert (_sim->_tt);
       return _sim->_tt[m_()];
     }
