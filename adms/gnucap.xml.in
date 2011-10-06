@@ -2614,7 +2614,7 @@ protected: // override virtual
 	// tr
 	void tr_call_iwants(int m_1, int m_2);
 	void tr_iwant_matrix();
-	void tr_begin() {STORAGE::tr_begin();   internal_precalc();}
+	void tr_begin();
 	void tr_restore() {STORAGE::tr_restore(); internal_precalc();}
 	void dc_advance() {STORAGE::dc_advance(); internal_precalc();}
 	void tr_advance();
@@ -2965,23 +2965,21 @@ void $(DEV_NAME)::expand()
 	//allocate state vectors
 	if (!_states[0])  
 	{
+		// initialise in tr_begin()
 		for (int ii=0; ii<OPT::_keep_time_steps; ++ii) 
 		{
 			assert(!_states[ii]);
 			_states[ii] = new double[_num_states];
 		}
+		assert(!_states_1);
 		_states_1 = new double[_num_states];
 	}
 	else
 	{
 		for (int ii=0; ii<OPT::_keep_time_steps; ++ii)
-		{
 			assert(_states[ii]);
-			std::fill_n(_states[ii], _num_states, 0);
-		}
 		assert(_states_1);
-	}	
-	std::fill_n(_states_1, _num_states, 0);
+	}
 
 	std::fill_n(it1, %(count(node[grounded='no'])), 0);
 
@@ -3092,6 +3090,17 @@ void $(DEV_NAME)::ac_iwant_matrix()
 		</admst:if>
 	</admst:for-each>
 	//ac_iwant_matrix_extended();
+}
+// -------------------------------------------------------------------------- //
+void $(DEV_NAME)::tr_begin()
+{
+	STORAGE::tr_begin();
+
+	for(int ii=0; ii<OPT::_keep_time_steps; ii++)
+                std::fill_n(_states[ii], _num_states, 0);
+        std::fill_n(_states_1, _num_states, 0);
+
+	internal_precalc();
 }
 
 // -------------------------------------------------------------------------- //
@@ -3395,6 +3404,9 @@ void $(DEV_NAME)::temperature()
 	
 void $(DEV_NAME)::guesstopology ()
 {
+	for(int i=0; i<%(count(jacobian)); i++)
+		m_required[i] = false;
+
 <admst:template match="evaluate.localvariables">
   <admst:choose>
     <admst:when test="[datatypename='assignment']">
