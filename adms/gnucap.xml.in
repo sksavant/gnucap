@@ -2934,15 +2934,16 @@ void DEV_ADMS::set_dev_type(const std::string& new_type)
 	_modelname = new_type;
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::Set_param_by_name(std::string Name, std::string new_value)
+void DEV_ADMS::Set_param_by_name(std::string /* Name */, std::string /* new_value */)
 {
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::set_param_by_name(std::string Name, std::string Value)
+// COMMON??
+void DEV_ADMS::set_param_by_name(std::string /* Name */, std::string /* Value */)
 {
 }
 // -------------------------------------------------------------------------- //
-void DEV_ADMS::Set_param_by_index(int i, std::string& new_value, int offset)
+void DEV_ADMS::Set_param_by_index(int /*i*/, std::string& /*new_value*/, int /*offset*/)
 {
 }
 // -------------------------------------------------------------------------- //
