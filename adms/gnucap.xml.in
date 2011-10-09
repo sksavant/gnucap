@@ -2986,11 +2986,11 @@ void DEV_ADMS::expand()
 	if (_sim->is_first_expand()) 
 	{
 		int start_internal = 0;
-		for (int ii = net_nodes(); ii < max_nodes(); ++ii)
+		for (unsigned ii = net_nodes(); ii < max_nodes(); ++ii)
 			_n[ii].set_to_ground(this);
 		
 		assert(max_nodes() != 0);		
-		for (int ii = 0; ii < matrix_nodes(); ++ii) 
+		for (unsigned ii = 0; ii < matrix_nodes(); ++ii) 
 			assert(_n[ii].n_());
 	}
 	else
