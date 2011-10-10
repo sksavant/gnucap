@@ -203,6 +203,7 @@ void SIM::set_flags()
 /*--------------------------------------------------------------------------*/
 void SIM::clear_arrays(void)
 {
+  trace0("SIM::clear_arrays");
   if (!_sim->is_inc_mode()) {			/* Clear working array */
     _sim->_aa.zero();
     _sim->_aa.dezero(OPT::gmin);		/* gmin fudge */
@@ -217,6 +218,7 @@ void SIM::clear_arrays(void)
 /*--------------------------------------------------------------------------*/
 void SIM::evaluate_models()
 {
+  trace0("SIM::evaluate_models\n");
   ::status.evaluate.start();
   if (OPT::bypass) {
     converged = true;
@@ -254,13 +256,13 @@ void SIM::load_matrix()
 {
   ::status.load.start();
   if (OPT::traceload && _sim->is_inc_mode()) {
-    trace0("loading some");
+    trace0("SIM::load_matrix loading some");
     while (!_sim->_loadq.empty()) {
       _sim->_loadq.back()->tr_load();
       _sim->_loadq.pop_back();
     }
   }else{
-    trace0("loading all :( ");
+    trace0("SIM::load_matrix loading all :( ");
     _sim->_loadq.clear();
     CARD_LIST::card_list.tr_load();
   }

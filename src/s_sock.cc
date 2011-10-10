@@ -695,6 +695,7 @@ void SOCK::sweep_recursive(int Nest)
       C.lu_decomp();
 
       _sim->_bypass_ok = false;
+      _sim->set_inc_mode_bad();
 
       if (_do_tran_step) { 
         do_tran_step();
@@ -1129,6 +1130,8 @@ void SOCK::veraop(){
   // ================do_dc========
   _sim->_uic = false;
   _sim->_more_uic = false;
+  _sim->_bypass_ok = false;
+  _sim->set_inc_mode_bad();
   OPT::ITL itl = OPT::DCBIAS;
 
   trace0("SOCK::veraop, hot");
@@ -1140,6 +1143,7 @@ void SOCK::veraop(){
     ::error(bDANGER, "hot failed\n");
     throw e;
   }
+  trace0("SOCK::veraop, hot done");
 
   ::status.accept.start();
   _sim->set_limit();
@@ -1289,7 +1293,7 @@ void SOCK::verainit_send()
 void SOCK::veraop_send()
 {
   assert(n_vars==_sim->_total_nodes);
-  trace1("veraop tail", n_vars);
+  trace1("SOCK::veraop_send ", n_vars);
   stream << error; stream.pad(6);
   for (unsigned i=0; i < n_vars; i++)         /* Variablen-Werte */
   {
@@ -1303,8 +1307,8 @@ void SOCK::veraop_send()
     }
   }
 
+  trace0("SOCK::veraop_send taking ac snapshot (matrix only?).");
   ac_snapshot();
-  trace0("SOCK::veraop_send sent voltages");
   send_matrix();
   stream << SocketStream::eol;
 

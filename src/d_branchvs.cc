@@ -29,11 +29,11 @@
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class DEV_VS : public ELEMENT {
+class DEV_BVS : public ELEMENT {
 private:
-  explicit DEV_VS(const DEV_VS& p) :ELEMENT(p) {}
+  explicit DEV_BVS(const DEV_BVS& p) :ELEMENT(p) {}
 public:
-  explicit DEV_VS()		:ELEMENT() {}
+  explicit DEV_BVS()		:ELEMENT() {}
 private: // state
   double _one0, _one1;
   double _source0, _source1;
@@ -51,7 +51,7 @@ private: // override virtual
   bool	   f_is_value()const	{return true;}
   bool	   has_iv_probe()const  {return true;}
   bool	   use_obsolete_callback_parse()const {return true;}
-  CARD*	   clone()const		{return new DEV_VS(*this);}
+  CARD*	   clone()const		{return new DEV_BVS(*this);}
   void     precalc_last();
   void	   tr_iwant_matrix();//	{ tr_iwant_matrix_passive();}
   void	   tr_begin();
@@ -77,14 +77,14 @@ private: // override virtual
   void expand();
 };
 /*--------------------------------------------------------------------------*/
-inline void DEV_VS::ac_begin()
+inline void DEV_BVS::ac_begin()
 {
   _acg = _ev = 0.;
 }
 /*--------------------------------------------------------------------------*/
-inline void DEV_VS::ac_load()
+inline void DEV_BVS::ac_load()
 {
-  trace0("DEV_VS::ac_load");
+  trace0("DEV_BVS::ac_load");
   //_sim->_acx.load_symmetric(_n[OUT1].m_(), _n[OUT2].m_(), mfactor() * _loss0);
   double d=1;
   _sim->_acx.load_point(_n[OUT1].m_(), _n[BR].m_(), d);
@@ -93,10 +93,15 @@ inline void DEV_VS::ac_load()
   _sim->_acx.load_point(_n[BR].m_(), _n[OUT2].m_(), -d);
 
   assert (_n[BR].m_() != 0);
+  untested(); // does this do the right thing?
+  /* load source */
   _n[BR].iac() += _acg; // mfactor() * _acg;
+
+  trace1("DEV_BVS::ac_load source ", _acg);
+
 }
 /*--------------------------------------------------------------------------*/
-void DEV_VS::expand(){
+void DEV_BVS::expand(){
 
     if (!(_n[BR].n_())) {
         _n[BR].new_model_node( long_label() + ".br", this);
@@ -105,7 +110,7 @@ void DEV_VS::expand(){
 
 }
 /*--------------------------------------------------------------------------*/
-void DEV_VS::tr_iwant_matrix()
+void DEV_BVS::tr_iwant_matrix()
 {
 /*
  *   +  -  b
@@ -127,7 +132,7 @@ void DEV_VS::tr_iwant_matrix()
   assert(_n[OUT2].m_() != INVALID_NODE);
   assert(_n[BR].m_() != INVALID_NODE);
 
-  trace3("DEV_VS::tr_iwant_matrix ", _n[OUT1].m_(),_n[OUT2].m_(),_n[BR].m_());
+  trace3("DEV_BVS::tr_iwant_matrix ", _n[OUT1].m_(),_n[OUT2].m_(),_n[BR].m_());
 
   _sim->_aa.iwant(_n[OUT1].m_(),_n[BR].m_());
   _sim->_aa.iwant(_n[OUT2].m_(),_n[BR].m_());
@@ -139,16 +144,16 @@ void DEV_VS::tr_iwant_matrix()
 //  tr_iwant_matrix_extended();
 }
 /*--------------------------------------------------------------------------*/
-inline void DEV_VS::tr_load()
+inline void DEV_BVS::tr_load()
 /*----------shunt---------------------------------------------------------------*/
 {
-  cout << "trload trload trload\n";
-  trace1("DEV_VS::tr_load", _sim->_time0);
-  trace3("DEV_VS::tr_load", _n[OUT1].m_(), _n[OUT2].m_(), _n[BR].m_());
+  cout << "trload trload trload " << value() <<" \n";
+  trace1("DEV_BVS::tr_load", _sim->_time0);
+  trace3("DEV_BVS::tr_load", _n[OUT1].m_(), _n[OUT2].m_(), _n[BR].m_());
   assert(_one0 == _one0);
   double d = _one0 - _one1;
   if (d != 0.) {
-    trace1("DEV_VS::tr_load 4 times",d);
+    trace1("DEV_BVS::tr_load 4 times",d);
     _sim->_aa.load_point(_n[OUT1].m_(), _n[BR].m_(), d);
     _sim->_aa.load_point(_n[OUT2].m_(), _n[BR].m_(), -d);
     _sim->_aa.load_point(_n[BR].m_(), _n[OUT1].m_(), d);
@@ -161,7 +166,7 @@ inline void DEV_VS::tr_load()
   assert(_m0.c0 == _m0.c0);
   assert (_n[BR].m_() != 0);
   d = dampdiff(&_m0.c0, _m1.c0); // hmmm
-  trace1("DEV_VS::tr_load source",d);
+  trace1("DEV_BVS::tr_load source",d);
   if (d != 0.) {
     _n[BR].i() += d;
   }else{
@@ -169,35 +174,37 @@ inline void DEV_VS::tr_load()
   _m1 = _m0;
 }
 /*--------------------------------------------------------------------------*/
-inline void DEV_VS::tr_unload()
+inline void DEV_BVS::tr_unload()
 {
+  cout << "bvs unload\n";
   _m0.c0 = 0; _source0 = 0;
   _one0 = 0;
 
   tr_load();
 }
 /*--------------------------------------------------------------------------*/
-void DEV_VS::precalc_last()
+void DEV_BVS::precalc_last()
 {
-  trace0("DEV_VS::precalc_last()");
+  trace0("DEV_BVS::precalc_last()");
   ELEMENT::precalc_last();
   set_constant(!has_tr_eval());
   set_converged(!has_tr_eval());
 }
 /*--------------------------------------------------------------------------*/
-void DEV_VS::tr_begin()
+void DEV_BVS::tr_begin()
 {
   ELEMENT::tr_begin();
   // _y1.f0 = _y[0].f0 = 0.; // override
   _m0.x  = 0.;
   _m0.c0 = value() ; //  -_loss0 * _y[0].f1;
   _m0.c1 = 0.;
-  std::cout << "tr_begin value " << value() << "\n";
+  trace1("DEV_BVS::tr_begin value " , value() );
   _source0 = value();
   _source1 = 0;
   _one0 = 1;
   _one1 = 0;
-  q_load();
+  //  q_load(); auch in d_vs nich
+  //  q_eval(); auch in d_vs nich
   // _m1 = _m0;    
   if (!using_tr_eval()) {
 
@@ -206,8 +213,9 @@ void DEV_VS::tr_begin()
   }
 }
 /*--------------------------------------------------------------------------*/
-bool DEV_VS::do_tr()
+bool DEV_BVS::do_tr()
 {
+
   assert(_m0.x == 0.);
   if (using_tr_eval()) {
     incomplete();
@@ -223,12 +231,12 @@ bool DEV_VS::do_tr()
     assert(_y1 == _y[0]);
     assert(converged());
   }
-q_load();
-  std::cout << "do_tr value " << value() << "\n";
+  trace1( "DEV_BVS::do_tr value", value() );
+  q_load();
   return converged();
 }
 /*--------------------------------------------------------------------------*/
-void DEV_VS::do_ac()
+void DEV_BVS::do_ac()
 {
   if (using_ac_eval()) {
     assert(false); // no common
@@ -236,11 +244,14 @@ void DEV_VS::do_ac()
     _acg = _ev;
   }else{itested();
     assert(_acg == 0.);
+    untested();
+    _ev = value();
+    _acg = _ev;
   }
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-DEV_VS p1;
+DEV_BVS p1;
 DISPATCHER<CARD>::INSTALL d1(&device_dispatcher, "vsb|branchvs", &p1);
 }
 /*--------------------------------------------------------------------------*/
