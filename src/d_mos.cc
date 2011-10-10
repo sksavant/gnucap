@@ -1022,9 +1022,9 @@ double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "dv_bti ")) { // hci???
     if (d->_BTI) return  ((const DEV_BUILT_IN_BTI*)(d->_BTI))->dvth();
     return(NA);
-  }else if (Umatch(x, "bti_stress ")) { // hci???
+  }else if (Umatch(x, "bti_stress ")) { 
     return  a->bti_stress->tr_get();
-  }else if (Umatch(x, "hci |bti ")) { // hci???
+  }else if (Umatch(x, "hci |bti ")) { 
     return  a->tr_probe_num(x);
   }else if (Umatch(x, "vgs ")) {
     return  _n[n_g].v0() - _n[n_s].v0();
@@ -1038,6 +1038,8 @@ double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
     return  vbs;
   }else if (Umatch(x, "use_bti ")) {
     return  m->use_bti();
+  }else if (Umatch(x, "use_hci ")) {
+    return  m->use_hci();
   }else if (Umatch(x, "vgd ")) {
     return  _n[n_g].v0() - _n[n_d].v0();
   }else if (Umatch(x, "vbd ")) {

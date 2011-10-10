@@ -131,7 +131,7 @@ inline int PARAMETER<int>::_NOT_INPUT()const { return NOT_INPUT_INT;} //BUG. mag
 /*--------------------------------------------------------------------------*/
 template <>
 inline unsigned int PARAMETER<unsigned int>::_NOT_INPUT() const{
-  untested(); // stupid();
+  // stupid();
   return NOT_INPUT_INT;
 } //BUG. magic number?
 /*--------------------------------------------------------------------------*/

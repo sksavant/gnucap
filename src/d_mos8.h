@@ -233,7 +233,7 @@ public: // override virtual
   bool      is_valid(const COMPONENT*)const;
   void      tr_eval(COMPONENT*)const;
 public: // not virtual
-  bool use_hci() const; // { return ((double)h0 != 0);
+  bool use_hci() const;
   static int count() {return _count;}
 private: // strictly internal
   static int _count;

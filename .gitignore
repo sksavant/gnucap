@@ -19,6 +19,7 @@ src/d_dio*.h
 src/d_bjt.cc
 src/d_bjt.h
 
+
 src/gnucap
 modelgen/gnucap-modelgen
 
@@ -28,6 +29,9 @@ modelgen/Makefile
 src/Makefile
 examples/Makefile
 
+m4
+install-sh
+
 config.h
 config.log
 config.status
@@ -36,4 +40,21 @@ modelgen/.deps
 src/.deps
 
 stamp-h1
+
+# adms stuff
+adms/gnucap.xml
+src/discipline.h
+src/d_hicum0.h
+src/d_hicum0.cc
+src/hicum0.hxx
+
+#verilog stuff
+d_invert.cc
+d_invert.h
+d_lfsr.cc
+d_lfsr.h
+d_latch.cc
+d_latch.h
+d_clock.cc
+d_clock.h
 

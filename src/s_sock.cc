@@ -159,18 +159,6 @@ private: //vera stuff.
   double*G;
   double*C;
 
-//from vera_titan_ak()
-//  data *A;                    // Zeiger auf globale Datenklasse
-                              // in ihr werden alle globalen Daten gehalten
-//  gls *dc_sysA;               // Zeiger auf das DC-Gleichungsystem
-//  gls *kons_sysA;
-
-//  double *dc_werteA,*dc_loesungA,*kons_loesungA,*kons_residuumA;
-
-//  get_tpara *para_obj;        // Zeiger auf ein Parameterobjekt
-
-//  int  i,k;
-
   int channel;
   int frame_number;
   Socket* socket;
@@ -1247,24 +1235,24 @@ void SOCK::verakons() {
   }
 
   _sim->keep_voltages();
-  //========================
-
-  //	kons_loesungA=konsop(A,kons_sysA,dc_werteA, x_schaetz,&kons_residuumA);
-
-
-//  incomplete();?
 }
 /*-==========================================================*/
 void SOCK::verakons_send()
 {
-
   stream << ((uint16_t)error); stream.pad(6);
-
   for (unsigned i=0; i < n_vars; i++)  
   {
     stream << _sim->_vdc[i];
   }
 
+  // BUG
+  // vera wants just cap stamps
+  //
+  // do something like
+  // _i=0;
+  // cap_list->tr_load();
+  //
+  //
 
   for (unsigned i=0; i < n_vars; i++)         /* Q-Punkt == I == RS */
   {
@@ -1281,12 +1269,11 @@ void SOCK::verakons_send()
   stream << SocketStream::eol;
   trace0("done SOCK::verakons_send");
 }
-
-
+/*--------------------------------------------*/
 void SOCK::verainit_send()
 {
-  stream << error;   stream.pad(6);        /* Fehlerflag */
-  stream << int32_t (n_vars);  stream.pad(4);      /* Anzahl der Variablen */
+  stream << error;   stream.pad(6);
+  stream << int32_t (n_vars);  stream.pad(4);
   stream << int32_t (var_namen_total_size);  stream.pad(4);     /* Laenge des Namen Feldes */
 
   trace4("SOCK::verainit_send ", error, n_vars, length, var_namen_total_size);
@@ -1312,6 +1299,7 @@ void SOCK::verainit_send()
   trace0("done verainit_send");
 }
 
+/*------------------------------------*/
 
 void SOCK::veraop_send()
 {
@@ -1338,215 +1326,7 @@ void SOCK::veraop_send()
         error,frame_number,total); 
   }
 }
-
-
-#if 0
-  } // while true
-}
-
-//-------------------------------------------
-// Konsistenten Arbeitspunkt berechnen
-// liefert konsistentes x zurueck und schreibt in A_mal_qpunkt
-// das residuum
-// Bei keiner Loesung liefert er NULL zurueck
-//-------------------------------------------
-
-double* konsop(data *A, gls *kons_sysA,double* dc_werteA,
-	       double* x_schaetz,double **A_mal_q_punkt)
-{
-  int i;
-  static int initial=0;
-  static char **x_schaetz_namen;
-  static char **s_namen;
-  static double *s_werte;
-  static double *iq_werte;
-  static double *iq_zero_werte;
-  static char **q_namen;
-  static char **iq_namen;
-  double *kons_residuum;
-  double *kons_loesungA;
-
-  if (initial == 0) // Initialisieren der globalen Bloecke und Felder
-  {
-    x_schaetz_namen=(char **)malloc(A->n_var*sizeof(char*));
-    for (i=0; i < A->n_var; i++)
-    {
-      x_schaetz_namen[i]=(char *)malloc(250*sizeof(char));
-      sprintf(x_schaetz_namen[i],"%s_schaetz",A->var_namen[i]);
-    } 
-    s_namen=(char **)malloc(2*sizeof(char*));
-    s_namen[0]=(char*)"siq";
-    s_namen[1]=(char*)"sko";
-    s_werte=(double *)malloc(2*sizeof(double));
-
-    iq_werte=(double*)malloc(kons_sysA->n_diff*sizeof(double));
-    iq_zero_werte=(double*)malloc(kons_sysA->n_diff*sizeof(double));
-    q_namen=(char**)malloc(kons_sysA->n_diff*sizeof(char*));
-    iq_namen=(char**)malloc(kons_sysA->n_diff*sizeof(char*));
-    for (i=0; i < kons_sysA->n_diff ; i++)
-    {
-      q_namen[i]=mstrcpy((kons_sysA->diff_namen[i])+2);
-      // ersten beiden Buchstaben D_ abschneiden	  
-      iq_namen[i]=mstrcpy(kons_sysA->diff_namen[i]);
-      iq_namen[i][0]='i';
-      iq_namen[i][1]='q';
-      // ersten beiden Buchstaben ersetzen 
-      userinfo(1,"konsop","IQ NAmen: %s %s \n",
-	       q_namen[i],iq_namen[i]);                        
-      iq_zero_werte[i]=0.0;
-      // braucht man zum spaeteren 0 setzen  
-    }      
-
-    initial=1; // nur einmal initialisieren
-  }
-
-  if (printlevel >= 1)
-  { 
-    userinfo(1,"konsop","Konsistenten Abp berechnen\n");
-    userinfo(1,"konsop","X-Schaetz:");
-    print_var_werte(kons_sysA->var_namen,x_schaetz,A->n_var);
-  }
-      
-  // X_schaetz als Startvektor vorgeben:
-  array_copy(kons_sysA->start_vek,x_schaetz,1,kons_sysA->n_var);
-
-  // X-Schaetzwerte in den Parametervektor eintragen:
-  kons_sysA->par_werte=insert_value(kons_sysA->par_namen,
-				    kons_sysA->par_werte,kons_sysA->n_par,
-				    x_schaetz_namen,x_schaetz,A->n_var);
-  assert(kons_sysA->par_werte!=NULL);
-  // Schalter siq auf 1 setzen
-  s_werte[0]=1.0; // siq
-  s_werte[1]=0.0; // sko
-  kons_sysA->par_werte=insert_value(kons_sysA->par_namen,
-				    kons_sysA->par_werte,kons_sysA->n_par,
-				    s_namen,s_werte,2);
-  assert(kons_sysA->par_werte!=NULL);
-      
-  if (printlevel >= 5)
-  {
-    userinfo(5,"konsop"," %d mal %d UPNs der Jacobimatrix\n\n",
-	     A->n_var,A->n_var);
-    upn_arr_iter(A->jac_arr,A->n_var,A->n_var,&upn_print);
-    kons_sysA->print();
-  }
-  // Eingabe xschaetz
-  // Gleichungssystem A*iq+f(x)=0             (3.a)
-  //                      fq(xschaetz)=fq(x)  (3.b)
-  // nach x,iq loesen daraus folgen die Ladungen
-  // es wuerde reichen nur den unteren Teil zu loesen, dass
-  // kann aber niligs nicht. 
-  // durch (3.b) wird x in dem Teil neu vorgegeben der zur Ladung gehoert
-  //printlevel=2;
-  // Ausgabe iqs, xkons
-  kons_loesungA=kons_sysA->solve_system(A->eingaenge,dc_werteA,
-					A->n_eingaenge);  
-  //printlevel=1;
-
-  // Die iqs stehen in den Variablen der q's 
-  // diese Loesung als Stroeme merken
-  if (kons_loesungA == NULL)
-  {
-    if (printlevel >= 1)
-    {
-      userinfo(1,"konsop","Fehler bei Pre Kons-Loesung von A\n");
-      userinfo(1,"konsop","X-Schaetz:");            
-      print_var_werte(kons_sysA->var_namen,x_schaetz,A->n_var);
-    }
-    return NULL;
-  }
-  else if (printlevel >= 1)
-  {
-    userinfo(1,"konsop","Pre Kons-Loesung mit qs als iqs:\n");            
-    print_var_werte(kons_sysA->var_namen,kons_loesungA,kons_sysA->n_var);
-  }
-
-  // Guten Startvektor vorgeben:
-  array_copy(kons_sysA->start_vek,kons_loesungA,1,kons_sysA->n_var);
-
-
-  // iq's Speichern und deren Namen generieren:
-  iq_werte=insert_value_sel(q_namen,iq_werte,kons_sysA->n_diff,
-			    kons_sysA->var_namen,kons_loesungA,
-			    kons_sysA->n_var);
-
-  if (printlevel >= 1)
-  {
-    userinfo(1,"konsop","IQ-Stroeme:\n");
-    print_var_werte(iq_namen,iq_werte,kons_sysA->n_diff);
-  }
- 
-  // Nun iqs als Parameter in kons-System einsetzen und Schalter sko umlegen
-  kons_sysA->par_werte=insert_value(kons_sysA->par_namen,
-				    kons_sysA->par_werte,kons_sysA->n_par,
-				    iq_namen,iq_werte,A->n_diff);
-  assert(kons_sysA->par_werte!=NULL);
-
-  s_werte[0]=0.0;  // siq
-  s_werte[1]=1.0;  // sko
-  kons_sysA->par_werte=insert_value(kons_sysA->par_namen,
-				    kons_sysA->par_werte,kons_sysA->n_par,
-				    s_namen,s_werte,2);
-  assert(kons_sysA->par_werte!=NULL);
-  // Eingabe iqs
-  // Gleichungssystem A*iq+f(xkons)=0 
-  //                      q=fq(xkons) loesen
-  // nun werden die kons_loesungen ueberschrieben
-  // und darin stehen dann tatsaechlich die konsistenten 
-  // Loesungen : 
-  // Asugabe: xkons, q 
-  kons_loesungA=kons_sysA->solve_system(A->eingaenge,dc_werteA,
-					A->n_eingaenge);  
-  if (kons_loesungA == NULL)
-  {
-    fprintf(stderr,"konsop: Fehler bei Kons Loesung von A\n");
-  }
-  else if (printlevel >= 1)
-  {
-    userinfo(1,"konsop","Kons-Loesung:");            
-    print_var_werte(kons_sysA->var_namen,kons_loesungA,kons_sysA->n_var);
-  }
-      
-      
-  // Nun noch A*qpunkt berechnen  
-  // dazu zuerst die iqs wieder auf 0 setzen
-  // Gleichungssytem ist dann  A*0+f(xkons)=0
-  //                            q=fq(xkons)
-  // das aufgeloest nach A*iq bedeutet: A*iq=-residuum(Gleichungssystem)
-      
-
-  kons_sysA->par_werte=insert_value(kons_sysA->par_namen,
-				    kons_sysA->par_werte,kons_sysA->n_par,
-				    iq_namen,iq_zero_werte,A->n_diff);
-  assert(kons_sysA->par_werte!=NULL);
-
- 
-  // Residuum des Gleichungssystemsberechnen
-  
-  kons_residuum=kons_sysA->residuum(A->eingaenge,dc_werteA,
-					    A->n_eingaenge);  
-  if (kons_residuum == NULL)
-  {
-    fprintf(stderr,"konsop: Fehler bei Residuum-Loesung von A\n");
-  }
-  else if (printlevel >= 1)
-  {
-    userinfo(1,"konsop","Residuum:");            
-    print_array(stderr,kons_residuum,1,kons_sysA->n_var);
-  }
-
-  for (i=0; i < kons_sysA->n_var; i++)
-  {
-    kons_residuum[i]*=-1.0;
-  }
-
-
-  *A_mal_q_punkt=kons_residuum;
-  // A*q_punkt-Ergebnis ablegen 
-  return kons_loesungA;
-}
-#endif
-
+/*-----------------------------------------*/
 void SOCK::send_matrix()
 {
   const BSMATRIX<double> G = _sim->_acx.real();

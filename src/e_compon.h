@@ -237,7 +237,9 @@ public:	// state, aux data
   //--------------------------------------------------------------------
   // list and queue management
   bool	is_q_for_eval()const	 {return (_q_for_eval >= _sim->iteration_tag());}
-  void	mark_q_for_eval()	 {_q_for_eval = _sim->iteration_tag();}
+  void	mark_q_for_eval()	 {
+    _q_for_eval = _sim->iteration_tag();
+  }
   void	mark_always_q_for_eval() {_q_for_eval = INT_MAX;}
   void	q_eval();
   void	q_load()		 { trace0(("q_load: "+ short_label()).c_str() );

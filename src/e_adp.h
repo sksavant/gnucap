@@ -184,7 +184,10 @@ class ADP_NODE: public CKT_BASE {
     hp_float_t get_aft_1()const;
     hp_float_t tt_get_sum()const  {return _val_bef[0] + _delta[0]; }
 
-    void tr_add( double x ) const { tr() += x;}
+    void tr_add( double x ) const { 
+      assert(is_number(tr())); 
+      tr() += x;
+    }
 
     void add_tr( hp_float_t x ) { tr_add(x);}
     void set_tr( hp_float_t x );

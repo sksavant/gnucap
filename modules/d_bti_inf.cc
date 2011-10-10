@@ -2,7 +2,7 @@
 vim:ts=8:sw=2:et:
 */
 
-// non-GPL code
+// non-GPL code ??
 
 #define WS_COLS 11
 #define WS_ROWS 11
@@ -39,12 +39,6 @@ class MODEL_BUILT_IN_BTI_INF
     virtual std::string RCD_name(uint_t)const;
 };
 /*--------------------------------------------------------------------------*/
-
-/*--------------------------------------------------------------------------*/
-
-
-/*--------------------------------------------------------------------------*/
-
 /*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_BTI_INF::MODEL_BUILT_IN_BTI_INF(const
     MODEL_BUILT_IN_BTI_INF& p)
@@ -54,9 +48,10 @@ MODEL_BUILT_IN_BTI_INF::MODEL_BUILT_IN_BTI_INF(const
   base(p.base),
   matrix(p.matrix)
 {
-  trace0("MODEL_BUILT_IN_BTI_INF::MODEL_BUILT_IN_BTI_INF");
-
-  assert(((vector<double>)matrix).size() == rows*cols);
+  if(!((vector<double>)matrix).size() == rows*cols){
+    throw(Exception("size mismatch %i %i %i\n", ((vector<double>)matrix).size(),
+        (int)rows, (int)cols));
+  }
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_BTI_INF::precalc_first()
@@ -64,7 +59,6 @@ void MODEL_BUILT_IN_BTI_INF::precalc_first()
   const CARD_LIST* par_scope = scope();
   assert(par_scope);
   MODEL_BUILT_IN_BTI::precalc_first();
-
 
   matrix.e_val( std::vector<double>(0), par_scope);
   total.e_val( 0, par_scope);
@@ -118,24 +112,24 @@ std::string MODEL_BUILT_IN_BTI_INF::param_name(int i)const
 bool MODEL_BUILT_IN_BTI_INF::param_is_printable(int i)const
 {
   switch (param_count() - 1 - i) {
-  case 0:  return (false);
-  case 1: 
-  case 2: 
-  case 3: 
-  case 4:  return (true);
-  default: return MODEL_BUILT_IN_BTI::param_is_printable( i );
+    case 0:  return (false);
+    case 1: 
+    case 2: 
+    case 3: 
+    case 4:  return (true);
+    default: return MODEL_BUILT_IN_BTI::param_is_printable( i );
   }
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_BTI_INF::set_param_by_index(int i, std::string& value, int offset)
 {
   switch (param_count() - 1 - i) {
-  case 0: untested(); break;
-  case 1: rows = value; break;
-  case 2: cols = value; break;
-  case 3: matrix = value; break;
-  case 4: base = value; break;
-  default: MODEL_BUILT_IN_BTI::set_param_by_index(i,value,offset);
+    case 0: untested(); break;
+    case 1: rows = value; break;
+    case 2: cols = value; break;
+    case 3: matrix = value; break;
+    case 4: base = value; break;
+    default: MODEL_BUILT_IN_BTI::set_param_by_index(i,value,offset);
   }
 }
 /*--------------------------------------------------------------------------*/
