@@ -273,3 +273,37 @@ bool PARAMETER<string>::operator==(const PARAMETER& p)const
   return ret;
 }
 /*--------------------------------------------------------------------------*/
+string to_string(vector< PARAMETER< vector< PARAMETER<double> > > > n)
+{
+  string buf("");
+  // FIXME: remove one ,
+  if (n.size()==0){return "( )";}
+
+  vector< PARAMETER<vector<PARAMETER<double> > > >::iterator i=n.begin();
+  buf += to_string("(")+ to_string(*i);
+  ++i;
+
+  while (i!=n.end()){
+    buf += std::string(",") + to_string(*i);
+    ++i;
+  }
+  return buf + std::string(" )");;
+}
+/*--------------------------------------------------------------------------*/
+inline string to_string(vector<PARAMETER<double> > n)
+{
+  string buf("");
+  // FIXME: remove one ,
+  if (n.size()==0){return "( )";}
+
+  vector<PARAMETER<double> >::iterator i=n.begin();
+  buf += string("(")+ftos((double)*i, 0, 7, 0);
+  ++i;
+
+  while (i!=n.end()){
+    buf += std::string(",") + ftos((double)*i, 0, 7, 0);
+    ++i;
+  }
+  return buf + std::string(" )");;
+}
+/*--------------------------------------------------------------------------*/

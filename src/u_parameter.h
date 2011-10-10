@@ -54,6 +54,7 @@ public:
 
   explicit PARAMETER() :_v(_NOT_INPUT()), _s() {}
   PARAMETER(const PARAMETER<double>& p) :_v(p._v), _s(p._s) {}
+  // PARAMETER(const T&);
   explicit PARAMETER(T v) :_v(v), _s() {}
   //explicit PARAMETER(T v, const std::string& s) :_v(v), _s(s) {untested();}
   ~PARAMETER() {}
@@ -134,6 +135,12 @@ inline unsigned int PARAMETER<unsigned int>::_NOT_INPUT() const{
   // stupid();
   return NOT_INPUT_INT;
 } //BUG. magic number?
+/*--------------------------------------------------------------------------*/
+template <> 
+inline vector<PARAMETER<double> > PARAMETER< vector<PARAMETER<double> > >::_NOT_INPUT() const {
+  untested();
+  return std::vector< PARAMETER<double> >(0);
+}
 /*--------------------------------------------------------------------------*/
 template <> 
 inline std::vector<double> PARAMETER< std::vector<double> >::_NOT_INPUT() const {
@@ -436,12 +443,35 @@ inline std::vector<double> PARAMETER<std::vector<double> >::e_val(const
 
   CS c(CS::_STRING,_s);
   std::vector<double>::iterator a;
-  a=_v.begin();
+  a = _v.begin();
   _v.erase(_v.begin(),_v.end());
   // FIXME: accept strings and parse...
   while ( c.more() ){
     d=c.ctof();
     trace1("PARAMETER vector add", d);
+    _v.push_back( d );
+  }
+  return _v;
+}
+/*--------------------------------------------------------------------------*/
+typedef PARAMETER<double> dp;
+template <>
+inline vector<PARAMETER<vector<dp> > >
+           PARAMETER<vector<PARAMETER<vector<dp> > > >::e_val(const
+    vector<PARAMETER<vector<dp > > >& , const CARD_LIST* )const
+{
+  trace0(("PARAMETER dl" + _s).c_str());
+  PARAMETER<vector< dp > > d;
+
+  CS c(CS::_STRING,_s);
+  vector< PARAMETER<vector<dp> > >::iterator a;
+  a = _v.begin();
+  _v.erase(_v.begin(),_v.end());
+  // FIXME: accept strings and parse...
+  while ( c.more() ){
+    incomplete();
+    c.ctof();
+    trace0("PARAMETER vector add v");
     _v.push_back( d );
   }
   return _v;
@@ -464,6 +494,7 @@ inline std::list<double> PARAMETER<std::list<double> >::e_val(const
   }
 
   while ( c.more() ){
+    incomplete();
     d=c.ctof();
     trace1("PARAMETER dl", d);
 
@@ -643,5 +674,16 @@ typedef struct{
   double tt_now; // total stress
   double tt_old; // old total
 } stress;
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+// FIXME: templatify
+// template<class T>
+string to_string(vector<PARAMETER<double> > n);
+string to_string(vector< PARAMETER< vector< PARAMETER<double> > > > n);
+/*--------------------------------------------------------------------------*/
+
+typedef vector<PARAMETER<double> > dpv;
+typedef vector<PARAMETER<dpv> > dpvv;
 
 #endif
