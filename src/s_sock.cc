@@ -1196,11 +1196,10 @@ void SOCK::verakons() {
   // Es wird davon ausgegangen, das dc_werteA noch stimmt
   //
 
-
-  trace1("verakons: Caplistsize:",cap_list.size());
-  for( unsigned i = 0; i<cap_list.size(); i++)
+  trace1("SOCK::verakons",cap_list.size());
+  for( unsigned i = 0; i < cap_list.size(); i++)
   {
-    trace0("latching");
+    trace1("latching", i);
     cap_list[i]->keep_ic(); // latch voltage applied to _v0
   }
   //

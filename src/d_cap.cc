@@ -230,22 +230,6 @@ DISPATCHER<CARD>::INSTALL
   d3(&device_dispatcher, "vccap",	    &p3);
 
 
-void DEV_CAPACITANCE::keep_ic( ){
-
-  trace4("D_CAP::keep_ic",IN1,IN2,_sim->_nm[IN1],_n[IN2].m_());
-  double x =  dn_diff(_sim->_vdc[_sim->_nm[IN1]],_sim->_vdc[_sim->_nm[IN2]] ); //tr_involts();
-  if(has_common()){
-    trace2("D_CAP::keep_ic", x,long_label());
-    mutable_common()->set_ic(x);
-  } else {
-    trace2("D_CAP::keep_ic b ", x,long_label());
-    // *(_x.pointer_hack()) = x;
-    mutable_common()->set_ic(x);
-  // do_tr(); mutable_common()->set_ic(x);
-  // tr_load();
-  q_eval(); 
-  }
-} 
 
 
 }
