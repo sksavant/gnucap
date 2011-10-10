@@ -142,7 +142,8 @@ private: // strictly internal
 public: // input parameters
   PARAMETER<double> perim;	// perimeter factor
   PARAMETER<double> weight;	// cap weight
-  PARAMETER<double> Recommon;	// emit resistance
+  PARAMETER<double> Recommon0;	// emit resistance
+  PARAMETER<double> Recommon1;	// emit resistance
   PARAMETER<double> Rccommon0;	// capt resistance abs
   PARAMETER<double> Rccommon1;	// capt resistance steepness
   PARAMETER<double> Uref;	// reference voltage

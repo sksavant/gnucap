@@ -173,7 +173,6 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
   uint_t rows = 10;
   vector<double> mat=matrix;
 
-
   long double up = pow(10, -7.5);
   double base=10;
   //double mu=1;
@@ -182,7 +181,7 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
   // 1 2 3
   // 4 5 6
   // 7 8 9
-  long double down = pow(base,4.5);
+  long double down = pow(base, 4.5);
 
   for(row=0; row < rows; row++ ) {
     up = pow(10, -7.5);
@@ -197,7 +196,7 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
       RCD1->set_modelname( rcd_model_name ); // <= !
       RCD1->attach(this); // ?
       RCD1->Uref = uref;
-      RCD1->Recommon = double (up);
+      RCD1->Recommon0 = double (up);
       double wt = mat[ cols * row + col];
 
       RCD1->weight = wt;

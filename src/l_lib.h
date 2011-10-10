@@ -23,6 +23,7 @@
 #ifndef L_LIB_H
 #define L_LIB_H
 #include "md.h"
+// #include "u_parameter.h"
 /*--------------------------------------------------------------------------*/
 	  char*		trim(char*);
 INTERFACE bool		Umatch(const std::string&, const std::string&);

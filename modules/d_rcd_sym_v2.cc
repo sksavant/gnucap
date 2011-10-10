@@ -205,7 +205,7 @@ double MODEL_BUILT_IN_RCD_SYM_V2::dvth(const COMPONENT* brh) const{
 double MODEL_BUILT_IN_RCD_SYM_V2::__Re(double uin, const COMMON_COMPONENT* c) const {
   assert(c);
   const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
-  double Y = cc->Recommon * exp(cc->Uref* cc->_lambda) ;
+  double Y = cc->Recommon0 * exp(cc->Uref* cc->_lambda) ;
         trace2(" " , Y , cc->_Re0);
   assert( Y = cc->_Re0);
   return cc->_Re0 / exp( cc->_lambda * uin );
@@ -245,7 +245,7 @@ void MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last(COMMON_COMPONENT* ccmp, const CA
   cc->_Rc0 = cc->Rccommon0;
 
   cc->X = cc->Rccommon0;
-  cc->_Re0 = cc->Recommon * exp(cc->Uref* cc->_lambda) ;
+  cc->_Re0 = cc->Recommon0 * exp(cc->Uref* cc->_lambda) ;
 
   double re_0 = m->__Re(0.0,cc);
   double rc_0 = m->__Rc(0.0,cc);
@@ -268,10 +268,10 @@ void MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last(COMMON_COMPONENT* ccmp, const CA
   //trace6("COMMON_BUILT_IN_RCD::precalc_last v2", Recommon, Rccommon0, rc, X, _wcorr, test);
   trace6("MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last" , uend_uref, cc->weight, cc->_weight, re_0, re_uref, m->uref );
   trace2("MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last", re_0, re_uref);
-  trace5("MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last", rc_0, rc_uref,  cc->Recommon, cc->__Re(cc->Uref), cc->Uref);
+  trace5("MODEL_BUILT_IN_RCD_SYM_V2::do_precalc_last", rc_0, rc_uref,  cc->Recommon0, cc->__Re(cc->Uref), cc->Uref);
   assert(rc_0 <= rc_uref); // incresging...
   assert(re_0 >= re_uref); // decreasing...
-  assert( fabs(cc->Recommon - cc->__Re(cc->Uref))/cc->Recommon < 1e-12);
+  assert( fabs(cc->Recommon0 - cc->__Re(cc->Uref))/cc->Recommon0 < 1e-12);
   assert( abs(cc->Uref*cc->weight  - (uend_uref + cc->_wcorr ) * cc->_weight) < 1e-12);
 }
 

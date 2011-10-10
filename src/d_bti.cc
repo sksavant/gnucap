@@ -19,8 +19,8 @@ static bool dummy=false;
 /*--------------------------------------------------------------------------*/
 class COMMON_COMPONENT;
 /*--------------------------------------------------------------------------*/
-int  MODEL_BUILT_IN_BTI_MATRIX::foo(){return 1;}
-int  MODEL_BUILT_IN_BTI_SINGLE::foo(){return 1;}
+//int  MODEL_BUILT_IN_BTI_MATRIX::foo(){return 1;}
+//int  MODEL_BUILT_IN_BTI_SINGLE::foo(){return 1;}
 /*--------------------------------------------------------------------------*/
 int DEV_BUILT_IN_BTI::_count = -1;
 int COMMON_BUILT_IN_BTI::_count = -1;
@@ -196,19 +196,49 @@ void MODEL_BUILT_IN_BTI::precalc_first()
 }
 /*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_BTI_MATRIX::MODEL_BUILT_IN_BTI_MATRIX(const BASE_SUBCKT* p)
-  :MODEL_BUILT_IN_BTI(p),
+  :MODEL_BUILT_IN_BTI_SUM(p),
   cols(0),
   rows(0),
   base(10)
 {
 }
 /*--------------------------------------------------------------------------*/
+std::string MODEL_BUILT_IN_BTI_SUM::param_value(int i)const
+{
+  switch (MODEL_BUILT_IN_BTI::param_count() - 1 - i) {
+    case 0:  unreachable(); return "";
+    case 1:  return rcdparm.string();
+  }
+  return MODEL_BUILT_IN_BTI::param_value(i);
+}
+/*--------------------------------------------------------------------------*/
+void MODEL_BUILT_IN_BTI_SUM::precalc_first()
+{
+  const CARD_LIST* par_scope = scope();
+  dpvv x;
+
+  rcdparm.e_val( x, par_scope);
+  MODEL_BUILT_IN_BTI::precalc_first();
+  rcd_number = (int) dpvv(rcdparm).size();
+}
+/*--------------------------------------------------------------------------*/
+int MODEL_BUILT_IN_BTI_SUM::param_count( )const
+  {return (1 + MODEL_BUILT_IN_BTI::param_count());}
+/*--------------------------------------------------------------------------*/
+void MODEL_BUILT_IN_BTI_SUM::set_dev_type(const std::string& new_type)
+{
+  if (Umatch(new_type, "matrix ")) {
+  }
+  MODEL_BUILT_IN_BTI::set_dev_type(new_type);
+}
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_BTI_MATRIX::set_dev_type(const std::string& new_type)
 {
   trace0(("MODEL_BUILT_IN_BTI_MATRIX::set_dev_type " + new_type).c_str());
   if (Umatch(new_type, "matrix ")) {
   }
-  MODEL_BUILT_IN_BTI::set_dev_type(new_type);
+  MODEL_BUILT_IN_BTI_SUM::set_dev_type(new_type);
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_BTI_MATRIX::precalc_first()
@@ -219,10 +249,8 @@ void MODEL_BUILT_IN_BTI_MATRIX::precalc_first()
   rows.e_val( 2, par_scope);
   cols.e_val( 3, par_scope);
   e_val(&(this->base), 11.0, par_scope);
-  MODEL_BUILT_IN_BTI::precalc_first();
-
+  MODEL_BUILT_IN_BTI_SUM::precalc_first();
   rcd_number=rows*cols;
-
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_BTI::precalc_last()
@@ -319,8 +347,87 @@ std::string MODEL_BUILT_IN_BTI::param_name(int i, int j)const
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-MODEL_BUILT_IN_BTI_MATRIX::MODEL_BUILT_IN_BTI_MATRIX(const MODEL_BUILT_IN_BTI_MATRIX& p)
+std::string MODEL_BUILT_IN_BTI_SUM::param_name(int i)const
+{
+  switch (MODEL_BUILT_IN_BTI_SUM::param_count() - 1 -i ){
+        case 0: return "=====";
+        case 1: return "params";
+  }
+  return MODEL_BUILT_IN_BTI::param_name( i  );
+}
+/*--------------------------------------------------------------------------*/
+MODEL_BUILT_IN_BTI_SUM::MODEL_BUILT_IN_BTI_SUM(const BASE_SUBCKT* p)
   :MODEL_BUILT_IN_BTI(p),
+  rcdparm(dpvv(0) )
+{
+}
+/*--------------------------------------------------------------------------*/
+MODEL_BUILT_IN_BTI_SUM::MODEL_BUILT_IN_BTI_SUM(const MODEL_BUILT_IN_BTI_SUM& p)
+  :MODEL_BUILT_IN_BTI(p),
+   rcdparm(p.rcdparm)
+{
+}
+/*--------------------------------------------------------------------------*/
+std::string MODEL_BUILT_IN_BTI_SUM::param_name(int i, int j)const
+{
+  if (j == 0) {
+    return param_name(i);
+  }else if (j == 1) {
+    switch (MODEL_BUILT_IN_BTI_SUM::param_count() - 1 - i) {
+    case 0:  return "=====";
+    default: return "";
+    }
+  }else{
+    return "";
+  }
+}
+/*--------------------------------------------------------------------------*/
+void MODEL_BUILT_IN_BTI_SUM::set_param_by_index(int i, std::string& value, int offset)
+{
+  switch (MODEL_BUILT_IN_BTI_SUM::param_count() - 1 - i) {
+  case 0: untested(); break;
+  case 1: rcdparm = value; break;
+  default: MODEL_BUILT_IN_BTI::set_param_by_index(i,value,offset);
+  }
+}
+/*--------------------------------------------------------------------------*/
+void MODEL_BUILT_IN_BTI_SUM::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
+{
+  trace0("MODEL_BUILT_IN_BTI_SUM()");
+  trace0(rcd_model_name.string().c_str());
+
+
+  // k
+  // 1 2 3
+  // 4 5 6
+  // 7 8 9
+//typedef vector<PARAMETER<double> > dpv;
+//typedef vector<PARAMETER<dpv> > dpvv;
+
+  size_t Nr = dpvv(rcdparm).size();
+
+  for(size_t n=0; n<Nr ; n++ ){
+    dpvv P = dpvv(rcdparm);
+    PARAMETER<dpv> Q = P[n];
+
+    COMMON_BUILT_IN_RCD* RCD1 = new COMMON_BUILT_IN_RCD;
+    RCD1->set_modelname( rcd_model_name ); // <= !
+    RCD1->attach(this); // ?
+
+    size_t Np = dpv(Q).size();
+    for(uint_t m=0; m<Np ; m++ ){
+      PARAMETER<double> pk = dpv(Q)[m];
+      string s=pk.string();
+      RCD1->set_param_by_index( (int)m, s, 0 );
+      trace2("MODEL_BUILT_IN_BTI_sum::attach_rcds ",  n, m  ); 
+    }
+    COMMON_COMPONENT::attach_common(RCD1, (COMMON_COMPONENT**)&(_RCD[n]));
+  }
+}
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+MODEL_BUILT_IN_BTI_MATRIX::MODEL_BUILT_IN_BTI_MATRIX(const MODEL_BUILT_IN_BTI_MATRIX& p)
+  :MODEL_BUILT_IN_BTI_SUM(p),
    cols(1),
    rows(1),
    base(1)
@@ -355,7 +462,7 @@ void MODEL_BUILT_IN_BTI_MATRIX::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
       RCD1->attach(this); // ?
 //  assert ((double)uref != NOT_INPUT );
       RCD1->Uref = uref;
-      RCD1->Recommon = double(up);
+      RCD1->Recommon0 = double(up);
       RCD1->Rccommon0 = double(down);
 
       trace5("MODEL_BUILT_IN_BTI_MATRIX::attach_rcds ", row, col, k, up, down); 
@@ -373,16 +480,33 @@ void MODEL_BUILT_IN_BTI_MATRIX::set_param_by_index(int i, std::string& value, in
 {
   trace2(("MATRIX::set_param_by_index" + value).c_str(), i, offset );
   switch (MODEL_BUILT_IN_BTI_MATRIX::param_count() - 1 - i) {
-  case 0: untested(); break;
-  case 1: rows = value; break;
-  case 2: cols = value; break;
-  case 3: base = value; break;
-  default: MODEL_BUILT_IN_BTI::set_param_by_index(i,value,offset);
+    case 0: untested(); break;
+    case 1: rows = value; break;
+    case 2: cols = value; break;
+    case 3: base = value; break;
+    default: MODEL_BUILT_IN_BTI_SUM::set_param_by_index(i,value,offset);
   }
 }
 /*--------------------------------------------------------------------------*/
 int MODEL_BUILT_IN_BTI_MATRIX::param_count( )const
-  {return (3 + MODEL_BUILT_IN_BTI::param_count());}
+  {return (3 + MODEL_BUILT_IN_BTI_SUM::param_count());}
+/*--------------------------------------------------------------------------*/
+bool MODEL_BUILT_IN_BTI_SUM::param_is_printable(int i)const
+{
+  switch (MODEL_BUILT_IN_BTI_SUM::param_count() - 1 - i) {
+  case 0:  return (false);
+  case 1:
+           return (true);
+  default: return MODEL_BUILT_IN_BTI::param_is_printable( i );
+  }
+}
+/*--------------------------------------------------------------------------*/
+namespace  { 
+  static DEV_BUILT_IN_BTI p1d;
+  static MODEL_BUILT_IN_BTI_SUM p1(&p1d);
+  static DISPATCHER<MODEL_CARD>::INSTALL
+    d1(&model_dispatcher, "bti_sum|btisum", &p1);
+}
 /*--------------------------------------------------------------------------*/
 bool MODEL_BUILT_IN_BTI::param_is_printable(int i)const
 {
@@ -410,7 +534,7 @@ bool MODEL_BUILT_IN_BTI_MATRIX::param_is_printable(int i)const
   case 2:
   case 3:
            return (true);
-  default: return MODEL_BUILT_IN_BTI::param_is_printable( i );
+  default: return MODEL_BUILT_IN_BTI_SUM::param_is_printable( i );
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -449,7 +573,7 @@ std::string MODEL_BUILT_IN_BTI_MATRIX::param_value(int i)const
     case 2:  return cols.string();
     case 3:  return base.string();
   }
-  return MODEL_BUILT_IN_BTI::param_value(i);
+  return MODEL_BUILT_IN_BTI_SUM::param_value(i);
 }
 /*--------------------------------------------------------------------------*/
 namespace MODEL_BUILT_IN_BTI_MATRIX_DISPATCHER { 
@@ -475,9 +599,9 @@ int MODEL_BUILT_IN_BTI_SINGLE::param_count( )const
 void MODEL_BUILT_IN_BTI_SINGLE::set_param_by_index(int i, std::string& value, int offset)
 {
   switch (MODEL_BUILT_IN_BTI_SINGLE::param_count() - 1 - i) {
-  case 0: untested(); break;
-  case 1: fooo = value; break;
-  default: MODEL_BUILT_IN_BTI::set_param_by_index(i,value,offset);
+    case 0: untested(); break;
+    case 1: fooo = value; break;
+    default: MODEL_BUILT_IN_BTI::set_param_by_index(i,value,offset);
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -575,20 +699,20 @@ void COMMON_BUILT_IN_BTI::set_param_by_index(int I, std::string& Value, int Offs
 {
   trace1("COMMON_BUILT_IN_BTI::set_param_by_index " + Value , I);
   switch (COMMON_BUILT_IN_BTI::param_count() - 1 - I) {
-  case 0:  lambda = Value; break;
-  case 1:  number = Value; break;
-  case 2:  weight = Value; break;
-  default: COMMON_COMPONENT::set_param_by_index(I, Value, Offset);
+    case 0:  lambda = Value; break;
+    case 1:  number = Value; break;
+    case 2:  weight = Value; break;
+    default: COMMON_COMPONENT::set_param_by_index(I, Value, Offset);
   }
 }
 /*--------------------------------------------------------------------------*/
 bool COMMON_BUILT_IN_BTI::param_is_printable(int i)const
 {
   switch (COMMON_BUILT_IN_BTI::param_count() - 1 - i) {
-  case 0:  return (true);
-  case 1:  return (true);
-  case 2:  return (true);
-  default: return COMMON_COMPONENT::param_is_printable(i);
+    case 0:  return (true);
+    case 1:  return (true);
+    case 2:  return (true);
+    default: return COMMON_COMPONENT::param_is_printable(i);
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -717,7 +841,7 @@ void MODEL_BUILT_IN_BTI::attach_rcds(COMMON_BUILT_IN_RCD** _RCDc) const
     RCD1->set_modelname( rcd_model_name ); // <= !
     RCD1->attach(this); // ?
     RCD1->weight = 1;
-    RCD1->Recommon = hoch(i);
+    RCD1->Recommon0 = hoch(i);
     RCD1->Rccommon0 = runter(i);
     RCD1->Rccommon1 = hoch(i);
     COMMON_COMPONENT::attach_common(RCD1, (COMMON_COMPONENT**)&(_RCDc[i]));
