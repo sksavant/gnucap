@@ -120,7 +120,7 @@ public: // calculated parameters
   double egap;	// energy gap at tnom
   bool needs_isub;	// 
   bool use_bti()const {return _use_bti;}
-  bool use_hci()const {return false;}
+  virtual bool use_hci()const {return false;}
 public: // other thiongs
   virtual void do_stress_apply( COMPONENT* C ) const;
   // virtual??

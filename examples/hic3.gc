@@ -1,0 +1,37 @@
+
+spice
+
+*.list
+
+Vcc1 ncc1 0 5
+Vcc2 ncc2 0 5
+Vcc3 ncc3 0 5
+
+Vin nin 0 sin(frequency=1, amplitude=2.5, offset=2.5)
+
+.verilog
+
+paramset myhicum hicum0;
+	.tnom=20;
+	.is=1.0e-16;
+endparamset
+
+myhicum Q1( b2 b1 0 );
+myhicum Q2( b3 b2 0 );
+myhicum Q3( nout b3 0 );
+
+spice
+
+R0 nin b1 10k
+R1 ncc1 b2 10k
+R2 ncc2 b3 10k
+R3 ncc3 nout 10k
+
+.print tran v(nodes) i(R*)
+.nodelist
+
+.tran .001 0.01  trace=a
+*trace v
+
+.end
+

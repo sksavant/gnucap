@@ -332,7 +332,6 @@ inline void ELEMENT::tr_load_passive()
 {
   // untested0( long_label().c_str() );
   if( _m0.c1 != _m0.c1 ){
-    std::cerr << "ELEMENT::tr_load_passive: " << long_label() << "\n";
     exit(30);
   }
   double d = dampdiff(&_m0.c1, _m1.c1);
@@ -446,7 +445,7 @@ template <class T>
 inline void ELEMENT::tr_load_point(const node_t& no1, const node_t& no2,
 				   T* new_value, T* old_value)
 {
-  untested();
+  itested();
   T d = dampdiff(new_value, *old_value);
   if (d != 0.) {
     _sim->_aa.load_point(no1.m_(), no2.m_(), d);

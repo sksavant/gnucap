@@ -535,9 +535,7 @@ void SOCK::sweep_recursive(int Nest)
 
       _sim->_uic=_sim->_more_uic=false;
 
-
       _sim->init();
-
       ac_snapshot();
 
       BSMATRIX<double> G = _sim->_acx.real();
@@ -658,7 +656,6 @@ void SOCK::sweep_recursive(int Nest)
        double work[lwork];
        dgelss_(&D,&D,&one,CU, &D, RS, &D, S, &rcond, &rank, work, &lwork, &info );
       
-
       if(info){
         cout<<info << "\n";
         exit(info);
@@ -1025,7 +1022,7 @@ void SOCK::main_loop(){
         veraop();
         veraop_send();
         break;
-      case '5':  // 52
+      case '5':  // 53
         verakons();
         verakons_send();
         break;
@@ -1112,12 +1109,11 @@ void SOCK::verainit(){
 }
 
 /*-------------------------------------------------------------*/
-
 void SOCK::veraop(){
   total = n_vars;
   assert(3*BUFSIZE*BUFSIZE >= total);
 
-  dc_werteA= (double*) malloc(sizeof(double)*n_vars);
+  dc_werteA = (double*) malloc(sizeof(double)*n_vars);
   trace1("fetching ",n_vars);
   assert(_sim->_vdc[0] == 0 );
   for (unsigned i=0; i < n_inputs; i++)
@@ -1130,14 +1126,14 @@ void SOCK::veraop(){
 
   error = 0; /* veraop(sweep_val, x_new, G, C); */
 
-  //================do_dc========
+  // ================do_dc========
   _sim->_uic = false;
   _sim->_more_uic = false;
   OPT::ITL itl = OPT::DCBIAS;
 
   trace0("SOCK::veraop, hot");
   _trace=tVERBOSE;
-  CARD_LIST::card_list.tr_begin();
+  CARD_LIST::card_list.tr_begin();  // hier muesste eigentlich eine dc hin.
   try{
     solve_with_homotopy(itl,_trace);
   }catch( Exception e) {
@@ -1145,21 +1141,14 @@ void SOCK::veraop(){
     throw e;
   }
 
+  ::status.accept.start();
+  _sim->set_limit();
+  CARD_LIST::card_list.tr_accept();
+  ::status.accept.stop();
+
   _sim->keep_voltages();
   //========================
 
-  {
-    for (unsigned i=0; i < n_vars; i++)
-    {
-      //      dc_sysA->start_vek[i]=dc_loesungA[i];
-      //      x_neu[i] = dc_loesungA[i];
-    }
-    if (printlevel >= 1)
-    {
-      //     dc_sysA->print_var();
-      //    print_array(stderr,dc_loesungA,1,A->n_var);
-    }
-  }
   // Die Variablenwerte stehen schon durch solve_system in var_werte
   // in dc_sysA und muessen noch nach A kopiert werden:
   //
@@ -1175,18 +1164,8 @@ void SOCK::veraop(){
   //  A->eval_lin_gl(dc_werteA,&matrixg,&matrixc,&vectorq);
 
   trace1("matrix", 1);
-
-  //  for (i=0; i < n_vars; i++)
-  //  {
-  //    for (k=0; k < n_vars; k++)
-  //    {  
-  //      // muessen transponiert werden
-  //      G[i+n_vars*k]=matrixg[k+n_vars*i];
-  //      C[i+n_vars*k]=matrixc[k+n_vars*i];
-  //    }
-  //  }
 }
-
+//==========================================================
 void SOCK::verakons() {
   //        n_eingaenge == #caps?
   total =  n_eingaenge + n_vars + 1;
@@ -1306,9 +1285,7 @@ void SOCK::verainit_send()
 
   trace0("done verainit_send");
 }
-
 /*------------------------------------*/
-
 void SOCK::veraop_send()
 {
   assert(n_vars==_sim->_total_nodes);
@@ -1317,6 +1294,13 @@ void SOCK::veraop_send()
   for (unsigned i=0; i < n_vars; i++)         /* Variablen-Werte */
   {
     stream << _sim->_vdc[i];
+  }
+  if(_dump_matrix){
+    _out << "i,u: \n";
+    for (unsigned i=0; i < n_vars; i++)         /* Variablen-Werte */
+    {
+      _out << _sim->_i[i] << "," <<  _sim->_vdc[i] << "\n" ;
+    }
   }
 
   ac_snapshot();

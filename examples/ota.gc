@@ -1,0 +1,36 @@
+# testbench for lowpass filter
+# 
+# Lutz Naethke
+#
+# Institut fuer Mikroelektronische Schaltungen und Systeme
+# Fachgebiet Entwurfsautomatisierung
+# Universitaet Hannover
+# 
+# 21.03.2001
+# 
+# Testbench fuer ota
+#
+
+# OTA:
+ota.test1 p_in n_in out1 pbias nbias vdd 0
+# Bias:
+#bias.bias1 pbias nbias vdd 0
+#spv.pbias pbias 0 = dc = 2.056
+spi.pbias pbias 0 = dc = -1000n
+spi.nbias nbias 0 = dc = -2000n
+#spv.nbias nbias 0 = dc = 0.693
+# Strommesswiderstaende pbias nbias:
+#rz.nbiasmess nbias nbias2ota = 0
+#rz.pbiasmess pbias pbias2ota = 0
+# Vdd:
+spv.vdd vdd   0 = dc = 2.7
+# Pos. input auf 1.35V gebiast:
+#wobble.p_in p_in bias = dc =0, wobble = (0, 50m, 8k, 80k, 1m)
+spv.bias_in bias 0 = dc = 1.35
+#spv.vin p_in bias = ac = (1,0), dc = 0, tran=(pulse=(v1=-0.02, v2=0.02, td=1u, tr=10n, tf=10n, pw=20u, per=45u))
+spv.vin p_in bias = ac = (1,0), dc = 0, tran=(ppwl=[0,0, 5u,0, 5.05u,-0.02, 10u,-0.02, 10.05u,0.02, 15u,0.02, 15.05u,0, 20u,0, 20.05u,-0.2, 25u,-0.2, 25.05u,0.2, 30u,0.2, 30.05u,0 ])
+
+# Eingangsdifferenz:
+spe.eingangsdifferenzmacher n_in bias p_in bias = -1
+# Last-Dc-Quelle:
+spv.last out1 0 = dc = 1.35, tran=(pwl=[0,1.35])
