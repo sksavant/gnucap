@@ -1037,7 +1037,7 @@ void SOCK::main_loop(){
         veraop();
         veraop_send();
         break;
-      case '5':  // 52
+      case '5':  // 53
         verakons();
         verakons_send();
         break;
@@ -1149,7 +1149,8 @@ void SOCK::veraop(){
 
   trace0("SOCK::veraop, hot");
   _trace=tVERBOSE;
-  CARD_LIST::card_list.tr_begin();
+  CARD_LIST::card_list.tr_begin();  // hier muesste eigentlich eine dc hin.
+                                    //  
   try{
     solve_with_homotopy(itl,_trace);
   }catch( Exception e) {
