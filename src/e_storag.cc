@@ -256,9 +256,18 @@ void STORAGE::set_ic( double x ){
 } 
 /*--------------------------------------------------------------------------*/
 void STORAGE::keep_ic( ){
-  double x = tr_involts();
+
+  trace4("STORAGE::keep_ic",IN1,IN2,_n[IN1].m_(),_n[IN2].m_());
+  double x =  dn_diff(_sim->_vdc[_n[IN1].m_()],_sim->_vdc[_n[IN2].m_()] ); //tr_involts();
   if(has_common()){
+    trace2("STORAGE::keep_ic", x,long_label());
     mutable_common()->set_ic(x);
+  } else {
+    trace2("STORAGE::keep_ic b ", x,long_label());
+  *(_value.pointer_hack()) = x;
+  // do_tr();
+  // tr_load();
+  q_eval(); 
   }
 } 
 /*--------------------------------------------------------------------------*/

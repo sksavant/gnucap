@@ -97,7 +97,7 @@ inline void DEV_BVS::ac_load()
   /* load source */
   _n[BR].iac() += _acg; // mfactor() * _acg;
 
-  trace1("DEV_BVS::ac_load source ", _acg);
+  trace3("DEV_BVS::ac_load source ", _acg, _n[BR].m_(),BR);
 
 }
 /*--------------------------------------------------------------------------*/

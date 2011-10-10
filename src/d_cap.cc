@@ -57,7 +57,6 @@ private: // override virtual
   hp_float_t   tr_involts_limited()const {return volts_limited(_n[IN1],_n[IN2]);}
   void	    ac_iwant_matrix()	{ac_iwant_matrix_active();}
   void	    ac_load()		{untested(); ac_load_active();}
-
   std::string port_name(uint_t i)const {untested();
     assert(i != INVALID_NODE);
     assert(i < 4);
@@ -229,6 +228,26 @@ DISPATCHER<CARD>::INSTALL
   d1(&device_dispatcher, "C|capacitor",	    &p1),
   d2(&device_dispatcher, "tcap|tcapacitor", &p2),
   d3(&device_dispatcher, "vccap",	    &p3);
+
+
+void DEV_CAPACITANCE::keep_ic( ){
+
+  trace4("D_CAP::keep_ic",IN1,IN2,_sim->_nm[IN1],_n[IN2].m_());
+  double x =  dn_diff(_sim->_vdc[_sim->_nm[IN1]],_sim->_vdc[_sim->_nm[IN2]] ); //tr_involts();
+  if(has_common()){
+    trace2("D_CAP::keep_ic", x,long_label());
+    mutable_common()->set_ic(x);
+  } else {
+    trace2("D_CAP::keep_ic b ", x,long_label());
+    // *(_x.pointer_hack()) = x;
+    mutable_common()->set_ic(x);
+  // do_tr(); mutable_common()->set_ic(x);
+  // tr_load();
+  q_eval(); 
+  }
+} 
+
+
 }
 /*--------------------------------------------------------------------------
 --------------------------------------------------------------------------*/

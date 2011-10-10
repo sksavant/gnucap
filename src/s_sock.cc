@@ -313,6 +313,7 @@ void SOCK::setup(CS& Cmd)
   fillnames( &CARD_LIST::card_list );
   n_vars_square = (uint16_t)(n_vars * n_vars);
 
+  findcaps(&CARD_LIST::card_list);
 #ifndef NDEBUG
     for (unsigned i=0; i < n_vars; i++)
       trace0("name: " + var_namen_arr[i]);
@@ -1183,7 +1184,7 @@ void SOCK::verakons() {
     asserted_cast<ELEMENT*>(input_devs[i])->set_value(d);
   }
 
-  for (unsigned i=0; i < n_vars; i++)
+  for (unsigned i=1; i <= n_vars; i++)
   {
     stream >> _sim->_vdc[i];
   }
@@ -1196,14 +1197,19 @@ void SOCK::verakons() {
   //
 
 
+  trace1("verakons: Caplistsize:",cap_list.size());
   for( unsigned i = 0; i<cap_list.size(); i++)
   {
-    cap_list[i]->keep_ic(); // latch voltage applied to _vdc
+    trace0("latching");
+    cap_list[i]->keep_ic(); // latch voltage applied to _v0
   }
   //
   //================do_dc========
   _sim->_uic = true;
   _sim->_more_uic = true;
+  _sim->_bypass_ok = false;
+  _sim->set_inc_mode_bad();
+
   OPT::ITL itl = OPT::DCBIAS;
 
   trace0("SOCK::verakons, hot");
@@ -1222,7 +1228,7 @@ void SOCK::verakons() {
 void SOCK::verakons_send()
 {
   stream << ((uint16_t)error); stream.pad(6);
-  for (unsigned i=0; i < n_vars; i++)  
+  for (unsigned i=1; i <= n_vars; i++)  
   {
     stream << _sim->_vdc[i];
   }
@@ -1295,13 +1301,13 @@ void SOCK::veraop_send()
   assert(n_vars==_sim->_total_nodes);
   trace1("SOCK::veraop_send ", n_vars);
   stream << error; stream.pad(6);
-  for (unsigned i=0; i < n_vars; i++)         /* Variablen-Werte */
+  for (unsigned i=1; i <= n_vars; i++)         /* Variablen-Werte */
   {
     stream << _sim->_vdc[i];
   }
   if(_dump_matrix){
     _out << "i,u: \n";
-    for (unsigned i=0; i < n_vars; i++)         /* Variablen-Werte */
+    for (unsigned i=0; i <= n_vars; i++)         /* Variablen-Werte */
     {
       _out << _sim->_i[i] << "," <<  _sim->_vdc[i] << "\n" ;
     }

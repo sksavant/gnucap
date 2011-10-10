@@ -11,6 +11,7 @@ protected:
   explicit DEV_CAPACITANCE(const DEV_CAPACITANCE& p) :STORAGE(p) {}
 public:
   explicit DEV_CAPACITANCE()	:STORAGE() {}
+  void      keep_ic();
 protected: // override virtual
   char	   id_letter()const	{return 'C';}
   std::string value_name()const {return "c";}
