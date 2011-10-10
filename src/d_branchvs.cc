@@ -142,6 +142,7 @@ void DEV_VS::tr_iwant_matrix()
 inline void DEV_VS::tr_load()
 /*----------shunt---------------------------------------------------------------*/
 {
+  cout << "trload trload trload\n";
   trace1("DEV_VS::tr_load", _sim->_time0);
   trace3("DEV_VS::tr_load", _n[OUT1].m_(), _n[OUT2].m_(), _n[BR].m_());
   assert(_one0 == _one0);
@@ -191,10 +192,12 @@ void DEV_VS::tr_begin()
   _m0.x  = 0.;
   _m0.c0 = value() ; //  -_loss0 * _y[0].f1;
   _m0.c1 = 0.;
+  std::cout << "tr_begin value " << value() << "\n";
   _source0 = value();
   _source1 = 0;
   _one0 = 1;
   _one1 = 0;
+  q_load();
   // _m1 = _m0;    
   if (!using_tr_eval()) {
 
@@ -220,6 +223,8 @@ bool DEV_VS::do_tr()
     assert(_y1 == _y[0]);
     assert(converged());
   }
+q_load();
+  std::cout << "do_tr value " << value() << "\n";
   return converged();
 }
 /*--------------------------------------------------------------------------*/
