@@ -86,7 +86,7 @@ public:	// dc-tran
   virtual void	 tr_load()		{}
   virtual TIME_PAIR tr_review();	//{return TIME_PAIR(NEVER,NEVER);}
   virtual void	 tr_accept()		{}
-  virtual void	 tr_unload()		{untested();}
+  virtual void	 tr_unload()		{untested(); assert(false);}
   //--------------------------------------------------------------------
 public:	// ac
   virtual void	 ac_iwant_matrix()	{}

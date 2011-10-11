@@ -78,9 +78,8 @@ private:
 public:
   static void attach_common(COMMON_COMPONENT* c, COMMON_COMPONENT** to);
   static void detach_common(COMMON_COMPONENT** from);
-#ifdef DO_TRACE
   int attach_count(){return		_attach_count;}
-#endif
+  void set_value(double x) {  _value = x; } // HACK
 private:
   COMMON_COMPONENT& operator=(const COMMON_COMPONENT&)
 			      {unreachable(); return *this;}

@@ -122,7 +122,7 @@ void EVAL_BM_ACTION_BASE::ac_final_adjust_with_temp(T* y)const
   *y *= temp_adjust();
   ac_final_adjust(y);
 }
-
+/*--------------------------------------------------------------------------*/
 void EVAL_BM_ACTION_BASE::ac_final_adjust_with_temp(COMPLEX* y)const
 {
   *y *= temp_adjust();

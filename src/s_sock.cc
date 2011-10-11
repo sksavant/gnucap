@@ -123,7 +123,7 @@ private:
   void cap_prepare();
   void cap_reset();
   vector<string> var_namen_arr;
-  vector<DEV_CAPACITANCE*> _caplist;
+  vector<DEV_CAPACITANCE*> _caplist; // FIXME: use cardlist
   CARDSTASH* _capstash;
   uint16_t var_namen_total_size; 
 
@@ -1234,8 +1234,9 @@ void SOCK::verakons_send()
   //
 
   // this could work:
-  // std::fill_n(_i,  _total_nodes+1, 0);
-  // _caplist->tr_unload();
+  std::fill_n(_sim->_i, _sim->_total_nodes+1, 0);
+  for( unsigned i = 0; i < _caplist.size(); i++)
+    asserted_cast<CARD*>(_caplist[i])->tr_unload();
   //
   // now i contains the negative sum of the cap value.
   // does this break anything?
@@ -1244,7 +1245,7 @@ void SOCK::verakons_send()
   {
     //buffer[i+n_vars+1].double_val = q_punkt[i];
     trace1("sending dqdt\n", _sim->_i[i]);
-    stream << _sim->_i[i];
+    stream << -_sim->_i[i];
   }
 
   ac_snapshot(); // FIXME: to verakons()
@@ -1372,15 +1373,20 @@ void SOCK::cap_prepare(void){
       _caplist[ii]->set_value(_caplist[ii]->value(),0);	// zap out extensions
       _caplist[ii]->set_constant(false);		// so it will be updated
     }else{
-      trace0("SOCK::cap_prepare, attaching common to " + _caplist[ii]->long_label());
+      untested();
+      trace1("SOCK::cap_prepare, attaching common", *_caplist[ii]);
       //      _sweepval[ii] = _zap[ii]->set__value();	// point to value to patch
       COMMON_COMPONENT* c = bm_dispatcher.clone("eval_bm_value");
+      c->set_value( _caplist[ii]->value() );
       COMMON_COMPONENT* dc = c->deflate();
       assert(dc);
       //
-       _caplist[ii]->set_value(_caplist[ii]->value(),dc);	// zap out extensions
-      // _caplist[ii]->set_constant(false);		// so it will be updated
+      _caplist[ii]->set_value(_caplist[ii]->value(),dc);	// zap out extensions
+      _caplist[ii]->set_constant(false);		// so it will be updated
       trace1("SOCK::cap_prepare", *_caplist[ii]);
+      _caplist[ii]->precalc_first();
+      _caplist[ii]->precalc_last();
+      _caplist[ii]->tr_begin();
     }
   }
 }

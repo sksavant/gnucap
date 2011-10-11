@@ -591,7 +591,7 @@ COMMON_COMPONENT* COMMON_COMPONENT::deflate()
 /*--------------------------------------------------------------------------*/
 void COMPONENT::precalc_first()
 {
-  trace0("COMPONENT::precalc_first");
+  trace1("COMPONENT::precalc_first", _value);
   CARD::precalc_first();
   if (has_common()) {
     try {

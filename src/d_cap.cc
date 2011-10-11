@@ -100,17 +100,20 @@ private: // override virtual
 bool DEV_CAPACITANCE::do_tr()
 {
   // FPOLY1* q=_y;
-  trace0(("DEV_CAPACITANCE::do_tr " + long_label()));
-  trace3(("DEV_CAPACITANCE::do_tr " + long_label()).c_str(), _y[0].f1, value(), tr_input() );
+  //trace0(("DEV_CAPACITANCE::do_tr " + long_label()));
+  //trace3(("DEV_CAPACITANCE::do_tr " + long_label()).c_str(), _y[0].f1, value(), tr_input() );
   if (using_tr_eval()) {
+    trace1("DEV_CAPACITANCE::do_tr, tr_eval", has_tr_eval());
     _y[0].x = tr_input_limited();
     tr_eval();
   }else{
+    trace0("DEV_CAPACITANCE::do_tr, no tr_eval");
     _y[0].x = tr_input(); // tr_involts();
     assert(_y[0].f1 == value());
     _y[0].f0 = _y[0].x * _y[0].f1;
     assert(converged());
   }
+  trace1("DEV_CAPACITANCE::do_tr ", _y[0].f1 );
   store_values();
   q_load();
 
@@ -140,7 +143,7 @@ bool DEV_CAPACITANCE::do_tr()
     trace3("i", _i[0].x, _i[0].f0, _i[0].f1);
   }
   _m0 = CPOLY1(_i[0]);
-  trace2("DEV_CAPACITANCE::do_tr", _m0, _m1);
+  trace3("DEV_CAPACITANCE::do_tr " + long_label(), value(), _m0, _m1);
   return converged();
 }
 /*--------------------------------------------------------------------------*/
