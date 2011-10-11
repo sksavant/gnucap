@@ -283,6 +283,7 @@ void STORAGE::keep_ic( ){
   // do_tr(); mutable_common()->set_ic(x);
   // tr_load();
     q_eval(); 
+    assert(false);
   }
 } 
 /*--------------------------------------------------------------------------*/

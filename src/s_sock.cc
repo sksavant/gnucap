@@ -1122,7 +1122,7 @@ void SOCK::veraop(){
   {
     double d;
     stream >> d;
-    trace2("setting input " + input_devs[i]->long_label(), i, d);
+    trace2("SOCK::veraop setting input " + input_devs[i]->long_label(), i, d);
     asserted_cast<ELEMENT*>(input_devs[i])->set_value(d);
   }
 
