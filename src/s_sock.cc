@@ -73,9 +73,8 @@ typedef union
 /*--------------------------------------------------------------------------*/
 class SOCK : public DDC_BASE {
 public:
-  void	finish();
   explicit SOCK();
-  ~SOCK() {}
+  ~SOCK();
 protected:
   void	fix_args(int);
   void	options(CS&, int x=0);
@@ -100,8 +99,7 @@ protected:
   bool _linswp[DCNEST];
   double _sweepval[DCNEST];	/* pointer to thing to sweep, dc command */
 //  typedef void (*p)(double);
-  ELEMENT* (_pushel[DCNEST]);	/* pointer to thing to sweep, dc command */
-  ELEMENT* (_zap[DCNEST]);	/* to branch to zap, for re-expand */
+  //ELEMENT* (_pushel[DCNEST]);	/* pointer to thing to sweep, dc command */
   CARDSTASH _stash[DCNEST];	/* store std values of elements being swept */
   bool _loop[DCNEST];		/* flag: do it again backwards */
   bool _reverse_in[DCNEST];	/* flag: sweep backwards, input */
@@ -122,8 +120,11 @@ private:
   void	setup(CS&);
   void fillnames( const CARD_LIST* scope);
   void findcaps( CARD_LIST* scope);
+  void cap_prepare();
+  void cap_reset();
   vector<string> var_namen_arr;
-  vector<DEV_CAPACITANCE*> cap_list;
+  vector<DEV_CAPACITANCE*> _caplist;
+  CARDSTASH* _capstash;
   uint16_t var_namen_total_size; 
 
 private: //vera stuff.
@@ -231,20 +232,6 @@ SOCK::SOCK() :DDC_BASE(),
   _sim->_uic=_sim->_more_uic=false;
 }
 /*--------------------------------------------------------------------------*/
-void SOCK::finish(void)
-{
-
-  for (int ii = 0;  ii < _n_sweeps;  ++ii) {
-    if (exists(_zap[ii])) { // component
-      _stash[ii].restore();
-      _zap[ii]->dec_probes();
-      _zap[ii]->precalc_first();
-      _zap[ii]->precalc_last();
-    }else{
-    }
-  }
-}
-/*--------------------------------------------------------------------------*/
 void SOCK::do_tran_step()
 {
 
@@ -314,6 +301,8 @@ void SOCK::setup(CS& Cmd)
   n_vars_square = (uint16_t)(n_vars * n_vars);
 
   findcaps(&CARD_LIST::card_list);
+  //cap_prepare();
+
 #ifndef NDEBUG
     for (unsigned i=0; i < n_vars; i++)
       trace0("name: " + var_namen_arr[i]);
@@ -791,7 +780,7 @@ void SOCK::findcaps( CARD_LIST* scope){
     if ( DEV_CAPACITANCE* cap = dynamic_cast< DEV_CAPACITANCE*>(*i) )
     {
       trace1("found cap", cap->long_label());
-      cap_list.push_back( cap );
+      _caplist.push_back( cap );
     }
     if ( BASE_SUBCKT* s = dynamic_cast< BASE_SUBCKT*>(*i) )
     {
@@ -1196,11 +1185,10 @@ void SOCK::verakons() {
   // Es wird davon ausgegangen, das dc_werteA noch stimmt
   //
 
-  trace1("SOCK::verakons",cap_list.size());
-  for( unsigned i = 0; i < cap_list.size(); i++)
+  trace1("SOCK::verakons",_caplist.size());
+  for( unsigned i = 0; i < _caplist.size(); i++)
   {
-    trace1("latching", i);
-    cap_list[i]->keep_ic(); // latch voltage applied to _v0
+    _caplist[i]->keep_ic(); // latch voltage applied to _v0
   }
   //
   //================do_dc========
@@ -1237,7 +1225,7 @@ void SOCK::verakons_send()
   //
   // do something like
   // _i=0;
-  // cap_list->tr_load();
+  // _caplist->tr_load();
   //
   // problem: tr_load just cares about differences, 
   // this call would only add 0
@@ -1245,7 +1233,7 @@ void SOCK::verakons_send()
 
   // this could work:
   // std::fill_n(_i,  _total_nodes+1, 0);
-  // cap_list->tr_unload();
+  // _caplist->tr_unload();
   //
   // now i contains the negative sum of the cap value.
   // does this break anything?
@@ -1263,6 +1251,25 @@ void SOCK::verakons_send()
 
   assert(3*BUFSIZE*BUFSIZE >= total);
   stream << SocketStream::eol;
+
+//  for( unsigned i = 0; i < _caplist.size(); i++)
+//  {
+//    trace1("unlatching", i);
+//        
+//    dashier umgekehrt.
+//    commonstash[i] = _caplist[i]->common();
+//    detach(_caplist[i]);
+//
+//    COMMON_COMPONENT* c = bm_dispatcher.clone("eval_bm_value");
+//    COMMON_COMPONENT* dc = c->deflate();
+//
+//    _caplist[i]->attach_common(dc);
+//
+//    _caplist[i]->keep_ic(); // latch voltage applied to _v0
+//
+//
+//  }
+
   trace0("done SOCK::verakons_send");
 }
 /*--------------------------------------------*/
@@ -1348,6 +1355,49 @@ void SOCK::send_matrix()
       stream << C.s(j,i);
     }
   }
+}
+/*-----------------------------------------*/
+void SOCK::cap_prepare(void){
+  trace1("SOCK::cap_prepare", _caplist.size() );
+  assert(!_capstash);
+  _capstash = new CARDSTASH[_caplist.size()];
+
+  for (unsigned ii = 0;  ii < _caplist.size();  ++ii) {
+    _capstash[ii] = _caplist[ii];			// stash the std value
+    _caplist[ii]->inc_probes();			// we need to keep track of it
+
+    if(_caplist[ii]->has_common()){
+      _caplist[ii]->set_value(_caplist[ii]->value(),0);	// zap out extensions
+      _caplist[ii]->set_constant(false);		// so it will be updated
+    }else{
+      trace0("SOCK::cap_prepare, attaching common to " + _caplist[ii]->long_label());
+      //      _sweepval[ii] = _zap[ii]->set__value();	// point to value to patch
+      COMMON_COMPONENT* c = bm_dispatcher.clone("eval_bm_value");
+      COMMON_COMPONENT* dc = c->deflate();
+      assert(dc);
+      //
+      // _caplist[ii]->set_value(_caplist[ii]->value(),dc);	// zap out extensions
+      // _caplist[ii]->set_constant(false);		// so it will be updated
+      trace1("SOCK::cap_prepare", *_caplist[ii]);
+    }
+  }
+}
+/*-----------------------------------------*/
+void SOCK::cap_reset(void)
+{
+  trace0("SOCK::cap_reset");
+  for (unsigned ii = 0;  ii < _caplist.size();  ++ii) {
+      _capstash[ii].restore();
+      _caplist[ii]->dec_probes();
+      _caplist[ii]->precalc_first();
+      _caplist[ii]->precalc_last();
+  }
+  delete[] _capstash;
+  _capstash = NULL;
+}
+/*-----------------------------------------*/
+SOCK::~SOCK(){
+  cap_reset();
 }
 
 // vim:ts=8:sw=2:et:
