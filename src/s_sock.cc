@@ -205,6 +205,7 @@ void SOCK::do_it(CS& Cmd, CARD_LIST* Scope)
   command_base(Cmd);
 
   //cleanup
+  cap_reset();
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -301,7 +302,7 @@ void SOCK::setup(CS& Cmd)
   n_vars_square = (uint16_t)(n_vars * n_vars);
 
   findcaps(&CARD_LIST::card_list);
-  //cap_prepare();
+  cap_prepare(); // attach value common if !has_common. stash old common
 
 #ifndef NDEBUG
     for (unsigned i=0; i < n_vars; i++)
@@ -1124,7 +1125,7 @@ void SOCK::veraop(){
   _sim->set_inc_mode_bad();
   OPT::ITL itl = OPT::DCBIAS;
 
-  trace0("SOCK::veraop, hot");
+  trace0("SOCK::veraop homotopy");
   _trace=tVERBOSE;
   CARD_LIST::card_list.tr_begin();  // hier muesste eigentlich eine dc hin.
   try{
@@ -1133,7 +1134,7 @@ void SOCK::veraop(){
     ::error(bDANGER, "hot failed\n");
     throw e;
   }
-  trace0("SOCK::veraop, hot done");
+  trace0("SOCK::veraop, homotopy done");
 
   ::status.accept.start();
   _sim->set_limit();
@@ -1189,6 +1190,7 @@ void SOCK::verakons() {
   for( unsigned i = 0; i < _caplist.size(); i++)
   {
     _caplist[i]->keep_ic(); // latch voltage applied to _v0
+    _caplist[i]->set_constant(false);		// so it will be updated
   }
   //
   //================do_dc========
@@ -1363,8 +1365,8 @@ void SOCK::cap_prepare(void){
   _capstash = new CARDSTASH[_caplist.size()];
 
   for (unsigned ii = 0;  ii < _caplist.size();  ++ii) {
-    _capstash[ii] = _caplist[ii];			// stash the std value
     _caplist[ii]->inc_probes();			// we need to keep track of it
+    _capstash[ii] = _caplist[ii];			// stash the std value
 
     if(_caplist[ii]->has_common()){
       _caplist[ii]->set_value(_caplist[ii]->value(),0);	// zap out extensions
@@ -1376,7 +1378,7 @@ void SOCK::cap_prepare(void){
       COMMON_COMPONENT* dc = c->deflate();
       assert(dc);
       //
-      // _caplist[ii]->set_value(_caplist[ii]->value(),dc);	// zap out extensions
+       _caplist[ii]->set_value(_caplist[ii]->value(),dc);	// zap out extensions
       // _caplist[ii]->set_constant(false);		// so it will be updated
       trace1("SOCK::cap_prepare", *_caplist[ii]);
     }
@@ -1397,7 +1399,7 @@ void SOCK::cap_reset(void)
 }
 /*-----------------------------------------*/
 SOCK::~SOCK(){
-  cap_reset();
+  trace0("SOCK::~SOCK()");
 }
 
 // vim:ts=8:sw=2:et:
