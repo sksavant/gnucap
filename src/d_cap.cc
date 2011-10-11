@@ -156,16 +156,9 @@ void DEV_CAPACITANCE::tr_accept()
   trace2("DEV_CAPACITANCE::tr_accept " + long_label(), _i[1], CPOLY1(_i[1]) );
 
   if(_loss0){
-
-  // sources might have been abused to enforce initial conditions
-  //
-  //
-  //tr_amps for d_vs
-  //trace5("", _loss0, tr_outvolts(), _m0.c1, tr_involts(), _m0.c0);
- // hp_float_t root = fixzero((_loss0 * tr_outvolts() + _m0.c1 * tr_involts() + _m0.c0),
-  //    _m0.c0);
-  //
-  //
+    // sources might have been abused to enforce initial conditions
+    // (otherwise this should be unreachable)
+    //
     trace1("DEV_CAPACITANCE::tr_accept i?", _loss0 * tr_outvolts() + _m0.c0 );
 
     double i = _loss0 * tr_outvolts() + _m0.c0 ;
@@ -173,13 +166,17 @@ void DEV_CAPACITANCE::tr_accept()
 
     m.f1 = 0; // mhos
     m.x = tr_input(); // voltage
-    m.f0 = i; // what is reported by tr_amps...
+    m.f0 = i; // what will be reported by tr_amps...
     _m0 = CPOLY1(m);
+    _m1 = CPOLY1(0,0,0);
 
-    _loss0 = _loss1 = 0.;
-    trace1("DEV_CAPACITANCE::tr_accept messed with m" + long_label(), _m0 );
+    trace3("DEV_CAPACITANCE::tr_accept messed m " + long_label(), i, _m0.c0 - i, _m1.c0 );
     _sim->mark_inc_mode_bad();
-    tr_load_source();
+    //_m1.c0 = _m0.c0 - i; // hack. makes tr_load
+
+    // tr_load_source();
+    // tr_load();
+    _loss0 = _loss1 = 0.;
     q_eval();
   }
 

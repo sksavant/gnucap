@@ -271,6 +271,7 @@ inline void ELEMENT::tr_load_source()
 
   assert(_m0.c0 == _m0.c0);
   hp_float_t d = dampdiff(&_m0.c0, _m1.c0);
+  trace1("ELEMENT::tr_load_source ", d);
   if (d != 0.) {
     if (_n[OUT2].m_() != 0) { //gnd knoten
       _n[OUT2].i() += d;

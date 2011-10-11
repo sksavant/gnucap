@@ -1233,9 +1233,10 @@ void SOCK::verakons_send()
   //
 
   // this could work:
-  std::fill_n(_sim->_i, _sim->_total_nodes+1, 0);
+  _sim->zero_currents();
+
   for( unsigned i = 0; i < _caplist.size(); i++){
-    asserted_cast<CARD*>(_caplist[i])->tr_unload();
+    asserted_cast<CARD*>(_caplist[i])->tr_load();
   }
   //
   // now i contains the negative sum of the cap value.
