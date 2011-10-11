@@ -249,10 +249,11 @@ double STORAGE::tr_probe_num(const std::string& x)const
 /*--------------------------------------------------------------------------*/
 void STORAGE::set_ic( double x ){
   if(has_common()){
-    trace1("STORAGE::set_ic "+long_label(), x);
+    trace1("STORAGE::set_ic have common "+long_label(), x);
     mutable_common()->set_ic(x);
+  } else {
+    trace3("STORAGE::set_ic nop", x, _m0, _m1);
   }
-  trace3("STORAGE::set_ic ", x, _m0, _m1);
 } 
 /*--------------------------------------------------------------------------*/
 //void STORAGE::keep_ic( ){
@@ -271,19 +272,23 @@ void STORAGE::set_ic( double x ){
 //  }
 //} 
 void STORAGE::keep_ic( ){
-  trace2("STORAGE::keep_ic", _sim->_nm[IN1], _sim->_nm[IN2] );
-  //hack
+  //hack can we use _sim->_v0 instead??
   double x =  dn_diff(_sim->_vdc[_sim->_nm[IN1]],_sim->_vdc[_sim->_nm[IN2]] ); //tr_involts();
+  trace3("STORAGE::keep_ic", _sim->_nm[IN1], _sim->_nm[IN2] , x);
   if(has_common()){
-    trace2("D_CAP::keep_ic", x,long_label());
+    trace1("D_CAP::keep_ic have common " +long_label(),x);
     mutable_common()->set_ic(x);
   } else {
-    trace2("D_CAP::keep_ic b ", x,long_label());
+    trace1("D_CAP::keep_ic no common "+ long_label(),x);
+    error(bDANGER, "no common for %s\n", long_label().c_str() );
+    assert(false);
     // *(_x.pointer_hack()) = x;
   // do_tr(); mutable_common()->set_ic(x);
   // tr_load();
-    q_eval(); 
-    assert(false);
+    // q_eval(); 
+    // do_tr(); mutable_common()->set_ic(x);
+    // tr_load();
+    // q_eval(); 
   }
 } 
 /*--------------------------------------------------------------------------*/

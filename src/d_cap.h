@@ -53,4 +53,10 @@ protected: // override virtual
   }
 };
 
+inline ostream& operator<<( ostream& o, const DEV_CAPACITANCE &c){
+	o << "cap " << c.long_label() << " " << c.value();
+	return o;
+}
+
+
 } // namespace
