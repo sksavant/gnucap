@@ -311,7 +311,8 @@ void ELEMENT::ac_iwant_matrix_extended()
 hp_float_t ELEMENT::tr_amps()const
 {
 	//return 44;
-  trace5("", _loss0, tr_outvolts(), _m0.c1, tr_involts(), _m0.c0);
+  trace5("ELEMENT::tr_amps " + long_label(), _loss0, tr_outvolts(), _m0.c1, tr_involts(), _m0.c0);
+  trace1("ELEMENT::tr_amps " + long_label(), _loss0 * tr_outvolts() + _m0.c1 * tr_involts() + _m0.c0 );
   hp_float_t root = fixzero((_loss0 * tr_outvolts() + _m0.c1 * tr_involts() + _m0.c0),
       _m0.c0);
 

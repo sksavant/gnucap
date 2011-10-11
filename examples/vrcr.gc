@@ -16,9 +16,9 @@ spice
 
 * bug! hier muss IC=x stehen
 V1 n3 0 1
-R1 n3 n2 .5k
+R1 n3 n2 .05
 C2 n2 n1 1u IC=0.2
-R2 n1 0 .5k
+R2 n1 0 .05
 
 .nodelist
 
@@ -35,11 +35,11 @@ R2 n1 0 .5k
 
 .options numdgt=10
 
-.PRINT ddc  V(V1) V(C2) dv(nodes) ddv(nodes) C(C2)
+.PRINT ddc  V(V1) V(C2) dv(nodes) ddv(nodes) C(C2) i(C2) I(v1)
 * ddv(nodes) i(C2)
 *v(C1) v1(1) v1(2)
 
-.DDC C2 0 1 .25  V1 0 2 1
+.DDC C2 0 1 .5  V1 1 2 1
 
 
 .end

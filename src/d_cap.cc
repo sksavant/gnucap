@@ -122,7 +122,7 @@ bool DEV_CAPACITANCE::do_tr()
     trace1("DEV_CAPACITANCE::do_tr m0 as if", _y[0]);
 
   if(_sim->more_uic_now()){
-    // BUG. only treat caps with _ic
+    // BUG: only treat caps with _ic
     assert(_time[0] == 0.);
 
     trace1("DEV_CAPACITANCE::do_tr: desired capacitance is ", _y[0].f1);
@@ -150,22 +150,34 @@ bool DEV_CAPACITANCE::do_tr()
 void DEV_CAPACITANCE::tr_accept()
 {
   ELEMENT::tr_accept();
-  // sources might have been abused to enforce initial conditions
-  //
-  trace2("DEV_CAPACITANCE::tr_accept              " + long_label(), _m0, _m1 );
+  trace3("DEV_CAPACITANCE::tr_accept " + long_label(), _m0.c1, _m0.x, _m0.c0 );
+  trace2("DEV_CAPACITANCE::tr_accept " + long_label(), _loss0, _loss1 );
+  trace2("DEV_CAPACITANCE::tr_accept " + long_label(), FPOLY1(_m0), tr_input() );
+  trace2("DEV_CAPACITANCE::tr_accept " + long_label(), _i[1], CPOLY1(_i[1]) );
 
   if(_loss0){
+
+  // sources might have been abused to enforce initial conditions
+  //
+  //
+  //tr_amps for d_vs
+  //trace5("", _loss0, tr_outvolts(), _m0.c1, tr_involts(), _m0.c0);
+ // hp_float_t root = fixzero((_loss0 * tr_outvolts() + _m0.c1 * tr_involts() + _m0.c0),
+  //    _m0.c0);
+  //
+  //
+    trace1("DEV_CAPACITANCE::tr_accept i?", _loss0 * tr_outvolts() + _m0.c0 );
+
+    double i = _loss0 * tr_outvolts() + _m0.c0 ;
     FPOLY1 m(_m0);
 
-    //_m0.x = 0.;
-    //_m0.c0 = 0.;
-    m.f1 = 0.;
-    m.x = tr_input();
-    m.f0 = 0;
+    m.f1 = 0; // mhos
+    m.x = tr_input(); // voltage
+    m.f0 = i; // what is reported by tr_amps...
     _m0 = CPOLY1(m);
 
     _loss0 = _loss1 = 0.;
-    trace2("DEV_CAPACITANCE::tr_accept messed with m" + long_label(), _m0, _m1 );
+    trace1("DEV_CAPACITANCE::tr_accept messed with m" + long_label(), _m0 );
     _sim->mark_inc_mode_bad();
     tr_load_source();
     q_eval();

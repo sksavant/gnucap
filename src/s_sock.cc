@@ -1069,11 +1069,8 @@ void SOCK::verainit(){
       }
       input_devs[n-1] = (*ci);
       assert(input_devs[n-1]);
-
-
     }
   }
-
 
   //trace0("input_namen " + string(input_namen) );
   total = (unsigned) (length+4);
@@ -1085,7 +1082,6 @@ void SOCK::verainit(){
         n_bytes, (int)(total*sizeof(di_union_t)));
     throw Exception("bloed\n");
   }
-
 
   assert(!var_names_buf);
   var_names_buf = (char*) malloc( BUFSIZE * sizeof(char));
@@ -1210,6 +1206,9 @@ void SOCK::verakons() {
     ::error(bDANGER, "hot failed\n");
     throw e;
   }
+  ::status.accept.start();
+  CARD_LIST::card_list.tr_accept();
+  ::status.accept.stop();
 
   _sim->keep_voltages();
 }
@@ -1235,16 +1234,17 @@ void SOCK::verakons_send()
 
   // this could work:
   std::fill_n(_sim->_i, _sim->_total_nodes+1, 0);
-  for( unsigned i = 0; i < _caplist.size(); i++)
+  for( unsigned i = 0; i < _caplist.size(); i++){
     asserted_cast<CARD*>(_caplist[i])->tr_unload();
+  }
   //
   // now i contains the negative sum of the cap value.
   // does this break anything?
 
-  for (unsigned i=0; i < n_vars; i++)         /* Q-Punkt == I == RS */
+  for (unsigned i=1; i <= n_vars; i++)         /* Q-Punkt == I == RS */
   {
     //buffer[i+n_vars+1].double_val = q_punkt[i];
-    trace1("sending dqdt\n", _sim->_i[i]);
+    trace1("SOCK::verakons_send  dqdt", _sim->_i[i]);
     stream << -_sim->_i[i];
   }
 
@@ -1273,7 +1273,6 @@ void SOCK::verakons_send()
 //
 //  }
 
-  trace0("done SOCK::verakons_send");
 }
 /*--------------------------------------------*/
 void SOCK::verainit_send()
