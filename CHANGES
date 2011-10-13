@@ -50,3 +50,4 @@
 - header/supplement for ivl tgt-gc output
 - logic node analog transitions delayed
 - added line eater for verilog parser.
+- added admst hicum0 and ota_simple
