@@ -45,8 +45,11 @@
    - matrix-vector multiplication
    - some stream::operator<<
    - minor stuff
+- precalc etc. for measurement probes
+- subckt nodes accessible via .probe
 - s_ddc.cc: dynamic dc simulation
 - debug helpers in c_debug.cc
 - header/supplement for ivl tgt-gc output
 - logic node analog transitions delayed
 - added line eater for verilog parser.
+- added socket remote controlled simulation
