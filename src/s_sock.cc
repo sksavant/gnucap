@@ -1,6 +1,5 @@
-/*$Id: s_dc.cc,v 26.132 2009/11/24 04:26:37 al Exp $ -*- C++ -*-
- * Copyright (C) 2001 Albert Davis
- * Author: Albert Davis <aldavis@gnu.org>
+/* Copyright (C) 2011 Felix Salfelder
+ * Author: Felix Salfelder
  *
  * This file is part of "Gnucap", the Gnu Circuit Analysis Package
  *
@@ -19,9 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  *------------------------------------------------------------------
- * dc analysis top
+ * a remote control socket. used by verification tools
  */
-//testing=script,complete 2006.07.14
 #include "u_status.h"
 #include <unistd.h>
 #include "u_prblst.h"
@@ -42,7 +40,7 @@
 
 
 using namespace std;
-using namespace SOME_CAP_HACK;
+using namespace SOME_CAP_HACK; // FIXME. (maybe use STORAGE device interface?)
 extern "C" {
 #include "atlas/clapack.h"
 

@@ -1,7 +1,5 @@
-/*$Id: d_vs.cc,v 1.9 2010-07-29 12:37:21 felix Exp $ -*- C++ -*-
- * vim:ts=8:sw=2:et
- * Copyright (C) 2001 Albert Davis
- * Author: Albert Davis <aldavis@gnu.org>
+/* * Copyright (C) 2011 Felix Salfelder
+ * Author: Felix Salfelder
  *
  * This file is part of "Gnucap", the Gnu Circuit Analysis Package
  *
@@ -20,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  *------------------------------------------------------------------
- * functions for fixed voltage sources
- * temporary kluge: it has resistance
+ * a vs using a branch node for its current.
+ * probably incomplete (rewiev). needed for sock
  */
 //testing=script 2006.07.17
 #include "e_elemnt.h"
@@ -256,3 +254,4 @@ DISPATCHER<CARD>::INSTALL d1(&device_dispatcher, "vsb|branchvs", &p1);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+// vim:ts=8:sw=8:et
