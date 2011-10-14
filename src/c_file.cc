@@ -69,7 +69,7 @@ public:
   }
   void do_it(CS& cmd, CARD_LIST* )
   {
-    trace0("CMD_INCLUDE::do_it");
+    trace0("CMD_EXPECT::do_it");
     unsigned here = cmd.cursor();
     try {
       std::string file_name;

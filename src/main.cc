@@ -143,8 +143,8 @@ static void process_cmd_line(int argc, const char *argv[])
 {
   for (int ii = 1;  ii < argc;  /*inside*/) {
     try {
-      if (   !strcasecmp(argv[ii], "-E") ) 
-          || !strcasecmp(argv[ii], "-e") {
+      if (   !strcasecmp(argv[ii], "-E")  
+          || !strcasecmp(argv[ii], "-e") ) {
         ++ii;
 
         if (ii < argc) {
