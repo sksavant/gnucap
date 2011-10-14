@@ -200,6 +200,7 @@ struct INTERFACE SIM_DATA {
   private:
   uint_t _tt_order;
   uint_t last_order_tt;
+  CS* _expect_file;
 
   public:
   int _stepno; // number of transient steps accepted.
@@ -210,6 +211,7 @@ struct INTERFACE SIM_DATA {
   unsigned total_outsteps()const;
 
   public:
+  void expect(CS* x){ assert (!_expect_file); _expect_file = x; }
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

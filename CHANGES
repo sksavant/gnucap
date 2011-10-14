@@ -53,3 +53,4 @@
 - logic node analog transitions delayed
 - added line eater for verilog parser.
 - added socket remote controlled simulation
+- added admst hicum0 and ota_simple

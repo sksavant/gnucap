@@ -61,10 +61,8 @@
 //`include "disciplines.vams"
 //`include "compact.vams"
 
-//Spectre
 `include "constants.h"
 `include "discipline.h"
-
 
 `define	NPN	+1
 `define	PNP	-1

@@ -136,20 +136,31 @@ static void finish(void)
   plclose();
   IO::mstdout.outreset();
 }
-/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------
+ * FIXME: use getopt
+ * ------------*/
 static void process_cmd_line(int argc, const char *argv[])
 {
   for (int ii = 1;  ii < argc;  /*inside*/) {
     try {
-      if (strcasecmp(argv[ii], "-q") == 0) {
+      if (   !strcasecmp(argv[ii], "-E") ) 
+          || !strcasecmp(argv[ii], "-e") {
         ++ii;
-        if (ii < argc) {itested();
-          fprintf( stderr, "quiet mode" );
 
-        }else{untested();
+        if (ii < argc) {
+          string v = "";
+          if (   !strcasecmp(argv[ii], "-E") )  
+            v="verbose ";
+            // dashier startet den OPT::language modus
+	    CMD::command(string("expect ") + v + argv[ii++], &CARD_LIST::card_list);
+        } else {
+          incomplete();
         }
-      }else 
-      if (strcasecmp(argv[ii], "-i") == 0) {itested();
+      }else if (strcasecmp(argv[ii], "-q") == 0) {
+        ++ii;
+          fprintf( stderr, "quiet mode" );
+          // doesnt do anything.
+      }else if (strcasecmp(argv[ii], "-i") == 0) {itested();
 	++ii;
 	if (ii < argc) {itested();
 	  CMD::command(std::string("include ") + argv[ii++], &CARD_LIST::card_list);
