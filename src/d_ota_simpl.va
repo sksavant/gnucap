@@ -4,7 +4,9 @@
 //
 // Generated on 09/29/03 at 18:14:23 */
 
-module ota(  p_in , n_in , out1 , pbias , nbias , vdd , gnd);
+`include "discipline.h"
+
+module ota_simpl(  p_in , n_in , out1 , pbias , nbias , vdd , gnd);
 
 // Ein- und Ausgangsknoten deklarieren:
 inout  p_in , n_in , out1 , pbias , nbias , vdd , gnd;

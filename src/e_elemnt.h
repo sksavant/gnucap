@@ -271,6 +271,7 @@ inline void ELEMENT::tr_load_source()
 
   assert(_m0.c0 == _m0.c0);
   hp_float_t d = dampdiff(&_m0.c0, _m1.c0);
+  trace1("ELEMENT::tr_load_source ", d);
   if (d != 0.) {
     if (_n[OUT2].m_() != 0) { //gnd knoten
       _n[OUT2].i() += d;
@@ -332,7 +333,6 @@ inline void ELEMENT::tr_load_passive()
 {
   // untested0( long_label().c_str() );
   if( _m0.c1 != _m0.c1 ){
-    std::cerr << "ELEMENT::tr_load_passive: " << long_label() << "\n";
     exit(30);
   }
   double d = dampdiff(&_m0.c1, _m1.c1);

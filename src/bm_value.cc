@@ -67,6 +67,7 @@ void EVAL_BM_VALUE::precalc_first(const CARD_LIST* Scope)
 /*--------------------------------------------------------------------------*/
 void EVAL_BM_VALUE::tr_eval(ELEMENT* d)const
 {
+  trace1("EVAL_BM_VALUE::tr_eval", _value);
   tr_finish_tdv(d, _value);
 }
 /*--------------------------------------------------------------------------*/

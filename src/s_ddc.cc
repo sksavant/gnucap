@@ -745,16 +745,15 @@ void DDC_BASE::ac_snapshot(){
   // if verbose
   _sim->_uic=_sim->_more_uic=false;
 
+  trace0("DDC_BASE::ac_snapshot AC::solve");
+  _sim->_acx.zero();
+  std::fill_n(_sim->_ac, _sim->_total_nodes+1, 0.);
 
-    trace0("AC::solve");
-    _sim->_acx.zero();
-    std::fill_n(_sim->_ac, _sim->_total_nodes+1, 0.);
-
-    ::status.load.start();
-    _sim->count_iterations(iTOTAL);
-    CARD_LIST::card_list.do_ac();
-    CARD_LIST::card_list.ac_load();
-    ::status.load.stop();
+  ::status.load.start();
+  _sim->count_iterations(iTOTAL);
+  CARD_LIST::card_list.do_ac();
+  CARD_LIST::card_list.ac_load();
+  ::status.load.stop();
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

@@ -46,7 +46,7 @@ const PROBELIST& SIM::plotlist()const
 }
 const PROBELIST& SIM::printlist()const
 {
-  trace1("SIM::printlist", _sim->_mode );
+//  trace1("SIM::printlist", _sim->_mode );
   return PROBE_LISTS::print[_sim->_mode];
 }
 const PROBELIST& SIM::storelist()const
@@ -54,10 +54,74 @@ const PROBELIST& SIM::storelist()const
   return PROBE_LISTS::store[_sim->_mode];
 }
 /*--------------------------------------------------------------------------*/
+void SIM::expect_results(double t){
+  static double t1;
+
+  CS* c = _sim->expect_file();
+
+  vector<double> last_raw(_sim->_expect_raw);
+
+  if (!c) return;
+  trace2("SIM::expect_results",t,  c->fullstring() );
+
+
+  double d;
+
+  double et = -1;
+
+  while(  et-t < -1e-20 ){ // FIXME rounding bug.
+    trace2("SIM::expect_results loop", et, t);
+    c->get_line(I_PROMPT);
+    _sim->_expect_raw.clear();
+
+    while (c->umatch("'|*|#|//|\"")){
+      c->get_line(I_PROMPT);
+      c->eat_lines();
+    }
+    c->eat_lines();
+
+    if(!c->more()){
+      incomplete();
+      assert(false);
+    }
+
+    *c >> et;
+    trace1("SIM::expect_results time", et);
+    assert(( et==0) == (t==0));
+    _sim->_expect_raw.push_back(et);
+
+    while( c->more()){
+      *c >> d;
+      trace1("SIM::expect_results found", d);
+      _sim->_expect_raw.push_back(d);
+
+      if (_sim->_expect_raw.size() > 100) assert(false); // safety net.
+    }
+
+    trace0("need more input");
+    last_raw = _sim->_expect_raw;
+
+    {
+
+      //interpolate
+      //
+    }
+
+
+  }
+
+
+  trace1("SIM::expect_results size", _sim->_expect_raw.size());
+
+  t1=t;
+
+}
+/*--------------------------------------------------------------------------*/
 /* SIM::out: output the data, "keep" for ac reference
  */
 void SIM::outdata(double x)
 {
+  expect_results(x);
   ::status.output.start();
   plottr(x, plotlist());
   print_results(x);
@@ -108,14 +172,27 @@ void SIM::head(double start, double stop, const std::string& col1)
  */
 void SIM::print_results(double x)
 {
-  trace1("SIM::print_results", printlist().size());
+  trace2("SIM::print_results", printlist().size(), x);
+  unsigned i=0;
+  if (_sim->expect_file()){
+    assert( fabs (_sim->_expect_raw[i] - x) < 1e-20);
+  }
+
   if (!IO::plotout.any()) {
     _out.setfloatwidth(OPT::numdgt, OPT::numdgt+6);
     assert(x != NOT_VALID);
     _out << x;
     for (PROBELIST::const_iterator
 	   p=printlist().begin();  p!=printlist().end();  ++p) {
-      _out << (*p)->value();
+      double v= (*p)->value(); 
+      if(_sim->expect_file()){ 
+        i++;
+        trace3("SIM::print_results", v,_sim->_expect_raw[i],i);
+        trace1("SIM::print_results", fabs(v-_sim->_expect_raw[i]));
+          
+        assert( fabs(v-_sim->_expect_raw[i]) < pow(10., 1-OPT::numdgt) );
+      }
+      _out << v;
     }
     _out << '\n';
   }else{

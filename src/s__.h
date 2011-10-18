@@ -82,6 +82,7 @@ protected:
 	 virtual bool	verify();
 	 virtual void	alarm();
 	 virtual void	store_results(double);
+	 virtual void	expect_results(double);
 public:
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
 protected:				/* s__solve.cc */

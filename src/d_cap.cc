@@ -57,7 +57,6 @@ private: // override virtual
   hp_float_t   tr_involts_limited()const {return volts_limited(_n[IN1],_n[IN2]);}
   void	    ac_iwant_matrix()	{ac_iwant_matrix_active();}
   void	    ac_load()		{untested(); ac_load_active();}
-
   std::string port_name(uint_t i)const {untested();
     assert(i != INVALID_NODE);
     assert(i < 4);
@@ -101,17 +100,20 @@ private: // override virtual
 bool DEV_CAPACITANCE::do_tr()
 {
   // FPOLY1* q=_y;
-  trace0(("DEV_CAPACITANCE::do_tr " + long_label()));
-  trace3(("DEV_CAPACITANCE::do_tr " + long_label()).c_str(), _y[0].f1, value(), tr_input() );
+  //trace0(("DEV_CAPACITANCE::do_tr " + long_label()));
+  //trace3(("DEV_CAPACITANCE::do_tr " + long_label()).c_str(), _y[0].f1, value(), tr_input() );
   if (using_tr_eval()) {
+    trace1("DEV_CAPACITANCE::do_tr, tr_eval", has_tr_eval());
     _y[0].x = tr_input_limited();
     tr_eval();
   }else{
+    trace0("DEV_CAPACITANCE::do_tr, no tr_eval");
     _y[0].x = tr_input(); // tr_involts();
     assert(_y[0].f1 == value());
     _y[0].f0 = _y[0].x * _y[0].f1;
     assert(converged());
   }
+  trace1("DEV_CAPACITANCE::do_tr ", _y[0].f1 );
   store_values();
   q_load();
 
@@ -120,7 +122,7 @@ bool DEV_CAPACITANCE::do_tr()
     trace1("DEV_CAPACITANCE::do_tr m0 as if", _y[0]);
 
   if(_sim->more_uic_now()){
-    // BUG. only treat caps with _ic
+    // BUG: only treat caps with _ic
     assert(_time[0] == 0.);
 
     trace1("DEV_CAPACITANCE::do_tr: desired capacitance is ", _y[0].f1);
@@ -141,31 +143,40 @@ bool DEV_CAPACITANCE::do_tr()
     trace3("i", _i[0].x, _i[0].f0, _i[0].f1);
   }
   _m0 = CPOLY1(_i[0]);
-  trace2("DEV_CAPACITANCE::do_tr", _m0, _m1);
+  trace3("DEV_CAPACITANCE::do_tr " + long_label(), value(), _m0, _m1);
   return converged();
 }
 /*--------------------------------------------------------------------------*/
 void DEV_CAPACITANCE::tr_accept()
 {
   ELEMENT::tr_accept();
-  // sources might have been abused to enforce initial conditions
-  //
-  trace2("DEV_CAPACITANCE::tr_accept              " + long_label(), _m0, _m1 );
+  trace3("DEV_CAPACITANCE::tr_accept " + long_label(), _m0.c1, _m0.x, _m0.c0 );
+  trace2("DEV_CAPACITANCE::tr_accept " + long_label(), _loss0, _loss1 );
+  trace2("DEV_CAPACITANCE::tr_accept " + long_label(), FPOLY1(_m0), tr_input() );
+  trace2("DEV_CAPACITANCE::tr_accept " + long_label(), _i[1], CPOLY1(_i[1]) );
 
   if(_loss0){
+    // sources might have been abused to enforce initial conditions
+    // (otherwise this should be unreachable)
+    //
+    trace1("DEV_CAPACITANCE::tr_accept i?", _loss0 * tr_outvolts() + _m0.c0 );
+
+    double i = _loss0 * tr_outvolts() + _m0.c0 ;
     FPOLY1 m(_m0);
 
-    //_m0.x = 0.;
-    //_m0.c0 = 0.;
-    m.f1 = 0.;
-    m.x = tr_input();
-    m.f0 = 0;
+    m.f1 = 0; // mhos
+    m.x = tr_input(); // voltage
+    m.f0 = i; // what will be reported by tr_amps...
     _m0 = CPOLY1(m);
+    _m1 = CPOLY1(0,0,0);
 
-    _loss0 = _loss1 = 0.;
-    trace2("DEV_CAPACITANCE::tr_accept messed with m" + long_label(), _m0, _m1 );
+    trace3("DEV_CAPACITANCE::tr_accept messed m " + long_label(), i, _m0.c0 - i, _m1.c0 );
     _sim->mark_inc_mode_bad();
-    tr_load_source();
+    //_m1.c0 = _m0.c0 - i; // hack. makes tr_load
+
+    // tr_load_source();
+    // tr_load();
+    _loss0 = _loss1 = 0.;
     q_eval();
   }
 
@@ -230,5 +241,5 @@ DISPATCHER<CARD>::INSTALL
   d2(&device_dispatcher, "tcap|tcapacitor", &p2),
   d3(&device_dispatcher, "vccap",	    &p3);
 }
-/*--------------------------------------------------------------------------
---------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------*/
