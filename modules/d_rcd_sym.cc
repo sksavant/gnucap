@@ -237,6 +237,8 @@ DEV_BUILT_IN_RCD_SYM::DEV_BUILT_IN_RCD_SYM()
 int  MODEL_BUILT_IN_RCD_SYM::tt_region(const COMPONENT* brh) const{
   const DEV_BUILT_IN_RCD* c = (const DEV_BUILT_IN_RCD*) brh;
 
+  untested();
+
   assert(c);
   return ( (c->_Ccgfill)->region() );
 }

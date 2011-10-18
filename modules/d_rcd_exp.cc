@@ -38,7 +38,6 @@ class MODEL_BUILT_IN_RCD_EXP : public MODEL_BUILT_IN_RCD_SYM {
     void do_expand( COMPONENT*) const;
     ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
 //    region_t region(const COMPONENT*) const;
-    int  tt_region(const COMPONENT*) const;
     double __Re(double uin, const COMMON_COMPONENT* cc)const;
     double __Rc(double uin, const COMMON_COMPONENT* cc)const;
     double __Ge(double uin, const COMMON_COMPONENT* cc)const;
@@ -343,21 +342,21 @@ double MODEL_BUILT_IN_RCD_EXP::__Re(double s, const COMMON_COMPONENT* c) const
 double MODEL_BUILT_IN_RCD_EXP::__Rc(double s, const COMMON_COMPONENT* c ) const
 {
   const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
-  return exp( cc->_Rc1 * uin  + cc->_Rc1 );
+  return exp( cc->_Rc1 * s  + cc->_Rc1 );
 }
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD_EXP::__Ge(double uin, const COMMON_COMPONENT* c ) const
+double MODEL_BUILT_IN_RCD_EXP::__Ge(double s, const COMMON_COMPONENT* c ) const
 {
   const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
   return exp( - cc->_Re1 * s - cc->_Re0 );
 }
 /*--------------------------------------------------------------------------*/
 /* E(t=inf) */
-double MODEL_BUILT_IN_RCD_EXP::__E(double uin, const COMMON_COMPONENT* c ) const 
+double MODEL_BUILT_IN_RCD_EXP::__E(double s, const COMMON_COMPONENT* c ) const 
 {
   const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
-  double tau_e_here = __Re( uin, cc);
-  double tau_c_here = __Rc( uin, cc);
+  double tau_e_here = __Re( s, cc);
+  double tau_c_here = __Rc( s, cc);
   return( tau_c_here / ( tau_e_here + tau_c_here ));
 }
 /*--------------------------------------------------------------------------*/
@@ -417,7 +416,7 @@ void MODEL_BUILT_IN_RCD_EXP::do_precalc_last(COMMON_COMPONENT* ccmp, const CARD_
 
   trace3("MODEL_BUILT_IN_RCD_EXP::do_precalc_last", cc->Uref, cc->Recommon, cc->Rccommon0);
 
-  double up   =  cc->Recommon;
+  //double up   =  cc->Recommon;
   double down =  cc->Rccommon0;
 
   double Eend_bad = (cc->Uref / (cc->__Re(cc->Uref) / cc->__Rc(cc->Uref) +1));
