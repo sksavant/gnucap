@@ -61,7 +61,11 @@ static void read_startup_files(void)
   }
   name = findfile(USERSTARTFILE, PWD, R_OK);
   if (name != "") {untested();
-    CMD::command("get " + name, &CARD_LIST::card_list);
+    try{
+      CMD::command("get " + name, &CARD_LIST::card_list);
+    }catch(Exception e){
+      error(bDANGER, "loading %s failed: %s\n", name.c_str(), e.message().c_str());
+    }
   }else{
     name = findfile(USERSTARTFILE, USERSTARTPATH, R_OK);
     if (name != "") {untested();
