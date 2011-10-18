@@ -11,6 +11,7 @@ lib_LTLIBRARIES = libd_rcd_sym.la libd_bti_inf.la
 libd_rcd_sym_la_SOURCES = d_rcd_sym.cc\
                           d_rcd_sym_v2.cc\
                           d_rcd_sym_v3.cc\
+                          d_rcd_exp.cc \
                           d_rcd_sym_v4.cc
 
 libd_bti_inf_la_SOURCES = d_bti_inf.cc
