@@ -95,6 +95,7 @@ public:
     }
     
     if ( ! search_file(file_name) ){
+      error(bDANGER,"cannot find file %s",cmd.fullstring().c_str());
       throw Exception_CS("cannot find file", cmd);
     }
 
@@ -103,7 +104,8 @@ public:
       attach_list[file_name] = handle;
     }else{itested();
       cmd.reset(here);
-      throw Exception_CS(dlerror(), cmd);
+      error(bDANGER,"dlerror %s: %s\n",cmd.fullstring().c_str(), file_name.c_str());
+      throw Exception(dlerror(), cmd.fullstring().c_str());
     }
   }
 } p1;

@@ -1,0 +1,3 @@
+[submodule "debian"]
+	path = debian
+	url = git://git.debian.org/git/pkg-electronics/gnucap.git
