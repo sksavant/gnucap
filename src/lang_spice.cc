@@ -426,10 +426,11 @@ void LANG_SPICE_BASE::parse_args(CS& cmd, CARD* x)
   cmd >> "params:";	// optional, skip it.
 
   if (!x->use_obsolete_callback_parse()) {
-    trace0(("LANG_SPICE_BASE::parse_args !ocp " + (std::string) cmd.tail()).c_str() );
+    trace1("LANG_SPICE_BASE::parse_args !ocp", cmd.tail().c_str() );
     int paren = cmd.skip1b('(');
     if (xx && cmd.is_float()) {		// simple unnamed value
       std::string value;
+      trace0("LANG_SPICE_BASE::parse_args simple");
       cmd >> value;
       x->set_param_by_name(xx->value_name(), value);
     }else if (cmd.match1("'{")) {	// quoted unnamed value
@@ -438,6 +439,7 @@ void LANG_SPICE_BASE::parse_args(CS& cmd, CARD* x)
       value = '{' + value + '}'; // put them back
       x->set_param_by_name(xx->value_name(), value);
     }else{				// only name=value pairs
+       trace0("LANG_SPICE_BASE::parse_args else");
     }
     trace0(("LANG_SPICE_BASE::parsedone " + (std::string) cmd.tail()).c_str() );
     unsigned here = cmd.cursor();

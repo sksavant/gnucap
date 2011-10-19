@@ -375,6 +375,7 @@ std::string MODEL_BUILT_IN_BTI_SUM::param_name(int i, int j)const
   }else if (j == 1) {
     switch (MODEL_BUILT_IN_BTI_SUM::param_count() - 1 - i) {
     case 0:  return "=====";
+    case 1:  return "parms";
     default: return "";
     }
   }else{
@@ -385,9 +386,11 @@ std::string MODEL_BUILT_IN_BTI_SUM::param_name(int i, int j)const
 void MODEL_BUILT_IN_BTI_SUM::set_param_by_index(int i, std::string& value, int offset)
 {
   switch (MODEL_BUILT_IN_BTI_SUM::param_count() - 1 - i) {
-  case 0: untested(); break;
-  case 1: rcdparm = value; break;
-  default: MODEL_BUILT_IN_BTI::set_param_by_index(i,value,offset);
+    case 0: untested(); break;
+    case 1: rcdparm = value; 
+            trace1("MODEL_BUILT_IN_BTI_SUM::set_param_by_index", value);
+            break;
+    default: MODEL_BUILT_IN_BTI::set_param_by_index(i,value,offset);
   }
 }
 /*--------------------------------------------------------------------------*/

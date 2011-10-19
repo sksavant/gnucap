@@ -244,6 +244,7 @@ node_t& CARD::n_(int i)const
 /*--------------------------------------------------------------------------*/
 void CARD::set_param_by_name(std::string Name, std::string Value)
 {
+  trace2("CARD::set_param_by_name", Name, Value);
   //BUG// ugly linear search
   for (int i = param_count() - 1;  i >= 0;  --i) {
     for (int j = 0;  param_name(i,j) != "";  ++j) { // multiple names
@@ -284,3 +285,4 @@ bool CARD::evaluated()const
 void	 CARD::stress_apply()	{ };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+// vim:ts=8:sw=2:et:

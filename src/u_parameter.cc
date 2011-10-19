@@ -307,3 +307,63 @@ inline string to_string(vector<PARAMETER<double> > n)
   return buf + std::string(" )");;
 }
 /*--------------------------------------------------------------------------*/
+//typedef PARAMETER<double> dp;
+template <>
+ vector<PARAMETER<vector<dp> > >
+           PARAMETER<vector<PARAMETER<vector<dp> > > >::e_val(const
+    vector<PARAMETER<vector<dp > > >& , const CARD_LIST* /*scope*/)const
+{
+  trace1("PARAMETER dl", _s);
+  PARAMETER<vector< dp > > d;
+
+  CS c(CS::_STRING,_s);
+  vector< PARAMETER<vector<dp> > >::iterator a;
+  a = _v.begin();
+  _v.erase(_v.begin(),_v.end());
+  // FIXME: accept strings and parse...
+  while ( c.more() ){
+    incomplete();
+    //d << c;
+
+    //d.e_val(0,scope)
+    trace1("PARAMETER vector add v", c.fullstring());
+    _v.push_back( d );
+  }
+  trace0("PARAMETER vector add done");
+  return _v;
+}
+/*--------------------------------------------------------------------------*/
+template <>
+std::vector<double> PARAMETER<std::vector<double> >::e_val(const
+    std::vector<double>& , const CARD_LIST* )const
+{
+  trace1("PARAMETER dv" , _s);
+  double d;
+
+  CS c(CS::_STRING,_s);
+  std::vector<double>::iterator a;
+  a = _v.begin();
+  _v.erase(_v.begin(),_v.end());
+  // FIXME: accept strings and parse...
+  while ( c.more() ){
+    d = c.ctof();
+//    d << c; ?
+    trace1("PARAMETER vector add", d);
+    _v.push_back( d );
+  }
+  return _v;
+}
+/*--------------------------------------------------------------------------*/
+template<>
+void	PARAMETER<vector<PARAMETER<vector<PARAMETER<double> > > > >::operator=(const std::string& s){
+  trace1("PARAMETER dv=" , s);
+  
+  incomplete();
+}
+/*--------------------------------------------------------------------------*/
+template<>
+void	PARAMETER<vector<vector<double> > >::operator=(const std::string& s){
+  trace1("PARAMETER dv=" , s);
+  
+  incomplete();
+}
