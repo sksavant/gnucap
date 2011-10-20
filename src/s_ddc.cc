@@ -347,6 +347,12 @@ void DDC_BASE::sweep()
   U = new double[d*d];
   CU = new double[d*d];
   CUTCU = new double[d*d];
+
+  unsigned d2 = 2 * d;
+  trace1("", d2);
+  // GLS: A * y = RS2
+  A = new double[d2*d2];
+  y = new double[d2];
   
   _sim->clear_limit();
   CARD_LIST::card_list.tr_begin();
@@ -358,6 +364,8 @@ void DDC_BASE::sweep()
 void DDC_BASE::sweep_recursive(int Nest)
 {
   unsigned d = _sim->_total_nodes; // 3
+  unsigned d2 = 2 * d; // 6
+  trace1("", d2);
 
   trace1("DDC_BASE::sweep_recursive", Nest);
   --Nest;
@@ -448,7 +456,7 @@ void DDC_BASE::sweep_recursive(int Nest)
 
       BSMATRIX<double> G = _sim->_acx.real();
       BSMATRIX<double> C = _sim->_acx.imag();
-  //    BSMATRIX<double> S = _sim->_acx.sum();
+      //BSMATRIX<double> A = _sim->_acx.sum();
 
       if(_dump_matrix){
         _out << "G\n" << G << "\n";
@@ -495,11 +503,16 @@ void DDC_BASE::sweep_recursive(int Nest)
       }
 
       double RS[d];
+      double RS2[d2];
       double X[d];
       // fetch rhs
       for(unsigned a = 0; a < d; ++a){
         RS[a] = - Gu[a] + _sim->_i[a+1] ;
         X[a] = - Gu[a] + _sim->_i[a+1] ;
+        RS2[a] = - Gu[a] + _sim->_i[a+1];
+      }
+      for(unsigned a = d; a < d2; ++a){
+        RS2[a] = 0;
       }
 
       if(_dump_matrix){
@@ -508,7 +521,52 @@ void DDC_BASE::sweep_recursive(int Nest)
           _out << " " <<  RS[a];
         }
         _out  << ") \n";
+
+        _out << "RS2 ( " << RS2[0];
+        for(unsigned a=1; a<d2; a++){
+          _out << " " << RS2[a];
+        }
+        _out << ") \n";
       }
+
+      //_out << "Allokation von A\n";
+      //_out << "d: " << d << "\n";
+ 
+      // Das Array A allozieren
+      for(unsigned i=0; i<d; i++){
+        for(unsigned j=0; j<d; j++){
+          //A[i+j*d2] = ((const BSMATRIX<double>)C).s(i+1,j+1);
+          A[i+j*d2] = ((const BSMATRIX<double>)C).s(i+1,j+1);
+          //_out << "C(" << i+1 << "," << j+1 << "): A("<< (i+j*d2) << "):" << ((const BSMATRIX<double>)C).s(i+1,j+1) << "\n";
+        }
+        for(unsigned j=d; j<d2; j++){
+          A[i+j*d2] = 0;
+        }
+      }
+
+      for(unsigned i=d; i<d2; i++){
+        for(unsigned j=0; j<d; j++){
+          //A[i+j*d] = ((const BSMATRIX<double>)G).s(i+1-d,j+1);
+          A[i+j*d2] = ((const BSMATRIX<double>)G).s(i+1-d,j+1);
+          //_out << "G(" << i+1 << "," << j+1 << "): A("<< (i+j*d2) << "): "  << ((const BSMATRIX<double>)G).s(i+1-d,j+1) << "\n";
+        }
+        for(unsigned j=d; j<d2; j++){
+          //A[i+j*d] = ((const BSMATRIX<double>)C).s(i+1-d,j+1-d);
+          A[i+j*d2] = ((const BSMATRIX<double>)C).s(i+1-d,j+1-d);
+          //_out << "C(" << i+1 << "," << j+1 << "): A(" << (i+j*d2) << "): " << ((const BSMATRIX<double>)C).s(i+1-d,j+1-d) << "\n";
+        }
+      }
+      // Das Array A ausgeben
+      for(unsigned i=0; i<d2; i++){
+        if(_dump_matrix){
+          _out << "A row "<< i << " ( " <<  A[i];
+          for(unsigned a=1; a<d2; a++){
+            _out << " " << A[i+a*d2];
+          }
+          _out << " ) \n ";
+        } 
+      }
+
 
       // X = CU.trans * App
       //cblas_dgemv(CblasColMajor, 
@@ -525,6 +583,25 @@ void DDC_BASE::sweep_recursive(int Nest)
         }
         _out  << ") \n";
       }
+
+      int D2 = d2;
+      int ONE = 1;
+      double ALPHA = 1;
+      double RCOND = 0;
+      int RANK;
+      double WURK;
+      int LWORK=-1;
+      int INFO = 0;
+
+
+      double S2[d2]; //singular values
+      dgelss_( &D2, &D2, &ONE, A, &D2, RS2, &D2, S2, &RCOND, &RANK, &WURK, &LWORK, &INFO );
+      assert(!INFO);
+      LWORK = (int)WURK;
+      double WORK[LWORK];
+      dgelss_( &D2, &D2, &ONE, A, &D2, RS2, &D2, S2, &RCOND, &RANK, WORK, &LWORK, &INFO );
+     
+
 
       // U = G^{-1} C
       // want to solve C x = i - Gu, and G x = C y <=> x = U y
@@ -545,23 +622,24 @@ void DDC_BASE::sweep_recursive(int Nest)
 
 
 
-//void dgels_(const char *trans, const int *M, const int *N, const int *nrhs,
-//    double *A, const int *lda, double *b, const int *ldb, double *work, const
-//    int * lwork, int *info);
-/*
+      // void dgels_(const char *trans, const int *M, const int *N, const int *nrhs,
+      // double *A, const int *lda, double *b, const int *ldb, double *work, const
+      // int * lwork, int *info);
+
+      /*
       dgels_("No transpose", &D,&D,&one, CU, &D, RS, &D, &wurk, &lwork, &info );
       assert(!info);
       lwork = (int)wurk;
       double work[lwork];
       dgels_("No transpose", &D,&D,&one, CU, &D, RS, &D, work, &lwork, &info );
-
       */
-       double S[d]; //singular values
-       dgelss_(&D,&D,&one,CU, &D, RS, &D, S, &rcond, &rank, &wurk, &lwork, &info );
-       assert(!info);
-       lwork = (int)wurk;
-       double work[lwork];
-       dgelss_(&D,&D,&one,CU, &D, RS, &D, S, &rcond, &rank, work, &lwork, &info );
+
+      double S[d]; //singular values
+      dgelss_(&D,&D,&one,CU, &D, RS, &D, S, &rcond, &rank, &wurk, &lwork, &info );
+      assert(!info);
+      lwork = (int)wurk;
+      double work[lwork];
+      dgelss_(&D,&D,&one,CU, &D, RS, &D, S, &rcond, &rank, work, &lwork, &info );
       
 
       if(info){
@@ -570,11 +648,17 @@ void DDC_BASE::sweep_recursive(int Nest)
       }
 
       if(_dump_matrix){
-        _out << "after dgels " << lwork  << " ( " << RS[0];
+        _out << "after dgels " << lwork  << " RS( " << RS[0];
         for(unsigned a=1; a < d; ++a){
           _out << " " <<  RS[a];
         }
         _out  << ") \n";
+
+        _out << "after dgels " << lwork << " RS2( " << RS2[0];
+        for(unsigned a=1; a<d2; ++a){
+          _out << " " << RS2[a];
+        }
+        _out << ") \n";
       }
 
       // dv = U * app 
@@ -602,6 +686,14 @@ void DDC_BASE::sweep_recursive(int Nest)
       C.dezero( OPT::cmin ); 
       C.lu_decomp();
 
+      //printf("after C.dezero() and C.lu_decomp()\n");
+
+      if(_dump_matrix){
+        _out << "G\n" << G << "\n";
+        _out << "C\n" << C << "\n";
+        //_out << "A\n" << A << "\n";
+      }
+
       _sim->_bypass_ok = false;
 
       if (_do_tran_step) { 
@@ -619,8 +711,8 @@ void DDC_BASE::sweep_recursive(int Nest)
           _out  << ") \n";
         }
 
-//        irgendwoher di/du holen...
-        //C.fbsub( dv, Gu , dv );
+        // irgendwoher di/du holen...
+        // C.fbsub( dv, Gu , dv );
 
         for(unsigned a=0; a < d; ++a){
           // stash hack
