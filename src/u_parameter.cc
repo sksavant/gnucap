@@ -30,6 +30,7 @@
 #include "u_lang.h"
 #include "e_card.h"
 #include "e_model.h"
+using namespace std;
 // #include "d_rcd.h" // hack
 /*--------------------------------------------------------------------------*/
 
@@ -279,12 +280,12 @@ string to_string(vector< PARAMETER< vector< PARAMETER<double> > > > n)
   // FIXME: remove one ,
   if (n.size()==0){return "( )";}
 
-  vector< PARAMETER<vector<PARAMETER<double> > > >::iterator i=n.begin();
+  vector< PARAMETER<vector<PARAMETER<double> > > >::iterator i = n.begin();
   buf += to_string("(")+ to_string(*i);
   ++i;
 
   while (i!=n.end()){
-    buf += std::string(",") + to_string(*i);
+    buf += std::string(", ") + to_string(*i);
     ++i;
   }
   return buf + std::string(" )");;
@@ -301,7 +302,7 @@ inline string to_string(vector<PARAMETER<double> > n)
   ++i;
 
   while (i!=n.end()){
-    buf += std::string(",") + ftos((double)*i, 0, 7, 0);
+    buf += std::string(", ") + ftos((double)*i, 0, 7, 0);
     ++i;
   }
   return buf + std::string(" )");;
@@ -311,25 +312,19 @@ inline string to_string(vector<PARAMETER<double> > n)
 template <>
  vector<PARAMETER<vector<dp> > >
            PARAMETER<vector<PARAMETER<vector<dp> > > >::e_val(const
-    vector<PARAMETER<vector<dp > > >& , const CARD_LIST* /*scope*/)const
+    vector<PARAMETER<vector<dp > > >& , const CARD_LIST* scope)const
 {
-  trace1("PARAMETER dl", _s);
+  trace2("PARAMETER dvv::e_val", _s, _v.size());
+  trace1("PARAMETER dvv::e_val", *this);
   PARAMETER<vector< dp > > d;
 
-  CS c(CS::_STRING,_s);
-  vector< PARAMETER<vector<dp> > >::iterator a;
-  a = _v.begin();
-  _v.erase(_v.begin(),_v.end());
+  //  CS c(CS::_STRING,_s);
   // FIXME: accept strings and parse...
-  while ( c.more() ){
-    incomplete();
-    //d << c;
-
-    //d.e_val(0,scope)
-    trace1("PARAMETER vector add v", c.fullstring());
-    _v.push_back( d );
+  for(unsigned  i=0; i<_v.size()  ; i++){
+    vector<PARAMETER<double> > nix;
+    _v[i].e_val(nix, scope);
   }
-  trace0("PARAMETER vector add done");
+  trace0("PARAMETER vector eval done");
   return _v;
 }
 /*--------------------------------------------------------------------------*/
@@ -337,14 +332,15 @@ template <>
 std::vector<double> PARAMETER<std::vector<double> >::e_val(const
     std::vector<double>& , const CARD_LIST* )const
 {
-  trace1("PARAMETER dv" , _s);
+  trace2("PARAMETER dv e_val" , _s, _v.size());
   double d;
 
   CS c(CS::_STRING,_s);
   std::vector<double>::iterator a;
-  a = _v.begin();
-  _v.erase(_v.begin(),_v.end());
+ // a = _v.begin();
+ // _v.erase(_v.begin(),_v.end());
   // FIXME: accept strings and parse...
+  //
   while ( c.more() ){
     d = c.ctof();
 //    d << c; ?
@@ -354,16 +350,131 @@ std::vector<double> PARAMETER<std::vector<double> >::e_val(const
   return _v;
 }
 /*--------------------------------------------------------------------------*/
+// next 2 should work for PARAMETER<vector<PARAMETER<T> > >
 template<>
-void	PARAMETER<vector<PARAMETER<vector<PARAMETER<double> > > > >::operator=(const std::string& s){
-  trace1("PARAMETER dv=" , s);
+void    PARAMETER<vector<PARAMETER<double> > >::operator=(const std::string& s){
+  trace1("pdv::operator = ", s);
+
+  CS cmd(CS::_STRING,s);
+  std::vector<PARAMETER<double> >::iterator a;
+  a = _v.begin();
+  _v.erase(_v.begin(),_v.end());
+  // FIXME: accept strings and parse...
+  std::string vect;
+
+  cmd.skip1b('(');
+
+  for(;;){
+    trace1("PARAMETER vector loop", cmd.tail());
+    if (!cmd.more()) break;
+    cmd.skipbl();
+    if(cmd.match1(")")){
+      trace0("PARAMETER at)");
+      break;
+    }
+
+    vect = cmd.ctos(",","(",")","");
+
+    PARAMETER<double>  d;
+    trace1("PARAMETER vector loop", vect);
+    // d =  '(' + vect + ')'; ??
+    d = vect;
+    _v.push_back( d );
+
+  }
+  if(!cmd.umatch(")"))
+    throw Exception(std::string("foo\n"));
+
+  _s="#";
+  trace3("PARAMETER done vector loop", cmd.tail(), *this, _v.size());
   
   incomplete();
 }
 /*--------------------------------------------------------------------------*/
 template<>
-void	PARAMETER<vector<vector<double> > >::operator=(const std::string& s){
-  trace1("PARAMETER dv=" , s);
-  
+void PARAMETER<vector<PARAMETER<vector<PARAMETER<double> > > > >::operator=(const std::string& s){
+  trace1("PARAMETER dvv =" , s);
+
+  CS cmd(CS::_STRING,s);
+  std::vector<PARAMETER<vector<PARAMETER<double> > > >::iterator a;
+  a = _v.begin();
+  _v.erase(_v.begin(),_v.end());
+  // FIXME: accept strings and parse...
+  std::string vect;
+
+  cmd.skipbl();
+
+  for(;;){
+    if (! cmd.match1('(')){break;}
+
+  //  cmd >> vect;
+    vect = cmd.ctos(";","(",")","");
+
+    PARAMETER<vector<PARAMETER<double> > > d;
+    trace1("PARAMETER matrix loop", vect);
+    d =  '(' + vect + ')'; 
+    // d = vect;
+    _v.push_back( d );
+
+    cmd.skip1b(')');
+    trace1("PARAMETER matrix loop pushed back ", d);
+  }
+  _s = "#";
+  trace2("PARAMETER done matrix loop", cmd.tail(), *this);
+}
+/*--------------------------------------------------------------------------*/
+template<>
+void	PARAMETER<vector<vector<double> > >::operator=(const std::string&  ){
+//  trace1("PARAMETER dv=",s );
+  unreachable(); // nonsense?
   incomplete();
 }
+/*--------------------------------------------------------------------------*/
+template <>
+void PARAMETER<vector<PARAMETER<PARAMETER< double > > > >::parse(CS& ){
+  incomplete();
+  unreachable(); // nonsense
+}
+/*--------------------------------------------------------------------------*/
+template<>
+CS&     CS::operator>>(vector<PARAMETER<vector<PARAMETER<double> > > >& ){
+
+  trace0("CS::operator");
+  incomplete();
+  return *this;
+}
+/*--------------------------------------------------------------------------*/
+template<>
+vector<PARAMETER<double> > PARAMETER<vector<PARAMETER<double> > >::e_val(
+    const vector<PARAMETER<double> >& def, const CARD_LIST* scope)const{
+
+  trace2("dp::e_val", _s, _v.size());
+  assert(def.size() >= _v.size());
+  assert(_s=="" ||  _v.size());
+
+  for(unsigned  i=0; i<_v.size()  ; i++){
+    _v[i].e_val(def[i], scope);
+  }
+
+  return _v;
+
+}
+/*-----------------------------------*/
+template<>
+string PARAMETER<vector<PARAMETER<double> > >::string()const {
+  std::string ret("VECTOR");
+  if (_s == "#") {
+    ret+= "(";
+  }else if (_s == "") {
+    ret+= "NA(";
+  }else{
+    return _s;
+  }
+  for(unsigned  i=0; i<_v.size()  ; i++){
+    ret+= (i)?",":"";
+    ret+= _v[i].string();
+  }
+  ret+=")";
+  return ret;
+}
+/*-----------------------------------*/

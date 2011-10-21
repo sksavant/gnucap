@@ -74,16 +74,9 @@ public:
   std::string debugstring()const {
     return(_s + " -> " + to_string(_v));
   }
-  std::string string()const {
-    if (_s == "#") {
-      return to_string(_v);
-    }else if (_s == "") {
-      return "NA(" + to_string(_v) + ")";
-    }else{
-      return _s;
-    }
-  }
+  std::string string()const;
   void	print(OMSTREAM& o)const		{o << string();}
+  void	print(ostream& o)const		{o << string();}
   void	set_default(const T& v)		{_v = v; _s = "";}
   void	operator=(const PARAMETER& p)	{_v = p._v; _s = p._s;}
   void	operator=(const T& v)		{_v = v; _s = "#";}
@@ -112,10 +105,34 @@ private:
   T lookup_solve(const T& def, const CARD_LIST* scope)const;
 };
 /*=========================*/
+// template std::string PARAMETER<vector<PARAMETER<T> > > ??
+template <>
+std::string PARAMETER<vector<PARAMETER<vector<PARAMETER<double> > > > >::string()const;
+
+template <>
+std::string PARAMETER<vector<PARAMETER<double> > >::string()const;
+/*=========================*/
+template <class T>
+inline std::string PARAMETER<T>::string()const {
+  if (_s == "#") {
+    return to_string(_v);
+  }else if (_s == "") {
+    return "NA(" + to_string(_v) + ")";
+  }else{
+    return _s;
+  }
+}
+/*=========================*/
+template<> void    PARAMETER<vector<vector<double> > >::operator=(const std::string& s); //nonsense?
+template<> void    PARAMETER<vector<double> >::operator=(const std::string& s); // nonsense?
+//FIXME:
+// implement
+//template<class T >
+//void	PARAMETER<vector<T> >::operator=(const std::string& s);
 template<>
 void	PARAMETER<vector<PARAMETER<vector<PARAMETER<double> > > > >::operator=(const std::string& s);
 template<>
-void    PARAMETER<vector<vector<double> > >::operator=(const std::string& s);
+void    PARAMETER<vector<PARAMETER<double> > >::operator=(const std::string& s);
 /*=========================*/
 template<class T>
 inline  void	PARAMETER<T>::operator=(const std::string& s)
@@ -479,6 +496,10 @@ inline std::list<double> PARAMETER<std::list<double> >::e_val(const
   return _v;
 }
 /*--------------------------------------------------------------------------*/
+template <>
+vector<PARAMETER<double> > PARAMETER<vector<PARAMETER<double> > >::e_val(
+    const vector<PARAMETER<double> >& def, const CARD_LIST* scope)const;
+/*--------------------------------------------------------------------------*/
 // fallback e_val
 template <class T>
 T PARAMETER<T>::e_val(const T& def, const CARD_LIST* scope)const
@@ -555,15 +576,20 @@ inline void PARAMETER<bool>::parse(CS& cmd)
   }
 }
 /*--------------------------------------------------------------------------*/
+//template <>
+//void PARAMETER<vector<PARAMETER<PARAMETER< double > > > >::parse(CS& cmd) ;
+/*--------------------------------------------------------------------------*/
 template <class T>
 inline void PARAMETER<T>::parse(CS& cmd) 
 {
   trace0(("PARAMETER<T>::parse " + cmd.tail()).c_str());
   T new_val;
+  //try
   cmd >> new_val;
   if (cmd) {
     _v = new_val;
     _s = "#";
+  //except
   }else{
     std::string name;
     //cmd >> name;
@@ -645,6 +671,13 @@ inline OMSTREAM& operator<<(OMSTREAM& o, const PARAMETER<T> p)
   return o;
 }
 /*--------------------------------------------------------------------------*/
+template <class T>
+inline ostream& operator<<(ostream& o, const PARAMETER<T> p)
+{
+  p.print(o);
+  return o;
+}
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 typedef struct{
   double tr_sum; // sum up stress during tr
@@ -662,5 +695,9 @@ string to_string(vector< PARAMETER< vector< PARAMETER<double> > > > n);
 
 typedef vector<PARAMETER<double> > dpv;
 typedef vector<PARAMETER<dpv> > dpvv;
+
+//#include "u_parameter.h"
+template<>
+inline CS&     CS::operator>>(vector<PARAMETER<vector<PARAMETER<double> > > >& x);
 
 #endif

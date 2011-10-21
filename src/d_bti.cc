@@ -215,11 +215,13 @@ std::string MODEL_BUILT_IN_BTI_SUM::param_value(int i)const
 void MODEL_BUILT_IN_BTI_SUM::precalc_first()
 {
   const CARD_LIST* par_scope = scope();
-  dpvv x;
+  dpvv x; // empty params.
 
+  trace0("MODEL_BUILT_IN_BTI_SUM::precalc_first");
   rcdparm.e_val( x, par_scope);
   MODEL_BUILT_IN_BTI::precalc_first();
   rcd_number = (int) dpvv(rcdparm).size();
+
 }
 /*--------------------------------------------------------------------------*/
 int MODEL_BUILT_IN_BTI_SUM::param_count( )const
@@ -408,6 +410,10 @@ void MODEL_BUILT_IN_BTI_SUM::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
 //typedef vector<PARAMETER<dpv> > dpvv;
 
   size_t Nr = dpvv(rcdparm).size();
+  if(!Nr)
+    throw Exception("no summands");
+
+  trace1("MODEL_BUILT_IN_BTI_SUM::attach_rcds", Nr);
 
   for(size_t n=0; n<Nr ; n++ ){
     dpvv P = dpvv(rcdparm);

@@ -55,7 +55,7 @@ private:
   unsigned  _length;
   unsigned  _begin_match;
   unsigned  _end_match;
-  bool _ok;
+  bool _ok; // FIXME: throw exceptions
   int _line_number;
 public:
   // construction, destruction, and re-construction
@@ -150,6 +150,8 @@ public:
   CS&         operator>>(short unsigned& x)	 {x=ctou();return *this;}
   CS&         operator>>(double& x)	 {x=ctof();return *this;}
   CS&	      operator>>(std::string& x) {x=ctos();return *this;}
+  template<class T>
+  CS&	      operator>>(vector<T>& x);
 
   // skip (ap_skip.cc) possibly consuming, sets _ok
   CS&	      skip(int c=1) 
@@ -215,5 +217,10 @@ inline CS& operator>>(CS& cmd, T& val)
   return cmd;
 }
 /*--------------------------------------------------------------------------*/
+template<class T>
+inline CS&     CS::operator>>(vector<T>& x){
+  incomplete();
+  return *this;
+}
 /*--------------------------------------------------------------------------*/
 #endif
