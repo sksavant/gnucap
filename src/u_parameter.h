@@ -43,6 +43,7 @@ namespace PARM{
   enum NA_ {NA};
 }
 
+//////////=========================
 class PARA_BASE {
   protected:
     std::string _s;
@@ -53,10 +54,16 @@ class PARA_BASE {
     PARA_BASE( const string s ): _s(s){}
     virtual ~PARA_BASE(){}
 
-};
+    bool has_hard_value()const {return (_s != "");}
 
+    void	print(OMSTREAM& o)const		{o << string(*this);}
+    void	print(ostream& o)const		{o << string(*this);}
+    virtual operator std::string()const = 0;
+
+};
+//////////=========================
 template <class T>
-class PARAMETER: PARA_BASE {
+class PARAMETER : public PARA_BASE {
   private:
     mutable T _v;
     virtual T my_infty() const; // HACK?
@@ -64,13 +71,12 @@ public:
   T _NOT_INPUT() const;
 
   explicit PARAMETER() : PARA_BASE(), _v(_NOT_INPUT()) {}
-  PARAMETER(const PARAMETER<double>& p) : PARA_BASE(_s), _v(p._v) {}
+  PARAMETER(const PARAMETER<double>& p) : PARA_BASE(p), _v(p._v) {}
   // PARAMETER(const T&);
   explicit PARAMETER(T v) : PARA_BASE(), _v(v) {}
   //explicit PARAMETER(T v, const std::string& s) :_v(v), _s(s) {untested();}
   ~PARAMETER() {}
   
-  bool	has_hard_value()const {return (_s != "");}
   bool	has_good_value()const {return (_v != NOT_INPUT);}
   //bool has_soft_value()const {untested(); return (has_good_value() && !has_hard_value());}
 
@@ -181,7 +187,6 @@ template <>
 class PARAMETER<std::string> : PARA_BASE {
 private:
   mutable std::string _v; //value
-  //std::string _s;  //backend string
   std::string my_infty() const;
 private:
   std::string lookup_solve(const std::string& def, const CARD_LIST* scope)const;
@@ -487,6 +492,7 @@ inline std::list<double> PARAMETER<std::list<double> >::e_val(const
 template <class T>
 T PARAMETER<T>::e_val(const T& def, const CARD_LIST* scope)const
 {
+  trace2("PARAMETER<T>::fallback_e_val", _s, *this);
   assert(scope);
 
   static int recursion=0;

@@ -25,7 +25,7 @@ double MODEL_BUILT_IN_RCD_SYM::dvth( const COMPONENT* brh) const
     // return c->_Ccgfill->get_tt() * cc->_weight * cc->_wcorr;
     //
     //FIXME. _tr_fill must be part of an ADP_NODE
-    return (c->_tr_fill + c->_Ccgfill->get_tt()) * cc->_weight * cc->_wcorr;
+    return double((c->_tr_fill + c->_Ccgfill->get_tt()) * cc->_weight * cc->_wcorr);
   }
 }
 /*--------------------------------------------------------------------------*/

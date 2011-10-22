@@ -274,45 +274,30 @@ bool PARAMETER<string>::operator==(const PARAMETER& p)const
   return ret;
 }
 /*--------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*--------------------------------------------------------------------------*/
 //typedef PARAMETER<double> dp;
-template <>
-std::vector<double> PARAMETER<std::vector<double> >::e_val(const
-    std::vector<double>& , const CARD_LIST* )const
-{
-  trace2("PARAMETER dv e_val" , _s, _v.size());
-  double d;
-
-  CS c(CS::_STRING,_s);
-  std::vector<double>::iterator a;
- // a = _v.begin();
- // _v.erase(_v.begin(),_v.end());
-  // FIXME: accept strings and parse...
-  //
-  while ( c.more() ){
-    d = c.ctof();
-//    d << c; ?
-    trace1("PARAMETER vector add", d);
-    _v.push_back( d );
-  }
-  return _v;
-}
+//template <>
+//std::vector<double> PARAMETER<std::vector<double> >::e_val(const
+//    std::vector<double>& , const CARD_LIST* )const
+//{
+//  unreachable();
+//  trace2("PARAMETER dv e_val" , _s, _v.size());
+//  double d;
+//
+//  CS c(CS::_STRING,_s);
+//  std::vector<double>::iterator a;
+// // a = _v.begin();
+// // _v.erase(_v.begin(),_v.end());
+//  // FIXME: accept strings and parse...
+//  //
+//  while ( c.more() ){
+//    d = c.ctof();
+////    d << c; ?
+//    trace1("PARAMETER vector add", d);
+//    _v.push_back( d );
+//  }
+//  return _v;
+//}
 /*--------------------------------------------------------------------------*/
 // next 2 should work for PARAMETER<vector<PARAMETER<T> > >
 //template<>
@@ -369,28 +354,5 @@ std::vector<double> PARAMETER<std::vector<double> >::e_val(const
 //  unreachable(); // nonsense
 //}
 /*--------------------------------------------------------------------------*/
-template<>
-CS&     CS::operator>>(vector<PARAMETER<vector<PARAMETER<double> > > >& ){
-
-  trace0("CS::operator");
-  incomplete();
-  return *this;
-}
 /*--------------------------------------------------------------------------*/
-template<>
-vector<PARAMETER<double> > PARAMETER<vector<PARAMETER<double> > >::e_val(
-    const vector<PARAMETER<double> >& def, const CARD_LIST* scope)const{
-
-  trace2("dp::e_val", _s, _v.size());
-  assert(def.size() >= _v.size());
-  assert(_s=="" ||  _v.size());
-
-  for(unsigned  i=0; i<_v.size()  ; i++){
-    _v[i].e_val(def[i], scope);
-  }
-
-  return _v;
-
-}
-/*-----------------------------------*/
 /*-----------------------------------*/

@@ -215,10 +215,10 @@ std::string MODEL_BUILT_IN_BTI_SUM::param_value(int i)const
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_BTI_SUM::precalc_first()
 {
+  trace0("MODEL_BUILT_IN_BTI_SUM::precalc_first");
   const CARD_LIST* par_scope = scope();
   dpvv x; // empty params.
 
-  trace0("MODEL_BUILT_IN_BTI_SUM::precalc_first");
   rcdparm.e_val( x, par_scope);
   MODEL_BUILT_IN_BTI::precalc_first();
   rcd_number = (int) rcdparm.size();
@@ -390,8 +390,9 @@ void MODEL_BUILT_IN_BTI_SUM::set_param_by_index(int i, std::string& value, int o
 {
   switch (MODEL_BUILT_IN_BTI_SUM::param_count() - 1 - i) {
     case 0: untested(); break;
-    case 1: rcdparm = value; 
+    case 1: 
             trace1("MODEL_BUILT_IN_BTI_SUM::set_param_by_index", value);
+            rcdparm = value; 
             break;
     default: MODEL_BUILT_IN_BTI::set_param_by_index(i,value,offset);
   }
@@ -639,7 +640,6 @@ void MODEL_BUILT_IN_BTI_SINGLE::precalc_first()
     const CARD_LIST* par_scope = scope();
     assert(par_scope);
     MODEL_BUILT_IN_BTI::precalc_first();
-
 }
 /*--------------------------------------------------------------------------*/
 namespace MODEL_BUILT_IN_BTI_SINGLE_DISPATCHER { 

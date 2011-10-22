@@ -24,7 +24,7 @@ using namespace std;
 
 //template <>
 template <class T>
-class PARAMETER<vector<PARAMETER<T> > > : PARA_BASE{
+class PARAMETER<vector<PARAMETER<T> > > : public PARA_BASE{
 	private:
 		mutable vector<PARAMETER<T> > _v;
 		vector<PARAMETER<T> > _NOT_INPUT() const;
@@ -36,8 +36,8 @@ class PARAMETER<vector<PARAMETER<T> > > : PARA_BASE{
 		PARAMETER(const PARAMETER<vector<PARAMETER<T> > >& p) :
 			PARA_BASE(p), _v(p._v){ }
 
-		void	print(OMSTREAM& o)const		{o << string();}
-		void	print(ostream& o)const		{o << string();}
+//		void	print(OMSTREAM& o)const		{o << string();}
+//		void	print(ostream& o)const		{o << string();}
 
 		std::string string()const;
 		//vector<PARAMETER<T> >  _NOT_INPUT() const;
@@ -54,24 +54,6 @@ class PARAMETER<vector<PARAMETER<T> > > : PARA_BASE{
 };
 //============================================================
 template <class T>
-vector<PARAMETER<T> >
-PARAMETER<vector<PARAMETER<T> > >::e_val(const vector<PARAMETER<T> >& def, const CARD_LIST* scope)const
-{
-  trace2("PARAMETER dvv::e_val", _s, _v.size());
-  trace1("PARAMETER dvv::e_val", (std::string)(*this));
-  PARAMETER<vector< PARAMETER<T> > > d;
-
-  //  CS c(CS::_STRING,_s);
-  // FIXME: accept strings and parse...
-  for(unsigned  i=0; i<_v.size()  ; i++){
-    vector<PARAMETER<double> > nix;
-    _v[i].e_val(def[i], scope);
-  }
-  trace0("PARAMETER vector eval done");
-  return _v;
-}
-/*===============================*/
-template <class T>
 PARAMETER<vector<PARAMETER<T> > >::operator  std::string()const{
 	return " ";
 }
@@ -79,7 +61,7 @@ PARAMETER<vector<PARAMETER<T> > >::operator  std::string()const{
 #define TP PARAMETER<vector<PARAMETER<T> > >
 template <class T>
 inline std::string PARAMETER<vector<PARAMETER<T> > >::string()const{
-  std::string ret("VECTOR");
+  std::string ret("V");
   if (PARAMETER<vector<PARAMETER<T> > >::_s == "#") {
     ret+= "(";
   }else if (_s == "") {
@@ -89,7 +71,7 @@ inline std::string PARAMETER<vector<PARAMETER<T> > >::string()const{
   }
   for(unsigned  i=0; i<TP::_v.size()  ; i++){
     ret+= (i)?",":"";
-    ret+= TP::_v[i].string();
+    ret+= _v[i];
   }
   ret+=")";
   return ret;
@@ -175,15 +157,20 @@ void PARAMETER<vector<PARAMETER<T> > >::operator=(const std::string& s){
   cmd.skipbl();
 
   for(;;){
-    if (! cmd.match1('(')){break;}
+    //if (! cmd.umatch("(")){
+	 //   untested();
+	 //   break;
+	 //}
+	 if(!cmd.more()) break;
 
   //  cmd >> vect;
-    vect = cmd.ctos(";","(",")","");
+    trace1("PARAMETER matrix loop", cmd.tail());
+    vect = cmd.ctos(",","(",")","");
+    trace1("PARAMETER matrix ctosd", vect);
 
     PARAMETER<T > d;
-    trace1("PARAMETER matrix loop", vect);
-    d =  '(' + vect + ')'; 
-    // d = vect;
+    //d =  '(' + vect + ')'; 
+     d = vect;
     _v.push_back( d );
 
     cmd.skip1b(')');
@@ -225,4 +212,51 @@ inline string to_string(vector<PARAMETER<T> > n)
 //  }
 //  return buf + std::string(" )");;
 }
+//========================================================================
+//template<class T>
+//inline vector<PARAMETER<T> > PARAMETER<vector<PARAMETER<T> > >::e_val(
+//    const vector<PARAMETER<T> >& def, const CARD_LIST* scope)const{
+//
+//  trace2("dp::e_val", _s, _v.size());
+//  assert(def.size() >= _v.size());
+//  assert(_s=="" ||  _v.size());
+//
+//  for(unsigned  i=0; i<_v.size()  ; i++){
+//    _v[i].e_val(def[i], scope);
+//  }
+//
+//  return _v;
+//
+//}
+/*-----------------------------------*/
+//template<class T>
+//CS&     CS::operator>>(vector<PARAMETER<vector<PARAMETER<double> > > >& ){
+//
+//  trace0("CS::operator");
+//  incomplete();
+//  return *this;
+//}
+/*-----------------------------------*/
+template <class T>
+inline vector<PARAMETER<T> >
+PARAMETER<vector<PARAMETER<T> > >::e_val(const vector<PARAMETER<T> >& def, const CARD_LIST* scope)const
+{
+  trace2("PARAMETER dvv::e_val", _s, _v.size());
+  trace1("PARAMETER dvv::e_val", (std::string)(*this));
+  trace1("PARAMETER dvv::e_val", def.size() );
+
+  //  CS c(CS::_STRING,_s);
+  // FIXME: accept strings and parse...
+  for(unsigned  i=0; i<_v.size()  ; i++){
+    PARAMETER<T>  D;
+	 if (i < def.size()){
+		 D = def[i];
+	 }
+	 trace2("PARAMETER vector eval", i,_v[i]);
+    _v[i].e_val(D, scope);
+  }
+  trace0("PARAMETER vector eval done");
+  return _v;
+}
+/*===============================*/
 #endif
