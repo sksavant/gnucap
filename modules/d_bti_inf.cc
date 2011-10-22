@@ -33,11 +33,19 @@ class MODEL_BUILT_IN_BTI_INF
     PARAMETER<uint_t> rows;
     PARAMETER<uint_t> cols;
     PARAMETER<double> base;
-    PARAMETER<std::vector<double> > matrix; //?
+    PARAMETER<std::vector<PARAMETER<double> > > matrix; //?
     PARAMETER<uint_t> total;
   public: // calculated parameters
     virtual std::string RCD_name(uint_t)const;
 };
+/*--------------------------------------------------------------------------*/
+MODEL_BUILT_IN_BTI_INF::MODEL_BUILT_IN_BTI_INF(const BASE_SUBCKT* p)
+  :MODEL_BUILT_IN_BTI(p),
+  rows(0),
+  cols(0),
+  base(10)
+{
+}
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_BTI_INF::MODEL_BUILT_IN_BTI_INF(const
@@ -48,8 +56,9 @@ MODEL_BUILT_IN_BTI_INF::MODEL_BUILT_IN_BTI_INF(const
   base(p.base),
   matrix(p.matrix)
 {
-  if(!((vector<double>)matrix).size() == rows*cols){
-    throw(Exception("size mismatch %i %i %i\n", ((vector<double>)matrix).size(),
+  if(matrix.size() != rows*cols){
+    trace1("MODEL_BUILT_IN_BTI_INF", matrix.size());
+    throw(Exception("size mismatch %i %i\n", 
         (int)rows, (int)cols));
   }
 }
@@ -60,11 +69,12 @@ void MODEL_BUILT_IN_BTI_INF::precalc_first()
   assert(par_scope);
   MODEL_BUILT_IN_BTI::precalc_first();
 
-  matrix.e_val( std::vector<double>(0), par_scope);
+  matrix.e_val( std::vector<PARAMETER<double> >(0), par_scope);
   total.e_val( 0, par_scope);
+  trace2("MODEL_BUILT_IN_BTI::precalc_first", rows,cols);
   e_val(&(this->rows), (uint_t)11, par_scope);
   e_val(&(this->cols), (uint_t)11, par_scope);
-  trace1("MODEL_BUILT_IN_BTI::precalc_first", rows*cols);
+  trace2("MODEL_BUILT_IN_BTI::precalc_first", rows,cols);
 
   base.e_val(10,par_scope);
 
@@ -72,11 +82,6 @@ void MODEL_BUILT_IN_BTI_INF::precalc_first()
     untested();
   }
 
-}
-/*--------------------------------------------------------------------------*/
-MODEL_BUILT_IN_BTI_INF::MODEL_BUILT_IN_BTI_INF(const BASE_SUBCKT* p)
-  :MODEL_BUILT_IN_BTI(p)
-{
 }
 /*--------------------------------------------------------------------------*/
 int MODEL_BUILT_IN_BTI_INF::param_count()const
@@ -90,7 +95,7 @@ std::string MODEL_BUILT_IN_BTI_INF::param_value(int i)const
     case 0: return "...";
     case 1: return to_string(rows);
     case 2: return to_string(cols);
-    case 3: return to_string(matrix);
+    case 3: return string(matrix);
     case 4: return to_string(base);
   }
   return MODEL_BUILT_IN_BTI::param_value(i);
@@ -139,7 +144,7 @@ std::string MODEL_BUILT_IN_BTI_INF::RCD_name(uint_t i) const{
   uint_t col=0;
   uint_t pos=0;
   uint_t find=0;
-  vector<double> mat=matrix;
+  vector<PARAMETER<double> > mat=matrix;
 
   while( true ){
     row = pos/WS_COLS;
@@ -171,7 +176,7 @@ void MODEL_BUILT_IN_BTI_INF::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
   uint_t row, col;
   uint_t cols = WS_COLS;
   uint_t rows = 10;
-  vector<double> mat=matrix;
+  vector<PARAMETER<double> > mat=matrix;
 
   long double up = pow(10, -7.5);
   double base=10;

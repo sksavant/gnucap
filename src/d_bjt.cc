@@ -1847,6 +1847,7 @@ bool DEV_BUILT_IN_BJT::do_tr()
 
   m->tr_eval(this);
   switch (m->polarity) {
+	  case dunno: assert(false);
   case pP:
     cce = -cce;
     ccexxx = -ccexxx;

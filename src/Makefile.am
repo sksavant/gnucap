@@ -229,6 +229,7 @@ ADMS_GC_XML=../adms/gnucap.xml
 
 d_vvp.lo extlib.lo: CPPFLAGS+= @IVERILOG_INCLUDE@
 
+# FIXME: -I iverilog only for .v stuff
 
 .DELETE_ON_ERROR: *.cc
 

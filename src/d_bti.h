@@ -10,7 +10,9 @@
 #ifndef D_BTI_H_INCLUDED
 #define D_BTI_H_INCLUDED
 
-#include "d_diode.h"
+//  enum polarity_t {pP = -1, pN = 1};
+
+//#include "d_diode.h"
 #include "e_aux.h"
 #include "d_rcd.h"
 #include "u_limit.h"
@@ -18,6 +20,7 @@
 #include "e_node.h"
 #include "e_subckt.h"
 #include "e_model.h"
+#include "u_para_vec.h"
 class COMMON_BUILT_IN_RCD;
 /*--------------------------------------------------------------------------*/
 class COMMON_BUILT_IN_BTI

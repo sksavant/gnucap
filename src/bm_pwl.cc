@@ -131,7 +131,7 @@ void EVAL_BM_PWL::precalc_last(const CARD_LIST* Scope)
 	 p = _raw_table.begin();  p != _raw_table.end();  ++p) {
     if (last > p->first) {
       throw Exception_Precalc("PWL is out of order: (" + to_string(last)
-			      + ", " + to_string(p->first) + ")\n");
+			      + ", " + string(p->first) + ")\n");
     }else{
       DPAIR x(p->first, p->second);
       _num_table.push_back(x);

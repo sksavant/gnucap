@@ -33,7 +33,7 @@
 #define D_DIODE_H_INCLUDED
 
   enum region_t {INITOFF=-2, REVERSE=-1, UNKNOWN=0, FORWARD=1};
-  enum polarity_t {pP = -1, pN = 1};
+  //enum polarity_t {pP = -1, dunno=0, pN = 1};
 #include "e_adp.h"
 
 #include "u_sdp.h"

@@ -15,6 +15,7 @@
 // #include "e_compon.h"
 #include "d_bti.h"
 #include "io_trace.h"
+#include "u_para_vec.h"
 static bool dummy=false;
 /*--------------------------------------------------------------------------*/
 class COMMON_COMPONENT;
@@ -207,7 +208,7 @@ std::string MODEL_BUILT_IN_BTI_SUM::param_value(int i)const
 {
   switch (MODEL_BUILT_IN_BTI::param_count() - 1 - i) {
     case 0:  unreachable(); return "";
-    case 1:  return rcdparm.string();
+    case 1:  return string(rcdparm);
   }
   return MODEL_BUILT_IN_BTI::param_value(i);
 }
@@ -220,7 +221,7 @@ void MODEL_BUILT_IN_BTI_SUM::precalc_first()
   trace0("MODEL_BUILT_IN_BTI_SUM::precalc_first");
   rcdparm.e_val( x, par_scope);
   MODEL_BUILT_IN_BTI::precalc_first();
-  rcd_number = (int) dpvv(rcdparm).size();
+  rcd_number = (int) rcdparm.size();
 
 }
 /*--------------------------------------------------------------------------*/
@@ -360,7 +361,7 @@ std::string MODEL_BUILT_IN_BTI_SUM::param_name(int i)const
 /*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_BTI_SUM::MODEL_BUILT_IN_BTI_SUM(const BASE_SUBCKT* p)
   :MODEL_BUILT_IN_BTI(p),
-  rcdparm(dpvv(0) )
+  rcdparm( PARAMETER< dpvv>() )
 {
 }
 /*--------------------------------------------------------------------------*/
@@ -409,7 +410,7 @@ void MODEL_BUILT_IN_BTI_SUM::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
 //typedef vector<PARAMETER<double> > dpv;
 //typedef vector<PARAMETER<dpv> > dpvv;
 
-  size_t Nr = dpvv(rcdparm).size();
+  size_t Nr = rcdparm.size();
   if(!Nr)
     throw Exception("no summands");
 

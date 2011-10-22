@@ -68,10 +68,10 @@ public:
   bool l_has_value()const {return _ld.has_hard_value();}
   bool p_has_value()const {return _pd.has_hard_value();}
 
-  std::string string()const {return _nom.string();}
-  std::string w_string()const {return _wd.string();}
-  std::string l_string()const {return _ld.string();}
-  std::string p_string()const {return _pd.string();}
+  std::string string()const {return _nom;}
+  std::string w_string()const {return _wd;}
+  std::string l_string()const {return _ld;}
+  std::string p_string()const {return _pd;}
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
