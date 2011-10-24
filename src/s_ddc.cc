@@ -472,6 +472,11 @@ void DDC_BASE::sweep_recursive(int Nest)
       G.rmul(Gul, _sim->_v0);
       G.lu_decomp();
 
+      printf("after G.lu_decomp()\n");
+      if(_dump_matrix){
+        _out << "G\n" << G << "\n";
+        _out << "C\n" << C << "\n";
+      }
 
       // U = G^{-1} C (column-major)
       for( unsigned i=0; i<d; ++i){
