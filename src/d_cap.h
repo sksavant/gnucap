@@ -11,6 +11,7 @@ protected:
   explicit DEV_CAPACITANCE(const DEV_CAPACITANCE& p) :STORAGE(p) {}
 public:
   explicit DEV_CAPACITANCE()	:STORAGE() {}
+ // void      keep_ic();
 protected: // override virtual
   char	   id_letter()const	{return 'C';}
   std::string value_name()const {return "c";}
@@ -25,7 +26,7 @@ protected: // override virtual
   void	   tr_iwant_matrix()	{tr_iwant_matrix_passive();}
   bool	   do_tr();
   void	   tr_accept(); // uic. possibly a hack
-  void	   tr_load()		{tr_load_passive();}
+  void	   tr_load()		{tr_load_passive(); trace1("DEV_CAPACITANCE::tr_load", value());  }
 //  void	   tr_init(double )		;
   void	   tr_unload()		{tr_unload_passive();}
   hp_float_t   tr_involts()const	{
@@ -51,5 +52,11 @@ protected: // override virtual
     return names[i];
   }
 };
+
+inline ostream& operator<<( ostream& o, const DEV_CAPACITANCE &c){
+	o << "cap " << c.long_label() << " " << c.value();
+	return o;
+}
+
 
 } // namespace

@@ -7,6 +7,7 @@ public:
 protected:
   void	fix_args(int);
   void	options(CS&, int);
+  bool _old_solver;
 private:
   void	sweep();
   void	sweep_recursive(int);
@@ -18,6 +19,9 @@ private:
 protected:
   explicit DDC_BASE();
   ~DDC_BASE() {}
+
+  void block_solver(); // solve block matrix ( C 0; G C )
+  void old_solver(); // solve using G^-1
   
 protected:
   enum {DCNEST = 4};

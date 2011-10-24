@@ -816,7 +816,7 @@ void ADP_BUILT_IN_DIODE2::init(const COMPONENT* cc)
 
 
 
-ADP_CARD* MODEL_BUILT_IN_DIODE2::new_adp(const COMPONENT* c)const
+ADP_CARD* MODEL_BUILT_IN_DIODE2::new_adp( COMPONENT* c)const
 {
   assert(c);
   return MODEL_CARD::new_adp(c);

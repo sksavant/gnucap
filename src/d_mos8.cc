@@ -5155,18 +5155,80 @@ void MODEL_BUILT_IN_MOS8::tr_eval(COMPONENT* brh)const
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_MOS8::do_tr_stress( const COMPONENT* c ) const
+void MODEL_BUILT_IN_MOS8::do_tr_stress( const COMPONENT*  ) const
 {
-  MODEL_BUILT_IN_MOS_BASE::do_tr_stress(c);
+  assert(false);
+}
+/*--------------------------------------------------------------------------*/
+// FIXME: use DEV for hci?
+void ADP_BUILT_IN_MOS8::init(const COMPONENT* d)
+{
+  const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
+  const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
 
-  const DEV_BUILT_IN_MOS* d = ( const DEV_BUILT_IN_MOS*)c;
-  const MODEL_BUILT_IN_MOS8* m = this;
-  ADP_BUILT_IN_MOS8* a = (ADP_BUILT_IN_MOS8*) c->adp();
-
-  const COMMON_BUILT_IN_MOS* cprime = prechecked_cast<const COMMON_BUILT_IN_MOS*>(d->common());
   assert(c);
-  const SDP_BUILT_IN_MOS8* s = prechecked_cast<const SDP_BUILT_IN_MOS8*>(cprime->sdp());
-  assert(s);
+  trace0( "ADP_BUILT_IN_MOS8::init\n" );
+  
+  // constructor does that. (init is intentionally non-virtual)
+  // ADP_BUILT_IN_MOS::init(d);
+
+  if ( m->use_hci()){
+    hci_node = new ADP_NODE(d, "hci" );
+    ADP_NODE_LIST::adp_node_list.push_back( hci_node );
+
+    vthdelta_hci = 0;
+    vthscale_hci = 1;
+
+  }else{
+    vthdelta_hci = vthscale_hci = NAN;
+    hci_node = NULL;
+  }
+	//  vto=m->vto;
+	//
+  // vthdelta=0; delta_vth
+}
+/*--------------------------------------------------------------------------*/
+ADP_CARD* MODEL_BUILT_IN_MOS8::new_adp( COMPONENT* c)const
+{
+  assert(c);
+  //const MODEL_BUILT_IN_MOS8* m = this;
+  trace0(( "MODEL_BUILT_IN_MOS8::new_adp for " + c->short_label() ).c_str() );
+
+  ADP_BUILT_IN_MOS8* a = new ADP_BUILT_IN_MOS8(c,"c->short_label()");
+  assert( c->adp() == NULL );
+  assert(a);
+  return a;
+}
+/*--------------------------------------------------------------------------*/
+double DEV_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
+{
+  assert(_n);
+  // const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(common());
+  //const MODEL_BUILT_IN_MOS_BASE* m = asserted_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
+  //const SDP_BUILT_IN_MOS_BASE* s = asserted_cast<const SDP_BUILT_IN_MOS_BASE*>(c->sdp());
+  const ADP_BUILT_IN_MOS8* a = asserted_cast<const ADP_BUILT_IN_MOS8*>(adp());
+
+  if (Umatch(x, "hci |dvth_hci ")) {
+    return  a->vthdelta_hci;
+  }else if (Umatch(x, "stress ")) {
+    return 19999;
+  }
+  return DEV_BUILT_IN_MOS::tt_probe_num(x);
+
+}
+/*--------------------------------------------------------------------------*/
+void ADP_BUILT_IN_MOS8::tr_accept(){
+
+  ADP_BUILT_IN_MOS::tr_accept();
+
+  const DEV_BUILT_IN_MOS* d = prechecked_cast<const DEV_BUILT_IN_MOS*>(owner());
+  assert(d);
+  const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
+  const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
+  ADP_BUILT_IN_MOS8* a = (ADP_BUILT_IN_MOS8*) this;
+
+//  const COMMON_BUILT_IN_MOS* cprime = prechecked_cast<const COMMON_BUILT_IN_MOS*>(d->common());
+  const SDP_BUILT_IN_MOS8* s = prechecked_cast<const SDP_BUILT_IN_MOS8*>(c->sdp());
 
   double exponent=3; // which is m in [4]
   hp_float_t hcis = 0;
@@ -5179,7 +5241,7 @@ void MODEL_BUILT_IN_MOS8::do_tr_stress( const COMPONENT* c ) const
   double Hg=m->h0;
 //  double m0 = m->m0;
 
-  if (use_hci()){
+  if (m->use_hci()){
     if( Ids < 1e-40) 
     {
       trace1("MODEL_BUILT_IN_MOS8::tr_stress ids too small: ", d->ids );
@@ -5196,9 +5258,10 @@ void MODEL_BUILT_IN_MOS8::do_tr_stress( const COMPONENT* c ) const
     double dt=  ( _sim->_dt0 );
     //  assert( dt >= 0 )
 
-    switch(polarity){
+    switch(m->polarity){
       case pN:
-        hcis = Ids * pow( Isub / fabs(d->ids),exponent)/H/W * dt;
+        hcis = Ids * pow( Isub / Ids, exponent)/H/W * dt;
+        assert(is_number(hcis));
         break;
       case pP:
         double mg = 3.0;
@@ -5216,110 +5279,19 @@ void MODEL_BUILT_IN_MOS8::do_tr_stress( const COMPONENT* c ) const
     }
 
     trace1( "MODEL_BUILT_IN_MOS8::do_tr_stress", hcis );
-    a->hci_stress->add_tr( hcis );
-    assert( ( a->hci_stress->tr()  < 1e6 ));
+    a->hci_node->add_tr( hcis );
+    assert( ( a->hci_node->tr()  < 1e6 ));
   } // end hci
-}
-/*--------------------------------------------------------------------------*/
 
-double DEV_BUILT_IN_MOS8::tr_probe_num(const std::string& x)const
-{
-  assert(_n);
-  const COMMON_BUILT_IN_MOS* c = prechecked_cast<const COMMON_BUILT_IN_MOS*>(common());
-  assert(c);
-  const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
-  assert(m);
-  const SDP_BUILT_IN_MOS_BASE* s = prechecked_cast<const SDP_BUILT_IN_MOS_BASE*>(c->sdp());
-  assert(s);
-  const ADP_BUILT_IN_MOS8* a = (ADP_BUILT_IN_MOS8*)(adp());
-  assert(a);
-
-  trace0( "MOS8 probe\n" );
-  assert(false); // kommt hier eh nich hin.
-
-  if (Umatch(x, "hci ")) {
-    return 25;
-    return  a->hci_stress->tr_get();
-  }else if (Umatch(x, "str_bti ")) {
-    return  17;
-  }else if (Umatch(x, "vth_hci ")) {
-    return  12.2;
-  }else {
-    return DEV_BUILT_IN_MOS::tr_probe_num(x);
-  }
-}
-/*--------------------------------------------------------------------------*/
-void ADP_BUILT_IN_MOS8::init(const COMPONENT* d)
-{
-  const COMMON_BUILT_IN_MOS* c = prechecked_cast<const COMMON_BUILT_IN_MOS*>(d->common());
-  assert(c);
-  const MODEL_BUILT_IN_MOS8* m = prechecked_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
-  assert(m);
-
-  assert(c);
-  trace0( "ADP_BUILT_IN_MOS8::init\n" );
-  
-  // constructor does that. (init is intentionally non-virtual)
-  // ADP_BUILT_IN_MOS::init(d);
-
-  if ( m->use_hci()){
-    hci_stress = new ADP_NODE(d, "hci" );
-    ADP_NODE_LIST::adp_node_list.push_back( hci_stress );
-
-    trace0( "initin vthdelta\n" );
-    vthdelta_hci = 0;
-    vthscale_hci = 1;
-
-  }else{
-    vthdelta_hci=
-    vthscale_hci = NAN;
-    hci_stress = NULL;
-  }
-	//  vto=m->vto;
-	//
-  // vthdelta=0; delta_vth
-}
-/*--------------------------------------------------------------------------*/
-ADP_CARD* MODEL_BUILT_IN_MOS8::new_adp(const COMPONENT* c)const
-{
-  assert(c);
-  const MODEL_BUILT_IN_MOS8* m = this;
-  m=m;
-  trace0(( "MODEL_BUILT_IN_MOS8::new_adp for " + c->short_label() ).c_str() );
-
-  ADP_BUILT_IN_MOS8* a = new ADP_BUILT_IN_MOS8(c,"c->short_label()");
-  assert( c->adp() == NULL );
-  assert(a);
-  return a;
-}
-/*--------------------------------------------------------------------------*/
-double DEV_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
-{
-
-  assert(_n);
-  const COMMON_BUILT_IN_MOS* c = prechecked_cast<const COMMON_BUILT_IN_MOS*>(common());
-  assert(c);
-  const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
-  assert(m);
-  const SDP_BUILT_IN_MOS_BASE* s = prechecked_cast<const SDP_BUILT_IN_MOS_BASE*>(c->sdp());
-  assert(s);
-  const ADP_BUILT_IN_MOS8* a = prechecked_cast<const ADP_BUILT_IN_MOS8*>(adp());
-  assert(a);
-
-  if (Umatch(x, "hci |dvth_hci ")) {
-    return  a->vthdelta_hci;
-  }else if (Umatch(x, "stress ")) {
-    return 19999;
-  }
-  return DEV_BUILT_IN_MOS::tt_probe_num(x);
-
+  q_eval();
 }
 /*--------------------------------------------------------------------------*/
 double ADP_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 {
   if( Umatch("hci ", x) ){
-    if(hci_stress)    return hci_stress->tt();
-    return NAN;
+    if(hci_node)
+      return hci_node->tt();
+    return -1;
   } else if( Umatch("dvth_hci ", x) ) {
     return vthdelta_hci;
   }else{
@@ -5332,7 +5304,8 @@ double ADP_BUILT_IN_MOS8::tr_probe_num(const std::string& x)const
 {
   double ret;
   if( Umatch("hci ", x) ){
-    ret= hci_stress->tr();
+    if(!hci_node) return -1;
+    ret= hci_node->tr();
   } else {
     ret= ADP_BUILT_IN_MOS::tr_probe_num(x);
   }
@@ -5346,10 +5319,11 @@ double ADP_BUILT_IN_MOS8::tr_probe_num(const std::string& x)const
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_MOS8::do_stress_apply(  COMPONENT* brh) const
 {
+
+  // obsolete? maybe not.
   MODEL_BUILT_IN_MOS_BASE::do_stress_apply(brh);
 
-  DEV_BUILT_IN_MOS* d = prechecked_cast<DEV_BUILT_IN_MOS*>(brh);
-  assert(d);
+  DEV_BUILT_IN_MOS* d = asserted_cast<DEV_BUILT_IN_MOS*>(brh);
   const COMMON_BUILT_IN_MOS* c = (const COMMON_BUILT_IN_MOS*)(d->common());
   assert(c);
   const SDP_BUILT_IN_MOS8* s = (const SDP_BUILT_IN_MOS8*)(c->sdp());
@@ -5357,18 +5331,25 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply(  COMPONENT* brh) const
   ADP_BUILT_IN_MOS8* a = (ADP_BUILT_IN_MOS8*)(d->adp());
   assert(a);
 
-  const MODEL_BUILT_IN_MOS8* m = this;
-  m=m;
+  //const MODEL_BUILT_IN_MOS8* m = this;
 
  // double H = .0001;
 
   if(use_hci()){
-    a->vthscale_hci = 1; //  exp ( 10000. * a->hci_stress->get() / c->w_in );
-    a->vthdelta_hci = polarity * pow( a->hci_stress->tt() , 0.3 );
+    assert(is_number( a->hci_node->tt() ));
+    a->vthscale_hci = 1; //  exp ( 10000. * a->hci_node->get() / c->w_in );
+    a->vthdelta_hci = polarity * pow( a->hci_node->tt() , 0.3 );
 
-    assert( -10 <  a->vthdelta_hci &&  a->vthdelta_hci <  10 );
+    if( -10 <  a->vthdelta_hci &&  a->vthdelta_hci <  10 ){
+
+    }else{
+      error(bDANGER, "wrong scope for a->vthdelta_hci, %f. "
+          " a->hci_node->tt()= %f \n",
+          a->vthdelta_hci, a->hci_node->tt() );
+    }
 
     a->delta_vth += a->vthdelta_hci;
+    assert(is_number(a->delta_vth));
 
     // std::cerr << "MODEL_BUILT_IN_MOS_BASE::do_stress_apply " << h0 << "\n";
     // assert (false); incomplete();
@@ -5395,8 +5376,31 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply(  COMPONENT* brh) const
 //
 //}
 /*------------------------------------------------------------------*/
+void ADP_BUILT_IN_MOS8::tt_prepare() 
+{
+  const DEV_BUILT_IN_MOS* d = asserted_cast<const DEV_BUILT_IN_MOS*>(owner());
+  const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
+  const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
+
+  if (m->use_hci()){
+    assert(hci_node);
+    hci_node->tt_set(0);
+    hci_node->tr_set(0);
+  }
+}
+/*------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS8::tt_commit() {
   ADP_BUILT_IN_MOS::tt_commit();
+}
+/*------------------------------------------------------------------*/
+void ADP_BUILT_IN_MOS8::stress_apply() {
+  // HIER
+  const DEV_BUILT_IN_MOS* d = asserted_cast<const DEV_BUILT_IN_MOS*>(owner());
+  const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
+  const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
+
+  if (m->use_hci())
+    hci_node->tt() = 0;
 }
 /*------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS8::tt_accept() {

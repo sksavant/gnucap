@@ -140,6 +140,10 @@ RAW_HDRS += d_vvp.h d_ivl.h e_ivl_compile.h d_ivl_ports.h
 # doesnt work (?)
 # dvvp_lo_CFLAGS = -I$(IVERILOG_PATH)/include
 endif
+
+if ADMS
+RAW_SRCS += d_hicum0.cc d_ota_simpl.cc
+endif
 #------------------------------------------------------------------------ 
 ## The modelgen generated files
 MODELSRCS= ${MODELS:.model=.cc} ${MODELS:.model=.h}
@@ -206,11 +210,18 @@ MAKEDEPEND = gcc -M $(CPPFLAGS) -o $*.d $<
 
 IVL=`which iverilog` -v
 
+# if iverilog ...
 %.cc : %.v $(IVERILOG_PATH)/compile_wrap.h # $(IVERILOG_PREFIX)/lib/ivl/gc.tgt
 	$(IVL) -tgc $< -o $@
 
 %.cc : %.model %.h ${MODELGEN}${EXEEXT}
 	${MODELGEN} -cc $<
+
+# if adms ...
+ADMS_GC_XML=../adms/gnucap.xml
+
+%.cc : %.va $(ADMS_GC_XML)
+	admsXml $< -e $(ADMS_GC_XML) -o $*
 
 %.h : %.model ${MODELGEN}${EXEEXT}
 	${MODELGEN} -h $<

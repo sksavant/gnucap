@@ -565,9 +565,9 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_precalc_last(COMMON_COMPONENT* ccmp, const CA
   assert(cc);
   const MODEL_BUILT_IN_RCD_SYM_V3* m=this;
 
-  trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->Uref, cc->Recommon, cc->Rccommon0);
+  trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->Uref, cc->Recommon0, cc->Rccommon0);
 
-  double up   =  cc->Recommon;
+  double up   =  cc->Recommon0;
   double down =  cc->Rccommon0;
 
   // RE = cc->_Re0/uin;
@@ -583,15 +583,15 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_precalc_last(COMMON_COMPONENT* ccmp, const CA
   cc->_weight = cc->weight;
 
   // sanity check.
-  trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->__tau_up(cc->Uref), cc->Recommon, cc->Rccommon0);
+  trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->__tau_up(cc->Uref), cc->Recommon0, cc->Rccommon0);
   trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->_Rc1, cc->_Re0, cc->_Rc0);
   trace2("MODEL_BUILT_IN_RCD::do_precalc_last", m->__tau(0,cc), down);
 
-  if ( abs( m->__tau(cc->Uref,cc) - cc->Recommon)/cc->Recommon > 1e-2 ){
+  if ( abs( m->__tau(cc->Uref,cc) - cc->Recommon0)/cc->Recommon0 > 1e-2 ){
     error(bDANGER, ("MODEL_BUILT_IN_RCD::do_precalc_last %s cc->Uref=%E Rec=%E mtau=%E rc0=%E\n"),
         (  long_label() ).c_str(),
         (double) cc->Uref,
-        (double) cc->Recommon, 
+        (double) cc->Recommon0, 
         m->__tau(cc->Uref,cc),
         (double)cc->Rccommon0  );
 

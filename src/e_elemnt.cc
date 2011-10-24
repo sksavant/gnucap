@@ -143,10 +143,13 @@ void ELEMENT::dc_advance()
 {
   assert(_sim->_time0 == 0.); // DC
 
+  bool ass = true;;
+
   for (int i=OPT::_keep_time_steps-1; i>=0; --i) {
     trace2(( "ELEMENT::dc_advance " + long_label()).c_str(), i, _time[i]);
-    assert(_time[i] == 0.);
+    ass &= _time[i] == 0.;
   }
+  assert(ass);
 
   _dt = NOT_VALID;
 }
@@ -311,7 +314,8 @@ void ELEMENT::ac_iwant_matrix_extended()
 hp_float_t ELEMENT::tr_amps()const
 {
 	//return 44;
-  trace5("", _loss0, tr_outvolts(), _m0.c1, tr_involts(), _m0.c0);
+  trace5("ELEMENT::tr_amps " + long_label(), _loss0, tr_outvolts(), _m0.c1, tr_involts(), _m0.c0);
+  trace1("ELEMENT::tr_amps " + long_label(), _loss0 * tr_outvolts() + _m0.c1 * tr_involts() + _m0.c0 );
   hp_float_t root = fixzero((_loss0 * tr_outvolts() + _m0.c1 * tr_involts() + _m0.c0),
       _m0.c0);
 

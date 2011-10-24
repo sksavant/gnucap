@@ -40,6 +40,7 @@
 
 
 // #include "globals.h" ??
+#include "e_adp.h"
 #include "e_adplist.h"
 /*--------------------------------------------------------------------------*/
 #define sanitycheck()  assert ( 0.99 * _sim->_Time0 <= _Time1 + _sim->_dT0 );\
@@ -218,7 +219,7 @@ void TTT::first_after_interruption(){
     _out << "* first after int " << _sim->tt_iteration_number() << "\n";
 
   outdata_b4(_sim->_Time0);
-  CARD_LIST::card_list.do_forall( &CARD::tt_next ); // doest things with tr history
+  CARD_LIST::card_list.tt_next(); // does things with tr history?
   CARD_LIST::card_list.do_forall( &CARD::tt_prepare ); // lasts==0 hack
 
   for (uint_t ii = 1;  ii <= _sim->_total_nodes;  ++ii) {
@@ -328,11 +329,8 @@ void TTT::sweep_tt()
     ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_commit );
     CARD_LIST::card_list.do_forall( &CARD::tt_commit ); // ?
     
-    trace1( "TTT::sweep adp stuff ", _sim->_Time0 );
-    ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_commit );
-    
     trace0("TTT::sweep CARD::stress_apply");
-    CARD_LIST::card_list.do_forall( &CARD::stress_apply );
+    CARD_LIST::card_list.stress_apply();
 
     trace2( "TTT::sweep calling TTT::sweep", _cont, _sim->_Time0 );
     store_results_tt(_sim->_Time0); // first output tt data
@@ -423,8 +421,8 @@ void TTT::sweep() // tr sweep wrapper.
     TRANSIENT::sweep();
     assert(_accepted);
     if (_trace>0 ) _out<< "* done sweep "<<tt_iteration_number()<<  "\n";
-    trace0("done sweep, tr_stress_last");
-    CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
+    CARD_LIST::card_list.tr_stress_last();
+
   }catch (Exception& e) {
     untested();
     error(bDANGER, "Sweep exception %s at %E, dT0 %E, step %i\n",
@@ -457,7 +455,7 @@ void TTT::accept_tt()
       << " at " <<  _sim->_Time0  << " - " << " _sim->_Time0 + _sim->_last_time " <<"\n";
   //_sim->keep_voltages(); // bloss nicht. wegen last_time
  // CARD_LIST::card_list.do_forall( &CARD::tt_accept ); //?
-  ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_accept ); // schiebt tt_valuei weiter.
+  //ADP_LIST::adp_list.do_forall( &ADP_CARD::tt_accept ); // schiebt tt_valuei weiter.
 
   //??
   ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_accept ); // schiebt tt_valuei weiter.
@@ -1017,7 +1015,7 @@ void TTT::outdata_tt(double x)
   trace0("TTT::outdata_tt()");
   assert( _sim->_mode  == s_TTT );
   ::status.output.start();
-  print_results(0); //transient print?
+  print_results_tr(0); //transient print?
   print_results_tt( x + _tstop );
   _sim->reset_iteration_counter(iPRINTSTEP);
   ::status.hidden_steps = 0;
@@ -1028,7 +1026,7 @@ void TTT::outdata_tt(double x)
 void TTT::print_results(double time)
 {
   // deprecated call.
-  untested();
+  unreachable();
   print_results_tr(time);
 }
 void TTT::print_results_tr(double )
@@ -1201,6 +1199,7 @@ void TTT::advance_Time(void)
 
       notstd::copy_n(_sim->_tt, _sim->_adp_nodes, _sim->_tt1);
 
+      // invalidate ....
       std::fill_n(_sim->_tr, _sim->_adp_nodes, NAN);
       std::fill_n(_sim->_tt, _sim->_adp_nodes, NAN);
 

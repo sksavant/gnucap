@@ -294,8 +294,6 @@ void SIM_DATA::unalloc_vectors()
   delete [] _tr3;
   delete [] _tt1;
   _tr=_tr1=_tt1=_tr2=_tr3=NULL;
-
-
 }
 /*--------------------------------------------------------------------------*/
 /* uninit: undo all the allocation associated with any simulation

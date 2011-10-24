@@ -986,6 +986,7 @@ void DEV_BUILT_IN_MOS::expand()
   trace0(("DEV_BUILT_IN_MOS::expand, ADP things " + long_label()).c_str());
   assert ( adp() == NULL );
   attach_adp( m->new_adp( (COMPONENT*) this ) );
+  adp()->q_accept();
   trace0(("DEV_BUILT_IN_MOS::expanded, ADP things " + long_label()).c_str());
 }
 /*--------------------------------------------------------------------------*/
@@ -1022,9 +1023,9 @@ double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "dv_bti ")) { // hci???
     if (d->_BTI) return  ((const DEV_BUILT_IN_BTI*)(d->_BTI))->dvth();
     return(NA);
-  }else if (Umatch(x, "bti_stress ")) { // hci???
+  }else if (Umatch(x, "bti_stress ")) { 
     return  a->bti_stress->tr_get();
-  }else if (Umatch(x, "hci |bti ")) { // hci???
+  }else if (Umatch(x, "hci |bti ")) { 
     return  a->tr_probe_num(x);
   }else if (Umatch(x, "vgs ")) {
     return  _n[n_g].v0() - _n[n_s].v0();
@@ -1038,6 +1039,8 @@ double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
     return  vbs;
   }else if (Umatch(x, "use_bti ")) {
     return  m->use_bti();
+  }else if (Umatch(x, "use_hci ")) {
+    return  m->use_hci();
   }else if (Umatch(x, "vgd ")) {
     return  _n[n_g].v0() - _n[n_d].v0();
   }else if (Umatch(x, "vbd ")) {
@@ -1510,33 +1513,51 @@ bool DEV_BUILT_IN_MOS::do_tr()
   return (converged() && _BTI->converged());
   _BTI->q_accept();
 #endif
+//  q_accept();
+  adp()->q_accept();
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_MOS::stress_apply( )
+void DEV_BUILT_IN_MOS::tr_stress_last( )
 {
-  const COMMON_BUILT_IN_MOS* c = (const COMMON_BUILT_IN_MOS*) common();
-  const MODEL_BUILT_IN_MOS_BASE* m = (const MODEL_BUILT_IN_MOS_BASE*)(c->model());
-  assert(m);
-  BASE_SUBCKT::stress_apply();
-  m->do_stress_apply(this);
+  BASE_SUBCKT::tr_stress_last();
+  // FIXME (put adp into sckt, or do not call sckt)
+  if(adp()) adp()->tr_stress_last();
+
+  const COMMON_COMPONENT* cc = common();
+  const MODEL_BUILT_IN_MOS_BASE* m = asserted_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
+
+  m->do_tr_stress_last( this );
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_stress( )
 {
+  BASE_SUBCKT::tr_stress();
+  // FIXME (put adp into sckt, or (better) do not call sckt)
+  if(adp()) adp()->tr_stress();
+
   const COMMON_COMPONENT* cc = common();
-  const MODEL_BUILT_IN_MOS_BASE* m = ( const MODEL_BUILT_IN_MOS_BASE*)(cc->model());
-  assert(m);
+  const MODEL_BUILT_IN_MOS_BASE* m = asserted_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
 
   m->do_tr_stress( this );
 }
+/*--------------------------------------------------------------------------*/
+void DEV_BUILT_IN_MOS::tt_next( )
+{
+  if (adp())
+    adp()->tt_next();
 
+
+  // FIXME (put adp into sckt, or something)
+  BASE_SUBCKT::tt_next();
+}
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 double ADP_BUILT_IN_MOS::wdT() const{
   return ids_stress->wdT();
 }
 /*--------------------------------------------------------------------------*/
-ADP_BUILT_IN_MOS::ADP_BUILT_IN_MOS(const COMPONENT* c, const std::string n) :
-	  ADP_BUILT_IN_DIODE(c,n),
+ADP_BUILT_IN_MOS::ADP_BUILT_IN_MOS( COMPONENT* c, const std::string n) :
+        ADP_BUILT_IN_DIODE(c,n),
 	  bti_stress(0)
 	  {init(c);}
 /*--------------------------------------------------------------------------*/
@@ -1557,10 +1578,10 @@ void ADP_BUILT_IN_MOS::init(const COMPONENT* c)
 
   // only mos>0?
 
-  if( m->use_hci()){
-    ids_stress = new ADP_NODE( c, "ids" );
-    igd_stress = new ADP_NODE( c, "igs" );
-  }
+//  if( m->use_hci()){
+//    ids_stress = new ADP_NODE( c, "ids" );
+//    igd_stress = new ADP_NODE( c, "igs" );
+//  }
 
   vthscale_bti = 1;
   vthdelta_bti = 0;
@@ -1584,6 +1605,8 @@ void DEV_BUILT_IN_MOS::tt_prepare() // NOT const
   assert(m);
 
   m->do_tt_prepare(this);
+
+  adp()->tt_prepare();
 }
 /*--------------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS::tt_accept()
@@ -1607,6 +1630,7 @@ void ADP_BUILT_IN_MOS::tt_accept()
 /*--------------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS::tt_commit()
 {
+  unreachable();
 
 
   //SIM_DATA* sim = CKT_BASE::_sim;
@@ -1649,7 +1673,7 @@ double ADP_BUILT_IN_MOS::tt_probe_num(const std::string& x)const
   }
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_MOS::tt_commit(){
+void DEV_BUILT_IN_MOS::tt_commit(){ unreachable();
   BASE_SUBCKT::tt_commit();
 
   //if(m->use_bti){
@@ -1848,19 +1872,7 @@ return  BASE_SUBCKT::tr_review();
   }
 #endif
 }
-void    DEV_BUILT_IN_MOS::tr_accept(){
-  BASE_SUBCKT::tr_accept();
-#ifndef BTI_IN_SUBCKT
-  const COMMON_BUILT_IN_MOS* c = static_cast<const COMMON_BUILT_IN_MOS*>(common());
-  assert(c);
-  assert(c->model());
-  const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
-  assert(m);
-  if(m->use_bti()){
-    _BTI->tr_accept();
-  }
-#endif
-}  
+/*-------------------------------------------------------*/
 void    DEV_BUILT_IN_MOS::tr_unload(){
   BASE_SUBCKT::tr_unload();
 #ifndef BTI_IN_SUBCKT
@@ -1874,3 +1886,31 @@ void    DEV_BUILT_IN_MOS::tr_unload(){
   }
 #endif
 }
+/*-------------------------------------------------------*/
+void DEV_BUILT_IN_MOS::stress_apply( )
+{
+  const COMMON_BUILT_IN_MOS* c = (const COMMON_BUILT_IN_MOS*) common();
+  const MODEL_BUILT_IN_MOS_BASE* m = (const MODEL_BUILT_IN_MOS_BASE*)(c->model());
+  assert(m);
+  BASE_SUBCKT::stress_apply();
+  if (adp()){
+    adp()->stress_apply(); // not yet part of subckt
+  }
+  m->do_stress_apply(this);
+
+    cout << "DEV_BUILT_IN_MOS::stress_apply\n";
+}
+/*-------------------------------------------------------*/
+void DEV_BUILT_IN_MOS::tr_accept(){
+  assert(false); // q_accept() not called.
+  BASE_SUBCKT::tr_accept();
+  const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(common());
+  const MODEL_BUILT_IN_MOS_BASE* m = asserted_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
+#ifndef BTI_IN_SUBCKT
+  if(m->use_bti()){
+    _BTI->tr_accept();
+  }
+#endif
+  m->do_tr_stress(this) ;
+}  
+/*-------------------------------------------------------*/

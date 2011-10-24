@@ -1,4 +1,4 @@
-/* vim:ts=8:sw=2:et:
+/*
  *
  * (c)2010 felix salfelder
  * nonGPL ?
@@ -8,7 +8,6 @@
 #ifndef D_RCD_SYM_H_INCLUDED
 #define D_RCD_SYM_H_INCLUDED
 
-//GPL only
 #include "d_rcd.h"
 
 class DEV_BUILT_IN_RCD;
@@ -39,7 +38,7 @@ class MODEL_BUILT_IN_RCD_SYM : public MODEL_BUILT_IN_RCD {
     virtual long double __Edu(long double, long double, const COMMON_COMPONENT* )const {return 0;}
 };
 /*--------------------------------------------------------------------------*/
-class DEV_BUILT_IN_RCD_SYM : public DEV_BUILT_IN_RCD{
+class DEV_BUILT_IN_RCD_SYM : public DEV_BUILT_IN_RCD {
   explicit DEV_BUILT_IN_RCD_SYM(const DEV_BUILT_IN_RCD_SYM& p);
   public:
   explicit DEV_BUILT_IN_RCD_SYM();
@@ -51,3 +50,4 @@ class DEV_BUILT_IN_RCD_SYM : public DEV_BUILT_IN_RCD{
 };
 /*--------------------------------------------------------------------------*/
 #endif
+// vim:ts=8:sw=2:et:

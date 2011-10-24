@@ -1,10 +1,22 @@
 NAMES=opamp1 diode tp tpcoil inv_amp inv_amp_bug
 
+EXPECT=LogicAND
+
 CIRQUITS= $(NAMES:%=%.ckt)
 GNUCAP_PS=$(NAMES:%=%.gc.ps)
 NGSPICE_PS=$(NAMES:%=%.ng.ps)
 
 HERE:= $(dir $(lastword $(MAKEFILE_LIST)))
+
+EXPECT_GC = $(EXPECT:%=%.gc)
+EXPECT_TOUT = $(EXPECT:%=%.tout)
+
+expect: $(EXPECT_TOUT)
+
+
+%.tout: %.gc %.out
+	gnucap $< -e $*.out
+
 
 
 SHELL=/bin/bash

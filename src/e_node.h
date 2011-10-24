@@ -151,7 +151,7 @@ public: // virtuals
     assert(m_() <= _sim->_total_nodes);
     return _sim->_ac [m_()];
   }
-  double      vdc()const		{untested();return _sim->_vdc[m_()];}
+  double      vdc()const		{itested();return _sim->_vdc[m_()];}
 
   //double&     i()	{untested();return SIM::i[m_()];}  /* lvalues */
   COMPLEX&    iac() {
@@ -376,7 +376,7 @@ public:
   }
 
   // ??
-  COMPLEX&    iac() {untested();
+  COMPLEX&    iac() {itested();
     assert(n_());
     assert(n_()->m_() == m_());
     // assert(n_()->iac() == NODE::_ac[m_()]);

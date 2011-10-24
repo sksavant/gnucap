@@ -54,6 +54,7 @@ public:
 
   explicit PARAMETER() :_v(_NOT_INPUT()), _s() {}
   PARAMETER(const PARAMETER<double>& p) :_v(p._v), _s(p._s) {}
+  // PARAMETER(const T&);
   explicit PARAMETER(T v) :_v(v), _s() {}
   //explicit PARAMETER(T v, const std::string& s) :_v(v), _s(s) {untested();}
   ~PARAMETER() {}
@@ -88,16 +89,7 @@ public:
   void	operator=(const T& v)		{_v = v; _s = "#";}
   //void	operator=(const std::string& s)	{untested();_s = s;}
 
-  void	operator=(const std::string& s)	{
-    if (strchr("'\"{", s[0])) {
-      CS cmd(CS::_STRING, s);
-      _s = cmd.ctos("", "'\"{", "'\"}");
-    }else if (s == "NA") {
-      _s = "";
-    }else{
-      _s = s;
-    }
-  }
+  void	operator=(const std::string& s);
   bool  operator==(const PARAMETER& p)const {
     return (_v == p._v  &&  _s == p._s);
   }
@@ -119,6 +111,24 @@ public:
 private:
   T lookup_solve(const T& def, const CARD_LIST* scope)const;
 };
+/*=========================*/
+template<>
+void	PARAMETER<vector<PARAMETER<vector<PARAMETER<double> > > > >::operator=(const std::string& s);
+template<>
+void    PARAMETER<vector<vector<double> > >::operator=(const std::string& s);
+/*=========================*/
+template<class T>
+inline  void	PARAMETER<T>::operator=(const std::string& s)
+{
+  if (strchr("'\"{", s[0])) {
+    CS cmd(CS::_STRING, s);
+    _s = cmd.ctos("", "'\"{", "'\"}");
+  }else if (s == "NA") {
+    _s = "";
+  }else{
+    _s = s;
+  }
+}
 /*--------------------------------------------------------------------------*/
 template<>
 inline int64_t PARAMETER<int64_t>::_NOT_INPUT() const { return 0 ;} // BUG.
@@ -131,9 +141,15 @@ inline int PARAMETER<int>::_NOT_INPUT()const { return NOT_INPUT_INT;} //BUG. mag
 /*--------------------------------------------------------------------------*/
 template <>
 inline unsigned int PARAMETER<unsigned int>::_NOT_INPUT() const{
-  untested(); // stupid();
+  // stupid();
   return NOT_INPUT_INT;
 } //BUG. magic number?
+/*--------------------------------------------------------------------------*/
+template <> 
+inline vector<PARAMETER<double> > PARAMETER< vector<PARAMETER<double> > >::_NOT_INPUT() const {
+  untested();
+  return std::vector< PARAMETER<double> >(0);
+}
 /*--------------------------------------------------------------------------*/
 template <> 
 inline std::vector<double> PARAMETER< std::vector<double> >::_NOT_INPUT() const {
@@ -428,25 +444,15 @@ template <class T>
 inline T PARAMETER<T>::my_infty()const{ untested(); return 0; }
 /*--------------------------------------------------------------------------*/
 template <>
-inline std::vector<double> PARAMETER<std::vector<double> >::e_val(const
-    std::vector<double>& , const CARD_LIST* )const
-{
-  trace0(("PARAMETER dl" + _s).c_str());
-  double d;
-
-  CS c(CS::_STRING,_s);
-  std::vector<double>::iterator a;
-  a=_v.begin();
-  _v.erase(_v.begin(),_v.end());
-  // FIXME: accept strings and parse...
-  while ( c.more() ){
-    d=c.ctof();
-    trace1("PARAMETER vector add", d);
-    _v.push_back( d );
-  }
-  return _v;
-}
+std::vector<double> PARAMETER<std::vector<double> >::e_val(const
+    std::vector<double>& , const CARD_LIST* )const;
 /*--------------------------------------------------------------------------*/
+typedef PARAMETER<double> dp;
+template <>
+vector<PARAMETER<vector<dp> > >
+           PARAMETER<vector<PARAMETER<vector<dp> > > >::e_val(const
+    vector<PARAMETER<vector<dp > > >& , const CARD_LIST* )const;
+///*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 template <>
 inline std::list<double> PARAMETER<std::list<double> >::e_val(const
@@ -464,6 +470,7 @@ inline std::list<double> PARAMETER<std::list<double> >::e_val(const
   }
 
   while ( c.more() ){
+    incomplete();
     d=c.ctof();
     trace1("PARAMETER dl", d);
 
@@ -472,6 +479,7 @@ inline std::list<double> PARAMETER<std::list<double> >::e_val(const
   return _v;
 }
 /*--------------------------------------------------------------------------*/
+// fallback e_val
 template <class T>
 T PARAMETER<T>::e_val(const T& def, const CARD_LIST* scope)const
 {
@@ -643,5 +651,16 @@ typedef struct{
   double tt_now; // total stress
   double tt_old; // old total
 } stress;
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+// FIXME: templatify
+// template<class T>
+string to_string(vector<PARAMETER<double> > n);
+string to_string(vector< PARAMETER< vector< PARAMETER<double> > > > n);
+/*--------------------------------------------------------------------------*/
+
+typedef vector<PARAMETER<double> > dpv;
+typedef vector<PARAMETER<dpv> > dpvv;
 
 #endif

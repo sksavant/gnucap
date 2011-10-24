@@ -304,10 +304,10 @@ void MODEL_BUILT_IN_RCD::do_precalc_last(COMMON_COMPONENT* ccmp, const CARD_LIST
   assert( is_number( cc->Rccommon1 ) );
   }
 
-  trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->Uref, cc->Recommon, cc->Rccommon0);
+  trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->Uref, cc->Recommon0, cc->Rccommon0);
   long double ueff = cc->Uref; // ( exp ( lambda * Uref ) - 1 );
 
-  double up   =  cc->Recommon;
+  double up   =  cc->Recommon0;
   double down =  cc->Rccommon0;
 
   double rad = double(ueff*ueff*up*up + 2.0*(up*up + up*down)*ueff + up*up - 2*up*down + down*down);
@@ -326,11 +326,11 @@ void MODEL_BUILT_IN_RCD::do_precalc_last(COMMON_COMPONENT* ccmp, const CARD_LIST
   cc->_wcorr = double ( cc->Uref / Eend_bad );
   cc->_weight = cc->weight;
   // sanity check.
-  trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->__tau_up(cc->Uref), cc->Recommon, cc->Rccommon0);
+  trace3("MODEL_BUILT_IN_RCD::do_precalc_last", cc->__tau_up(cc->Uref), cc->Recommon0, cc->Rccommon0);
   trace3("MODEL_BUILT_IN_RCD::do_precalc_last",cc->_Rc1, cc->_Re0, cc->_Rc0);
   assert( cc->weight != 0 );
   assert( cc->_weight != 0 );
-  assert( abs( cc->__tau_up(cc->Uref) - cc->Recommon)/cc->Recommon <1e-6 );
+  assert( abs( cc->__tau_up(cc->Uref) - cc->Recommon0)/cc->Recommon0 <1e-6 );
   assert( is_number( cc->_Rc1 ) );
   assert( is_number( cc->_Rc0 ) );
 }
@@ -351,7 +351,8 @@ COMMON_BUILT_IN_RCD::COMMON_BUILT_IN_RCD(int c)
   :COMMON_COMPONENT(c),
    perim(0.0),
    weight(1.0),
-   Recommon(NA),
+   Recommon0(NA),
+   Recommon1(NA),
    Rccommon0(NA),
    Rccommon1(NA),
    Uref(0.0),
@@ -370,7 +371,8 @@ COMMON_BUILT_IN_RCD::COMMON_BUILT_IN_RCD(const COMMON_BUILT_IN_RCD& p)
   :COMMON_COMPONENT(p),
    perim(p.perim),
    weight(p.weight),
-   Recommon(p.Recommon),
+   Recommon0(p.Recommon0),
+   Recommon1(p.Recommon1),
    Rccommon0(p.Rccommon0),
    Rccommon1(p.Rccommon1),
    Uref(p.Uref),
@@ -397,7 +399,8 @@ bool COMMON_BUILT_IN_RCD::operator==(const COMMON_COMPONENT& x)const
   return (p
     && perim == p->perim
     && weight == p->weight
-    && Recommon == p->Recommon
+    && Recommon0 == p->Recommon0
+    && Recommon1 == p->Recommon1
     && Rccommon0 == p->Rccommon0
     && Rccommon1 == p->Rccommon1
     && Uref == p->Uref
@@ -414,16 +417,17 @@ void COMMON_BUILT_IN_RCD::set_param_by_index(int I, std::string& Value, int Offs
   switch (COMMON_BUILT_IN_RCD::param_count() - 1 - I) {
   case 0:  perim = Value; break;
   case 1:  weight = Value; break;
-  case 2:  Recommon = Value; break;
-  case 3:  Rccommon0 = Value; break;
-  case 4:  Rccommon1 = Value; break;
-  case 5:  Uref = Value;
+  case 2:  Recommon0 = Value; break;
+  case 3:  Recommon1 = Value; break;
+  case 4:  Rccommon0 = Value; break;
+  case 5:  Rccommon1 = Value; break;
+  case 6:  Uref = Value;
            trace1(("Set Uref to" + Value ).c_str(), (double)Uref);
            break;
-  case 6:  mu = Value; break;
-  case 7:  lambda = Value; break;
-  case 8:  Uref = Value; break;
-  case 9:  dummy_emit = Value; break;
+  case 7:  mu = Value; break;
+  case 8:  lambda = Value; break;
+  case 9:  Uref = Value; break;
+  case 10:  dummy_emit = Value; break;
   default: COMMON_COMPONENT::set_param_by_index(I, Value, Offset);
   }
 }
@@ -488,14 +492,15 @@ std::string COMMON_BUILT_IN_RCD::param_value(int i)const
   switch (COMMON_BUILT_IN_RCD::param_count() - 1 - i) {
   case 0:  return perim.string();
   case 1:  return weight.string();
-  case 2:  return Recommon.string();
-  case 3:  return Rccommon0.string();
-  case 4:  return Rccommon1.string();
-  case 5:  return Uref.string();
-  case 6:  return mu.string();
-  case 7:  return lambda.string();
-  case 8:  return Uref.string();
-  case 9:  return dummy_emit.string();
+  case 2:  return Recommon0.string();
+  case 3:  return Recommon1.string();
+  case 4:  return Rccommon0.string();
+  case 5:  return Rccommon1.string();
+  case 6:  return Uref.string();
+  case 7:  return mu.string();
+  case 8:  return lambda.string();
+  case 9:  return Uref.string();
+  case 10:  return dummy_emit.string();
   default: return COMMON_COMPONENT::param_value(i);
   }
 }
@@ -511,11 +516,11 @@ void COMMON_BUILT_IN_RCD::expand(const COMPONENT* d)
   }else{
   }
 
-  if ((double)Recommon == NA) { Recommon = m->Re;}
+  if ((double)Recommon0 == NA) { Recommon0 = m->Re;}
   if ((double)Rccommon0 == NA) { Rccommon0 = m->Rc;}
 
   trace6(("COMMON_BUILT_IN_RCD::expand" + d->short_label()).c_str(), Rccommon0,
-      Recommon, m->Re, m->Rc, Uref, m->uref );
+      Recommon0, m->Re, m->Rc, Uref, m->uref );
   // size dependent
   //delete _sdp;
   _sdp = m->new_sdp(this);
@@ -535,7 +540,8 @@ void COMMON_BUILT_IN_RCD::precalc_first(const CARD_LIST* par_scope)
   COMMON_COMPONENT::precalc_first(par_scope);
     e_val(&(this->perim), 0.0, par_scope);
     e_val(&(this->weight), 1.0, par_scope);
-    e_val(&(this->Recommon), 1.0, par_scope);
+    e_val(&(this->Recommon0), 1.0, par_scope);
+    e_val(&(this->Recommon1), 1.0, par_scope);
     e_val(&(this->Rccommon0), 1.0, par_scope);
     e_val(&(this->Rccommon1), 1.0, par_scope);
     e_val(&(this->Uref), 0.00001, par_scope);
@@ -558,7 +564,8 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
   // final adjust: raw
   e_val(&(this->perim), 0.0, par_scope);
   e_val(&(this->weight), 1.0, par_scope);
-  e_val(&(this->Recommon), m->Re, par_scope);
+  e_val(&(this->Recommon0), m->Re, par_scope);
+  e_val(&(this->Recommon1), m->Re, par_scope);
   e_val(&(this->Rccommon0), m->Rc, par_scope);
   e_val(&(this->Rccommon1), m->Re, par_scope);
   e_val(&(this->Uref), m->uref, par_scope);
@@ -604,7 +611,7 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
   } else if (Uref!=0.0 ){
     m->do_precalc_last(cc, par_scope );
   } else { // no uref...
-    cc->_Re0  = Recommon;
+    cc->_Re0 = Recommon0;
     cc->_Rc0 = Rccommon0;
     cc->_Rc1 = _Re0;
 
@@ -833,7 +840,8 @@ void DEV_BUILT_IN_RCD::expand_sym() {
     precalc_first();
     precalc_last();
 
-    trace4(("DEV_BUILT_IN_RCD::expand_sym" + short_label()).c_str(), cc->Rccommon0, cc->Recommon, m->Re, m->Rc );
+    trace4(("DEV_BUILT_IN_RCD::expand_sym" + short_label()).c_str(), cc->Rccommon0, cc->Recommon0,
+        m->Re, m->Rc );
     // local nodes
     //assert(!(_n[n_ic].n_()));
     //BUG// this assert fails on a repeat elaboration after a change.
@@ -1171,7 +1179,7 @@ void MODEL_BUILT_IN_RCD::do_tt_prepare(COMPONENT* c)const
   c=c;
 }
 ///*--------------------------------------------------------------------------*/
-ADP_CARD* MODEL_BUILT_IN_RCD::new_adp(const COMPONENT* c)const
+ADP_CARD* MODEL_BUILT_IN_RCD::new_adp( COMPONENT* c)const
 {
   trace0("MODEL_BUILT_IN_RCD::new_adp");
   assert(c);
@@ -1288,7 +1296,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
   long double fill_new  = E_old;
   long double fill_new2 = E_old;
 
-  double ex_time=_sim->_dT0-_sim->_last_time;
+  double ex_time = _sim->_dT0 - _sim->_last_time;
   
   fill_new = c->__step( eff , fill_new, ex_time );
 
@@ -1303,7 +1311,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
   assert(is_number(fill_new2));
 
 
-  fill_new=fill_new2;
+  fill_new = fill_new2;
 
   trace4("DEV_BUILT_IN_RCD::stress_apply ", fill_new, E_old, eff, fill_new-_tr_fill );
 
@@ -1326,7 +1334,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
   } else {
     assert(is_number(fill_new));
     _Ccgfill->tt() = (double) fill_new;
-    _tr_fill=fill_new;
+    _tr_fill = fill_new;
     trace2("DEV_BUILT_IN_RCD::stress_apply done ", fill_new, _tr_fill );
   }
 }
@@ -1511,8 +1519,7 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
     assert(is_number(_tr_fill));
   }
 
-
-  double uin_eff= cap->tr(); 
+  double uin_eff = cap->tr(); 
 
   if ((uin_eff < cap->tr_lo) || (uin_eff > cap->tr_hi ) ){
     error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress_last Time %E \n    "
@@ -1558,8 +1565,7 @@ double COMMON_BUILT_IN_RCD::__tau(double uin)const
   }
 }
 ///*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_RCD::tt_commit()
-{
+void DEV_BUILT_IN_RCD::tt_commit() { unreachable();
   // untested();
   return;
 }

@@ -62,7 +62,7 @@ public: // override virtual
   void      precalc_first();
   void      precalc_last();
   SDP_CARD* new_sdp(COMMON_COMPONENT* c)const;
-  ADP_CARD* new_adp( const COMPONENT* c)const;
+  ADP_CARD* new_adp(COMPONENT* c)const;
   void      set_param_by_index(int, std::string&, int);
   bool      param_is_printable(int)const;
   std::string param_name(int)const;
@@ -142,7 +142,8 @@ private: // strictly internal
 public: // input parameters
   PARAMETER<double> perim;	// perimeter factor
   PARAMETER<double> weight;	// cap weight
-  PARAMETER<double> Recommon;	// emit resistance
+  PARAMETER<double> Recommon0;	// emit resistance
+  PARAMETER<double> Recommon1;	// emit resistance
   PARAMETER<double> Rccommon0;	// capt resistance abs
   PARAMETER<double> Rccommon1;	// capt resistance steepness
   PARAMETER<double> Uref;	// reference voltage
@@ -313,7 +314,7 @@ class DEV_BUILT_IN_RCD_NET : public DEV_BUILT_IN_RCD{
 class ADP_BUILT_IN_RCD
   :public ADP_CARD{
 public:
-  explicit ADP_BUILT_IN_RCD(const COMPONENT* c) : ADP_CARD(c)
+  explicit ADP_BUILT_IN_RCD( COMPONENT* c) : ADP_CARD(c)
     {init(c);}
 
   void init(const COMPONENT*);

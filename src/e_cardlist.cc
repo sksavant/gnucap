@@ -283,7 +283,6 @@ CARD_LIST& CARD_LIST::tr_iwant_matrix()
 CARD_LIST& CARD_LIST::tr_begin()
 {
   for (iterator ci=begin(); ci!=end(); ++ci) {
-    trace0("P::tr_begin" + (**ci).short_label() );
     trace_func_comp();
     (**ci).tr_begin();
   }
@@ -471,6 +470,25 @@ CARD_LIST& CARD_LIST::tr_load()
       CARD* brh = *ci;
       brh->tr_load();
     }
+  }
+  return *this;
+}
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+CARD_LIST& CARD_LIST::tt_begin()
+{
+  for (iterator ci=begin(); ci!=end(); ++ci) {
+    trace_func_comp();
+    (**ci).tt_begin();
+  }
+  return *this;
+}
+/*--------------------------------------------------------------------------*/
+CARD_LIST& CARD_LIST::tt_prepare()
+{
+  for (iterator ci=begin(); ci!=end(); ++ci) {
+    trace_func_comp();
+    (**ci).tt_prepare();
   }
   return *this;
 }

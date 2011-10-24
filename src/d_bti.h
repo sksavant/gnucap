@@ -49,7 +49,7 @@ public: // input parameters
   PARAMETER<int>    type;	// type
   PARAMETER<double> base;	
   PARAMETER<double> weight;	// weight
-  PARAMETER<polarity_t> polarity;	// polarity
+  PARAMETER<polarity_t> polarity;
 public: // calculated parameters
   SDP_CARD* _sdp;
 public: // attached commons
@@ -85,7 +85,7 @@ public: // override virtual
   virtual void      precalc_first();
   virtual void      precalc_last();
   SDP_CARD* new_sdp(COMMON_COMPONENT* c)const;
-  ADP_CARD* new_adp( const COMPONENT* c)const;
+  ADP_CARD* new_adp(COMPONENT* c)const;
   virtual void      set_param_by_index(int, std::string&, int);
   virtual bool      param_is_printable(int)const;
   virtual std::string param_name(int)const;
@@ -123,8 +123,35 @@ public: // calculated parameters
   virtual std::string RCD_name(uint_t)const;
 };
 /*--------------------------------------------------------------------------*/
-class MODEL_BUILT_IN_BTI_MATRIX
+/*--------------------------------------------------------------------------*/
+class MODEL_BUILT_IN_BTI_SUM
   :public MODEL_BUILT_IN_BTI{
+protected:
+  explicit MODEL_BUILT_IN_BTI_SUM(const MODEL_BUILT_IN_BTI_SUM& p);
+public:
+  explicit MODEL_BUILT_IN_BTI_SUM(const BASE_SUBCKT*);
+public: // override virtual
+  virtual void attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const;
+  virtual std::string dev_type()const {return "bti_matrix";}
+  virtual void      set_dev_type(const std::string& nt);
+  virtual CARD*     clone()const {return new MODEL_BUILT_IN_BTI_SUM(*this);}
+  virtual void      set_param_by_index(int, std::string&, int);
+  virtual bool      param_is_printable(int)const;
+  virtual std::string param_name(int)const;
+  virtual std::string param_name(int,int)const;
+  virtual std::string param_value(int)const;
+  virtual int param_count()const;
+  virtual void     precalc_first();
+public: // not virtual
+  static int count() {return _count;} // garbage collect
+public: // input parameters
+  PARAMETER<dpvv > rcdparm; // subdev parms. in order.
+  // PARAMETER<MODEL_BUILT_IN_RCD> rcd_model;	// 
+public: // calculated parameters
+};
+/*--------------------------------------------------------------------------*/
+class MODEL_BUILT_IN_BTI_MATRIX
+  :public MODEL_BUILT_IN_BTI_SUM{ 
 protected:
   int foo();
   explicit MODEL_BUILT_IN_BTI_MATRIX(const MODEL_BUILT_IN_BTI_MATRIX& p);
@@ -142,8 +169,6 @@ public: // override virtual
   std::string param_value(int)const;
   int param_count()const;
   virtual void     precalc_first();
-public: // not virtual
-  static int count() {return _count;}
 public: // input parameters
   PARAMETER<uint_t> cols;
   PARAMETER<uint_t> rows;
@@ -255,7 +280,7 @@ private: // node list
 class ADP_BUILT_IN_BTI
   :public ADP_CARD{
 public:
-  explicit ADP_BUILT_IN_BTI(const COMPONENT* c) : ADP_CARD(c)
+  explicit ADP_BUILT_IN_BTI( COMPONENT* c) : ADP_CARD(c)
   //. Hgone(0),
     {init(c);}
 

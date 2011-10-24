@@ -78,9 +78,8 @@ private:
 public:
   static void attach_common(COMMON_COMPONENT* c, COMMON_COMPONENT** to);
   static void detach_common(COMMON_COMPONENT** from);
-#ifdef DO_TRACE
   int attach_count(){return		_attach_count;}
-#endif
+  void set_value(double x) {  _value = x; } // HACK
 private:
   COMMON_COMPONENT& operator=(const COMMON_COMPONENT&)
 			      {unreachable(); return *this;}
@@ -237,7 +236,10 @@ public:	// state, aux data
   //--------------------------------------------------------------------
   // list and queue management
   bool	is_q_for_eval()const	 {return (_q_for_eval >= _sim->iteration_tag());}
-  void	mark_q_for_eval()	 {_q_for_eval = _sim->iteration_tag();}
+  void	mark_q_for_eval()	 {
+    assert(_q_for_eval != INT_MAX); 
+    _q_for_eval = _sim->iteration_tag();
+  }
   void	mark_always_q_for_eval() {_q_for_eval = INT_MAX;}
   void	q_eval();
   void	q_load()		 { trace0(("q_load: "+ short_label()).c_str() );
@@ -314,7 +316,7 @@ public: // parameters
   const PARAMETER<double>& value()const		{return _value;}
   //--------------------------------------------------------------------
 public:	// obsolete -- do not use in new code
-  virtual bool print_type_in_spice()const = 0;
+  virtual bool print_type_in_spice()const {return false;}
   bool use_obsolete_callback_parse()const;
   bool use_obsolete_callback_print()const;
   void print_args_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
@@ -324,6 +326,7 @@ public:
   ADP_CARD* adp()const {return(_adp);}
   void attach_adp(ADP_CARD* a);
   virtual void tt_prepare();
+  virtual void tt_next() {  }
 protected:
   double  _tr_amps_diff_cur;
   double  _tr_amps_diff_max;
@@ -335,7 +338,6 @@ protected:
   void tt_behaviour_update();
   void tr_behaviour(){ tt_behaviour_update(); }
   virtual void tt_begin() {  }
-  virtual void tt_next() {  }
 
   virtual void tt_init_i(){
           std::cerr << short_label() << " COMP:init_i have " << net_nodes() <<

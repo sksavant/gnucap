@@ -556,6 +556,7 @@ void MODEL_BUILT_IN_MOS_BASE::tr_eval(COMPONENT*)const
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_MOS_BASE::do_tr_stress( const COMPONENT* c ) const
 {
+  cout<<"foo5\n";
   const DEV_BUILT_IN_MOS* d = (const DEV_BUILT_IN_MOS*)c;
   const COMMON_COMPONENT* cc = c->common();
   const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
@@ -577,6 +578,8 @@ void MODEL_BUILT_IN_MOS_BASE::do_tt_prepare( COMPONENT* c) const
     std::cerr << "MODEL_BUILT_IN_MOS_BASE::tt_prepare: error. not already adp (?)\n";
   } else{
   }
+
+  // _adp->tt_prepare( );
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_MOS_BASE::do_stress_apply( COMPONENT* c ) const

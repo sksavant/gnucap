@@ -42,14 +42,49 @@ AC_PREFIX_DEFAULT("/usr/local")
 
 #sysconfdir='/bar/etc'
 
-#
-
 #AC_SUBST([PREFIX])
 #AC_SUBST([LIBDIR])
 
 
+dnl ----------------- doc ------------------
+AC_MSG_CHECKING([doc])
+AC_ARG_ENABLE([doc],
+[  --enable-doc            Enable building of modules. [[default: disabled]]],
+[
+if test "X$enable_doc" = "Xno" ; then
+	AC_MSG_RESULT([no])
+else
+	AC_MSG_RESULT([yes])
+	enable_doc=yes
+fi
+],
+[
+	AC_MSG_RESULT([no])
+	enable_doc=no
+])
 
-
+if test "X$enable_doc" = "Xyes"; then
+	AC_OUTPUT([ doc/Makefile ])
+fi
+AM_CONDITIONAL([DOC], [test x$enable_doc != xno] )
+dnl ----------------- man ------------------
+AC_MSG_CHECKING([man])
+AC_ARG_ENABLE([man],
+[  --enable-man            Enable building of modules. [[default: disabled]]],
+[
+if test "X$enable_man" = "Xno" ; then
+	AC_MSG_RESULT([no])
+else
+	AC_MSG_RESULT([yes])
+	enable_man=yes
+fi
+],
+[
+	AC_MSG_RESULT([no])
+	enable_man=no
+])
+dnl ------------- modules -------------------
+dnl MODULES=
 AC_MSG_CHECKING([if modules should be compiled in])
 AC_ARG_ENABLE([modules],
 [  --enable-modules            Enable building of modules. [[default: disabled]]],
@@ -65,8 +100,31 @@ fi
 	AC_MSG_RESULT([no])
 	enable_modules=no
 ])
+AM_CONDITIONAL([MODULES], [test x$enable_modules != xno] )
 
-dnl Ivl for d_vvp.cc
+dnl --------------- adms -----------------
+#ADMS=
+AC_MSG_CHECKING([compile adms va devices])
+AC_ARG_ENABLE([adms],
+  [  --enable-adms            Enable adms devices. [[default: disabled]]],
+  [ if test "X$enable_adms" = "Xno" ; then
+	   AC_MSG_RESULT([no])
+    else
+	   AC_MSG_RESULT([yes])
+	   enable_adms=yes
+	   with_adms=admsXml
+	   AC_DEFINE([HAVE_ADMS], [1], [make adms devices])
+    fi
+  ],
+  [
+    AC_CHECK_PROG(found_admsxml, admsXml, yes, no)
+	 # FIXME: check version. 2.2.9 works.
+    AC_MSG_RESULT([$found_admsxml])
+	 enable_adms=$found_admsxml
+	 # with_adms=admsXml
+  ])
+
+dnl ------------ icarus verilog -------------------
 iverilog=no
 AC_ARG_WITH([iverilog],
   [AS_HELP_STRING([--with-iverilog], [directory where ivl source resides])],
@@ -104,8 +162,6 @@ AC_CHECK_HEADERS(vvp/schedule.h, [ ],
 					) ] )
 
 
-AM_CONDITIONAL(IVERILOG, test x$with_iverilog != xno )
-AM_CONDITIONAL(IVERILOG_VVP, test x$iverilog_vvp_old = xyes )
 
 AC_SUBST(IVERILOG_INCLUDE)
 
@@ -165,7 +221,7 @@ AC_CHECK_LIB([gsl], [gsl_blas_dgemm])
 AC_CHECK_LIB([gsl], [gsl_fit_linear])
 AC_CHECK_FUNCS([sqrt])
 
-
+dnl ----------------------------------------------------
 # some more checks. some should depend on switches. but the switches arent
 # there yet
 AC_CHECK_HEADER([atlas/clapack.h],
@@ -193,12 +249,19 @@ AC_CHECK_HEADER([readline/history.h],
                            [Define to 1 if you have readline/history.h])],
                 [AC_MSG_ERROR([please install the libreadline-dev package])])
 
-AC_CHECK_HEADER([gsl/gsl_fit.h],
-                [AC_DEFINE([HAVE_GSL_FIT_H], [1],
-                           [Define to 1 if you have gsl/gsl_fit.h])],
-                [AC_MSG_ERROR([please install the libgsl0-dev package])])
 
+AC_ARG_WITH([gsl],
+[AS_HELP_STRING([--with-gsl],
+  [support gls @<:@default=yes@:>@])],
+[],
+[with_gsl=yes])
 
+if test "x$with_gsl" != xno ; then
+	AC_CHECK_HEADER([gsl/gsl_fit.h],
+	[AC_DEFINE([HAVE_GSL_FIT_H], [1],
+		[Define to 1 if you have gsl/gsl_fit.h])],
+	[AC_MSG_ERROR([please install the libgsl0-dev package])])
+fi    
 
 AC_ARG_WITH([readline],
 [AS_HELP_STRING([--with-readline],
@@ -297,21 +360,6 @@ fi
 LDFLAGS="$LDFLAGS -rdynamic"
 
 
-#AC_OUTPUT([
-#	Makefile
-#	doc/Makefile
-#	examples/Makefile
-#	man/Makefile
-#	man/Addmodel/Makefile
-#	man/Behavior/Makefile
-#	man/Circuit/Makefile
-#	man/Commands/Makefile
-#	man/Tech/Makefile
-#	modelgen/Makefile
-#	src/Makefile
-#	])
-
-
 # stupid hack.
 if test "x${prefix}" = "xNONE"; then
 		AC_DEFINE_UNQUOTED( PREFIX, "${ac_default_prefix}", "Prefix")
@@ -324,19 +372,41 @@ else
 fi
 
 
+AM_CONDITIONAL([ADMS], [test x$enable_adms != xno] )
+AM_CONDITIONAL(IVERILOG, test x$with_iverilog != xno )
+AM_CONDITIONAL(IVERILOG_VVP, test x$iverilog_vvp_old = xyes )
 
 AC_OUTPUT([
 	Makefile
-	doc/Makefile
 	examples/Makefile
-	modelgen/Makefile
-	src/Makefile])
+	modelgen/Makefile ])
+
+
+if test "X$enable_adms" = "Xyes"; then
+	AC_OUTPUT([ adms/Makefile ])
+	AC_MSG_NOTICE( [adms Makefile...])
+fi
+
+AC_OUTPUT( [ src/Makefile ])
 
 if test "X$enable_modules" = "Xyes"; then
 	AC_OUTPUT([ modules/Makefile ])
 fi
 
-AM_CONDITIONAL(MODULES, test x$enable_modules != xno )
+
+
+# todo
+#if test "X$enable_man" = "Xyes"; then
+	#AC_OUTPUT([
+		#man/Makefile
+		#man/Addmodel/Makefile
+		#man/Behavior/Makefile
+		#man/Circuit/Makefile
+		#man/Commands/Makefile
+		#man/Tech/Makefile
+	#])
+#fi
+
 
 
 AC_MSG_RESULT([
@@ -353,7 +423,9 @@ AC_MSG_RESULT([
    LIBS:       $LIBS
    debug:      $enable_debug
    modules:    $enable_modules
+   admst:      $enable_adms
    shared:     $shared
+	doc:     $enable_doc
 
 ])
 

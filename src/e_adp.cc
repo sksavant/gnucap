@@ -54,6 +54,7 @@ ADP_NODE::ADP_NODE( const COMPONENT* c, const std::string n ) :
   dbg(0),
   tr_noise(0)
 {
+  trace0("ADP_NODE::ADP_NODE ");
   init(c,n);
   assert(c);
   tr_lo = inf;
@@ -146,11 +147,7 @@ TIME_PAIR ADP_NODE_RCD::tt_review( ) {
   }
   _rel_tt_err = fabs (tt_value - tt_expect) / (fabs(tt_value) + fabs(tt_expect));
 
-
   tr_value = delta_model;
-
-  // _debug=_rel_tt_err;
-
 
   trace3(("ADP_NODE::tt_review" + label() + "got tol").c_str(), myreltol, _abs_tr_err, _rel_tr_err);
   if( _abs_tr_err == 0 ) {
@@ -202,9 +199,15 @@ TIME_PAIR ADP_NODE::tt_preview( ) {
     return _time_pre;
 }
 /*----------------------------------------------------------------------------*/
+void ADP_NODE::tr_add( double x ) const { 
+  assert(is_number(tr())); 
+  tr() += x;
+}
+/*----------------------------------------------------------------------------*/
 void ADP_NODE::reset() {
   trace2( "ADP_NODE::reset()", CKT_BASE::_sim->_Time0, tr_value );
   std::cout << "rst " << label() << "\n";
+  assert(false); //BUG
   tr_value = 0; // tt1() = 0; tt() =0;
 }
 /*----------------------------------------------------------------------------*/
@@ -870,7 +873,6 @@ void ADP_NODE::tt_commit( )
 
   // this is before sweep....
   assert( CKT_BASE::_sim->_last_time >0 );
-//  std::cout << " commit expect " << tr_value << " <= " << _delta_expect <<"\n";
 
   assert( tt_value == tt_value );
   assert( tt_value >=0 || !_positive );
@@ -979,7 +981,6 @@ void ADP_NODE::tr_expect_( ){
   // assert(is_number(_tt[0]));
 
 //  return _delta_expect;
- // std::cout << "exp_ " << _delta[1] <<  " " <<  short_label() << " "  <<
  // tt_value  << " " << get1() << " order " << _order << " val1 " <<
  // tt1() <<
  //  "ttex " << tt_expect <<  "\n";
@@ -1243,7 +1244,7 @@ double ADP_NODE::tt_integrate_2_exp(double tr_) {
 /*----------------------------------------------------------------------*/
 // ADP_CARD::ADP_CARD() {unreachable();}
 /*----------------------------------------------------------------------*/
-ADP_CARD::ADP_CARD(const ADP_CARD& p) : CARD(p) {unreachable();} 
+ADP_CARD::ADP_CARD(const ADP_CARD& p) : COMPONENT(p) {unreachable();} 
 /*----------------------------------------------------------------------*/
 
 TIME_PAIR ADP_NODE_UDC::tt_review( ) {
@@ -1318,7 +1319,6 @@ TIME_PAIR ADP_NODE::tt_review( ) {
   _wdT = dT0() * sqrt( myreltol / _rel_tr_err )  + h;
   _wdT = dT0() * log( 1+ myreltol / _rel_tr_err )  + h;
 
-  // std::cout << myreltol << " " <<  tr_noise << " " << _rel_tr_err << " " << _abs_tr_err << " " << _wdT << "\n";
 
   if (_rel_tr_err >= 1 ){
     error( bDANGER, "stepdebug %i dev: %s reltr %f>1 model %E, tr_ %E fill %E\n",
