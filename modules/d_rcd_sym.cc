@@ -29,7 +29,7 @@ double MODEL_BUILT_IN_RCD_SYM::dvth( const COMPONENT* brh) const
   }
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_SYM::do_stress_apply( COMPONENT*  ) const
+void MODEL_BUILT_IN_RCD_SYM::do_stress_apply( COMPONENT* ) const
 {
   if (!_sim->analysis_is_tt()){
 //        _Ccgfill->
@@ -221,7 +221,7 @@ void MODEL_BUILT_IN_RCD_SYM::do_tt_prepare( COMPONENT* brh) const{
   const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
   c->_Ccgfill->tt_set( cc->_zero );
 
-  trace2( ( "MODEL_BUILT_IN_RCD_SYM_V2::do_tt_prepare" + brh->short_label()).c_str(),  -cc->_wcorr, cc->_zero );
+  trace2( ( "MODEL_BUILT_IN_RCD_SYM_V2::do_tt_prepare" + brh->short_label()).c_str(), -cc->_wcorr, cc->_zero );
 }
 /*--------------------------------------------------------------------------*/
 DEV_BUILT_IN_RCD_SYM::DEV_BUILT_IN_RCD_SYM()

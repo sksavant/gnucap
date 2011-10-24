@@ -104,6 +104,8 @@ void DEV_BUILT_IN_RCD_SYM_V3::expand()
   }
 }
 /*--------------------------------------------------------------------------*/
+
+// _SYM ??
 double MODEL_BUILT_IN_RCD_SYM_V3::__tau(double uin, const COMMON_COMPONENT* cc)const
 {
   double tau_e = __Re( uin, cc);
@@ -194,10 +196,11 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress( const COMPONENT* brh) const
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE* _c,
-    const COMMON_COMPONENT* ccmp ) const
+    COMPONENT* dd ) const
 {
   // ADP_NODE_UDC* udc= dynamic_cast<ADP_NODE_UDC*>(a);
-  const COMMON_BUILT_IN_RCD* cc = static_cast<const COMMON_BUILT_IN_RCD*>(ccmp);
+  //const DEV_BUILT_IN_RCD* d = static_cast<const DEV_BUILT_IN_RCD*>(dd);
+  const COMMON_BUILT_IN_RCD* cc = static_cast<const COMMON_BUILT_IN_RCD*>(dd->common());
   const MODEL_BUILT_IN_RCD* m =   static_cast<const MODEL_BUILT_IN_RCD*>(this);
   assert(m);
   assert(is_number(_c->tt()));
@@ -278,7 +281,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE* _c,
 
   if (!linear_inversion){
     try{
-      uin_eff = cc->__uin_iter(uin_eff, E_old, (double)E, _c->tr_lo, _c->tr_hi );
+      uin_eff = cc->__uin_iter(uin_eff, E_old, (double)E, _c->tr_lo, _c->tr_hi, dd );
     } catch (Exception &e) {
       error(bDANGER, "Exception in %s\n", long_label().c_str());
       throw(e);
@@ -538,11 +541,11 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__Edu(long double uin, long double cur, c
 }
 /*--------------------------------------------------------------------------*/
 // solve E(uin)-E==0
-long double MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter(long double& uin, double
-    E_old, double E, const COMMON_COMPONENT* ccmp ) const { const
-  COMMON_BUILT_IN_RCD* c = dynamic_cast<const COMMON_BUILT_IN_RCD*>(ccmp);
-  assert(false);
-  return c->__uin_iter( uin, E_old ,E,0,0 ); }
+//long double MODEL_BUILT_IN_RCD_SYM_V3::__uin_iter(long double& uin, double
+//    E_old, double E, COMPONENT* dd ) const { const
+//  COMMON_BUILT_IN_RCD* c = dynamic_cast<const COMMON_BUILT_IN_RCD*>(dd->common());
+//  assert(false);
+//  return c->__uin_iter( uin, E_old ,E,0,0,dd ); }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 // old.

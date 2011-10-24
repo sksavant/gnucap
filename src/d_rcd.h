@@ -41,8 +41,7 @@ public:
 public:
 };
 /*--------------------------------------------------------------------------*/
-class MODEL_BUILT_IN_RCD
-  :public MODEL_CARD{
+class MODEL_BUILT_IN_RCD :public MODEL_CARD{
 protected:
   explicit MODEL_BUILT_IN_RCD(const MODEL_BUILT_IN_RCD& p);
 public:
@@ -97,7 +96,7 @@ public: // probes
   virtual double __Re(double uin, const COMMON_COMPONENT* cc)const ;
   virtual double __Rc(double uin, const COMMON_COMPONENT* cc)const ;
   virtual long double __Edu(long double , long double , const COMMON_COMPONENT*)const {return 0;}
-  virtual void do_tr_stress_last( long double , ADP_NODE* , const COMMON_COMPONENT*  ) const 
+  virtual void do_tr_stress_last( long double , ADP_NODE* , COMPONENT* ) const 
   {unreachable();}
 };
 /*--------------------------------------------------------------------------*/
@@ -115,64 +114,63 @@ class MODEL_BUILT_IN_RCD_NET : public MODEL_BUILT_IN_RCD {
     double dvth(const COMPONENT* )const;
 };
 /*--------------------------------------------------------------------------*/
-class COMMON_BUILT_IN_RCD
-  :public COMMON_COMPONENT{
-public:
-  explicit COMMON_BUILT_IN_RCD(const COMMON_BUILT_IN_RCD& p);
-  explicit COMMON_BUILT_IN_RCD(int c=0);
-           ~COMMON_BUILT_IN_RCD();
-  bool     operator==(const COMMON_COMPONENT&)const;
-  COMMON_COMPONENT* clone()const {return new COMMON_BUILT_IN_RCD(*this);}
-  void     set_param_by_index(int, std::string&, int);
-  bool     param_is_printable(int)const;
-  std::string param_name(int)const;
-  std::string param_name(int,int)const;
-  std::string param_value(int)const;
-  int param_count()const {return (3 + COMMON_COMPONENT::param_count());}
-  void     precalc_first(const CARD_LIST*);
-  void     expand(const COMPONENT*);
-  void     precalc_last(const CARD_LIST*);
-  std::string name()const {itested();return "rcd";}
-  const SDP_CARD* sdp()const {return _sdp;}
-  bool     has_sdp()const {untested();return _sdp;}
-  static int  count() {return _count;}
-  //virtual  void stress_apply( DEV_BUILT_IN_RCD* d ) const;
-private: // strictly internal
-  static int _count;
-public: // input parameters
-  PARAMETER<double> perim;	// perimeter factor
-  PARAMETER<double> weight;	// cap weight
-  PARAMETER<double> Recommon0;	// emit resistance
-  PARAMETER<double> Recommon1;	// emit resistance
-  PARAMETER<double> Rccommon0;	// capt resistance abs
-  PARAMETER<double> Rccommon1;	// capt resistance steepness
-  PARAMETER<double> Uref;	// reference voltage
-  PARAMETER<double> mu;	// mu
-  PARAMETER<double> lambda;	// lambda
-  PARAMETER<bool> dummy_capture;// use dummy as emit resistor
-  PARAMETER<bool> dummy_emit;	// use dummy as emit resistor
-public: // calculated parameters
-  double X;
-  double _Re1;
-  double _Re0;
-  double _Rc0;
-  double _Rc1;
-  double _weight;
-  double _wcorr; // correction for uref fit.
-  double _zero;  // this much fill is dvth=0
-  double _lambda;
-  SDP_CARD* _sdp;
-  double cj_adjusted;	// 
-public: // functions...
-  //double _Ueff( double ug);
-  double __Re(double ueff)const;
-  double __Rc(double ueff)const;
-  double __tau ( double ueff ) const; 
-  double __tau_up ( double ueff ) const;
-  long double __step(long double uin, long double cur,  double deltat ) const;
-  long double __uin_iter(long double& uin, double, double, double bhi, double blo)const;
+class COMMON_BUILT_IN_RCD :public COMMON_COMPONENT{
+  public:
+    explicit COMMON_BUILT_IN_RCD(const COMMON_BUILT_IN_RCD& p);
+    explicit COMMON_BUILT_IN_RCD(int c=0);
+    ~COMMON_BUILT_IN_RCD();
+    bool     operator==(const COMMON_COMPONENT&)const;
+    COMMON_COMPONENT* clone()const {return new COMMON_BUILT_IN_RCD(*this);}
+    void     set_param_by_index(int, std::string&, int);
+    bool     param_is_printable(int)const;
+    std::string param_name(int)const;
+    std::string param_name(int,int)const;
+    std::string param_value(int)const;
+    int param_count()const {return (3 + COMMON_COMPONENT::param_count());}
+    void     precalc_first(const CARD_LIST*);
+    void     expand(const COMPONENT*);
+    void     precalc_last(const CARD_LIST*);
+    std::string name()const {itested();return "rcd";}
+    const SDP_CARD* sdp()const {return _sdp;}
+    bool     has_sdp()const {untested();return _sdp;}
+    static int  count() {return _count;}
+    //virtual  void stress_apply( DEV_BUILT_IN_RCD* d ) const;
+  private: // strictly internal
+    static int _count;
+  public: // input parameters
+    PARAMETER<double> perim;	// perimeter factor
+    PARAMETER<double> weight;	// cap weight
+    PARAMETER<double> Recommon0;	// emit resistance
+    PARAMETER<double> Recommon1;	// emit resistance
+    PARAMETER<double> Rccommon0;	// capt resistance abs
+    PARAMETER<double> Rccommon1;	// capt resistance steepness
+    PARAMETER<double> Uref;	// reference voltage
+    PARAMETER<double> mu;	// mu
+    PARAMETER<double> lambda;	// lambda
+    PARAMETER<bool> dummy_capture;// use dummy as emit resistor
+    PARAMETER<bool> dummy_emit;	// use dummy as emit resistor
+  public: // calculated parameters
+    double X;
+    double _Re1;
+    double _Re0;
+    double _Rc0;
+    double _Rc1;
+    double _weight;
+    double _wcorr; // correction for uref fit. FIXME: remove
+    double _zero;  // this much fill is dvth=0 ("E0")
+    double _lambda;
+    SDP_CARD* _sdp;
+    double cj_adjusted;	// 
+  public: // functions... (protected?)  should be in MODEL??
+    //double _Ueff( double ug);
+    double __Re(double s)const;
+    double __Rc(double s)const;
+    double __tau ( double s) const; 
+    double __tau_up ( double ueff ) const;
+    long double __step(long double uin, long double cur,  double deltat ) const;
+    long double __uin_iter(long double& uin, double, double, double bhi, double blo,COMPONENT*)const;
 
-public: // attached commons
+  public: // attached commons
 };
 /*--------------------------------------------------------------------------*/
 class EVAL_BUILT_IN_RCD_GRc : public COMMON_COMPONENT {
@@ -204,101 +202,103 @@ public:
 };
 /*--------------------------------------------------------------------------*/
 class DEV_BUILT_IN_RCD : public BASE_SUBCKT {
-private:
-  explicit DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p);
-  double lasts;
-public:
-  explicit DEV_BUILT_IN_RCD();
-  ~DEV_BUILT_IN_RCD() {
-    --_count;
-    if( _Ccgfill ) {
-   //   ADP_NODE_LIST::adp_node_list.erase( _Ccgfill );
-    }
-    if( _Udc )  {
-   //   ADP_NODE_LIST::adp_node_list.erase( _Udc );
-    }
-  }
-protected: // override virtual
-  char      id_letter()const     {untested();return 'Z';}
-  bool      print_type_in_spice()const {return true;}
-  std::string value_name()const  {return "area";}
-  //std::string dev_type()const;   //BASE_SUBCKT
-  uint_t       max_nodes()const     {return 2;}
-  uint_t       min_nodes()const     {return 2;}
-  //int     matrix_nodes()const; //BASE_SUBCKT
-  uint_t       net_nodes()const     {return 2;}
-  uint_t       int_nodes()const     {return 1;}
-  CARD*     clone()const         {return new DEV_BUILT_IN_RCD(*this);}
-  void      precalc_first() {COMPONENT::precalc_first(); if(subckt()) subckt()->precalc_first();}
-  virtual   void      expand(); // virtual??
-  void      precalc_last();
-  //void    map_nodes();         //BASE_SUBCKT
-  void    tr_begin();    // BASE_SUBCKT
-  void tt_next(); //{  } // HACK
-  void    tr_stress(); //BASE_SUBCKT
-  void    tr_stress_();
-  //void    tr_restore();        //BASE_SUBCKT
-  void    stress_apply(); 
-  void	 tt_begin();
-  void      tt_commit(); 
-  void      tt_prepare();         //BASE_SUBCKT
-  void      dc_advance() {set_not_converged(); BASE_SUBCKT::dc_advance();}
-  void      tr_advance() {set_not_converged(); BASE_SUBCKT::tr_advance();}
-  void      tr_regress() {set_not_converged(); BASE_SUBCKT::tr_regress();}
-  bool      tr_needs_eval()const;
-  // ????? what is this good for?
-  void      tr_queue_eval()      {if(tr_needs_eval()){q_eval();}}
-  bool      do_tr();
-  //void    tr_load();           //BASE_SUBCKT
-  virtual TIME_PAIR  tr_review() { 
-    assert(subckt());
-    return BASE_SUBCKT::tr_review();
-  }
-  void	  tr_accept(); // 	{assert(subckt()); subckt()->tr_accept();}
-  //void    tr_unload();         //BASE_SUBCKT
-  double    tr_probe_num(const std::string&)const;
-  double    tt_probe_num(const std::string&)const;
-  //void    ac_begin();          //BASE_SUBCKT
-  //void    do_ac();             //BASE_SUBCKT
-  //void    ac_load();           //BASE_SUBCKT
-  //XPROBE  ac_probe_ext(CS&)const;//CKT_BASE/nothing
-  double _uin_eff;
-public:
-  double    involts()const;
-  virtual double E()const {return 3;}
-  virtual double dvth() const;
-  static int  count() {return _count;}
-public: // may be used by models
-private: // not available even to models
-  void     expand_net();
-  void     expand_sym();
-  static int _count;
-public: // input parameters
-  region_t _region;	// fwd, reverse, unknown
-private: // calculated parameters
-  int _tt_region;	// fwd, reverse, unknown
-public: // netlist
-  COMPONENT* _Ccg;
-  COMPONENT* _Ye;
-  COMPONENT* _Re;
-  COMPONENT* _Rc;
-  COMPONENT* _GRc;
-  ADP_NODE* _Ccgfill;
-  ADP_NODE_UDC* _Udc;
-  long double _tr_fill;
-protected: // node list
-  enum {n_u, n_b, n_ic};
-  node_t _nodes[3];
-  std::string port_name(uint_t i)const {
-    assert(i != INVALID_NODE);
-    assert(i < 2);
-    static std::string names[] = {"u", "b", ""};
-    return names[i];
-  }
+  friend class COMMON_BUILT_IN_RCD;
+  private:
+    explicit DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p);
+    double lasts;
   public:
-  virtual region_t region() const ;
-  virtual int tt_region() const ;
-  virtual void tr_stress_last();
+    explicit DEV_BUILT_IN_RCD();
+    ~DEV_BUILT_IN_RCD() {
+      --_count;
+      if( _Ccgfill ) {
+        //   ADP_NODE_LIST::adp_node_list.erase( _Ccgfill );
+      }
+      if( _Udc )  {
+        //   ADP_NODE_LIST::adp_node_list.erase( _Udc );
+      }
+    }
+  protected: // override virtual
+    char      id_letter()const     {untested();return 'Z';}
+    bool      print_type_in_spice()const {return true;}
+    std::string value_name()const  {return "area";}
+    //std::string dev_type()const;   //BASE_SUBCKT
+    uint_t       max_nodes()const     {return 2;}
+    uint_t       min_nodes()const     {return 2;}
+    //int     matrix_nodes()const; //BASE_SUBCKT
+    uint_t       net_nodes()const     {return 2;}
+    uint_t       int_nodes()const     {return 1;}
+    CARD*     clone()const         {return new DEV_BUILT_IN_RCD(*this);}
+    void      precalc_first() {COMPONENT::precalc_first(); if(subckt()) subckt()->precalc_first();}
+    virtual   void      expand(); // virtual??
+    void      precalc_last();
+    //void    map_nodes();         //BASE_SUBCKT
+    void    tr_begin();    // BASE_SUBCKT
+    void tt_next(); //{  } // HACK
+    void    tr_stress(); //BASE_SUBCKT
+    void    tr_stress_();
+    //void    tr_restore();        //BASE_SUBCKT
+    void stress_apply(); 
+    void tt_begin();
+    void tt_commit(); 
+    void tt_prepare();         //BASE_SUBCKT
+    void dc_advance() {set_not_converged(); BASE_SUBCKT::dc_advance();}
+    void tr_advance() {set_not_converged(); BASE_SUBCKT::tr_advance();}
+    void tr_regress() {set_not_converged(); BASE_SUBCKT::tr_regress();}
+    bool tr_needs_eval()const;
+    // ????? what is this good for?
+    void      tr_queue_eval()      {if(tr_needs_eval()){q_eval();}}
+    bool      do_tr();
+    //void    tr_load();           //BASE_SUBCKT
+    virtual TIME_PAIR  tr_review() { 
+      assert(subckt());
+      return BASE_SUBCKT::tr_review();
+    }
+    void	  tr_accept(); // 	{assert(subckt()); subckt()->tr_accept();}
+    //void    tr_unload();         //BASE_SUBCKT
+    double    tr_probe_num(const std::string&)const;
+    double    tt_probe_num(const std::string&)const;
+    //void    ac_begin();          //BASE_SUBCKT
+    //void    do_ac();             //BASE_SUBCKT
+    //void    ac_load();           //BASE_SUBCKT
+    //XPROBE  ac_probe_ext(CS&)const;//CKT_BASE/nothing
+    double _iter_count;
+    double _uin_eff;
+  public:
+    double    involts()const;
+    virtual double E()const {return 3;}
+    virtual double dvth() const;
+    static int  count() {return _count;}
+  public: // may be used by models
+  private: // not available even to models
+    void     expand_net();
+    void     expand_sym();
+    static int _count;
+  public: // input parameters
+    region_t _region;	// fwd, reverse, unknown
+  private: // calculated parameters
+    int _tt_region;	// fwd, reverse, unknown
+  public: // netlist
+    COMPONENT* _Ccg;
+    COMPONENT* _Ye;
+    COMPONENT* _Re;
+    COMPONENT* _Rc;
+    COMPONENT* _GRc;
+    ADP_NODE* _Ccgfill;
+    ADP_NODE_UDC* _Udc;
+    long double _tr_fill;
+  protected: // node list
+    enum {n_u, n_b, n_ic};
+    node_t _nodes[3];
+    std::string port_name(uint_t i)const {
+      assert(i != INVALID_NODE);
+      assert(i < 2);
+      static std::string names[] = {"u", "b", ""};
+      return names[i];
+    }
+  public:
+    virtual region_t region() const ;
+    virtual int tt_region() const ;
+    virtual void tr_stress_last();
 };
 /*--------------------------------------------------------------------------*/
 class DEV_BUILT_IN_RCD_NET : public DEV_BUILT_IN_RCD{

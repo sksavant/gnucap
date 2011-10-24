@@ -1,3 +1,9 @@
+// a specialization for vectors
+// parameters are assigned like
+// PARAMETER<vector<PARAMETER<double> > > x;
+// x = "1,2,3,4" // without brackets
+
+
 #include "e_cardlist.h"
 #include "u_parameter.h"
 #ifndef PV_H
@@ -8,21 +14,6 @@
 
 using namespace std;
 
-// this is just an experiment
-
-//template <class T>
-//class PARAVEC :  PARAMETER< vector<PARAMETER<T> > > {
-//	public:
-//
-//	  std::string string()const;
-//};
-/*=========================*/
-//struct dummy{};
-//template <> inline dummy PARAMETER<dummy>::_NOT_INPUT() const { return dummy();}
-//template <> inline dummy PARAMETER<dummy>::my_infty()const{ return dummy(); }
-//inline string to_string(dummy){unreachable();return "";}
-
-//template <>
 template <class T>
 class PARAMETER<vector<PARAMETER<T> > > : public PARA_BASE{
 	private:
@@ -58,7 +49,6 @@ PARAMETER<vector<PARAMETER<T> > >::operator  std::string()const{
 	return " ";
 }
 /*===============================*/
-#define TP PARAMETER<vector<PARAMETER<T> > >
 template <class T>
 inline std::string PARAMETER<vector<PARAMETER<T> > >::string()const{
   std::string ret("V");
@@ -69,7 +59,7 @@ inline std::string PARAMETER<vector<PARAMETER<T> > >::string()const{
   }else{
     return _s;
   }
-  for(unsigned  i=0; i<TP::_v.size()  ; i++){
+  for(unsigned  i=0; i<_v.size(); i++){
     ret+= (i)?",":"";
     ret+= _v[i];
   }
@@ -77,81 +67,19 @@ inline std::string PARAMETER<vector<PARAMETER<T> > >::string()const{
   return ret;
 }
 /*===============================*/
-//template <class T>
-//std::string PARAMETER<vector<PARAMETER<T> > >::to_string(vector< PARAMETER<T> > n) const
-//{
-//  //t::iterator i = n.begin();
-//  std::vector< PARAMETER<T> >::iterator i = n.begin();
-//  string buf("");
-//  // FIXME: remove one ,
-//  if (n.size()==0){return "( )";}
-//
-//  buf += to_string("(")+ to_string(*i);
-//  ++i;
-//
-//  while (i!=n.end()){
-//    buf += std::string(", ") + to_string(*i);
-//    ++i;
-//  }
-//  return buf + std::string(" )");;
-//}
-
-/*=========================*/
-//template <>
-//std::vector<double> PARAMETER<std::vector<double> >::e_val(const
-//    std::vector<double>& , const CARD_LIST* )const;
-/*--------------------------------------------------------------------------*/
-typedef PARAMETER<double> dp;
-
-//template <>
-//template <class T>
-//inline vector<PARAMETER<T> >
-//           PARAMETER<vector<PARAMETER<T> > >::e_val(const vector<PARAMETER<T> >& , const CARD_LIST* )const{
-//				  incomplete();
-//
-//			  }
-///*--------------------------------------------------------------------------*/
-/*=========================*/
-
-//template <>
-//std::string PARAMETER<vector<PARAMETER<vector<PARAMETER<double> > > > >::string()const;
-/*=========================*/
-
-//template <>
-//std::string PARAMETER<vector<PARAMETER<double> > >::string()const;
-/*=========================*/
-//template <> 
-//template <class T>
-//inline vector<PARAMETER<T> > PARAMETER<vector<PARAMETER<T> > >::_NOT_INPUT() const {
-//  untested();
-//  return std::vector< PARAMETER<T> >(0);
-//}
+//typedef PARAMETER<double> dp;
 //============================================================
 template <class T>
 inline vector<PARAMETER<T> > PARAMETER<vector<PARAMETER<T> > >::_NOT_INPUT() const {
   	return vector<PARAMETER< T> > ();
 }
-//============================================================
-/*--------------------------------------------------------------------------*/
-//template <> 
-//inline std::vector<double> PARAMETER< std::vector<double> >::_NOT_INPUT() const {
-//  untested();
-//  return std::vector<double>(0);
-//}
-/*=========================*/
 /*--------------------------------------------------------------------------*/
 template<class T>
 void PARAMETER<vector<PARAMETER<T> > >::operator=(const std::string& s){
   trace1("PARAMETER dvv =" , s);
 
   CS cmd(CS::_STRING,s);
-  //typedef std::vector<PARAMETER<T> > TT;
-  // TT::iterator a;
-  //std::vector<PARAMETER<T> >::iterator a;
-  //a = _v.begin();
   _v.clear();
- // (_v.begin(),_v.end());
-  // FIXME: accept strings and parse...
   std::string vect;
 
   cmd.skipbl();
@@ -165,7 +93,7 @@ void PARAMETER<vector<PARAMETER<T> > >::operator=(const std::string& s){
 
   //  cmd >> vect;
     trace1("PARAMETER matrix loop", cmd.tail());
-    vect = cmd.ctos(",","(",")","");
+    vect = cmd.ctos(",","({",")}",""); // More sorts of braces?
     trace1("PARAMETER matrix ctosd", vect);
 
     PARAMETER<T > d;
