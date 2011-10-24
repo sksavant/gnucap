@@ -397,7 +397,7 @@ void DDC_BASE::sweep_recursive(int Nest)
 
       if(_dump_matrix){
         _out << " ======================== \n";
-        _out << "iddc ( " << _sim->_i[1];
+        _out << "_i ( " << _sim->_i[1];
         for(unsigned a=2; a <= d; ++a){
           _out << " " <<  _sim->_i[a];
         }
@@ -408,9 +408,12 @@ void DDC_BASE::sweep_recursive(int Nest)
         iddc[a]=_sim->_i[a];
       }
 
+      _sim->_uic=_sim->_more_uic=false;
       CARD_LIST::card_list.tr_accept();
+
       ::status.accept.stop();
       _sim->keep_voltages(); // vdc = v0
+//      CARD_LIST::card_list.do_tr();
 
       _sim->_uic=_sim->_more_uic=false;
 
@@ -427,7 +430,9 @@ void DDC_BASE::sweep_recursive(int Nest)
 
       trace0("solved with homotopy");
       if(_dump_matrix){
-        _out << "i ( " << _sim->_i[1];
+        _out << "solved w/ht\n";
+        _out << "i ( " << _sim->_i[1]; // K-put
+
         for(unsigned a=2; a <= _sim->_total_nodes; ++a){
           _out << " " <<  _sim->_i[a];
         }

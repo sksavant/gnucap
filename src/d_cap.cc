@@ -166,17 +166,26 @@ void DEV_CAPACITANCE::tr_accept()
 
     m.f1 = 0; // mhos
     m.x = tr_input(); // voltage
-    m.f0 = i; // what will be reported by tr_amps...
+    m.f0 = i; // what will be reported by tr_amps... =0? ACHTUNG BUG
     _m0 = CPOLY1(m);
-    _m1 = CPOLY1(0,0,0);
+
+    if(_sim->more_uic_now())
+      _m1 = CPOLY1(0,0,0); // HACK. NEED SOME CLEANUP
 
     trace3("DEV_CAPACITANCE::tr_accept messed m " + long_label(), i, _m0.c0 - i, _m1.c0 );
     _sim->mark_inc_mode_bad();
     //_m1.c0 = _m0.c0 - i; // hack. makes tr_load
 
-    // tr_load_source();
-    // tr_load();
+
     _loss0 = _loss1 = 0.;
+    if(!_sim->more_uic_now()){ // HACK. NEED SOME CLEANUP
+      m.f1 = 0; // mhos
+      m.x = tr_input(); // voltage
+      m.f0 = 0; // what will be reported by tr_amps... =0? ACHTUNG BUG
+      _m0 = CPOLY1(m);
+      tr_load_source();
+    }
+    // tr_load();
     q_eval();
   }
 
