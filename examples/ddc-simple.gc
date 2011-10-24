@@ -1,3 +1,5 @@
+
+spice
 * RC-Glied
 
 .OPTIONS abstol=1e-6
@@ -10,13 +12,13 @@
 
 V1 (1 0) DC 3
 R1 1 2 1k
-C1 2 0 0.1 IC=0.2
+C1 2 0 1u IC=0.2
 
 .options numdgt=10
 
 .PRINT DDC V(nodes) dv(nodes) ddv(nodes)
 
-.DDC R1 1 2 1 C1 0.1 0.3 0.1 tr dm
+.DDC R1 1 2 1 C1 0.1 0.3 0.1  tr 
 
 .END
 

@@ -1,0 +1,23 @@
+
+spice
+* RC-Glied (aufladen mit uic)
+
+R1 n1 0 1k
+R2 n2 0 1k
+C1 n1 0 400m IC=0V
+C2 n2 0 400m IC=3V
+
+.PRINT TRAN  v(nodes)
+.PRINT ddc  v(nodes) dv(nodes) c(C*) R(R*)
+
+*.TRAN 0 12 0.1 uic trace iterations >rc-glied3_tran.out
+*.TRAN 0 15e-6 2e-7 uic >rc-glied3_tran.out
+
+* .dc uic2  >rc-glied3_dc.out
+
+*.TRAN 0 100m 10m uic2 
+
+
+.ddc c1 0 1 .25 c2 -1 0 0.5 old
+
+.end
