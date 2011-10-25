@@ -56,7 +56,8 @@ class MODEL_BUILT_IN_RCD_EXP : public MODEL_BUILT_IN_RCD_SYM {
     long double __E(double uin, long double cur, const COMMON_COMPONENT* cc)const;
     long double __dstepds(long double uin, long double cur, const COMMON_COMPONENT* cc)const;
 //    template<class T>
-//      T __step(T s, T cur,  double deltat, const COMMON_COMPONENT* ) const ; // MODEL_RCD
+//    BUG: _step in MODEL_RCD not generic.
+    long double __step(long double s, double cur,  double deltat, const COMMON_COMPONENT* ) const ; // MODEL_RCD
 };
 /*--------------------------------------------------------------------------*/
 
@@ -309,7 +310,7 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
     _c->set_order(0);
 
   if ((double)E_high<(double)E_low){
-    error( bDANGER, "COMMON_BUILT_IN_RCD:: sanitycheck ( %LE < %LE )", E_high, E_low);
+    error( bDANGER, "MODEL_BUILT_IN_RCD_EXP:: sanitycheck ( %LE < %LE )", E_high, E_low);
     assert(false);
   }
 
@@ -324,8 +325,8 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
   assert(E_low <= E || double(E)==1.0 || double(E_high)==1.0 || !linear_inversion);
 
   if(E > E_high && E!=1){
-    untested1("COMMON_BUILT_IN_RCD::", linear_inversion);
-    error( bDANGER, "COMMON_BUILT_IN_RCD:: sanitycheck ( %LE =E >  E_high=%LE ) del %LE\n", E_high, E, E_high-E);
+    untested1("MODEL_IN_RCD_EXP::", linear_inversion);
+    error( bDANGER, "MODEL_BUILT_IN_RCD_EXP:: sanitycheck ( %LE =E >  E_high=%LE ) del %LE\n", E_high, E, E_high-E);
   }
 
   _c->set_tr_noise ((double)E_high-(double)E_low);
@@ -337,7 +338,8 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
     }
   }
 
-  trace1("MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last done", _c->get_tr_noise());
+  trace2("MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last done", _c->get_tr_noise(), uin_eff);
+  assert(is_number(uin_eff));
 
 }
 
@@ -374,30 +376,32 @@ double MODEL_BUILT_IN_RCD_EXP::__Ge(double s, const COMMON_COMPONENT* c ) const
 /*--------------------------------------------------------------------------*/
 //template<class T>
 //T MODEL_BUILT_IN_RCD_EXP::__step(T s, T cur,  double t, const COMMON_COMPONENT* c ) const 
-//{
-//  assert(is_number(s));
-//  assert(is_number(cur));
-//  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
-//  const MODEL_BUILT_IN_RCD* m =   static_cast<const MODEL_BUILT_IN_RCD*>(this);
-//  assert ( s >= 0 || !m->positive);
-//  
-//  T Eend = __E_end(s,cc);
-//  T tauinv = __tau_inv(s,cc);
-//  T ret = (cur-Eend) * expl( -t*tauinv ) + Eend;
-//
-//  trace6("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, uin, Rc0, ret,  logl(fabsl(cur-Eend ) ) );
-////  assert(is_almost(retalt ,ret));
-//
-//  if (!is_number(ret) || ret < -0.1){
-//    trace7("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, uin, Rc0, Rc1, Re0, logl(fabsl(cur-Eend ) ) );
-//    trace7("COMMON_BUILT_IN_RCD::__step ", cur-Eend, deltat, uin, Rc0, Rc1, Re0, fabsl(cur-Eend )  );
-//    trace6("COMMON_BUILT_IN_RCD::__step ", cur, deltat, uin, Rc0, Rc1, Re0  );
-//    assert(false);
-//  }
-//
-//  return(ret);
-//
-//}
+long double MODEL_BUILT_IN_RCD_EXP::__step(long double s, double cur,  double deltat, const COMMON_COMPONENT* c ) const 
+{
+  //cout << "exp step\n";
+  assert(is_number(s));
+  assert(is_number(cur));
+  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
+  const MODEL_BUILT_IN_RCD* m =   static_cast<const MODEL_BUILT_IN_RCD*>(this);
+  assert ( s >= 0 || !m->positive);
+  
+  long double Eend = __E_end(s,cc);
+  long double tauinv = __tau_inv(s,cc);
+  long double ret = (cur-Eend) * expl( -deltat*tauinv ) + Eend;
+
+  trace5("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, s,  ret,  logl(fabsl(cur-Eend ) ) );
+//  assert(is_almost(retalt ,ret));
+
+  if (!is_number(ret) || ret < -0.1){
+    trace4("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, s, logl(fabsl(cur-Eend ) ) );
+    trace4("COMMON_BUILT_IN_RCD::__step ", cur-Eend, deltat, s, fabsl(cur-Eend )  );
+    trace3("COMMON_BUILT_IN_RCD::__step ", cur, deltat, s  );
+    assert(false);
+  }
+
+  return(ret);
+
+}
 /* E(t=inf) */
 /*--------------------------------------------------------------------------*/
 long double MODEL_BUILT_IN_RCD_EXP::__dstepds(long double uin, long double cur, const COMMON_COMPONENT* cc ) const

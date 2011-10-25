@@ -400,10 +400,11 @@ void COMMON_BUILT_IN_RCD::set_param_by_index(int I, std::string& Value, int Offs
   switch (COMMON_BUILT_IN_RCD::param_count() - 1 - I) {
   case 0:  perim = Value; break;
   case 1:  weight = Value; break;
-  case 2:  Recommon0 = Value; break;
-  case 3:  Recommon1 = Value; break;
-  case 4:  Rccommon0 = Value; break;
-  case 5:  Rccommon1 = Value; break;
+//  order          double _hl, double _hc, double _rl, double _rc)
+  case 2:  Recommon1 = Value; break;
+  case 3:  Recommon0 = Value; break;
+  case 4:  Rccommon1 = Value; break;
+  case 5:  Rccommon0 = Value; break;
   case 6:  Uref = Value;
            trace1(("Set Uref to" + Value ).c_str(), (double)Uref);
            break;
@@ -436,13 +437,14 @@ std::string COMMON_BUILT_IN_RCD::param_name(int i)const
   switch (COMMON_BUILT_IN_RCD::param_count() - 1 - i) {
   case 0:  return "perim";
   case 1:  return "weight";
-  case 2:  return "re";
-  case 3:  return "rc0";
+  case 2:  return "re1";
+  case 3:  return "re0";
   case 4:  return "rc1";
-  case 5:  return "mu";
-  case 6:  return "lam";
-  case 7:  return "rcdummy";
-  case 8:  return "uref";
+  case 5:  return "rc0";
+  case 6:  return "mu";
+  case 7:  return "lam";
+  case 8:  return "rcdummy";
+  case 9:  return "uref";
   //case 10:  return "norm_uin";
   default: return COMMON_COMPONENT::param_name(i);
   }
@@ -475,10 +477,10 @@ std::string COMMON_BUILT_IN_RCD::param_value(int i)const
   switch (COMMON_BUILT_IN_RCD::param_count() - 1 - i) {
   case 0:  return perim.string();
   case 1:  return weight.string();
-  case 2:  return Recommon0.string();
-  case 3:  return Recommon1.string();
-  case 4:  return Rccommon0.string();
-  case 5:  return Rccommon1.string();
+  case 2:  return Recommon1.string();
+  case 3:  return Recommon0.string();
+  case 4:  return Rccommon1.string();
+  case 5:  return Rccommon0.string();
   case 6:  return Uref.string();
   case 7:  return mu.string();
   case 8:  return lambda.string();
@@ -1191,6 +1193,9 @@ bool DEV_BUILT_IN_RCD::tr_needs_eval()const  // not defined...
 //  return m->__step(uin,cur,deltat, this);
 //}
 ///*--------------------------------------------------------------------------*/
+//
+// v3 implementation.
+// FIXME: put generic impl here.
 long double MODEL_BUILT_IN_RCD::__step(long double uin, long double cur,  double deltat, const COMMON_COMPONENT* c ) const 
 {
   if (!is_number(uin)){

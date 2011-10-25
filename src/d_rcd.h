@@ -97,19 +97,23 @@ class MODEL_BUILT_IN_RCD :public MODEL_CARD{
 
   protected:
     virtual double __Re(double uin, const COMMON_COMPONENT* cc)const ;
+    //virtual long double __Re(long double uin, const COMMON_COMPONENT* cc)const ;
     virtual double __Rc(double uin, const COMMON_COMPONENT* cc)const ;
     virtual double __Ge(double uin, const COMMON_COMPONENT* )const;
     virtual double __dRe(double, const COMMON_COMPONENT* )const { unreachable(); return 0; }
     virtual double __dRc(double, const COMMON_COMPONENT* )const { unreachable(); return 0; }
 
     long double __step(long double uin, long double cur,  double deltat, const COMMON_COMPONENT* ) const ;
-  private:
+  
+  protected: // functions using the virtual __Re __Rc
     template<class T>
       T __tau(T, const COMMON_COMPONENT* )const; 
     template<class T>
       T __tau_inv(T, const COMMON_COMPONENT* )const ;
-    template<class T>
-      T __E_end()const;
+    template<class T> // final state at fixed stress
+      T __E_end_0( const COMMON_COMPONENT* c ) const;
+    template<class T> // final state at fixed stress
+      T __E_end(T s, const COMMON_COMPONENT* c ) const;
     
   protected:
     virtual long double __dstepds( long double, long double , const COMMON_COMPONENT*)const { return 0; }
@@ -119,10 +123,6 @@ class MODEL_BUILT_IN_RCD :public MODEL_CARD{
   private:
     long double __uin_iter(long double& uin, double E_old, double E_in, double bound_lo, double bound_hi, COMPONENT* dd ) const;
 
-    template<class T> // final state at fixed stress
-      T __E_end_0( const COMMON_COMPONENT* c ) const;
-    template<class T> // final state at fixed stress
-      T __E_end(T s, const COMMON_COMPONENT* c ) const;
   public:
     virtual void do_tr_stress_last( long double , ADP_NODE* , COMPONENT* ) const 
     {unreachable();}
@@ -131,9 +131,9 @@ class MODEL_BUILT_IN_RCD :public MODEL_CARD{
 template<class T>
 inline T MODEL_BUILT_IN_RCD::__E_end(T s, const COMMON_COMPONENT* c ) const 
 {
-  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
-  T tau_e = __Re( s, cc);
-  T tau_c = __Rc( s, cc);
+//  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
+  T tau_e = (T)__Re((double)s, c);
+  T tau_c = (T)__Rc((double)s, c);
   T ret =  tau_c / ( tau_e + tau_c );
   assert(is_number(ret));
   return ret;
@@ -144,8 +144,8 @@ inline T MODEL_BUILT_IN_RCD::__tau_inv(T s, const COMMON_COMPONENT* cc)const
 {
   const MODEL_BUILT_IN_RCD* m = this;
   assert(m);
-  T tau_e = m->__Re( s, cc );
-  T tau_c = m->__Rc( s, cc );
+  T tau_e = m->__Re( (double)s, cc );
+  T tau_c = m->__Rc( (double)s, cc );
   if (tau_c < tau_e){
     return ( tau_c/tau_e + 1 ) / tau_c;
   } else{
