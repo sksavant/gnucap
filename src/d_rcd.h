@@ -50,6 +50,8 @@ class MODEL_BUILT_IN_RCD :public MODEL_CARD{
     explicit MODEL_BUILT_IN_RCD(const BASE_SUBCKT*);
     ~MODEL_BUILT_IN_RCD() {--_count;}
     /// virtual void     do_expand( COMPONENT*)const {}; // doesnt work, not in use
+    //
+//    virtual void     do_precalc_last(COMPONENT*, const );
     virtual void     do_precalc_last(COMMON_COMPONENT*, const
         CARD_LIST*)const;
     virtual void     do_tt_prepare(COMPONENT*)const;
@@ -83,8 +85,8 @@ class MODEL_BUILT_IN_RCD :public MODEL_CARD{
     PARAMETER<bool> anneal;	// flag: anneal
     PARAMETER<double> Remodel;	// emit Resistance
     PARAMETER<double> Re1;	//
-    PARAMETER<double> Rc1;	//.
     PARAMETER<double> Re0;	// emit res
+    PARAMETER<double> Rc1;	//.
     PARAMETER<double> Rc0;	// capt res.
     PARAMETER<int> flags;	// 
     PARAMETER<double> uref;	// 
@@ -112,8 +114,8 @@ class MODEL_BUILT_IN_RCD :public MODEL_CARD{
       T __tau(T, const COMMON_COMPONENT* )const; 
     template<class T>
       T __tau_inv(T, const COMMON_COMPONENT* )const ;
-    template<class T> // final state at fixed stress
-      T __E_end_0( const COMMON_COMPONENT* c ) const;
+//    template<class T> // final state at fixed stress
+    double __E_end_0( const COMMON_COMPONENT* c ) const;
     template<class T> // final state at fixed stress
       T __E_end(T s, const COMMON_COMPONENT* c ) const;
     
@@ -136,7 +138,8 @@ inline T MODEL_BUILT_IN_RCD::__E_end(T s, const COMMON_COMPONENT* c ) const
 //  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
   T tau_e = (T)__Re((double)s, c);
   T tau_c = (T)__Rc((double)s, c);
-  T ret =  tau_c / ( tau_e + tau_c );
+  //T ret =  tau_c / ( tau_e + tau_c );
+  T ret =  1L / ( 1L +  tau_e/ tau_c );
   assert(is_number(ret));
   return ret;
 }
@@ -155,7 +158,8 @@ inline T MODEL_BUILT_IN_RCD::__tau_inv(T s, const COMMON_COMPONENT* cc)const
   }
 }
 ///*--------------------------------------------------------------------------*/
-template <class T> inline T MODEL_BUILT_IN_RCD::__tau(T s, const COMMON_COMPONENT* cc)const
+template <class T>
+inline T MODEL_BUILT_IN_RCD::__tau(T s, const COMMON_COMPONENT* cc)const
 {
   const MODEL_BUILT_IN_RCD* m = this;
   assert(m);
@@ -408,12 +412,20 @@ public:
   double eff(){return 0.0; }
 };
 /*--------------------------------------------------------------------------*/
-template<class T>
-inline T MODEL_BUILT_IN_RCD::__E_end_0( const COMMON_COMPONENT* c)const {
+//template<class T>
+#define T double
+inline T MODEL_BUILT_IN_RCD::__E_end_0( const COMMON_COMPONENT* cc)const {
   T n = 0;
-  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
-  return  (cc->__Rc(n) / (cc->__Re(n) + cc->__Rc(n) ));
+  const COMMON_BUILT_IN_RCD* c = dynamic_cast<const COMMON_BUILT_IN_RCD*>(cc) ;
+  cerr.precision(30);
+  T ret =  (1/  (1 + __Re(n,cc)/__Rc(n,cc) ));
+  trace3("MODEL_BUILT_IN_RCD::__E_end_0",  __Re(n,cc), __Rc(n,cc), ret );
+  trace2("MODEL_BUILT_IN_RCD::__E_end_0",  c->_Re1, c->_Re0);
+  trace2("MODEL_BUILT_IN_RCD::__E_end_0",  c->_Rc1, c->_Rc0);
+  return ret;
+  return  (__Rc(n,c) / (c->__Re(n) + c->__Rc(n) ));
 }
+#undef T
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 #endif

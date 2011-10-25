@@ -57,10 +57,10 @@ MODEL_BUILT_IN_RCD::MODEL_BUILT_IN_RCD(const BASE_SUBCKT* p)
   :MODEL_CARD(p),
    anneal(true),
    Remodel(1e6),
-   Re0(1e6),
-   Rc0(1e6),
    Re1(1),
+   Re0(1e6),
    Rc1(1),
+   Rc0(1e6),
    flags(int(USE_OPT)),
    uref(0),
    modelparm(0),
@@ -83,8 +83,8 @@ MODEL_BUILT_IN_RCD::MODEL_BUILT_IN_RCD(const MODEL_BUILT_IN_RCD& p)
    anneal(p.anneal),
    Remodel(p.Remodel),
    Re1(p.Re1),
-   Rc1(p.Rc1),
    Re0(p.Re0),
+   Rc1(p.Rc1),
    Rc0(p.Rc0),
    flags(p.flags),
    uref(p.uref),
@@ -282,9 +282,9 @@ std::string MODEL_BUILT_IN_RCD::param_value(int i)const
   }
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD::do_precalc_last(COMMON_COMPONENT* ccmp, const CARD_LIST* )const
+void MODEL_BUILT_IN_RCD::do_precalc_last(COMMON_COMPONENT* ccc, const CARD_LIST* )const
 {
-  COMMON_BUILT_IN_RCD* cc = dynamic_cast<COMMON_BUILT_IN_RCD*>(ccmp);
+  COMMON_BUILT_IN_RCD* cc = dynamic_cast<COMMON_BUILT_IN_RCD*>(ccc);
   assert(cc);
   //const MODEL_BUILT_IN_RCD* m = this;
   //
@@ -414,19 +414,14 @@ void COMMON_BUILT_IN_RCD::set_param_by_index(int I, std::string& Value, int Offs
            trace1("wt", Value);
            break;
   case 2:  Recommon1 = Value;
-           trace1("Recommon1", Value);
            break;
   case 3:  Recommon0 = Value; 
-           trace1("Recommon0", Value);
            break;
   case 4:  Rccommon1 = Value; break;
-           trace1("Rccommon1", Value);
            break;
   case 5:  Rccommon0 = Value; break;
-           trace1("Rccommon0", Value);
            break;
   case 6:  Uref = Value;
-           trace1(("Set Uref to" + Value ).c_str(), (double)Uref);
            break;
   case 7:  mu = Value; break;
   case 8:  lambda = Value; break;
@@ -562,6 +557,7 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
   assert(par_scope);
   COMMON_COMPONENT::precalc_last(par_scope);
   COMMON_BUILT_IN_RCD* cc = this;
+  COMMON_BUILT_IN_RCD* c = this;
   const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(model());
   // final adjust: code_pre
   trace2("COMMON_BUILT_IN_RCD::precalc_last", m->v2(), m->uref);
@@ -607,8 +603,8 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
   assert(s);
 
   // subcircuit commons, recursive
-  cc->_wcorr=0;
-  cc->_zero=0;
+  c->_wcorr=0;
+  c->_zero=0;
 
 
   if(m->v2()){
@@ -1119,7 +1115,7 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   else if (Umatch(x, "RE1 "    )) { return( c->_Re0 );}
   else if (Umatch(x, "RC0 "    )) { return( c->_Rc1 );}
   else if (Umatch(x, "RC1 "    )) { return( c->_Rc0 );}
-  else if (Umatch(x, "E0 "    )) { return( c->_zero );}
+  else if (Umatch(x, "E0|zero "    )) { return( c->_zero );}
   else if (Umatch(x, "ttr "   )) { return( _Ccgfill->tt_rel_err() ); }
   else if (Umatch(x, "trr "   )) { return( _Ccgfill->tr_rel_err() ); }
   else if (Umatch(x, "iter "  )) { return( _iter_count ); }
@@ -1430,10 +1426,9 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
     trace1("not h\n", _tr_fill);
     return;
   }
-  trace2("DEV_BUILT_IN_RCD::tr_stress ", _tr_fill, h );
+  trace3("DEV_BUILT_IN_RCD::tr_stress ", _tr_fill, h, m->positive );
 
-
-  if( m->positive) {
+  if( (bool)m->positive) {
     if ( _tr_fill < 0 ){
       trace1(("DEV_BUILT_IN_RCD::tr_stress fill is negative: " +
             short_label()).c_str() ,  _Ccgfill->get_total() );
@@ -1477,7 +1472,8 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
 
   }
   assert( newfill > -0.01 || !m->positive);
-  if( newfill <= 0 ){
+  if( newfill <= 0 && m->positive  ){
+    untested();
     newfill = 0.0;
   }
 
@@ -1487,8 +1483,8 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   }
   assert(newfill==newfill);
 
-  _tr_fill=newfill;
-  trace5("DEV_BUILT_IN_RCD::tr_stress ", fill, h, (newfill-fill)/h, _tr_fill, h );
+  _tr_fill = newfill;
+  trace5("DEV_BUILT_IN_RCD::tr_stress ", fill, h, (newfill-fill)/h, newfill, h );
 
   assert(is_number(_tr_fill));
   assert(h > 0);

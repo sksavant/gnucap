@@ -156,7 +156,7 @@ AS_IF([ test "x$with_iverilog" != xno],
 	]
 )
 
-CPPFLAGS_SAVE="$CPPFLAGS $IVL_CPPFLAGS"
+CPPFLAGS_SAVE="$CPPFLAGS"
 CPPFLAGS="$IVL_CPPFLAGS $CPPFLAGS"
 AS_IF([ test "x$with_iverilog" != xno], [
 AC_CHECK_HEADERS(vvp/schedule.h, [ ],
