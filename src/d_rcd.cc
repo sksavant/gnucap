@@ -57,8 +57,10 @@ MODEL_BUILT_IN_RCD::MODEL_BUILT_IN_RCD(const BASE_SUBCKT* p)
   :MODEL_CARD(p),
    anneal(true),
    Remodel(1e6),
-   Re(1e6),
-   Rc(1e6),
+   Re0(1e6),
+   Rc0(1e6),
+   Re1(1),
+   Rc1(1),
    flags(int(USE_OPT)),
    uref(0),
    modelparm(0),
@@ -80,8 +82,10 @@ MODEL_BUILT_IN_RCD::MODEL_BUILT_IN_RCD(const MODEL_BUILT_IN_RCD& p)
   :MODEL_CARD(p),
    anneal(p.anneal),
    Remodel(p.Remodel),
-   Re(p.Re),
-   Rc(p.Rc),
+   Re1(p.Re1),
+   Rc1(p.Rc1),
+   Re0(p.Re0),
+   Rc0(p.Rc0),
    flags(p.flags),
    uref(p.uref),
    modelparm(p.modelparm),
@@ -156,8 +160,10 @@ void MODEL_BUILT_IN_RCD::precalc_first()
     MODEL_CARD::precalc_first();
     e_val(&(this->anneal), true, par_scope);
     e_val(&(this->Remodel), 1e6, par_scope);
-    e_val(&(this->Re), 1.0, par_scope);
-    e_val(&(this->Rc), 1.0, par_scope);
+    e_val(&(this->Re0), 1.0, par_scope);
+    e_val(&(this->Rc0), 1.0, par_scope);
+    e_val(&(this->Re1), 1.0, par_scope);
+    e_val(&(this->Rc1), 1.0, par_scope);
     e_val(&(this->flags), int(USE_OPT), par_scope);
     e_val(&(this->uref), NA, par_scope);
     e_val(&(this->modelparm), 0, par_scope);
@@ -195,8 +201,8 @@ void MODEL_BUILT_IN_RCD::set_param_by_index(int i, std::string& value, int offse
   case 1: _tnom_c = value; break;
   case 2: anneal = value; break;
   case 3: Remodel = value; break;
-  case 4: Re = value; break;
-  case 5: Rc = value; break;
+  case 4: Re0 = value; break; // former Re
+  case 5: Rc0 = value; break;
   case 6: flags = value; break;
   case 7: uref = value; break;
   case 8: modelparm = value; break;
@@ -265,8 +271,8 @@ std::string MODEL_BUILT_IN_RCD::param_value(int i)const
   case 1:  return _tnom_c.string();
   case 2:  return anneal.string();
   case 3:  return Remodel.string();
-  case 4:  return Re.string();
-  case 5:  return Rc.string();
+  case 4:  return Re0.string(); // former Re
+  case 5:  return Rc0.string(); // former Rc
   case 6:  return flags.string();
   case 7:  return uref.string();
   case 8:  return modelparm.string();
@@ -395,16 +401,30 @@ bool COMMON_BUILT_IN_RCD::operator==(const COMMON_COMPONENT& x)const
     && COMMON_COMPONENT::operator==(x));
 }
 /*--------------------------------------------------------------------------*/
+int COMMON_BUILT_IN_RCD::param_count()const
+    {return (3 + COMMON_COMPONENT::param_count());}
+/*--------------------------------------------------------------------------*/
 void COMMON_BUILT_IN_RCD::set_param_by_index(int I, std::string& Value, int Offset)
 {
+  trace3("COMMON_BUILT_IN_RCD::set_param_by_index ",I, COMMON_BUILT_IN_RCD::param_count() - 1 - I, Value );
   switch (COMMON_BUILT_IN_RCD::param_count() - 1 - I) {
   case 0:  perim = Value; break;
-  case 1:  weight = Value; break;
+  case 1:  weight = Value; 
 //  order          double _hl, double _hc, double _rl, double _rc)
-  case 2:  Recommon1 = Value; break;
-  case 3:  Recommon0 = Value; break;
+           trace1("wt", Value);
+           break;
+  case 2:  Recommon1 = Value;
+           trace1("Recommon1", Value);
+           break;
+  case 3:  Recommon0 = Value; 
+           trace1("Recommon0", Value);
+           break;
   case 4:  Rccommon1 = Value; break;
+           trace1("Rccommon1", Value);
+           break;
   case 5:  Rccommon0 = Value; break;
+           trace1("Rccommon0", Value);
+           break;
   case 6:  Uref = Value;
            trace1(("Set Uref to" + Value ).c_str(), (double)Uref);
            break;
@@ -501,11 +521,11 @@ void COMMON_BUILT_IN_RCD::expand(const COMPONENT* d)
   }else{
   }
 
-  if ((double)Recommon0 == NA) { Recommon0 = m->Re;}
-  if ((double)Rccommon0 == NA) { Rccommon0 = m->Rc;}
+  if ((double)Recommon0 == NA) { Recommon0 = m->Re0;}
+  if ((double)Rccommon0 == NA) { Rccommon0 = m->Rc0;}
 
   trace6(("COMMON_BUILT_IN_RCD::expand" + d->short_label()).c_str(), Rccommon0,
-      Recommon0, m->Re, m->Rc, Uref, m->uref );
+      Recommon0, m->Re0, m->Rc0, Uref, m->uref );
   // size dependent
   //delete _sdp;
   _sdp = m->new_sdp(this);
@@ -549,10 +569,10 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
   // final adjust: raw
   e_val(&(this->perim), 0.0, par_scope);
   e_val(&(this->weight), 1.0, par_scope);
-  e_val(&(this->Recommon0), m->Re, par_scope);
-  e_val(&(this->Recommon1), m->Re, par_scope);
-  e_val(&(this->Rccommon0), m->Rc, par_scope);
-  e_val(&(this->Rccommon1), m->Re, par_scope);
+  e_val(&(this->Recommon0), m->Re0, par_scope);
+  e_val(&(this->Recommon1), m->Re1, par_scope);
+  e_val(&(this->Rccommon0), m->Rc0, par_scope);
+  e_val(&(this->Rccommon1), m->Rc1, par_scope);
   e_val(&(this->Uref), m->uref, par_scope);
   
   trace4("uref...",  m->uref, NOT_INPUT, Uref , double (Uref));
@@ -826,7 +846,7 @@ void DEV_BUILT_IN_RCD::expand_sym() {
     precalc_last();
 
     trace4(("DEV_BUILT_IN_RCD::expand_sym" + short_label()).c_str(), cc->Rccommon0, cc->Recommon0,
-        m->Re, m->Rc );
+        m->Re0, m->Rc0 );
     // local nodes
     //assert(!(_n[n_ic].n_()));
     //BUG// this assert fails on a repeat elaboration after a change.
@@ -1095,7 +1115,10 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   else if (Umatch(x, "net "   )) { return( (double ) m->use_net()); }
   else if (Umatch(x, "tr "    )) { return( _Ccgfill->tr_get() ); }
   else if (Umatch(x, "tt "    )) { return( _Ccgfill->get_tt() ); }
-  else if (Umatch(x, "RE "    )) { return( c->_Re0 );}
+  else if (Umatch(x, "RE0 "    )) { return( c->_Re1 );}
+  else if (Umatch(x, "RE1 "    )) { return( c->_Re0 );}
+  else if (Umatch(x, "RC0 "    )) { return( c->_Rc1 );}
+  else if (Umatch(x, "RC1 "    )) { return( c->_Rc0 );}
   else if (Umatch(x, "E0 "    )) { return( c->_zero );}
   else if (Umatch(x, "ttr "   )) { return( _Ccgfill->tt_rel_err() ); }
   else if (Umatch(x, "trr "   )) { return( _Ccgfill->tr_rel_err() ); }

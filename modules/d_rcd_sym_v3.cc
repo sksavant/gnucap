@@ -479,7 +479,7 @@ double MODEL_BUILT_IN_RCD_SYM_V3::__E(double uin, const COMMON_COMPONENT* c ) co
 
 //}
 /*--------------------------------------------------------------------------*/
-long double MODEL_BUILT_IN_RCD_SYM_V3::__Edu(long double uin, long double cur, const COMMON_COMPONENT* cc ) const
+long double MODEL_BUILT_IN_RCD_SYM_V3::__dstepds(long double uin, long double cur, const COMMON_COMPONENT* cc ) const
 {
   const COMMON_BUILT_IN_RCD* c = dynamic_cast<const COMMON_BUILT_IN_RCD*>(cc) ;
   long double Rc0=c->_Rc0;

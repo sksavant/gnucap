@@ -82,8 +82,10 @@ class MODEL_BUILT_IN_RCD :public MODEL_CARD{
   public: // input parameters
     PARAMETER<bool> anneal;	// flag: anneal
     PARAMETER<double> Remodel;	// emit Resistance
-    PARAMETER<double> Re;	// emit res
-    PARAMETER<double> Rc;	// capt res.
+    PARAMETER<double> Re1;	//
+    PARAMETER<double> Rc1;	//.
+    PARAMETER<double> Re0;	// emit res
+    PARAMETER<double> Rc0;	// capt res.
     PARAMETER<int> flags;	// 
     PARAMETER<double> uref;	// 
     PARAMETER<int> modelparm;	// just a test
@@ -192,7 +194,7 @@ class COMMON_BUILT_IN_RCD :public COMMON_COMPONENT{
     std::string param_name(int)const;
     std::string param_name(int,int)const;
     std::string param_value(int)const;
-    int param_count()const {return (3 + COMMON_COMPONENT::param_count());}
+    int param_count() const;
     void     precalc_first(const CARD_LIST*);
     void     expand(const COMPONENT*);
     void     precalc_last(const CARD_LIST*);

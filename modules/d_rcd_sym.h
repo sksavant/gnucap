@@ -36,8 +36,8 @@ class MODEL_BUILT_IN_RCD_SYM : public MODEL_BUILT_IN_RCD {
     virtual double dvth(const COMPONENT*) const;
     virtual double do_tr_error_last( double, const COMMON_COMPONENT*  ) const {unreachable(); return 0;}
   private:
-    template <class T>
-      T __Edu(T,T, const COMMON_COMPONENT* )const {return 0;}
+//    template <class T>
+//      T __Edu(T,T, const COMMON_COMPONENT* )const {return 0;}
   protected:
     double __E(double s, const COMMON_COMPONENT* c ) const ;
 };

@@ -231,10 +231,10 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
 
   assert (E_low>=0);
 
-  if(!((double)E_high >= (double)E_low)){
+  if(((double)E_high < (double)E_low - 1e-18)){
     error(bDANGER,"MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last uin_high=%LE uin_low=%LE deltaE= %LE; %LE>%LE\n",
         uin_high, uin_low, E_high - E_low, E_high, E_low );
-    throw(Exception("false"));
+    throw(Exception("order mismatch in exp"));
   }
 
   bool linear_inversion=false;
@@ -310,7 +310,7 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
     _c->set_order(0);
 
   if ((double)E_high<(double)E_low){
-    error( bDANGER, "MODEL_BUILT_IN_RCD_EXP:: sanitycheck ( %LE < %LE )", E_high, E_low);
+    error( bDANGER, "MODEL_BUILT_IN_RCD_EXP:: sanitycheck ( %LE < %LE ) in %s\n", E_high, E_low, dd->long_label().c_str());
     assert(false);
   }
 
@@ -412,6 +412,8 @@ long double MODEL_BUILT_IN_RCD_EXP::__dstepds(long double uin, long double cur, 
   long double Rc1=c->_Rc1;
   long double Re1=c->_Re1;
   long double t=_sim->_last_time;
+
+  return 1;
 
   long double ret =
     -((cur - 1.L)*Rc0*Rc0*Rc0*Re1*t*expl(3.L*(Rc1 + Re1)*uin) - Rc1*Re0*Re0*Re0*cur*t - ((cur - 1.L)*Rc0*Rc0*Rc1*Re0 - 

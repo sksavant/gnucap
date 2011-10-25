@@ -417,7 +417,6 @@ void TTT::sweep() // tr sweep wrapper.
 
   try{
     trace3("TTT::sweep calling sweep", _sim->_time0, _sim->_last_time, _tstep);
-    //_inside_tt=true;
     TRANSIENT::sweep();
     assert(_accepted);
     if (_trace>0 ) _out<< "* done sweep "<<tt_iteration_number()<<  "\n";
@@ -432,6 +431,10 @@ void TTT::sweep() // tr sweep wrapper.
     ::status.review.stop();
     _sim->invalidate_tt();
     // throw(e); go on with smalller step?
+    if (!tt_iteration_number()) {
+      _out << "* first one may not fail\n";
+      throw(e); 
+    }
   }
 
   trace2("TTT done TRANSIENT::sweep", _sim->_last_time, _sim->_Time0);

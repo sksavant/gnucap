@@ -419,17 +419,21 @@ void MODEL_BUILT_IN_BTI_SUM::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
   for(size_t n=0; n<Nr; n++){
     dpvv P = dpvv(rcdparm);
     PARAMETER<dpv> Q = P[n];
+    trace3("MODEL_BUILT_IN_BTI_SUM::attach_rcds", n, Q, Q.size());
 
     COMMON_BUILT_IN_RCD* RCD1 = new COMMON_BUILT_IN_RCD;
     RCD1->set_modelname( rcd_model_name ); // <= !
     RCD1->attach(this); // ?
 
     size_t Np = dpv(Q).size();
+    trace1("MODEL_BUILT_IN_BTI_SUM::attach_rcds", Np);
     for(uint_t m=0; m<Np ; m++ ){
+      trace1("MODEL_BUILT_IN_BTI_SUM::attach_rcds ",  m ); 
       PARAMETER<double> pk = dpv(Q)[m];
       string s=pk.string();
-      RCD1->set_param_by_index( (int)m+1, s, 0 );
-      trace2("MODEL_BUILT_IN_BTI_SUM::attach_rcds ",  n, m  ); 
+      int index =  RCD1->param_count() - m - 2;
+      trace3("MODEL_BUILT_IN_BTI_SUM::attach_rcds ",  n, index, s  ); 
+      RCD1->set_param_by_index( index, s, 0 );
     }
     COMMON_COMPONENT::attach_common(RCD1, (COMMON_COMPONENT**)&(_RCD[n]));
   }
