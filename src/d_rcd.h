@@ -42,64 +42,130 @@ public:
 };
 /*--------------------------------------------------------------------------*/
 class MODEL_BUILT_IN_RCD :public MODEL_CARD{
-protected:
-  explicit MODEL_BUILT_IN_RCD(const MODEL_BUILT_IN_RCD& p);
-public:
-  explicit MODEL_BUILT_IN_RCD(const BASE_SUBCKT*);
-  ~MODEL_BUILT_IN_RCD() {--_count;}
-  /// virtual void     do_expand( COMPONENT*)const {}; // doesnt work, not in use
-  virtual void     do_precalc_last(COMMON_COMPONENT*, const
-      CARD_LIST*)const;
-  virtual void     do_tt_prepare(COMPONENT*)const;
-  virtual ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
-public: // override virtual
-  virtual bool v2() const{return false;}
-  virtual double dvth(const COMPONENT*) const;
-  virtual std::string dev_type()const;
-  virtual void      set_dev_type(const std::string& nt);
-  CARD*     clone()const {return new MODEL_BUILT_IN_RCD(*this);}
-  void      precalc_first();
-  void      precalc_last();
-  SDP_CARD* new_sdp(COMMON_COMPONENT* c)const;
-  ADP_CARD* new_adp(COMPONENT* c)const;
-  void      set_param_by_index(int, std::string&, int);
-  bool      param_is_printable(int)const;
-  std::string param_name(int)const;
-  std::string param_name(int,int)const;
-  std::string param_value(int)const;
-  int param_count()const {return (10);}
-  void tt_eval(COMPONENT*)const;
-  bool      is_valid(const COMPONENT*)const;
-  void      tr_eval(COMPONENT*)const;
-  virtual void      do_stress_apply( COMPONENT*)const {unreachable();}
-  virtual void      do_tr_stress( const COMPONENT*) const;        
-public: // not virtual
-  static int count() {return _count;}
-private: // strictly internal
-  static int _count;
-public: // input parameters
-  PARAMETER<bool> anneal;	// flag: anneal
-  PARAMETER<double> Remodel;	// emit Resistance
-  PARAMETER<double> Re;	// emit res
-  PARAMETER<double> Rc;	// capt res.
-  PARAMETER<int> flags;	// 
-  PARAMETER<double> uref;	// 
-  PARAMETER<int> modelparm;	// just a test
-  PARAMETER<bool> positive;	// only take positive stress
-  PARAMETER<bool> norm_uin;	// normalized uin
-public: // calculated parameters
-  virtual bool use_net() const {unreachable(); return 1;}
-public: // probes
-  virtual region_t region(const COMPONENT* ) const;
-  virtual int tt_region(const COMPONENT* ) const;
-  virtual double __Ge(double uin, const COMMON_COMPONENT* )const;
-  virtual double __Re(double uin, const COMMON_COMPONENT* cc)const ;
-  virtual double __Rc(double uin, const COMMON_COMPONENT* cc)const ;
-  virtual long double __Edu(long double , long double , const COMMON_COMPONENT*)const {return 0;}
-  virtual void do_tr_stress_last( long double , ADP_NODE* , COMPONENT* ) const 
-  {unreachable();}
+  friend class COMMON_BUILT_IN_RCD;
+  friend class DEV_BUILT_IN_RCD;
+  protected:
+    explicit MODEL_BUILT_IN_RCD(const MODEL_BUILT_IN_RCD& p);
+  public:
+    explicit MODEL_BUILT_IN_RCD(const BASE_SUBCKT*);
+    ~MODEL_BUILT_IN_RCD() {--_count;}
+    /// virtual void     do_expand( COMPONENT*)const {}; // doesnt work, not in use
+    virtual void     do_precalc_last(COMMON_COMPONENT*, const
+        CARD_LIST*)const;
+    virtual void     do_tt_prepare(COMPONENT*)const;
+    virtual ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
+  public: // override virtual
+    virtual bool v2() const{return false;}
+    virtual double dvth(const COMPONENT*) const;
+    virtual std::string dev_type()const;
+    virtual void      set_dev_type(const std::string& nt);
+    CARD*     clone()const {return new MODEL_BUILT_IN_RCD(*this);}
+    void      precalc_first();
+    void      precalc_last();
+    SDP_CARD* new_sdp(COMMON_COMPONENT* c)const;
+    ADP_CARD* new_adp(COMPONENT* c)const;
+    void      set_param_by_index(int, std::string&, int);
+    bool      param_is_printable(int)const;
+    std::string param_name(int)const;
+    std::string param_name(int,int)const;
+    std::string param_value(int)const;
+    int param_count()const {return (10);}
+    void tt_eval(COMPONENT*)const;
+    bool      is_valid(const COMPONENT*)const;
+    void      tr_eval(COMPONENT*)const;
+    virtual void      do_stress_apply( COMPONENT*)const {unreachable();}
+    virtual void      do_tr_stress( const COMPONENT*) const;        
+  public: // not virtual
+    static int count() {return _count;}
+  private: // strictly internal
+    static int _count;
+  public: // input parameters
+    PARAMETER<bool> anneal;	// flag: anneal
+    PARAMETER<double> Remodel;	// emit Resistance
+    PARAMETER<double> Re;	// emit res
+    PARAMETER<double> Rc;	// capt res.
+    PARAMETER<int> flags;	// 
+    PARAMETER<double> uref;	// 
+    PARAMETER<int> modelparm;	// just a test
+    PARAMETER<bool> positive;	// only take positive stress
+    PARAMETER<bool> norm_uin;	// normalized uin
+  public: // calculated parameters
+    virtual bool use_net() const {unreachable(); return 1;}
+  public: // probes
+    virtual region_t region(const COMPONENT* ) const;
+    virtual int tt_region(const COMPONENT* ) const;
+
+  protected:
+    virtual double __Re(double uin, const COMMON_COMPONENT* cc)const ;
+    virtual double __Rc(double uin, const COMMON_COMPONENT* cc)const ;
+    virtual double __Ge(double uin, const COMMON_COMPONENT* )const;
+    virtual double __dRe(double, const COMMON_COMPONENT* )const { unreachable(); return 0; }
+    virtual double __dRc(double, const COMMON_COMPONENT* )const { unreachable(); return 0; }
+
+    long double __step(long double uin, long double cur,  double deltat, const COMMON_COMPONENT* ) const ;
+  private:
+    template<class T>
+      T __tau(T, const COMMON_COMPONENT* )const; 
+    template<class T>
+      T __tau_inv(T, const COMMON_COMPONENT* )const ;
+    template<class T>
+      T __E_end()const;
+    
+  protected:
+    virtual long double __dstepds( long double, long double , const COMMON_COMPONENT*)const { return 0; }
+    //virtual double __dstepds( double, double , const COMMON_COMPONENT*)const { return 0; }
+    //  dstep/du
+    //
+  private:
+    long double __uin_iter(long double& uin, double E_old, double E_in, double bound_lo, double bound_hi, COMPONENT* dd ) const;
+
+    template<class T> // final state at fixed stress
+      T __E_end_0( const COMMON_COMPONENT* c ) const;
+    template<class T> // final state at fixed stress
+      T __E_end(T s, const COMMON_COMPONENT* c ) const;
+  public:
+    virtual void do_tr_stress_last( long double , ADP_NODE* , COMPONENT* ) const 
+    {unreachable();}
 };
 /*--------------------------------------------------------------------------*/
+template<class T>
+inline T MODEL_BUILT_IN_RCD::__E_end(T s, const COMMON_COMPONENT* c ) const 
+{
+  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
+  T tau_e = __Re( s, cc);
+  T tau_c = __Rc( s, cc);
+  T ret =  tau_c / ( tau_e + tau_c );
+  assert(is_number(ret));
+  return ret;
+}
+/*--------------------------------------------------------------------------*/
+template <class T>
+inline T MODEL_BUILT_IN_RCD::__tau_inv(T s, const COMMON_COMPONENT* cc)const
+{
+  const MODEL_BUILT_IN_RCD* m = this;
+  assert(m);
+  T tau_e = m->__Re( s, cc );
+  T tau_c = m->__Rc( s, cc );
+  if (tau_c < tau_e){
+    return ( tau_c/tau_e + 1 ) / tau_c;
+  } else{
+    return ( tau_e/tau_c + 1 ) / tau_e;
+  }
+}
+///*--------------------------------------------------------------------------*/
+template <class T> inline T MODEL_BUILT_IN_RCD::__tau(T s, const COMMON_COMPONENT* cc)const
+{
+  const MODEL_BUILT_IN_RCD* m = this;
+  assert(m);
+  T tau_e = m->__Re( s, cc );
+  T tau_c = m->__Rc( s, cc );
+  if (tau_c < tau_e){
+    return tau_c  / ( tau_c/tau_e + 1 );
+  } else{
+    return tau_e  / ( tau_e/tau_c + 1 );
+  }
+}
+///*--------------------------------------------------------------------------*/
 class MODEL_BUILT_IN_RCD_NET : public MODEL_BUILT_IN_RCD {
   protected:
     explicit MODEL_BUILT_IN_RCD_NET(const MODEL_BUILT_IN_RCD_NET& p);
@@ -163,11 +229,13 @@ class COMMON_BUILT_IN_RCD :public COMMON_COMPONENT{
     double cj_adjusted;	// 
   public: // functions... (protected?)  should be in MODEL??
     //double _Ueff( double ug);
-    double __Re(double s)const;
-    double __Rc(double s)const;
+    double __Re(double s)const; // just forwarding to model
+    double __Rc(double s)const; // just forwarding to model
+//    virtual double __Re(double s)const;
+//    virtual double __Rc(double s)const;
     double __tau ( double s) const; 
     double __tau_up ( double ueff ) const;
-    long double __step(long double uin, long double cur,  double deltat ) const;
+  //  long double __step(long double uin, long double cur,  double deltat ) const;
     long double __uin_iter(long double& uin, double, double, double bhi, double blo,COMPONENT*)const;
 
   public: // attached commons
@@ -203,6 +271,7 @@ public:
 /*--------------------------------------------------------------------------*/
 class DEV_BUILT_IN_RCD : public BASE_SUBCKT {
   friend class COMMON_BUILT_IN_RCD;
+  friend class MODEL_BUILT_IN_RCD;
   private:
     explicit DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p);
     double lasts;
@@ -336,6 +405,13 @@ public:
   double vthdelta_bti ;
   double eff(){return 0.0; }
 };
+/*--------------------------------------------------------------------------*/
+template<class T>
+inline T MODEL_BUILT_IN_RCD::__E_end_0( const COMMON_COMPONENT* c)const {
+  T n = 0;
+  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
+  return  (cc->__Rc(n) / (cc->__Re(n) + cc->__Rc(n) ));
+}
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 #endif

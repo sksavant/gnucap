@@ -1097,6 +1097,7 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   else if (Umatch(x, "E0 "    )) { return( c->_zero );}
   else if (Umatch(x, "ttr "   )) { return( _Ccgfill->tt_rel_err() ); }
   else if (Umatch(x, "trr "   )) { return( _Ccgfill->tr_rel_err() ); }
+  else if (Umatch(x, "iter "  )) { return( _iter_count ); }
   else if (Umatch(x, "tra "   )) { return( _Ccgfill->tr_abs_err() ); }
   else if (Umatch(x, "order " )) { return( _Ccgfill->order() ); }
   else if (Umatch(x, "Rc "    )) { return( c->_Rc0 ); }
@@ -1138,6 +1139,7 @@ region_t MODEL_BUILT_IN_RCD::region( const COMPONENT* )const
 {
   return UNKNOWN;
 }
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 int MODEL_BUILT_IN_RCD::tt_region( const COMPONENT* )const
 {
@@ -1181,30 +1183,40 @@ bool DEV_BUILT_IN_RCD::tr_needs_eval()const  // not defined...
 }
 
 ///*--------------------------------------------------------------------------*/
-long double COMMON_BUILT_IN_RCD::__step(long double uin, long double cur,  double deltat ) const 
+//long double COMMON_BUILT_IN_RCD::__step(long double uin, long double cur,  double deltat ) const 
+//{
+//  const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(model());
+//  assert(m);
+//
+//  return m->__step(uin,cur,deltat, this);
+//}
+///*--------------------------------------------------------------------------*/
+long double MODEL_BUILT_IN_RCD::__step(long double uin, long double cur,  double deltat, const COMMON_COMPONENT* c ) const 
 {
-  const COMMON_BUILT_IN_RCD* cc = this;
-  assert(cc);
   if (!is_number(uin)){
     error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress no number %E ", uin);
     throw(Exception("no number in __step"));
   }
 
   assert(is_number(cur));
-  const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(cc->model());
-  assert(m);
+  const MODEL_BUILT_IN_RCD* m = this; //prechecked_cast<const MODEL_BUILT_IN_RCD*>(cc->model());
+  const COMMON_BUILT_IN_RCD* cc = asserted_cast<const COMMON_BUILT_IN_RCD*>(c);
 
   assert (uin >= 0 || !m->positive);
   
-  long double Rc0=cc->_Rc0;
-  long double Re0=cc->_Re0;
-  long double Rc1=cc->_Rc1;
-  long double t=deltat;
+  long double Rc0 = cc->_Rc0;
+  long double Re0 = cc->_Re0;
+  long double Rc1 = cc->_Rc1;
+  long double t = deltat;
 
   // long double Eend = 1.0L/(1.0L + expl(-Rc1*uin)/uin/Rc0*Re0 );
-  long double Eend = uin /( uin  + expl(-Rc1*uin)/Rc0*Re0 );
+  // (__Rc(s) / (__Re(s) + __Rc(s) ));
+  // (1/uin) / (exp(zeux) + 1/uin)
+  //  1/ (1+ e/c)
+  //
+  long double Eend = uin / ( uin + expl(-Rc1*uin)/Rc0*Re0 );
 
-  long double tauinv = (uin /Re0 + expl(-Rc1*uin)/Rc0);
+  long double tauinv = (uin / Re0 + expl(-Rc1*uin)/Rc0);
   long double ret =  (cur-Eend) * expl( -t*tauinv ) + Eend;
 
   trace6("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, uin, Rc0, ret,  logl(fabsl(cur-Eend ) ) );
@@ -1284,16 +1296,16 @@ void DEV_BUILT_IN_RCD::stress_apply()
 
   double ex_time = _sim->_dT0 - _sim->_last_time;
   
-  fill_new = c->__step( eff , fill_new, ex_time );
+  fill_new = m->__step( eff , fill_new, ex_time, c );
 
   long double eff1=_Ccgfill->tr( Time1+ex_time/3.0 );
   long double eff2=_Ccgfill->tr( Time1+ex_time*2.0/3.0 );
   if(m->positive) eff1= max(eff1,0.0L);
   if(m->positive) eff2= max(eff2,0.0L);
 
-  fill_new2 = c->__step( eff1, fill_new2, ex_time/2.0 );
+  fill_new2 = m->__step( eff1, fill_new2, ex_time/2.0, c );
   assert(is_number(fill_new2));
-  fill_new2 = c->__step( eff2, fill_new2, ex_time/2.0 );
+  fill_new2 = m->__step( eff2, fill_new2, ex_time/2.0, c );
   assert(is_number(fill_new2));
 
 
@@ -1433,7 +1445,7 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
     case 0:
     case 1:
     default:
-      newfill = c->__step(uin, fill,  h);
+      newfill = m->__step(uin, fill,  h, c);
 
   }
   assert( newfill > -0.01 || !m->positive);
@@ -1623,9 +1635,14 @@ void DEV_BUILT_IN_RCD::tt_begin()  {
 // should be part of MODEL?
 long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, double E_in, double bound_lo, double bound_hi, COMPONENT* dd ) const
 {
+  const MODEL_BUILT_IN_RCD* m = dynamic_cast<const MODEL_BUILT_IN_RCD*>(model());
+  return m->__uin_iter(uin,E_old, E_in,  bound_lo, bound_hi, dd );
+}
+/*--------------------------------------------------------------------------*/
+long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, double E_in, double bound_lo, double bound_hi, COMPONENT* dd ) const
+{
   long double E=(long double) E_in;
-  const COMMON_BUILT_IN_RCD* c = this;
-  const COMMON_BUILT_IN_RCD* cc = this;
+  const COMMON_BUILT_IN_RCD* c = asserted_cast<const COMMON_BUILT_IN_RCD*>(dd->common());
   const MODEL_BUILT_IN_RCD* m = dynamic_cast<const MODEL_BUILT_IN_RCD*>(c->model());
   DEV_BUILT_IN_RCD* d = asserted_cast<DEV_BUILT_IN_RCD*>(dd);
   trace5("COMMON_BUILT_IN_RCD::__uin_iter: ", uin, E_old, E, E-E_old,  CKT_BASE::_sim->_last_time );
@@ -1668,7 +1685,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
   bool D=true;
   bool U=true;
 
-  Euin = ((const COMMON_BUILT_IN_RCD*)c)->__step( uin, E_old, h  );
+  Euin = m->__step( uin, E_old, h, c );
   if(!is_number(Euin)) {
     error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter pl cannot evaluate E "
         "at uin=%LE (E_old=%E) %i\n", uin, E_old, CKT_BASE::_sim->tt_iteration_number());
@@ -1707,7 +1724,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
       assert(false);
       return( inf );
     }
-    Edu = m->__Edu(uin, E_old, c); // ??
+    Edu = m->__dstepds(uin, E_old, c); // ??
     if(!is_number(Edu) ){
       untested();
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter step %i:%i Edu nan at %LE Euin=%LE C=%LE diff "
@@ -1782,7 +1799,7 @@ long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doub
 
     Q = fabs( dx_res / uin );
 
-    Euin = cc->__step( uin, E_old, h  );
+    Euin = m->__step( uin, E_old, h, c );
     deltaE_alt = deltaE;
     deltaE = Euin - Euin_alt; // Effektive Veraenderung
     Euin_alt = Euin;

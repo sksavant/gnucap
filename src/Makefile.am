@@ -51,11 +51,17 @@ if IVERILOG_VVP
 D_SRCS += d_vvp.cc extlib.cc
 endif
 
-if IVERILOG
-D_SRCS +=  d_ivl_base.cc d_ivl_ports.cc \
+D_IVL = d_ivl_base.cc d_ivl_ports.cc \
 			 d_invert.cc d_clock.cc \
 		  	 d_latch.cc d_lfsr.cc  \
 			 e_ivl_compile.cc
+
+
+D_IVL_O = $(D_IVL:%.cc=%.o)
+
+if IVERILOG
+D_SRCS += D_IVL
+
 
 #	libvvpg_la_SOURCES = vvp_main.cc
 #  bin_PROGRAMS += libvvpg
@@ -228,6 +234,8 @@ ADMS_GC_XML=../adms/gnucap.xml
 
 
 d_vvp.lo extlib.lo: CPPFLAGS+= @IVERILOG_INCLUDE@
+
+$(D_IVL_O): CPPFLAGS+= IVL_CPPFLAGS
 
 # FIXME: -I iverilog only for .v stuff
 

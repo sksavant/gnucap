@@ -242,8 +242,19 @@ int  MODEL_BUILT_IN_RCD_SYM::tt_region(const COMPONENT* brh) const{
   assert(c);
   return ( (c->_Ccgfill)->region() );
 }
-
-
+/*--------------------------------------------------------------------------*/
+//double MODEL_BUILT_IN_RCD_SYM::__Edu(double s, const COMMON_COMPONENT* c ) const 
+//{
+//  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
+//  double te = __Re( s, cc);
+//  double tc = __Rc( s, cc);
+//  double dte = __dRe( s, cc);
+//  double dtc = __dRc( s, cc);
+//  double ret =  (dtc * ( te + tc ) - ( dte + dtc ) * tc) / ( dte + dtc ) / ( dte + dtc )  ;
+//  assert(is_number(ret));
+//  return ret;
+//}
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 ADP_NODE_RCD* MODEL_BUILT_IN_RCD_SYM::new_adp_node(const COMPONENT* c) const{
   return new ADP_NODE_RCD(c);

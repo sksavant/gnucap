@@ -39,19 +39,24 @@ class MODEL_BUILT_IN_RCD_EXP : public MODEL_BUILT_IN_RCD_SYM {
     ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
 //    region_t region(const COMPONENT*) const;
     double dvth( const COMPONENT* brh) const;
-  //private:?
+  private:
+    double __dRe(double uin, const COMMON_COMPONENT* cc)const;
+    double __dRc(double uin, const COMMON_COMPONENT* cc)const;
     double __Re(double uin, const COMMON_COMPONENT* cc)const;
     double __Rc(double uin, const COMMON_COMPONENT* cc)const;
     double __Ge(double uin, const COMMON_COMPONENT* cc)const;
     double __tau(double uin, const COMMON_COMPONENT* cc)const;
+  public:
     virtual void do_tr_stress_last(long double fill, ADP_NODE*, COMPONENT*  ) const;
   private:
-    double __uin_iter(double& uin, double E, const COMMON_COMPONENT* cc)const;
+    //double __uin_iter(double& uin, double E, const COMMON_COMPONENT* cc)const;
     double __E(double uin, const COMMON_COMPONENT* cc)const;
 
-    long double __uin_iter(long double& uin,  double cur, double E, COMPONENT* )const;
+   // long double __uin_iter(long double& uin,  double cur, double E, COMPONENT* )const;
     long double __E(double uin, long double cur, const COMMON_COMPONENT* cc)const;
-    long double __Edu(long double uin, long double cur, const COMMON_COMPONENT* cc)const;
+    long double __dstepds(long double uin, long double cur, const COMMON_COMPONENT* cc)const;
+//    template<class T>
+//      T __step(T s, T cur,  double deltat, const COMMON_COMPONENT* ) const ; // MODEL_RCD
 };
 /*--------------------------------------------------------------------------*/
 
@@ -189,8 +194,9 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
 {
   // ADP_NODE_UDC* udc= dynamic_cast<ADP_NODE_UDC*>(a);
   DEV_BUILT_IN_RCD* d = asserted_cast<DEV_BUILT_IN_RCD*>(dd);
-  const COMMON_BUILT_IN_RCD* cc = static_cast<const COMMON_BUILT_IN_RCD*>(d->common());
-  const MODEL_BUILT_IN_RCD* m =   static_cast<const MODEL_BUILT_IN_RCD*>(this);
+  const COMMON_BUILT_IN_RCD* cc = asserted_cast<const COMMON_BUILT_IN_RCD*>(d->common());
+  const COMMON_BUILT_IN_RCD* c = cc;
+  const MODEL_BUILT_IN_RCD* m = this; //  asserted_cast<const MODEL_BUILT_IN_RCD*>(this);
   assert(m);
   assert(is_number(_c->tt()));
   double E_old = _c->tt();
@@ -219,8 +225,8 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
   long double uin_low  = min ( uin_eff - OPT::abstol, uin_eff * (1-OPT::reltol) );
   assert (uin_high>=uin_low);
 
-  E_high = cc->__step( uin_high, E_old, CKT_BASE::_sim->_last_time );
-  E_low  = cc->__step( uin_low,  E_old, CKT_BASE::_sim->_last_time ); 
+  E_high = __step( uin_high, E_old, CKT_BASE::_sim->_last_time, c );
+  E_low  = __step( uin_low,  E_old, CKT_BASE::_sim->_last_time, c ); 
 
   assert (E_low>=0);
 
@@ -260,9 +266,9 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
   }
 
   // sanitycheck (monotonicity)
-  long double E_test=cc->__step( uin_eff, E_old, CKT_BASE::_sim->_last_time );
+  long double E_test = this->__step( uin_eff, E_old, CKT_BASE::_sim->_last_time, c );
   double trvorher= _c->tr();
-  long double E_vorher=cc->__step( trvorher , E_old, CKT_BASE::_sim->_last_time );
+  long double E_vorher = this->__step( trvorher , E_old, CKT_BASE::_sim->_last_time, c );
   if (fabs(E_test - E) < fabs(E_vorher-E)){
     trace6("MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last new uin better ",
         uin_eff, _c->tr(), E_test - E, E_vorher-E,1-E , linear_inversion);
@@ -292,8 +298,8 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
   trace3(("MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last E" + _c->label()).c_str(),
       uin_low, uin_eff, uin_high);
 
-  E_high = cc->__step( uin_high, E_old, CKT_BASE::_sim->_last_time  );
-  E_low  = cc->__step( uin_low,  E_old, CKT_BASE::_sim->_last_time  ); 
+  E_high = __step( uin_high, E_old, CKT_BASE::_sim->_last_time, c );
+  E_low  = __step( uin_low,  E_old, CKT_BASE::_sim->_last_time, c ); 
   trace6(("MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last E" + _c->label()).c_str(),
       uin_eff,  E-E_low, E_high - E_low, E, 1-E, E_high-E );
   trace3(("MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last E" + _c->label()).c_str(), 
@@ -342,10 +348,22 @@ double MODEL_BUILT_IN_RCD_EXP::__Re(double s, const COMMON_COMPONENT* c) const
   return exp( cc->_Re1 * s + cc->_Re0 );
 }
 /*--------------------------------------------------------------------------*/
+double MODEL_BUILT_IN_RCD_EXP::__dRe(double s, const COMMON_COMPONENT* c) const
+{
+  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
+  return cc->_Re1 * exp( cc->_Re1 * s + cc->_Re0 );
+}
+/*--------------------------------------------------------------------------*/
 double MODEL_BUILT_IN_RCD_EXP::__Rc(double s, const COMMON_COMPONENT* c ) const
 {
   const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
   return exp( cc->_Rc1 * s  + cc->_Rc1 );
+}
+/*--------------------------------------------------------------------------*/
+double MODEL_BUILT_IN_RCD_EXP::__dRc(double s, const COMMON_COMPONENT* c ) const
+{
+  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
+  return cc->_Rc1 * exp( cc->_Rc1 * s  + cc->_Rc1 );
 }
 /*--------------------------------------------------------------------------*/
 double MODEL_BUILT_IN_RCD_EXP::__Ge(double s, const COMMON_COMPONENT* c ) const
@@ -354,16 +372,35 @@ double MODEL_BUILT_IN_RCD_EXP::__Ge(double s, const COMMON_COMPONENT* c ) const
   return exp( - cc->_Re1 * s - cc->_Re0 );
 }
 /*--------------------------------------------------------------------------*/
+//template<class T>
+//T MODEL_BUILT_IN_RCD_EXP::__step(T s, T cur,  double t, const COMMON_COMPONENT* c ) const 
+//{
+//  assert(is_number(s));
+//  assert(is_number(cur));
+//  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
+//  const MODEL_BUILT_IN_RCD* m =   static_cast<const MODEL_BUILT_IN_RCD*>(this);
+//  assert ( s >= 0 || !m->positive);
+//  
+//  T Eend = __E_end(s,cc);
+//  T tauinv = __tau_inv(s,cc);
+//  T ret = (cur-Eend) * expl( -t*tauinv ) + Eend;
+//
+//  trace6("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, uin, Rc0, ret,  logl(fabsl(cur-Eend ) ) );
+////  assert(is_almost(retalt ,ret));
+//
+//  if (!is_number(ret) || ret < -0.1){
+//    trace7("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, uin, Rc0, Rc1, Re0, logl(fabsl(cur-Eend ) ) );
+//    trace7("COMMON_BUILT_IN_RCD::__step ", cur-Eend, deltat, uin, Rc0, Rc1, Re0, fabsl(cur-Eend )  );
+//    trace6("COMMON_BUILT_IN_RCD::__step ", cur, deltat, uin, Rc0, Rc1, Re0  );
+//    assert(false);
+//  }
+//
+//  return(ret);
+//
+//}
 /* E(t=inf) */
-double MODEL_BUILT_IN_RCD_EXP::__E(double s, const COMMON_COMPONENT* c ) const 
-{
-  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
-  double tau_e_here = __Re( s, cc);
-  double tau_c_here = __Rc( s, cc);
-  return( tau_c_here / ( tau_e_here + tau_c_here ));
-}
 /*--------------------------------------------------------------------------*/
-long double MODEL_BUILT_IN_RCD_EXP::__Edu(long double uin, long double cur, const COMMON_COMPONENT* cc ) const
+long double MODEL_BUILT_IN_RCD_EXP::__dstepds(long double uin, long double cur, const COMMON_COMPONENT* cc ) const
 {
   const COMMON_BUILT_IN_RCD* c = dynamic_cast<const COMMON_BUILT_IN_RCD*>(cc) ;
   long double Rc0=c->_Rc0;
@@ -404,12 +441,12 @@ long double MODEL_BUILT_IN_RCD_EXP::__Edu(long double uin, long double cur, cons
 }
 /*--------------------------------------------------------------------------*/
 // solve E(uin)-E==0
-long double MODEL_BUILT_IN_RCD_EXP::__uin_iter(long double& uin, double
-    E_old, double E, COMPONENT* dd ) const { const
-  COMMON_BUILT_IN_RCD* c = dynamic_cast<const COMMON_BUILT_IN_RCD*>(dd->common());
-  assert(false);
-  return c->__uin_iter( uin, E_old ,E,0,0,dd ); 
-}
+//long double MODEL_BUILT_IN_RCD_EXP::__uin_iter(long double& uin, double
+//    E_old, double E, COMPONENT* dd ) const { const
+//  COMMON_BUILT_IN_RCD* c = dynamic_cast<const COMMON_BUILT_IN_RCD*>(dd->common());
+//  assert(false);
+//  return c->__uin_iter( uin, E_old ,E,0,0,dd ); 
+//}
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_RCD_EXP::do_precalc_last(COMMON_COMPONENT* ccmp, const CARD_LIST*)const
 {
