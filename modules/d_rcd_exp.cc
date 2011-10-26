@@ -40,7 +40,7 @@ class MODEL_BUILT_IN_RCD_EXP : public MODEL_BUILT_IN_RCD_SYM {
 //    region_t region(const COMPONENT*) const;
     double dvth( const COMPONENT* brh) const;
   private:
-    double __dRe(double uin, const COMMON_COMPONENT* cc)const;
+    double __dRe(double uin, const COMMON_COMPONENT* cc)const; // unneeded?
     double __dRc(double uin, const COMMON_COMPONENT* cc)const;
     double __Re(double uin, const COMMON_COMPONENT* cc)const;
     double __Rc(double uin, const COMMON_COMPONENT* cc)const;
