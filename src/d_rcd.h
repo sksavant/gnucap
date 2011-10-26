@@ -52,8 +52,7 @@ class MODEL_BUILT_IN_RCD :public MODEL_CARD{
     /// virtual void     do_expand( COMPONENT*)const {}; // doesnt work, not in use
     //
 //    virtual void     do_precalc_last(COMPONENT*, const );
-    virtual void     do_precalc_last(COMMON_COMPONENT*, const
-        CARD_LIST*)const;
+    virtual void     do_precalc_last(COMMON_COMPONENT*, const CARD_LIST*)const;
     virtual void     do_tt_prepare(COMPONENT*)const;
     virtual ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
   public: // override virtual
@@ -107,7 +106,7 @@ class MODEL_BUILT_IN_RCD :public MODEL_CARD{
     virtual double __dRe(double, const COMMON_COMPONENT* )const { unreachable(); return 0; }
     virtual double __dRc(double, const COMMON_COMPONENT* )const { unreachable(); return 0; }
 
-    long double __step(long double uin, long double cur,  double deltat, const COMMON_COMPONENT* ) const ;
+    virtual long double __step(long double uin, long double cur, double deltat, const COMMON_COMPONENT* ) const;
   
   protected: // functions using the virtual __Re __Rc
     template<class T>
@@ -115,7 +114,7 @@ class MODEL_BUILT_IN_RCD :public MODEL_CARD{
     template<class T>
       T __tau_inv(T, const COMMON_COMPONENT* )const ;
 //    template<class T> // final state at fixed stress
-    double __E_end_0( const COMMON_COMPONENT* c ) const;
+    long double __E_end_0( const COMMON_COMPONENT* c ) const;
     template<class T> // final state at fixed stress
       T __E_end(T s, const COMMON_COMPONENT* c ) const;
     
@@ -131,18 +130,6 @@ class MODEL_BUILT_IN_RCD :public MODEL_CARD{
     virtual void do_tr_stress_last( long double , ADP_NODE* , COMPONENT* ) const 
     {unreachable();}
 };
-/*--------------------------------------------------------------------------*/
-template<class T>
-inline T MODEL_BUILT_IN_RCD::__E_end(T s, const COMMON_COMPONENT* c ) const 
-{
-//  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
-  T tau_e = (T)__Re((double)s, c);
-  T tau_c = (T)__Rc((double)s, c);
-  //T ret =  tau_c / ( tau_e + tau_c );
-  T ret =  1L / ( 1L +  tau_e/ tau_c );
-  assert(is_number(ret));
-  return ret;
-}
 /*--------------------------------------------------------------------------*/
 template <class T>
 inline T MODEL_BUILT_IN_RCD::__tau_inv(T s, const COMMON_COMPONENT* cc)const
@@ -412,20 +399,38 @@ public:
   double eff(){return 0.0; }
 };
 /*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+template<class T>
+inline T MODEL_BUILT_IN_RCD::__E_end(T s, const COMMON_COMPONENT* c ) const 
+{
+//  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
+  T tau_e = static_cast<T>(__Re(( double)s, c));
+  T tau_c = (T)__Rc(( double)s, c);
+  //T ret =  tau_c / ( tau_e + tau_c );
+  T ret = T( 1.l / ( 1.l +  tau_e/ tau_c ));
+  assert(is_number(ret));
+  return ret;
+}
+/*--------------------------------------------------------------------------*/
 //template<class T>
-#define T double
+#define T long double
 inline T MODEL_BUILT_IN_RCD::__E_end_0( const COMMON_COMPONENT* cc)const {
+  return __E_end(0.l,cc);
   T n = 0;
-  const COMMON_BUILT_IN_RCD* c = dynamic_cast<const COMMON_BUILT_IN_RCD*>(cc) ;
   cerr.precision(30);
-  T ret =  (1/  (1 + __Re(n,cc)/__Rc(n,cc) ));
+  T ret = ((T) (1.) /  
+      ((T)(1.) + 
+       static_cast<T>(__Re((double)n,cc))/static_cast<T>(__Rc((double)n,cc)) )
+      );
+#ifdef DO_TRACE
+  const COMMON_BUILT_IN_RCD* c = dynamic_cast<const COMMON_BUILT_IN_RCD*>(cc) ;
+#endif
   trace3("MODEL_BUILT_IN_RCD::__E_end_0",  __Re(n,cc), __Rc(n,cc), ret );
   trace2("MODEL_BUILT_IN_RCD::__E_end_0",  c->_Re1, c->_Re0);
   trace2("MODEL_BUILT_IN_RCD::__E_end_0",  c->_Rc1, c->_Rc0);
   return ret;
-  return  (__Rc(n,c) / (c->__Re(n) + c->__Rc(n) ));
+  //return  (__Rc(n,c) / (c->__Re(n) + c->__Rc(n) ));
 }
 #undef T
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 #endif

@@ -75,7 +75,7 @@ MODEL_BUILT_IN_RCD::MODEL_BUILT_IN_RCD(const BASE_SUBCKT* p)
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_RCD::do_tr_stress( const COMPONENT* ) const {
-  unreachable();
+  unreachable(); // stress done  by device.
 }
 /*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_RCD::MODEL_BUILT_IN_RCD(const MODEL_BUILT_IN_RCD& p)
@@ -822,7 +822,7 @@ void DEV_BUILT_IN_RCD::expand()
     // do_tt?
     // _Ccgfill->tt_set( -c->_wcorr );
   }
-  // _tr_fill=_Ccgfill->get();
+  // _tr_fill = _Ccgfill->get();
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -1031,6 +1031,8 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
     return  ( NAN );
   }else if (Umatch(x, "trr ")) {
     return  ( _Ccgfill->tr_rel_err() );
+  }else if (Umatch(x, "E0|zero "    )) {
+    return  ( c->_zero );
   }else if (Umatch(x, "te ")) {
       return  ( c->__tau_up(c->Uref) );
   }else if (Umatch(x, "tc ")) {
@@ -1041,6 +1043,8 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
       return  ( m->__Rc(0 , c) );
   }else if (Umatch(x, "wdt ")) {
     return  ( _Ccgfill->wdT() );
+  }else if (Umatch(x, "tau ")) {
+    return  ( m->__tau(involts(),c) );
   }else if (Umatch(x, "net ")) {
     return  ( m->use_net() );
   }else if (Umatch(x, "tra ")) {
@@ -1115,7 +1119,6 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   else if (Umatch(x, "RE1 "    )) { return( c->_Re0 );}
   else if (Umatch(x, "RC0 "    )) { return( c->_Rc1 );}
   else if (Umatch(x, "RC1 "    )) { return( c->_Rc0 );}
-  else if (Umatch(x, "E0|zero "    )) { return( c->_zero );}
   else if (Umatch(x, "ttr "   )) { return( _Ccgfill->tt_rel_err() ); }
   else if (Umatch(x, "trr "   )) { return( _Ccgfill->tr_rel_err() ); }
   else if (Umatch(x, "iter "  )) { return( _iter_count ); }
@@ -1217,6 +1220,7 @@ bool DEV_BUILT_IN_RCD::tr_needs_eval()const  // not defined...
 // FIXME: put generic impl here.
 long double MODEL_BUILT_IN_RCD::__step(long double uin, long double cur,  double deltat, const COMMON_COMPONENT* c ) const 
 {
+  cout << "v3\n";
   if (!is_number(uin)){
     error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress no number %E ", uin);
     throw(Exception("no number in __step"));
@@ -1292,7 +1296,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
   trace2("DEV_BUILT_IN_RCD::stress_apply ",  _sim->_dT0, _Ccgfill->tt() );
   
   if(_sim->_dT0==0){
-    _tr_fill=_Ccgfill->tt();
+    _tr_fill = _Ccgfill->tt();
     return;
   }
   double Time1=_sim->_Time0 - _sim->_dT0;
@@ -1372,7 +1376,7 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
   assert(c);
   assert(c->model());
-  const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
+  const MODEL_BUILT_IN_RCD* m = asserted_cast<const MODEL_BUILT_IN_RCD*>(c->model());
   assert(m);
   assert(c->sdp());
   assert(_Ccgfill);
@@ -1426,7 +1430,18 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
     trace1("not h\n", _tr_fill);
     return;
   }
-  trace3("DEV_BUILT_IN_RCD::tr_stress ", _tr_fill, h, m->positive );
+  double uin = rcd->involts();
+  trace5("DEV_BUILT_IN_RCD::tr_stress ", long_label(), _tr_fill, h, m->positive, (_tr_fill-c->_zero)*c->_weight );
+  if(uin>0) assert(m->__E_end(uin,c) > c->_zero);
+
+  trace1("DEV_BUILT_IN_RCD::tr_stress" ,  m->__E_end_0(c)-  m->__E_end(0.l,c)  );
+//  assert( m->__E_end_0(c) == c->_zero );
+//  assert( m->__E_end(0.l,c) == c->_zero );
+
+#ifdef DO_TRACE
+  double lim=m->__E_end(uin,c);
+#endif
+  trace3("DEV_BUILT_IN_RCD::tr_stress ", uin, (_tr_fill-c->_zero)*c->_weight, (lim-c->_zero)*c->_weight) ;
 
   if( (bool)m->positive) {
     if ( _tr_fill < 0 ){
@@ -1444,7 +1459,6 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   /*----------------------------------------------------------------------------*/
 
   long double fill=_tr_fill;
-  double uin = rcd->involts();
   if (m->positive){
     uin=max(uin,0.0);
     itested();
@@ -1463,13 +1477,14 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   assert (fill==fill);
   assert (uin==uin);
 
+  //tr_stress...
   long double newfill;
   switch(_sim->_stepno){ incomplete();
     case 0:
     case 1:
     default:
-      newfill = m->__step(uin, fill,  h, c);
-
+      trace0("DEV_BUILT_IN_RCD::tr_stress calling __step");
+      newfill = m->__step(uin, fill, h, c);
   }
   assert( newfill > -0.01 || !m->positive);
   if( newfill <= 0 && m->positive  ){
@@ -1694,7 +1709,7 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
   long double df_fres =1; // df 
   long double cres; // cut res
   long double dx_res=1;
-  int i=0;
+  unsigned i=0;
   int hhack=0;
   long double Edu=0;
   long double Q=1;
@@ -1717,6 +1732,11 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
   }
   double reltol = pow(OPT::reltol,1.2);
   double abstol = OPT::abstol/10.0;
+  unsigned iterlimit=50;
+  if (!_sim->tt_iteration_number()){
+    iterlimit=500;
+  }
+
 
   trace2("COMMON_BUILT_IN_RCD::__uin_iter rel_tol", reltol, OPT::abstol);
   //while( ( A || ( B && C && D ) ) ) { // && fabs(Euin-E)>1e-40 )  }
@@ -1725,7 +1745,7 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
     edge = false;
     trace7("COMMON_BUILT_IN _RCD::__uin_iter loop", (double)uin, (double)res, (double)deltaE, Edu, E, i,Euin);
     trace3(" ",dx_res,Q,df_fres);
-    if( i> 50){
+    if( i> iterlimit){
       untested();
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge uin="
           "%LE, E=%LE, res=%LE, lres=%Lg, Q=%Lg\n", uin, E, res, log(fabs(res)), Q);
@@ -1739,7 +1759,7 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
           Edu, Euin, E, fu, delta_u);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter s=%i%i%i%i%i putres=%i\n",
           A, B, C, D, U, putres);
-      throw(Exception("does not converge"));
+      throw(Exception("does not converge: %s\n", dd->long_label().c_str()));
       break;
     }
     if(!is_number(uin)){

@@ -57,7 +57,8 @@ class MODEL_BUILT_IN_RCD_EXP : public MODEL_BUILT_IN_RCD_SYM {
     long double __dstepds(long double uin, long double cur, const COMMON_COMPONENT* cc)const;
 //    template<class T>
 //    BUG: _step in MODEL_RCD not generic.
-    long double __step(long double s, double cur,  double deltat, const COMMON_COMPONENT* ) const ; // MODEL_RCD
+  protected:
+    long double __step(long double s, long double cur,  double dt, const COMMON_COMPONENT* ) const ; // MODEL_RCD
 };
 /*--------------------------------------------------------------------------*/
 
@@ -376,7 +377,7 @@ double MODEL_BUILT_IN_RCD_EXP::__Ge(double s, const COMMON_COMPONENT* c ) const
 /*--------------------------------------------------------------------------*/
 //template<class T>
 //T MODEL_BUILT_IN_RCD_EXP::__step(T s, T cur,  double t, const COMMON_COMPONENT* c ) const 
-long double MODEL_BUILT_IN_RCD_EXP::__step(long double s, double cur,  double deltat, const COMMON_COMPONENT* c ) const 
+long double MODEL_BUILT_IN_RCD_EXP::__step(long double s, long double cur, double deltat, const COMMON_COMPONENT* c ) const 
 {
   //cout << "exp step\n";
   assert(is_number(s));
@@ -389,7 +390,7 @@ long double MODEL_BUILT_IN_RCD_EXP::__step(long double s, double cur,  double de
   long double tauinv = __tau_inv(s,cc);
   long double ret = (cur-Eend) * expl( -deltat*tauinv ) + Eend;
 
-  trace5("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, s,  ret,  logl(fabsl(cur-Eend ) ) );
+  trace5("MODEL_BUILT_IN_RCD_EXP::__step ", Eend, deltat, s,  ret,  logl(fabsl(cur-Eend ) ) );
 //  assert(is_almost(retalt ,ret));
 
   if (!is_number(ret) || ret < -0.1){
@@ -478,7 +479,7 @@ void MODEL_BUILT_IN_RCD_EXP::do_precalc_last(COMMON_COMPONENT* ccc, const CARD_L
   // double Eend_bad = (cc->Uref / (cc->__Re(cc->Uref) / cc->__Rc(cc->Uref) +1));
 
   c->_zero = (__Rc(0,c) / (__Re(0,c) + __Rc(0,c) ));
-  c->_zero = __E_end_0(c);
+  c->_zero = (double)__E_end_0(c);
 
   cerr.precision(150);
   trace1("MODEL_BUILT_IN_RCD_EXP::do_precalc_last", cc->_zero);

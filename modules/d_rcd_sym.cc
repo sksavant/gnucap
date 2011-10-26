@@ -176,6 +176,7 @@ void MODEL_BUILT_IN_RCD_SYM::do_tr_stress( const COMPONENT* brh) const {
   const COMMON_BUILT_IN_RCD* cc = static_cast<const COMMON_BUILT_IN_RCD*>(c->common());
   //double  fill = _n[n_ic].v0();
   //
+  assert(false); // use DEV::tr_stress
 
   double  fill = c->_Ccgfill->get_total();
   double  ueff = c->involts();
