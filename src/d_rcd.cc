@@ -1912,6 +1912,7 @@ double MODEL_BUILT_IN_RCD_NET::dvth(const COMPONENT* c) const{
   // read from CAP. _Ccgfill is only updated after tr
   const  ELEMENT* cap = dynamic_cast<const ELEMENT*> (d->_Ccg);
   assert(cap);
+  assert(false);
   assert(is_number( cap->tr_involts() ) * cc->_weight * cc->_wcorr );
 
   return  ( cap->tr_involts() ) * cc->_weight * cc->_wcorr;

@@ -310,9 +310,10 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
   if( ( E_old < E_high ) && ( E_low <= E_old ))
     _c->set_order(0);
 
-  if ((double)E_high<(double)E_low - 1e-19){
-    error( bDANGER, "MODEL_BUILT_IN_RCD_EXP:: sanitycheck ( %LE ) in %s\n", E_high - E_low, dd->long_label().c_str());
-    assert(false);
+  if ((double)E_high<(double)E_low - 1.5e-19){
+    error( bDANGER, "MODEL_BUILT_IN_RCD_EXP:: sanitycheck (delta %LE ) in %s\n", E_high - E_low, dd->long_label().c_str());
+    error( bDANGER, "MODEL_BUILT_IN_RCD_EXP:: sanitycheck (abs %LE ) in %s\n", E_high, dd->long_label().c_str());
+    throw(Exception("sanitycheck failed"));
   }
 
   if (linear_inversion)  _c->set_order(0);
