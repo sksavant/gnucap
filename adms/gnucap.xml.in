@@ -2987,6 +2987,15 @@ void $(DEV_NAME)::expand()
 	if (_sim->is_first_expand()) 
 	{
 	  trace4("DEV_ADMS::expand nodes",  net_nodes() , max_nodes() , matrix_nodes(), int_nodes());
+		char fake_name[] = "a";
+		for(unsigned ii = net_nodes(); ii < matrix_nodes(); ++ii)
+		{
+			if( !_n[ii].n_() ){
+				trace2("DEV_ADMS::expand allocating missing internal node " , ii, fake_name );
+				_n[ii].new_model_node('.' + long_label() + '.' + fake_name, this);
+			}
+			++(*fake_name);
+		}
 
 	   // int start_internal = 0;
 		for (unsigned ii = net_nodes(); ii < max_nodes(); ++ii){
@@ -6332,7 +6341,7 @@ int $(DEV_NAME)::load(int mode)
 #define m10_sqrt(v10,v00,x)     v10 = (0.5/v00);
 #define m00_fabs(v00,x)         v00 = fabs(x);
 #define m10_fabs(v10,v00,x)     v10 = (((x)>=0)?(+1.0):(-1.0));
-#define m00_exp(v00,x)          v00 = exp(x);
+#define m00_exp(v00,x)          v00 = exp(x); assert(is_number(x));
 #define m10_exp(v10,v00,x)      v10 = v00;
 #define m00_abs(v00)            ((v00)<(0)?(-(v00)):(v00))
 #define m00_limexp(v00,x)       v00 = ((x)<90.0?exp(x):EXP90*(x-89.0));

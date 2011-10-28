@@ -87,14 +87,25 @@ class hp{
 		     << "  " << #y << "=" << (y)  \
 		     << "  " << #z << "=" << (z)  \
 		     << endl )
-#define trace6(s,u,v,w,x,y,z)\
-	(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g\n",\
-    s, #u, (double)(u),#v, (double)(v), #w, (double)(w), #x, (double)(x),\
-	#y, (double)(y), #z, (double)(z)))
-#define trace7(s,t,u,v,w,x,y,z)\
-	(fprintf(stderr, "@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g %s=%g\n",\
-    s, #t, (double)(t), #u, (double)(u),#v, (double)(v), #w, (double)(w),\
-    #x, (double)(x), #y, (double)(y), #z, (double)(z)))
+#define trace6(s,u,v,w,x,y,z) ( \
+		cerr <<  "@#@" << s  \
+		     << "  " << #u << "=" << (u)  \
+		     << "  " << #v << "=" << (v)  \
+		     << "  " << #w << "=" << (w)  \
+		     << "  " << #x << "=" << (x)  \
+		     << "  " << #y << "=" << (y)  \
+		     << "  " << #z << "=" << (z)  \
+		     << endl )
+#define trace7(s,t,u,v,w,x,y,z) ( \
+		cerr <<  "@#@" << s  \
+		     << "  " << #t << "=" << (t)  \
+		     << "  " << #u << "=" << (u)  \
+		     << "  " << #v << "=" << (v)  \
+		     << "  " << #w << "=" << (w)  \
+		     << "  " << #x << "=" << (x)  \
+		     << "  " << #y << "=" << (y)  \
+		     << "  " << #z << "=" << (z)  \
+		     << endl )
 #else
 #define trace_line()
 #define trace0(s)
