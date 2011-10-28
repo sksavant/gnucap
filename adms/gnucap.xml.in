@@ -2986,13 +2986,20 @@ void $(DEV_NAME)::expand()
 	// fix up internal nodes
 	if (_sim->is_first_expand()) 
 	{
+	  trace4("DEV_ADMS::expand nodes",  net_nodes() , max_nodes() , matrix_nodes(), int_nodes());
+
 	   // int start_internal = 0;
-		for (unsigned ii = net_nodes(); ii < max_nodes(); ++ii)
+		for (unsigned ii = net_nodes(); ii < max_nodes(); ++ii){
+			trace1("DEV_ADMS::expand grounding", ii);
 			_n[ii].set_to_ground(this);
+		}
 		
 		assert(max_nodes() != 0);		
-		for (unsigned ii = 0; ii < matrix_nodes(); ++ii) 
+		for (unsigned ii = 0; ii < matrix_nodes(); ++ii)
+		{
+			trace1("DEV_ADMS::expand matrix node check", ii);
 			assert(_n[ii].n_());
+		}
 	}
 	else
 		untested();
