@@ -2986,6 +2986,11 @@ void $(DEV_NAME)::expand()
 	// fix up internal nodes
 	if (_sim->is_first_expand()) 
 	{
+		char fake_name[] = "a";
+		for(unsigned ii = max_nodes(); ii < matrix_nodes(); ++ii)
+			if( !_n[ii].n_() )
+				_n[ii].new_model_node('.' + long_label() + '.' + fake_name, this);
+
 	   // int start_internal = 0;
 		for (unsigned ii = net_nodes(); ii < max_nodes(); ++ii)
 			_n[ii].set_to_ground(this);
