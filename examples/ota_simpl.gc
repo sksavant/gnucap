@@ -14,10 +14,7 @@ V1 nin 0  sin(frequency=1, amplitude=2.5, offset=2.5)
 
 .verilog
 
-paramset myota ota_simpl; 
- .tnom=20;
- .is=a;
-endparamset
+paramset myota ota_simpl; .tnom=20; endparamset
 
 
 myota OTA0(  p_in , n_in , out1 , pbias , nbias , vdd , 0);
