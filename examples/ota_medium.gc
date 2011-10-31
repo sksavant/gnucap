@@ -2,8 +2,10 @@
 spice
 * vorsicht: nodenames case-sensitive
 
-Vcc ncc 0 5
-V1 nin 0  sin(frequency=1, amplitude=2.5, offset=2.5)
+Vcc ncc 0 3.3
+V1 nin 0  sin(frequency=1, amplitude=0.1, offset={3.3/2})
+
+Vhalf n_in 0 {3.3/2}
 
 .list
 
@@ -17,16 +19,19 @@ V1 nin 0  sin(frequency=1, amplitude=2.5, offset=2.5)
 paramset myota ota_medium; .tnom=20; endparamset
 
 
-myota OTA0(  p_in , 0 , out1 , pbias , nbias , vdd , 0);
+myota OTA0(  p_in , n_in , out1 , pbias , nbias , ncc , 0);
 
 spice
 
 Rin nin p_in 10k
-R1 out1 nout 10k
-R2 0 nout 10k
+R1 out1 0 10k
+*R2 0 nout 10
 
-Vn nbias 0 1.7
-Vp pbias 0 0.7
+Vp pbias 0 2.7
+Vn nbias 0 0.7
+
+*Ip pbias 0 10u
+*In nbias 0 0
 
 *                 o ncc
 *                 |
@@ -36,7 +41,7 @@ Vp pbias 0 0.7
 *               |\|
 * nin   ___     | \  
 *   o--[___]----|+ \    R ___
-*               |   >----[___]---o  nout
+*               |   >------------o  nout
 *         ------|- /             |
 *         |     | /             | |
 *         |     |/|             | |R
@@ -48,13 +53,13 @@ Vp pbias 0 0.7
 
 .listnodes
 
-.print tran v(nodes)
+.print tran v(nodes) I(V*) I(R1)
 
 .tran .1 1 
 *trace v
 
 .param a=1.0e-16
 
-.tran 2
+*.tran 2
 
 .end
