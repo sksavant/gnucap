@@ -1,0 +1,42 @@
+
+spice
+* vorsicht: nodenames case-sensitive
+
+Vcc ncc 0 5
+V1 p_in 0  sin(frequency=1, amplitude=0.002, offset=0.025)
+
+.list
+
+.verilog
+
+paramset myota ota_simpl;  endparamset
+
+myota OTA0 (p_in , 0 , out1 , ncc , 0);
+
+spice
+
+R1 out1 0 10
+
+*Ip pbias 0 -1e-4
+
+*                 o ncc
+*                 |
+*                 |
+*                 |
+*               \ |
+*               |\|
+* nin   ___     | \  
+*   o--[___]----|+ \    R ___
+*               |   >----[___]---o  nout
+*         ------|- /             |
+*         |     | /             | |
+*         |     |/|             | |R
+*         |     / |              |
+*         V       V              V
+
+.print tran v(nodes)
+
+.tran .1 1 
+*trace v
+
+.end
