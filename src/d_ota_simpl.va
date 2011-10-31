@@ -6,222 +6,27 @@
 
 `include "discipline.h"
 
-module ota_simpl(  p_in , n_in , out1 , pbias , nbias , vdd , gnd);
+module ota_simpl(  p_in , n_in , out1 , vdd , gnd);
 
 // Ein- und Ausgangsknoten deklarieren:
-inout  p_in , n_in , out1 , pbias , nbias , vdd , gnd;
-electrical  p_in , n_in , out1 , pbias , nbias , vdd , gnd;
+inout  p_in , n_in , out1 , vdd , gnd;
+electrical  p_in , n_in , out1 , vdd , gnd;
 
+// Lokale Parameter deklarieren:
 
- // Lokale Parameter deklarieren:
+// Schalter deklarieren:
+parameter real v_t = 0.025 ;
 
- // Schalter deklarieren:
- parameter real _a1 = 1.0 ;
- parameter real _a2 = 1.0 ;
- parameter real _a3 = 1.0 ;
- parameter real _a4 = 1.0 ;
- parameter real _a5 = 1.0 ;
- parameter real _a6 = 1.0 ;
- parameter real _a7 = 1.0 ;
- parameter real _a8 = 1.0 ;
- parameter real _a9 = 1.0 ;
- parameter real _a10 = 1.0 ;
- parameter real _a11 = 1.0 ;
- parameter real _a12 = 1.0 ;
- parameter real _a13 = 1.0 ;
- parameter real _a14 = 1.0 ;
- parameter real _a15 = 1.0 ;
- parameter real _a16 = 1.0 ;
- parameter real _a17 = 1.0 ;
- parameter real _a18 = 1.0 ;
- parameter real _a19 = 1.0 ;
- parameter real _a20 = 1.0 ;
- parameter real _a21 = 1.0 ;
- parameter real _a22 = 1.0 ;
- parameter real _a23 = 1.0 ;
- parameter real _a24 = 1.0 ;
- parameter real _a25 = 1.0 ;
- parameter real _a26 = 1.0 ;
- parameter real _a27 = 1.0 ;
- parameter real _a28 = 1.0 ;
- parameter real _a29 = 1.0 ;
- parameter real _a30 = 1.0 ;
- parameter real _a31 = 1.0 ;
- parameter real _a32 = 1.0 ;
- parameter real _a33 = 1.0 ;
- parameter real _a34 = 1.0 ;
- parameter real _a35 = 1.0 ;
- parameter real _a36 = 1.0 ;
- parameter real _a37 = 1.0 ;
- parameter real _a38 = 1.0 ;
- parameter real _a39 = 1.0 ;
- parameter real _a40 = 1.0 ;
- parameter real _a41 = 1.0 ;
- parameter real _a42 = 1.0 ;
+// Values deklarieren:
+real gm;
+real u_diff;
 
- // Vars ohne deklarieren:
- electrical u_int1 ;
+analog begin 
 
- // Values deklarieren:
- real f_pmtrans1_dir ;
- real f_pmtrans1_ugs ;
- real f_pmtrans1_uds ;
- real f_pmtrans1_ugsteff_val ;
- real f_pmtrans1_udseff_val ;
- real f_pmtrans1_id ;
- real f_pmtrans2_dir ;
- real f_pmtrans2_ugs ;
- real f_pmtrans2_uds ;
- real f_pmtrans2_ugsteff_val ;
- real f_pmtrans2_udseff_val ;
- real f_pmtrans2_id ;
- real f_nmtrans1_dir ;
- real f_nmtrans1_ugs ;
- real f_nmtrans1_uds ;
- real f_nmtrans1_ugsteff_val ;
- real f_nmtrans1_udseff_val ;
- real f_nmtrans1_id ;
- real f_nmtrans2_dir ;
- real f_nmtrans2_ugs ;
- real f_nmtrans2_uds ;
- real f_nmtrans2_ugsteff_val ;
- real f_nmtrans2_udseff_val ;
- real f_nmtrans2_id ;
- real f_nmtrans3_dir ;
- real f_nmtrans3_ugs ;
- real f_nmtrans3_uds ;
- real f_nmtrans3_ugsteff_val ;
- real f_nmtrans3_udseff_val ;
- real f_nmtrans3_id ;
- real f_pmbtrans9_dir ;
- real f_pmbtrans9_ugs ;
- real f_pmbtrans9_uds ;
- real f_pmbtrans9_ugsteff_val ;
- real f_pmbtrans9_udseff_val ;
- real f_pmbtrans9_id ;
- real f_pmbtrans20_dir ;
- real f_pmbtrans20_ugs ;
- real f_pmbtrans20_uds ;
- real f_pmbtrans20_ugsteff_val ;
- real f_pmbtrans20_udseff_val ;
- real f_pmbtrans20_id ;
+u_diff = V(p_in) - V(n_in);
+gm = 0.01 / (2 * v_t);
 
- // VPN-Liste deklarieren:
-
- // Vals der Terme s1 ... deklarieren:
- analog begin 
-
- // Vals aus der Val-Liste: 
-f_pmtrans1_dir = 
-_a1*(-1.0*V(u_int1)+V(vdd) >= 0 ?  1.0 : 0.0 )+1.0-1.0*_a1   ;
-f_pmtrans1_ugs = 
--1.0*V(u_int1)+f_pmtrans1_dir*V(vdd)+(1.0-1.0*f_pmtrans1_dir)*V(u_int1)   ;
-f_pmtrans1_uds = 
-(-1.0+2.0*f_pmtrans1_dir)*(-1.0*V(u_int1)+V(vdd))   ;
-f_pmtrans1_ugsteff_val = 
-0.256e-1*_a2*_a3*ln(1.0+exp(39.06250000*f_pmtrans1_ugs-44.53125000))+(1.0-1.0*_a2)*_a3*(f_pmtrans1_ugs-1.14)   ;
-f_pmtrans1_udseff_val = 
-_a5*f_pmtrans1_ugsteff_val-0.5*_a4*_a5*(f_pmtrans1_ugsteff_val-1.0*f_pmtrans1_uds-0.1e-1+pow(pow(f_pmtrans1_ugsteff_val-1.0*f_pmtrans1_uds-0.1e-1,2)+0.4e-1*f_pmtrans1_ugsteff_val,0.5000000000))+(1.0-1.0*_a5)*_a4*f_pmtrans1_uds   ;
-f_pmtrans1_id = 
-(-1.0+2.0*f_pmtrans1_dir)*(0.5870321340e-4*(_a4*(f_pmtrans1_ugsteff_val*f_pmtrans1_udseff_val-0.5000000000*pow(f_pmtrans1_udseff_val,2))+0.5000000000*(1.0-1.0*_a4)*_a5*pow(f_pmtrans1_ugsteff_val,2))*(1.0+_a6*f_pmtrans1_uds/(81.08400577*f_pmtrans1_uds+94.11764706))+0.10e-11*f_pmtrans1_uds)   ;
-f_pmtrans2_dir = 
-_a7*(-1.0*V(out1)+V(vdd) >= 0 ?  1.0 : 0.0 )+1.0-1.0*_a7   ;
-f_pmtrans2_ugs = 
--1.0*V(u_int1)+f_pmtrans2_dir*V(vdd)+(1.0-1.0*f_pmtrans2_dir)*V(out1)   ;
-f_pmtrans2_uds = 
-(-1.0+2.0*f_pmtrans2_dir)*(-1.0*V(out1)+V(vdd))   ;
-f_pmtrans2_ugsteff_val = 
-0.256e-1*_a8*_a9*ln(1.0+exp(39.06250000*f_pmtrans2_ugs-44.53125000))+(1.0-1.0*_a8)*_a9*(f_pmtrans2_ugs-1.14)   ;
-f_pmtrans2_udseff_val = 
-_a11*f_pmtrans2_ugsteff_val-0.5*_a10*_a11*(f_pmtrans2_ugsteff_val-1.0*f_pmtrans2_uds-0.1e-1+pow(pow(f_pmtrans2_ugsteff_val-1.0*f_pmtrans2_uds-0.1e-1,2)+0.4e-1*f_pmtrans2_ugsteff_val,0.5000000000))+(1.0-1.0*_a11)*_a10*f_pmtrans2_uds   ;
-f_pmtrans2_id = 
-(-1.0+2.0*f_pmtrans2_dir)*(0.5870321340e-4*(_a10*(f_pmtrans2_ugsteff_val*f_pmtrans2_udseff_val-0.5000000000*pow(f_pmtrans2_udseff_val,2))+0.5000000000*(1.0-1.0*_a10)*_a11*pow(f_pmtrans2_ugsteff_val,2))*(1.0+_a12*f_pmtrans2_uds/(81.08400577*f_pmtrans2_uds+94.11764706))+0.10e-11*f_pmtrans2_uds)   ;
-f_nmtrans1_dir = 
-_a13*(V(u_int1)-1.0*V(gnd) >= 0 ?  1.0 : 0.0 )+1.0-1.0*_a13   ;
-f_nmtrans1_ugs = 
-V(nbias)-1.0*f_nmtrans1_dir*V(gnd)-1.0*(1.0-1.0*f_nmtrans1_dir)*V(u_int1)   ;
-f_nmtrans1_uds = 
-(-1.0+2.0*f_nmtrans1_dir)*(V(u_int1)-1.0*V(gnd))   ;
-f_nmtrans1_ugsteff_val = 
-0.256e-1*_a14*_a15*ln(1.0+exp(39.06250000*f_nmtrans1_ugs-33.20312500))+(1.0-1.0*_a14)*_a15*(f_nmtrans1_ugs-0.85)   ;
-f_nmtrans1_udseff_val = 
-_a17*f_nmtrans1_ugsteff_val-0.5*_a16*_a17*(f_nmtrans1_ugsteff_val-1.0*f_nmtrans1_uds-0.1e-1+pow(pow(f_nmtrans1_ugsteff_val-1.0*f_nmtrans1_uds-0.1e-1,2)+0.4e-1*f_nmtrans1_ugsteff_val,0.5000000000))+(1.0-1.0*_a17)*_a16*f_nmtrans1_uds   ;
-f_nmtrans1_id = 
-(-1.0+2.0*f_nmtrans1_dir)*(0.9323451540e-4*(_a16*(f_nmtrans1_ugsteff_val*f_nmtrans1_udseff_val-0.5000000000*pow(f_nmtrans1_udseff_val,2))+0.5000000000*(1.0-1.0*_a16)*_a17*pow(f_nmtrans1_ugsteff_val,2))*(1.0+_a18*f_nmtrans1_uds/(81.08400577*f_nmtrans1_uds+29.62962962))+0.10e-11*f_nmtrans1_uds)   ;
-f_nmtrans2_dir = 
-_a19*(V(out1)-1.0*V(gnd) >= 0 ?  1.0 : 0.0 )+1.0-1.0*_a19   ;
-f_nmtrans2_ugs = 
-V(nbias)-1.0*f_nmtrans2_dir*V(gnd)-1.0*(1.0-1.0*f_nmtrans2_dir)*V(out1)   ;
-f_nmtrans2_uds = 
-(-1.0+2.0*f_nmtrans2_dir)*(V(out1)-1.0*V(gnd))   ;
-f_nmtrans2_ugsteff_val = 
-0.256e-1*_a20*_a21*ln(1.0+exp(39.06250000*f_nmtrans2_ugs-33.20312500))+(1.0-1.0*_a20)*_a21*(f_nmtrans2_ugs-0.85)   ;
-f_nmtrans2_udseff_val = 
-_a23*f_nmtrans2_ugsteff_val-0.5*_a22*_a23*(f_nmtrans2_ugsteff_val-1.0*f_nmtrans2_uds-0.1e-1+pow(pow(f_nmtrans2_ugsteff_val-1.0*f_nmtrans2_uds-0.1e-1,2)+0.4e-1*f_nmtrans2_ugsteff_val,0.5000000000))+(1.0-1.0*_a23)*_a22*f_nmtrans2_uds   ;
-f_nmtrans2_id = 
-(-1.0+2.0*f_nmtrans2_dir)*(0.9323451540e-4*(_a22*(f_nmtrans2_ugsteff_val*f_nmtrans2_udseff_val-0.5000000000*pow(f_nmtrans2_udseff_val,2))+0.5000000000*(1.0-1.0*_a22)*_a23*pow(f_nmtrans2_ugsteff_val,2))*(1.0+_a24*f_nmtrans2_uds/(81.08400577*f_nmtrans2_uds+29.62962962))+0.10e-11*f_nmtrans2_uds)   ;
-f_nmtrans3_dir = 
-_a25*(V(nbias)-1.0*V(gnd) >= 0 ?  1.0 : 0.0 )+1.0-1.0*_a25   ;
-f_nmtrans3_ugs = 
-V(nbias)-1.0*f_nmtrans3_dir*V(gnd)-1.0*(1.0-1.0*f_nmtrans3_dir)*V(nbias)   ;
-f_nmtrans3_uds = 
-(-1.0+2.0*f_nmtrans3_dir)*(V(nbias)-1.0*V(gnd))   ;
-f_nmtrans3_ugsteff_val = 
-0.256e-1*_a26*_a27*ln(1.0+exp(39.06250000*f_nmtrans3_ugs-33.20312500))+(1.0-1.0*_a26)*_a27*(f_nmtrans3_ugs-0.85)   ;
-f_nmtrans3_udseff_val = 
-_a29*f_nmtrans3_ugsteff_val-0.5*_a28*_a29*(f_nmtrans3_ugsteff_val-1.0*f_nmtrans3_uds-0.1e-1+pow(pow(f_nmtrans3_ugsteff_val-1.0*f_nmtrans3_uds-0.1e-1,2)+0.4e-1*f_nmtrans3_ugsteff_val,0.5000000000))+(1.0-1.0*_a29)*_a28*f_nmtrans3_uds   ;
-f_nmtrans3_id = 
-(-1.0+2.0*f_nmtrans3_dir)*(0.9323451540e-4*(_a28*(f_nmtrans3_ugsteff_val*f_nmtrans3_udseff_val-0.5000000000*pow(f_nmtrans3_udseff_val,2))+0.5000000000*(1.0-1.0*_a28)*_a29*pow(f_nmtrans3_ugsteff_val,2))*(1.0+_a30*f_nmtrans3_uds/(81.08400577*f_nmtrans3_uds+29.62962962))+0.10e-11*f_nmtrans3_uds)   ;
-f_pmbtrans9_dir = 
-_a31*(-1.0*V(u_int1)+V(pbias) >= 0 ?  1.0 : 0.0 )+1.0-1.0*_a31   ;
-f_pmbtrans9_ugs = 
--1.0*V(p_in)+f_pmbtrans9_dir*V(pbias)+(1.0-1.0*f_pmbtrans9_dir)*V(u_int1)   ;
-f_pmbtrans9_uds = 
-(-1.0+2.0*f_pmbtrans9_dir)*(-1.0*V(u_int1)+V(pbias))   ;
-f_pmbtrans9_ugsteff_val = 
-0.256e-1*_a32*_a33*ln(1.0+exp(39.06250000*f_pmbtrans9_ugs-44.53125000))+(1.0-1.0*_a32)*_a33*(f_pmbtrans9_ugs-1.14)   ;
-f_pmbtrans9_udseff_val = 
-_a35*f_pmbtrans9_ugsteff_val-0.5*_a34*_a35*(f_pmbtrans9_ugsteff_val-1.0*f_pmbtrans9_uds-0.1e-1+pow(pow(f_pmbtrans9_ugsteff_val-1.0*f_pmbtrans9_uds-0.1e-1,2)+0.4e-1*f_pmbtrans9_ugsteff_val,0.5000000000))+(1.0-1.0*_a35)*_a34*f_pmbtrans9_uds   ;
-f_pmbtrans9_id = 
-(-1.0+2.0*f_pmbtrans9_dir)*(0.2935160670e-3*(_a34*(f_pmbtrans9_ugsteff_val*f_pmbtrans9_udseff_val-0.5000000000*pow(f_pmbtrans9_udseff_val,2))+0.5000000000*(1.0-1.0*_a34)*_a35*pow(f_pmbtrans9_ugsteff_val,2))*(1.0+_a36*f_pmbtrans9_uds/(81.08400577*f_pmbtrans9_uds+94.11764706))+0.10e-11*f_pmbtrans9_uds)   ;
-f_pmbtrans20_dir = 
-_a37*(-1.0*V(out1)+V(pbias) >= 0 ?  1.0 : 0.0 )+1.0-1.0*_a37   ;
-f_pmbtrans20_ugs = 
--1.0*V(n_in)+f_pmbtrans20_dir*V(pbias)+(1.0-1.0*f_pmbtrans20_dir)*V(out1)   ;
-f_pmbtrans20_uds = 
-(-1.0+2.0*f_pmbtrans20_dir)*(-1.0*V(out1)+V(pbias))   ;
-f_pmbtrans20_ugsteff_val = 
-0.256e-1*_a38*_a39*ln(1.0+exp(39.06250000*f_pmbtrans20_ugs-44.53125000))+(1.0-1.0*_a38)*_a39*(f_pmbtrans20_ugs-1.14)   ;
-f_pmbtrans20_udseff_val = 
-_a41*f_pmbtrans20_ugsteff_val-0.5*_a40*_a41*(f_pmbtrans20_ugsteff_val-1.0*f_pmbtrans20_uds-0.1e-1+pow(pow(f_pmbtrans20_ugsteff_val-1.0*f_pmbtrans20_uds-0.1e-1,2)+0.4e-1*f_pmbtrans20_ugsteff_val,0.5000000000))+(1.0-1.0*_a41)*_a40*f_pmbtrans20_uds   ;
-f_pmbtrans20_id = 
-(-1.0+2.0*f_pmbtrans20_dir)*(0.2935160670e-3*(_a40*(f_pmbtrans20_ugsteff_val*f_pmbtrans20_udseff_val-0.5000000000*pow(f_pmbtrans20_udseff_val,2))+0.5000000000*(1.0-1.0*_a40)*_a41*pow(f_pmbtrans20_ugsteff_val,2))*(1.0+_a42*f_pmbtrans20_uds/(81.08400577*f_pmbtrans20_uds+94.11764706))+0.10e-11*f_pmbtrans20_uds)   ;
-
- // --- Ende der expliziten Gleichungen ---
-
- // --- Begin der impliziten Gleichungen ---
-
- // Vars ohne: 
-  I(u_int1) <+ 
--1.0*f_pmtrans1_id+1.0*f_nmtrans1_id-1.0*f_pmbtrans9_id   ;
-
- // Subs-Diff Gleichungen: 
-
- // Stromgleichungen: 
-  I(p_in) <+ 
-  (   0   );
-  I(n_in) <+ 
-  (   0   );
-  I(out1) <+ 
-  (   f_pmtrans2_id-1.0*f_nmtrans2_id+f_pmbtrans20_id   );
-  I(pbias) <+ 
-  (   -1.0*f_pmbtrans9_id-1.0*f_pmbtrans20_id   );
-  I(nbias) <+ 
-  (   -1.0*f_nmtrans3_id   );
-  I(vdd) <+ 
-  (   -1.0*f_pmtrans1_id-1.0*f_pmtrans2_id   );
-  I(gnd) <+ 
-  (   f_nmtrans1_id+f_nmtrans2_id+f_nmtrans3_id   );
+I(vdd,out1) <+ u_diff * gm;
 
   end
 endmodule
