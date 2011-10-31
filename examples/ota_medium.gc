@@ -46,6 +46,7 @@ Ip pbias 0 -1e-4
 
 * I_{CE} = 100* I_{BE}
 
+.listnodes
 
 .print tran v(nodes)
 

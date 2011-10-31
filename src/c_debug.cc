@@ -226,7 +226,7 @@ public:
     _out.outreset();
   }
 } p6;
-DISPATCHER<CMD>::INSTALL d6(&command_dispatcher, "nodelist", &p6);
+DISPATCHER<CMD>::INSTALL d6(&command_dispatcher, "nodelist|listnodes", &p6);
 /*--------------------------------------------------------------------------*/
 void CMD_NL::print( OMSTREAM _out, const CARD_LIST* scope){
 
@@ -237,8 +237,8 @@ void CMD_NL::print( OMSTREAM _out, const CARD_LIST* scope){
     if (i->first != "0") {
       stringstream s;
       s << setw(8) << i->second->long_label() << " vector position " << 
-        ", m_ " << i->second->m_() << " , matrix " << i->second->matrix_number() 
-        << ", use " << i->second->user_number() << 
+        ", m_ " << i->second->m_() << " , matrix_number " << i->second->matrix_number() 
+        << ", user_number " << i->second->user_number() << 
         " x-Entry " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
       _out << s.str();
     }else{
