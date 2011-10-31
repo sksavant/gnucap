@@ -6,7 +6,7 @@
 
 `include "discipline.h"
 
-module ota_simpl(  p_in , n_in , out1 , pbias , nbias , vdd , gnd);
+module ota_medium(  p_in , n_in , out1 , pbias , nbias , vdd , gnd);
 
 // Ein- und Ausgangsknoten deklarieren:
 inout  p_in , n_in , out1 , pbias , nbias , vdd , gnd;
