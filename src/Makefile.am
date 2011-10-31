@@ -148,7 +148,7 @@ RAW_HDRS += d_vvp.h d_ivl.h e_ivl_compile.h d_ivl_ports.h
 endif
 
 if ADMS
-RAW_SRCS += d_hicum0.cc d_ota_simpl.cc
+RAW_SRCS += d_hicum0.cc d_ota_simpl.cc d_ota_medium.cc
 endif
 #------------------------------------------------------------------------ 
 ## The modelgen generated files
