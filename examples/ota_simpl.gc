@@ -3,13 +3,15 @@ spice
 * vorsicht: nodenames case-sensitive
 
 Vcc ncc 0 5
-V1 p_in 0  sin(frequency=1, amplitude=0.002, offset=0.025)
+V1 p_in 0  sin(frequency=1, amplitude=0.002, offset=0.)
 
 .list
 
 .verilog
 
-paramset myota ota_simpl;  endparamset
+paramset myota ota_simpl;  
+.v_t=0.001;
+endparamset
 
 myota OTA0 (p_in , 0 , out1 , ncc , 0);
 
