@@ -2589,6 +2589,7 @@ private:
 	const $(MODEL_NAME)* _model;
 	node_t _nodes[MATRIX_NODES];
 
+
 private:
 	explicit $(DEV_NAME)(const $(DEV_NAME)& p);
 public:
@@ -2684,13 +2685,18 @@ protected: // implementation
 private:
 	// nodes / matrix indexes
 
+	public:
 	<admst:text format="\tenum ENodes {"/>
+
   
   	<admst:join select="node[grounded='no']" separator=",">  
     	<admst:value-of select="name"/>  
     	<admst:text format=" %sNode=%(position(.)-1)"/>    
   	</admst:join>
-  	<admst:text format=" };"/>
+	<admst:text format=" };"/>
+	private:
+
+	double BP2(  ENodes p,  ENodes n  ) const;
 	double it0[%(count(node[grounded='no']))];
 	double it1[%(count(node[grounded='no']))];
 	
@@ -3532,8 +3538,14 @@ void $(DEV_NAME)::pzLoad(COMPLEX s)
 </admst:for-each>
 }
 // -------------------------------------------------------------------------- //
-#define NP(p) _n[p##Node].v0()
-#define BP(p,n) (NP(p)-NP(n))
+#define NP(p) min(100.,max(-100., _n[p##Node].v0()) )
+// #define BP(p,n) (NP(p)-NP(n))
+#define BP(p,n) (BP2( p##Node, n##Node ))
+
+inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  ) const{
+	assert(is_number( _n[p].v0() - _n[n].v0() ));
+	return  min( 100. , max (  _n[p].v0() - _n[n].v0(), -100. ));
+}
 
 #define _STATIC
 #define _DYNAMIC

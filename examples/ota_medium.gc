@@ -3,7 +3,7 @@ spice
 * vorsicht: nodenames case-sensitive
 
 Vcc ncc 0 3.3
-V1 nin 0  sin(frequency=1, amplitude=0.1, offset={3.3/2})
+V1 nin 0  sin(frequency=1, amplitude=0.00001, offset={3.3/2})
 
 Vhalf n_in 0 {3.3/2}
 
@@ -27,8 +27,10 @@ Rin nin p_in 10k
 R1 out1 0 10k
 *R2 0 nout 10
 
-Vp pbias 0 2.7
-Vn nbias 0 0.7
+
+
+Vp pbias 0 2.9
+Vn nbias 0 n
 
 *Ip pbias 0 10u
 *In nbias 0 0
@@ -55,7 +57,11 @@ Vn nbias 0 0.7
 
 .print tran v(nodes) I(V*) I(R1)
 
+
+.sweep 10  n 1.9 2.3
 .tran .1 1 
+go
+
 *trace v
 
 .param a=1.0e-16
