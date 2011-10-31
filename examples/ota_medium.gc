@@ -23,10 +23,10 @@ spice
 
 Rin nin p_in 10k
 R1 out1 nout 10k
-R1 0 nout 10k
+R2 0 nout 10k
 
-In nbias 0 -1e-4
-Ip pbias 0 -1e-4
+Vn nbias 0 1.7
+Vp pbias 0 0.7
 
 *                 o ncc
 *                 |
