@@ -26,7 +26,9 @@ analog begin
 u_diff = V(p_in) - V(n_in);
 gm = 0.01 / (2 * v_t);
 
-I(vdd,out1) <+ u_diff * gm;
+
+I(gnd,out1) <+ u_diff * gm;
+
 
   end
 endmodule
