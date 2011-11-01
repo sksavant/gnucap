@@ -739,6 +739,11 @@
   </admst:choose>
 </admst:template>
 <!-- ====================================== -->
+<admst:for-each select="/module">
+<!-- definition of variables -->
+<admst:variable name="module" path="name"/>
+</admst:for-each>
+
 <admst:template match="c:math_h">
 inline double _cos(double arg)             { return  cos(arg); }
 inline double _d0_cos(double arg)          { return (-sin(arg)); }
@@ -876,106 +881,6 @@ double $(module)_d_$(function) (<admst:join select="variable[input='yes']" separ
   </admst:join>;
 }
 
-</admst:for-each>
-#ifdef STAND_ALONE
-int
-main(void)
-{
-<admst:for-each select="/module/analogfunction">
-
-
-<admst:variable name="myfunction" select="triangle"/>
-<admst:variable name="function" select="%(name)"/>
-  double my$function, myd_$function, <admst:join select="variable[input='yes']" separator=", ">
-    
-    <admst:text format="my$function%(name)=0.0"/>
-  </admst:join>;
-  my$function=$(module)_$function(<admst:join select="variable[input='yes']" separator=", ">
-    
-    <admst:text format="my$function%(name)"/>
-  </admst:join>);
-  myd_$function=$(module)_d_$function(<admst:join select="variable[input='yes']" separator=", ">
-    
-    <admst:text format="my$function%(name)"/>
-  </admst:join>,<admst:join select="variable[input='yes']" separator=", ">
-    <admst:text format="1.0"/>
-  </admst:join>);
-  printf(&quot;my$function=%%e\\n&quot;,my$function);
-  printf(&quot;myd_$function=%%e\\n&quot;,myd_$function);</admst:for-each>
-  printf(&quot;(1.0,1.0) norm0=%%e dnorm0=%%e [expected: 1.0]\\n&quot;,          $(module)_norm(1.0,1.0,0.0), $(module)_d_norm(1.0,1.0,0.0,1.0,1.0,1.0));
-  printf(&quot;(1.0,1.0) norm1=%%e dnorm1=%%e [expected: 2.0]\\n&quot;,          $(module)_norm(1.0,1.0,1.0), $(module)_d_norm(1.0,1.0,1.0,1.0,1.0,1.0));
-  printf(&quot;(1.0,1.0) norm2=%%e dnorm2=%%e [expected: sqrt(2.0)=%%e]\\n&quot;,$(module)_norm(1.0,1.0,2.0), $(module)_d_norm(1.0,1.0,2.0,1.0,1.0,1.0),sqrt(2));
-  double x,xnb=500.0,xmin=0.0,xmax=10.0,xstep=(xmax-xmin)/xnb;
-  FILE*y=fopen("y.data","w");
-  FILE*dy=fopen("dy.data","w");
-  for(x=xmin;x&lt;=xmax;x+=xstep)
-  {
-    fprintf(y,&quot;%%.2f %%.2f\\n&quot;,x,$(module)_$myfunction(x));
-    fprintf(dy,&quot;%%.2f %%.2f\\n&quot;,x,$(module)_d_$myfunction(x,1.0));
-  }
-  fclose(y);
-  fclose(dy);
-  return 0;
-}
-#endif /* STAND_ALONE */
-
-</admst:template>
-
-<admst:variable name="globalanalogfunction"/>
-<admst:open file="analogfunction.h">/*
- * analogfunction.h - analog function header
- *
- * This is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * 
- */
-
-#ifdef __cplusplus
-extern &quot;C&quot;
-{
-#endif /*__cplusplus*/
-
-#ifndef __$(module)_ANALOGFUNCTION_H__
-#define __$(module)_ANALOGFUNCTION_H__
-
-<admst:apply-templates select="/module" match="analogfunctionH"/>
-#endif /* __$(module)_ANALOGFUNCTION_H__ */
-#ifdef __cplusplus
-}
-#endif /*__cplusplus*/
-
-</admst:open>
-<admst:message format="analogfunction.h created\n"/>
-<admst:open file="analogfunction.cpp">/*
- * analogfunction.cpp - analog function implementations
- *
- * This is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- * 
- */
-
-
-#include &lt;stdio.h&gt;
-#include &quot;analogfunction.h&quot;
-#include &lt;math.h&gt;
-
-#ifdef __cplusplus
-extern &quot;C&quot;
-{
-#endif /*__cplusplus*/
-  <admst:apply-templates select="." match="c:math_h"/>
-  <admst:apply-templates select="/module" match="analogfunctionC">
-  </admst:apply-templates>
-#ifdef __cplusplus
-}
-#endif /*__cplusplus*/
-
-</admst:open>
-<admst:message format="analogfunction.cpp created\n"/>
-
-
+  </admst:for-each>
+ </admst:template>
 </admst>
