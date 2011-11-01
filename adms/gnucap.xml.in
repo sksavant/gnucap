@@ -2489,6 +2489,9 @@
 <admst:variable name="module" select="%s"/>
 <admst:variable name="DEV_NAME" select="DEV_%(upper-case(name))"/>
 <admst:variable name="MODEL_NAME" select="MODEL_%(upper-case(name))"/>
+#ifndef $(module)_header__
+#define $(module)_header__
+#endif
 #pragma once
 
 #include <stdio.h>
@@ -2502,6 +2505,10 @@
 // customization - gnucap specific constants
 #define VALUE_NAME "#"
 #define TAIL_SIZE 1
+
+// myfunc
+<admst:apply-templates select="." match="X3c:myfunc:math_h"/>
+/// myfunc
 
 #define SPICE_LETTER "\0"
 #define DEVICE_TYPE "dev_$(module)"
@@ -6379,9 +6386,13 @@ int $(DEV_NAME)::load(int mode)
 <admst:text format="\n"/>
 </admst:template>
 
+<admst:template match="X3c:myfunc:math_h">
+inline double doh(double x)            {return  log(1+exp(x)); }
+inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
+</admst:template>
+
+
 <admst:template match="X3c:analogfunction:math_h">
-inline double doh(double arg)            {return  ln(1+exp(x)); }
-inline double d_doh(double arg)          {return  exp(x)/(exp(x) + 1); }
 inline double _cos(double arg)             { return  cos(arg); }
 inline double _d0_cos(double arg)          { return (-sin(arg)); }
 inline double _sin(double arg)             { return  sin(arg); }
@@ -6630,4 +6641,3 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
 	
 </admst:template>
 
-</admst>

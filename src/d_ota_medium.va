@@ -18,12 +18,12 @@ doh = ln(1.0+exp(x));
 end
 endfunction
 
-analog function real d_doh;
-input x;
-begin
-d_doh = ln(1.0+exp(x));
-end
-endfunction
+//analog function real d_doh;
+//input x;
+//begin
+//d_doh = ln(1.0+exp(x));
+//end
+//endfunction
 
  // Switches.
  parameter real _a1 = 1.0 ;
