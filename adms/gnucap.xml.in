@@ -2749,7 +2749,9 @@ private:
 
 //analog function stuff
 
-<admst:apply-templates select="." match="analogfunctionC"/>
+<!--	<admst:apply-templates select="." match="c:math_h"/> -->
+		<admst:apply-templates select="/module" match="analogfunctionC">
+				</admst:apply-templates> 
 
 
 <admst:value-of select="attribute[name='ngspicename']/value"/>
@@ -6312,6 +6314,7 @@ int $(DEV_NAME)::load(int mode)
       <admst:variable name="module:desc" select="no description"/>
     </admst:otherwise>
   </admst:choose>
+  <admst:variable name="globalanalogfunction"/>
   <admst:variable name="file" select="%(attribute[name='ngspicename']/value).hxx"/>
   <admst:open file="$file">
   	<admst:apply-templates select="." match="X3wrapper"/>
@@ -6475,8 +6478,8 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 #define _dx_div(dx,xy,x,y)
 #define _dy_div(dy,dx,xy,x,y)    dy = -xy*dx;
 
-#define _limexp(val,arg)         val = ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90)));
-#define _d_limexp(val,dval,arg)  val = ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); dval = val;
+//#define _limexp(val,arg)         val = ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90)));
+//#define _d_limexp(val,dval,arg)  val = ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); dval = val;
 #define _fabs(val,arg)           val = fabs(arg);
 #define _d_fabs(val,dval,arg)    val = fabs(arg);    dval = (((val)>=0)?(+1.0):(-1.0));
 #define _abs(val)                ((val)<(0) ? (-(val)):(val))
