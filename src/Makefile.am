@@ -149,7 +149,7 @@ endif
 
 if ADMS
 ADMS_SRCS = d_hicum0.cc d_ota_simpl.cc d_ota_medium.cc
-RAW_SRCS += ADMS_SRCS
+RAW_SRCS += $(ADMS_SRCS)
 endif
 #------------------------------------------------------------------------ 
 ## The modelgen generated files
