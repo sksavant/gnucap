@@ -2483,7 +2483,9 @@
 
 <!-- ************************************** Make File .h ******************************* -->
 
+
 <admst:open file="$(filename).h">
+  <admst:apply-templates select="." match="c:math_h"/>
 <admst:for-each select="/module">
 <admst:value-of select="attribute[name='ngspicename']/value"/>
 <admst:variable name="module" select="%s"/>
@@ -2491,8 +2493,6 @@
 <admst:variable name="MODEL_NAME" select="MODEL_%(upper-case(name))"/>
 #ifndef $(module)_header__
 #define $(module)_header__
-#endif
-#pragma once
 
 #include <stdio.h>
 
@@ -2506,9 +2506,10 @@
 #define VALUE_NAME "#"
 #define TAIL_SIZE 1
 
+<!--
 // myfunc
-<admst:apply-templates select="." match="X3c:myfunc:math_h"/>
 /// myfunc
+-->
 
 #define SPICE_LETTER "\0"
 #define DEVICE_TYPE "dev_$(module)"
@@ -2731,18 +2732,25 @@ private:
 };
 
 </admst:for-each>
+#endif
 </admst:open>
 
 <!-- ************************************************************************************* -->
 <!-- ********************************* Make _common.cc *********************************** -->
 <!-- ************************************************************************************* -->
 
+<admst:variable name="globalanalogfunction"/>
 <admst:open file="$(filename).cc">
 #include <limits>
 
 #include "$(filename).h"
-
 <admst:for-each select="/module">
+
+//analog function stuff
+
+<admst:apply-templates select="." match="analogfunctionC"/>
+
+
 <admst:value-of select="attribute[name='ngspicename']/value"/>
 <admst:variable name="module" select="%s"/>
 <admst:variable name="DEV_NAME" select="DEV_%(upper-case(name))"/>
@@ -6309,6 +6317,7 @@ int $(DEV_NAME)::load(int mode)
   	<admst:apply-templates select="." match="Printhxxwrapperdefines"/>
     <admst:apply-templates select="." match="Printhxxdefines"/>
     <admst:apply-templates select="." match="X3c:math_h"/>
+	 <admst:apply-templates select="/module" match="analogfunctionH"/>
     <admst:apply-templates select="analog/code" match="X3analog:evaluate"/>
     <!--admst:message format="$file: created\n"/-->
   </admst:open>

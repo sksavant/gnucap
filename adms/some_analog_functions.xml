@@ -738,6 +738,7 @@
     </admst:otherwise>
   </admst:choose>
 </admst:template>
+<!-- ====================================== -->
 <admst:template match="c:math_h">
 inline double _cos(double arg)             { return  cos(arg); }
 inline double _d0_cos(double arg)          { return (-sin(arg)); }
