@@ -174,9 +174,9 @@ protected:
   virtual double    tr_probe_num(const std::string&)const;
   virtual double    tt_probe_num(const std::string&)const;
 
-  void    ac_begin(){assert(false);}          //BASE_SUBCKT
-  void    do_ac(){assert( false);}             //BASE_SUBCKT
-  void    ac_load(){assert(false);}           //BASE_SUBCKT
+//  void    ac_begin(){}          //BASE_SUBCKT
+//  void    do_ac(){}             //BASE_SUBCKT
+//  void    ac_load(){}           //BASE_SUBCKT
   //XPROBE  ac_probe_ext(CS&)const;//CKT_BASE/nothing
 public:
   static int  count() {return _count;}
