@@ -3583,7 +3583,7 @@ int $(DEV_NAME)::load(int mode)
 </admst:for-each>
 </admst:open>
 
-<!-- ****************************** ngspiseMODULE.hxx.xml ************************* -->
+<!-- ****************************** ngspiceMODULE.hxx.xml ************************* -->
 <admst:variable name="pprobe"/>
 <admst:variable name="qprobe"/>
 <admst:variable name="e"/>
@@ -6380,6 +6380,8 @@ int $(DEV_NAME)::load(int mode)
 </admst:template>
 
 <admst:template match="X3c:analogfunction:math_h">
+inline double doh(double arg)            {return  ln(1+exp(x)); }
+inline double d_doh(double arg)          {return  exp(x)/(exp(x) + 1); }
 inline double _cos(double arg)             { return  cos(arg); }
 inline double _d0_cos(double arg)          { return (-sin(arg)); }
 inline double _sin(double arg)             { return  sin(arg); }
@@ -6456,6 +6458,7 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
 #define _circuit_tnom                (OPT::tnom_c + CONSTCtoK)
 #define _circuit_temp      (CKT_BASE::_sim->_temp_c + CONSTCtoK)
 #define _scale             1.0
+
 
 #define _cos(val,arg)            val = cos(arg);
 #define _d_cos(val,dval,arg)     val = cos(arg);     dval = (-sin(arg));

@@ -9,7 +9,7 @@ spice
 
 *Vcc ndd 0 pulse(iv=0, pv=vdd, rise=1)
 Vcc ndd 0 vdd
-Vdelta nin n_in  sin(frequency=1, amplitude=0.01, offset=0)
+Vdelta nin n_in  sin(frequency=1, amplitude=0.1, offset=0)
 
 Rhalf1 n_in 0 100
 Rhalf2 n_in ndd 100
@@ -36,7 +36,7 @@ R1 out1 0 100k
 
 Ip ndd pbias pulse(iv=0 pv=0.9u, rise=1)
 Rp ndd pbias 500k
-In 0 nbias pulse(iv=0, pv=1.3u ,rise=1)
+In 0 nbias pulse(iv=0, pv=1.7u ,rise=1)
 Rp 0 nbias 500k
 
 *                 o ndd
