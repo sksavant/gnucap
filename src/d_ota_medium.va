@@ -118,10 +118,8 @@ f_pmtrans1_ugs =
 -1.0*V(u_int1)+f_pmtrans1_dir*V(vdd)+(1.0-1.0*f_pmtrans1_dir)*V(u_int1)   ;
 f_pmtrans1_uds = 
 (-1.0+2.0*f_pmtrans1_dir)*(-1.0*V(u_int1)+V(vdd))   ;
-f_pmtrans1_ugsteff_val = 
-0.256e-1*_a2*_a3*39.06250000*ln(1.0+exp(f_pmtrans1_ugs-44.53125000/39.06250000))+(1.0-1.0*_a2)*_a3*(f_pmtrans1_ugs-1.14)   ;
-f_pmtrans1_udseff_val = 
-_a5*f_pmtrans1_ugsteff_val-0.5*_a4*_a5*(f_pmtrans1_ugsteff_val-1.0*f_pmtrans1_uds-0.1e-1+pow(pow(f_pmtrans1_ugsteff_val-1.0*f_pmtrans1_uds-0.1e-1,2)+0.4e-1*f_pmtrans1_ugsteff_val,0.5000000000))+(1.0-1.0*_a5)*_a4*f_pmtrans1_uds   ;
+f_pmtrans1_ugsteff_val = 0.256e-1*_a2*_a3*39.06250000*ln(1.0+exp((f_pmtrans1_ugs-44.53125000/39.06250000)*1.0))/1.0+(1.0-1.0*_a2)*_a3*(f_pmtrans1_ugs-1.14);
+f_pmtrans1_udseff_val = _a5*f_pmtrans1_ugsteff_val-0.5*_a4*_a5*(f_pmtrans1_ugsteff_val-1.0*f_pmtrans1_uds-0.1e-1+pow(pow(f_pmtrans1_ugsteff_val-1.0*f_pmtrans1_uds-0.1e-1,2)+0.4e-1*f_pmtrans1_ugsteff_val,0.5000000000))+(1.0-1.0*_a5)*_a4*f_pmtrans1_uds ;
 f_pmtrans1_id = 
 (-1.0+2.0*f_pmtrans1_dir)*(0.5870321340e-4*(_a4*(f_pmtrans1_ugsteff_val*f_pmtrans1_udseff_val-0.5000000000*pow(f_pmtrans1_udseff_val,2))+0.5000000000*(1.0-1.0*_a4)*_a5*pow(f_pmtrans1_ugsteff_val,2))*(1.0+_a6*f_pmtrans1_uds/(81.08400577*f_pmtrans1_uds+94.11764706))+0.10e-11*f_pmtrans1_uds)   ;
 f_pmtrans2_dir = 

@@ -236,6 +236,9 @@ ADMS_GC_XML=../adms/gnucap.xml
 if ADMS
 $(ADMS_SRCS): $(ADMS_GC_XML)
 
+$(ADMS_GC_XML):
+	make -C ../adms
+
 endif
 
 d_vvp.lo extlib.lo: CPPFLAGS+= @IVERILOG_INCLUDE@
