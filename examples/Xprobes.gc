@@ -1,3 +1,5 @@
+
+spice
 * test subckt node probes
 
 .subckt half a1 a2
@@ -27,3 +29,5 @@ V2 ne3 0 2
 .tran 1 5 
 
 .nodelist
+
+.end
