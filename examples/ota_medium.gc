@@ -2,6 +2,12 @@
 spice
 * vorsicht: nodenames case-sensitive
 
+Vcc ncc 0 3.3
+V1 ninp 0  sin(frequency=1, amplitude=0.1, offset={3.3/2})
+
+Vhalf ninn 0 {3.3/2}
+
+.list
 .options abstol=1e-10
 .options reltol=1e-3
 
@@ -23,16 +29,14 @@ Rhalf2 n_in ndd 100
 paramset myota ota_medium; .tnom=20; endparamset
 
 
-myota OTA0(  p_in , n_in , out1 , pbias , nbias , ndd , 0);
+myota OTA0(  ninp , ninn , out1 , pbias , nbias , ncc , 0);
 
 spice
 
-Rin nin p_in 10k
-R1 out1 0 100k
-*R2 0 nout 10
+R1 out1 0 100
 
-*Vp pbias 0 pulse(iv=0, pv=2.056, rise=1)
-*Vn nbias 0 pulse(iv=0, pv=0.693, rise=1)
+*Vp pbias 0 2.0
+*Vn nbias 0 1.7
 
 Ip ndd pbias pulse(iv=0 pv=0.9u, rise=1)
 Rp ndd pbias 500k
@@ -69,8 +73,5 @@ Rp 0 nbias 500k
 
 *trace v
 
-.param a=1.0e-16
-
-*.tran 2
 
 .end
