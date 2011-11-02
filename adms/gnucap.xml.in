@@ -2483,13 +2483,16 @@
 
 <!-- ************************************** Make File .h ******************************* -->
 
+
 <admst:open file="$(filename).h">
+  <admst:apply-templates select="." match="c:math_h"/>
 <admst:for-each select="/module">
 <admst:value-of select="attribute[name='ngspicename']/value"/>
 <admst:variable name="module" select="%s"/>
 <admst:variable name="DEV_NAME" select="DEV_%(upper-case(name))"/>
 <admst:variable name="MODEL_NAME" select="MODEL_%(upper-case(name))"/>
-#pragma once
+#ifndef $(module)_header__
+#define $(module)_header__
 
 #include <stdio.h>
 
@@ -2502,6 +2505,11 @@
 // customization - gnucap specific constants
 #define VALUE_NAME "#"
 #define TAIL_SIZE 1
+
+<!--
+// myfunc
+/// myfunc
+-->
 
 #define SPICE_LETTER "\0"
 #define DEVICE_TYPE "dev_$(module)"
@@ -2588,6 +2596,7 @@ private:
 	std::string _modelname;
 	const $(MODEL_NAME)* _model;
 	node_t _nodes[MATRIX_NODES];
+
 
 private:
 	explicit $(DEV_NAME)(const $(DEV_NAME)& p);
@@ -2684,13 +2693,18 @@ protected: // implementation
 private:
 	// nodes / matrix indexes
 
+	public:
 	<admst:text format="\tenum ENodes {"/>
+
   
   	<admst:join select="node[grounded='no']" separator=",">  
     	<admst:value-of select="name"/>  
     	<admst:text format=" %sNode=%(position(.)-1)"/>    
   	</admst:join>
-  	<admst:text format=" };"/>
+	<admst:text format=" };"/>
+	private:
+
+	double BP2(  ENodes p,  ENodes n  ) const;
 	double it0[%(count(node[grounded='no']))];
 	double it1[%(count(node[grounded='no']))];
 	
@@ -2718,18 +2732,25 @@ private:
 };
 
 </admst:for-each>
+#endif
 </admst:open>
 
 <!-- ************************************************************************************* -->
 <!-- ********************************* Make _common.cc *********************************** -->
 <!-- ************************************************************************************* -->
 
+<admst:variable name="globalanalogfunction"/>
 <admst:open file="$(filename).cc">
 #include <limits>
 
 #include "$(filename).h"
-
 <admst:for-each select="/module">
+
+//analog function stuff
+
+<admst:apply-templates select="." match="analogfunctionC"/>
+
+
 <admst:value-of select="attribute[name='ngspicename']/value"/>
 <admst:variable name="module" select="%s"/>
 <admst:variable name="DEV_NAME" select="DEV_%(upper-case(name))"/>
@@ -3532,8 +3553,14 @@ void $(DEV_NAME)::pzLoad(COMPLEX s)
 </admst:for-each>
 }
 // -------------------------------------------------------------------------- //
-#define NP(p) _n[p##Node].v0()
-#define BP(p,n) (NP(p)-NP(n))
+#define NP(p) min(100.,max(-100., _n[p##Node].v0()) )
+// #define BP(p,n) (NP(p)-NP(n))
+#define BP(p,n) (BP2( p##Node, n##Node ))
+
+inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  ) const{
+	assert(is_number( _n[p].v0() - _n[n].v0() ));
+	return  min( 100. , max (  _n[p].v0() - _n[n].v0(), -100. ));
+}
 
 #define _STATIC
 #define _DYNAMIC
@@ -3571,7 +3598,7 @@ int $(DEV_NAME)::load(int mode)
 </admst:for-each>
 </admst:open>
 
-<!-- ****************************** ngspiseMODULE.hxx.xml ************************* -->
+<!-- ****************************** ngspiceMODULE.hxx.xml ************************* -->
 <admst:variable name="pprobe"/>
 <admst:variable name="qprobe"/>
 <admst:variable name="e"/>
@@ -6290,6 +6317,7 @@ int $(DEV_NAME)::load(int mode)
   	<admst:apply-templates select="." match="Printhxxwrapperdefines"/>
     <admst:apply-templates select="." match="Printhxxdefines"/>
     <admst:apply-templates select="." match="X3c:math_h"/>
+	 <admst:apply-templates select="/module" match="analogfunctionH"/>
     <admst:apply-templates select="analog/code" match="X3analog:evaluate"/>
     <!--admst:message format="$file: created\n"/-->
   </admst:open>
@@ -6366,6 +6394,12 @@ int $(DEV_NAME)::load(int mode)
 </admst:if>
 <admst:text format="\n"/>
 </admst:template>
+
+<admst:template match="X3c:myfunc:math_h">
+inline double doh(double x)            {return  log(1+exp(x)); }
+inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
+</admst:template>
+
 
 <admst:template match="X3c:analogfunction:math_h">
 inline double _cos(double arg)             { return  cos(arg); }
@@ -6444,6 +6478,7 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
 #define _circuit_tnom                (OPT::tnom_c + CONSTCtoK)
 #define _circuit_temp      (CKT_BASE::_sim->_temp_c + CONSTCtoK)
 #define _scale             1.0
+
 
 #define _cos(val,arg)            val = cos(arg);
 #define _d_cos(val,dval,arg)     val = cos(arg);     dval = (-sin(arg));
@@ -6615,4 +6650,3 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
 	
 </admst:template>
 
-</admst>
