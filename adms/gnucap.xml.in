@@ -1849,7 +1849,7 @@
     <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
   </admst:if>
   <admst:if test="[input='no' and scope='global_instance']">
-    <admst:value-to select="/simulator/tmp" value="%s"/>
+    <admst:value-to select="/simulator/tmp" value="$(var_prefix)%s"/>
   </admst:if>
   <admst:if test="[parametertype!='analogfunction' and scope='local']">
     <admst:value-to select="/simulator/tmp" value="%s"/>
@@ -1860,7 +1860,7 @@
   <admst:text test="[input='yes' and parametertype='model']" format="_model-&gt;%(name)"/>
   <admst:text test="[input='yes' and parametertype='instance']" format="_model-&gt;%(name)"/>
   <admst:text test="[input='no' and scope='global_model']" format="_model-&gt;%(name)"/>
-  <admst:text test="[input='no' and scope='global_instance']" format="%(name)"/>
+  <admst:text test="[input='no' and scope='global_instance']" format="$(var_prefix)%(name)"/>
   <admst:text test="[scope='local']" format="%(name)"/>
 </admst:template>
 <!-- handle analog//callfunctions -->
@@ -2693,8 +2693,18 @@ protected: // implementation
 	};
 	int load(int mode);
 
+private:
+	// variables of verilog-module
+	<admst:for-each select="variable[input='no' and scope='global_instance']">
+	<admst:choose>
+			<admst:when test="[type='real']"><admst:text format="\n\tdouble $(var_prefix)%(.);"/></admst:when>
+			<admst:when test="[type='integer']"><admst:text format="\n\tint $(var_prefix)%(.);"/></admst:when>
+			<admst:otherwise><admst:text format="\n\tstd::string $(var_prefix)%(.);"/></admst:otherwise>
+	</admst:choose>
+	</admst:for-each>
+
+private:
 	// analogfunctions of verilog-modul
-private:	
 	<admst:apply-templates select="/module" match="analogfunctionH"/>
 
 private:
@@ -3586,13 +3596,13 @@ int $(DEV_NAME)::load(int mode)
 	if (_time[1] != 0 && _method_a == mTRAP) CKTag0 = 2 / _dt;
 	else CKTag0 = 1 / _dt;
 
-	<admst:for-each select="variable[input='no' and scope='global_instance']">
+	<!--admst:for-each select="variable[input='no' and scope='global_instance']">
 	<admst:choose>
 			<admst:when test="[type='real']"><admst:text format="\n\tdouble %(.) = 0.0;"/></admst:when>
 			<admst:when test="[type='integer']"><admst:text format="\n\tint %(.) = 0;"/></admst:when>
 			<admst:otherwise><admst:text format="\n\tstd::string %(.);"/></admst:otherwise>
 	</admst:choose>
-	</admst:for-each>
+	</admst:for-each-->
 
 	<admst:text format="\n\tstd::fill_n(m_ac_static, %(count(jacobian)), 0);"/>
 	<admst:text format="\n\tstd::fill_n(m_ac_dynamic, %(count(jacobian)), 0);"/>
@@ -4609,7 +4619,7 @@ int $(DEV_NAME)::load(int mode)
       <admst:variable name="e" select="pSpiceModel-&gt;%(name)"/>
     </admst:when>
     <admst:when test="[input='no' and scope='global_instance']">
-      <admst:variable name="e" select="%(name)"/>
+      <admst:variable name="e" select="$(var_prefix)%(name)"/>
     </admst:when>
     <admst:otherwise>
       <admst:variable name="e" select="%(name)"/>
