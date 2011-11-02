@@ -2704,7 +2704,8 @@ private:
 	</admst:for-each>
 
 private:
-	// analogfunctions of verilog-modul
+// analogfunctions of verilog-modul
+
 	<admst:apply-templates select="/module" match="analogfunctionH"/>
 
 private:
