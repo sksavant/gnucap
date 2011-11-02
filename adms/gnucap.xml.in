@@ -2754,11 +2754,6 @@ private:
 //analog function stuff
 
 <!--	<admst:apply-templates select="." match="c:math_h"/> -->
-<<<<<<< HEAD
-		<admst:apply-templates select="/module" match="analogfunctionC">
-				</admst:apply-templates> 
-=======
->>>>>>> afcap
 
 
 <admst:value-of select="attribute[name='ngspicename']/value"/>
