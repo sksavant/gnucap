@@ -3141,6 +3141,8 @@ void $(DEV_NAME)::tr_begin()
 {
 	STORAGE::tr_begin();
 
+	<admst:apply-templates select="analog" match="analog:initial_step" />
+
 	for(int ii=0; ii<OPT::_keep_time_steps; ii++)
                 std::fill_n(_states[ii], _num_states, 0);
         std::fill_n(_states_1, _num_states, 0);
