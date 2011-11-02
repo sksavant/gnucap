@@ -192,6 +192,7 @@ PROBE* PROBELIST::add_list(CS& cmd, const CARD_LIST* scope)
     if (cmd.umatch("nodes ")) {
       // all nodes
       add_all_nodes(what, &CARD_LIST::card_list);
+      found_something=(PROBE*)-1;
     }else if (what == "meas") {
       std::string meas_descr;
       cmd >> meas_descr ; 
@@ -207,9 +208,9 @@ PROBE* PROBELIST::add_list(CS& cmd, const CARD_LIST* scope)
     }else if (cmd.is_alnum() || cmd.match1("*?")) {
       // branches or named nodes
       unsigned here1 = cmd.cursor();
-      trace0("add_list found_something1 adding brancges");
+      trace1("add_list found_something1 adding brancges", what);
       found_something = add_branches(cmd.ctos(),what,&CARD_LIST::card_list);
-      trace0("add_list found_something1 returned from brancges");
+      trace1("add_list found_something1 returned from brancges", found_something);
       if (!found_something) {
         cmd.warn(bWARNING, here1, "No match (al)");
       }else{
@@ -255,6 +256,7 @@ PROBE* PROBELIST::add_list(CS& cmd, const CARD_LIST* scope)
     }
   }else{
   }
+  trace1("add_list", found_something);
   return found_something;
 }
 /*--------------------------------------------------------------------------*/
@@ -284,13 +286,14 @@ PROBE* PROBELIST::push_new_probe(const std::string& param,const CKT_BASE* object
 /*--------------------------------------------------------------------------*/
 void PROBELIST::add_all_nodes(const std::string& what, const CARD_LIST* scope)
 {
-  untested();
   for (NODE_MAP::const_iterator
        i = scope->nodes()->begin();
        //i != CARD_LIST::card_list.nodes()->end();
        i != scope->nodes()->end();
        ++i) {
-    if ((i->first != "0") ) {
+    //    if ((i->first != "0") ) {
+    if ((i->first != "0") && (i->first.find('.') == std::string::npos)) {
+
       NODE* node = i->second;
       assert (node);
       trace0("PROBELIST::add_all_nodes " + what + " i " + i->second->long_label() );
@@ -304,6 +307,7 @@ void PROBELIST::add_all_nodes(const std::string& what, const CARD_LIST* scope)
 //     }else{
 //     }
   }
+  untested();
 }
 /*--------------------------------------------------------------------------*/
 MATH_OP strtotype(std::string s)
@@ -418,13 +422,16 @@ PROBE* PROBELIST::add_branches(const std::string&device,
     if ( device == "nodes") {
       trace0("PROBELIST::add_branches " + param + "( nodes )" );
       add_all_nodes(param, scope);
+      trace0("added all nodes");
+      found_something=(PROBE*)-1;
     } else if (device.find_first_of("*?") != std::string::npos) {
       // there's a wild card.  do linear search for all
       { // nodes
         for (NODE_MAP::const_iterator 
                i = scope->nodes()->begin();
              i != scope->nodes()->end();
-             ++i) {
+             ++i) 
+        {
           trace0("PROBELIST::add_branches node " + i->first + " sec" +
               i->second->long_label());
         
@@ -518,10 +525,10 @@ PROBE* PROBELIST::add_branches(const std::string&device,
                 sprintf(str,"V%1d",ip);
                 string paramipn(str);
                 //                cerr << "               paramn " << paramipn << std::endl;
-                found_something =     push_new_probe(paramipn, card);
+                found_something = push_new_probe(paramipn, card);
               }
             }else {
-              found_something =     push_new_probe(param, card);
+              found_something = push_new_probe(param, card);
             }
           }else{
           }
@@ -550,10 +557,10 @@ PROBE* PROBELIST::add_branches(const std::string&device,
               sprintf(str,"V%1d",ip);
               string paramipn(str);
               //                cerr << "               paramn " << paramipn << std::endl;
-              found_something =     push_new_probe(paramipn, *i);
+              found_something =  push_new_probe(paramipn, *i);
             }
           }else {
-            found_something =     push_new_probe(param, *i);
+            found_something = push_new_probe(param, *i);
           }
           // found_something = 	  push_new_probe(param, *i);
         }else{
@@ -561,6 +568,7 @@ PROBE* PROBELIST::add_branches(const std::string&device,
       }
     }
   }
+  trace1("add_branches returning" , found_something);
   return found_something;
 }
 /*--------------------------------------------------------------------------*/
@@ -578,3 +586,4 @@ ostream& operator<<( ostream& o, const PROBELIST &l)
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+// vim:ts=8:sw=2:et:

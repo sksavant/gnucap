@@ -236,10 +236,9 @@ void CMD_NL::print( OMSTREAM _out, const CARD_LIST* scope){
   for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
     if (i->first != "0") {
       stringstream s;
-      s << setw(8) << i->second->long_label() << " vector position " << 
-        ", m_ " << i->second->m_() << " , matrix_number " << i->second->matrix_number() 
+      s << setw(8) << i->second->long_label() << " , matrix_number " << i->second->matrix_number() 
         << ", user_number " << i->second->user_number() << 
-        " x-Entry " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
+        " vdc " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
       _out << s.str();
     }else{
       // _out << "Zero Node  "  << "\n";
