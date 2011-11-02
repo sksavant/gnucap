@@ -3,15 +3,11 @@ spice
 * vorsicht: nodenames case-sensitive
 
 Vcc ncc 0 3.3
-V1 nin 0  sin(frequency=1, amplitude=0.1, offset={3.3/2})
+V1 ninp 0  sin(frequency=1, amplitude=0.1, offset={3.3/2})
 
-Vhalf n_in 0 {3.3/2}
+Vhalf ninn 0 {3.3/2}
 
 .list
-
-
-.param a=1.0e-15
-
 
 
 .verilog
@@ -19,19 +15,15 @@ Vhalf n_in 0 {3.3/2}
 paramset myota ota_medium; .tnom=20; endparamset
 
 
-myota OTA0(  p_in , n_in , out1 , pbias , nbias , ncc , 0);
+myota OTA0(  ninp , ninn , out1 , pbias , nbias , ncc , 0);
 
 spice
 
-Rin nin p_in 10k
-R1 out1 0 10k
-*R2 0 nout 10
+R1 out1 0 100
 
-Vp pbias 0 2.7
-Vn nbias 0 0.7
+Vp pbias 0 2.0
+Vn nbias 0 1.7
 
-*Ip pbias 0 10u
-*In nbias 0 0
 
 *                 o ncc
 *                 |
@@ -58,8 +50,5 @@ Vn nbias 0 0.7
 .tran .1 1 
 *trace v
 
-.param a=1.0e-16
-
-*.tran 2
 
 .end
