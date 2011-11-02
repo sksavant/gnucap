@@ -23,6 +23,8 @@
 	</admst:if>	
 </admst:for-each>
 
+<!-- prefix for local variables -->
+<admst:variable name="var_prefix" select="__"/>
 
 <!-- ****************************** ngspiseVersion.xml ************************* -->
 
