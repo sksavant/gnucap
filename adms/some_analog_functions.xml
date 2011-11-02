@@ -739,10 +739,6 @@
   </admst:choose>
 </admst:template>
 <!-- ====================================== -->
-<admst:for-each select="/module">
-<!-- definition of variables -->
-<admst:variable name="module" path="name"/>
-</admst:for-each>
 
 <admst:template match="c:math_h">
 inline double _cos(double arg)             { return  cos(arg); }
@@ -793,13 +789,14 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
 #define _limexp(arg)    _exp(val,arg)
 #define _d_limexp(arg)  _d_exp(val,dval,arg)
 
-inline double $(module)_vt (double Tdev) {
+<!--inline double $(module)_vt (double Tdev) {
   return 1.3806503e-23*Tdev/1.602176462e-19;
 }
 inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   double vt_Tdev=1.3806503e-23/1.602176462e-19;
   return vt_Tdev*d_Tdev;
 }
+-->
 
 </admst:template>
 
@@ -823,11 +820,11 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 <admst:template match="analogfunctionH">
 <admst:for-each select="/module/analogfunction">
   <admst:variable name="function" select="%(name)"/>
-<admst:apply-templates select="." match="v2c:converttype"/> $(module)_$function (<admst:join select="variable[input='yes']" separator=", ">
+<admst:apply-templates select="." match="v2c:converttype"/> \t$function (<admst:join select="variable[input='yes']" separator=", ">
     <admst:apply-templates select="." match="v2c:converttype"/><admst:text format=" %(name)"/>
   </admst:join>);
 
-<admst:apply-templates select="." match="v2c:converttype"/> $(module)_d_$(function) (<admst:join select="variable[input='yes']" separator=", ">
+<admst:apply-templates select="." match="v2c:converttype"/> \td_$(function) (<admst:join select="variable[input='yes']" separator=", ">
     <admst:apply-templates select="." match="v2c:converttype"/><admst:text format=" %(name)"/>
   </admst:join>, <admst:join select="variable[input='yes']" separator=", ">
     <admst:apply-templates select="." match="v2c:converttype"/><admst:text format=" d_%(name)"/>
@@ -840,7 +837,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 <admst:for-each select="/module/analogfunction">
   <admst:variable name="globalanalogfunction" select="%(.)"/>
   <admst:variable name="function" select="%(name)"/>
-<admst:apply-templates select="." match="v2c:converttype"/> $(module)_$function (<admst:join select="variable[input='yes']" separator=", ">
+<admst:apply-templates select="." match="v2c:converttype"/> $(DEV_NAME)::$function (<admst:join select="variable[input='yes']" separator=", ">
     <admst:apply-templates select="." match="v2c:converttype"/><admst:text format=" %(name)"/>
   </admst:join>)
 {
@@ -853,7 +850,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:apply-templates>
   return $function;
 }
-double $(module)_d_$(function) (<admst:join select="variable[input='yes']" separator=", ">
+double $(DEV_NAME)::d_$(function) (<admst:join select="variable[input='yes']" separator=", ">
     
     <admst:apply-templates select="." match="v2c:converttype"/><admst:text format=" %(name)"/>
   </admst:join>, <admst:join select="variable[input='yes']" separator=", ">

@@ -2691,6 +2691,10 @@ protected: // implementation
 	};
 	int load(int mode);
 
+	// analogfunctions of verilog-modul
+private:	
+	<admst:apply-templates select="/module" match="analogfunctionH"/>
+
 private:
 	// nodes / matrix indexes
 
@@ -2750,8 +2754,6 @@ private:
 //analog function stuff
 
 <!--	<admst:apply-templates select="." match="c:math_h"/> -->
-		<admst:apply-templates select="/module" match="analogfunctionC">
-				</admst:apply-templates> 
 
 
 <admst:value-of select="attribute[name='ngspicename']/value"/>
@@ -2955,6 +2957,9 @@ $(DEV_NAME)::~$(DEV_NAME)()
     	assert(!_states_1);
   	}
 }
+// ---------------- all analog functions from verilog-module here: ---------- //
+
+<admst:apply-templates select="/module" match="analogfunctionC"/>
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::set_dev_type(const std::string& new_type)
 {
@@ -6321,7 +6326,6 @@ int $(DEV_NAME)::load(int mode)
   	<admst:apply-templates select="." match="Printhxxwrapperdefines"/>
     <admst:apply-templates select="." match="Printhxxdefines"/>
     <admst:apply-templates select="." match="X3c:math_h"/>
-	 <admst:apply-templates select="/module" match="analogfunctionH"/>
     <admst:apply-templates select="analog/code" match="X3analog:evaluate"/>
     <!--admst:message format="$file: created\n"/-->
   </admst:open>
