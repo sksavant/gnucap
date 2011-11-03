@@ -1,16 +1,17 @@
 
 spice
 
-.options abstol=1e-9
+.options abstol=1e-13
+.options numdgt 10
 .options reltol=1e-4
 
 * vorsicht: nodenames case-sensitive
 
-.param vdd 5
+.param vdd 3.3
 
 Vcc ndd 0 vdd
-V1 nin_p 0  sin(frequency=1, amplitude=0.00, offset={vdd/2})
-VQ nin_n 0 {vdd/2}
+Vcc1 ndd_minus 0 {-vdd}
+V1 nin_p 0  sin(frequency=1, amplitude=0.4, offset=0)
 
 
 .list
@@ -18,16 +19,18 @@ VQ nin_n 0 {vdd/2}
 .verilog
 
 paramset myota opamp;  
-.gain=10;
+.gain=1000;
+.freq_unitygain=300;
+.slew_rate=1000;
 endparamset
 
-myota OTA0 (nout, nin_p, half, nvbias, ndd, 0);
+myota OTA0 (nout, nin_p, 0, nvbias, ndd, ndd_minus);
 
 spice
 
-R1 out1 0 10
+R1 nout 0 10k
 
-Vnbias nvbias 0 1
+Vnbias nvbias 0 0.1
 
 *                 o ncc
 *                 |
@@ -36,16 +39,17 @@ Vnbias nvbias 0 1
 *               \ |
 *               |\|
 * nin   ___     | \  
-*   o--[___]----|+ \    R ___
-*               |   >----[___]---o  nout
+*   o--[___]----|+ \         
+*               |   >------------o  nout
 *         ------|- /             |
 *         |     | /             | |
 *        [Q]    |/|             | |R
 *         |     / |              |
 *         V       V              V
 
-.print tran v(nodes)
+.print tran v(nodes) 
 
-.tran .1 1 trace v
+.tran .1 1
+* trace v
 
 .end
