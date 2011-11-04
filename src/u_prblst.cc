@@ -291,8 +291,8 @@ void PROBELIST::add_all_nodes(const std::string& what, const CARD_LIST* scope)
        //i != CARD_LIST::card_list.nodes()->end();
        i != scope->nodes()->end();
        ++i) {
-    //    if ((i->first != "0") ) {
-    if ((i->first != "0") && (i->first.find('.') == std::string::npos)) {
+    if ((i->first != "0") ) {
+    //if ((i->first != "0") && (i->first.find('.') == std::string::npos)) {
 
       NODE* node = i->second;
       assert (node);

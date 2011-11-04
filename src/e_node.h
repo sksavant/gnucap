@@ -316,7 +316,7 @@ public:
   node_t&     map() {
     if (t_() != INVALID_NODE) {
       assert(_nnn);
-      _m=to_internal(t_());
+      _m = to_internal(t_());
     }else{
       assert(_m == INVALID_NODE);
     }

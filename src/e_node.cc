@@ -121,6 +121,16 @@ NODE::NODE(const NODE& p)
   unreachable();
 }
 /*--------------------------------------------------------------------------*/
+NODE_BASE::NODE_BASE(const std::string& s, int n, CARD_LIST* p)
+  :CKT_BASE(s),
+   _parent(p),
+   _user_number(n)
+   //_flat_number(n)
+   //_matrix_number(INVALID_NODE)
+{
+  trace1("NODE_BASE::NODE_BASE()" + s, n);
+}
+/*--------------------------------------------------------------------------*/
 /* constructor taking a pointer : it must be valid
  * supposedly not used, but used by a required function that is also not used
  */
@@ -135,16 +145,6 @@ NODE::NODE(const NODE* p)
 NODE::NODE(const std::string& s, int n, CARD_LIST*p)
   :NODE_BASE(s,n,p)
 {
-}
-/*--------------------------------------------------------------------------*/
-NODE_BASE::NODE_BASE(const std::string& s, int n, CARD_LIST* p)
-  :CKT_BASE(s),
-   _parent(p),
-   _user_number(n)
-   //_flat_number(n)
-   //_matrix_number(INVALID_NODE)
-{
-  trace1("NODE_BASE::NODE_BASE()" + s, n);
 }
 /*--------------------------------------------------------------------------*/
 node_t::node_t()
@@ -233,6 +233,8 @@ double NODE::tr_probe_num(const std::string& x)const
     double z1 = tr_probe_num("zero ");
     double z2 = tr_probe_num("zero ");
     return z1/z2;
+  }else if (Umatch(x, "m ")) {
+    return  m_();
   }else{itested();
     return CKT_BASE::tr_probe_num(x);
   }
@@ -592,6 +594,7 @@ void node_t::set_to_ground(CARD* d)
 void node_t::new_node(const std::string& node_name, const CARD* d)
 {
   //assert(!_nnn); //BUG// fails on MUTUAL_L::expand after clone
+  trace1("node_t::new_node", node_name);
   assert(d);
   assert(d->scope());
 
@@ -614,14 +617,15 @@ void node_t::new_model_node(const std::string& node_name, CARD* d)
 {
   new_node(node_name, d);
   _ttt = CKT_BASE::_sim->newnode_model();
+  trace2("node_t::new_model_node", node_name, _ttt);
   //assert(_ttt == _nnn->flat_number());
 }
 /*--------------------------------------------------------------------------*/
 void node_t::hack_subckt_node(NODE* n, int i )
 {
   if(_nnn){
-    trace0("node_t::hack_subckt_node " + _nnn->short_label() + " " 
-        + n->short_label());
+    trace3("node_t::hack_subckt_node ", _nnn->short_label() ,
+         n->short_label() , i);
   }
   _nnn = n;
   _nnn->set_user_number(i);
