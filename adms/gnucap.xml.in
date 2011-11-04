@@ -3259,13 +3259,17 @@ bool $(DEV_NAME)::do_tr()
 	<admst:text format="\n\tfor(int i=0; converged() && i<%(count(node[grounded='no'])); i++)"/>
 	{ 
 		bool conv= conchk(it0[i], it1[i]);	
-		if (!conv) { trace3("not converged", i , it0[i], it1[i] ) }; 
+		if (!conv) { trace4("not converged", i , it0[i], it1[i], _sim->iteration_number() );}
 		set_converged(conv);	
 	}
 	
 	
 	<admst:text format="\n\tfor(int i=0; converged() && i<%(count(jacobian)); i++)"/>
-		set_converged(conchk(m_entries[i], m_entries_old[i]));
+	{
+		bool conv = conchk(m_entries[i], m_entries_old[i]);
+		if (!conv) { trace4("not converged", i , m_entries[i], m_entries_old[i], _sim->iteration_number() );}
+		set_converged(conv);
+	}
 
 	bool needs_load = !converged();
 	<admst:text format="\n\tfor (int i = 0; !needs_load && i < %(count(node[grounded='no'])); i++)"/>
@@ -3518,7 +3522,11 @@ void $(DEV_NAME)::guesstopology ()
          and name!='initial_model' and name!='initializeModel' and name!='initial_instance' and name!='initializeInstance')]">
       <admst:apply-templates select="." match="ngspiseMODULEguesstopology.cevaluatetopology"/>
     </admst:if>
-  </admst:for-each>
+ </admst:for-each>
+
+ for(int i=0; i<%(count(jacobian)); i++){
+  trace1("guess m", m_required[i]);
+ }
 }	
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::acLoad()
