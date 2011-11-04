@@ -3259,7 +3259,7 @@ bool $(DEV_NAME)::do_tr()
 	<admst:text format="\n\tfor(int i=0; i<%(count(node[grounded='no'])); i++)"/>
 	{ 
 		bool conv= conchk(it0[i], it1[i]);	
-		if (!conv) trace3("not converged", i , it0[i], it1[i] );
+		if (!conv) { trace3("not converged", i , it0[i], it1[i] ) }; 
 		set_converged(conv);	
 	}
 	
