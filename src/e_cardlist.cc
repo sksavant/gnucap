@@ -631,8 +631,6 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
   //assert(owner->subckt() == this);
 
   trace0("model: "+model->long_label());
-
-
   trace0("owner: "+owner->long_label());
 
   uint_t num_nodes_in_subckt = model->subckt()->nodes()->how_many();
@@ -662,20 +660,29 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
 	// for each remaining node in card_list
         // these are the internal nodes.
 	map[i] = CKT_BASE::_sim->newnode_subckt();
+        //
+	// map[i] = CKT_BASE::_sim->newnode_model();
+
         string label= (*(model->subckt()->nodes())) [i] ;
         trace3("int map", i, map[i],label);
 
+        // NODE* hacknode = _nm->new_node( label , this);
+#ifdef SOMETRY
         NODE* hacknode = _nm->new_node( label , this);
 
-          trace3("new hacknode", owner->short_label() , hacknode->user_number(), hp(hacknode) );
+          trace5("new hacknode", owner->short_label(),label ,
+              hacknode->user_number(), hp(hacknode),map[i] );
           assert(hacknode);
 
         //n_(i).hack_subckt_node( hacknode, map[i] );
         //_nnn = n;
-        hacknode->set_user_number(map[i]);
+        // hacknode->set_user_number(model->n_(i).e_()   );
+        hacknode->set_user_number( map[i] );
+#endif
 
       }
       trace_nodenames(model->subckt());
+      trace_nodenames(this);
 
     }
   }
@@ -694,7 +701,19 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
       for (uint_t ii = 0;  ii < (**ci).net_nodes();  ++ii) {
 	// for each connection node in card
         const CARD* c = *ci;
-        trace4("CARD_LIST::map_subckt_nodes subdevice node ", c->long_label(), c->n_(ii).short_label(),  c->n_(ii).e_() ,  c->n_(ii).t_()  );
+        trace4("CARD_LIST::map_subckt_nodes subdevice node ", c->long_label(),
+            c->n_(ii).short_label(),  c->n_(ii).e_() ,  c->n_(ii).t_()  );
+
+        if ( c->n_(ii).t_() > model->net_nodes() ) {
+          trace1("INTERNAL:", c->n_(ii).short_label());
+
+          // NODE* hacknode = _nm->new_node( label , this);
+          c->n_(ii).new_model_node(c->n_(ii).short_label() , this);
+
+
+        } else {
+          trace1("EXTERNA", c->n_(ii).short_label());
+        }
 
 	c->n_(ii).map_subckt_node(map, owner);
       }

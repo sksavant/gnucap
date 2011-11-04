@@ -119,6 +119,7 @@ void SIM_DATA::zero_voltages()
  */
 void SIM_DATA::map__nodes()
 {
+  trace1("SIM_DATA::map__nodes", _total_nodes);
   _nm = new int[_total_nodes+1];
   ::status.order.reset().start();
   switch (OPT::order) {
