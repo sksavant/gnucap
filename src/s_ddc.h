@@ -31,7 +31,7 @@ protected:
   PARAMETER<double> _step_in[DCNEST];
   double _step[DCNEST];
   bool _linswp[DCNEST];
-  double _sweepval[DCNEST];	/* pointer to thing to sweep, dc command */
+  double (_sweepval[DCNEST]);	/* pointer to thing to sweep, dc command */
 //  typedef void (*p)(double);
   ELEMENT* (_pushel[DCNEST]);	/* pointer to thing to sweep, dc command */
   ELEMENT* (_zap[DCNEST]);	/* to branch to zap, for re-expand */

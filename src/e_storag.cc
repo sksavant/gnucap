@@ -248,6 +248,10 @@ double STORAGE::tr_probe_num(const std::string& x)const
 }
 /*--------------------------------------------------------------------------*/
 void STORAGE::set_ic( double x ){
+
+  printf("STORAGE:set_ic(...)\n");
+
+
   if(has_common()){
     trace1("STORAGE::set_ic have common "+long_label(), x);
     mutable_common()->set_ic(x);

@@ -556,7 +556,7 @@ void MODEL_BUILT_IN_MOS_BASE::tr_eval(COMPONENT*)const
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_MOS_BASE::do_tr_stress( const COMPONENT* c ) const
 {
-  cout<<"foo5\n";
+  //cout<<"foo5\n";
   const DEV_BUILT_IN_MOS* d = (const DEV_BUILT_IN_MOS*)c;
   const COMMON_COMPONENT* cc = c->common();
   const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());

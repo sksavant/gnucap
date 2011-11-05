@@ -144,6 +144,7 @@ bool DEV_CAPACITANCE::do_tr()
   }
   _m0 = CPOLY1(_i[0]);
   trace3("DEV_CAPACITANCE::do_tr " + long_label(), value(), _m0, _m1);
+
   return converged();
 }
 /*--------------------------------------------------------------------------*/

@@ -111,7 +111,7 @@ void DDC::setup(CS& Cmd)
   }
   Cmd.check(bWARNING, "what's this?");
 
-  _sim->_uic = _sim->_more_uic = true;
+  //_sim->_uic = _sim->_more_uic = true;
 
   IO::plotout = (ploton) ? IO::mstdout : OMSTREAM();
   initio(_out);
@@ -126,8 +126,13 @@ void DDC::setup(CS& Cmd)
       _stash[ii] = _zap[ii];			// stash the std value
       _zap[ii]->inc_probes();			// we need to keep track of it
 
+      //_zap[ii]->set_value(_zap[ii]->value(),0);	// zap out extensions
+      //_zap[ii]->set_constant(false);		// so it will be updated
+      //_pushel[ii] = _zap[ii];	                   // element to patch
+      //_sweepval[ii] = *(_zap[ii]->set__value());	// point to value to patch
 
-//      urghs. hack
+      
+      // urghs. hack
       STORAGE* s = dynamic_cast<STORAGE*>(_zap[ii]);
       if(s != 0){
         _zap[ii]->set_constant(false);		   // so it will be updated
@@ -139,6 +144,8 @@ void DDC::setup(CS& Cmd)
       }
       _sweepval[ii] = 0;	        
       
+
+
       //_zap[ii]->set_value(_zap[ii]->value(),0);	// zap out extensions
       //_zap[ii]->set_constant(false);		// so it will be updated
       //_sweepval[ii] = _zap[ii]->set__value();	// point to value to patch
@@ -290,8 +297,8 @@ void DDC_BASE::fix_args(int Nest)
 void DDC_BASE::options(CS& Cmd, int Nest)
 {
 
-  _sim->_uic = _loop[Nest] = _reverse_in[Nest] = false;
-  _sim->_more_uic = true;
+  _loop[Nest] = _reverse_in[Nest] = false;
+  _sim->_uic = _sim->_more_uic = false;
   _old_solver = false;
   unsigned here = Cmd.cursor();
   do{
@@ -315,8 +322,8 @@ void DDC_BASE::options(CS& Cmd, int Nest)
       || Get(Cmd, "re{verse}",	  &_reverse_in[Nest])
       || Get(Cmd, "te{mperature}",&temp_c_in)
       // FIXME
-      //|| Get(Cmd, "uic",	   &_sim->_uic)
-      //|| Get(Cmd, "more_uic",	   &_sim->_more_uic)
+      || Get(Cmd, "uic",	   &_sim->_uic)
+      || Get(Cmd, "more_uic",	   &_sim->_more_uic)
       || (Cmd.umatch("tr{ace} {=}") &&
 	  (ONE_OF
 	   || Set(Cmd, "n{one}",      &_trace, tNONE)
@@ -332,7 +339,7 @@ void DDC_BASE::options(CS& Cmd, int Nest)
       ;
   }while (Cmd.more() && !Cmd.stuck(&here));
 
-  //_sim->_uic|=_sim->_more_uic;
+  _sim->_uic|=_sim->_more_uic;
 
 }
 /*--------------------------------------------------------------------------*/
@@ -386,7 +393,7 @@ void DDC_BASE::sweep_recursive(int Nest)
       _sim->_time0 = _sim->_dt0 = 0.0;
       _sim->_last_time = 0.0;
       // _sim->zero_currents();
-      _sim->_uic=_sim->_more_uic=true;
+      //_sim->_uic=_sim->_more_uic=true;
       int converged = solve_with_homotopy(itl,_trace);
       if (!converged) {itested();
 	error(bWARNING, "did not converge\n");
@@ -735,8 +742,6 @@ void DDC_BASE::old_solver(){
 
   C.dezero( OPT::cmin ); 
   C.lu_decomp();
-
-  //printf("after C.dezero() and C.lu_decomp()\n");
 
   if(_dump_matrix){
     _out << "G\n" << G << "\n";
