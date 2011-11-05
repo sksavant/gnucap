@@ -28,6 +28,7 @@
  */
 //testing=script 2006.07.14
 #include "s__.h"
+#include "io_trace.h"
 /*--------------------------------------------------------------------------*/
 //static void	 SIM::map__nodes();
 //static void	 SIM::order_reverse();
@@ -57,9 +58,9 @@
  *  subcircuits at beginning, results on border at the bottom
  */
 /*static*/ void SIM::order_reverse()
-{untested();
+{
   nm[0] = 0;
-  for (int node = 1;  node <= ::status.total_nodes;  ++node) {untested();
+  for (int node = 1;  node <= ::status.total_nodes;  ++node) {
     nm[node] = ::status.total_nodes - node + 1;
   }
 }
@@ -80,10 +81,9 @@
  */
 /*static*/ void SIM::order_auto()
 {
-  nm[0] = 0;
-  for (int node = 1;  node <= ::status.total_nodes;  ++node) {
-    nm[node] = ::status.total_nodes - node + 1;
-  }
+  trace1("SIM::order_auto",  ::status.total_nodes);
+  order_reverse();
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+// vim:ts=8:sw=2:et:

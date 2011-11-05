@@ -65,6 +65,7 @@ NODE_MAP::~NODE_MAP()
   }  
 }
 /*--------------------------------------------------------------------------*/
+// slow/stupid for debugging only!
 string NODE_MAP::operator[](unsigned x)const {
 
   for (NODE_MAP::const_iterator ni = _node_map.begin(); ni != _node_map.end(); ++ni) {

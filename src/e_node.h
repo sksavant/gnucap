@@ -289,7 +289,7 @@ private:
 public:
   uint_t	      m_()const	{return _m;}
 
-  int	      t_()const {
+  uint_t	      t_()const {
     //assert(_nnn);
     //assert(_ttt == _nnn->flat_number());
     return _ttt;
@@ -307,7 +307,9 @@ public:
   const std::string  short_label()const {return ((n_()) ? (n_()->short_label()) : "?????");}
   void	set_to_ground(CARD*);
   void	new_node(const std::string&, const CARD*);
+  void	new_node(const std::string&, const CARD_LIST*);
   void	new_model_node(const std::string& n, CARD* d);
+  void	new_sckt_node(const std::string& n, CARD_LIST* d);
   void	map_subckt_node(uint_t* map_array, const CARD* d);
   void	hack_subckt_node(NODE*, int );
   bool	is_grounded()const {return (e_() == 0);}

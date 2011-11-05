@@ -229,7 +229,8 @@ public:
       << " sckt: " << _sim->_subckt_nodes
       << "\n";
     for(unsigned k=0; k<= _sim->_total_nodes; ++k)
-      _out << CKT_BASE::_sim->_vdc[k]  << ",";
+      // _out << CKT_BASE::_sim->_vdc[k]  << ",";
+      _out << k << " " << _sim->_nm[k] <<"\n";
     _out << "\n";
     print(_out, &CARD_LIST::card_list);
     _out.outreset();
@@ -256,7 +257,7 @@ void CMD_NL::print( OMSTREAM _out, const CARD_LIST* scope){
   for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
     const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i);
     if (s) {
-      _out << s->long_label() <<"\n";
+      _out << "-" << s->long_label() <<"\n";
       print(_out,s->subckt());
     }
   }

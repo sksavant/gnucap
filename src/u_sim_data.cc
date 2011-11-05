@@ -278,7 +278,7 @@ void SIM_DATA::invalidate_tt(){
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::unalloc_vectors()
 {
-  trace0("SIM_DATA::unalloc_vectors");
+  trace1("SIM_DATA::unalloc_vectors",_total_nodes);
   _evalq1.clear();
   _evalq2.clear();
   delete [] _i;

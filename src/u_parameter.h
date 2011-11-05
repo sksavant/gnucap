@@ -492,7 +492,7 @@ inline std::list<double> PARAMETER<std::list<double> >::e_val(const
 template <class T>
 T PARAMETER<T>::e_val(const T& def, const CARD_LIST* scope)const
 {
-  trace2("PARAMETER<T>::fallback_e_val", _s, *this);
+  //trace2("PARAMETER<T>::fallback_e_val", _s, *this);
   assert(scope);
 
   static int recursion=0;
