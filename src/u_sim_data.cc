@@ -132,6 +132,7 @@ void SIM_DATA::map__nodes()
   ::status.order.stop();
 }
 /*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 /* order_reverse: force ordering to reverse of user ordering
  *  subcircuits at beginning, results on border at the bottom
  */

@@ -690,7 +690,6 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
   // "map" now contains a translation list,
   // from subckt local numbers to matrix index numbers
 
-  // The node list (_nm) in an instance of a subckt does not exist.
   // Device nodes (type node_t) points to the NODE in the parent.
   // Mapping is done in node_t.
 
@@ -718,4 +717,36 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
   }
 }
 /*--------------------------------------------------------------------------*/
+// maybe not necessary.
+void CARD_LIST::number_nodes(unsigned* tot)
+{
+  const NODE_MAP * nm = scope->nodes();
+
+  unsigned* map = new unsigned[nm->how_many()];
+
+  /* node map (external to internal)	*/
+  /* node map (external to internal)	*/
+
+  unsigned ii=0;
+  for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
+    if (i->first != "0") {
+      trace2( "flattening tree", i->second->long_label(),  i->second->user_number() );
+
+      map[ii++] = (*tot)++;
+    }else{
+      // _out << "Zero Node  "  << "\n";
+    }
+  }
+  _mnm = map;
+
+  for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
+    const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i);
+    if (s) {
+      _out << "-" << s->long_label() <<"\n";
+      flatten_tree(s->subckt(), tot);
+    }
+  }
+
+//    nm[node] = ::status.total_nodes - node + 1;
+}
 /*--------------------------------------------------------------------------*/
