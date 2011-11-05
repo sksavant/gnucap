@@ -110,6 +110,7 @@ NODE* NODE_MAP::new_node(std::string s, CARD_LIST* p)
   // increments how_many() when lookup fails (new s)  
   if (!node) {
     node = new NODE(s, how_many(), p);
+    trace2("NODE_MAP::new_node", s, node->user_number());
     //                 ^^^^ is really the map number of the new node
     _node_map[s] = node;
   }

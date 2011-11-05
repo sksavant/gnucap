@@ -629,10 +629,10 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
   assert(model->subckt());
   assert(model->subckt()->nodes());
   assert(owner);
-      trace1("model nodenames", *(model->subckt()->nodes()));
-      trace1("... now own", *(owner->scope()->nodes())  );
-      trace2("now own sckt", *nodes(), hp(nodes()));
-   NODE_MAP* nm = owner->scope()->nodes();
+  trace1("model nodenames", *(model->subckt()->nodes()));
+  trace1("... now own", *(owner->scope()->nodes())  );
+  trace2("now own sckt", *nodes(), hp(nodes()));
+  NODE_MAP* nm = owner->scope()->nodes();
 
 //:w
 //trace_nodenames(owner->subckt());
@@ -668,35 +668,24 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
       for (assert(i==model->net_nodes() + 1); i <= num_nodes_in_subckt; ++i) {
 	// for each remaining node in card_list
         // these are the internal nodes.
-        //  too many nodes!
-	map[i] = CKT_BASE::_sim->newnode_subckt();
-        //
-//	 map[i] = CKT_BASE::_sim->newnode_model();
+        string label = (*(model->subckt()->nodes())) [i] ;
+        assert(this);
+        unsigned k = CKT_BASE::_sim->_total_nodes;
+        owner->n_(i-1).new_sckt_node( label, this); // this correct??
+        assert (k+1 ==  CKT_BASE::_sim->_total_nodes);
+	//map[i] = CKT_BASE::_sim->newnode_subckt();
+        trace2("int map", i, owner->n_(i-1).t_() );
+	map[i] = owner->n_(i-1).t_();
 
-       // string label= (*(model->subckt()->nodes())) [i] ;
-      //  trace3("int map", i, map[i],label);
+        // irgendwie sowas?
+	//map[i] = owner->scope()->new_node()
+        //owner->n_(i-1).new_sckt_node( label, subckt());
 
-        // NODE* hacknode = _nm->new_node( label , this);
-#ifdef SOMETRY // does not work!
-        
-        NODE* hacknode = _nm->new_node( label , this);
-
-          trace5("new hacknode", owner->short_label(),label ,
-              hacknode->user_number(), hp(hacknode),map[i] );
-          assert(hacknode);
-
-        //_nnn = n;
-        // hacknode->set_user_number(model->n_(i).e_()   );
-        hacknode->set_user_number( map[i] );
-#endif
-        //n_(i).set_user_number(3);
       }
-      trace0("now own");
-      //trace_nodenames(owner->subckt());
+      trace1("CARD_LIST::map_subckt_nodes done map", *nodes());
 
     }
   }
-
 
   // "map" now contains a translation list,
   // from subckt local numbers to matrix index numbers
@@ -716,32 +705,12 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
 
 
         if ( c->n_(ii).t_() > model->net_nodes() ) {
-        c->n_(ii).map_subckt_node(map, owner);
-
-          trace3("INTERNAL?:", c->n_(ii).short_label(), c->n_(ii).t_() , map[c->n_(ii).t_()] );
-        //   c->n_(ii).n_()->set_user_number(1);
-
-#ifndef SOMETHING
-
-          // NODE* hacknode = _nm->new_node( label , this);
-          // c->n_(ii).new_model_node(c->n_(ii).short_label() , this);
- //         NODE* hacknode = _nm->new_node( c->n_(ii).short_label(), this);
-          trace1("new node in sckt scope",  c->n_(ii).short_label() );
-          //assert(hacknode);
-          // c->n_(ii).new_sckt_node(  c->n_(ii).short_label() , owner );
-          // hacknode->set_user_number( map[c->n_(ii).t_()] );
-
-#endif
-
-
-
+          trace3("INTERNAL:", c->n_(ii).short_label(), c->n_(ii).t_() , map[c->n_(ii).t_()] );
         } else {
-          trace1("EXTERNA", c->n_(ii).short_label());
-        c->n_(ii).map_subckt_node(map, owner);
-
+          trace1("EXTERNAL", c->n_(ii).short_label());
         }
 
-//	c->n_(ii).map_subckt_node(map, owner);
+        c->n_(ii).map_subckt_node(map, owner);
       }
     }else{
       assert(dynamic_cast<MODEL_CARD*>(*ci));

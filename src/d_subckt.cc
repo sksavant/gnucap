@@ -195,46 +195,42 @@ void DEV_SUBCKT::expand()
   c->_params.set_try_again(pl);
   assert(c->_params._try_again);
 
+
+
   renew_subckt(model, this, scope(), &(c->_params));
 
-  subckt()->expand();
-//  subckt()->set_(model);
-  trace1("",model->subckt());
-////////////////////////////////
+  trace1("DEV_SUBCKT::expand renew done", *(subckt()->nodes()));
+
+  assert(scope());
   for (unsigned i=model->net_nodes() + 1; i <= num_nodes_in_subckt; ++i) {
     // these are the internal nodes.
     string label= (*(model->subckt()->nodes())) [i] ;
-    trace2("adding internal node", label, long_label());
-    _n[i].new_sckt_node( label, subckt());
+  //  trace3("adding internal node", label, long_label(),_sim->_total_nodes);
+    //_n[i].new_sckt_node( label, subckt()); /// BUG? increases total_nodes
+    trace3("DEV_SUBCKT::expand internal node", label, long_label(),_sim->_total_nodes);
   }
 
+
+  subckt()->expand();
+  trace1("DEV_SUBCKT::expand sckt expand done", *(subckt()->nodes()));
+//  subckt()->set_(model);
+  trace1("",model->subckt());
+// map nodes done. .. //////////////////////////////
   for (unsigned i=model->net_nodes() + 1; i <= num_nodes_in_subckt; ++i) {
     // these are the internal nodes.
+    string label= (*(model->subckt()->nodes())) [i] ;
+ //   _n[i].new_sckt_node( label, subckt());
+    trace3("DEV_SUBCKT::expand internal node 2", label, long_label(),_sim->_total_nodes);
+  }
+
+  for (unsigned i=model->net_nodes() ; i < num_nodes_in_subckt; ++i) {
 
     string label= (*(model->subckt()->nodes())) [i] ;
-    trace2("adding internal node", label, long_label());
-    // _n[i].new_sckt_node( label, subckt());
-    trace2("adding internal node", label, long_label());
-    trace2("adding internal node", _n[i].e_(),_n[i].t_() );
-    trace1("adding internal node", ((_n[i])).n_()-> user_number());
 
+    trace4("DEV_SUBCKT::expand internal node", i, label, long_label(),  _n[i].t_());
+    assert(_n[i].n_());
+    trace1("DEV_SUBCKT::expand internal node",  _n[i].n_()->user_number());
     _n[i].n_()->set_user_number( _n[i].t_());
-
-
-    // NODE* hacknode = _nm->new_node( label , this);
-#ifdef SOMETRY // does not work!
-
-    NODE* hacknode = _nm->new_node( label , this);
-
-    trace5("new hacknode", owner->short_label(),label ,
-        hacknode->user_number(), hp(hacknode),map[i] );
-    assert(hacknode);
-
-    //n_(i).hack_subckt_node( hacknode, map[i] );
-    //_nnn = n;
-    // hacknode->set_user_number(model->n_(i).e_()   );
-    hacknode->set_user_number( map[i] );
-#endif
 
   }
   ////////////////////////////
