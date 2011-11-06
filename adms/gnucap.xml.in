@@ -3294,7 +3294,9 @@ bool $(DEV_NAME)::do_tr()
 	<admst:text format="\n\tfor(int i=0; converged() && i<%(count(node[grounded='no'])); i++)"/>
 	{ 
 		bool conv= conchk(it0[i], it1[i]);	
-		if (!conv) { trace4("not converged", i , it0[i], it1[i], _sim->iteration_number() );}
+                if (!conv) {
+                  trace5("not converged", i , it0[i], it1[i], _sim->iteration_number(), it0[i]-it1[i] );
+                }
 		set_converged(conv);	
 	}
 	

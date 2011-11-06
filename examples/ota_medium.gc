@@ -2,20 +2,23 @@
 spice
 * vorsicht: nodenames case-sensitive
 
-Vcc ncc 0 3.3
-V1 ninp 0  sin(frequency=1, amplitude=0.1, offset={3.3/2})
+.param vdd 2.8
 
-Vhalf ninn 0 {3.3/2}
+Vcc ndd 0 vdd
+V1 ninp 0  sin(frequency=1, amplitude=0.1, offset={vdd/2})
+
+Vhalf ninn 0 {vdd/2}
 
 .list
-.options abstol=1e-10
-.options reltol=1e-3
+*.options abstol=1e-7
+*.options reltol=1e-4
+* .options itl4=1000
 
 .param vdd 2.7
 
 *Vcc ndd 0 pulse(iv=0, pv=vdd, rise=1)
 Vcc ndd 0 vdd
-Vdelta nin n_in  sin(frequency=1, amplitude=0.1, offset=0)
+Vdelta nin n_in  sin(frequency=1, amplitude=0.001, offset=0)
 
 Rhalf1 n_in 0 100
 Rhalf2 n_in ndd 100
@@ -29,19 +32,21 @@ Rhalf2 n_in ndd 100
 paramset myota ota_medium; .tnom=20; endparamset
 
 
-myota OTA0(  ninp , ninn , out1 , pbias , nbias , ncc , 0);
+myota OTA0(  ninp , ninn , out1 , pbias , nbias , ndd , 0);
 
 spice
 
-R1 out1 0 100
+Rout out1 0 100
 
 *Vp pbias 0 2.0
 *Vn nbias 0 1.7
 
-Ip ndd pbias pulse(iv=0 pv=0.9u, rise=1)
-Rp ndd pbias 500k
-In 0 nbias pulse(iv=0, pv=1.7u ,rise=1)
-Rp 0 nbias 500k
+Ip ndd pbias 1u
+*pulse(iv=0 pv=1u, rise=1)
+Rp ndd pbias 600k
+In 0 nbias 2u 
+* pulse(iv=0, pv=2u, rise=1)
+Rp 0 nbias 400k
 
 *                 o ndd
 *                 |
@@ -54,7 +59,7 @@ Rp 0 nbias 500k
 *               |   >------------o  nout
 *         ------|- /             |
 *         |     | /             | |
-*         |     |/|             | |R
+*         |     |/|             | |Rout
 *         |     / |              |
 *         V       V              V
 
@@ -63,12 +68,13 @@ Rp 0 nbias 500k
 
 .listnodes
 
-*.print tran v(ndd) v(p_in) I(V*) I(R1) v(vdelta) V(*bias) V(I*) v(ota.*)
-.print tran v(nodes) I(R1) diff(v(p_in), v(n_in))
+.print tran  I(Rout) v(vdelta) V(*bias)
+*.print tran v(nodes) I(Rout) 
+*diff(v(p_in), v(n_in))
 
 
-*.sweep 10  n 1.9 2.3
-.tran .1 2 
+.tran .1 2  
+*trace=v
 *go
 
 *trace v
