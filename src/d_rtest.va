@@ -2,58 +2,36 @@
 
 
 `define P(txt) (*txt*)
-
 `include "discipline.h"
 
 module rtest (top,low);
-
-   // Node definitions
 
    inout top,low;
    electrical top,low;
 
    // Model parameters
-   
    parameter real R1=10000 from [0:inf) 
                   `P(info="Resistor [Ohm]");
    
-
    // Declaration of variables
-   real     v1,  i1;	
+   real v1, i1;
    
-
    analog begin
 
-//      `INITIAL_MODEL begin      // Model Initialization
-//
-//      end // INITIAL_MODEL
-
-//      `INSTANCE begin // temperature independent device initialization
-//
-//      end // temperature independent
-      
-//      `INSTANCE begin // temperature dependent device initialization
-//         
-//      end // temperature dependent
 
       
       begin     //Bias-dependent model evaluation
 	 
-	 v1 = V(top,low);
-	 i1 = v1/ R1;
-	 
+		   v1 = V(top,low);
+         i1 = v1/ R1;
+    
       end       //Bias-dependent model evaluation
 
       begin     //Define branch sources
 
          I(top,low) <+ i1;
 
-      end // begin
-
-//      `NOISE begin    //Define noise sources
-//       
-//      end // noise
-      
-   end //analog
+      end 
+   end
 
 endmodule

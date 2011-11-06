@@ -226,9 +226,14 @@ IVL=`which iverilog` -v
 
 # if adms ...
 ADMS_GC_XML=../adms/gnucap.xml
+ADMS_HTM_XML=../adms/admst_htm.xml
 
 %.cc : %.va $(ADMS_GC_XML)
 	admsXml $< -e $(ADMS_GC_XML) -o $*
+
+#move to ../doc?
+%.htm : %.va $(ADMS_HTM_XML)
+	admsXml $< -e $(ADMS_HTM_XML) -o $@
 
 %.h : %.model ${MODELGEN}${EXEEXT}
 	${MODELGEN} -h $<
