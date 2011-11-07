@@ -287,7 +287,7 @@ private:
 
 private:
   NODE* _nnn;
-  int _ttt;		// m == nm[_ttt] if properly set up
+  unsigned _ttt;	// m == nm[_ttt] if properly set up
   int _m;		// mapped, after reordering
 
 public:

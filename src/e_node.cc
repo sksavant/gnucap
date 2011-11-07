@@ -644,7 +644,7 @@ void node_t::new_model_node(const std::string& node_name, CARD* d)
   // _sim->_total_nodes
   _nnn->set_user_number(_ttt);
 
-  //assert(_ttt == _nnn->flat_number());
+  assert(_ttt == _nnn->user_number());
 }
 /*--------------------------------------------------------------------------*/
 void node_t::new_sckt_node(const std::string& node_name, const CARD_LIST* scope)
@@ -656,18 +656,7 @@ void node_t::new_sckt_node(const std::string& node_name, const CARD_LIST* scope)
   //assert(_ttt == _nnn->flat_number());
   //
   // later??
-  // _nnn->set_user_number(_ttt);
-}
-/*--------------------------------------------------------------------------*/
-void node_t::hack_subckt_node(NODE* n, int i )
-{
-  if(_nnn){
-    trace4("node_t::hack_subckt_node already there", _nnn->short_label() ,
-         n->short_label() , i, _nnn->user_number());
-    assert(n==_nnn);
-  }
-  _nnn = n;
-  _nnn->set_user_number(i);
+  _nnn->set_user_number(_ttt);
 }
 /*--------------------------------------------------------------------------*/
 void node_t::map_subckt_node(uint_t* m, const CARD* d)
