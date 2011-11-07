@@ -161,6 +161,49 @@ void SIM_DATA::order_auto()
   _nm[0] = 0;
   for (uint_t node = 1;  node <= _total_nodes;  ++node) {
     _nm[node] = _total_nodes - node + 1;
+  order_reverse();
+}
+/*--------------------------------------------------------------------------*/
+void SIM_DATA::order_tree( const CARD_LIST* scope, unsigned *c)
+{
+  bool cleanup=false;
+  if (!c){
+    c = new unsigned(0);
+    _nm[0]=0;
+
+    cleanup=true;
+  }
+  const NODE_MAP * nm = scope->nodes();
+
+  // nm = new unsigned[nm->how_many()];
+
+  /* node map (external to internal)	*/
+  /* node map (external to internal)	*/
+
+  for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
+    if (i->first != "0") {
+      (*c)++;
+      _nm[ i->second->user_number() ]=*c;
+      trace3("SIM_DATA::order_tree " , i->second->long_label(),
+           i->second->user_number() , *c);
+    }else{
+      // _out << "Zero Node  "  << "\n";
+    }
+  }
+
+  for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
+    const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i);
+    if (s) {
+      trace1("SIM_DATA::order_tree child ", s->long_label() );
+      order_tree(s->subckt(),c);
+    }
+  }
+
+//    nm[node] = ::status.total_nodes - node + 1;
+  if (cleanup){
+    trace2("SIM_DATA::order_tree", *c,  CKT_BASE::_sim->_total_nodes );
+    assert  (*c== CKT_BASE::_sim->_total_nodes );
+        delete c;
   }
 }
 /*--------------------------------------------------------------------------*/
