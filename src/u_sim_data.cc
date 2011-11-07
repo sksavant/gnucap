@@ -27,6 +27,7 @@
 #include "u_nodemap.h"
 #include "e_cardlist.h"
 #include "u_status.h"
+#include "e_subckt.h"
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::set_limit()
 {
@@ -128,6 +129,7 @@ void SIM_DATA::map__nodes()
     case oAUTO:		       order_auto();    break;
     case oREVERSE: untested(); order_reverse(); break;
     case oFORWARD: untested(); order_forward(); break;
+    case oTREE:    untested(); order_tree(); break;
   }
   ::status.order.stop();
 }
@@ -166,6 +168,43 @@ void SIM_DATA::order_auto()
   }
 }
 /*--------------------------------------------------------------------------*/
+void SIM_DATA::order_tree( const CARD_LIST* scope, unsigned *c)
+{
+  bool cleanup=false;
+  if (!c){
+    c = new unsigned();
+    cleanup=true;
+  }
+  const NODE_MAP * nm = scope->nodes();
+
+  // nm = new unsigned[nm->how_many()];
+
+  /* node map (external to internal)	*/
+  /* node map (external to internal)	*/
+
+  for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
+    if (i->first != "0") {
+      _nm[ i->second->user_number() ]=*c;
+      trace3("SIM_DATA::order_tree " , i->second->long_label() ,  i->second->matrix_number(), i->second->user_number() );
+      *c++;
+    }else{
+      // _out << "Zero Node  "  << "\n";
+    }
+  }
+
+  for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
+    const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i);
+    if (s) {
+      order_tree(s->subckt(),c);
+    }
+  }
+
+//    nm[node] = ::status.total_nodes - node + 1;
+  if (cleanup){
+    assert  (*c== CKT_BASE::_sim->_total_nodes );
+        delete c;
+  }
+}
 /*--------------------------------------------------------------------------*/
 /* init: allocate, set up, etc ... for any type of simulation
  * also called by status and probe for access to internals and subckts
