@@ -12,7 +12,9 @@ Vhalf ninn 0 {vdd/2}
 .list
 *.options abstol=1e-7
 *.options reltol=1e-4
-* .options itl4=1000
+
+.options itl1=1000
+*.options itl4=1000
 
 .param vdd 2.7
 
@@ -43,10 +45,10 @@ Rout out1 0 100
 
 Ip ndd pbias 1u
 *pulse(iv=0 pv=1u, rise=1)
-Rp ndd pbias 600k
+Rp ndd pbias 1000k
 In 0 nbias 2u 
 * pulse(iv=0, pv=2u, rise=1)
-Rp 0 nbias 400k
+Rp 0 nbias 1000k
 
 *                 o ndd
 *                 |
