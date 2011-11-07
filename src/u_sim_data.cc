@@ -165,6 +165,59 @@ void SIM_DATA::order_auto()
   order_reverse();
 }
 /*--------------------------------------------------------------------------*/
+void SIM_DATA::order_tree_comp( const CARD_LIST* scope, unsigned *c, bool *d)
+{
+  bool cleanup=false;
+  if (!c){
+    c = new unsigned(0);
+    d = new bool[CKT_BASE::_sim->_total_nodes];
+
+    _nm[0]=0;
+
+    cleanup=true;
+  }
+  const NODE_MAP * nm = scope->nodes();
+
+  // nm = new unsigned[nm->how_many()];
+
+  /* node map (external to internal)	*/
+  
+
+  for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
+
+    for(unsigned k=0; k<(*i)->net_nodes();++k){
+      // FIXME: use node_map()
+
+      unsigned un = (*i)->n_(k).n_()->user_number();
+
+      if(!d[un]){
+        (*c)++;
+        _nm[ un ]=*c;
+      }
+
+      trace4("SIM_DATA::order_tree_comp " , *c, i->second->long_label(),
+          i->second->matrix_number(), i->second->user_number() );
+
+    }
+
+    for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
+      const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i);
+      if (s) {
+        order_tree_comp(s->subckt(),c,d);
+      }
+    }
+  }
+
+
+//    nm[node] = ::status.total_nodes - node + 1;
+  if (cleanup){
+    trace2("SIM_DATA::order_tree", *c,  CKT_BASE::_sim->_total_nodes );
+    assert  (*c== CKT_BASE::_sim->_total_nodes );
+    delete c;
+    delete d;
+  }
+}
+/*--------------------------------------------------------------------------*/
 void SIM_DATA::order_tree( const CARD_LIST* scope, unsigned *c)
 {
   bool cleanup=false;
