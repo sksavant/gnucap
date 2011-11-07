@@ -58,7 +58,8 @@ void STORAGE::precalc_last()
   ELEMENT::precalc_last();
 
   set_converged();
-  assert(!is_constant()); /* because of integration */
+  trace2("STORAGE::precalc_last", _sim->sim_mode(), _sim->phase());
+  assert(!is_constant() || _sim->analysis_is_ddc_op() ); /* because of integration */
  
   _method_a = method_select[OPT::method][_method_u];
   //assert(_loss0 == 0.);
@@ -249,7 +250,7 @@ double STORAGE::tr_probe_num(const std::string& x)const
 /*--------------------------------------------------------------------------*/
 void STORAGE::set_ic( double x ){
 
-  printf("STORAGE:set_ic(...)\n");
+  trace1("STORAGE:set_ic(...)",x);
 
 
   if(has_common()){

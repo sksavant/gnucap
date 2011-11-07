@@ -121,7 +121,7 @@ bool DEV_CAPACITANCE::do_tr()
     _i[0] = differentiate(_y, _i, _time, _method_a);
     trace1("DEV_CAPACITANCE::do_tr m0 as if", _y[0]);
 
-  if(_sim->more_uic_now()){
+  if(_sim->more_uic_now() && is_constant() ){
     // BUG: only treat caps with _ic
     assert(_time[0] == 0.);
 

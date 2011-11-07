@@ -35,6 +35,10 @@ protected:
 //  typedef void (*p)(double);
   ELEMENT* (_pushel[DCNEST]);	/* pointer to thing to sweep, dc command */
   ELEMENT* (_zap[DCNEST]);	/* to branch to zap, for re-expand */
+
+  vector<STORAGE*> _uic_caplist;
+  void set_uic_caps_constant(bool x=true);
+
   CARDSTASH _stash[DCNEST];	/* store std values of elements being swept */
   bool _loop[DCNEST];		/* flag: do it again backwards */
   bool _reverse_in[DCNEST];	/* flag: sweep backwards, input */

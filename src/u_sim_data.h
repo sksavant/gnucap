@@ -165,14 +165,16 @@ struct INTERFACE SIM_DATA {
   void set_command_tran() {_mode = s_TRAN;}
   void set_command_fourier() {_mode = s_FOURIER;}
   void set_command_tt() {_mode = s_TTT;}
+  void set_command(SIM_MODE x){ _mode=x;} 
   SIM_MODE sim_mode()	   {return _mode;}
+  SIM_PHASE phase()	   {return _phase;}
   bool command_is_ac()	   {return _mode == s_AC;}
   bool command_is_dc()	   {return _mode == s_DC;}
   bool command_is_op()	   {return _mode == s_OP;}
   //bool command_is_tran()    {return _mode == s_TRAN;}
   //bool command_is_fourier() {return _mode == s_FOURIER;}
   bool analysis_is_ac()      {return _mode == s_AC;}
-  bool analysis_is_dcop()    {return _mode == s_DC || _mode == s_OP;}
+  bool analysis_is_dcop()    {return _mode == s_DC || _mode == s_OP || _mode==s_DDC ;}
   bool analysis_is_static()const  {return _phase == p_INIT_DC || _phase == p_DC_SWEEP;}
   bool analysis_is_restore() {return _phase == p_RESTORE;}
   bool analysis_is_tran()    {return _mode == s_TRAN || _mode == s_FOURIER || _mode == s_TTT;}
@@ -180,6 +182,8 @@ struct INTERFACE SIM_DATA {
   bool analysis_is_tran_static()  {return analysis_is_tran() && _phase == p_INIT_DC;}
   bool analysis_is_tran_restore() {return analysis_is_tran() && _phase == p_RESTORE;}
   bool analysis_is_tran_dynamic() {return analysis_is_tran() && _phase == p_TRAN;}
+  bool analysis_is_ddc() {return _mode == s_DDC; }
+  bool analysis_is_ddc_op() {return analysis_is_ddc() && _phase == p_INIT_DC;}
 
   void reset_iteration_counter(int i) {assert(up_order(0,i,iCOUNT-1)); _iter[i] = 0;}
   void count_iterations(int i)	{assert(up_order(0,i,iCOUNT-1)); ++_iter[i];}

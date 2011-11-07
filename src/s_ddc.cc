@@ -57,7 +57,7 @@ void DDC::do_it(CS& Cmd, CARD_LIST* Scope)
   _scope = Scope;
   _sim->_time0 = 0.;
   //_sim->set_command_ddc();
-  _sim->set_command_dc();
+  _sim->set_command(s_DDC);
   _sim->_phase = p_INIT_DC;
   //_sim->_ddc = true;
   ::status.ddc.reset().start();
@@ -111,6 +111,7 @@ void DDC::setup(CS& Cmd)
   }
   Cmd.check(bWARNING, "what's this?");
 
+  // hat peter auskommentiert
   //_sim->_uic = _sim->_more_uic = true;
 
   IO::plotout = (ploton) ? IO::mstdout : OMSTREAM();
@@ -122,21 +123,18 @@ void DDC::setup(CS& Cmd)
     fix_args(ii);
 
     if (exists(_zap[ii])) { // component
-      trace1("zap" + _zap[ii]->long_label(), ii );
+      trace2("zap inc_probes" + _zap[ii]->long_label(), ii, _zap[ii]->probes() );
       _stash[ii] = _zap[ii];			// stash the std value
       _zap[ii]->inc_probes();			// we need to keep track of it
-
-      //_zap[ii]->set_value(_zap[ii]->value(),0);	// zap out extensions
-      //_zap[ii]->set_constant(false);		// so it will be updated
-      //_pushel[ii] = _zap[ii];	                   // element to patch
-      //_sweepval[ii] = *(_zap[ii]->set__value());	// point to value to patch
 
       
       // urghs. hack
       STORAGE* s = dynamic_cast<STORAGE*>(_zap[ii]);
-      if(s != 0){
-        _zap[ii]->set_constant(false);		   // so it will be updated
+      if(s){
+        trace2("DDC::setup ", _zap[ii]->long_label(), _zap[ii]->is_constant());
+        _zap[ii]->set_constant(true);		   // so it will be updated
         _pushel[ii] = _zap[ii];	           // point to value to patch
+        _uic_caplist.push_back(s);
       }else{
         _zap[ii]->set_value(_zap[ii]->value(),0);  // zap out extensions
         _zap[ii]->set_constant(false);		   // so it will be updated
@@ -144,12 +142,6 @@ void DDC::setup(CS& Cmd)
       }
       _sweepval[ii] = 0;	        
       
-
-
-      //_zap[ii]->set_value(_zap[ii]->value(),0);	// zap out extensions
-      //_zap[ii]->set_constant(false);		// so it will be updated
-      //_sweepval[ii] = _zap[ii]->set__value();	// point to value to patch
-      //_sweepval[ii] = _zap[ii]->set__ic();	// point to value to patch
     }else{ // generator
       _sweepval[ii] = 0;
       incomplete();
@@ -192,16 +184,22 @@ DDC_BASE::DDC_BASE()
 /*--------------------------------------------------------------------------*/
 void DDC_BASE::finish(void)
 {
+  trace0("DDC_BASE::finish");
+
+//  _sim->_phase = p_;
 
   for (int ii = 0;  ii < _n_sweeps;  ++ii) {
     if (exists(_zap[ii])) { // component
       _stash[ii].restore();
       _zap[ii]->dec_probes();
+      trace2("DDC_BASE::finish dec_probes done", _zap[ii]->long_label(), _zap[ii]->probes());
       _zap[ii]->precalc_first();
       _zap[ii]->precalc_last();
     }else{
     }
   }
+
+  _uic_caplist.clear();
 }
 /*--------------------------------------------------------------------------*/
 void DDC_BASE::do_tran_step()
@@ -210,7 +208,7 @@ void DDC_BASE::do_tran_step()
   SIM_PHASE old_phase = _sim->_phase;
   trace1("DDC_BASE::do_tran_step", OPT::dtddc);
   _sim->_phase = p_TRAN;
-  _sim->_mode=s_TRAN;
+//  _sim->_mode=s_TRAN;
   _sim->_time0 = _sim->_dt0 = OPT::dtddc;
   //_sim->_genout = gen();
 
@@ -235,7 +233,6 @@ void DDC_BASE::do_tran_step()
 
   _sim->_time0 = _sim->_dt0 = 0.0;
 
-  _sim->_mode = s_DC;
   _sim->_phase = p_RESTORE;
   //_sim->restore_voltages(); ????
   _sim->keep_voltages(); //  vdc  = v0
@@ -322,8 +319,8 @@ void DDC_BASE::options(CS& Cmd, int Nest)
       || Get(Cmd, "re{verse}",	  &_reverse_in[Nest])
       || Get(Cmd, "te{mperature}",&temp_c_in)
       // FIXME
-      || Get(Cmd, "uic",	   &_sim->_uic)
-      || Get(Cmd, "more_uic",	   &_sim->_more_uic)
+//      || Get(Cmd, "uic",	   &_sim->_uic)
+//      || Get(Cmd, "more_uic",	   &_sim->_more_uic)
       || (Cmd.umatch("tr{ace} {=}") &&
 	  (ONE_OF
 	   || Set(Cmd, "n{one}",      &_trace, tNONE)
@@ -339,7 +336,7 @@ void DDC_BASE::options(CS& Cmd, int Nest)
       ;
   }while (Cmd.more() && !Cmd.stuck(&here));
 
-  _sim->_uic|=_sim->_more_uic;
+//  _sim->_uic|=_sim->_more_uic;
 
 }
 /*--------------------------------------------------------------------------*/
@@ -369,12 +366,18 @@ void DDC_BASE::sweep()
   sweep_recursive(_n_sweeps);
 }
 /*--------------------------------------------------------------------------*/
-
+void DDC_BASE::set_uic_caps_constant(bool x){
+  for( vector<STORAGE*>::iterator i=_uic_caplist.begin(); i!=_uic_caplist.end(); ++i)
+  {
+    (*i)->set_constant(x);
+  }
+}
+/*--------------------------------------------------------------------------*/
 //here?? -> DDC
 void DDC_BASE::sweep_recursive(int Nest)
 {
   unsigned d = _sim->_total_nodes; // 3
-  trace1("", d2);
+  trace1("DDC_BASE::sweep_recursive",d);
 
   trace1("DDC_BASE::sweep_recursive", Nest);
   --Nest;
@@ -393,8 +396,15 @@ void DDC_BASE::sweep_recursive(int Nest)
       _sim->_time0 = _sim->_dt0 = 0.0;
       _sim->_last_time = 0.0;
       // _sim->zero_currents();
-      //_sim->_uic=_sim->_more_uic=true;
+      //
+      // why not?
+      _sim->_uic=_sim->_more_uic=true;
+      _sim->_phase = p_INIT_DC;
+
+      set_uic_caps_constant();
       int converged = solve_with_homotopy(itl,_trace);
+
+
       if (!converged) {itested();
 	error(bWARNING, "did not converge\n");
         throw(Exception("foobar"));
@@ -428,8 +438,12 @@ void DDC_BASE::sweep_recursive(int Nest)
 
       _sim->_acx.reallocate();
       _sim->_jomega = COMPLEX(0., 1.0);
-      _sim->_mode=s_AC;
+//      _sim->_mode=s_AC;
       // _sim->_acx.set_min_pivot(OPT::pivtol);
+      //
+      set_uic_caps_constant(false);
+      _sim->_phase = p_AC;
+
       {// AC::sweep
         CARD_LIST::card_list.ac_begin();
         //...
@@ -477,13 +491,13 @@ void DDC_BASE::sweep_recursive(int Nest)
       }
 
 
-
-
        
+      //_sim->set_command(s_DC);
       outdata(_sweepval[Nest]);
+      //_sim->set_command(s_DDC);
 
       // here??
-      CARD_LIST::card_list.tr_regress();
+      CARD_LIST::card_list.tr_regress(); incomplete(); // => do_tran_step ?
       itl = OPT::DCXFER;
     }else{
       sweep_recursive(Nest);
@@ -576,7 +590,9 @@ void DDC_BASE::ac_snapshot(){
 
   _sim->_acx.reallocate();
   _sim->_jomega = COMPLEX(0., 1.0);
-  _sim->_mode=s_AC;
+
+  _sim->_phase = p_AC;
+
   // _sim->_acx.set_min_pivot(OPT::pivtol);
   //
   CARD_LIST::card_list.ac_begin();
@@ -752,9 +768,9 @@ void DDC_BASE::old_solver(){
   _sim->_bypass_ok = false;
 
   if (_do_tran_step) { 
+    _sim->_phase = p_TRAN;
     do_tran_step();
   } 
-  _sim->_mode = s_DC;
 
   { // some more AC stuff
 
@@ -901,7 +917,6 @@ void DDC_BASE::block_solver(){
   if (_do_tran_step) { 
     do_tran_step();
   } 
-  _sim->_mode = s_DC;
 
   { // some more AC stuff
 
