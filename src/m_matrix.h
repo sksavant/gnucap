@@ -117,6 +117,7 @@
 #include <fstream>
 using namespace std;
 /*--------------------------------------------------------------------------*/
+class OMSTREAM;
 template <class T>
 class BSMATRIX {
   // hack.

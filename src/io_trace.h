@@ -24,6 +24,7 @@
 //testing=trivial 2006.07.17
 /* allow multiple inclusions with different DO_TRACE */
 #include <iostream>
+using namespace std;
 
 #undef trace_line
 #undef trace
@@ -40,7 +41,6 @@
 #undef unreachable
 #undef incomplete
 /*--------------------------------------------------------------------------*/
-// using namespace std;
 
 #ifndef hashpointer_
 # define hashpointer_
@@ -152,5 +152,8 @@ class hp{
 #else
 #define itested()
 #endif
+
+
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

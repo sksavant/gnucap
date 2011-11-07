@@ -575,6 +575,7 @@ MODEL_SUBCKT* LANG_SPICE_BASE::parse_module(CS& cmd, MODEL_SUBCKT* x)
 
   // body
   parse_module_body(cmd, x, x->subckt(), name() + "-subckt>", NO_EXIT_ON_BLANK, ".ends |.eom ");
+  trace0("LANG_SPICE_BASE::parse_module done " );
   return x;
 }
 /*--------------------------------------------------------------------------*/

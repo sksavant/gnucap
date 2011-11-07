@@ -38,6 +38,8 @@ m1 3 6 5 8 cmosn w=5u l=5u ad=45p as=45p pd=28u ps=28u nrd=1.8 nrs=1.8
 .print tran v(X*.nodes)
 .tran 1 5 
 
+
+.echo NODELIST
 .nodelist
 
 .end

@@ -120,6 +120,7 @@ void SIM_DATA::zero_voltages()
  */
 void SIM_DATA::map__nodes()
 {
+  trace1("SIM_DATA::map__nodes", _total_nodes);
   _nm = new int[_total_nodes+1];
   ::status.order.reset().start();
   switch (OPT::order) {
@@ -128,9 +129,11 @@ void SIM_DATA::map__nodes()
     case oAUTO:		       order_auto();    break;
     case oREVERSE: untested(); order_reverse(); break;
     case oFORWARD: untested(); order_forward(); break;
+    case oTREE:    untested(); order_tree(); break;
   }
   ::status.order.stop();
 }
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /* order_reverse: force ordering to reverse of user ordering
  *  subcircuits at beginning, results on border at the bottom
@@ -318,7 +321,7 @@ void SIM_DATA::invalidate_tt(){
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::unalloc_vectors()
 {
-  trace0("SIM_DATA::unalloc_vectors");
+  trace1("SIM_DATA::unalloc_vectors",_total_nodes);
   _evalq1.clear();
   _evalq2.clear();
   delete [] _i;

@@ -104,6 +104,7 @@ void DEV_BVS::expand(){
     if (!(_n[BR].n_())) {
         _n[BR].new_model_node( long_label() + ".br", this);
     }
+    trace2("DEV_BVS::expand ", long_label(),  _n[BR].m_() );
     COMPONENT::expand();
 
 }

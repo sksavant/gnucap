@@ -99,6 +99,7 @@ NODE_BASE::NODE_BASE()
   _user_number(INVALID_NODE)
 {
 }
+/*--------------------------------------------------------------------------*/
 NODE::NODE()
   :NODE_BASE()
 {
@@ -121,6 +122,16 @@ NODE::NODE(const NODE& p)
   unreachable();
 }
 /*--------------------------------------------------------------------------*/
+NODE_BASE::NODE_BASE(const std::string& s, int n, CARD_LIST* p)
+  :CKT_BASE(s),
+   _parent(p),
+   _user_number(n)
+   //_flat_number(n)
+   //_matrix_number(INVALID_NODE)
+{
+  trace1("NODE_BASE::NODE_BASE()" + s, n);
+}
+/*--------------------------------------------------------------------------*/
 /* constructor taking a pointer : it must be valid
  * supposedly not used, but used by a required function that is also not used
  */
@@ -135,16 +146,6 @@ NODE::NODE(const NODE* p)
 NODE::NODE(const std::string& s, int n, CARD_LIST*p)
   :NODE_BASE(s,n,p)
 {
-}
-/*--------------------------------------------------------------------------*/
-NODE_BASE::NODE_BASE(const std::string& s, int n, CARD_LIST* p)
-  :CKT_BASE(s),
-   _parent(p),
-   _user_number(n)
-   //_flat_number(n)
-   //_matrix_number(INVALID_NODE)
-{
-  trace1("NODE_BASE::NODE_BASE()" + s, n);
 }
 /*--------------------------------------------------------------------------*/
 node_t::node_t()
@@ -167,7 +168,7 @@ node_t::node_t(NODE* n)
    _ttt(n->user_number()),
    _m(to_internal(n->user_number()))
 {
-  trace0("node_t::node_t(NODE*) " + _nnn->long_label());
+  trace3("node_t::node_t(NODE*) " , _nnn->long_label(), n->user_number(), to_internal(n->user_number()));
   //assert(_ttt == _nnn->flat_number());
 }
 /*--------------------------------------------------------------------------*/
@@ -233,6 +234,8 @@ double NODE::tr_probe_num(const std::string& x)const
     double z1 = tr_probe_num("zero ");
     double z2 = tr_probe_num("zero ");
     return z1/z2;
+  }else if (Umatch(x, "m ")) {
+    return  m_();
   }else{itested();
     return CKT_BASE::tr_probe_num(x);
   }
@@ -591,15 +594,32 @@ void node_t::set_to_ground(CARD* d)
  */
 void node_t::new_node(const std::string& node_name, const CARD* d)
 {
+
+  //  simpler:
+  //return new_node( node_name, d->scope() );
+
+  // OLD code
   //assert(!_nnn); //BUG// fails on MUTUAL_L::expand after clone
   assert(d);
   assert(d->scope());
 
   NODE_MAP* Map = d->scope()->nodes();
   assert(Map);
-  trace0("node_t::new_node " + node_name + " " + d->long_label());
   _nnn = Map->new_node(node_name);
-  trace0("node_t::new_node ...");
+  trace2("node_t::new_node", node_name, _nnn->user_number());
+  _ttt = _nnn->user_number();
+  assert(_nnn);
+}
+/*--------------------------------------------------------------------------*/
+// same, but leave choice of scope to user.
+void node_t::new_node(const std::string& node_name, const CARD_LIST* scope)
+{
+  //assert(!_nnn); //BUG// fails on MUTUAL_L::expand after clone
+  assert(scope);
+
+  NODE_MAP* Map = scope->nodes();
+  assert(Map);
+  _nnn = Map->new_node(node_name);
   _ttt = _nnn->user_number();
   assert(_nnn);
 }
@@ -612,12 +632,11 @@ void node_t::new_node(const std::string& node_name, const CARD* d)
  */
 void node_t::new_model_node(const std::string& node_name, CARD* d)
 {
-  new_node(node_name, d);
+  // new_node(node_name, d);
   _ttt = CKT_BASE::_sim->newnode_model();
   assert (d->subckt());
   new_node(node_name, d->subckt());
   // _ttt = CKT_BASE::_sim->newnode_model(); // global user number
-  _ttt = CKT_BASE::_sim->newnode_model(); // global user number
   trace3("node_t::new_model_node", node_name, _ttt, _nnn->user_number());
 
   //HACK: (no subckt/node tree yet)
@@ -643,8 +662,9 @@ void node_t::new_sckt_node(const std::string& node_name, const CARD_LIST* scope)
 void node_t::hack_subckt_node(NODE* n, int i )
 {
   if(_nnn){
-    trace0("node_t::hack_subckt_node " + _nnn->short_label() + " " 
-        + n->short_label());
+    trace4("node_t::hack_subckt_node already there", _nnn->short_label() ,
+         n->short_label() , i, _nnn->user_number());
+    assert(n==_nnn);
   }
   _nnn = n;
   _nnn->set_user_number(i);
