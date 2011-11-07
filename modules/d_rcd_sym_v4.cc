@@ -46,9 +46,9 @@ class MODEL_BUILT_IN_RCD_SYM_V4 : public MODEL_BUILT_IN_RCD_SYM {
     double __Rc(double uin, const COMMON_COMPONENT* cc)const;
     double __Ge(double uin, const COMMON_COMPONENT* cc)const;
     double __tau(double uin, const COMMON_COMPONENT* cc)const;
-    virtual void do_tr_stress_last(long double fill, ADP_NODE* , const COMMON_COMPONENT* cc ) const;
+    virtual void do_tr_stress_last(long double fill, ADP_NODE*, COMPONENT* ) const;
   private:
-    double __uin_iter(double& uin, double E, const COMMON_COMPONENT* cc)const;
+//    double __uin_iter(double& uin, double E, const COMMON_COMPONENT* cc)const;
     double __E(double uin, const COMMON_COMPONENT* cc)const;
 
     long double __uin_iter(long double& uin,  double cur, double E, const COMMON_COMPONENT* cc)const;
@@ -189,10 +189,12 @@ void MODEL_BUILT_IN_RCD_SYM_V4::do_tr_stress( const COMPONENT* brh) const
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_RCD_SYM_V4::do_tr_stress_last( long double E, ADP_NODE* _c,
-    const COMMON_COMPONENT* ccmp ) const
+    COMPONENT* dd ) const
 {
   // ADP_NODE_UDC* udc= dynamic_cast<ADP_NODE_UDC*>(a);
-  const COMMON_BUILT_IN_RCD* cc = static_cast<const COMMON_BUILT_IN_RCD*>(ccmp);
+  //const DEV_BUILT_IN_RCD* d = static_cast<const DEV_BUILT_IN_RCD*>(dd);
+  const COMMON_BUILT_IN_RCD* cc = static_cast<const COMMON_BUILT_IN_RCD*>(dd->common());
+  const COMMON_BUILT_IN_RCD* c = cc;
   const MODEL_BUILT_IN_RCD* m =   static_cast<const MODEL_BUILT_IN_RCD*>(this);
   assert(m);
   assert(is_number(_c->tt()));
@@ -222,8 +224,8 @@ void MODEL_BUILT_IN_RCD_SYM_V4::do_tr_stress_last( long double E, ADP_NODE* _c,
   long double uin_low  = min ( uin_eff - OPT::abstol, uin_eff * (1-OPT::reltol) );
   assert (uin_high>=uin_low);
 
-  E_high = cc->__step( uin_high, E_old, CKT_BASE::_sim->_last_time );
-  E_low  = cc->__step( uin_low,  E_old, CKT_BASE::_sim->_last_time ); 
+  E_high = __step( uin_high, E_old, CKT_BASE::_sim->_last_time, c );
+  E_low  = __step( uin_low,  E_old, CKT_BASE::_sim->_last_time, c ); 
 
   assert (E_low>=0);
 
@@ -253,7 +255,7 @@ void MODEL_BUILT_IN_RCD_SYM_V4::do_tr_stress_last( long double E, ADP_NODE* _c,
 
   if (!linear_inversion){
     try{
-      uin_eff = cc->__uin_iter(uin_eff, E_old, (double)E, _c->tr_lo, _c->tr_hi );
+      uin_eff = cc->__uin_iter(uin_eff, E_old, (double)E, _c->tr_lo, _c->tr_hi, dd );
     } catch (Exception &e) {
       error(bDANGER, "Exception in %s\n", long_label().c_str());
       throw(e);
@@ -263,9 +265,9 @@ void MODEL_BUILT_IN_RCD_SYM_V4::do_tr_stress_last( long double E, ADP_NODE* _c,
   }
 
   // sanitycheck (monotonicity)
-  long double E_test=cc->__step( uin_eff, E_old, CKT_BASE::_sim->_last_time );
+  long double E_test = __step( uin_eff, E_old, CKT_BASE::_sim->_last_time, c );
   double trvorher= _c->tr();
-  long double E_vorher=cc->__step( trvorher , E_old, CKT_BASE::_sim->_last_time );
+  long double E_vorher = __step( trvorher , E_old, CKT_BASE::_sim->_last_time, c );
   if (fabs(E_test - E) < fabs(E_vorher-E)){
     trace6("MODEL_BUILT_IN_RCD_SYM_V4::do_tr_stress_last new uin better ",
         uin_eff, _c->tr(), E_test - E, E_vorher-E,1-E , linear_inversion);
@@ -295,8 +297,8 @@ void MODEL_BUILT_IN_RCD_SYM_V4::do_tr_stress_last( long double E, ADP_NODE* _c,
   trace3(("MODEL_BUILT_IN_RCD_SYM_V4::do_tr_stress_last E" + _c->label()).c_str(),
       uin_low, uin_eff, uin_high);
 
-  E_high = cc->__step( uin_high, E_old, CKT_BASE::_sim->_last_time  );
-  E_low  = cc->__step( uin_low,  E_old, CKT_BASE::_sim->_last_time  ); 
+  E_high = __step( uin_high, E_old, CKT_BASE::_sim->_last_time, c );
+  E_low  = this->__step( uin_low,  E_old, CKT_BASE::_sim->_last_time, c  ); 
   trace6(("MODEL_BUILT_IN_RCD_SYM_V4::do_tr_stress_last E" + _c->label()).c_str(),
       uin_eff,  E-E_low, E_high - E_low, E, 1-E, E_high-E );
   trace3(("MODEL_BUILT_IN_RCD_SYM_V4::do_tr_stress_last E" + _c->label()).c_str(), 
@@ -407,12 +409,12 @@ long double MODEL_BUILT_IN_RCD_SYM_V4::__Edu(long double uin, long double cur, c
 }
 /*--------------------------------------------------------------------------*/
 // solve E(uin)-E==0
-long double MODEL_BUILT_IN_RCD_SYM_V4::__uin_iter(long double& uin, double
-    E_old, double E, const COMMON_COMPONENT* ccmp ) const { const
-  COMMON_BUILT_IN_RCD* c = dynamic_cast<const COMMON_BUILT_IN_RCD*>(ccmp);
-  assert(false);
-  return c->__uin_iter( uin, E_old ,E,0,0 ); 
-}
+//long double MODEL_BUILT_IN_RCD_SYM_V4::__uin_iter(long double& uin, double
+//    E_old, double E, const COMMON_COMPONENT* ccmp ) const { const
+//  COMMON_BUILT_IN_RCD* c = dynamic_cast<const COMMON_BUILT_IN_RCD*>(ccmp);
+//  assert(false);
+//  return c->__uin_iter( uin, E_old ,E,0,0, dd ); 
+//}
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 // old.

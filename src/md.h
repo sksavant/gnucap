@@ -139,7 +139,7 @@ const double inf = std::numeric_limits<float>::infinity( );
 
 template <class T, class S>
 inline T asserted_cast(S s){
-  T x=prechecked_cast<T>(s);
+  T x = prechecked_cast<T>(s);
   assert(x);
   return x;
 }

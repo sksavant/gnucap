@@ -765,6 +765,8 @@ electrical  p_in , n_in , out1 , pbias , nbias , vdd , gnd;
  electrical f_pmbtrans20_qs ;
 
  // VPN-Liste deklarieren:
+ V(f_pmtrans1_g_t) <+ 
+_a2*$temperature-273.15+300.15-27.0*_a2   ;
 
  // Vals der Terme s1 ... deklarieren:
   analog function real mysqrt;
@@ -778,8 +780,6 @@ electrical  p_in , n_in , out1 , pbias , nbias , vdd , gnd;
  analog begin 
 
  // Vals aus der Val-Liste: 
- V(f_pmtrans1_g_t) <+ 
-_a2*$temperature-273.15+300.15-27.0*_a2   ;
  V(f_pmtrans1_g_ni) <+ 
 0.2788434715e13*pow(V(f_pmtrans1_g_t),1.5)*exp(21.5565981-5802.261235*(1.16-0.702e-3*pow(V(f_pmtrans1_g_t),2)/(V(f_pmtrans1_g_t)+1108.0))/V(f_pmtrans1_g_t))   ;
  V(f_pmtrans1_g_k2) <+ 

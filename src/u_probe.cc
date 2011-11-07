@@ -197,7 +197,6 @@ MATH_PROBE::MATH_PROBE(const MATH_PROBE& p) : PROBE(p) {  _type = p._type ; }
 double MATH_PROBE::value(void)const
 {
   trace0(("MATH_PROBE::value()"+_what).c_str());
-  untested();
   if( ( _type & MATH_OP_MASK ) == MATH_OP_CONST)
   {
        return NOT_VALID; // not impl.

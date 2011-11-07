@@ -113,7 +113,6 @@ void volts_save(CS&, OMSTREAM _out, CARD_LIST*)
   }
   const NODE_MAP * nm = CARD_LIST::card_list.nodes();
   for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
-    untested();
     if (i->first != "0") {
       _out << i->second->long_label() << " vector position " << 
         ", m_ " << i->second->m_() << " , matrix " << i->second->matrix_number() 
@@ -222,24 +221,32 @@ public:
     _out.outset(cmd);
 
     _out << "name   ...\n";
+
+    CKT_BASE::_sim->init();
+
+    _out << "have " << _sim->_total_nodes 
+      << " nodes. model: " << _sim->_model_nodes 
+      << " sckt: " << _sim->_subckt_nodes
+      << "\n";
+    for(unsigned k=0; k<= _sim->_total_nodes; ++k)
+      _out << CKT_BASE::_sim->_vdc[k]  << ",";
+    _out << "\n";
     print(_out, &CARD_LIST::card_list);
     _out.outreset();
   }
 } p6;
-DISPATCHER<CMD>::INSTALL d6(&command_dispatcher, "nodelist", &p6);
+DISPATCHER<CMD>::INSTALL d6(&command_dispatcher, "nodelist|listnodes", &p6);
 /*--------------------------------------------------------------------------*/
 void CMD_NL::print( OMSTREAM _out, const CARD_LIST* scope){
-
-  CKT_BASE::_sim->init();
 
   const NODE_MAP * nm = scope->nodes();
   for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
     if (i->first != "0") {
       stringstream s;
-      s << setw(8) << i->second->long_label() << " vector position " << 
-        ", m_ " << i->second->m_() << " , matrix " << i->second->matrix_number() 
-        << ", use " << i->second->user_number() << 
-        " x-Entry " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
+      s << setw(8) << i->second->long_label() << " , matrix_number " 
+        << i->second->matrix_number() << " (" <<  i->second->m_() << 
+        "), user_number " << i->second->user_number() << " nm[t] " <<
+        " vdc " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
       _out << s.str();
     }else{
       // _out << "Zero Node  "  << "\n";
@@ -249,6 +256,7 @@ void CMD_NL::print( OMSTREAM _out, const CARD_LIST* scope){
   for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
     const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i);
     if (s) {
+      _out << s->long_label() <<"\n";
       print(_out,s->subckt());
     }
   }

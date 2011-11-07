@@ -43,23 +43,40 @@ namespace PARM{
   enum NA_ {NA};
 }
 
+//////////=========================
+class PARA_BASE {
+  protected:
+    std::string _s;
+
+  public:
+    PARA_BASE( ): _s(){}
+    PARA_BASE(const PARA_BASE& p ): _s(p._s){}
+    PARA_BASE( const string s ): _s(s){}
+    virtual ~PARA_BASE(){}
+
+    bool has_hard_value()const {return (_s != "");}
+
+    void	print(OMSTREAM& o)const		{o << string(*this);}
+    void	print(ostream& o)const		{o << string(*this);}
+    virtual operator std::string()const = 0;
+
+};
+//////////=========================
 template <class T>
-class PARAMETER {
-private:
-  mutable T _v;
-  std::string _s;
-  T my_infty() const;
+class PARAMETER : public PARA_BASE {
+  private:
+    mutable T _v;
+    virtual T my_infty() const; // HACK?
 public:
   T _NOT_INPUT() const;
 
-  explicit PARAMETER() :_v(_NOT_INPUT()), _s() {}
-  PARAMETER(const PARAMETER<double>& p) :_v(p._v), _s(p._s) {}
+  explicit PARAMETER() : PARA_BASE(), _v(_NOT_INPUT()) {}
+  PARAMETER(const PARAMETER<double>& p) : PARA_BASE(p), _v(p._v) {}
   // PARAMETER(const T&);
-  explicit PARAMETER(T v) :_v(v), _s() {}
+  explicit PARAMETER(T v) : PARA_BASE(), _v(v) {}
   //explicit PARAMETER(T v, const std::string& s) :_v(v), _s(s) {untested();}
   ~PARAMETER() {}
   
-  bool	has_hard_value()const {return (_s != "");}
   bool	has_good_value()const {return (_v != NOT_INPUT);}
   //bool has_soft_value()const {untested(); return (has_good_value() && !has_hard_value());}
 
@@ -74,16 +91,10 @@ public:
   std::string debugstring()const {
     return(_s + " -> " + to_string(_v));
   }
-  std::string string()const {
-    if (_s == "#") {
-      return to_string(_v);
-    }else if (_s == "") {
-      return "NA(" + to_string(_v) + ")";
-    }else{
-      return _s;
-    }
-  }
+  virtual std::string string( )const {return *this;}
+  operator std::string()const;
   void	print(OMSTREAM& o)const		{o << string();}
+  void	print(ostream& o)const		{o << string();}
   void	set_default(const T& v)		{_v = v; _s = "";}
   void	operator=(const PARAMETER& p)	{_v = p._v; _s = p._s;}
   void	operator=(const T& v)		{_v = v; _s = "#";}
@@ -112,10 +123,28 @@ private:
   T lookup_solve(const T& def, const CARD_LIST* scope)const;
 };
 /*=========================*/
-template<>
-void	PARAMETER<vector<PARAMETER<vector<PARAMETER<double> > > > >::operator=(const std::string& s);
-template<>
-void    PARAMETER<vector<vector<double> > >::operator=(const std::string& s);
+/*=========================*/
+//template <class T>
+//inline std::string PARAMETER<T>::string()const {
+//  if (_s == "#") {
+//    return to_string(_v);
+//  }else if (_s == "") {
+//    return "NA(" + to_string(_v) + ")";
+//  }else{
+//    return _s;
+//  }
+//}
+/*=========================*/
+template <class T>
+inline  PARAMETER<T>::operator std::string()const {
+  if (_s == "#") {
+    return to_string(_v);
+  }else if (_s == "") {
+    return "NA(" + to_string(_v) + ")";
+  }else{
+    return _s;
+  }
+}
 /*=========================*/
 template<class T>
 inline  void	PARAMETER<T>::operator=(const std::string& s)
@@ -145,17 +174,6 @@ inline unsigned int PARAMETER<unsigned int>::_NOT_INPUT() const{
   return NOT_INPUT_INT;
 } //BUG. magic number?
 /*--------------------------------------------------------------------------*/
-template <> 
-inline vector<PARAMETER<double> > PARAMETER< vector<PARAMETER<double> > >::_NOT_INPUT() const {
-  untested();
-  return std::vector< PARAMETER<double> >(0);
-}
-/*--------------------------------------------------------------------------*/
-template <> 
-inline std::vector<double> PARAMETER< std::vector<double> >::_NOT_INPUT() const {
-  untested();
-  return std::vector<double>(0);
-}
 /*--------------------------------------------------------------------------*/
 template <> 
 inline std::list<double> PARAMETER< std::list<double> >::_NOT_INPUT() const {
@@ -166,17 +184,16 @@ inline std::list<double> PARAMETER< std::list<double> >::_NOT_INPUT() const {
 
 // ugly hack, probably
 template <>
-class PARAMETER<std::string> {
+class PARAMETER<std::string> : PARA_BASE {
 private:
   mutable std::string _v; //value
-  std::string _s;  //backend string
   std::string my_infty() const;
 private:
   std::string lookup_solve(const std::string& def, const CARD_LIST* scope)const;
 public:
   explicit PARAMETER() :_v("") {}
-  PARAMETER(const PARAMETER<std::string>& p) :_v(p._v), _s(p._s) {}
-  explicit PARAMETER(std::string v) :_s(v) {}
+  PARAMETER(const PARAMETER<std::string>& p) : PARA_BASE(p), _v(p._v) {}
+  explicit PARAMETER(std::string v) :PARA_BASE(v) {}
   //explicit PARAMETER(T v, const std::string& s) :_v(v), _s(s) {untested();}
   ~PARAMETER() {}
   
@@ -399,7 +416,7 @@ inline string PARAMETER<string>::lookup_solve(const std::string& def,
   trace0(("lookup_solve " + _s).c_str());
   const PARAM_LIST* pl = scope->params();
   PARAMETER<double> x =  (pl->deep_lookup(_s));
-  return x.string();
+  return ::string(x);
 
   return def;
 }
@@ -439,20 +456,12 @@ inline T PARAMETER<T>::lookup_solve(const T& def, const CARD_LIST* scope)const
 template <>
 inline double PARAMETER<double>::my_infty()const{ return inf; }
 /*--------------------------------------------------------------------------*/
-
+  enum polarity_t {pP = -1, dunno=0, pN = 1};
+template <>
+inline polarity_t PARAMETER<polarity_t>::my_infty()const{ return dunno; }
+/*--------------------------------------------------------------------------*/
 template <class T>
 inline T PARAMETER<T>::my_infty()const{ untested(); return 0; }
-/*--------------------------------------------------------------------------*/
-template <>
-std::vector<double> PARAMETER<std::vector<double> >::e_val(const
-    std::vector<double>& , const CARD_LIST* )const;
-/*--------------------------------------------------------------------------*/
-typedef PARAMETER<double> dp;
-template <>
-vector<PARAMETER<vector<dp> > >
-           PARAMETER<vector<PARAMETER<vector<dp> > > >::e_val(const
-    vector<PARAMETER<vector<dp > > >& , const CARD_LIST* )const;
-///*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 template <>
 inline std::list<double> PARAMETER<std::list<double> >::e_val(const
@@ -483,6 +492,7 @@ inline std::list<double> PARAMETER<std::list<double> >::e_val(const
 template <class T>
 T PARAMETER<T>::e_val(const T& def, const CARD_LIST* scope)const
 {
+  trace2("PARAMETER<T>::fallback_e_val", _s, *this);
   assert(scope);
 
   static int recursion=0;
@@ -555,15 +565,20 @@ inline void PARAMETER<bool>::parse(CS& cmd)
   }
 }
 /*--------------------------------------------------------------------------*/
+//template <>
+//void PARAMETER<vector<PARAMETER<PARAMETER< double > > > >::parse(CS& cmd) ;
+/*--------------------------------------------------------------------------*/
 template <class T>
 inline void PARAMETER<T>::parse(CS& cmd) 
 {
   trace0(("PARAMETER<T>::parse " + cmd.tail()).c_str());
   T new_val;
+  //try
   cmd >> new_val;
   if (cmd) {
     _v = new_val;
     _s = "#";
+  //except
   }else{
     std::string name;
     //cmd >> name;
@@ -639,12 +654,18 @@ INTERFACE bool Get(CS& cmd, const std::string& key, PARAMETER<bool>* val);
 INTERFACE bool Get(CS& cmd, const std::string& key, PARAMETER<int>* val);
 /*--------------------------------------------------------------------------*/
 template <class T>
-inline OMSTREAM& operator<<(OMSTREAM& o, const PARAMETER<T> p)
+inline ostream& operator<<(ostream& o, const PARAMETER<T> p)
 {
   p.print(o);
   return o;
 }
 /*--------------------------------------------------------------------------*/
+template <class T>
+inline OMSTREAM& operator<<(OMSTREAM& o, const PARAMETER<T> p)
+{
+  p.print(o);
+  return o;
+}
 /*--------------------------------------------------------------------------*/
 typedef struct{
   double tr_sum; // sum up stress during tr
@@ -652,15 +673,11 @@ typedef struct{
   double tt_old; // old total
 } stress;
 /*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-// FIXME: templatify
-// template<class T>
-string to_string(vector<PARAMETER<double> > n);
-string to_string(vector< PARAMETER< vector< PARAMETER<double> > > > n);
-/*--------------------------------------------------------------------------*/
+template <class T>
+inline std::string to_string( PARAMETER<T> n) {
+  return string(n);
+}
 
-typedef vector<PARAMETER<double> > dpv;
-typedef vector<PARAMETER<dpv> > dpvv;
+/*--------------------------------------------------------------------------*/
 
 #endif

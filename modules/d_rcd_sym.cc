@@ -25,11 +25,11 @@ double MODEL_BUILT_IN_RCD_SYM::dvth( const COMPONENT* brh) const
     // return c->_Ccgfill->get_tt() * cc->_weight * cc->_wcorr;
     //
     //FIXME. _tr_fill must be part of an ADP_NODE
-    return (c->_tr_fill + c->_Ccgfill->get_tt()) * cc->_weight * cc->_wcorr;
+    return double((c->_tr_fill + c->_Ccgfill->get_tt()) * cc->_weight * cc->_wcorr);
   }
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_RCD_SYM::do_stress_apply( COMPONENT*  ) const
+void MODEL_BUILT_IN_RCD_SYM::do_stress_apply( COMPONENT* ) const
 {
   if (!_sim->analysis_is_tt()){
 //        _Ccgfill->
@@ -50,6 +50,7 @@ void DEV_BUILT_IN_RCD_SYM::tr_stress()
 
   bool use_1_uend = m -> norm_uin; // usually false...
 
+  assert(is_number(_Ccgfill->get_total()));
   if( m->positive) {
     if ( _Ccgfill->get_total() < 0 ){
       trace1(("DEV_BUILT_IN_RCD::tr_stress fill is negative: " + short_label()).c_str() ,  _Ccgfill->get_total() );
@@ -175,6 +176,7 @@ void MODEL_BUILT_IN_RCD_SYM::do_tr_stress( const COMPONENT* brh) const {
   const COMMON_BUILT_IN_RCD* cc = static_cast<const COMMON_BUILT_IN_RCD*>(c->common());
   //double  fill = _n[n_ic].v0();
   //
+  assert(false); // use DEV::tr_stress
 
   double  fill = c->_Ccgfill->get_total();
   double  ueff = c->involts();
@@ -214,14 +216,16 @@ void MODEL_BUILT_IN_RCD_SYM::do_tr_stress( const COMPONENT* brh) const {
   trace6("DEV_BUILT_IN_RCD::tr_stress ", fill, h, tau, (newfill-fill)/h, rc, re );
   assert(newfill == newfill);
   c->_Ccgfill->tr_add(newfill-fill);
+  assert(is_number(newfill-fill));
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_RCD_SYM::do_tt_prepare( COMPONENT* brh) const{
   const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
   const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
+  assert(is_number(cc->_zero));
   c->_Ccgfill->tt_set( cc->_zero );
 
-  trace2( ( "MODEL_BUILT_IN_RCD_SYM_V2::do_tt_prepare" + brh->short_label()).c_str(),  -cc->_wcorr, cc->_zero );
+  trace2( ( "MODEL_BUILT_IN_RCD_SYM_V2::do_tt_prepare" + brh->short_label()).c_str(), -cc->_wcorr, cc->_zero );
 }
 /*--------------------------------------------------------------------------*/
 DEV_BUILT_IN_RCD_SYM::DEV_BUILT_IN_RCD_SYM()
@@ -242,8 +246,19 @@ int  MODEL_BUILT_IN_RCD_SYM::tt_region(const COMPONENT* brh) const{
   assert(c);
   return ( (c->_Ccgfill)->region() );
 }
-
-
+/*--------------------------------------------------------------------------*/
+//double MODEL_BUILT_IN_RCD_SYM::__Edu(double s, const COMMON_COMPONENT* c ) const 
+//{
+//  const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c) ;
+//  double te = __Re( s, cc);
+//  double tc = __Rc( s, cc);
+//  double dte = __dRe( s, cc);
+//  double dtc = __dRc( s, cc);
+//  double ret =  (dtc * ( te + tc ) - ( dte + dtc ) * tc) / ( dte + dtc ) / ( dte + dtc )  ;
+//  assert(is_number(ret));
+//  return ret;
+//}
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 ADP_NODE_RCD* MODEL_BUILT_IN_RCD_SYM::new_adp_node(const COMPONENT* c) const{
   return new ADP_NODE_RCD(c);

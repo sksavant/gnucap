@@ -242,8 +242,7 @@ public:	// state, aux data
   }
   void	mark_always_q_for_eval() {_q_for_eval = INT_MAX;}
   void	q_eval();
-  void	q_load()		 { trace0(("q_load: "+ short_label()).c_str() );
-                                   _sim->_loadq.push_back(this);}
+  void	q_load()		 {_sim->_loadq.push_back(this);}
   void	q_accept()		 {_sim->_acceptq.push_back(this);}
   void	q_tt_accept()		 {_sim->_tt_acceptq.push_back(this);}
   //--------------------------------------------------------------------

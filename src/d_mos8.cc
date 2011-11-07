@@ -5259,6 +5259,8 @@ void ADP_BUILT_IN_MOS8::tr_accept(){
     //  assert( dt >= 0 )
 
     switch(m->polarity){
+      case dunno:
+        assert(false);
       case pN:
         hcis = Ids * pow( Isub / Ids, exponent)/H/W * dt;
         assert(is_number(hcis));
@@ -5272,6 +5274,7 @@ void ADP_BUILT_IN_MOS8::tr_accept(){
             ) * dt;
         trace6( "MODEL_BUILT_IN_MOS8::do_tr_stress", Wg, Hg, ig, W, mg, Ids );
         assert(is_number(hcis));
+        break;
     }
     if (hcis > 1e-10)
     {

@@ -51,11 +51,17 @@ if IVERILOG_VVP
 D_SRCS += d_vvp.cc extlib.cc
 endif
 
-if IVERILOG
-D_SRCS +=  d_ivl_base.cc d_ivl_ports.cc \
+D_IVL = d_ivl_base.cc d_ivl_ports.cc \
 			 d_invert.cc d_clock.cc \
 		  	 d_latch.cc d_lfsr.cc  \
 			 e_ivl_compile.cc
+
+
+D_IVL_O = $(D_IVL:%.cc=%.o)
+
+if IVERILOG
+D_SRCS += D_IVL
+
 
 #	libvvpg_la_SOURCES = vvp_main.cc
 #  bin_PROGRAMS += libvvpg
@@ -142,7 +148,8 @@ RAW_HDRS += d_vvp.h d_ivl.h e_ivl_compile.h d_ivl_ports.h
 endif
 
 if ADMS
-RAW_SRCS += d_hicum0.cc d_ota_simpl.cc
+ADMS_SRCS = d_hicum0.cc d_ota_simpl.cc d_ota_medium.cc d_opamp.cc
+RAW_SRCS += $(ADMS_SRCS)
 endif
 #------------------------------------------------------------------------ 
 ## The modelgen generated files
@@ -226,9 +233,19 @@ ADMS_GC_XML=../adms/gnucap.xml
 %.h : %.model ${MODELGEN}${EXEEXT}
 	${MODELGEN} -h $<
 
+if ADMS
+$(ADMS_SRCS): $(ADMS_GC_XML)
+
+$(ADMS_GC_XML):
+	make -C ../adms
+
+endif
 
 d_vvp.lo extlib.lo: CPPFLAGS+= @IVERILOG_INCLUDE@
 
+$(D_IVL_O): CPPFLAGS+= IVL_CPPFLAGS
+
+# FIXME: -I iverilog only for .v stuff
 
 .DELETE_ON_ERROR: *.cc
 

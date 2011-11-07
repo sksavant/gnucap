@@ -31,20 +31,6 @@
 /*--------------------------------------------------------------------------*/
 #define trace_func_comp() trace0((__func__ + (":" + (**ci).long_label())).c_str())
 /*--------------------------------------------------------------------------*/
-#ifdef DO_TRACE
-void trace_nodenames(const CARD_LIST* scope){
-  trace0("CARD_LIST tracing nodenames");
-  NODE_MAP* nm = scope->nodes();
-  for (NODE_MAP::const_iterator ni = nm->begin(); ni != nm->end(); ++ni) {
-    NODE* n = (*ni).second;
-    string label = (*ni).first;
-    trace0("CARD_LIST:... nodename " + label );
-  }
-}
-#else
-#define trace_nodenames(x)
-#endif
-/*--------------------------------------------------------------------------*/
 CARD_LIST::CARD_LIST()
   :_parent(NULL),
    _nm(new NODE_MAP),
@@ -234,9 +220,29 @@ CARD_LIST& CARD_LIST::map_nodes()
   return *this;
 }
 /*--------------------------------------------------------------------------*/
+#ifdef DO_TRACE
+#include "e_cardlist.h"
+#include "e_node.h"
+#include "u_nodemap.h"
+class NODE;
+class NODE_MAP;
+inline void trace_nodenames(const CARD_LIST* scope){
+  trace0("CARD_LIST tracing nodenames");
+  NODE_MAP* nm = scope->nodes();
+  for (NODE_MAP::const_iterator ni = nm->begin(); ni != nm->end(); ++ni) {
+    NODE* n = (*ni).second;
+    string label = (*ni).first;
+    trace2("CARD_LIST:... nodename ", label, n->user_number() );
+  }
+}
+#else
+inline void trace_nodenames(const CARD_LIST* scope){}
+#endif
+/*--------------------------------------------------------------------------*/
 NODE* CARD_LIST::node(string s) const{
   const COMPONENT* o = dynamic_cast<const COMPONENT*>(owner());
   const CARD_LIST* scope = _origin;
+    trace1("CARD_LIST::node",s);
 
 
   if (0 && scope){
@@ -625,11 +631,12 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
   //assert(owner->subckt() == this);
 
   trace0("model: "+model->long_label());
+
+
   trace0("owner: "+owner->long_label());
 
   uint_t num_nodes_in_subckt = model->subckt()->nodes()->how_many();
-  trace1("CARD_LIST::map_subckt_nodes ", num_nodes_in_subckt);
-  trace_nodenames(model->subckt());
+  trace2("CARD_LIST::map_subckt_nodes ", owner->long_label(), num_nodes_in_subckt);
   uint_t* map = new uint_t[num_nodes_in_subckt+1];
   {
     map[0] = 0;
@@ -646,16 +653,34 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
       uint_t i=0;
       for (i=1; i <= model->net_nodes(); ++i) {
 	map[i] = owner->n_(i-1).t_();
-	trace3("ports", i, map[i], owner->n_(i-1).t_());
+        trace2("map", i, map[i]);
+	// trace3("ports", i, map[i], owner->n_(i-1).t_());
       }
     
       // get new node numbers, and assign them to the remaining
       for (assert(i==model->net_nodes() + 1); i <= num_nodes_in_subckt; ++i) {
 	// for each remaining node in card_list
+        // these are the internal nodes.
 	map[i] = CKT_BASE::_sim->newnode_subckt();
+        string label= (*(model->subckt()->nodes())) [i] ;
+        trace3("int map", i, map[i],label);
+
+        NODE* hacknode = _nm->new_node( label , this);
+
+          trace3("new hacknode", owner->short_label() , hacknode->user_number(), hp(hacknode) );
+          assert(hacknode);
+
+        //n_(i).hack_subckt_node( hacknode, map[i] );
+        //_nnn = n;
+        hacknode->set_user_number(map[i]);
+
       }
+      trace_nodenames(model->subckt());
+
     }
   }
+
+
   // "map" now contains a translation list,
   // from subckt local numbers to matrix index numbers
 
@@ -669,22 +694,9 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
       for (uint_t ii = 0;  ii < (**ci).net_nodes();  ++ii) {
 	// for each connection node in card
         const CARD* c = *ci;
-	c->n_(ii).map_subckt_node(map, owner);
+        trace4("CARD_LIST::map_subckt_nodes subdevice node ", c->long_label(), c->n_(ii).short_label(),  c->n_(ii).e_() ,  c->n_(ii).t_()  );
 
-        // hack internal nodes into subckt instance scope
-        if ((c->n_(ii)).e_() > model->net_nodes() ){
-          trace2("CARD_LIST::map_subckt_nodes hacknode " +
-              c->n_(ii).short_label(), ii, (c->n_(ii)).e_() );
-          NODE* hacknode = _nm->new_node( c->n_(ii).short_label(), this);
-          assert(hacknode);
-          c->n_(ii).hack_subckt_node( hacknode, map[ (c->n_(ii)).e_() ] );
-        }
-        trace3("CARD_LIST::map_subckt_nodes " 
-            + owner->long_label() + " mapping in device "+ (**ci).long_label()
-            + " node " + c->n_(ii).short_label() + " "
-            + (c->n_(ii)).n_()->long_label(),
-            (c->n_(ii)).e_(),
-            ii, hp((c->n_(ii)).n_() ));
+	c->n_(ii).map_subckt_node(map, owner);
       }
     }else{
       assert(dynamic_cast<MODEL_CARD*>(*ci));

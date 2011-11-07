@@ -398,9 +398,9 @@ std::string MODEL_BUILT_IN_MOS3::param_value(int i)const
   case 4:  unreachable(); return "";
   case 5:  unreachable(); return "";
   case 6:  unreachable(); return "";
-  case 7:  return mos_level.string();
-  case 8:  return kp.string();
-  case 9:  return nfs_cm.string();
+  case 7:  return mos_level;
+  case 8:  return kp;
+  case 9:  return nfs_cm;
   case 10:  return vmax.string();
   case 11:  return theta.string();
   case 12:  return eta.string();

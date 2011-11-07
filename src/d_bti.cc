@@ -15,6 +15,7 @@
 // #include "e_compon.h"
 #include "d_bti.h"
 #include "io_trace.h"
+#include "u_para_vec.h"
 static bool dummy=false;
 /*--------------------------------------------------------------------------*/
 class COMMON_COMPONENT;
@@ -207,19 +208,21 @@ std::string MODEL_BUILT_IN_BTI_SUM::param_value(int i)const
 {
   switch (MODEL_BUILT_IN_BTI::param_count() - 1 - i) {
     case 0:  unreachable(); return "";
-    case 1:  return rcdparm.string();
+    case 1:  return string(rcdparm);
   }
   return MODEL_BUILT_IN_BTI::param_value(i);
 }
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_BTI_SUM::precalc_first()
 {
+  trace0("MODEL_BUILT_IN_BTI_SUM::precalc_first");
   const CARD_LIST* par_scope = scope();
-  dpvv x;
+  dpvv x; // empty params.
 
   rcdparm.e_val( x, par_scope);
   MODEL_BUILT_IN_BTI::precalc_first();
-  rcd_number = (int) dpvv(rcdparm).size();
+  rcd_number = (int) rcdparm.size();
+
 }
 /*--------------------------------------------------------------------------*/
 int MODEL_BUILT_IN_BTI_SUM::param_count( )const
@@ -358,7 +361,7 @@ std::string MODEL_BUILT_IN_BTI_SUM::param_name(int i)const
 /*--------------------------------------------------------------------------*/
 MODEL_BUILT_IN_BTI_SUM::MODEL_BUILT_IN_BTI_SUM(const BASE_SUBCKT* p)
   :MODEL_BUILT_IN_BTI(p),
-  rcdparm(dpvv(0) )
+  rcdparm( PARAMETER< dpvv>() )
 {
 }
 /*--------------------------------------------------------------------------*/
@@ -387,8 +390,9 @@ void MODEL_BUILT_IN_BTI_SUM::set_param_by_index(int i, std::string& value, int o
 {
   switch (MODEL_BUILT_IN_BTI_SUM::param_count() - 1 - i) {
     case 0: untested(); break;
-    case 1: rcdparm = value; 
+    case 1: 
             trace1("MODEL_BUILT_IN_BTI_SUM::set_param_by_index", value);
+            rcdparm = value; 
             break;
     default: MODEL_BUILT_IN_BTI::set_param_by_index(i,value,offset);
   }
@@ -399,7 +403,6 @@ void MODEL_BUILT_IN_BTI_SUM::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
   trace0("MODEL_BUILT_IN_BTI_SUM()");
   trace0(rcd_model_name.string().c_str());
 
-
   // k
   // 1 2 3
   // 4 5 6
@@ -407,22 +410,30 @@ void MODEL_BUILT_IN_BTI_SUM::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
 //typedef vector<PARAMETER<double> > dpv;
 //typedef vector<PARAMETER<dpv> > dpvv;
 
-  size_t Nr = dpvv(rcdparm).size();
+  size_t Nr = rcdparm.size();
+  if(!Nr)
+    throw Exception("no summands");
 
-  for(size_t n=0; n<Nr ; n++ ){
+  trace1("MODEL_BUILT_IN_BTI_SUM::attach_rcds", Nr);
+
+  for(size_t n=0; n<Nr; n++){
     dpvv P = dpvv(rcdparm);
     PARAMETER<dpv> Q = P[n];
+    trace3("MODEL_BUILT_IN_BTI_SUM::attach_rcds", n, Q, Q.size());
 
     COMMON_BUILT_IN_RCD* RCD1 = new COMMON_BUILT_IN_RCD;
     RCD1->set_modelname( rcd_model_name ); // <= !
     RCD1->attach(this); // ?
 
     size_t Np = dpv(Q).size();
+    trace1("MODEL_BUILT_IN_BTI_SUM::attach_rcds", Np);
     for(uint_t m=0; m<Np ; m++ ){
+      trace1("MODEL_BUILT_IN_BTI_SUM::attach_rcds ",  m ); 
       PARAMETER<double> pk = dpv(Q)[m];
       string s=pk.string();
-      RCD1->set_param_by_index( (int)m, s, 0 );
-      trace2("MODEL_BUILT_IN_BTI_sum::attach_rcds ",  n, m  ); 
+      int index =  RCD1->param_count() - m - 2;
+      trace3("MODEL_BUILT_IN_BTI_SUM::attach_rcds ",  n, index, s  ); 
+      RCD1->set_param_by_index( index, s, 0 );
     }
     COMMON_COMPONENT::attach_common(RCD1, (COMMON_COMPONENT**)&(_RCD[n]));
   }
@@ -632,7 +643,6 @@ void MODEL_BUILT_IN_BTI_SINGLE::precalc_first()
     const CARD_LIST* par_scope = scope();
     assert(par_scope);
     MODEL_BUILT_IN_BTI::precalc_first();
-
 }
 /*--------------------------------------------------------------------------*/
 namespace MODEL_BUILT_IN_BTI_SINGLE_DISPATCHER { 

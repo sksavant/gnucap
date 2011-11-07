@@ -74,6 +74,7 @@ std::string CS::ctos(const std::string& term,
 		     const std::string& end_quote,
 		     const std::string& trap)
 {
+  trace1("CS::ctos", tail());
   assert(begin_quote.length() == end_quote.length());
 
   skipbl();
@@ -113,6 +114,7 @@ std::string CS::ctos(const std::string& term,
     }
     s += _cmd.substr(begin_string, end_string-begin_string);
   }else{
+    trace0("CS::ctos term?");
     while(ns_more() && !is_term(term)) {
       skip();
     }

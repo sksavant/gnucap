@@ -64,7 +64,6 @@ DISPATCHER<CMD>::INSTALL d0(&command_dispatcher, "include", &p0);
 class CMD_EXPECT : public CMD {
 public:
   virtual ~CMD_EXPECT(){
-    cout << "destroying expector.\n";
 
   }
   void do_it(CS& cmd, CARD_LIST* )

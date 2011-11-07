@@ -138,7 +138,7 @@ AS_IF([ test "x$with_iverilog" != xno],
 	   echo "testing iverilog availibility..."
 		AC_CHECK_LIB([vvp], [main],
 				  [
-					CPPFLAGS+=-I$with_iverilog
+					IVL_CPPFLAGS+=-I$with_iverilog
 #					AC_SUBST([IVERILOG], ["-lvvp"])
 # using dlmopen for now.
 					#AC_SUBST([IVERILOG], ["-lvvp_compile"]) 
@@ -156,16 +156,19 @@ AS_IF([ test "x$with_iverilog" != xno],
 	]
 )
 
+CPPFLAGS_SAVE="$CPPFLAGS"
+CPPFLAGS="$IVL_CPPFLAGS $CPPFLAGS"
 AS_IF([ test "x$with_iverilog" != xno], [
 AC_CHECK_HEADERS(vvp/schedule.h, [ ],
 					AC_MSG_FAILURE([there should be vvp headers in $with_iverilog  ])
 					) ] )
-
+CPPFLAGS="$CPPFLAGS_SAVE"
 
 
 AC_SUBST(IVERILOG_INCLUDE)
+AC_SUBST(IVL_CPPFLAGS)
 
-dnl debugging
+dnl ------------------- debugging -------------------
 AC_MSG_CHECKING([if debug code should be compiled in])
 AC_ARG_ENABLE([debug],
 [  --enable-debug            Enable building of debug code. [[default: disabled]]],

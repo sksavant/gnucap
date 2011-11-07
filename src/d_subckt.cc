@@ -166,6 +166,24 @@ DEV_SUBCKT::DEV_SUBCKT(const DEV_SUBCKT& p)
   ++_count;
 }
 /*--------------------------------------------------------------------------*/
+#ifdef DO_TRACE
+#include "e_cardlist.h"
+#include "e_node.h"
+#include "u_nodemap.h"
+class NODE;
+class NODE_MAP;
+inline void trace_nodenames(const CARD_LIST* scope){
+  trace0("CARD_LIST tracing nodenames");
+  NODE_MAP* nm = scope->nodes();
+  for (NODE_MAP::const_iterator ni = nm->begin(); ni != nm->end(); ++ni) {
+    NODE* n = (*ni).second;
+    string label = (*ni).first;
+    trace2("CARD_LIST:... nodename ", label, n->user_number() );
+  }
+}
+#else
+inline void trace_nodenames(const CARD_LIST* scope){}
+#endif
 void DEV_SUBCKT::expand()
 {
   BASE_SUBCKT::expand();
@@ -192,6 +210,7 @@ void DEV_SUBCKT::expand()
   renew_subckt(model, this, scope(), &(c->_params));
   subckt()->expand();
 //  subckt()->set_(model);
+  trace_nodenames(model->subckt());
 }
 /*--------------------------------------------------------------------------*/
 void DEV_SUBCKT::precalc_first()

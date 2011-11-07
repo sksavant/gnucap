@@ -23,6 +23,8 @@
 	</admst:if>	
 </admst:for-each>
 
+<!-- prefix for local variables -->
+<admst:variable name="var_prefix" select="__"/>
 
 <!-- ****************************** ngspiseVersion.xml ************************* -->
 
@@ -1847,7 +1849,7 @@
     <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
   </admst:if>
   <admst:if test="[input='no' and scope='global_instance']">
-    <admst:value-to select="/simulator/tmp" value="%s"/>
+    <admst:value-to select="/simulator/tmp" value="$(var_prefix)%s"/>
   </admst:if>
   <admst:if test="[parametertype!='analogfunction' and scope='local']">
     <admst:value-to select="/simulator/tmp" value="%s"/>
@@ -1858,7 +1860,7 @@
   <admst:text test="[input='yes' and parametertype='model']" format="_model-&gt;%(name)"/>
   <admst:text test="[input='yes' and parametertype='instance']" format="_model-&gt;%(name)"/>
   <admst:text test="[input='no' and scope='global_model']" format="_model-&gt;%(name)"/>
-  <admst:text test="[input='no' and scope='global_instance']" format="%(name)"/>
+  <admst:text test="[input='no' and scope='global_instance']" format="$(var_prefix)%(name)"/>
   <admst:text test="[scope='local']" format="%(name)"/>
 </admst:template>
 <!-- handle analog//callfunctions -->
@@ -2483,13 +2485,17 @@
 
 <!-- ************************************** Make File .h ******************************* -->
 
+
 <admst:open file="$(filename).h">
+#include  "math.h"
+  <admst:apply-templates select="." match="c:math_h"/>
 <admst:for-each select="/module">
 <admst:value-of select="attribute[name='ngspicename']/value"/>
 <admst:variable name="module" select="%s"/>
 <admst:variable name="DEV_NAME" select="DEV_%(upper-case(name))"/>
 <admst:variable name="MODEL_NAME" select="MODEL_%(upper-case(name))"/>
-#pragma once
+#ifndef $(module)_header__
+#define $(module)_header__
 
 #include <stdio.h>
 
@@ -2502,6 +2508,11 @@
 // customization - gnucap specific constants
 #define VALUE_NAME "#"
 #define TAIL_SIZE 1
+
+<!--
+// myfunc
+/// myfunc
+-->
 
 #define SPICE_LETTER "\0"
 #define DEVICE_TYPE "dev_$(module)"
@@ -2588,6 +2599,7 @@ private:
 	std::string _modelname;
 	const $(MODEL_NAME)* _model;
 	node_t _nodes[MATRIX_NODES];
+
 
 private:
 	explicit $(DEV_NAME)(const $(DEV_NAME)& p);
@@ -2682,15 +2694,35 @@ protected: // implementation
 	int load(int mode);
 
 private:
+	// variables of verilog-module
+	<admst:for-each select="variable[input='no' and scope='global_instance']">
+	<admst:choose>
+			<admst:when test="[type='real']"><admst:text format="\n\tdouble $(var_prefix)%(.);"/></admst:when>
+			<admst:when test="[type='integer']"><admst:text format="\n\tint $(var_prefix)%(.);"/></admst:when>
+			<admst:otherwise><admst:text format="\n\tstd::string $(var_prefix)%(.);"/></admst:otherwise>
+	</admst:choose>
+	</admst:for-each>
+
+private:
+// analogfunctions of verilog-modul
+
+	<admst:apply-templates select="/module" match="analogfunctionH"/>
+
+private:
 	// nodes / matrix indexes
 
+	public:
 	<admst:text format="\tenum ENodes {"/>
+
   
   	<admst:join select="node[grounded='no']" separator=",">  
     	<admst:value-of select="name"/>  
     	<admst:text format=" %sNode=%(position(.)-1)"/>    
   	</admst:join>
-  	<admst:text format=" };"/>
+	<admst:text format=" };"/>
+	private:
+
+	double BP2(  ENodes p,  ENodes n  ) const;
 	double it0[%(count(node[grounded='no']))];
 	double it1[%(count(node[grounded='no']))];
 	
@@ -2718,18 +2750,25 @@ private:
 };
 
 </admst:for-each>
+#endif
 </admst:open>
 
 <!-- ************************************************************************************* -->
 <!-- ********************************* Make _common.cc *********************************** -->
 <!-- ************************************************************************************* -->
 
+<admst:variable name="globalanalogfunction"/>
 <admst:open file="$(filename).cc">
 #include <limits>
 
 #include "$(filename).h"
-
 <admst:for-each select="/module">
+
+//analog function stuff
+
+<!--	<admst:apply-templates select="." match="c:math_h"/> -->
+
+
 <admst:value-of select="attribute[name='ngspicename']/value"/>
 <admst:variable name="module" select="%s"/>
 <admst:variable name="DEV_NAME" select="DEV_%(upper-case(name))"/>
@@ -2931,6 +2970,9 @@ $(DEV_NAME)::~$(DEV_NAME)()
     	assert(!_states_1);
   	}
 }
+// ---------------- all analog functions from verilog-module here: ---------- //
+
+<admst:apply-templates select="/module" match="analogfunctionC"/>
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::set_dev_type(const std::string& new_type)
 {
@@ -2986,13 +3028,29 @@ void $(DEV_NAME)::expand()
 	// fix up internal nodes
 	if (_sim->is_first_expand()) 
 	{
+	  trace4("DEV_ADMS::expand nodes",  net_nodes() , max_nodes() , matrix_nodes(), int_nodes());
+		char fake_name[] = "a";
+		for(unsigned ii = net_nodes(); ii < matrix_nodes(); ++ii)
+		{
+			if( !_n[ii].n_() ){
+				trace2("DEV_ADMS::expand allocating missing internal node " , ii, fake_name );
+				_n[ii].new_model_node('.' + long_label() + '.' + fake_name, this);
+			}
+			++(*fake_name);
+		}
+
 	   // int start_internal = 0;
-		for (unsigned ii = net_nodes(); ii < max_nodes(); ++ii)
+		for (unsigned ii = net_nodes(); ii < max_nodes(); ++ii){
+			trace1("DEV_ADMS::expand grounding", ii);
 			_n[ii].set_to_ground(this);
+		}
 		
 		assert(max_nodes() != 0);		
-		for (unsigned ii = 0; ii < matrix_nodes(); ++ii) 
+		for (unsigned ii = 0; ii < matrix_nodes(); ++ii)
+		{
+			trace1("DEV_ADMS::expand matrix node check", ii);
 			assert(_n[ii].n_());
+		}
 	}
 	else
 		untested();
@@ -3096,6 +3154,8 @@ void $(DEV_NAME)::tr_begin()
 {
 	STORAGE::tr_begin();
 
+	<admst:apply-templates select="analog" match="analog:initial_step" />
+
 	for(int ii=0; ii<OPT::_keep_time_steps; ii++)
                 std::fill_n(_states[ii], _num_states, 0);
         std::fill_n(_states_1, _num_states, 0);
@@ -3196,12 +3256,20 @@ bool $(DEV_NAME)::do_tr()
 		_states_1[ii] = _states[0][ii];
 	}	
 	
-	<admst:text format="\n\tfor(int i=0; i<%(count(node[grounded='no'])); i++)"/>
-		set_converged(conchk(it0[i], it1[i]));	
+	<admst:text format="\n\tfor(int i=0; converged() && i<%(count(node[grounded='no'])); i++)"/>
+	{ 
+		bool conv= conchk(it0[i], it1[i]);	
+		if (!conv) { trace4("not converged", i , it0[i], it1[i], _sim->iteration_number() );}
+		set_converged(conv);	
+	}
 	
 	
 	<admst:text format="\n\tfor(int i=0; converged() && i<%(count(jacobian)); i++)"/>
-		set_converged(conchk(m_entries[i], m_entries_old[i]));
+	{
+		bool conv = conchk(m_entries[i], m_entries_old[i]);
+		if (!conv) { trace4("not converged", i , m_entries[i], m_entries_old[i], _sim->iteration_number() );}
+		set_converged(conv);
+	}
 
 	bool needs_load = !converged();
 	<admst:text format="\n\tfor (int i = 0; !needs_load && i < %(count(node[grounded='no'])); i++)"/>
@@ -3454,7 +3522,11 @@ void $(DEV_NAME)::guesstopology ()
          and name!='initial_model' and name!='initializeModel' and name!='initial_instance' and name!='initializeInstance')]">
       <admst:apply-templates select="." match="ngspiseMODULEguesstopology.cevaluatetopology"/>
     </admst:if>
-  </admst:for-each>
+ </admst:for-each>
+
+ for(int i=0; i<%(count(jacobian)); i++){
+  trace1("guess m", m_required[i]);
+ }
 }	
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::acLoad()
@@ -3516,8 +3588,14 @@ void $(DEV_NAME)::pzLoad(COMPLEX s)
 </admst:for-each>
 }
 // -------------------------------------------------------------------------- //
-#define NP(p) _n[p##Node].v0()
-#define BP(p,n) (NP(p)-NP(n))
+#define NP(p) min(100.,max(-100., _n[p##Node].v0()) )
+// #define BP(p,n) (NP(p)-NP(n))
+#define BP(p,n) (BP2( p##Node, n##Node ))
+
+inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  ) const{
+	assert(is_number( _n[p].v0() - _n[n].v0() ));
+	return  min( 100. , max (  _n[p].v0() - _n[n].v0(), -100. ));
+}
 
 #define _STATIC
 #define _DYNAMIC
@@ -3531,13 +3609,13 @@ int $(DEV_NAME)::load(int mode)
 	if (_time[1] != 0 && _method_a == mTRAP) CKTag0 = 2 / _dt;
 	else CKTag0 = 1 / _dt;
 
-	<admst:for-each select="variable[input='no' and scope='global_instance']">
+	<!--admst:for-each select="variable[input='no' and scope='global_instance']">
 	<admst:choose>
 			<admst:when test="[type='real']"><admst:text format="\n\tdouble %(.) = 0.0;"/></admst:when>
 			<admst:when test="[type='integer']"><admst:text format="\n\tint %(.) = 0;"/></admst:when>
 			<admst:otherwise><admst:text format="\n\tstd::string %(.);"/></admst:otherwise>
 	</admst:choose>
-	</admst:for-each>
+	</admst:for-each-->
 
 	<admst:text format="\n\tstd::fill_n(m_ac_static, %(count(jacobian)), 0);"/>
 	<admst:text format="\n\tstd::fill_n(m_ac_dynamic, %(count(jacobian)), 0);"/>
@@ -3555,7 +3633,7 @@ int $(DEV_NAME)::load(int mode)
 </admst:for-each>
 </admst:open>
 
-<!-- ****************************** ngspiseMODULE.hxx.xml ************************* -->
+<!-- ****************************** ngspiceMODULE.hxx.xml ************************* -->
 <admst:variable name="pprobe"/>
 <admst:variable name="qprobe"/>
 <admst:variable name="e"/>
@@ -4554,7 +4632,7 @@ int $(DEV_NAME)::load(int mode)
       <admst:variable name="e" select="pSpiceModel-&gt;%(name)"/>
     </admst:when>
     <admst:when test="[input='no' and scope='global_instance']">
-      <admst:variable name="e" select="%(name)"/>
+      <admst:variable name="e" select="$(var_prefix)%(name)"/>
     </admst:when>
     <admst:otherwise>
       <admst:variable name="e" select="%(name)"/>
@@ -6268,6 +6346,7 @@ int $(DEV_NAME)::load(int mode)
       <admst:variable name="module:desc" select="no description"/>
     </admst:otherwise>
   </admst:choose>
+  <admst:variable name="globalanalogfunction"/>
   <admst:variable name="file" select="%(attribute[name='ngspicename']/value).hxx"/>
   <admst:open file="$file">
   	<admst:apply-templates select="." match="X3wrapper"/>
@@ -6325,7 +6404,7 @@ int $(DEV_NAME)::load(int mode)
 #define m10_sqrt(v10,v00,x)     v10 = (0.5/v00);
 #define m00_fabs(v00,x)         v00 = fabs(x);
 #define m10_fabs(v10,v00,x)     v10 = (((x)>=0)?(+1.0):(-1.0));
-#define m00_exp(v00,x)          v00 = exp(x);
+#define m00_exp(v00,x)          v00 = exp(x); assert(is_number(x));
 #define m10_exp(v10,v00,x)      v10 = v00;
 #define m00_abs(v00)            ((v00)<(0)?(-(v00)):(v00))
 #define m00_limexp(v00,x)       v00 = ((x)<90.0?exp(x):EXP90*(x-89.0));
@@ -6351,56 +6430,11 @@ int $(DEV_NAME)::load(int mode)
 <admst:text format="\n"/>
 </admst:template>
 
-<admst:template match="X3c:analogfunction:math_h">
-inline double _cos(double arg)             { return  cos(arg); }
-inline double _d0_cos(double arg)          { return (-sin(arg)); }
-inline double _sin(double arg)             { return  sin(arg); }
-inline double _d0_sin(double arg)          { return (cos(arg)); }
-inline double _tan(double arg)             { return  tan(arg); }
-inline double _d0_tan(double arg)          { return (1.0/cos(arg)/cos(arg)); }
-inline double _cosh(double arg)            { return  cosh(arg); }
-inline double _d0_cosh(double arg)         { return (sinh(arg)); }
-inline double _sinh(double arg)            { return  sinh(arg); }
-inline double _d0_sinh(double arg)         { return (cosh(arg)); }
-inline double _tanh(double arg)            { return  tanh(arg); }
-inline double _d0_tanh(double arg)         { return (1.0/cosh(arg)/cosh(arg)); }
-inline double _acos(double arg)            { return  acos(arg); }
-inline double _d0_acos(double arg)         { return (-1.0/sqrt(1-arg*arg)); }
-inline double _asin(double arg)            { return  asin(arg); }
-inline double _d0_asin(double arg)         { return (+1.0/sqrt(1-arg*arg)); }
-inline double _atan(double arg)            { return  atan(arg); }
-inline double _d0_atan(double arg)         { return (+1.0/(1+arg*arg)); }
-inline double _logE(double arg)            { return  log(arg); }
-inline double _d0_logE(double arg)         { return (1.0/arg); }
-inline double _log10(double arg)           { return  log10(arg); }
-inline double _d0_log10(double arg)        { return (1.0/arg/log(10)); }
-inline double _exp(double arg)             { return  exp(arg); }
-inline double _d0_exp(double arg)          { return exp(arg); }
-inline double _sqrt(double arg)            { return  sqrt(arg); }
-inline double _d0_sqrt(double arg)         { return (1.0/sqrt(arg)/2.0); }
-inline double _abs(double arg)             { return  fabs(arg); }
-inline double _d0_abs(double arg)          { return (((arg)>=0)?(+1.0):(-1.0)); }
-
-inline double _hypot(double x,double y)    { return sqrt((x)*(x)+(y)*(y)); }
-inline double _d0_hypot(double x,double y) { return (x)/sqrt((x)*(x)+(y)*(y)); }
-inline double _d1_hypot(double x,double y) { return (y)/sqrt((x)*(x)+(y)*(y)); }
-
-inline double _2_2arg_max(double x,double y)      { return ((x)>(y))?(x):(y); }
-inline double _d0_max(double x,double y)   { return ((x)>(y))?1.0:0.0; }
-inline double _d1_max(double x,double y)   { return ((x)>(y))?0.0:1.0; }
-
-inline double _min(double x,double y)      { return ((x)<(y))?(x):(y); }
-inline double _d0_min(double x,double y)   { return ((x)<(y))?1.0:0.0; }
-inline double _d1_min(double x,double y)   { return ((x)<(y))?0.0:1.0; }
-
-inline double _pow(double x,double y)      { return pow(x,y); }
-inline double _d0_pow(double x,double y)   { return (x==0.0)?0.0:((y/x)*pow(x,y)); }
-inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.0))*pow(x,y)); }
-
-#define _limexp(arg)    _exp(val,arg)
-#define _d_limexp(arg)  _d_exp(val,dval,arg)
-
+<admst:template match="X3c:myfunc:math_h">
+inline double doh(double x)            {return  log(1+exp(x)); }
+inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 </admst:template>
+
 
 <admst:template match="Printhxxdefines">
 //  *** ngspice \$simparam variables ***
@@ -6428,6 +6462,7 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
 #define _circuit_tnom                (OPT::tnom_c + CONSTCtoK)
 #define _circuit_temp      (CKT_BASE::_sim->_temp_c + CONSTCtoK)
 #define _scale             1.0
+
 
 #define _cos(val,arg)            val = cos(arg);
 #define _d_cos(val,dval,arg)     val = cos(arg);     dval = (-sin(arg));
@@ -6474,8 +6509,8 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
 #define _dx_div(dx,xy,x,y)
 #define _dy_div(dy,dx,xy,x,y)    dy = -xy*dx;
 
-#define _limexp(val,arg)         val = ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90)));
-#define _d_limexp(val,dval,arg)  val = ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); dval = val;
+//#define _limexp(val,arg)         val = ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90)));
+//#define _d_limexp(val,dval,arg)  val = ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); dval = val;
 #define _fabs(val,arg)           val = fabs(arg);
 #define _d_fabs(val,dval,arg)    val = fabs(arg);    dval = (((val)>=0)?(+1.0):(-1.0));
 #define _abs(val)                ((val)<(0) ? (-(val)):(val))
@@ -6599,4 +6634,3 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
 	
 </admst:template>
 
-</admst>

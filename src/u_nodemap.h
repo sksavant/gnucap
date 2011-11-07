@@ -46,6 +46,8 @@ public:
   const_iterator begin()const		{return _node_map.begin();}
   const_iterator end()const		{return _node_map.end();}
   int		 how_many()const	{return static_cast<int>(_node_map.size()-1);}
+
+  string operator[](unsigned) const ; // ugly HACK
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

@@ -154,7 +154,7 @@ void EVAL_BM_FIT::precalc_last(const CARD_LIST* Scope)
 	 iterator p = _table.begin();  p != _table.end();  ++p) {
     if (last > p->first) {untested();
       throw Exception_Precalc("FIT table is out of order: (" + to_string(last)
-      			      + ", " + to_string(p->first) + ")\n");
+      			      + ", " + string(p->first) + ")\n");
     }else{
     }
     last = p->first;

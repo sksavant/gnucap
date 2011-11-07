@@ -20,8 +20,8 @@ V1 nin 0  sin(frequency=1, amplitude=2.5, offset=2.5)
 .verilog
 
 paramset myhicum hicum0; 
- .tnom=20;
- .is=a;
+* .tnom=20;
+* .is=a;
 endparamset
 
 
@@ -53,7 +53,7 @@ R2 ncc c 10k
 
 .print tran v(nodes)
 
-.tran .1 1 
+.tran .1 1 trace v
 *trace v
 
 .param a=1.0e-16

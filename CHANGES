@@ -55,3 +55,4 @@
 - added socket remote controlled simulation
 - added admst hicum0 and ota_simple
 - added expect command (reads output file) for testing.
+- added std::vector and matrix PARAMETER

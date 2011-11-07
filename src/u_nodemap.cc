@@ -65,6 +65,18 @@ NODE_MAP::~NODE_MAP()
   }  
 }
 /*--------------------------------------------------------------------------*/
+string NODE_MAP::operator[](unsigned x)const {
+
+  for (NODE_MAP::const_iterator ni = _node_map.begin(); ni != _node_map.end(); ++ni) {
+    NODE* n = (*ni).second;
+    string label = (*ni).first;
+    if (n->user_number() == x){ return label; };
+  }
+  assert(false);
+  return("erorr");
+
+}
+/*--------------------------------------------------------------------------*/
 /* return a pointer to a node given a string
  * returns NULL pointer if no match
  */
