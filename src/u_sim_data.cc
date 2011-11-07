@@ -27,6 +27,7 @@
 #include "u_nodemap.h"
 #include "e_cardlist.h"
 #include "u_status.h"
+#include "e_subckt.h"
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::set_limit()
 {
@@ -158,9 +159,6 @@ void SIM_DATA::order_forward()
  */
 void SIM_DATA::order_auto()
 {
-  _nm[0] = 0;
-  for (uint_t node = 1;  node <= _total_nodes;  ++node) {
-    _nm[node] = _total_nodes - node + 1;
   order_reverse();
 }
 /*--------------------------------------------------------------------------*/
