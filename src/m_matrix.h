@@ -177,6 +177,7 @@ public:
   inline T*    rmul(T* b, const T* x)const; // returns A*x
   T 	d(unsigned r, unsigned  )const	{return *(_diaptr[r]);}
   T     s(unsigned r, unsigned c)const; 
+  bool n(unsigned row, unsigned col)const;
 private:
   T 	u(unsigned r, unsigned c)const	{ return _colptr[c][r];}
   T 	l(unsigned r, unsigned c)const	{ return *(_rowptr[r]-c);}
@@ -499,7 +500,6 @@ T& BSMATRIX<T>::m(unsigned r, unsigned c)
  *   Writing to trash is allowed and encouraged,
  *   but reading it gives a number not useful for anything.
  */
-#if 1
 template <class T>
 T BSMATRIX<T>::s(unsigned row, unsigned col)const
 {
@@ -532,6 +532,42 @@ T BSMATRIX<T>::s(unsigned row, unsigned col)const
   }
   unreachable();
 }
+/*--------------------------------------------------------------------------*/
+// the entry is allocated (non-zero)
+template <class T>
+bool BSMATRIX<T>::n(unsigned row, unsigned col)const
+{
+  assert(_lownode);
+  // assert(0 <= col);
+  assert(col <= size());
+  // assert(0 <= row);
+  assert(row <= size());
+  assert(_zero == 0.);
+
+  if (col == row) {
+    return true;
+  }else if (col > row) {	/* above the diagonal */
+    if (row == 0) {
+      return false;
+    }else if (row < _lownode[col]) {
+      return false;
+    }else{
+      return true;
+    }
+  }else{			/* below the diagonal */
+    assert(col < row);
+    if (col == 0) {
+      return false;
+    }else if (col < _lownode[row]) {
+      return false;
+    }else{
+      return true; 
+    }
+  }
+  unreachable();
+}
+/*--------------------------------------------------------------------------*/
+// rw access.
 template <class T>
 T& BSMATRIX<T>::s(unsigned row, unsigned col)
 {
@@ -564,7 +600,6 @@ T& BSMATRIX<T>::s(unsigned row, unsigned col)
   }
   unreachable();
 }
-#endif
 /*--------------------------------------------------------------------------*/
 template <class T>
 void BSMATRIX<T>::load_point(int i, int j, T value)
