@@ -196,6 +196,28 @@ public:
 } p4;
 DISPATCHER<CMD>::INSTALL d4(&command_dispatcher, "lu", &p4);
 /*--------------------------------------------------------------------------*/
+class CMD_MSTAT: public CMD {
+public:
+  void do_it(CS& cmd, CARD_LIST* )
+  {
+    OMSTREAM out = IO::mstdout;
+    out.setfloatwidth(30);
+    out.outset(cmd);
+
+    CKT_BASE::_sim->init();
+    for(unsigned i=0; i < _sim->_total_nodes; ++i){
+      for(unsigned j=0; j < _sim->_total_nodes; ++j){
+        assert(_sim->_aa.n(i,j)==_sim->_lu.n(i,j));
+        out << ((_sim->_aa.n(i,j))?"*":"0");
+      }
+      out << "\n";
+    }
+
+    out.outreset();
+  }
+} p5k;
+DISPATCHER<CMD>::INSTALL d5k(&command_dispatcher, "mstat", &p5k);
+/*--------------------------------------------------------------------------*/
 class CMD_ACX: public CMD {
 public:
   void do_it(CS& cmd, CARD_LIST* )
