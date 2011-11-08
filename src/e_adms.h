@@ -51,7 +51,7 @@ class ADMS_BASE : public BASE_SUBCKT {
 		void	   tr_advance();
 		void	   tr_regress();
 		bool	   tr_needs_eval()const;
-		virtual bool do_tr() { unreachable();}
+		virtual bool do_tr() { unreachable(); return false; }
 		void	   tr_queue_eval(); // why not const?
 			
 		TIME_PAIR tr_review();

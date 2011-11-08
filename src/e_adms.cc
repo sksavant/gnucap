@@ -25,7 +25,7 @@
 #include "e_adms.h"
 /*--------------------------------------------------------------------------*/
 ADMS_BASE::ADMS_BASE():
-  BASE_SUBCKT(), _method_u(meUNKNOWN), _method_a(mTRAPGEAR) ,
+  BASE_SUBCKT(),
    _loaditer(0),
    _m0(),
    _m1(),
@@ -33,7 +33,8 @@ ADMS_BASE::ADMS_BASE():
    _loss1(0.),
    _acg(0.),
    _ev(0.),
-   _dt(0.)
+   _dt(0.),
+  	_method_u(meUNKNOWN), _method_a(mTRAPGEAR) 
 {
   _n = _nodes;
   assert(_y[0].x == 0. && _y[0].f0 == 0. && _y[0].f1 == 0.);
@@ -43,7 +44,7 @@ ADMS_BASE::ADMS_BASE():
 }
 /*--------------------------------------------------------------------------*/
 ADMS_BASE::ADMS_BASE(const ADMS_BASE& p)
-    : BASE_SUBCKT(p), _method_u(p._method_u), _method_a(p._method_a),
+    : BASE_SUBCKT(p),
    _loaditer(0),
    _m0(),
    _m1(),
@@ -51,7 +52,8 @@ ADMS_BASE::ADMS_BASE(const ADMS_BASE& p)
    _loss1(p._loss1),
    _acg(0.),
    _ev(0.),
-   _dt(0.)
+   _dt(0.),
+	 _method_u(p._method_u), _method_a(p._method_a)
 {
   trace0(long_label().c_str());
   _n = _nodes;

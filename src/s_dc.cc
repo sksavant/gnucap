@@ -365,6 +365,8 @@ void DCOP::sweep_recursive(int Nest)
   
   first(Nest);
   do {
+
+    trace1("DCOP::sweep_recursive loop", Nest);
     _sim->_temp_c = temp_c_in;
     if (Nest == 0) {
       int converged = solve_with_homotopy(itl,_trace);

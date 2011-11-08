@@ -3181,7 +3181,7 @@ void $(DEV_NAME)::tr_begin()
 	// /initial step
 
 	for(int ii=0; ii<OPT::_keep_time_steps; ii++)
-                std::fill_n(_states[ii], _num_states, 0);
+          std::fill_n(_states[ii], _num_states, 0);
         std::fill_n(_states_1, _num_states, 0);
 
 	internal_precalc();
@@ -3208,6 +3208,7 @@ void $(DEV_NAME)::tr_begin()
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_advance()
 {
+        trace0("$(DEV_NAME)::tr_advance");
 	ADMS_BASE::tr_advance();
 	
 	// shift states, clear states[0]
@@ -3225,6 +3226,7 @@ void $(DEV_NAME)::tr_regress()
 // -------------------------------------------------------------------------- //
 bool $(DEV_NAME)::tr_needs_eval()const
 {
+        trace0("$(DEV_NAME)::tr_needs_eval");
 	if (is_q_for_eval()) return false;
 	if (!converged()) return true;
 	if (_sim->is_advance_iteration()) return true;
@@ -3287,7 +3289,7 @@ bool $(DEV_NAME)::do_tr()
 
 	// (sets m_entries, it0)
 	//-----
-	load(mode);
+        load(mode); // this is tr_eval!!!1
 	//-----
 			
 	// convergence check -- gnucap method
