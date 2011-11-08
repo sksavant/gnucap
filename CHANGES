@@ -56,4 +56,8 @@
 - added admst hicum0 and ota_simple
 - added expect command (reads output file) for testing.
 - added std::vector and matrix PARAMETER
+<<<<<<< HEAD
 - node order method "oTREE" sorts according to tree-structure (alpha)
+=======
+- matrix use visualization. new allocator (allocate component-wise)
+>>>>>>> nodenames

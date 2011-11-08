@@ -130,6 +130,7 @@ void SIM_DATA::map__nodes()
     case oREVERSE: untested(); order_reverse(); break;
     case oFORWARD: untested(); order_forward(); break;
     case oTREE:    untested(); order_tree(); break;
+    case oCOMP:    untested(); order_tree_comp(); break;
   }
   ::status.order.stop();
 }
@@ -141,7 +142,7 @@ void SIM_DATA::map__nodes()
 void SIM_DATA::order_reverse()
 {untested();
   _nm[0] = 0;
-  for (uint_t node = 1;  node <= _total_nodes;  ++node) {untested();
+  for (uint_t node = 1;  node <= _total_nodes;  ++node) {
     _nm[node] = _total_nodes - node + 1;
   }
 }
@@ -163,6 +164,54 @@ void SIM_DATA::order_forward()
 void SIM_DATA::order_auto()
 {
   order_reverse();
+}
+/*--------------------------------------------------------------------------*/
+// component wise node sort. depth-first
+void SIM_DATA::order_comp( const CARD_LIST* scope, unsigned *c, bool *d)
+{
+  bool cleanup=false;
+  if (!c){
+    c = new unsigned(0);
+    d = new bool[CKT_BASE::_sim->_total_nodes];
+
+    _nm[0]=0;
+    d[0]=1;
+
+    cleanup=true;
+  }
+
+  for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
+    trace1("SIM_DATA::order_tree_comp " , (*i)->short_label());
+
+    for (CARD_LIST::const_iterator j = scope->begin(); j != scope->end(); ++j) {
+      const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*j);
+      if (s) {
+        order_tree_comp(s->subckt(),c,d);
+      }
+    }
+
+    for(unsigned k=0; k<(*i)->net_nodes();++k){
+      // FIXME: use node_map()
+
+      unsigned un = (*i)->n_(k).n_()->user_number();
+
+      if(!d[un]){
+        (*c)++;
+        _nm[ un ]=*c;
+        d[un]=true;
+      }
+      trace4("SIM_DATA::order_tree_comp " , (*i)->short_label(),k, un, *c);
+
+    }
+
+  }
+
+  if (cleanup){
+    trace2("SIM_DATA::order_tree", *c,  CKT_BASE::_sim->_total_nodes );
+    assert  (*c== CKT_BASE::_sim->_total_nodes );
+    delete c;
+    delete d;
+  }
 }
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::order_tree( const CARD_LIST* scope, unsigned *c)

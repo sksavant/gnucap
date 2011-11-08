@@ -134,6 +134,8 @@ struct INTERFACE SIM_DATA {
   void order_forward();
   void order_auto();
   void order_tree( const CARD_LIST* scope=&CARD_LIST::card_list, unsigned* c=0);
+  void order_tree_comp( const CARD_LIST* scope=&CARD_LIST::card_list, unsigned* c=0,
+      bool* d=0);
 
   int init_node_count(int user, int sub, int mod) {
     _user_nodes=user; _subckt_nodes=sub; _model_nodes=mod; return (_total_nodes=user+sub+mod);

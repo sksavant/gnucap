@@ -129,7 +129,7 @@ public:	// label -- in CKT_BASE
   /*virtual*/ const std::string long_label()const; // no further override
   //--------------------------------------------------------------------
 public:	// ports -- mostly defer to COMPONENT
-  node_t& n_(int i)const;
+  node_t& n_(unsigned i)const;
   int     connects_to(const node_t& node)const;
   //--------------------------------------------------------------------
 public: // parameters

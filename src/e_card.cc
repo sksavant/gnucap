@@ -237,7 +237,7 @@ void CARD::renew_subckt(const CARD* Model, CARD* Owner,
   }
 }
 /*--------------------------------------------------------------------------*/
-node_t& CARD::n_(int i)const
+node_t& CARD::n_(unsigned i)const
 {
   return _n[i];
 }
