@@ -130,7 +130,7 @@ void SIM_DATA::map__nodes()
     case oREVERSE: untested(); order_reverse(); break;
     case oFORWARD: untested(); order_forward(); break;
     case oTREE:    untested(); order_tree(); break;
-    case oCOMP:    untested(); order_tree_comp(); break;
+    case oCOMP:    untested(); order_comp(); break;
   }
   ::status.order.stop();
 }
@@ -186,7 +186,7 @@ void SIM_DATA::order_comp( const CARD_LIST* scope, unsigned *c, bool *d)
     for (CARD_LIST::const_iterator j = scope->begin(); j != scope->end(); ++j) {
       const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*j);
       if (s) {
-        order_tree_comp(s->subckt(),c,d);
+        order_comp(s->subckt(),c,d);
       }
     }
 
