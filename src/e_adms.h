@@ -1,8 +1,4 @@
-/*$Id: e_elemnt.h,v 1.12 2010-09-07 07:46:23 felix Exp $ -*- C++ -*-
- * vim:ts=8:sw=2:et:
- * Copyright (C) 2001 Albert Davis
- * Author: Albert Davis <aldavis@gnu.org>
- *
+/* adms base 2011 felix salfelder
  * This file is part of "Gnucap", the Gnu Circuit Analysis Package
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  *------------------------------------------------------------------
- * base class for simple elements
+ * Base class for adms models
  */
 //testing=script 2006.07.12
 #ifndef E_ADMS_H
@@ -28,7 +24,9 @@
 #include "e_node.h"
 #include "m_cpoly.h"
 #include "l_denoise.h"
-#include "e_compon.h"
+#include "e_subckt.h"
+#include "e_adms.h"
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 class ADMS_BASE : public BASE_SUBCKT {
 protected:
@@ -55,7 +53,7 @@ public: // override virtual
   void	   dc_advance();
   void	   tr_advance();
   void	   tr_regress();
-  bool	   tr_needs_eval()const {/*assert(!is_q_for_eval());*/ return !is_constant();}
+  bool	   tr_needs_eval()const;
 #if 0
   void	   tr_queue_eval()	{
     if(tr_needs_eval()) {
@@ -199,6 +197,8 @@ protected: // from storag
   FPOLY1   _i[OPT::_keep_time_steps]; /* deriv of _q */
 protected: // from storag
   static METHOD method_select[meNUM_METHODS][meNUM_METHODS];
+public: // from storag
+  double   tr_c_to_g(double c, double g)const;
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

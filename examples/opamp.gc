@@ -10,7 +10,7 @@ spice
 .param vdd 1.7
 
 Vcc ndd 0 vdd
-Vcc1 ndd_minus 0 {-vdd}
+Vcc1 0 ndd_minus  vdd
 V1 nin_p 0  sin(frequency=1, amplitude=0.01, offset=0)
 
 
@@ -20,7 +20,7 @@ V1 nin_p 0  sin(frequency=1, amplitude=0.01, offset=0)
 
 paramset myota opamp;  
 .gain=100000;
-.f0_3db=300;
+.f0=300;
 .slew_rate=5000
 .vgap=0.333
 endparamset
