@@ -1,0 +1,12 @@
+
+
+include mstat.ckt
+
+
+spice
+
+.options order=c
+.mstat
+
+.end
+

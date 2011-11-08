@@ -1,17 +1,13 @@
 
-spice
 
-.list
+spice
 
 Vcc ncc 0 5
 Vin nin 0 sin(frequency=1, amplitude=0.2, offset=0.8)
 
 .verilog
 
-paramset myhicum npn;
-	.is=1.0e-16;
-	.rc=1;
-endparamset
+paramset myhicum npn; .is=1.0e-16; .rc=1; endparamset
 
 myhicum Q1( c1 b1 0 );
 myhicum Q2( c2 b2 0 );
@@ -69,21 +65,4 @@ R10a c10 nout 150
 R10b nout 0 3k
 
 
-.echo backward
-.options order=a
-.mstat
-
-.echo forward
-.options order=f
-.mstat
-
-.echo tree
-.options order=t
-.mstat
-
-.nodelist
-
-*trace v
-
-.end
-
+.verilog
