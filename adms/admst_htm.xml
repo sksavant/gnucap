@@ -2,8 +2,27 @@
 	admst_show_data*.xml, written in xml1, automatically
 -->
 <!DOCTYPE admst SYSTEM "admst.dtd">
-<admst version="2.2.9" xmlns:admst="http://mot-adms.sourceforge.net/xml-files/admst">
-	<admst:open file="toWinHtml.html">
+<admst version="2.3.0" xmlns:admst="http://mot-adms.sourceforge.net/xml-files/admst">
+
+<admst:variable name="filename_state" select="0"/>
+<admst:for-each select="/argv">
+	<admst:variable name="arg" select="%(.)"/>
+	
+	<admst:if test="[position(.)=2]">
+		<admst:variable name="filename" select="$arg"/>
+	</admst:if>
+	<admst:if test="[$(filename_state)='1']">
+		<admst:variable name="filename" select="$arg"/>
+		<admst:variable name="filename_state" select="2"/>
+	</admst:if>
+	<admst:if test="[$(filename_state)='0' and $(arg)='-o']">
+		<admst:variable name="filename_state" select="1"/>
+	</admst:if>	
+</admst:for-each>
+
+	<admst:message format="$(filename) created\n"/>
+
+	<admst:open file="$(filename)">
 
 
 	<!-- ************************** Header & Ending ************************** -->

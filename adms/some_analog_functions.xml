@@ -786,8 +786,8 @@ inline double _pow(double x,double y)      { return pow(x,y); }
 inline double _d0_pow(double x,double y)   { return (x==0.0)?0.0:((y/x)*pow(x,y)); } /* fixme */
 inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.0))*pow(x,y)); } /* fixme */
 
-#define _limexp(arg)    _exp(val,arg)
-#define _d_limexp(arg)  _d_exp(val,dval,arg)
+inline double _limexp(double arg)  { return  ((arg)&lt;(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); }
+inline double _d0_limexp(double arg) { return  ((arg)&lt;(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); }
 
 <!--inline double $(module)_vt (double Tdev) {
   return 1.3806503e-23*Tdev/1.602176462e-19;

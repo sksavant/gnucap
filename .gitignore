@@ -31,6 +31,7 @@ examples/Makefile
 
 m4
 install-sh
+aclocal.m4
 
 config.h
 config.log

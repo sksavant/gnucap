@@ -121,6 +121,10 @@ public: // raw data access (rvalues)
   //int	flat_number()const	{itested();return _flat_number;}
 public: // simple calculated data access (rvalues)
   uint_t	matrix_number()const	{return _sim->_nm[_user_number];}
+  // better?
+  // uint_t	matrix_number()const	{return _matrix_number;}
+  // or
+  // uint_t	matrix_number()const	{return _subckt->_nm[_user_number];}
   uint_t	m_()const		{return matrix_number();}
 public: // maniputation
   //NODE& set_flat_number(int n) {itested();_flat_number = n; return *this;}
@@ -283,13 +287,13 @@ private:
 
 private:
   NODE* _nnn;
-  int _ttt;		// m == nm[t] if properly set up
+  unsigned _ttt;	// m == nm[_ttt] if properly set up
   int _m;		// mapped, after reordering
 
 public:
   uint_t	      m_()const	{return _m;}
 
-  int	      t_()const {
+  uint_t	      t_()const {
     //assert(_nnn);
     //assert(_ttt == _nnn->flat_number());
     return _ttt;
@@ -307,7 +311,9 @@ public:
   const std::string  short_label()const {return ((n_()) ? (n_()->short_label()) : "?????");}
   void	set_to_ground(CARD*);
   void	new_node(const std::string&, const CARD*);
+  void	new_node(const std::string&, const CARD_LIST*);
   void	new_model_node(const std::string& n, CARD* d);
+  void	new_sckt_node(const std::string& n, const CARD_LIST* d);
   void	map_subckt_node(uint_t* map_array, const CARD* d);
   void	hack_subckt_node(NODE*, int );
   bool	is_grounded()const {return (e_() == 0);}
@@ -346,6 +352,7 @@ public:
     if (m_() != INVALID_NODE ) {
       assert(m_() <= NODE::_sim->_total_nodes);
       assert(n_());
+      trace2("node_t::v0", n_()->m_(), m_());
       //assert(n_()->m_() == m_());
       //assert(n_()->v0() == NODE::_sim->_v0[m_()]);
       return NODE::_sim->_v0[m_()];
@@ -378,7 +385,8 @@ public:
   // ??
   COMPLEX&    iac() {itested();
     assert(n_());
-    assert(n_()->m_() == m_());
+    trace2("node_t::iac", n_()->m_(), m_());
+    // assert(n_()->m_() == m_()); why not??
     // assert(n_()->iac() == NODE::_ac[m_()]);
     //return n_()->iac();
     return NODE::_sim->_ac[m_()];

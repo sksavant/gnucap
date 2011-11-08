@@ -43,6 +43,7 @@ class INTERFACE CARD_LIST {
 private:
   const CARD_LIST* _parent;
   mutable NODE_MAP* _nm;
+  mutable int	*_mnm;	 // map node user number to matrix number.
   mutable PARAM_LIST* _params;
   LANGUAGE* _language;
   std::list<CARD*> _cl;
