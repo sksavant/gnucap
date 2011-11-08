@@ -36,6 +36,9 @@
 #include "e_adplist.h"
 #include "globals.h"
 /*--------------------------------------------------------------------------*/
+// needed by stoarage and ADMS_BASE
+enum METHOD {mTRAPGEAR, mEULER, mTRAP, mGEAR, mTRAPEULER};
+/*--------------------------------------------------------------------------*/
 // this file
 class COMMON_COMPONENT;
 class COMPONENT;

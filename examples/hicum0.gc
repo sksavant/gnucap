@@ -25,19 +25,20 @@ paramset myhicum hicum0;
 endparamset
 
 
-myhicum Q1( c b 0 );
+myhicum Q1( nC b 0 );
 
 spice
 
 R1 nin b 10k
-R2 ncc c 10k
+R2 ncc nC 10k
 
 *    o ncc
 *    |
 *    |
 *    R
 *    |
-*   C|
+*    o nout
+*    |
 *    \  
 *     \|  B  ___
 *   npn|----[___]---o  nin
@@ -53,6 +54,7 @@ R2 ncc c 10k
 
 .print tran v(nodes)
 
+
 .tran .1 1 trace v
 *trace v
 
@@ -60,4 +62,5 @@ R2 ncc c 10k
 
 .tran 2
 
+.nodelist
 .end

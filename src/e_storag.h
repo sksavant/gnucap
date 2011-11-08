@@ -26,7 +26,7 @@
 #define E_STORAGE_H
 #include "e_elemnt.h"
 /*--------------------------------------------------------------------------*/
-enum METHOD {mTRAPGEAR, mEULER, mTRAP, mGEAR, mTRAPEULER};
+//enum METHOD {mTRAPGEAR, mEULER, mTRAP, mGEAR, mTRAPEULER};
 /*--------------------------------------------------------------------------*/
 INTERFACE FPOLY1 differentiate(const FPOLY1* q, const FPOLY1* i, double* time,
 		     METHOD method);
