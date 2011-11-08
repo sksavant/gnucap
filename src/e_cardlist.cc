@@ -224,8 +224,7 @@ CARD_LIST& CARD_LIST::map_nodes()
 NODE* CARD_LIST::node(string s) const{
   const COMPONENT* o = dynamic_cast<const COMPONENT*>(owner());
   const CARD_LIST* scope = _origin;
-    trace1("CARD_LIST::node",s);
-
+  trace1("CARD_LIST::node",s);
 
   if (0 && scope){
     trace1("CARD_LIST::node have an origin scope " + s, scope->nodes()->how_many() );
@@ -647,6 +646,7 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
     
       // get new node numbers, and assign them to the remaining
       for (assert(i==model->net_nodes() + 1); i <= num_nodes_in_subckt; ++i) {
+        untested();
 	// for each remaining node in card_list
         // these are the internal nodes.
         string label = (*(model->subckt()->nodes())) [i] ;

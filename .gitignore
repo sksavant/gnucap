@@ -47,7 +47,13 @@ adms/gnucap.xml
 src/discipline.h
 src/d_hicum0.h
 src/d_hicum0.cc
-src/hicum0.hxx
+src/d_opamp.h
+src/d_opamp.cc
+src/d_rtest.h
+src/d_rtest.cc
+#FIXME
+src/*.hxx
+
 
 #verilog stuff
 d_invert.cc
