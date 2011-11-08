@@ -8,6 +8,7 @@ spice
 .param vin 0.1
 
 Vcc ndd 0 vdd
+Vcc ndd_minus 0 -vdd
 V4 nin_p nin_n pulse(iv={-vin}, pv=vin,rise=1,width=1.,rise=1, fall=1, delay=0)
 
 .list
@@ -16,23 +17,21 @@ Rh1 nin_n 0 10
 Rh2 nin_n ndd 10
 
 
-vbias nout_n 0 {vdd/2}
-
 .list
 .verilog
 
 paramset myota opamp;  
 .gain=1000;
-.f_3db=200;
+.f0=200;
 .slew_rate=100;
 .vgap=0.5;
 endparamset
 
-myota OTA0 (nout_p, nout_n, nin_p, nin_n, ndd, 0);
+myota OTA0 (nout, nin_p, nin_n, ndd, ndd_minus);
 
 spice
 
-Rout nout_p 0 1k
+Rout nout 0 1k
 
 
 *                 o ncc
@@ -43,14 +42,16 @@ Rout nout_p 0 1k
 *               |\|
 * nin   ___     | \  
 *   o--[___]----|+ \         
-*               |   >------------o  nout_p
+*               |   >------------o  nout
 *         ------|- /             |
 *         |     | /             | |
 *        [Q]    |/|             | |Rout
 *         |     / |              |
 *         V       V              V
 
-.print tran v(nin_p) v(nin_n) v(nout_n) v(nout_p) v(ndd) I(Rout) iter(0)
+.print tran v(nin_p) v(nin_n) v(nout) v(ndd) I(Rout) iter(0)
 .tran .1 4
+
+.nodelist
 
 .end
