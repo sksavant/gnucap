@@ -70,7 +70,6 @@ void SIM_DATA::put_v1_to_v0()
   for (uint_t ii = 1;  ii <= _total_nodes;  ++ii) {
     _v0[ii] = _vt1[ii];
   }
-
 }
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::restore_voltages()

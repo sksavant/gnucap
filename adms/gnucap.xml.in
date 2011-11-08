@@ -3253,6 +3253,7 @@ bool $(DEV_NAME)::tr_needs_eval()const
 // -------------------------------------------------------------------------- //
 bool $(DEV_NAME)::do_tr()
 {
+        trace0("$(DEV_NAME)::do_tr");
 	assert(_num_states >= 0);
 	assert(OPT::_keep_time_steps <= 8);  
 	assert(_dt == NOT_VALID || conchk(_dt, _time[0] - _time[1]));
@@ -3329,6 +3330,7 @@ bool $(DEV_NAME)::do_tr()
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_load()
 {
+        trace0("$(DEV_NAME)::tr_load");
 		/// BUG: only dynamic!
 	<admst:text format="\n\tfor(int i=0; i<%(count(node[grounded='no'])); i++)"/>
 		tr_load_source_point(_n[i], &(it0[i]), &(it1[i]));
@@ -3359,7 +3361,8 @@ void $(DEV_NAME)::tr_unload()
 // -------------------------------------------------------------------------- //
 TIME_PAIR $(DEV_NAME)::tr_review()
 {
-	assert(_dt == NOT_VALID || conchk(_dt, _time[0] - _time[1]));
+  trace0("$(DEV_NAME)::tr_review");
+  assert(_dt == NOT_VALID || conchk(_dt, _time[0] - _time[1]));
 
     double timestep = NEVER;
     //----- (DEVtrunc)
@@ -3377,6 +3380,7 @@ TIME_PAIR $(DEV_NAME)::tr_review()
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_accept()
 {
+        trace0("$(DEV_NAME)::tr_accept");
 	if (_sim->analysis_is_dcop() || _sim->analysis_is_ac()) 
 	{
     	assert(_dt == NOT_VALID || conchk(_dt, _time[0] - _time[1]));

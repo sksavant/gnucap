@@ -211,28 +211,6 @@ void ADMS_BASE::tr_regress()
   _dt = _time[0] - _time[1];
 }
 /*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-/* some regress hack??
-void ADMS_BASE::tr_regress()
-{
-  trace3("ADMS_BASE::tr_regress", _time[0], _time[1], _sim->_time0);
-  assert(_time[0] >= _sim->_time0); // moving backwards
-//  assert(_time[1] <= _sim->_time0); // but not too far backwards
-  if (  _time[1] <  _sim->_time0){
-    error(bDANGER, "regress %s //BUG// some time mismatch.  _time[1]=%.17f, _sim->_time0=%.17f\n",
-        (short_label()).c_str(),
-    _time[1], _sim->_time0);
-  }
-
-  for (int i=OPT::_keep_time_steps-1; i>0; --i) {
-    assert(_time[i] < _time[i-1] || _time[i] == 0.);
-  }
-  _time[0] = _sim->_time0;
-
-  _dt = _time[0] - _time[1];
-}
-*/
-/*--------------------------------------------------------------------------*/
 TIME_PAIR ADMS_BASE::tr_review()
 {
   BASE_SUBCKT::tr_review();
@@ -595,22 +573,6 @@ double ADMS_BASE::tr_review_check_and_convert(double timestep)
   assert(time_future > 0.);
   assert(time_future > _time[1]);
   return time_future;
-}
-/*--------------------------------------------------------------------------*/
-void ADMS_BASE::set_ic(double x)
-{ 
-  // tr_unload();
-  trace1("ADMS_BASE::set_ic " + long_label(), x);
-  *(_value.pointer_hack()) = x;
-  // do_tr();
-  // tr_load();
-  q_eval();
-  // q_load();
-}
-/*--------------------------------------------------------------------------*/
-void ADMS_BASE::keep_ic()
-{ 
-  unreachable();
 }
 /*--------------------------------------------------------------------------*/
 void ADMS_BASE::tt_next()

@@ -17,9 +17,6 @@ module rtest (top,low);
    real v1, i1;
    
    analog begin
-
-
-      
       begin     //Bias-dependent model evaluation
 	 
 		   v1 = V(top,low);
