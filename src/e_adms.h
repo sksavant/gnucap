@@ -52,13 +52,8 @@ class ADMS_BASE : public BASE_SUBCKT {
 		void	   tr_regress();
 		bool	   tr_needs_eval()const;
 		virtual bool do_tr() { unreachable();}
-
-		void	   tr_queue_eval()	{
-			if(tr_needs_eval()) {
-				q_eval();
-			}else{
-			}
-		}
+		void	   tr_queue_eval(); // why not const?
+			
 		TIME_PAIR tr_review();
 		virtual void  tr_stress() {
 			trace0( ("ADMS_BASE device " + short_label() + ": no stress").c_str() );

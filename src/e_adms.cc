@@ -666,6 +666,15 @@ METHOD ADMS_BASE::method_select[meNUM_METHODS][meNUM_METHODS] = {
   {mTRAPEULER,mEULER,mEULER,mTRAP,mTRAP,mGEAR, mGEAR,mTRAPGEAR,mTRAPEULER}
 };
 /*--------------------------------------------------------------------------*/
+void	  ADMS_BASE::tr_queue_eval()	{
+	BASE_SUBCKT::tr_queue_eval();
+
+	if(tr_needs_eval()) {
+		q_eval();
+	}else{
+	}
+}
+/*--------------------------------------------------------------------------*/
 /* tr_needs_eval: check to see if this device needs to be evaluated
  * this works, and saves significant time
  * but possible errors.
