@@ -47,9 +47,9 @@ inline OMSTREAM& operator<<(OMSTREAM& o, method_t t) {
   return (o << s[t]);
 }
 /*--------------------------------------------------------------------------*/
-enum order_t {oREVERSE=1, oFORWARD, oAUTO, oTREE };
+enum order_t {oREVERSE=1, oFORWARD, oAUTO, oTREE, oCOMP };
 inline OMSTREAM& operator<<(OMSTREAM& o, order_t t) {
-  const std::string s[] = {"", "reverse", "forward", "auto","tree"};
+  const std::string s[] = {"", "reverse", "forward", "auto","tree","comp"};
   return (o << s[t]);
 }
 /*--------------------------------------------------------------------------*/
