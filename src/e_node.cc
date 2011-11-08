@@ -633,11 +633,11 @@ void node_t::new_node(const std::string& node_name, const CARD_LIST* scope)
 void node_t::new_model_node(const std::string& node_name, CARD* d)
 {
   // new_node(node_name, d);
-  _ttt = CKT_BASE::_sim->newnode_model();
   assert (d->subckt());
   new_node(node_name, d->subckt());
+  _ttt = CKT_BASE::_sim->newnode_model();
   // _ttt = CKT_BASE::_sim->newnode_model(); // global user number
-  trace3("node_t::new_model_node", node_name, _ttt, _nnn->user_number());
+  trace4("node_t::new_model_node", node_name, _ttt, _nnn->user_number(), CKT_BASE::_sim->_total_nodes);
   _nnn->set_user_number(_ttt);
 
   // _nnn has its user number from the scope, which doesnt know about
@@ -651,11 +651,11 @@ void node_t::new_sckt_node(const std::string& node_name, const CARD_LIST* scope)
   assert(scope);
   new_node(node_name, scope);
   _ttt = CKT_BASE::_sim->newnode_subckt();
-  _nnn->set_user_number(_ttt);
   trace3("node_t::new_sckt_node", node_name, _ttt, _nnn->user_number());
   //assert(_ttt == _nnn->flat_number());
   //
   // later??
+  _nnn->set_user_number(_ttt);
 }
 /*--------------------------------------------------------------------------*/
 void node_t::map_subckt_node(uint_t* m, const CARD* d)

@@ -257,6 +257,10 @@ void SIM_DATA::order_tree( const CARD_LIST* scope, unsigned *c)
   }
 }
 /*--------------------------------------------------------------------------*/
+int SIM_DATA::init_node_count(int user, int sub, int mod) {
+  trace3("SIM_DATA::init_node_count", user, sub, mod);
+  _user_nodes=user; _subckt_nodes=sub; _model_nodes=mod; return (_total_nodes=user+sub+mod);
+}
 /*--------------------------------------------------------------------------*/
 /* init: allocate, set up, etc ... for any type of simulation
  * also called by status and probe for access to internals and subckts
