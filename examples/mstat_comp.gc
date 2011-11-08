@@ -6,7 +6,10 @@ include mstat.ckt
 spice
 
 .options order=c
+
+.nodelist
 .mstat
+
 
 .end
 

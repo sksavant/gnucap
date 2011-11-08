@@ -32,6 +32,7 @@ class ADMS_BASE : public BASE_SUBCKT {
 protected:
   explicit ADMS_BASE();
   explicit ADMS_BASE(const ADMS_BASE& p);
+
   ~ADMS_BASE() {}
   
   void	   store_values()		{assert(_y[0]==_y[0]); _y1=_y[0];}

@@ -24,8 +24,8 @@
 #include "e_aux.h"
 #include "e_adms.h"
 /*--------------------------------------------------------------------------*/
-ADMS_BASE::ADMS_BASE()
-  :BASE_SUBCKT(),
+ADMS_BASE::ADMS_BASE():
+  BASE_SUBCKT(), _method_u(meUNKNOWN), _method_a(mTRAPGEAR) ,
    _loaditer(0),
    _m0(),
    _m1(),
@@ -43,7 +43,7 @@ ADMS_BASE::ADMS_BASE()
 }
 /*--------------------------------------------------------------------------*/
 ADMS_BASE::ADMS_BASE(const ADMS_BASE& p)
-  :BASE_SUBCKT(p),
+    : BASE_SUBCKT(p), _method_u(p._method_u), _method_a(p._method_a),
    _loaditer(0),
    _m0(),
    _m1(),
