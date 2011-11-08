@@ -1,0 +1,90 @@
+
+spice
+* hicum0.gc
+* vorsicht: nodenames case-sensitive
+* .list
+
+Vce nci 0 2
+Ib 0 nb 10e-6
+vicq1 nci nc 0
+
+
+.verilog
+paramset myhicum npn;
+	.is = 4.479F
+	.bf = 260
+	.nf = 1.07
+	.vaf = 260
+	.ikf = 1M
+	.ise = 3.471P
+	.ne = 3.66
+	.br = 1
+	.nr = 1.07
+	.var = 500
+	.ikr = 0
+	.isc = 0
+	.nc = 1
+	.rb = 36
+	.irb = 0
+	.rbm = 36
+	.re = 500M
+	.rc = 1
+	.cje = 910F
+	.vje = 661M
+	.mje = 294M
+	.tf = 112P
+	.xtf = 120
+	.vtf = 0
+	.itf = 0
+	.ptf = 0
+	.cjc = 835F
+	.vjc = 1
+	.mjc = 280M
+	.xcjc = 0.5
+	.tr = 1N
+	.cjs = 0
+	.vjs = 700M
+	.mjs = 0.5
+	.xtb = 2.3
+	.eg = 1.11
+	.xti = 3
+	.kf = 0
+	.af = 1
+	.fc = 0.5	
+endparamset
+	
+myhicum Q1( nc nb 0 );
+
+spice
+
+.list
+
+*    o nc
+*    |
+*    |
+*    |
+*    |
+*   C|
+*    \  
+*     \|  B  
+*   npn|------------o  nb
+*     /|
+*    /   
+*   E|
+*    |
+*    V
+*
+* I_{CE} = 100* I_{BE}
+
+
+.print dc i(Ib) v(nc) i(Vicq1)
+
+*.dc Vce 0 2 0.1  Ib 0 10u 1u
+.dc Ib 0 10u 2u Vce 0 1 0.01  basic
+
+
+*.tran .1 1 trace v
+*trace v
+*.tran 2
+
+.end
