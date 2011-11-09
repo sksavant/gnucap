@@ -196,23 +196,17 @@ void SIM_DATA::order_comp( const CARD_LIST* scope, unsigned *c, bool *d)
         order_comp(s->subckt(),c,d);
       }
     }
-    trace1("SIM_DATA::order_comp ", (*i)->net_nodes() );
 
     for(unsigned k=0; k<(*i)->net_nodes();++k){
       // FIXME: use node_map()
 
       unsigned un = (*i)->n_(k).n_()->user_number();
-      trace1("SIM_DATA::order_comp ", un);
 
       if(!d[un]){
-        trace0("SIM_DATA::order_comp " );
         (*c)++;
         _nm[ un ]=*c;
         d[un]=true;
-        trace1("SIM_DATA::order_comp " , k);
-        trace1("SIM_DATA::order_comp " , un);
-        trace1("SIM_DATA::order_comp " , *c);
-        trace1("SIM_DATA::order_comp " , (*i)->long_label());
+        trace4("SIM_DATA::order_comp " , (*i)->long_label(), k ,un, *c);
         assert(un<_total_nodes+1);
       }
     }

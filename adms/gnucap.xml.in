@@ -3006,6 +3006,7 @@ void $(DEV_NAME)::Set_param_by_index(int /*i*/, std::string& /*new_value*/, int 
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::expand()
 {
+        trace0("$(DEV_NAME)::expand");
   ADMS_BASE::expand();
 
   if (!subckt()) {
