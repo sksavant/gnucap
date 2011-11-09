@@ -80,7 +80,7 @@ public:	// dc-tran
   virtual void	 tr_regress()		{}
 
   virtual bool	 tr_needs_eval()const	{return false;}
-  virtual void	 tr_queue_eval()	{}
+  virtual void	 tr_queue_eval()	{} // not const, would need mutable iteration_tag
   virtual bool	 do_tr()		{return true;}
   virtual bool	 do_tr_last()		{return true;}
   virtual void	 tr_load()		{}
@@ -150,17 +150,19 @@ public:	// obsolete -- do not use in new code
   virtual void print_args_obsolete_callback(OMSTREAM&,LANGUAGE*)const {unreachable();}
   //--------------------------------------------------------------------
 public:	// tt
-  virtual void	 tt_begin()	{}
-  virtual void   tt_next()  {} // set times back to 0, leaving state alone
-  virtual void   tt_commit()  {}
-  virtual void   tt_accept()    {}
+  virtual void	 tt_begin(){}
+  virtual void   tt_next(){}    // set times back to 0, leaving state alone
+  virtual void   tt_commit(){}
+  virtual void   tt_accept(){}
 //  virtual void   tt_prepare()           {}
-  virtual void  tt_prepare() {  } // save unstressed parameters
-  virtual void  tt_init_i() {  } // save unstressed parameters
-  virtual void	 tr_stress()	{    } // calculate stress during tr
-  virtual void	 tr_stress_last() {   } // calculate stress during tr
-  virtual void	 stress_apply(); // not const (element)
+  virtual void  tt_prepare(){unreachable();}      // older tt_begin
+  virtual void  tt_init_i(){}       // save unstressed parameters
+  virtual void	 tr_stress(){}      // calculate stress during tr
+  virtual void	 tr_stress_last(){} // calculate stress during tr
+  virtual void	 stress_apply();    // not const (element)
+  virtual TIME_PAIR tt_review()		{return TIME_PAIR(NEVER,NEVER);}
   // virtual void   stress_apply(COMPONENT* )const{ unreachable();}
+public: /// experimental & cruft
   virtual void	 tr_save_amps( int ){ } // behaviouir??
   hp_float_t tr_behaviour_del; // behaviour now.
   hp_float_t tt_behaviour_del;
@@ -168,8 +170,17 @@ public:	// tt
   hp_float_t tt_behaviour_rel;
   void tt_behaviour_reset() { tt_behaviour_del=0; tt_behaviour_rel=0; }
   void tt_behaviour_commit(){ tt_behaviour_reset(); }
-  virtual TIME_PAIR tt_review()		{return TIME_PAIR(NEVER,NEVER);}
 };
+/*--------------------------------------------------------------------------*/
+
+template <class S>
+inline S& operator<<( S& o, const  std::deque<CARD*> &d){
+  for(deque<CARD*>::const_iterator i=d.begin(); i!=d.end(); ++i){
+       o << "\n" << (*i)->long_label() << " " << (*i)->short_label() ; 
+  }
+  return o<<"\n";
+
+}
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 #endif

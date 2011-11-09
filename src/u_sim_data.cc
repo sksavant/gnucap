@@ -181,7 +181,7 @@ void SIM_DATA::order_comp( const CARD_LIST* scope, unsigned *c, bool *d)
   }
 
   for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
-    trace1("SIM_DATA::order_tree_comp " , (*i)->short_label());
+    trace1("SIM_DATA::order_comp " , (*i)->short_label());
 
     for (CARD_LIST::const_iterator j = scope->begin(); j != scope->end(); ++j) {
       const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*j);
@@ -201,14 +201,17 @@ void SIM_DATA::order_comp( const CARD_LIST* scope, unsigned *c, bool *d)
         d[un]=true;
         trace4("SIM_DATA::order_tree_comp " , (*i)->short_label(),k, un, *c);
       }
-
     }
 
   }
 
   if (cleanup){
     trace2("SIM_DATA::order_tree", *c,  CKT_BASE::_sim->_total_nodes );
-    assert  (*c== CKT_BASE::_sim->_total_nodes );
+    if  (*c != CKT_BASE::_sim->_total_nodes ){
+      error(bDANGER, "c=%i, t=%i\n", *c, CKT_BASE::_sim->_total_nodes  );
+
+    }
+    assert  (*c == CKT_BASE::_sim->_total_nodes );
     delete c;
     delete d;
   }
@@ -331,6 +334,7 @@ void SIM_DATA::alloc_vectors()
 {
   trace1("SIM_DATA::alloc_vectors",  _total_nodes);
   assert(_evalq1.empty());
+  if (! _evalq2.empty() ){ trace1("SIM_DATA::alloc_vectors", _evalq2);}
   assert(_evalq2.empty());
   assert(_evalq != _evalq_uc);
 
