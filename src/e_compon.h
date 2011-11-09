@@ -373,7 +373,7 @@ public:
   virtual void  tr_stress()  {
     trace0 ( ( "COMP device " + short_label() + ": no stress" ).c_str() );
   } // calcul
-  virtual void  tr_stress_last()    { trace0("COMPONENT::tr_stress_last");}
+  virtual void  tr_stress_last()    { trace1("COMPONENT::tr_stress_last", long_label());}
   virtual double tr_amps_diff()const {return 0.;}
   virtual double tr_amps_diff_cur()const {return 0.;}
   virtual bool	has_stress()const	{untested(); return false;}
