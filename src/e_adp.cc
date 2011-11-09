@@ -1286,7 +1286,8 @@ TIME_PAIR ADP_NODE::tt_review( ) {
     _abs_tr_err = fabs(delta_model - tr_value);
   }
 
-  trace1("ADP_NODE::tt_review", tr_noise);
+  trace2("ADP_NODE::tt_review", long_label(), tr_noise);
+
   assert (tr_noise >=0);
 
   _abs_tr_err = fabs (tr_value - delta_model);

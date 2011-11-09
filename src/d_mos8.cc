@@ -5218,6 +5218,7 @@ double DEV_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 }
 /*--------------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS8::tr_accept(){
+  trace0("MODEL_BUILT_IN_MOS8::tr_accept " );
 
   ADP_BUILT_IN_MOS::tr_accept();
 
@@ -5322,6 +5323,7 @@ double ADP_BUILT_IN_MOS8::tr_probe_num(const std::string& x)const
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_MOS8::do_stress_apply(  COMPONENT* brh) const
 {
+  trace1("MODEL_BUILT_IN_MOS8::do_stress_apply", brh->long_label());
 
   // obsolete? maybe not.
   MODEL_BUILT_IN_MOS_BASE::do_stress_apply(brh);
