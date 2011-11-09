@@ -38,6 +38,7 @@ void SIM_DATA::set_limit()
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::set_limit(double v)
 {
+  trace1("SIM_DATA::set_limit", v);
   if (v+.4 > _vmax) {
     _vmax = v+.5;
     error(bTRACE, "new max = %g, new limit = %g\n", v, _vmax);

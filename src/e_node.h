@@ -352,7 +352,6 @@ public:
     if (m_() != INVALID_NODE ) {
       assert(m_() <= NODE::_sim->_total_nodes);
       assert(n_());
-      trace2("node_t::v0", n_()->m_(), m_());
       //assert(n_()->m_() == m_());
       //assert(n_()->v0() == NODE::_sim->_v0[m_()]);
       return NODE::_sim->_v0[m_()];
