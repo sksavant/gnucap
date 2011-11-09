@@ -1531,12 +1531,21 @@ void DEV_BUILT_IN_MOS::tr_stress_last( )
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_stress( )
 {
+  const COMMON_COMPONENT* cc = common();
+  const MODEL_BUILT_IN_MOS_BASE* m = asserted_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
+#ifndef BTI_IN_SUBCKT
+  if(m->use_bti()){
+    _BTI->tr_accept();
+  }
+#endif
+if(_sim->analysis_is_tt()){
+  untested();
+  m->do_tr_stress(this) ;
+}
   BASE_SUBCKT::tr_stress();
   // FIXME (put adp into sckt, or (better) do not call sckt)
   if(adp()) adp()->tr_stress();
 
-  const COMMON_COMPONENT* cc = common();
-  const MODEL_BUILT_IN_MOS_BASE* m = asserted_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
 
   m->do_tr_stress( this );
 }
@@ -1902,18 +1911,8 @@ void DEV_BUILT_IN_MOS::stress_apply( )
 }
 /*-------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_accept(){
-//  assert(false); // q_accept() not called. (???)
+  // remember calling q_accept
   BASE_SUBCKT::tr_accept();
-  const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(common());
-  const MODEL_BUILT_IN_MOS_BASE* m = asserted_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
-#ifndef BTI_IN_SUBCKT
-  if(m->use_bti()){
-    _BTI->tr_accept();
-  }
-#endif
-if(_sim->analysis_is_tt()){
-  untested();
-  m->do_tr_stress(this) ;
-}
+  tr_stress();
 }  
 /*-------------------------------------------------------*/

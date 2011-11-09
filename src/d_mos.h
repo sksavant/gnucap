@@ -279,7 +279,7 @@ private: // node list
     return names[i];
   }
 private:
-  void tr_stress( );
+  void tr_stress( );    // called by tr_accept
   void stress_apply();
   void tt_prepare( ); //NOT const
   void tt_next( ); //NOT const?

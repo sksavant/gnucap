@@ -254,7 +254,8 @@ void TTT::power_down(double time)
     CARD_LIST::card_list.do_forall( &CARD::tt_prepare ); // lasts==0 hack
     print_results_tt( _sim->_Time0 );
 
-    CARD_LIST::card_list.do_forall( &CARD::tr_stress );
+    incomplete(); // tr_stress no longer used.
+    CARD_LIST::card_list.do_forall( &CARD::tr_stress ); // better tr_accept??
     CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
     CARD_LIST::card_list.do_forall( &CARD::stress_apply );
 
