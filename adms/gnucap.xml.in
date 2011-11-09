@@ -2520,11 +2520,6 @@
 #define VALUE_NAME "#"
 #define TAIL_SIZE 1
 
-<!--
-// myfunc
-/// myfunc
--->
-
 #define SPICE_LETTER "\0"
 #define DEVICE_TYPE "dev_$(module)"
 #define MODEL_TYPE "$(module)"
@@ -2549,6 +2544,9 @@ static std::string state_names[] = {};
 #define EXIT_IF_ISNAN(var) \
 	if(isnan((double) var)) {printf("%%s:%%i:isnan:"#var"\n",__FILE__,__LINE__);exit(1);} \
 	if(isinf((double) var)) {printf("%%s:%%i:isinf:"#var"\n",__FILE__,__LINE__);exit(1);}
+
+inline void _used(double)  {}        
+
 
 class $(DEV_NAME);
 class $(MODEL_NAME) : public MODEL_CARD
@@ -3631,11 +3629,16 @@ void $(DEV_NAME)::guesstopology ()
       <admst:apply-templates select="." match="evaluate.localvariables"/>
     </admst:if>
   </admst:for-each>
+
   <admst:for-each select="$localvariables">
     <admst:if test="[type='integer']">int %(name);\n</admst:if>
     <admst:if test="[type='real']">double %(name)=std::numeric_limits&lt;double&gt;::quiet_NaN();\n</admst:if>
     <admst:if test="[type='string']">char* %(name);\n</admst:if>
   </admst:for-each>
+  <admst:for-each select="$localvariables">
+    _used(%(name));
+  </admst:for-each>
+
   
   <admst:for-each select="analog/code[datatypename='block']/item">
     <admst:if test="[(datatypename!='block') or (datatypename='block'
