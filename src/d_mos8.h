@@ -63,11 +63,13 @@ public:
   virtual double tt_probe_num(const std::string& x)const;
   virtual double tr_probe_num(const std::string& x)const;
 
-  virtual void tt_prepare();
-  virtual void tt_accept();
-  virtual void tt_commit();
-  virtual void tr_accept();
-  virtual void stress_apply();
+private: // overrides
+  void tt_begin();
+  void tt_accept();
+  void tt_commit();
+  void tr_accept();
+  void tr_stress_last();
+  void stress_apply();
 };
 /*--------------------------------------------------------------------------*/
 class SDP_BUILT_IN_MOS8
