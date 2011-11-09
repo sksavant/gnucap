@@ -1902,7 +1902,7 @@ void DEV_BUILT_IN_MOS::stress_apply( )
 }
 /*-------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_accept(){
-  assert(false); // q_accept() not called.
+//  assert(false); // q_accept() not called. (???)
   BASE_SUBCKT::tr_accept();
   const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(common());
   const MODEL_BUILT_IN_MOS_BASE* m = asserted_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
@@ -1911,6 +1911,9 @@ void DEV_BUILT_IN_MOS::tr_accept(){
     _BTI->tr_accept();
   }
 #endif
+if(_sim->analysis_is_tt()){
+  untested();
   m->do_tr_stress(this) ;
+}
 }  
 /*-------------------------------------------------------*/

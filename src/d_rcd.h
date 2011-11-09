@@ -57,10 +57,10 @@ class MODEL_BUILT_IN_RCD :public MODEL_CARD{
     virtual ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
   public: // override virtual
     virtual bool v2() const{return false;}
-    virtual double dvth(const COMPONENT*) const;
+    virtual double dvth(const COMPONENT*) const = 0;
     virtual std::string dev_type()const;
     virtual void      set_dev_type(const std::string& nt);
-    CARD*     clone()const {return new MODEL_BUILT_IN_RCD(*this);}
+    virtual CARD*     clone()const = 0;//{return new MODEL_BUILT_IN_RCD(*this);}
     void      precalc_first();
     void      precalc_last();
     SDP_CARD* new_sdp(COMMON_COMPONENT* c)const;

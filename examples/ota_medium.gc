@@ -1,0 +1,85 @@
+
+spice
+* vorsicht: nodenames case-sensitive
+
+.param vdd 2.8
+
+Vcc ndd 0 vdd
+V1 ninp 0  sin(frequency=1, amplitude=0.1, offset={vdd/2})
+
+Vhalf ninn 0 {vdd/2}
+
+.list
+*.options abstol=1e-7
+*.options reltol=1e-4
+
+.options itl1=1000
+*.options itl4=1000
+
+.param vdd 2.7
+
+*Vcc ndd 0 pulse(iv=0, pv=vdd, rise=1)
+Vcc ndd 0 vdd
+Vdelta nin n_in  sin(frequency=1, amplitude=0.001, offset=0)
+
+Rhalf1 n_in 0 100
+Rhalf2 n_in ndd 100
+
+.list
+
+.param a=1.0e-15
+
+.verilog
+
+paramset myota ota_medium; .tnom=20; endparamset
+
+
+myota OTA0(  ninp , ninn , out1 , pbias , nbias , ndd , 0);
+
+spice
+
+Rout out1 0 100
+
+*Vp pbias 0 2.0
+*Vn nbias 0 1.7
+
+Ip ndd pbias 1u
+*pulse(iv=0 pv=1u, rise=1)
+Rp ndd pbias 1000k
+In 0 nbias 2u 
+* pulse(iv=0, pv=2u, rise=1)
+Rp 0 nbias 1000k
+
+*                 o ndd
+*                 |
+*                 |
+*                 |
+*               \ |
+*               |\|
+* nin   ___     | \  
+*   o--[___]----|+ \    
+*               |   >------------o  nout
+*         ------|- /             |
+*         |     | /             | |
+*         |     |/|             | |Rout
+*         |     / |              |
+*         V       V              V
+
+
+* I_{CE} = 100* I_{BE}
+
+.listnodes
+
+.print tran  I(Rout) v(vdelta) V(*bias)
+*.print tran v(nodes) I(Rout) 
+*diff(v(p_in), v(n_in))
+
+
+.tran .1 2  
+*trace=v
+*go
+
+*trace v
+
+
+.end

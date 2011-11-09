@@ -14,8 +14,9 @@ CPP_FLAGS = -DTRACE_UNTESTED -DNGSPICE_17 -DPREDICTOR -DHAS_STDLIB -fPIC -g -sha
 %_common.cc: gnucap.xml
 	admsXml $*/$*.va -e $< -D $*_common
 
-%.xml: %.xml.in convert_symb/convert
+%.xml: %.xml.in convert_symb/convert some_analog_functions.xml 
 	convert_symb/convert $< -o $@ -addxml
+	cat some_analog_functions.xml >> $@
 
 convert_symb/convert:
 	cd convert_symb/ && make

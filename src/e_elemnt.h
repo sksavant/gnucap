@@ -194,7 +194,7 @@ inline T ELEMENT::dampdiff(T* v0, const T& v1)
   if(*v0 != *v0){ 
     error(bDANGER,"ELEMENT::dampdiff: %s\n", short_label().c_str());
 //    std::cerr << "ungood: " << *v0 << "\n";
-    exit(2);
+    assert(false);
   }
   assert(v1 == v1);
   T diff = dn_diff(*v0, v1);

@@ -1,3 +1,5 @@
+
+spice
 * test subckt node probes
 
 .subckt half a1 a2
@@ -14,6 +16,16 @@ X2 ne3 ne4 half
 R1 ne4 0   1
 V2 ne3 0 2
 
+.model cmosn nmos (level=8 ld=0.265073u tox=418.0e-10 rd=1)
+m1 3 6 5 8 cmosn w=5u l=5u ad=45p as=45p pd=28u ps=28u nrd=1.8 nrs=1.8
+
+
+.print tran v(nodes)
+.tran 1 5 
+
+* doesnt work.
+*.print tran v(.m1.id)
+
 .print tran v(X1.ni) v(X1.nii)
 .tran 1 5 
 
@@ -26,4 +38,8 @@ V2 ne3 0 2
 .print tran v(X*.nodes)
 .tran 1 5 
 
+
+.echo NODELIST
 .nodelist
+
+.end
