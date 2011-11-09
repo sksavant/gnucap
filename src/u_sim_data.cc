@@ -199,8 +199,8 @@ void SIM_DATA::order_comp( const CARD_LIST* scope, unsigned *c, bool *d)
         (*c)++;
         _nm[ un ]=*c;
         d[un]=true;
+        trace4("SIM_DATA::order_tree_comp " , (*i)->short_label(),k, un, *c);
       }
-      trace4("SIM_DATA::order_tree_comp " , (*i)->short_label(),k, un, *c);
 
     }
 
