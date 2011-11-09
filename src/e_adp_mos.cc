@@ -9,24 +9,9 @@ double ADP_BUILT_IN_MOS::wdT() const{
   return ids_stress->wdT();
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_MOS::tt_begin() // NOT const
-{
-  BASE_SUBCKT::tt_begin();
-
-  const COMMON_BUILT_IN_MOS* c = (const COMMON_BUILT_IN_MOS*)(common());
-  assert(c);
-  assert(c->model());
-
-  const MODEL_BUILT_IN_MOS_BASE* m = (const MODEL_BUILT_IN_MOS_BASE*)(c->model());
-  assert(m);
-
-  m->do_tt_prepare(this);
-
-  adp()->tt_begin();
-}
-/*--------------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS::tt_accept()
 {
+	trace0("ADP_BUILT_IN_MOS::tt_accept");
   //FIXME: move c to ADP_CARD. merge ADP_card with DEV?
   // const DEV_BUILT_IN_MOS* c = (const DEV_BUILT_IN_MOS*) (bti_stress->c());
   //SIM_DATA* sim = c->_sim;
@@ -146,7 +131,7 @@ double ADP_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 }
 /*--------------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS8::tr_accept(){
-  trace0("MODEL_BUILT_IN_MOS8::tr_accept " );
+  trace0("ADP_BUILT_IN_MOS8::tr_accept " );
 
   ADP_BUILT_IN_MOS::tr_accept();
 
@@ -159,10 +144,10 @@ void ADP_BUILT_IN_MOS8::tr_accept(){
 //  const COMMON_BUILT_IN_MOS* cprime = prechecked_cast<const COMMON_BUILT_IN_MOS*>(d->common());
   const SDP_BUILT_IN_MOS8* s = prechecked_cast<const SDP_BUILT_IN_MOS8*>(c->sdp());
 
-  double exponent=3; // which is m in [4]
+  double exponent = 3; // which is m in [4]
   hp_float_t hcis = 0;
-  double Wg=0.8;
-  hp_float_t Ids=fabs(d->ids);
+  double Wg = 0.8;
+  hp_float_t Ids = fabs(d->ids);
 
 //  std::cerr << "DEV_BUILT_IN_MOS8::h0 of "<<  d->short_label() << " " <<   m->h0 << "\n";
   double H=m->h0;
@@ -201,7 +186,7 @@ void ADP_BUILT_IN_MOS8::tr_accept(){
             Wg/Hg * pow( fabs(ig)/W, mg ) 
             + (1-Wg)*Ids/H/W * pow(Isub/fabs(Ids), exponent)
             ) * dt;
-        trace6( "MODEL_BUILT_IN_MOS8::do_tr_stress", Wg, Hg, ig, W, mg, Ids );
+        trace6( "ADP_BUILT_IN_MOS8::do_tr_stress", Wg, Hg, ig, W, mg, Ids );
         assert(is_number(hcis));
         break;
     }
@@ -210,8 +195,11 @@ void ADP_BUILT_IN_MOS8::tr_accept(){
 
     }
 
-    trace1( "MODEL_BUILT_IN_MOS8::do_tr_stress", hcis );
-    a->hci_node->add_tr( hcis );
+    trace1( "ADP_BUILT_IN_MOS8::do_tr_stress", hcis );
+	 _hci_tr += hcis;
+
+//    a->hci_node->add_tr( hcis );
+
     assert( ( a->hci_node->tr()  < 1e6 ));
   } // end hci
 
@@ -237,7 +225,7 @@ double ADP_BUILT_IN_MOS8::tr_probe_num(const std::string& x)const
 /*--------------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS8::tt_begin()  // FIXME: tt_begin
 {
-	trace1("ADP_BUILT_IN_MOS8::tt_prepare", long_label());
+	trace1("ADP_BUILT_IN_MOS8::tt_begin", long_label());
 	const DEV_BUILT_IN_MOS* d = asserted_cast<const DEV_BUILT_IN_MOS*>(owner());
 	const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
 	const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
@@ -246,6 +234,7 @@ void ADP_BUILT_IN_MOS8::tt_begin()  // FIXME: tt_begin
 		assert(hci_node);
 		hci_node->tt_set(0);
 		hci_node->tr_set(0);
+		_hci_tr=0;
 	}
 	q_accept();
 }
@@ -257,8 +246,8 @@ void ADP_BUILT_IN_MOS8::tt_commit() {
 /*------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS8::tr_stress_last() {
 	ADP_BUILT_IN_MOS::tr_stress_last();
-	trace2("ADP_BUILT_IN_MOS8::tt_prepare", long_label(), _sim->tt_iteration_number());
-	trace2("ADP_BUILT_IN_MOS8::tt_prepare", hci_node->tt(), hci_node->tr());
+	trace2("ADP_BUILT_IN_MOS8::tt_stress_last", long_label(), _sim->tt_iteration_number());
+	trace2("ADP_BUILT_IN_MOS8::tt_stress_last", hci_node->tt(), hci_node->tr());
 }
 /*------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS8::stress_apply() {
@@ -273,6 +262,7 @@ void ADP_BUILT_IN_MOS8::stress_apply() {
 }
 /*------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS8::tt_accept() {
+
 	ADP_BUILT_IN_MOS::tt_accept();
 }
 /*--------------------------------------------------------------------------*/

@@ -45,6 +45,7 @@
 /*--------------------------------------------------------------------------*/
 class ADP_BUILT_IN_MOS8
   :public ADP_BUILT_IN_MOS{
+	 double _hci_tr;
 public:
   explicit ADP_BUILT_IN_MOS8( COMPONENT* c, const std::string n):
     ADP_BUILT_IN_MOS(c,n)

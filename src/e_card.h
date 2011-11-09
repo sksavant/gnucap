@@ -172,5 +172,15 @@ public: /// experimental & cruft
   void tt_behaviour_commit(){ tt_behaviour_reset(); }
 };
 /*--------------------------------------------------------------------------*/
+
+template <class S>
+inline S& operator<<( S& o, const  std::deque<CARD*> &d){
+  for(deque<CARD*>::const_iterator i=d.begin(); i!=d.end(); ++i){
+       o << "\n" << (*i)->long_label() << " " << (*i)->short_label() ; 
+  }
+  return o<<"\n";
+
+}
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 #endif

@@ -240,7 +240,7 @@ void TTT::first_after_interruption(){
   _sim->_last_Time = _sim->_Time0+_tstop;
   trace0("TTT::first_after_interruption done");
 }
-
+/*--------------------------------------------------------------*/
 void TTT::power_down(double time)
 {
     if (_trace>0 )
@@ -1224,7 +1224,7 @@ void TTT::advance_Time(void)
       // CARD_LIST::card_list.tr_regress();
     }
   }else{
-    if (_trace>0 ) _out << "* advancing from " << _sim->_Time0 << "\n" ;
+    trace0("TTT::advance_Time osolete call?");
     CARD_LIST::card_list.do_forall( &CARD::tt_prepare );
   }
   last_iter_time = _sim->_Time0;

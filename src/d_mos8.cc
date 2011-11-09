@@ -5194,7 +5194,9 @@ ADP_CARD* MODEL_BUILT_IN_MOS8::new_adp( COMPONENT* c)const
   //const MODEL_BUILT_IN_MOS8* m = this;
   trace0(( "MODEL_BUILT_IN_MOS8::new_adp for " + c->short_label() ).c_str() );
 
-  ADP_BUILT_IN_MOS8* a = new ADP_BUILT_IN_MOS8(c,"c->short_label()");
+  //attach a generic adp for MOS8 effects
+  ADP_BUILT_IN_MOS8* a = new ADP_BUILT_IN_MOS8(c,"adp");
+
   assert( c->adp() == NULL );
   assert(a);
   return a;

@@ -67,7 +67,7 @@ ADP_NODE_RCD::ADP_NODE_RCD( const COMPONENT* c ) : ADP_NODE(c, "rcd"), udc(.2)
 {}
 /*----------------------------------------------------------------------------*/
 void ADP_NODE::init(const COMPONENT* c, const std::string name_in){
-  set_label( c->short_label() + "." +  name_in );
+  set_label( c->short_label() + ".." +  name_in );
   tr_value = (0.);
   tr_noise = NAN;
   dbg=0;

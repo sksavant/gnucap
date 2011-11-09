@@ -986,7 +986,8 @@ void DEV_BUILT_IN_MOS::expand()
   trace0(("DEV_BUILT_IN_MOS::expand, ADP things " + long_label()).c_str());
   assert ( adp() == NULL );
   attach_adp( m->new_adp( (COMPONENT*) this ) );
-  adp()->q_accept();
+//  adp()->q_accept();
+//  adp()->q_eval();
   trace0(("DEV_BUILT_IN_MOS::expanded, ADP things " + long_label()).c_str());
 }
 /*--------------------------------------------------------------------------*/
@@ -1517,6 +1518,22 @@ bool DEV_BUILT_IN_MOS::do_tr()
   adp()->q_accept();
 }
 /*--------------------------------------------------------------------------*/
+void DEV_BUILT_IN_MOS::tt_begin() // NOT const
+{
+  BASE_SUBCKT::tt_begin();
+
+  const COMMON_BUILT_IN_MOS* c = (const COMMON_BUILT_IN_MOS*)(common());
+  assert(c);
+  assert(c->model());
+
+  const MODEL_BUILT_IN_MOS_BASE* m = (const MODEL_BUILT_IN_MOS_BASE*)(c->model());
+  assert(m);
+
+  adp()->tt_begin();
+
+  m->do_tt_prepare(this);
+}
+/*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_stress_last( )
 {
   BASE_SUBCKT::tr_stress_last();
@@ -1786,6 +1803,8 @@ void DEV_BUILT_IN_MOS::tr_accept(){
 
   // FIXME (put adp into sckt, or (better) do not call sckt)
   if (m->use_hci()) assert(adp());
+
+  // hack. let adp queue itself if needed.
   if(adp()) adp()->tr_accept();
 
 

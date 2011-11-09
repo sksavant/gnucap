@@ -305,11 +305,14 @@ class ADP_CARD : public COMPONENT { // FIXME: SUBCKT_BASE
     }
     // explicit ADP_CARD();
     virtual ~ADP_CARD() {}
+    const COMPONENT* _c; // subckt??
   protected:
     void init(const COMPONENT*, const std::string) {}
 
   public:
-    const COMPONENT* _c;
+    virtual void tt_begin(){ };
+    bool do_tr(){ q_accept(); return true; };
+
     virtual double tr_probe_num(const std::string& )const { unreachable(); return 888; }
     virtual double tt_probe_num(const std::string& )const { unreachable(); return 888; }
     virtual std::string value_name() const{ return "unknown";}
