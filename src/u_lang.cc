@@ -98,9 +98,8 @@ void LANGUAGE::new__instance(CS& cmd, MODEL_SUBCKT* owner, CARD_LIST* Scope)
 {
   trace1(("LANGUAGE::new__instance "+ (std::string)cmd).c_str(), OPT::language);
 
-  if (name()!=OPT::language->name()){
+  if (OPT::language && name()!=OPT::language->name()){
     error(bWARNING, "not implemented: change language. use acs on top level.");
-
   }
 
   if (cmd.is_end()) {
