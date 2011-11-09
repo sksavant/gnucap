@@ -38,7 +38,7 @@ void SIM_DATA::set_limit()
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::set_limit(double v)
 {
-  trace1("SIM_DATA::set_limit", v);
+//  trace1("SIM_DATA::set_limit", v);
   if (v+.4 > _vmax) {
     _vmax = v+.5;
     error(bTRACE, "new max = %g, new limit = %g\n", v, _vmax);
@@ -171,17 +171,24 @@ void SIM_DATA::order_comp( const CARD_LIST* scope, unsigned *c, bool *d)
 {
   bool cleanup=false;
   if (!c){
-    c = new unsigned(0);
-    d = new bool[CKT_BASE::_sim->_total_nodes];
+    trace2("SIM_DATA::order_comp init", CKT_BASE::_sim->_total_nodes, c );
+    c = new unsigned();
+    *c=0;
+    d = new bool[CKT_BASE::_sim->_total_nodes+2] ;
+    for(unsigned k=1; CKT_BASE::_sim->_total_nodes+2>k ;++k) d[k]=0;
+
+
 
     _nm[0]=0;
     d[0]=1;
 
     cleanup=true;
+  } else {
+    trace2("SIM_DATA::order_comp no init", CKT_BASE::_sim->_total_nodes ,*c );
   }
 
   for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
-    trace1("SIM_DATA::order_comp " , (*i)->short_label());
+//    trace1("SIM_DATA::order_comp " , (*i)->short_label());
 
     for (CARD_LIST::const_iterator j = scope->begin(); j != scope->end(); ++j) {
       const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*j);
@@ -189,23 +196,32 @@ void SIM_DATA::order_comp( const CARD_LIST* scope, unsigned *c, bool *d)
         order_comp(s->subckt(),c,d);
       }
     }
+    trace1("SIM_DATA::order_comp ", (*i)->net_nodes() );
 
     for(unsigned k=0; k<(*i)->net_nodes();++k){
       // FIXME: use node_map()
 
       unsigned un = (*i)->n_(k).n_()->user_number();
+      trace1("SIM_DATA::order_comp ", un);
 
       if(!d[un]){
+        trace0("SIM_DATA::order_comp " );
         (*c)++;
         _nm[ un ]=*c;
         d[un]=true;
-        trace4("SIM_DATA::order_tree_comp " , (*i)->short_label(),k, un, *c);
+        trace1("SIM_DATA::order_comp " , k);
+        trace1("SIM_DATA::order_comp " , un);
+        trace1("SIM_DATA::order_comp " , *c);
+        trace1("SIM_DATA::order_comp " , (*i)->long_label());
+        assert(un<_total_nodes+1);
       }
     }
 
   }
 
   if (cleanup){
+    assert(c);
+    assert(d);
     trace2("SIM_DATA::order_tree", *c,  CKT_BASE::_sim->_total_nodes );
     if  (*c != CKT_BASE::_sim->_total_nodes ){
       error(bDANGER, "c=%i, t=%i\n", *c, CKT_BASE::_sim->_total_nodes  );
