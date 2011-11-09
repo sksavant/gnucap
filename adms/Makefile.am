@@ -22,7 +22,7 @@ convert_symb/convert:
 	cd convert_symb/ && make
 
 clean:
-	rm -f *.cc *.h *.o *~ *.c *.xml *.hxx *.so
+	rm -f *.cc *.h *.o *~ *.c gnucap.xml *.hxx *.so
 
 %.out: %.sp %.so
 	$(GNUCAP) -b $< | tee  $@
