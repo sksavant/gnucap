@@ -31,6 +31,7 @@ void LANGUAGE::parse_top_item(CS& cmd, CARD_LIST* Scope)
 {
   cmd.get_line(I_PROMPT);
   CMD::cmdproc(cmd, Scope);
+  trace0("done top item");
 }
 /*--------------------------------------------------------------------------*/
 const CARD* LANGUAGE::find_proto(const std::string& Name, const CARD* Scope)
@@ -95,13 +96,17 @@ const CARD* LANGUAGE::find_proto(const std::string& Name, const CARD* Scope)
 /*--------------------------------------------------------------------------*/
 void LANGUAGE::new__instance(CS& cmd, MODEL_SUBCKT* owner, CARD_LIST* Scope)
 {
-  trace0(("LANGUAGE::new__instance "+ (std::string)cmd).c_str());
+  trace1(("LANGUAGE::new__instance "+ (std::string)cmd).c_str(), OPT::language);
+
+  if (OPT::language && name()!=OPT::language->name()){
+    error(bWARNING, "not implemented: change language. use acs on top level.");
+  }
 
   if (cmd.is_end()) {
     // nothing
   }else{
     std::string type = find_type_in_string(cmd);
-    trace0(("LANGUAGE::new__instance type "+ (std::string) type).c_str());
+    trace1(("LANGUAGE::new__instance type "+ (std::string) type).c_str(), name());
 
     if (const CARD* proto = find_proto(type, owner)) {
       CARD* new_instance = proto->clone_instance();
@@ -165,15 +170,6 @@ void LANGUAGE::print_item(OMSTREAM& o, const CARD* c)
   }else{untested();
     incomplete();
     unreachable();
-  }
-}
-/*--------------------------------------------------------------------------*/
-OMSTREAM& operator<<(OMSTREAM& o, LANGUAGE* x)
-{
-  if (x) {
-    return (o << x->name());
-  }else{
-    return (o << "none");
   }
 }
 /*--------------------------------------------------------------------------*/

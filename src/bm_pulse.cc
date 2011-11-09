@@ -135,8 +135,9 @@ void EVAL_BM_PULSE::precalc_first(const CARD_LIST* Scope)
   _width.e_val(_default_width, Scope);
   _period.e_val(_default_period, Scope);
 
-  if (_width == 0.) {untested();
-    _width = _default_width;
+  if (_width == 0.) {untested(); incomplete();
+	  // removed (what about sawtooth??)
+    // _width = _default_width;
   }else{
   }
   if (_period == 0.) {untested();

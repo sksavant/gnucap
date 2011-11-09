@@ -32,9 +32,10 @@ class CARD_LIST;
 class NODE_MAP {
 private:
   std::map<const std::string, NODE*> _node_map;
-  explicit  NODE_MAP(const NODE_MAP&);
 
+  explicit  NODE_MAP(const NODE_MAP&);
 public:
+  //  NODE_MAP( const NODE_MAP& p) : _node_map(p._node_map) {}
   explicit  NODE_MAP();
 	   ~NODE_MAP();
   NODE*     operator[](std::string);

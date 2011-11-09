@@ -1,0 +1,68 @@
+
+
+spice
+
+Vcc ncc 0 5
+Vin nin 0 sin(frequency=1, amplitude=0.2, offset=0.8)
+
+.verilog
+
+paramset myhicum npn; .is=1.0e-16; .rc=1; endparamset
+
+myhicum Q1( c1 b1 0 );
+myhicum Q2( c2 b2 0 );
+myhicum Q3( c3 b3 0 );
+myhicum Q4( c4 b4 0 );
+myhicum Q5( c5 b5 0 );
+myhicum Q6( c6 b6 0 );
+myhicum Q7( c7 b7 0 );
+myhicum Q8( c8 b8 0 );
+myhicum Q9( c9 b9 0 );
+myhicum Q10( c10 b10 0 );
+
+spice
+
+R0 nin b1 10k
+
+R1 ncc b2 1k
+R1a c1 b2 150
+R1b b2 0 3k
+
+R2 ncc b3 1k
+R2a c2 b3 150
+R2b b3 0 3k
+
+R3 ncc b4 1k
+R3a c3 b4 150
+R3b b4 0 3k
+
+R4 ncc b5 1k
+R4a c4 b5 150
+R4b b5 0 3k
+
+R5 ncc b6 1k
+R5a c5 b6 150
+R5b b6 0 3k
+
+R6 ncc b7 1k
+R6a c6 b7 150
+R6b b7 0 3k
+
+R7 ncc b8 1k
+R7a c7 b8 150
+R7b b8 0 3k
+
+R8 ncc b9 1k
+R8a c8 b9 150
+R8b b9 0 3k
+
+R9 ncc b10 1k
+R9a c9 b10 150
+R9b b10 0 3k
+
+R10 ncc nout 1k
+R10a c10 nout 150
+R10b nout 0 3k
+
+
+.verilog

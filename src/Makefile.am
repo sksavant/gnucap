@@ -148,7 +148,7 @@ RAW_HDRS += d_vvp.h d_ivl.h e_ivl_compile.h d_ivl_ports.h
 endif
 
 if ADMS
-ADMS_SRCS = d_hicum0.cc d_ota_simpl.cc d_ota_medium.cc d_opamp.cc
+ADMS_SRCS = e_adms.cc d_hicum0.cc d_ota_simpl.cc d_ota_medium.cc d_opamp.cc
 RAW_SRCS += $(ADMS_SRCS)
 endif
 #------------------------------------------------------------------------ 
@@ -226,9 +226,14 @@ IVL=`which iverilog` -v
 
 # if adms ...
 ADMS_GC_XML=../adms/gnucap.xml
+ADMS_HTM_XML=../adms/admst_htm.xml
 
 %.cc : %.va $(ADMS_GC_XML)
 	admsXml $< -e $(ADMS_GC_XML) -o $*
+
+#move to ../doc?
+%.htm : %.va $(ADMS_HTM_XML)
+	admsXml $< -e $(ADMS_HTM_XML) -o $@
 
 %.h : %.model ${MODELGEN}${EXEEXT}
 	${MODELGEN} -h $<

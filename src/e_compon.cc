@@ -509,7 +509,7 @@ inline void trace_nodenames(const CARD_LIST* scope){
   }
 }
 #else
-inline void trace_nodenames(const CARD_LIST* scope){}
+inline void trace_nodenames(const CARD_LIST*){}
 #endif
 /*--------------------------------------------------------------------------*/
 void COMPONENT::set_port_by_index(uint_t num, std::string& ext_name)

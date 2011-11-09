@@ -45,8 +45,8 @@ public:
       std::string file_name;
       cmd >> file_name;
       CS file(CS::_INC_FILE, file_name);
-      trace1( (" CMD_INCLUDE::do_it > " +file_name).c_str() , (long int)(OPT::language) );
       for (;;) {
+        trace1( (" CMD_INCLUDE::do_it > " +file_name).c_str() , (OPT::language) );
 	OPT::language->parse_top_item(file, Scope);
       }
     }catch (Exception_File_Open& e) {

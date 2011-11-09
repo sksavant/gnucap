@@ -29,6 +29,7 @@
 #include "l_compar.h"
 #include "u_opt.h"
 #include "m_matrix.h"
+#include "e_cardlist.h"
 /*--------------------------------------------------------------------------*/
 // external
 class WAVE;
@@ -132,9 +133,11 @@ struct INTERFACE SIM_DATA {
   void order_reverse();
   void order_forward();
   void order_auto();
-  int init_node_count(int user, int sub, int mod) {
-    _user_nodes=user; _subckt_nodes=sub; _model_nodes=mod; return (_total_nodes=user+sub+mod);
-  }
+  void order_tree( const CARD_LIST* scope=&CARD_LIST::card_list, unsigned* c=0);
+  void order_comp( const CARD_LIST* scope=&CARD_LIST::card_list, unsigned* c=0,
+      bool* d=0);
+
+  int init_node_count(int user, int sub, int mod);
   int newnode_subckt() {++_subckt_nodes; return ++_total_nodes;}
   int newnode_model()  {++_model_nodes;  return ++_total_nodes;}
   int newnode_adp()  {return _adp_nodes++;}

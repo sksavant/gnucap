@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="ISO-8859-1"?> <!-- vim:ts=8:sw=2:et: 
+-->
 
 <!DOCTYPE admst SYSTEM "admst.dtd">
 <admst version="2.3.0" xmlns:admst="http://mot-adms.sourceforge.net/xml-files/admst">
@@ -1095,6 +1096,7 @@
 
 <!-- save all variables used for local declaration -->
 <admst:template match="block:local:declaration">
+  <admst:text format="// block:local:declaration\n"/>
   <admst:choose>
     <admst:when test="adms[datatypename='assignment']">
       <admst:push into="module/evaluation/variable" select="lhs" onduplicate="ignore"/>
@@ -1162,7 +1164,8 @@
     <admst:if test="code/adms[datatypename='block']">
       <admst:for-each select="code/item">
         <admst:if test="adms[datatypename='block']">
-          <admst:apply-templates select="[name='initial_instance' or name='initializeInstance']" match="block:initial"/>
+			  <admst:apply-templates select="[name='initial_instance' or name='initializeInstance']" 
+				  match="block:initial"/>
         </admst:if>
       </admst:for-each>
     </admst:if>
@@ -1173,7 +1176,8 @@
     <admst:if test="code/adms[datatypename='block']">
       <admst:for-each select="code/item">
         <admst:if test="adms[datatypename='block']">
-          <admst:apply-templates select="[name='initial_model' or name='initializeModel']" match="block:initial"/>
+			  <admst:apply-templates select="[name='initial_model' or name='initializeModel']" 
+				  match="block:initial"/>
         </admst:if>
       </admst:for-each>
     </admst:if>
@@ -2212,11 +2216,15 @@
 <!-- analog/![initializeModel|initializeInstance|initial_model|initial_instance|initial_step|noise] -->
 
 <admst:template match="analog:evaluate">
+
+  // evaluate template
+
   <admst:if test="code">
     <admst:assert test="code/adms[datatypename='block']" format="expecting datatypename=block\n"/>
     <admst:for-each select="code/item">
       <admst:if test="adms[datatypename='block']">
-        <admst:if test="[name!='initial_model' and name!='initial_instance' and name!='initializeModel' and name!='initializeInstance'
+        <admst:if test="[name!='initial_model' and name!='initial_instance'
+           and name!='initializeModel' and name!='initializeInstance'
            and name!='initial_step']">
           <admst:apply-templates select="." match="block:local:declaration"/>
         </admst:if>
@@ -2233,8 +2241,9 @@
           <admst:apply-templates select="." match="ngspiseMODULEload%s"/>
         </admst:when>
         <admst:otherwise>
-        <admst:if test="[name!='initial_model' and name!='initial_instance' and name!='initializeModel' and name!='initializeInstance'
-             and name!='initial_step']">
+          <admst:if test="[name!='initial_model' and name!='initial_instance' 
+            and name!='initializeModel' and name!='initializeInstance'
+            and name!='initial_step']">
             <admst:apply-templates select="." match="block"/>
           </admst:if>
         </admst:otherwise>
@@ -2361,7 +2370,8 @@
           <admst:when test="lhs/branch[grounded='no']">
                                                             	
             <admst:text test="lhs/branch/nnode[location='internal']"
-			            	format="_nodes[%(lhs/branch/nnode/name)Node] = _nodes[%(lhs/branch/pnode/name)Node]; // nnode collapsed \n"/>
+              format="_nodes[%(lhs/branch/nnode/name)Node] 
+                      = _nodes[%(lhs/branch/pnode/name)Node]; // nnode collapsed \n"/>
 			              
 			<admst:text test="lhs/branch/pnode[location='internal']"
 			              	format="_nodes[%(lhs/branch/pnode/name)Node] = _nodes[%(lhs/branch/nnode/name)Node]; // pnode collapsed \n"/>
@@ -2503,6 +2513,7 @@
 #include "d_subckt.h"
 #include "e_storag.h"
 #include "e_model.h"
+#include "e_adms.h"
 #include "u_parameter.h"
 
 // customization - gnucap specific constants
@@ -2593,7 +2604,7 @@ public:
 	PARAM_LIST  _params;
 };
 
-class $(DEV_NAME) : public STORAGE 
+class $(DEV_NAME) : public ADMS_BASE 
 {
 private:	
 	std::string _modelname;
@@ -2627,8 +2638,8 @@ protected: // override virtual
 	void tr_call_iwants(int m_1, int m_2);
 	void tr_iwant_matrix();
 	void tr_begin();
-	void tr_restore() {STORAGE::tr_restore(); internal_precalc();}
-	void dc_advance() {STORAGE::dc_advance(); internal_precalc();}
+	void tr_restore() {ADMS_BASE::tr_restore(); internal_precalc();}
+	void dc_advance() {ADMS_BASE::dc_advance(); internal_precalc();}
 	void tr_advance();
 	void tr_regress();
 	bool tr_needs_eval()const;	
@@ -2693,8 +2704,7 @@ protected: // implementation
 	};
 	int load(int mode);
 
-private:
-	// variables of verilog-module
+private: // variables of verilog-module
 	<admst:for-each select="variable[input='no' and scope='global_instance']">
 	<admst:choose>
 			<admst:when test="[type='real']"><admst:text format="\n\tdouble $(var_prefix)%(.);"/></admst:when>
@@ -2703,13 +2713,11 @@ private:
 	</admst:choose>
 	</admst:for-each>
 
-private:
-// analogfunctions of verilog-modul
+private: // analogfunctions of verilog-modul
 
 	<admst:apply-templates select="/module" match="analogfunctionH"/>
 
-private:
-	// nodes / matrix indexes
+private: // nodes / matrix indexes
 
 	public:
 	<admst:text format="\tenum ENodes {"/>
@@ -2754,7 +2762,7 @@ private:
 </admst:open>
 
 <!-- ************************************************************************************* -->
-<!-- ********************************* Make _common.cc *********************************** -->
+<!-- ********************************* Make d_*.cc *********************************** -->
 <!-- ************************************************************************************* -->
 
 <admst:variable name="globalanalogfunction"/>
@@ -2762,6 +2770,7 @@ private:
 #include <limits>
 
 #include "$(filename).h"
+#include "e_adms.h"
 <admst:for-each select="/module">
 
 //analog function stuff
@@ -2910,7 +2919,7 @@ void $(MODEL_NAME)::set_dev_type(const std::string& new_type)
 }
 // ********************************* $(DEV_NAME) ********************************* //
 $(DEV_NAME)::$(DEV_NAME)()
-  :STORAGE(),   
+  :ADMS_BASE(),   
    _modelname(""),
    _model(NULL),
    _nodes(),
@@ -2932,7 +2941,7 @@ $(DEV_NAME)::$(DEV_NAME)()
 }
 // -------------------------------------------------------------------------- //
 $(DEV_NAME)::$(DEV_NAME)(const $(DEV_NAME)& p)
-  :STORAGE(p),
+  :ADMS_BASE(p),
    _modelname(p._modelname),
    _model(p._model),
    _nodes(),
@@ -2994,7 +3003,12 @@ void $(DEV_NAME)::Set_param_by_index(int /*i*/, std::string& /*new_value*/, int 
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::expand()
 {
-	STORAGE::expand();
+ADMS_BASE::expand();
+
+  if (!subckt()) {
+    new_subckt();
+  }else{
+  }
 
 	// attach model
 	_model = dynamic_cast<const $(MODEL_NAME)*>(find_model(_modelname));
@@ -3058,7 +3072,7 @@ void $(DEV_NAME)::expand()
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::precalc_first()
 {
-	STORAGE::precalc_first();
+	ADMS_BASE::precalc_first();
 
 	// push down parameters into spice data
 	COMMON_SUBCKT* c = dynamic_cast<COMMON_SUBCKT*>(mutable_common());
@@ -3078,7 +3092,7 @@ void $(DEV_NAME)::precalc_first()
 void $(DEV_NAME)::precalc_last()
 {
 	assert(_model);
-	STORAGE::precalc_last();
+	ADMS_BASE::precalc_last();
 	assert(!is_constant());
 }
 // -------------------------------------------------------------------------- //
@@ -3103,19 +3117,26 @@ void $(DEV_NAME)::tr_iwant_matrix()
 		<!-- if bigger check if 'smaller' exists -->
 		<admst:if test="[$myF_ret1='bigger']">
 			<admst:variable  name="local_ifelse" select="else"/>
-			<admst:if test="(../jacobian[row/name=$myF_par2 and column/name=$myF_par1])"><admst:variable  name="local_ifelse" select="if"/></admst:if>
+			<admst:if test="(../jacobian[row/name=$myF_par2 and column/name=$myF_par1])">
+				<admst:variable  name="local_ifelse" select="if"/>
+			</admst:if>
 			<admst:if test="[$local_ifelse='else']">
 				<admst:variable  name="myF_ret1" select="smaller"/>				
 				// COUNTER DOESNT EXIST
 			</admst:if>
 		</admst:if>
-		<!-- TODO if there are only node1:node1 jacobian (without any other combinations), it will not call iwant matrix -->
+		<!-- TODO if there are only node1:node1 jacobian (without any other combinations),
+		     it will not call iwant matrix
+		-->
 		<admst:if test="[$myF_ret1='smaller']">
 			<!-- only if 1st node has smaller position than 2nd -->		
 			<admst:text format="\n\tif( m_required[m_$(myF_par1)_$(myF_par2)]"/>
-			<admst:text format=" || m_required[m_$(myF_par2)_$(myF_par1)]" test="../jacobian[row/name=$myF_par2 and column/name=$myF_par1]"/>
-			<admst:text format=" || m_required[m_$(myF_par1)_$(myF_par1)]" test="../jacobian[row/name=$myF_par1 and column/name=$myF_par1]"/>
-			<admst:text format=" || m_required[m_$(myF_par2)_$(myF_par2)]" test="../jacobian[row/name=$myF_par2 and column/name=$myF_par2]"/>
+			<admst:text format=" || m_required[m_$(myF_par2)_$(myF_par1)]" 
+				test="../jacobian[row/name=$myF_par2 and column/name=$myF_par1]"/>
+			<admst:text format=" || m_required[m_$(myF_par1)_$(myF_par1)]"
+				test="../jacobian[row/name=$myF_par1 and column/name=$myF_par1]"/>
+			<admst:text format=" || m_required[m_$(myF_par2)_$(myF_par2)]"
+				test="../jacobian[row/name=$myF_par2 and column/name=$myF_par2]"/>
 			<admst:text format=" ) \n\t\ttr_call_iwants(_n[$(myF_par1)Node].m_(), _n[$(myF_par2)Node].m_());"/>
 		</admst:if>
 	</admst:for-each>
@@ -3152,21 +3173,43 @@ void $(DEV_NAME)::ac_iwant_matrix()
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_begin()
 {
-	STORAGE::tr_begin();
+	ADMS_BASE::tr_begin();
 
-	<admst:apply-templates select="analog" match="analog:initial_step" />
+	// initial step
+
+	<admst:apply-templates select="analog" match="analog:initial_step"/>
+	// /initial step
 
 	for(int ii=0; ii<OPT::_keep_time_steps; ii++)
-                std::fill_n(_states[ii], _num_states, 0);
+          std::fill_n(_states[ii], _num_states, 0);
         std::fill_n(_states_1, _num_states, 0);
 
 	internal_precalc();
-}
 
+	// load static
+	<admst:text format="\n\tfor(int i=0; i<%(count(node[grounded='no'])); i++)"/>
+		tr_load_source_point(_n[i], &(it0[i]), &(it1[i]));
+
+	<admst:for-each select="jacobian[static='yes']">
+	<admst:value-of select="column/name"/>
+	<admst:value-of select="row/name"/>
+	<admst:value-of select="column/name"/>
+	<admst:value-of select="row/name"/>
+	<admst:value-of select="column/name"/>
+	<admst:value-of select="row/name"/>
+	<admst:value-of select="column/name"/>
+	<admst:value-of select="row/name"/>
+	if( m_required[m_%s_%s] )
+  		tr_load_point(_n[%sNode], _n[%sNode], &(m_entries[m_%s_%s]), &(m_entries_old[m_%s_%s]));
+	</admst:for-each>
+
+
+}
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_advance()
 {
-	STORAGE::tr_advance();
+        trace0("$(DEV_NAME)::tr_advance");
+	ADMS_BASE::tr_advance();
 	
 	// shift states, clear states[0]
 	double* t = _states[OPT::_keep_time_steps-1];
@@ -3178,11 +3221,12 @@ void $(DEV_NAME)::tr_advance()
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_regress()
 {
-	ELEMENT::tr_regress();
+	ADMS_BASE::tr_regress();
 }
 // -------------------------------------------------------------------------- //
 bool $(DEV_NAME)::tr_needs_eval()const
 {
+        trace0("$(DEV_NAME)::tr_needs_eval");
 	if (is_q_for_eval()) return false;
 	if (!converged()) return true;
 	if (_sim->is_advance_iteration()) return true;
@@ -3211,6 +3255,7 @@ bool $(DEV_NAME)::tr_needs_eval()const
 // -------------------------------------------------------------------------- //
 bool $(DEV_NAME)::do_tr()
 {
+        trace0("$(DEV_NAME)::do_tr");
 	assert(_num_states >= 0);
 	assert(OPT::_keep_time_steps <= 8);  
 	assert(_dt == NOT_VALID || conchk(_dt, _time[0] - _time[1]));
@@ -3244,7 +3289,7 @@ bool $(DEV_NAME)::do_tr()
 
 	// (sets m_entries, it0)
 	//-----
-	load(mode);
+        load(mode); // this is tr_eval!!!1
 	//-----
 			
 	// convergence check -- gnucap method
@@ -3259,7 +3304,9 @@ bool $(DEV_NAME)::do_tr()
 	<admst:text format="\n\tfor(int i=0; converged() && i<%(count(node[grounded='no'])); i++)"/>
 	{ 
 		bool conv= conchk(it0[i], it1[i]);	
-		if (!conv) { trace4("not converged", i , it0[i], it1[i], _sim->iteration_number() );}
+                if (!conv) {
+                  trace5("not converged", i , it0[i], it1[i], _sim->iteration_number(), it0[i]-it1[i] );
+                }
 		set_converged(conv);	
 	}
 	
@@ -3285,9 +3332,13 @@ bool $(DEV_NAME)::do_tr()
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_load()
 {
+        trace0("$(DEV_NAME)::tr_load");
+		/// BUG: only dynamic!
 	<admst:text format="\n\tfor(int i=0; i<%(count(node[grounded='no'])); i++)"/>
 		tr_load_source_point(_n[i], &(it0[i]), &(it1[i]));
 	
+		/// BUG: only dynamic!
+
 	<admst:for-each select="jacobian">
 	<admst:value-of select="column/name"/>
 	<admst:value-of select="row/name"/>
@@ -3297,7 +3348,8 @@ void $(DEV_NAME)::tr_load()
 	<admst:value-of select="row/name"/>
 	<admst:value-of select="column/name"/>
 	<admst:value-of select="row/name"/>
-	if( m_required[m_%s_%s] ) tr_load_point(_n[%sNode], _n[%sNode], &(m_entries[m_%s_%s]), &(m_entries_old[m_%s_%s]));
+	if( m_required[m_%s_%s] )
+  		tr_load_point(_n[%sNode], _n[%sNode], &(m_entries[m_%s_%s]), &(m_entries_old[m_%s_%s]));
 	</admst:for-each>
 }
 // -------------------------------------------------------------------------- //
@@ -3311,7 +3363,8 @@ void $(DEV_NAME)::tr_unload()
 // -------------------------------------------------------------------------- //
 TIME_PAIR $(DEV_NAME)::tr_review()
 {
-	assert(_dt == NOT_VALID || conchk(_dt, _time[0] - _time[1]));
+  trace0("$(DEV_NAME)::tr_review");
+  assert(_dt == NOT_VALID || conchk(_dt, _time[0] - _time[1]));
 
     double timestep = NEVER;
     //----- (DEVtrunc)
@@ -3329,6 +3382,7 @@ TIME_PAIR $(DEV_NAME)::tr_review()
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_accept()
 {
+        trace0("$(DEV_NAME)::tr_accept");
 	if (_sim->analysis_is_dcop() || _sim->analysis_is_ac()) 
 	{
     	assert(_dt == NOT_VALID || conchk(_dt, _time[0] - _time[1]));
@@ -3350,12 +3404,12 @@ double $(DEV_NAME)::tr_probe_num(const std::string& x)const
 		if (Umatch(x, state_names[ii] + ' ')) 
 			return _states[0][ii];
 	
-	return STORAGE::tr_probe_num(x);
+	return ADMS_BASE::tr_probe_num(x);
 }
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::ac_begin()
 {
-	STORAGE::ac_begin();
+	ADMS_BASE::ac_begin();
 	internal_precalc();
 	tr_accept();
 }
@@ -3486,7 +3540,8 @@ void $(DEV_NAME)::guesstopology ()
       <admst:apply-templates select="item" match="evaluate.localvariables"/>
     </admst:when>
     <admst:when test="[datatypename='conditional']">
-      <admst:push select="if/variable[scope='local' and OPdependent='no']" into="$localvariables" onduplicate="ignore"/>
+      <admst:push select="if/variable[scope='local' and OPdependent='no']"
+        into="$localvariables" onduplicate="ignore"/>
       <admst:apply-templates select="then" match="evaluate.localvariables"/>
       <admst:apply-templates select="else" match="evaluate.localvariables"/>
     </admst:when>
@@ -3507,7 +3562,8 @@ void $(DEV_NAME)::guesstopology ()
 </admst:template>
   <admst:for-each select="analog/code[datatypename='block']/item">
     <admst:if test="[(datatypename!='block') or (datatypename='block'
-         and name!='initial_model' and name!='initializeModel' and name!='initial_instance' and name!='initializeInstance')]">
+      and name!='initial_model' and name!='initializeModel' and name!='initial_instance'
+      and name!='initializeInstance')]">
       <admst:apply-templates select="." match="evaluate.localvariables"/>
     </admst:if>
   </admst:for-each>
@@ -3538,7 +3594,7 @@ void $(DEV_NAME)::acLoad()
 <admst:value-of select="row/name"/>
 <admst:value-of select="column/name"/>
 <admst:value-of select="row/name"/>
-<admst:text format="\n\tif(m_required[m_%s_%s]) m_entries[m_%s_%s] += m_ac_static[m_%s_%s];"/>
+<admst:text format="\n\tif(m_required[m_%s_%s]) m_entries[m_%s_%s] += m_ac_static[m_%s_%s]; // static"/>
 </admst:for-each>
 
 <admst:text format="\n"/>
@@ -3549,7 +3605,7 @@ void $(DEV_NAME)::acLoad()
 <admst:value-of select="row/name"/>
 <admst:value-of select="column/name"/>
 <admst:value-of select="row/name"/>
-<admst:text format="\n\tif(m_required[m_%s_%s]) m_entries_old[m_%s_%s] += _sim->_jomega.imag() * m_ac_dynamic[m_%s_%s];"/>
+<admst:text format="\n\tif(m_required[m_%s_%s]) m_entries_old[m_%s_%s] += _sim->_jomega.imag() * m_ac_dynamic[m_%s_%s]; // dynamic"/>
 </admst:for-each>
 }	
 // -------------------------------------------------------------------------- //
@@ -3562,9 +3618,10 @@ void $(DEV_NAME)::pzLoad(COMPLEX s)
 	<admst:value-of select="row/name"/>
 	<admst:value-of select="column/name"/>
 	<admst:value-of select="row/name"/>
-	<admst:text format="\n\tif(m_required[m_%s_%s]) m_entries[m_%s_%s] += m_ac_static[m_%s_%s] * s.real();"/>
+	<admst:text format="\n\tif(m_required[m_%s_%s]) m_entries[m_%s_%s] += m_ac_static[m_%s_%s] * s.real(); // static"/>
 </admst:for-each>
 	
+<!-- why two selects?? -->
 <admst:text format="\n"/>
 <admst:for-each select="jacobian[dynamic='yes']">
 	<admst:value-of select="column/name"/>
@@ -3573,7 +3630,7 @@ void $(DEV_NAME)::pzLoad(COMPLEX s)
 	<admst:value-of select="row/name"/>
 	<admst:value-of select="column/name"/>
 	<admst:value-of select="row/name"/>
-	<admst:text format="\n\tif(m_required[m_%s_%s]) m_entries[m_%s_%s] += m_ac_dynamic[m_%s_%s] * s.real();"/>
+	<admst:text format="\n\tif(m_required[m_%s_%s]) m_entries[m_%s_%s] += m_ac_dynamic[m_%s_%s] * s.real(); //dynamic"/>
 </admst:for-each>
 
 <admst:text format="\n"/>
@@ -3584,7 +3641,7 @@ void $(DEV_NAME)::pzLoad(COMPLEX s)
 	<admst:value-of select="row/name"/>
 	<admst:value-of select="column/name"/>
 	<admst:value-of select="row/name"/>
-	<admst:text format="\n\tif(m_required[m_%s_%s]) m_entries_old[m_%s_%s] += m_ac_dynamic[m_%s_%s] * s.imag();"/>
+	<admst:text format="\n\tif(m_required[m_%s_%s]) m_entries_old[m_%s_%s] += m_ac_dynamic[m_%s_%s] * s.imag(); //dynamic"/>
 </admst:for-each>
 }
 // -------------------------------------------------------------------------- //
@@ -4180,8 +4237,10 @@ int $(DEV_NAME)::load(int mode)
         </admst:apply-templates>
       </admst:for-each>
       <admst:choose>
-        <admst:when test="[ name='cos' or name='sin' or name='tan' or name='cosh' or name='sinh' or name='tanh' or name='acos' or name='asin'
-                            or name='atan' or name='ln' or name='log' or name='exp' or name='sqrt' or name='abs' or name='limexp'
+        <admst:when test="[ name='cos' or name='sin' or name='tan' or name='cosh'
+                            or name='sinh' or name='tanh' or name='acos' or name='asin'
+                            or name='atan' or name='ln' or name='log' or name='exp' 
+                            or name='sqrt' or name='abs' or name='limexp'
                             or name='div' or name='pow' or name='hypot' or name='min' or name='max' ]">
           <admst:return name="x" value="_$function($args)"/>
           <admst:for-each select="$globalanalogfunction/variable[input='yes']">
@@ -5592,7 +5651,10 @@ int $(DEV_NAME)::load(int mode)
     <admst:when test="[name='ddt']">
       <admst:variable name="eq" select="$xq"/>
     </admst:when>
-    <admst:when test="[name='abs' or name='acos' or name='asin' or name='atan' or name='cos' or name='cosh' or name='exp' or name='hypot' or name='limexp' or name='ln' or name='log' or name='sin' or name='sinh' or name='sqrt' or name='tan' or name='tanh']">
+    <admst:when test="[name='abs' or name='acos' or name='asin' or name='atan'
+                       or name='cos' or name='cosh' or name='exp' or name='hypot' 
+                       or name='limexp' or name='ln' or name='log' or name='sin' or name='sinh' 
+                       or name='sqrt' or name='tan' or name='tanh']">
       <admst:variable name="index" select="%(index(subexpression/expression/function,.))"/>
       <admst:choose>
         <admst:when test="[$xq='0.0']">
@@ -5626,7 +5688,10 @@ int $(DEV_NAME)::load(int mode)
   </admst:choose>
 
   <admst:choose>
-    <admst:when test="[name='abs' or name='acos' or name='asin' or name='atan' or name='cos' or name='cosh' or name='exp' or name='hypot' or name='limexp' or name='ln' or name='log' or name='sin' or name='sinh' or name='sqrt' or name='tan' or name='tanh']">
+    <admst:when test="[name='abs' or name='acos' or name='asin' or name='atan'
+                       or name='cos' or name='cosh' or name='exp' or name='hypot'
+                       or name='limexp' or name='ln' or name='log' or name='sin'
+                       or name='sinh' or name='sqrt' or name='tan' or name='tanh']">
       <admst:variable name="index" select="%(index(./subexpression/expression/function,.))"/>
       <admst:variable name="fname" select="%(X3funcname(.)/[name='fname']/value)"/>
       <admst:choose>
@@ -5688,7 +5753,9 @@ int $(DEV_NAME)::load(int mode)
         <admst:variable name="ddxprobes" select="%(.)"/>
         <admst:for-each select="$myvariable/probe">
           <admst:variable name="pprobe" select="%(.)"/>
-          <admst:push into="$ddxprobes/item" select="$myvariable/ddxprobe/branch/pnode[.=$pprobe/branch/pnode or .=$pprobe/branch/nnode]/$pprobe" onduplicate="ignore"/>
+          <admst:push into="$ddxprobes/item"
+            select="$myvariable/ddxprobe/branch/pnode[.=$pprobe/branch/pnode 
+                                     or .=$pprobe/branch/nnode]/$pprobe" onduplicate="ignore"/>
         </admst:for-each>
       </admst:new>
       <admst:text test="$ddxprobes/item" format="#if defined(_DERIVATE)\n"/>
@@ -5756,7 +5823,8 @@ int $(DEV_NAME)::load(int mode)
           <admst:for-each select="arguments">
             <admst:variable name="position" select="%(position(.)-1)"/>
             <admst:if test="math[dependency!='constant']">
-              <admst:text format="m1$(position)_$(fname)(d1$(position)_$(fname)$index,d00_$(fname)$index,d10_$(fname)$index"/>
+              <admst:text 
+                format="m1$(position)_$(fname)(d1$(position)_$(fname)$index,d00_$(fname)$index,d10_$(fname)$index"/>
               <admst:text select="../arguments" format=",%(X3e(.))"/>
               <admst:text format=")\n"/>
             </admst:if>
@@ -5868,7 +5936,8 @@ int $(DEV_NAME)::load(int mode)
           <admst:variable name="qprobe"/>
           <admst:variable name="ep" select="0.0"/>
           <admst:apply-templates select="[$isinside='1']/$rhs/tree" match="X3%(adms/datatypename)"/>
-          <admst:text test="[$ddxinsidederivate='yes' and $ddxinsidethisprobe='no']" format="#if defined(_DERIVATE)\n"/>
+          <admst:text test="[$ddxinsidederivate='yes' and $ddxinsidethisprobe='no']" 
+                      format="#if defined(_DERIVATE)\n"/>
           <admst:text format="%(X3dxname($lhs)/[name='dxname']/value)=$ep;\n"/>
           <admst:text test="[$ddxinsidederivate='yes' and $ddxinsidethisprobe='no']" format="#endif\n"/>
           <admst:text test="[$ddxinsidethisprobe='yes']" format="#if defined(_DERIVATE2)\n"/>
@@ -6149,7 +6218,9 @@ int $(DEV_NAME)::load(int mode)
     <admst:variable name="ddxprobes" select="%(.)"/>
     <admst:for-each select="$myvariable/probe">
       <admst:variable name="pprobe" select="%(.)"/>
-      <admst:push into="$ddxprobes/item" select="$myvariable/ddxprobe/branch/pnode[.=$pprobe/branch/pnode or .=$pprobe/branch/nnode]/$pprobe" onduplicate="ignore"/>
+      <admst:push into="$ddxprobes/item" 
+        select="$myvariable/ddxprobe/branch/pnode[.=$pprobe/branch/pnode or .=$pprobe/branch/nnode]/$pprobe" 
+        onduplicate="ignore"/>
     </admst:for-each>
   </admst:new>
   <admst:if test="block/adms[datatypename='module']">
@@ -6170,7 +6241,8 @@ int $(DEV_NAME)::load(int mode)
           <admst:text format="#if defined(_DERIVATE)\n"/>
         </admst:otherwise>
       </admst:choose>
-      <admst:text select="probe" format="double %(../name)_%(nature/access)%(branch/pnode/name)_%(branch/nnode/name);\n"/>
+      <admst:text select="probe"
+        format="double %(../name)_%(nature/access)%(branch/pnode/name)_%(branch/nnode/name);\n"/>
       <admst:text test="[$ddxinsidederivate='yes']" format="#if defined(_DERIVATE2)\n"/>
       <admst:for-each select="$ddxprobes/item">
         <admst:variable name="pprobe" select="%(.)"/>
@@ -6210,8 +6282,10 @@ int $(DEV_NAME)::load(int mode)
     </admst:otherwise>
   </admst:choose>
 </admst:template>
+
 <admst:template match="X3analog:evaluate">
-  <admst:text select="$fnoise/item" format="fpnoise%(index($fnoise/item,.))=0.0; fenoise%(index($fnoise/item,.))=0.0;\n"/>
+  <admst:text select="$fnoise/item" format="fpnoise%(index($fnoise/item,.))=0.0;
+    fenoise%(index($fnoise/item,.))=0.0;\n"/>
   <admst:text select="$tnoise/item" format="tnoise%(index($tnoise/item,.))=0.0;\n"/>
   <admst:text select="$wnoise/item" format="wnoise%(index($wnoise/item,.))=0.0;\n"/>
   <admst:for-each select="item">
@@ -6231,12 +6305,15 @@ int $(DEV_NAME)::load(int mode)
       </admst:when>
       <admst:otherwise>
         <admst:if test="[name!='initial_model' and name!='initial_instance']">
+          <admst:text format="//bug?\n"/>
           <admst:apply-templates select="." match="X3block"/>
+          <admst:text format="// end bug?\n"/>
         </admst:if>
       </admst:otherwise>
     </admst:choose>
   </admst:for-each>
 </admst:template>
+
 <admst:template match="X3analog:initializeModel">
   <admst:for-each select="item">
     <admst:if test="adms[datatypename='block']/..[name='initial_model']">
@@ -6349,10 +6426,13 @@ int $(DEV_NAME)::load(int mode)
   <admst:variable name="globalanalogfunction"/>
   <admst:variable name="file" select="%(attribute[name='ngspicename']/value).hxx"/>
   <admst:open file="$file">
-  	<admst:apply-templates select="." match="X3wrapper"/>
-  	<admst:apply-templates select="." match="Printhxxwrapperdefines"/>
+
+    <admst:apply-templates select="." match="X3wrapper"/>
+    <admst:apply-templates select="." match="Printhxxwrapperdefines"/>
     <admst:apply-templates select="." match="Printhxxdefines"/>
     <admst:apply-templates select="." match="X3c:math_h"/>
+    // evaluate
+
     <admst:apply-templates select="analog/code" match="X3analog:evaluate"/>
     <!--admst:message format="$file: created\n"/-->
   </admst:open>
@@ -6518,7 +6598,7 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 </admst:template>
 
 <admst:template match="Printhxxwrapperdefines">
-// ******************** calculatnign defines ***************************
+// ******************** load definitions ***************************
 #define _load_static_residual1(p,v)\
 	it0[p ## Node]-=v;
 #define _load_static_residual2(p,n,v)\
