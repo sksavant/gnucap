@@ -88,7 +88,7 @@ void STORAGE::tr_begin()
   ELEMENT::tr_begin();
   _method_a = method_select[OPT::method][_method_u];
   for (int i = 0;  i < OPT::_keep_time_steps;  ++i) {
-    _i[i] = FPOLY1(0., 0., 0.);
+    _i[i] = FPOLY1(0., 0., 0.); // state
   }
   _m1 = _m0 = CPOLY1(0., 0., 0.);
 }

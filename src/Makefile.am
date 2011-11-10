@@ -122,7 +122,7 @@ e_homebrew.cc \
 e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc e_adplist.cc\
 bm_value.cc bm.cc \
 c__cmd.cc c_attach.cc c_file.cc c_genrat.cc c_debug.cc \
-findbr.cc plot.cc globals.cc e_adp.cc
+findbr.cc plot.cc globals.cc e_adp.cc e_adp_mos.cc
 #------------------------------------------------------------------------
 RAW_HDRS = \
 md.h ap.h mode.h constant.h declare.h patchlev.h \

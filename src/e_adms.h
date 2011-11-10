@@ -169,8 +169,12 @@ class ADMS_BASE : public BASE_SUBCKT {
 		double   _dt;
 
 		double   _time[OPT::_keep_time_steps];
+
+		// BUG?
+		// BUG: only needed if cap present!
 		FPOLY1   _y1;		// iteration parameters, 1 iter ago
 		FPOLY1   _y[OPT::_keep_time_steps]; /* charge or flux, and deriv.	*/
+
 	private: // from storag
 		int	   order()const {
 			const int o[] = {1, 1, 2, 1, 1};
@@ -471,9 +475,9 @@ inline void ADMS_BASE::ac_load_point(const node_t& no1, const node_t& no2,
 /*--------------------------------------------------------------------------*/
 inline bool ADMS_BASE::conv_check()const
 {
-	return conchk(_y1.f1, _y[0].f1)
-		&& conchk(_y1.f0, _y[0].f0)
-		&& conchk(_y1.x,  _y[0].x, OPT::vntol);
+	incomplete();
+	unreachable();
+	return false;
 }
 /*--------------------------------------------------------------------------*/
 inline bool ADMS_BASE::has_tr_eval()const

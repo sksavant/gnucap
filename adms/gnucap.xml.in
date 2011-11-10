@@ -2520,11 +2520,6 @@
 #define VALUE_NAME "#"
 #define TAIL_SIZE 1
 
-<!--
-// myfunc
-/// myfunc
--->
-
 #define SPICE_LETTER "\0"
 #define DEVICE_TYPE "dev_$(module)"
 #define MODEL_TYPE "$(module)"
@@ -2549,6 +2544,9 @@ static std::string state_names[] = {};
 #define EXIT_IF_ISNAN(var) \
 	if(isnan((double) var)) {printf("%%s:%%i:isnan:"#var"\n",__FILE__,__LINE__);exit(1);} \
 	if(isinf((double) var)) {printf("%%s:%%i:isinf:"#var"\n",__FILE__,__LINE__);exit(1);}
+
+inline void _used(double)  {}        
+
 
 class $(DEV_NAME);
 class $(MODEL_NAME) : public MODEL_CARD
@@ -2639,12 +2637,15 @@ protected: // override virtual
 	void tr_iwant_matrix();
 	void tr_begin();
 	void tr_restore() {ADMS_BASE::tr_restore(); internal_precalc();}
-	void dc_advance() {ADMS_BASE::dc_advance(); internal_precalc();}
+        void	   store_values();
+        void dc_advance();
 	void tr_advance();
 	void tr_regress();
 	bool tr_needs_eval()const;	
 	bool do_tr();
 	void tr_load();
+	void tr_eval();
+        bool conv_check()const;
 	TIME_PAIR tr_review();
 	void tr_accept();
 	void tr_unload();
@@ -3003,52 +3004,63 @@ void $(DEV_NAME)::Set_param_by_index(int /*i*/, std::string& /*new_value*/, int 
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::expand()
 {
-ADMS_BASE::expand();
+        trace0("$(DEV_NAME)::expand");
+  ADMS_BASE::expand();
 
   if (!subckt()) {
     new_subckt();
   }else{
   }
 
-	// attach model
-	_model = dynamic_cast<const $(MODEL_NAME)*>(find_model(_modelname));
-	if (!_model) 
-		throw Exception_Model_Type_Mismatch(long_label(), _modelname, DEVICE_TYPE);
+  // attach model
+  _model = dynamic_cast<const $(MODEL_NAME)*>(find_model(_modelname));
+  if (!_model) 
+          throw Exception_Model_Type_Mismatch(long_label(), _modelname, DEVICE_TYPE);
 
-	// set m_required
-	guesstopology();
+  // set m_required
+  guesstopology();
+  //allocate state vectors
+  if (!_states[0])  
+  {
+    // initialise in tr_begin()
+    for (int ii=0; ii<OPT::_keep_time_steps; ++ii)  // >
+    {
+      assert(!_states[ii]);
+      _states[ii] = new double[_num_states];
+    }
+    assert(!_states_1);
+    _states_1 = new double[_num_states];
+  }
+  else
+  {
+    for (int ii=0; ii<OPT::_keep_time_steps; ++ii) //>
+            assert(_states[ii]);
+    assert(_states_1);
+  }
 
-	//allocate state vectors
-	if (!_states[0])  
-	{
-		// initialise in tr_begin()
-		for (int ii=0; ii<OPT::_keep_time_steps; ++ii) 
-		{
-			assert(!_states[ii]);
-			_states[ii] = new double[_num_states];
-		}
-		assert(!_states_1);
-		_states_1 = new double[_num_states];
-	}
-	else
-	{
-		for (int ii=0; ii<OPT::_keep_time_steps; ++ii)
-			assert(_states[ii]);
-		assert(_states_1);
-	}
 
-	std::fill_n(it1, %(count(node[grounded='no'])), 0);
+  std::fill_n(it1, %(count(node[grounded='no'])), 0);
 
 	// fix up internal nodes
 	if (_sim->is_first_expand()) 
-	{
+        {
+
+	        <admst:text format="\t\tstd::string node_names[] = {"/>
+         	<admst:join select="node[grounded='no']" separator=", ">  
+            	        <admst:value-of select="name"/>  
+                    	<admst:text format="&quot;%s&quot;"/>    
+          	</admst:join>
+        	<admst:text format=" };"/>
 	  trace4("DEV_ADMS::expand nodes",  net_nodes() , max_nodes() , matrix_nodes(), int_nodes());
-		char fake_name[] = "a";
-		for(unsigned ii = net_nodes(); ii < matrix_nodes(); ++ii)
-		{
-			if( !_n[ii].n_() ){
-				trace2("DEV_ADMS::expand allocating missing internal node " , ii, fake_name );
-				_n[ii].new_model_node('.' + long_label() + '.' + fake_name, this);
+            char fake_name[] = "a"; // FIXME: use real name
+                for(unsigned ii = net_nodes(); ii < matrix_nodes(); ++ii)
+                {
+                        if( !_n[ii].n_() )
+                       {       
+                                trace1("alloc internal node ", ii);
+                                
+                                //_n[ii].new_model_node('.' + long_label() + '.' + fake_name, this);
+                                _n[ii].new_model_node(node_names[ii], this);
 			}
 			++(*fake_name);
 		}
@@ -3173,6 +3185,7 @@ void $(DEV_NAME)::ac_iwant_matrix()
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_begin()
 {
+  trace0("$(DEV_NAME)::tr_begin");
 	ADMS_BASE::tr_begin();
 
 	// initial step
@@ -3180,15 +3193,28 @@ void $(DEV_NAME)::tr_begin()
 	<admst:apply-templates select="analog" match="analog:initial_step"/>
 	// /initial step
 
-	for(int ii=0; ii<OPT::_keep_time_steps; ii++)
-          std::fill_n(_states[ii], _num_states, 0);
+        // d_vs...
+        //for(int ii=0; ii<OPT::_keep_time_steps; ii++)
+        std::fill_n(_states[0], _num_states, 0);
         std::fill_n(_states_1, _num_states, 0);
+
+          // like d_vs.
+	<admst:text format="\n\tfor(int i=0; i<%(count(node[grounded='no'])); i++)"/>
+		it0[i] = it1[i]=0;
+
+        //     in storag:
+        // _m1 = _m0 = CPOLY1(0., 0., 0.);
+	std::fill_n(m_entries, %(count(jacobian)), 0);
+	std::fill_n(m_entries_old, %(count(jacobian)), 0);
 
 	internal_precalc();
 
-	// load static
-	<admst:text format="\n\tfor(int i=0; i<%(count(node[grounded='no'])); i++)"/>
-		tr_load_source_point(_n[i], &(it0[i]), &(it1[i]));
+	// load static ??
+        //<admst:text format="\n\tfor(int i=0; i<%(count(node[grounded='no'])); i++)"/>
+        //	tr_load_source_point(_n[i], &(it0[i]), &(it1[i]));
+        //
+
+#ifdef load_in_begin
 
 	<admst:for-each select="jacobian[static='yes']">
 	<admst:value-of select="column/name"/>
@@ -3201,22 +3227,48 @@ void $(DEV_NAME)::tr_begin()
 	<admst:value-of select="row/name"/>
 	if( m_required[m_%s_%s] )
   		tr_load_point(_n[%sNode], _n[%sNode], &(m_entries[m_%s_%s]), &(m_entries_old[m_%s_%s]));
-	</admst:for-each>
+              </admst:for-each>
+#endif
+
+        q_load();
+
+}
+// -------------------------------------------------------------------------- //
+void $(DEV_NAME)::dc_advance(){
+       ADMS_BASE::dc_advance(); internal_precalc();
+       for (int i = 1;  i < OPT::_keep_time_steps;  ++i) {
+        notstd::copy_n(_states[0], _num_states, _states[i]);
+        //_i[i] = _i[0];
+      }
 
 
 }
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_advance()
 {
-        trace0("$(DEV_NAME)::tr_advance");
-	ADMS_BASE::tr_advance();
-	
-	// shift states, clear states[0]
-	double* t = _states[OPT::_keep_time_steps-1];
-  	for (int ii = OPT::_keep_time_steps-1;  ii > 0;  --ii)
-    	_states[ii] = _states[ii-1];
-  	_states[0] = t;
-	notstd::copy_n(_states[1], _num_states, _states[0]);
+  trace0("$(DEV_NAME)::tr_advance");
+  ADMS_BASE::tr_advance();
+
+  // FIXME:
+  // <if(have states)>
+  //   ADMS_BASE::tr_advance_states()
+  // </if>
+
+  // shift states, clear states[0]
+  double* t = _states[OPT::_keep_time_steps-1];
+  for (int ii = OPT::_keep_time_steps-1;  ii > 0;  --ii){
+    _states[ii] = _states[ii-1];
+  }
+  _states[0] = t;
+
+  //initial guess.
+  notstd::copy_n(_states[1], _num_states, _states[0]);
+
+
+// storage would do:
+//for (int i=OPT::_keep_time_steps-1; i>0; --i) {
+//_i[i] = _i[i-1];
+// }
 }
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_regress()
@@ -3239,8 +3291,9 @@ bool $(DEV_NAME)::tr_needs_eval()const
 	
 	// check the node voltages, reference to each other
 	for (unsigned ii=0; ii<matrix_nodes(); ++ii)
-		for (unsigned jj=0; jj<ii; ++jj)
-			if (!conchk((_sim->_vt1[_n[ii].m_()] - _sim->_vt1[_n[jj].m_()]), (_n[ii].v0() - _n[jj].v0()), 0, OPT::reltol*OPT::bypasstol)) 
+            for (unsigned jj=0; jj<ii; ++jj)
+              if (!conchk((_sim->_vt1[_n[ii].m_()] - _sim->_vt1[_n[jj].m_()]),
+                 (_n[ii].v0() - _n[jj].v0()), 0, OPT::reltol*OPT::bypasstol)) 
 				return true;
 				
     return false;
@@ -3288,8 +3341,11 @@ bool $(DEV_NAME)::do_tr()
 	std::fill_n(m_entries, %(count(jacobian)), 0);
 
 	// (sets m_entries, it0)
-	//-----
-        load(mode); // this is tr_eval!!!1
+	//----- thish is what cap does.
+        tr_eval(); // if needed??
+        q_load(); 
+        //differntiate
+        // return converged();
 	//-----
 			
 	// convergence check -- gnucap method
@@ -3325,9 +3381,16 @@ bool $(DEV_NAME)::do_tr()
 	<admst:text format="\n\tfor(int i=0; !needs_load && i<%(count(jacobian)); i++)"/>
 		needs_load = !conchk(m_entries[i], m_entries_old[i], 0, OPT::reltol * OPT::loadtol);
 	
-	if (needs_load) q_load(); // harmless DA
-	
+                            store_values();
+
+                // if (needs_load)
 	return converged();
+}
+// -------------------------------------------------------------------------- //
+void	   $(DEV_NAME)::store_values()		{
+
+// element: y[0] -> y_1
+  notstd::copy_n(_states[0], _num_states, _states_1);
 }
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_load()
@@ -3567,11 +3630,16 @@ void $(DEV_NAME)::guesstopology ()
       <admst:apply-templates select="." match="evaluate.localvariables"/>
     </admst:if>
   </admst:for-each>
+
   <admst:for-each select="$localvariables">
     <admst:if test="[type='integer']">int %(name);\n</admst:if>
     <admst:if test="[type='real']">double %(name)=std::numeric_limits&lt;double&gt;::quiet_NaN();\n</admst:if>
     <admst:if test="[type='string']">char* %(name);\n</admst:if>
   </admst:for-each>
+  <admst:for-each select="$localvariables">
+    _used(%(name));
+  </admst:for-each>
+
   
   <admst:for-each select="analog/code[datatypename='block']/item">
     <admst:if test="[(datatypename!='block') or (datatypename='block'
@@ -3654,10 +3722,75 @@ inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  )
 	return  min( 100. , max (  _n[p].v0() - _n[n].v0(), -100. ));
 }
 
+// -------------------------------------------------------------------------- //
+bool $(DEV_NAME)::conv_check()const{
+  for (int ii = 0; ii < _num_states; ++ii) 
+  {
+    if (! conchk(_states[0][ii], _states_1[ii]))
+      return false;
+  }	
+
+  <admst:text format="\n\tfor(int i=0; converged() && i<%(count(node[grounded='no'])); i++)"/>
+  { 
+    bool conv= conchk(it0[i], it1[i]);	
+    if (!conv) {
+        return false;
+    }
+  }
+
+
+  <admst:text format="\n\tfor(int i=0; converged() && i<%(count(jacobian)); i++)"/>
+  {
+    bool conv = conchk(m_entries[i], m_entries_old[i]);
+    if (!conv) { trace4("not converged", i , m_entries[i], m_entries_old[i], _sim->iteration_number() );}
+        return false;
+  }
+  return true;
+
+}
+// -------------------------------------------------------------------------- //
 #define _STATIC
 #define _DYNAMIC
 #define _DERIVATE
-int $(DEV_NAME)::load(int mode)
+void $(DEV_NAME)::tr_eval() 
+{
+  int ChargeComputationNeeded = 1; // fixme!
+  int mode=MODETRAN; // FIXME
+	
+  double CKTag0;
+  assert( _dt != 0 ); // untested, tag0 = 0.0
+  if (_time[1] != 0 && _method_a == mTRAP) CKTag0 = 2 / _dt;
+  else CKTag0 = 1 / _dt;
+
+  <!--admst:for-each select="variable[input='no' and scope='global_instance']">
+      <admst:choose>
+                <admst:when test="[type='real']"><admst:text format="\n\tdouble %(.) = 0.0;"/></admst:when>
+                <admst:when test="[type='integer']"><admst:text format="\n\tint %(.) = 0;"/></admst:when>
+                  <admst:otherwise><admst:text format="\n\tstd::string %(.);"/></admst:otherwise>
+	</admst:choose>
+	</admst:for-each-->
+
+	<admst:text format="\n\tstd::fill_n(m_ac_static, %(count(jacobian)), 0);"/>
+	<admst:text format="\n\tstd::fill_n(m_ac_dynamic, %(count(jacobian)), 0);"/>
+									
+  {
+  #include "$module.hxx"
+  }
+
+
+  // this is what cap does.
+  set_converged(conv_check());
+  return; // OK
+}
+#undef _STATIC
+#undef _DYNAMIC
+#undef _DERIVATE
+// -------------------------------------------------------------------------- //
+// -------------------------------------------------------------------------- //
+#define _STATIC
+#define _DYNAMIC
+#define _DERIVATE
+int $(DEV_NAME)::load(int mode) 
 {
 	int ChargeComputationNeeded = ( (mode&(MODEAC|MODETRAN|MODEINITSMSIG)) || ((mode&MODETRANOP)&&(mode&MODEUIC)) ) ? 1 : 0;
 	
@@ -3675,7 +3808,7 @@ int $(DEV_NAME)::load(int mode)
 	</admst:for-each-->
 
 	<admst:text format="\n\tstd::fill_n(m_ac_static, %(count(jacobian)), 0);"/>
-	<admst:text format="\n\tstd::fill_n(m_ac_dynamic, %(count(jacobian)), 0);"/>
+        <admst:text format="\n\tstd::fill_n(m_ac_dynamic, %(count(jacobian)), 0);"/>
 									
 	{
 	#include "$module.hxx"
@@ -3686,6 +3819,7 @@ int $(DEV_NAME)::load(int mode)
 #undef _STATIC
 #undef _DYNAMIC
 #undef _DERIVATE
+// -------------------------------------------------------------------------- //
 
 </admst:for-each>
 </admst:open>
@@ -6589,8 +6723,8 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 #define _dx_div(dx,xy,x,y)
 #define _dy_div(dy,dx,xy,x,y)    dy = -xy*dx;
 
-//#define _limexp(val,arg)         val = ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90)));
-//#define _d_limexp(val,dval,arg)  val = ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); dval = val;
+#define _limexp(val,arg)         val = ((arg)&lt;<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90)));
+#define _d_limexp(val,dval,arg)  val = ((arg)&lt;(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); dval = val;
 #define _fabs(val,arg)           val = fabs(arg);
 #define _d_fabs(val,dval,arg)    val = fabs(arg);    dval = (((val)>=0)?(+1.0):(-1.0));
 #define _abs(val)                ((val)<(0) ? (-(val)):(val))
@@ -6641,12 +6775,11 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 	if(ChargeComputationNeeded)\
 	{\
 		int error;\
-		double unused;\
 		_states[0][state_##p##_##n]=v;\
 		if(mode & MODEINITTRAN)\
 			_states[1][state_##p##_##n]=_states[0][state_##p##_##n];\
 		error = NIintegrate(state_##p##_##n);\
-		if(error) return(error);\
+		assert(!error); \
 		if(mode & MODEINITTRAN)\
 			_states[1][state_##p##_##n+1] = _states[0][state_##p##_##n+1];\
 		_load_static_residual2(p,n,_states[0][state_##p##_##n+1])\
@@ -6655,12 +6788,11 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 	if(ChargeComputationNeeded)\
 	{\
 		int error;\
-		double unused;\
 		_states[0][state_##p##_GND]=v;\
 		if(mode & MODEINITTRAN)\
 			_states[1][state_##p##_GND]=_states[0][state_##p##_GND];\
 		error = NIintegrate(state_##p##_GND);\
-		if(error) return(error);\
+		if(error) assert(!error);\
 		if(mode & MODEINITTRAN)\
 			_states[1][state_##p##_GND+1] = _states[0][state_##p##_GND+1];\
 		_load_static_residual1(p,_states[0][state_##p##_GND+1])\

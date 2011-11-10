@@ -155,7 +155,7 @@ public:	// tt
   virtual void   tt_commit(){}
   virtual void   tt_accept(){}
 //  virtual void   tt_prepare()           {}
-  virtual void  tt_prepare(){}      // save unstressed parameters
+  virtual void  tt_prepare(){unreachable();}      // older tt_begin
   virtual void  tt_init_i(){}       // save unstressed parameters
   virtual void	 tr_stress(){}      // calculate stress during tr
   virtual void	 tr_stress_last(){} // calculate stress during tr
@@ -171,6 +171,16 @@ public: /// experimental & cruft
   void tt_behaviour_reset() { tt_behaviour_del=0; tt_behaviour_rel=0; }
   void tt_behaviour_commit(){ tt_behaviour_reset(); }
 };
+/*--------------------------------------------------------------------------*/
+
+template <class S>
+inline S& operator<<( S& o, const  std::deque<CARD*> &d){
+  for(deque<CARD*>::const_iterator i=d.begin(); i!=d.end(); ++i){
+       o << "\n" << (*i)->long_label() << " " << (*i)->short_label() ; 
+  }
+  return o<<"\n";
+
+}
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 #endif

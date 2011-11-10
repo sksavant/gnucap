@@ -85,8 +85,8 @@ public:
 /*--------------------------------------------------------------------------*/
 // necessary?
 class NODE_BASE : public CKT_BASE {
-  private:
-    CARD_LIST* _parent;
+    const CARD_LIST* _parent;
+    const CARD* _owner;
   protected:
     explicit NODE_BASE();
     explicit NODE_BASE(const NODE_BASE& p);
@@ -96,7 +96,7 @@ class NODE_BASE : public CKT_BASE {
     //int	_matrix_number;
   public:
     explicit NODE_BASE(const NODE_BASE* p);
-    explicit NODE_BASE(const std::string& s, int n, CARD_LIST* p=0);
+    explicit NODE_BASE(const std::string& s, int n, const CARD_LIST* p=0);
     virtual ~NODE_BASE() {}
     NODE_BASE&	set_user_number(uint_t n){_user_number = n; return *this;}
   public: // virtuals
@@ -104,6 +104,8 @@ class NODE_BASE : public CKT_BASE {
     virtual double	tt_probe_num(const std::string&)const;
     virtual XPROBE	ac_probe_ext(const std::string&)const;
     const std::string  long_label()const;
+  public:
+    const CARD_LIST* scope()const{return _parent;}
 };
 /*--------------------------------------------------------------------------*/
 class NODE : public NODE_BASE {
@@ -113,7 +115,7 @@ private: // inhibited
   explicit NODE(const NODE& p);
 public:
   explicit NODE(const NODE* p); // u_nodemap.cc:49 (deep copy)
-  explicit NODE(const std::string& s, int n, CARD_LIST* p=0);
+  explicit NODE(const std::string& s, int n, const CARD_LIST* p=0);
   ~NODE() {}
 public: // raw data access (rvalues)
   uint_t	user_number()const	{return _user_number;}
@@ -352,7 +354,6 @@ public:
     if (m_() != INVALID_NODE ) {
       assert(m_() <= NODE::_sim->_total_nodes);
       assert(n_());
-      trace2("node_t::v0", n_()->m_(), m_());
       //assert(n_()->m_() == m_());
       //assert(n_()->v0() == NODE::_sim->_v0[m_()]);
       return NODE::_sim->_v0[m_()];

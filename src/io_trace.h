@@ -36,6 +36,7 @@ using namespace std;
 #undef trace5
 #undef trace6
 #undef trace7
+#undef trace8
 #undef untested
 #undef untested0
 #undef unreachable
@@ -106,6 +107,17 @@ class hp{
 		     << "  " << #y << "=" << (y)  \
 		     << "  " << #z << "=" << (z)  \
 		     << endl )
+#define trace8(s,r,t,u,v,w,x,y,z) ( \
+		cerr <<  "@#@" << s  \
+		     << "  " << #r << "=" << (r)  \
+		     << "  " << #t << "=" << (t)  \
+		     << "  " << #u << "=" << (u)  \
+		     << "  " << #v << "=" << (v)  \
+		     << "  " << #w << "=" << (w)  \
+		     << "  " << #x << "=" << (x)  \
+		     << "  " << #y << "=" << (y)  \
+		     << "  " << #z << "=" << (z)  \
+		     << endl )
 #else
 #define trace_line()
 #define trace0(s)
@@ -116,6 +128,7 @@ class hp{
 #define trace5(s,v,w,x,y,z)
 #define trace6(s,u,v,w,x,y,z)
 #define trace7(s,t,u,v,w,x,y,z)
+#define trace8(r,s,t,u,v,w,x,y,z)
 #endif
 
 #define unreachable() (fprintf(stderr, "@@#\n@@@unreachable:%s:%u:%s\n", \
