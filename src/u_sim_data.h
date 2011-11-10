@@ -42,7 +42,7 @@ struct INTERFACE SIM_DATA {
   double _dt0;
   double _time0;	/* time now */
   double _Time0;	/* Time now */
-  double _dT0;	
+  double _dT0;	        /* last step length (including transient time) */
   double _dT1;	
   double _dT2;	/* HACK? */
   double _dT3;	/* HACK? */
@@ -53,9 +53,9 @@ struct INTERFACE SIM_DATA {
   double _dTmin;	/* min internal step size */
   double _genout;	/* tr dc input to circuit (generator) */
   bool   _bypass_ok;	/* flag: ok to bypass model evaluation */
-  bool	_fulldamp; 	/* flag: big iter. jump. use full (min) damp */
+  bool   _fulldamp; 	/* flag: big iter. jump. use full (min) damp */
   double _last_time;	/* time at which "volts" is valid */
-  double _last_Time;	/* time at which "volts" is valid */
+  double _last_Time;	/* end of last accepted timeframe */
   bool _freezetime;	/* flag: don't advance stored time */
   int _iter[iCOUNT];
   int _tt_iter;

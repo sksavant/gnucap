@@ -172,9 +172,15 @@ double PROBE::probe_node(void)const
     return _sim->_temp_c;
   }else if (Umatch(_what, "gain ")) {
     return _sim->_dT0/_sim->_dTmin;
-  }else if (Umatch(_what, "ttime ")) {untested();
+  }else if (Umatch(_what, "ltt ")) {
+    return _sim->_last_Time;
+  }else if (Umatch(_what, "ttime|tt0 ")) {
     return _sim->_Time0;
-  }else if (Umatch(_what, "time ")) {untested();
+  }else if (Umatch(_what, "dtt0 ")) {
+    return _sim->_dT0;
+  }else if (Umatch(_what, "tt1 ")) {
+    return _sim->_Time0 - _sim->_dT0;
+  }else if (Umatch(_what, "time ")) {
     return _sim->_time0;
   }else if (Umatch(_what, "event ")) {
     return ((_sim->_eq.empty())? -1.: _sim->_eq.top());

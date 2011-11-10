@@ -1316,7 +1316,7 @@ double DEV_BUILT_IN_MOS::tt_probe_num(const std::string& x)const
       return NA;
   }else if (Umatch(x, "wdt ")) {
     return  a->wdT();
-  }else if (Umatch(x, "hci |dvth_hci ")) {
+  }else if (Umatch(x, "hci{_raw} |dvth_hci ")) {
     return  a->tt_probe_num(x);
   }else if (Umatch(x, "use_bti ")) {
     return  m->use_bti();
@@ -1786,7 +1786,6 @@ void DEV_BUILT_IN_MOS::stress_apply( )
   }
   m->do_stress_apply(this);
 
-    cout << "DEV_BUILT_IN_MOS::stress_apply\n";
 }
 /*-------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_accept(){

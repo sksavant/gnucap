@@ -112,7 +112,7 @@ ADP_NODE_LIST& ADP_NODE_LIST::do_forall( void (ADP_NODE::*thing)( )  )
 TIME_PAIR ADP_NODE_LIST::tt_review()
 {
 
-  incomplete();
+  //incomplete();
   trace0(("ADP_NODE_LIST::tt_review\n"));
   // put review into DEVICE?
   //
