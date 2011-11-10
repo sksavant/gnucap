@@ -5197,7 +5197,7 @@ ADP_CARD* MODEL_BUILT_IN_MOS8::new_adp( COMPONENT* c)const
 
   //attach a generic adp for MOS8 effects
   if (!use_hci()){
-    return 0;
+    return new ADP_BUILT_IN_MOS(c,"dummy");
   }
   ADP_BUILT_IN_MOS8* a = new ADP_BUILT_IN_MOS8(c,"adp");
 

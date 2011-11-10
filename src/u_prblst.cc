@@ -276,6 +276,10 @@ void PROBELIST::merge_probe( PROBE* m )
 PROBE* PROBELIST::push_new_probe(const std::string& param,const CKT_BASE* object)
 {
   trace0("PROBELIST::push_new_probe " + param + " for " + (object?object->long_label():"0"));
+  if( dynamic_cast<const NODE*>(object) ){
+    trace1("this is a node", object->long_label());
+
+  }
   if (param=="V?") {
     cerr << "warning V? not supported" << std::endl;
   }
@@ -286,8 +290,12 @@ PROBE* PROBELIST::push_new_probe(const std::string& param,const CKT_BASE* object
 /*--------------------------------------------------------------------------*/
 void PROBELIST::add_all_nodes(const std::string& what, const CARD_LIST* scope)
 {
-  for (NODE_MAP::const_iterator
-       i = scope->nodes()->begin();
+
+  string devname="";
+  if( scope->owner())
+    devname= scope->owner()->long_label();
+
+  for (NODE_MAP::const_iterator i = scope->nodes()->begin();
        //i != CARD_LIST::card_list.nodes()->end();
        i != scope->nodes()->end();
        ++i) {
