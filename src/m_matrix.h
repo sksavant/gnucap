@@ -135,6 +135,7 @@ private:
   T	_zero;		// always 0 but not const
   T	_trash;		// depository for row and col 0, write only
   T	_min_pivot;	// minimum pivot value
+  vector<set<unsigned> > _adj;
 public:
   enum REAL {_REAL};
   enum IMAG {_IMAG};
@@ -323,6 +324,9 @@ void BSMATRIX<T>::iwant(unsigned node1, unsigned node2)
   assert(_lownode);
   assert(node1 <= size());
   assert(node2 <= size());
+
+  _adj[node1].insert(node2);
+  _adj[node2].insert(node1);
 
   if (node1 <= 0  ||  node2 <= 0) {
     // node 0 is ground, and doesn't count as a connection
