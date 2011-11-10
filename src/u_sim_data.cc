@@ -177,8 +177,6 @@ void SIM_DATA::order_comp( const CARD_LIST* scope, unsigned *c, bool *d)
     d = new bool[CKT_BASE::_sim->_total_nodes+2] ;
     for(unsigned k=1; CKT_BASE::_sim->_total_nodes+2>k ;++k) d[k]=0;
 
-
-
     _nm[0]=0;
     d[0]=1;
 
@@ -189,7 +187,6 @@ void SIM_DATA::order_comp( const CARD_LIST* scope, unsigned *c, bool *d)
 
   for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
 //    trace1("SIM_DATA::order_comp " , (*i)->short_label());
-
     for (CARD_LIST::const_iterator j = scope->begin(); j != scope->end(); ++j) {
       const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*j);
       if (s) {
@@ -197,7 +194,8 @@ void SIM_DATA::order_comp( const CARD_LIST* scope, unsigned *c, bool *d)
       }
     }
 
-    for(unsigned k=0; k<(*i)->net_nodes();++k){
+    // for(unsigned k=0; k<(*i)->net_nodes();++k){
+    for(int k = (*i)->net_nodes()-1; k>=0 ;--k){
       // FIXME: use node_map()
 
       unsigned un = (*i)->n_(k).n_()->user_number();
@@ -210,6 +208,8 @@ void SIM_DATA::order_comp( const CARD_LIST* scope, unsigned *c, bool *d)
         assert(un<_total_nodes+1);
       }
     }
+
+
 
   }
 
