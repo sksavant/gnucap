@@ -195,7 +195,7 @@ void ADP_BUILT_IN_MOS8::tr_accept(){
 
 		}
 
-		_hci_tr += hcis *  _sim->_dt0  
+		_hci_tr += hcis *  _sim->_dt0  ;
 
 		//    a->hci_node->add_tr( hcis );
 
