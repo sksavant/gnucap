@@ -1,18 +1,17 @@
 #!/bin/bash
 
-usage='
-type $0 some.va to generate some.cc and some.h.
-
-to get a shared object type
+usage=' type $0 some.va to generate some.cc and some.h. \n
+\n
+to get a shared object type \n
 make some.so CPPFLAGS=`gnucap-conf --cppflags` LDFLAGS=`gnucap-conf --ldflags`
 '
 
 function check_gnucap {
-[ -n `which gnucap-conf` ] && echo "need gnucap-conf" && exit 1
+[ -z `which gnucap-conf` ] &&  echo "need gnucap-conf" && exit 1 
 }
 
 function check_adms {
-[ -n `which admsXml` ] && echo "need admsXml" && exit 1
+[ -z `which admsXml` ] &&  echo "need admsXml" && exit 1 
 }
 
 check_gnucap
@@ -22,10 +21,12 @@ case "$1" in
 		check_adms
 		admsXml `gnucap-conf --adms` $1
 
+		;;
 
 	--help|*)
 
-	echo $usage
-;;
+	echo -e $usage
+	;;
 
+	esac
 
