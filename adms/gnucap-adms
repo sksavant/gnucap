@@ -1,0 +1,31 @@
+#!/bin/bash
+
+usage='
+type $0 some.va to generate some.cc and some.h.
+
+to get a shared object type
+make some.so CPPFLAGS=`gnucap-conf --cppflags` LDFLAGS=`gnucap-conf --ldflags`
+'
+
+function check_gnucap {
+[ -n `which gnucap-conf` ] && echo "need gnucap-conf" && exit 1
+}
+
+function check_adms {
+[ -n `which admsXml` ] && echo "need admsXml" && exit 1
+}
+
+check_gnucap
+
+case "$1" in
+	*.va)
+		check_adms
+		admsXml `gnucap-conf --adms` $1
+
+
+	--help|*)
+
+	echo $usage
+;;
+
+
