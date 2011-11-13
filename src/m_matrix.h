@@ -189,10 +189,10 @@ private:
   T&	m(unsigned r, unsigned c);
   T&	s(unsigned r, unsigned c);
 public:
-  template <class X>
-  friend ostream& operator<< ( ostream &o, const BSMATRIX<X>& m);
-  template <class X>
-  friend OMSTREAM& operator<< ( OMSTREAM &o, const BSMATRIX<X>& m);
+  template <class S,class X>
+  friend S& operator<< ( S &o, const BSMATRIX<X>& m);
+//  template <class X>
+//  friend OMSTREAM& operator<< ( OMSTREAM &o, const BSMATRIX<X>& m);
   void		load_diagonal_point(int i, T value);
   void		load_point(int i, int j, T value);
   void		load_couple(int i, int j, T value);
