@@ -29,10 +29,10 @@ void rcm(){
 	assert(i == size());
 	adjx[i] = here;
 
-	rcm_perm = new int[n];
+	_rcm = new int[n+1];
+	_rcm[0] = 0;
 	int* deg = new int[n];
-
-	genrcmi(n, 0,xadj, adj, perm,mask, deg);
+	genrcmi(n, 0, xadj, adj, _rcm+1, mask, deg);
 
 	delete deg;
 	delete adjx;
