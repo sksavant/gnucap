@@ -24,6 +24,7 @@
 //testing=trivial 2006.07.17
 /* allow multiple inclusions with different DO_TRACE */
 #include <iostream>
+using namespace std;
 
 #undef trace_line
 #undef trace
@@ -35,12 +36,12 @@
 #undef trace5
 #undef trace6
 #undef trace7
+#undef trace8
 #undef untested
 #undef untested0
 #undef unreachable
 #undef incomplete
 /*--------------------------------------------------------------------------*/
-// using namespace std;
 
 #ifndef hashpointer_
 # define hashpointer_
@@ -106,6 +107,17 @@ class hp{
 		     << "  " << #y << "=" << (y)  \
 		     << "  " << #z << "=" << (z)  \
 		     << endl )
+#define trace8(s,r,t,u,v,w,x,y,z) ( \
+		cerr <<  "@#@" << s  \
+		     << "  " << #r << "=" << (r)  \
+		     << "  " << #t << "=" << (t)  \
+		     << "  " << #u << "=" << (u)  \
+		     << "  " << #v << "=" << (v)  \
+		     << "  " << #w << "=" << (w)  \
+		     << "  " << #x << "=" << (x)  \
+		     << "  " << #y << "=" << (y)  \
+		     << "  " << #z << "=" << (z)  \
+		     << endl )
 #else
 #define trace_line()
 #define trace0(s)
@@ -116,6 +128,7 @@ class hp{
 #define trace5(s,v,w,x,y,z)
 #define trace6(s,u,v,w,x,y,z)
 #define trace7(s,t,u,v,w,x,y,z)
+#define trace8(r,s,t,u,v,w,x,y,z)
 #endif
 
 #define unreachable() (fprintf(stderr, "@@#\n@@@unreachable:%s:%u:%s\n", \
@@ -152,5 +165,8 @@ class hp{
 #else
 #define itested()
 #endif
+
+
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

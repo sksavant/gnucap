@@ -5,6 +5,6 @@
 - some bug with store_results not in time (cap) (fixed?)
 - bug with wildcard probes like wDt(B1*)
 - store tran x AND print tran x x crashes
-
-
 - adms: MIN_NET_NODES is 0.
+- some inconsistency about internal device vs internal subckt node in prblist
+- probe bug found in ddc. R(R1) or something (garbage coll)

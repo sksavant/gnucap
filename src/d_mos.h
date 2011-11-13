@@ -174,9 +174,9 @@ protected:
   virtual double    tr_probe_num(const std::string&)const;
   virtual double    tt_probe_num(const std::string&)const;
 
-  void    ac_begin(){assert(false);}          //BASE_SUBCKT
-  void    do_ac(){assert( false);}             //BASE_SUBCKT
-  void    ac_load(){assert(false);}           //BASE_SUBCKT
+//  void    ac_begin(){}          //BASE_SUBCKT
+//  void    do_ac(){}             //BASE_SUBCKT
+//  void    ac_load(){}           //BASE_SUBCKT
   //XPROBE  ac_probe_ext(CS&)const;//CKT_BASE/nothing
 public:
   static int  count() {return _count;}
@@ -279,9 +279,10 @@ private: // node list
     return names[i];
   }
 private:
-  void tr_stress( );
+  void tt_begin( );
+  void tr_stress( );    // called by tr_accept
   void stress_apply();
-  void tt_prepare( ); //NOT const
+  void tt_prepare( ){unreachable();}
   void tt_next( ); //NOT const?
 public:
   virtual void tt_commit( ); //NOT const
@@ -319,6 +320,7 @@ private:
 public:
   virtual void tt_accept();
   virtual void tt_commit();
+  virtual void tr_stress_last();
   double vthscale_bti ; //  exp ( 10000. * a->hci_stress->get() / c->w_in );
   double vthdelta_bti ;
   double eff(){return bti_eff_voltage;}

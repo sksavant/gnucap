@@ -428,7 +428,7 @@ AC_MSG_RESULT([
    modules:    $enable_modules
    admst:      $enable_adms
    shared:     $shared
-	doc:     $enable_doc
+   doc:        $enable_doc
 
 ])
 

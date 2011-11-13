@@ -14,7 +14,7 @@ using namespace std;
 //}
 
 template <class T, class S>
-inline S& operator<<( S& o, const BSMATRIX<T> &m)
+inline S operator<<( S o, const BSMATRIX<T> &m)
 {
   unsigned size=m.size();
   unsigned i,j;
@@ -30,7 +30,7 @@ inline S& operator<<( S& o, const BSMATRIX<T> &m)
   return o;
 }
 
-#if 1 // why is this needed??
+#if 1 // why are these needed??
 
 template <class T>
 inline OMSTREAM& operator<<( OMSTREAM& o, const BSMATRIX<T> &m)

@@ -42,16 +42,19 @@ enum SIM_MODE { // simulation types
   s_DC,  	/* dc sweep command				*/
   s_TRAN,	/* transient command				*/
   s_TTT,	/* two time transient command			*/
-  s_FOURIER	/* fourier command				*/
+  s_FOURIER,	/* fourier command				*/
+  s_DDC,  	/* dynamic dc command				*/
+  s_SOCK  	/* socket remote control			*/
 };
 const int sSTART = s_NONE;
 const int sCOUNT = s_FOURIER + 1;
 const std::string SIM_MODE_label[] = {"ALL", "AC", "OP", "DC", "TRAN", "TTT",
-  "FOURIER"};
-inline OMSTREAM& operator<<(OMSTREAM& o, SIM_MODE t) {
-  trace0( "mode stream" );
+  "FOURIER", "DDC", "SOCK"};
+
+template<class T>
+inline T& operator<<(T& o, SIM_MODE t) {
   assert(t >= int(s_NONE));
-  assert(t <= int(s_FOURIER));
+  assert(t <= int(s_SOCK));
   return (o << SIM_MODE_label[t]);
 }
 
@@ -60,10 +63,18 @@ enum SIM_PHASE { // which of the many steps...
   p_INIT_DC,	/* initial DC analysis				*/
   p_DC_SWEEP,	/* DC analysis sweep, in progress		*/
   p_TRAN, 	/* transient, in progress			*/
+  p_AC, 	/* plain AC analysis    			*/
   p_RESTORE	/* transient restore after stop			*/
 };
-const std::string SIM_PHASE_label[] = {"NONE", "INIT_DC", "DC_SWEEP", "TRAN",
-  "RESTORE"};
+const std::string SIM_PHASE_label[] = {"NONE", "INIT_DC", "DC_SWEEP", "TRAN", 
+  "AC", "RESTORE"};
+
+template<class T>
+inline T& operator<<(T& o, SIM_PHASE t) {
+  assert(t >= int(p_NONE));
+  assert(t <= int(p_RESTORE));
+  return (o << SIM_PHASE_label[t]);
+}
 
 
 enum PROBE_INDEX { // iter probes (continue after SIM_MODE)

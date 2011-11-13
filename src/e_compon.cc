@@ -28,6 +28,9 @@
 #include "e_model.h"
 #include "e_elemnt.h"
 #include "io_trace.h"
+
+#include <typeinfo>
+
 /*--------------------------------------------------------------------------*/
 COMMON_COMPONENT::COMMON_COMPONENT(const COMMON_COMPONENT& p)
   :_tnom_c(p._tnom_c),
@@ -321,6 +324,9 @@ void COMMON_COMPONENT::tr_eval(ELEMENT*x)const
 {
   untested0( x->short_label().c_str()); // bug?
   assert(_model);
+
+  //printf("typeid(_model): %s", typeid(_model).name());
+
   _model->tr_eval(x);
 }
 /*--------------------------------------------------------------------------*/
@@ -487,10 +493,29 @@ void COMPONENT::set_port_by_name(std::string& int_name, std::string& ext_name)
   throw Exception_No_Match(int_name);
 }
 /*--------------------------------------------------------------------------*/
+#ifdef DO_TRACE
+#include "e_cardlist.h"
+#include "e_node.h"
+#include "u_nodemap.h"
+class NODE;
+class NODE_MAP;
+inline void trace_nodenames(const CARD_LIST* scope){
+  trace0("CARD_LIST tracing nodenames");
+  NODE_MAP* nm = scope->nodes();
+  for (NODE_MAP::const_iterator ni = nm->begin(); ni != nm->end(); ++ni) {
+    NODE* n = (*ni).second;
+    string label = (*ni).first;
+    trace2("CARD_LIST:... nodename ", label, n->user_number() );
+  }
+}
+#else
+inline void trace_nodenames(const CARD_LIST*){}
+#endif
+/*--------------------------------------------------------------------------*/
 void COMPONENT::set_port_by_index(uint_t num, std::string& ext_name)
 {
   if (num <= max_nodes()) {
-    trace0("COMPONENT::set_port_by_index " + short_label() + " " + ext_name);
+    trace3("COMPONENT::set_port_by_index " , short_label()  , ext_name, num);
     _n[num].new_node(ext_name, this);
     if (num+1 > _net_nodes) {
       // make the list bigger
@@ -501,6 +526,7 @@ void COMPONENT::set_port_by_index(uint_t num, std::string& ext_name)
   }else{untested();
     throw Exception_Too_Many(num, max_nodes(), 0/*offset*/);
   }
+  trace_nodenames(scope());
 }
 /*--------------------------------------------------------------------------*/
 void COMPONENT::set_port_to_ground(uint_t num)
@@ -632,17 +658,26 @@ void COMPONENT::precalc_last()
 void COMPONENT::map_nodes()
 {
   assert(is_device());
+  trace3("COMPONENT::map_nodes", long_label(), net_nodes(), max_nodes());
   //assert(min_nodes() <= net_nodes());
   if(net_nodes() > max_nodes()){
-    trace2("COMPONENT::map_nodes", net_nodes(), max_nodes());
+    trace3("COMPONENT::map_nodes", long_label(), net_nodes(), max_nodes());
   }
   assert(net_nodes() <= max_nodes());
   //assert(ext_nodes() + int_nodes() == matrix_nodes());
 
   for (uint_t ii = 0; ii < ext_nodes()+int_nodes(); ++ii) {
-    trace2("COMPONENT::map_nodes", ext_nodes()+int_nodes(), ii);
+    unsigned oldm = _n[ii].m_();
     _n[ii].map();
-    trace2("COMPONENT::map_nodes", ext_nodes()+int_nodes(), _n[ii].m_());
+    unsigned user_number = (_n[ii].n_())? _n[ii].n_()->user_number(): 0;
+    unsigned matrix_number = (_n[ii].n_())? _n[ii].n_()->matrix_number(): 0;
+    string node_label = (_n[ii].n_())? _n[ii].n_()->long_label(): "";
+    // matrix_number not initialized yet.
+    trace7("COMPONENT::map_nodes", long_label(), ii, oldm, _n[ii].m_(), user_number, matrix_number, node_label);
+    trace1("COMPONENT::map_nodes",  _n[ii].t_() );
+    oldm = 0;
+    user_number = matrix_number = 0;
+    node_label="";
   }
 
   if (subckt()) {

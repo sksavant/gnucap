@@ -122,7 +122,7 @@ e_homebrew.cc \
 e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc e_adplist.cc\
 bm_value.cc bm.cc \
 c__cmd.cc c_attach.cc c_file.cc c_genrat.cc c_debug.cc \
-findbr.cc plot.cc globals.cc e_adp.cc
+findbr.cc plot.cc globals.cc e_adp.cc e_adp_mos.cc
 #------------------------------------------------------------------------
 RAW_HDRS = \
 md.h ap.h mode.h constant.h declare.h patchlev.h \
@@ -148,7 +148,8 @@ RAW_HDRS += d_vvp.h d_ivl.h e_ivl_compile.h d_ivl_ports.h
 endif
 
 if ADMS
-RAW_SRCS += d_hicum0.cc d_ota_simpl.cc d_ota_medium.cc
+ADMS_SRCS = e_adms.cc d_hicum0.cc d_ota_simpl.cc d_ota_medium.cc d_opamp.cc
+RAW_SRCS += $(ADMS_SRCS)
 endif
 #------------------------------------------------------------------------ 
 ## The modelgen generated files
@@ -225,13 +226,25 @@ IVL=`which iverilog` -v
 
 # if adms ...
 ADMS_GC_XML=../adms/gnucap.xml
+ADMS_HTM_XML=../adms/admst_htm.xml
 
 %.cc : %.va $(ADMS_GC_XML)
 	admsXml $< -e $(ADMS_GC_XML) -o $*
 
+#move to ../doc?
+%.htm : %.va $(ADMS_HTM_XML)
+	admsXml $< -e $(ADMS_HTM_XML) -o $@
+
 %.h : %.model ${MODELGEN}${EXEEXT}
 	${MODELGEN} -h $<
 
+if ADMS
+$(ADMS_SRCS): $(ADMS_GC_XML)
+
+$(ADMS_GC_XML):
+	make -C ../adms
+
+endif
 
 d_vvp.lo extlib.lo: CPPFLAGS+= @IVERILOG_INCLUDE@
 

@@ -575,6 +575,7 @@ MODEL_SUBCKT* LANG_SPICE_BASE::parse_module(CS& cmd, MODEL_SUBCKT* x)
 
   // body
   parse_module_body(cmd, x, x->subckt(), name() + "-subckt>", NO_EXIT_ON_BLANK, ".ends |.eom ");
+  trace0("LANG_SPICE_BASE::parse_module done " );
   return x;
 }
 /*--------------------------------------------------------------------------*/
@@ -589,7 +590,7 @@ void LANG_SPICE_BASE::parse_module_body(CS& cmd, MODEL_SUBCKT* x, CARD_LIST* Sco
 	  || cmd.umatch(exit_key)) {
 	break;
       }else{
-        trace0("LANG_SPICE_BASE::parse_module_body " + cmd.fullstring());
+        trace2("LANG_SPICE_BASE::parse_module_body ", cmd.fullstring(), OPT::language);
 	skip_pre_stuff(cmd);
 	new__instance(cmd, x, Scope);
       }

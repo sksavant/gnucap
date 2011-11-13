@@ -85,8 +85,8 @@ public:
 /*--------------------------------------------------------------------------*/
 // necessary?
 class NODE_BASE : public CKT_BASE {
-  private:
-    CARD_LIST* _parent;
+    const CARD_LIST* _parent;
+    const CARD* _owner;
   protected:
     explicit NODE_BASE();
     explicit NODE_BASE(const NODE_BASE& p);
@@ -96,7 +96,7 @@ class NODE_BASE : public CKT_BASE {
     //int	_matrix_number;
   public:
     explicit NODE_BASE(const NODE_BASE* p);
-    explicit NODE_BASE(const std::string& s, int n, CARD_LIST* p=0);
+    explicit NODE_BASE(const std::string& s, int n, const CARD_LIST* p=0);
     virtual ~NODE_BASE() {}
     NODE_BASE&	set_user_number(uint_t n){_user_number = n; return *this;}
   public: // virtuals
@@ -104,6 +104,8 @@ class NODE_BASE : public CKT_BASE {
     virtual double	tt_probe_num(const std::string&)const;
     virtual XPROBE	ac_probe_ext(const std::string&)const;
     const std::string  long_label()const;
+  public:
+    const CARD_LIST* scope()const{return _parent;}
 };
 /*--------------------------------------------------------------------------*/
 class NODE : public NODE_BASE {
@@ -113,7 +115,7 @@ private: // inhibited
   explicit NODE(const NODE& p);
 public:
   explicit NODE(const NODE* p); // u_nodemap.cc:49 (deep copy)
-  explicit NODE(const std::string& s, int n, CARD_LIST* p=0);
+  explicit NODE(const std::string& s, int n, const CARD_LIST* p=0);
   ~NODE() {}
 public: // raw data access (rvalues)
   uint_t	user_number()const	{return _user_number;}
@@ -121,6 +123,10 @@ public: // raw data access (rvalues)
   //int	flat_number()const	{itested();return _flat_number;}
 public: // simple calculated data access (rvalues)
   uint_t	matrix_number()const	{return _sim->_nm[_user_number];}
+  // better?
+  // uint_t	matrix_number()const	{return _matrix_number;}
+  // or
+  // uint_t	matrix_number()const	{return _subckt->_nm[_user_number];}
   uint_t	m_()const		{return matrix_number();}
 public: // maniputation
   //NODE& set_flat_number(int n) {itested();_flat_number = n; return *this;}
@@ -283,13 +289,13 @@ private:
 
 private:
   NODE* _nnn;
-  int _ttt;		// m == nm[t] if properly set up
+  unsigned _ttt;	// m == nm[_ttt] if properly set up
   int _m;		// mapped, after reordering
 
 public:
   uint_t	      m_()const	{return _m;}
 
-  int	      t_()const {
+  uint_t	      t_()const {
     //assert(_nnn);
     //assert(_ttt == _nnn->flat_number());
     return _ttt;
@@ -307,7 +313,9 @@ public:
   const std::string  short_label()const {return ((n_()) ? (n_()->short_label()) : "?????");}
   void	set_to_ground(CARD*);
   void	new_node(const std::string&, const CARD*);
+  void	new_node(const std::string&, const CARD_LIST*);
   void	new_model_node(const std::string& n, CARD* d);
+  void	new_sckt_node(const std::string& n, const CARD_LIST* d);
   void	map_subckt_node(uint_t* map_array, const CARD* d);
   void	hack_subckt_node(NODE*, int );
   bool	is_grounded()const {return (e_() == 0);}
@@ -316,7 +324,7 @@ public:
   node_t&     map() {
     if (t_() != INVALID_NODE) {
       assert(_nnn);
-      _m=to_internal(t_());
+      _m = to_internal(t_());
     }else{
       assert(_m == INVALID_NODE);
     }
@@ -378,7 +386,8 @@ public:
   // ??
   COMPLEX&    iac() {itested();
     assert(n_());
-    assert(n_()->m_() == m_());
+    trace2("node_t::iac", n_()->m_(), m_());
+    // assert(n_()->m_() == m_()); why not??
     // assert(n_()->iac() == NODE::_ac[m_()]);
     //return n_()->iac();
     return NODE::_sim->_ac[m_()];

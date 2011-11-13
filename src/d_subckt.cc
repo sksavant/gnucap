@@ -33,6 +33,8 @@
  */
 //testing=script 2006.07.17
 #include "d_subckt.h"
+#include "u_nodemap.h"
+#include "io_node.h"
 /*--------------------------------------------------------------------------*/
 int DEV_SUBCKT::_count = -1;
 int COMMON_SUBCKT::_count = -1;
@@ -168,6 +170,7 @@ DEV_SUBCKT::DEV_SUBCKT(const DEV_SUBCKT& p)
 /*--------------------------------------------------------------------------*/
 void DEV_SUBCKT::expand()
 {
+  trace1("DEV_SUBCKT::expand", long_label());
   BASE_SUBCKT::expand();
   COMMON_SUBCKT* c = prechecked_cast<COMMON_SUBCKT*>(mutable_common());
   assert(c);
@@ -181,6 +184,8 @@ void DEV_SUBCKT::expand()
   }else{
     assert(model && model == _parent);
   }
+
+  uint_t num_nodes_in_subckt = model->subckt()->nodes()->how_many();
   
   //assert(!c->_params._try_again);
   assert(model->subckt());
@@ -189,9 +194,49 @@ void DEV_SUBCKT::expand()
   assert(pl);
   c->_params.set_try_again(pl);
   assert(c->_params._try_again);
+
+
+
   renew_subckt(model, this, scope(), &(c->_params));
+
+  trace1("DEV_SUBCKT::expand renew done", *(subckt()->nodes()));
+
+  assert(scope());
+  for (unsigned i=model->net_nodes() + 1; i <= num_nodes_in_subckt; ++i) {
+    // these are the internal nodes.
+    string label= (*(model->subckt()->nodes())) [i] ;
+  //  trace3("adding internal node", label, long_label(),_sim->_total_nodes);
+    //_n[i].new_sckt_node( label, subckt()); /// BUG? increases total_nodes
+    trace3("DEV_SUBCKT::expand internal node", label, long_label(),_sim->_total_nodes);
+  }
+
+
   subckt()->expand();
+  trace1("DEV_SUBCKT::expand sckt expand done", *(subckt()->nodes()));
 //  subckt()->set_(model);
+  trace1("",model->subckt());
+// map nodes done. .. //////////////////////////////
+  for (unsigned i=model->net_nodes() + 1; i <= num_nodes_in_subckt; ++i) {
+    // these are the internal nodes.
+    string label= (*(model->subckt()->nodes())) [i] ;
+ //   _n[i].new_sckt_node( label, subckt());
+    trace3("DEV_SUBCKT::expand internal node 2", label, long_label(),_sim->_total_nodes);
+  }
+
+  for (unsigned i=model->net_nodes() ; i < num_nodes_in_subckt; ++i) {
+
+    string label= (*(model->subckt()->nodes())) [i] ;
+
+    trace4("DEV_SUBCKT::expand internal node", i, label, long_label(),  _n[i].t_());
+    assert(_n[i].n_());
+    trace1("DEV_SUBCKT::expand internal node",  _n[i].n_()->user_number());
+    _n[i].n_()->set_user_number( _n[i].t_());
+
+  }
+  ////////////////////////////
+
+  /// hack
+  trace3("expand done. my nodes", long_label(), hp(subckt()->nodes()), *(subckt()->nodes()));
 }
 /*--------------------------------------------------------------------------*/
 void DEV_SUBCKT::precalc_first()
@@ -253,3 +298,4 @@ double DEV_SUBCKT::tr_probe_num(const std::string& x)const
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+// vim:ts=8:sw=2:et:

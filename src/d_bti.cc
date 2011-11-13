@@ -85,7 +85,8 @@ MODEL_BUILT_IN_BTI::MODEL_BUILT_IN_BTI(const MODEL_BUILT_IN_BTI& p)
 {
   if (ENV::run_mode != rPRE_MAIN) {
     ++_count;
-  }else{untested();//194
+  }else{
+    untested();//194
   }
 }
 /*--------------------------------------------------------------------------*/

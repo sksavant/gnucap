@@ -36,6 +36,9 @@
 #include "e_adplist.h"
 #include "globals.h"
 /*--------------------------------------------------------------------------*/
+// needed by stoarage and ADMS_BASE
+enum METHOD {mTRAPGEAR, mEULER, mTRAP, mGEAR, mTRAPEULER};
+/*--------------------------------------------------------------------------*/
 // this file
 class COMMON_COMPONENT;
 class COMPONENT;
@@ -242,8 +245,7 @@ public:	// state, aux data
   }
   void	mark_always_q_for_eval() {_q_for_eval = INT_MAX;}
   void	q_eval();
-  void	q_load()		 { trace0(("q_load: "+ short_label()).c_str() );
-                                   _sim->_loadq.push_back(this);}
+  void	q_load()		 {_sim->_loadq.push_back(this);}
   void	q_accept()		 {_sim->_acceptq.push_back(this);}
   void	q_tt_accept()		 {_sim->_tt_acceptq.push_back(this);}
   //--------------------------------------------------------------------
@@ -325,8 +327,6 @@ public:	// obsolete -- do not use in new code
 public:
   ADP_CARD* adp()const {return(_adp);}
   void attach_adp(ADP_CARD* a);
-  virtual void tt_prepare();
-  virtual void tt_next() {  }
 protected:
   double  _tr_amps_diff_cur;
   double  _tr_amps_diff_max;
@@ -337,7 +337,6 @@ protected:
 
   void tt_behaviour_update();
   void tr_behaviour(){ tt_behaviour_update(); }
-  virtual void tt_begin() {  }
 
   virtual void tt_init_i(){
           std::cerr << short_label() << " COMP:init_i have " << net_nodes() <<
@@ -366,12 +365,15 @@ protected:
 
 private:
   ADP_CARD* _adp;
-public:
+public: // twotime interface.
+  virtual void tt_begin() {  }
+  virtual void tt_prepare();
+  virtual void tt_next() {  }
   virtual void stress_apply() { }
   virtual void  tr_stress()  {
     trace0 ( ( "COMP device " + short_label() + ": no stress" ).c_str() );
   } // calcul
-  virtual void  tr_stress_last()    { trace0("COMPONENT::tr_stress_last");}
+  virtual void  tr_stress_last()    { trace1("COMPONENT::tr_stress_last", long_label());}
   virtual double tr_amps_diff()const {return 0.;}
   virtual double tr_amps_diff_cur()const {return 0.;}
   virtual bool	has_stress()const	{untested(); return false;}
