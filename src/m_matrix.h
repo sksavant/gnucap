@@ -168,6 +168,10 @@ public:
   T* row(T*, unsigned);
   T* col(T*, unsigned);
   void		iwant(unsigned, unsigned);
+private:
+  int* _rcm;
+  void rcm(); // used by allocate.
+pubnlic:
   void		unallocate();
   void		allocate();
   void		reallocate()		{unallocate(); allocate();}
