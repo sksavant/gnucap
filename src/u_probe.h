@@ -79,7 +79,8 @@ class INTERFACE PROBE {
     PROBE(){_brh=0;_next=0;itested();};
     explicit  PROBE(const std::string& what, const CKT_BASE *brh);
     PROBE(const PROBE& p);
-    ~PROBE(){
+    virtual ~PROBE(){
+      trace1("deleting probe",label());
       detach();
     }
 
@@ -150,6 +151,7 @@ class MATH_PROBE : public PROBE {
     MATH_OP type()const{return(_type);}
     MATH_PROBE&    operator=(const MATH_PROBE& p);
     void	   set_arg( PROBE*  );//	{ assert(this); _arg=n;}
+    ~MATH_PROBE();
   private:
     MATH_OP _type;
     unsigned _arity;

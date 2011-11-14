@@ -43,7 +43,7 @@ PROBE::PROBE(const std::string& what,const CKT_BASE *brh)
 {
   if (_brh) {
     _brh->inc_probes();
-    trace1( ( "PROBE::PROBE ++probe: " + _what +_override_label).c_str(),  _brh->probes());
+    trace3(  "PROBE::PROBE copy ++probe: 1 " , _what ,  _brh->probes(), label() );
   }else{
   }
 }
@@ -60,7 +60,7 @@ PROBE::PROBE(const PROBE& p)
 {
   if (_brh) {
     _brh->inc_probes();
-    trace1( ( "PROBE::PROBE copy ++probe: " + _what +_override_label ).c_str(),  _brh->probes());
+    trace3(  "PROBE::PROBE copy ++probe: 2 " , _what ,  _brh->probes(), label() );
   }else{
   }
 }
@@ -95,8 +95,8 @@ PROBE& PROBE::operator=(const PROBE& p)
 void PROBE::detach()
 {
   if (_brh) {
-    _brh->dec_probes();
     trace1( ( "PROBE::detach --probe: " + label() ).c_str(),  _brh->probes());
+    _brh->dec_probes();
   }else{
     // could be measurement or probe(0) or something.
     //untested();
@@ -190,10 +190,29 @@ double PROBE::probe_node(void)const
   }
 }
 /*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+MATH_PROBE::~MATH_PROBE(){
+  trace1("MATH_PROBE::~MATH_PROBE", label());
+
+  PROBE*  token=arg();
+
+  while( token){
+    PROBE* nt=token->next();
+    trace1("MATH_PROBE::~MATH_PROBE deleting", token->label());
+
+    // delete token;
+
+    token=nt;
+  }
+
+}
+/*--------------------------------------------------------------------------*/
 void MATH_PROBE::push(PROBE* p)
 {
   trace1("probe::push", p->label());
-  PROBE* newp = p->clone();
+//  PROBE* newp = p->clone();
+  //
+  PROBE* newp = p;
   assert(p!=NULL);
   newp->set_next(arg());
   set_arg(newp);

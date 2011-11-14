@@ -99,7 +99,13 @@ inline void DEV_BVS::ac_load()
 
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BVS::expand(){
+void DEV_BVS::expand()
+{
+    trace1("DEV_BVS::expand ", long_label() );
+    if (!subckt()) {
+            new_subckt();
+    }else{
+    }
 
     if (!(_n[BR].n_())) {
         _n[BR].new_model_node( long_label() + ".br", this);
