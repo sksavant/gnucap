@@ -1096,6 +1096,7 @@ void SOCK::verainit(){
 
 /*-------------------------------------------------------------*/
 void SOCK::veraop(){
+  trace1("SOCK::veraop",n_vars);
   total = n_vars;
   assert(3*BUFSIZE*BUFSIZE >= total);
 
