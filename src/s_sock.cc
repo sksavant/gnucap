@@ -412,10 +412,51 @@ void SOCK::sweep()
 {
   // later... FIXME
   //
-  assert(false);
+  frame_number=0;
+  n_bytes = 0;
+  x_schaetz = new double[BUFSIZE];
+  q_punkt = new double[BUFSIZE];
+  G = new double[BUFSIZE*BUFSIZE];
+  C = new double[BUFSIZE*BUFSIZE];
+  trace1("SOCK::do_it", _port);
+
+  if (_client_mode){
+    socket = new ClientSocket(Socket::TCP, _port, _host);
+    trace1("connected to "+ _host, _port );
+    stream = *socket;
+
+  } else {
+    stringstream p(_port);
+    uint16_t _port_;
+    p>>_port_;
+    socket = new ServerSocket(Socket::TCP, _port_, _port_range);
+    ServerSocket* sock=prechecked_cast<ServerSocket*>(socket);
+
+    trace0("SOCK::do_it waiting");
+    stream = sock->listen();
+  }
+  trace0("SOCK::do_it have stream");
+    
+  if(!socket){
+    ::error(bDANGER,"Error, cannot create Socket\n");
+    throw Exception("foo");
+  }
+
+  /* Wiederverwendung der lokalen Adresse erlauben */
+//  if (setsockopt(channel, SOL_SOCKET, SO_REUSEADDR, (void *) &reuseaddr, 
+//		 sizeof(reuseaddr)) == -1)
+//  {
+//    printf("Error, cannot set Socketoptions\n");
+//    exit(1);
+//  }
+
+  //setup(Cmd);
+  main_loop();
+  // what am i doing here??
+  return ;
 }
 /*--------------------------------------------------------------------------*/
-void SOCK::sweep_recursive(int Nest)
+void SOCK::sweep_recursive(int )
 {
   assert(false);
 }
@@ -881,7 +922,9 @@ void SOCK::verakons() {
   for (unsigned i=1; i <= n_vars; i++)
   {
     stream >> _sim->_vdc[i];
+    trace2("verakons start ", i,  _sim->_v0[i] );
   }
+  _sim->keep_voltages(); // v0->vdc
 
   error = 0; /* verakons(Dwork, x_new, q_dot, G, C); */
   //	n_vars = A->n_var;
@@ -890,11 +933,12 @@ void SOCK::verakons() {
   // Es wird davon ausgegangen, das dc_werteA noch stimmt
   //
 
-  trace1("SOCK::verakons",_caplist.size());
   for( unsigned i = 0; i < _caplist.size(); i++)
   {
     _caplist[i]->keep_ic(); // latch voltage applied to _v0
-    _caplist[i]->set_constant(false);		// so it will be updated
+    trace2("SOCK::verakons",_caplist[i]->long_label(), _caplist[i]->tr_involts() );
+    _caplist[i]->set_constant(true);
+    _caplist[i]->q_eval();		// so it will be updated
   }
   //
   //================do_dc========
@@ -907,7 +951,7 @@ void SOCK::verakons() {
 
   trace2("SOCK::verakons, hot", _sim->_phase, _sim->_more_uic);
   if(_dump_matrix) { // Damit man mal was sieht L.H.
-    _trace=tVERBOSE;
+    //_trace=tVERBOSE; // use trace=v
   }
   head(0,0," ");
   CARD_LIST::card_list.tr_begin();
