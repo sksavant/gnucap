@@ -42,11 +42,11 @@ protected:
 	  COMPONENT::tr_save_amps(n);
   }
 protected: // override virtual
-	virtual double* tr_ampsp(){ 
-	  std::cerr << "BASE_SUBCKT::tr_ampsp " << short_label() << "\n";
-	
-	  return NULL;
-	};
+  virtual double* tr_ampsp(){ 
+    std::cerr << "BASE_SUBCKT::tr_ampsp " << short_label() << "\n";
+
+    return NULL;
+  };
 
   //char  id_letter()const		//CARD/null
   std::string dev_type()const {assert(common()); return common()->modelname();}
@@ -62,7 +62,7 @@ protected: // override virtual
   //void  precalc_last()	{assert(subckt()); subckt()->precalc();}
   //void  map_nodes();
   void	  tr_begin()	{assert(subckt()); subckt()->tr_begin();}
-  void	tr_stress()
+  void    tr_stress()
          { assert(subckt()); subckt()->do_forall( &CARD::tr_stress ); }
   virtual void	tr_stress_last()
          { assert(subckt()); subckt()->do_forall( &CARD::tr_stress_last ); }
@@ -108,3 +108,4 @@ protected: // override virtual
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 #endif
+// vim:ts=8:sw=2:et:

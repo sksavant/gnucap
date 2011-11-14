@@ -29,6 +29,7 @@
 #include "c_comand.h"
 #include "globals.h"
 #include "e_node.h"
+#include "d_subckt.h"
 #include "e_subckt.h"
 #include "u_nodemap.h"
 #include "io_matrix.h"
@@ -266,19 +267,25 @@ void CMD_NL::print( OMSTREAM _out, const CARD_LIST* scope){
   for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
     if (i->first != "0") {
       stringstream s;
-      s << setw(8) << i->second->long_label() << " , matrix_number " 
+      _out << "|";
+      s << setw(8) << i->second->long_label();
+      _out << s.str();
+      
+      _out << " , matrix_number " 
         << i->second->matrix_number() << " (" <<  i->second->m_() << 
         "), user_number " << i->second->user_number() << " nm[t] " <<
         " vdc " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
-      _out << s.str();
     }else{
       // _out << "Zero Node  "  << "\n";
     }
   }
 
   for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
-    const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i);
-    if (s) {
+    const MODEL_SUBCKT* m = dynamic_cast<const MODEL_SUBCKT*>(*i);
+    const COMPONENT* s = dynamic_cast<const COMPONENT*>(*i);
+    //const CARD* s=*i;
+    if (!m && s)
+    if (s->subckt()) {
       _out << "-" << s->long_label() <<"\n";
       print(_out,s->subckt());
     }

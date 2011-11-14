@@ -28,6 +28,7 @@
 #include "e_elemnt.h"
 #include "e_storag.h"
 #include "e_subckt.h"
+#include "d_subckt.h"
 #include "u_sock.h"
 #include "s_ddc.h"
 #include "io_error.h"
@@ -130,9 +131,9 @@ private: //vera stuff.
   void verainit();
   void verakons();
   void veraop();
-  void verainit_send();
-  void verakons_send();
-  void veraop_send();
+  void verainit_reply();
+  void verakons_reply();
+  void veraop_reply();
 
   char* var_names_buf;
 
@@ -767,7 +768,11 @@ void SOCK::fillnames( const CARD_LIST* scope){
 
   //for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
   for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
-    if (   const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i) )
+    const MODEL_SUBCKT* m = dynamic_cast<const MODEL_SUBCKT*>(*i);
+    const COMPONENT* s = dynamic_cast<const COMPONENT*>(*i);
+    //const CARD* s=*i;
+    if (!m && s)
+    if ( s->subckt() )
     {
       fillnames( s->subckt() );
     }
@@ -1005,16 +1010,16 @@ void SOCK::main_loop(){
       case '3': // 51
         if(init_done) throw Exception("init twice??");
         verainit();
-        verainit_send();
+        verainit_reply();
         init_done=true;
         break;
       case '4':  // 52
         veraop();
-        veraop_send();
+        veraop_reply();
         break;
       case '5':  // 53
         verakons();
-        verakons_send();
+        verakons_reply();
         break;
 
       default:
@@ -1055,16 +1060,17 @@ void SOCK::verainit(){
   {
     stream >> input_namen[i] >> 7;
     if(input_namen[i] == '\t'){
-      input_namen[i]=0;
-      input_names[n++]=string(input_namen+here);
+      input_namen[i] = 0;
+      trace1("input_namen", string(input_namen+here));
+      input_names[n++] = string(input_namen+here);
       here = i;
-      trace0(input_names[n-1]);
 
       trace1("looking out for", input_names[n-1]);
       CARD_LIST::fat_iterator ci = findbranch(input_names[n-1], &CARD_LIST::card_list);
       if (ci.is_end()){
         throw Exception("cannot find voltage source \"" +  input_names[n-1] +"\", giving up");
       }
+      trace0("found input device");
       input_devs[n-1] = (*ci);
       assert(input_devs[n-1]);
     }
@@ -1119,12 +1125,14 @@ void SOCK::veraop(){
   _sim->_bypass_ok = false;
   _sim->set_inc_mode_bad();
   OPT::ITL itl = OPT::DCBIAS;
+  _sim->_phase = p_INIT_DC;
 
-  trace0("SOCK::veraop homotopy");
+  trace1("SOCK::veraop homotopy", _sim->_phase);
   if(_dump_matrix) {
     _trace=tVERBOSE;
   }
   CARD_LIST::card_list.tr_begin();  // hier muesste eigentlich eine dc hin.
+  head(0,0," ");
   try{
     solve_with_homotopy(itl,_trace);
   }catch( Exception e) {
@@ -1198,11 +1206,13 @@ void SOCK::verakons() {
 
   OPT::ITL itl = OPT::DCBIAS;
 
-  trace0("SOCK::verakons, hot");
+  trace1("SOCK::verakons, hot", _sim->_phase);
   if(_dump_matrix) { // Damit man mal was sieht L.H.
     _trace=tVERBOSE;
   }
+  head(0,0," ");
   CARD_LIST::card_list.tr_begin();
+
   try{
     solve_with_homotopy(itl,_trace);
   }catch( Exception e) {
@@ -1216,7 +1226,7 @@ void SOCK::verakons() {
   _sim->keep_voltages();
 }
 /*-==========================================================*/
-void SOCK::verakons_send()
+void SOCK::verakons_reply()
 {
   stream << ((uint16_t)error); stream.pad(6);
   for (unsigned i=1; i <= n_vars; i++)  
@@ -1248,7 +1258,7 @@ void SOCK::verakons_send()
   for (unsigned i=1; i <= n_vars; i++)         /* Q-Punkt == I == RS */
   {
     //buffer[i+n_vars+1].double_val = q_punkt[i];
-    trace1("SOCK::verakons_send  dqdt", _sim->_i[i]);
+    trace1("SOCK::verakons_reply  dqdt", _sim->_i[i]);
     stream << -_sim->_i[i];
   }
 
@@ -1279,18 +1289,19 @@ void SOCK::verakons_send()
 
 }
 /*--------------------------------------------*/
-void SOCK::verainit_send()
+void SOCK::verainit_reply()
 {
   stream << error;   stream.pad(6);
   stream << int32_t (n_vars);  stream.pad(4);
   stream << int32_t (var_namen_total_size);  stream.pad(4);     /* Laenge des Namen Feldes */
 
-  trace4("SOCK::verainit_send ", error, n_vars, length, var_namen_total_size);
+  trace4("SOCK::verainit_reply ", error, n_vars, length, var_namen_total_size);
 
   assert(stream.tcur() == 24);
 
   for (unsigned i = 0; i < n_vars; i++) 
   {
+    trace2("SOCK::verainit_reply",  i, var_namen_arr[i]);
     putstring8( &stream, var_namen_arr[i]);
     stream << '\t'; stream.pad(7);
   }
@@ -1305,13 +1316,13 @@ void SOCK::verainit_send()
 //  }
   stream.flush();
 
-  trace0("done verainit_send");
+  trace0("done verainit_reply");
 }
 /*------------------------------------*/
-void SOCK::veraop_send()
+void SOCK::veraop_reply()
 {
   assert(n_vars==_sim->_total_nodes);
-  trace1("SOCK::veraop_send ", n_vars);
+  trace1("SOCK::veraop_reply ", n_vars);
   stream << error; stream.pad(6);
   for (unsigned i=1; i <= n_vars; i++)         /* Variablen-Werte */
   {
@@ -1325,12 +1336,12 @@ void SOCK::veraop_send()
     }
   }
 
-  trace0("SOCK::veraop_send taking ac snapshot (matrix only?).");
+  trace0("SOCK::veraop_reply taking ac snapshot (matrix only?).");
   ac_snapshot();
   send_matrix();
   stream << SocketStream::eol;
 
-  trace0("SOCK::veraop_send sent");
+  trace0("SOCK::veraop_reply sent");
 
   total = 2*n_vars_square+n_vars+1;
   assert(3*BUFSIZE*BUFSIZE >= total);
