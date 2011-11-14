@@ -43,7 +43,7 @@ d_cs.cc d_poly_g.cc d_poly_cap.cc d_res.cc d_switch.cc \
 d_trln.cc d_vcg.cc d_vcr.cc d_vcvs.cc d_vs.cc d_vcvs2.cc \
 d_rcd.cc d_bti.cc  d_branchvs.cc
 
-gnucap_LDADD = libgnucap.la
+
 matrix_example_LDADD = libgnucap.la
 
 #old/unused
@@ -165,8 +165,8 @@ MODELOBJS= ${MODELS:.model=.${OBJEXT}}
 
 # nodist_gnucap_SOURCES= ${SRCS1} ${MODELSRCS} ${SRCS2}
 # henjo:
-nodist_gnucap_SOURCES= main.cc
-nodist_matrix_example_SOURCES= m_matrix_example.cc
+# nodist_gnucap_SOURCES= main.cc
+# nodist_matrix_example_SOURCES= m_matrix_example.cc
 
 
 # gibsnich
@@ -197,9 +197,13 @@ Makefile.am
 bin_PROGRAMS= gnucap matrix_example
 
 ## gnucap as a shared library
+#if SHARED?
 lib_LTLIBRARIES = libgnucap.la
-
 libgnucap_la_SOURCES = ${SRCS1} ${MODELSRCS} ${SRCS2}
+#endif
+
+# gnucap_LDADD = libgnucap.la
+gnucap_SOURCES =  ${SRCS1} ${MODELSRCS} ${SRCS2} main.cc
 
 libgnucap_includedir = $(includedir)/gnucap
 libgnucap_include_HEADERS = ${RAW_HDRS}

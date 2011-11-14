@@ -279,11 +279,12 @@ fi
 
 AC_CHECK_LIB([dl], [dlopen])
 
-LT_INIT([disable-static])
+# LT_INIT([disable-static])
+LT_INIT([static shared])
 
-AC_DISABLE_STATIC
-AC_PROG_LIBTOOL
-
+# shared.
+#AC_DISABLE_STATIC
+#AC_PROG_LIBTOOL
 
 # Checks for header files.
 #AC_CHECK_HEADERS([fcntl.h unistd.h])
