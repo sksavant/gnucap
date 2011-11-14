@@ -58,7 +58,8 @@ void STORAGE::precalc_last()
   ELEMENT::precalc_last();
 
   set_converged();
-  assert(!is_constant()); /* because of integration */
+  trace2("STORAGE::precalc_last", _sim->sim_mode(), _sim->phase());
+  assert(!is_constant() || _sim->analysis_is_ddc_op() ); /* because of integration */
  
   _method_a = method_select[OPT::method][_method_u];
   //assert(_loss0 == 0.);
@@ -87,7 +88,7 @@ void STORAGE::tr_begin()
   ELEMENT::tr_begin();
   _method_a = method_select[OPT::method][_method_u];
   for (int i = 0;  i < OPT::_keep_time_steps;  ++i) {
-    _i[i] = FPOLY1(0., 0., 0.);
+    _i[i] = FPOLY1(0., 0., 0.); // state
   }
   _m1 = _m0 = CPOLY1(0., 0., 0.);
 }
@@ -248,6 +249,10 @@ double STORAGE::tr_probe_num(const std::string& x)const
 }
 /*--------------------------------------------------------------------------*/
 void STORAGE::set_ic( double x ){
+
+  trace1("STORAGE:set_ic(...)",x);
+
+
   if(has_common()){
     trace1("STORAGE::set_ic have common "+long_label(), x);
     mutable_common()->set_ic(x);

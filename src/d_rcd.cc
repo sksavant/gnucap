@@ -1299,7 +1299,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
     _tr_fill = _Ccgfill->tt();
     return;
   }
-  double Time1=_sim->_Time0 - _sim->_dT0;
+  double Time1 = _sim->_Time0 - _sim->_dT0;
 
   trace4("DEV_BUILT_IN_RCD::stress_apply ", _sim->_Time0, _sim->_dT0,
       tt_iteration_number(), _sim->_Time0);
@@ -1323,14 +1323,17 @@ void DEV_BUILT_IN_RCD::stress_apply()
   long double fill_new2 = E_old;
 
   double ex_time = _sim->_dT0 - _sim->_last_time;
+  assert(ex_time = _sim->_last_Time);
   
   fill_new = m->__step( eff , fill_new, ex_time, c );
 
-  long double eff1=_Ccgfill->tr( Time1+ex_time/3.0 );
-  long double eff2=_Ccgfill->tr( Time1+ex_time*2.0/3.0 );
+  long double eff1 = _Ccgfill->tr( Time1 + ex_time/3.0 );
+  long double eff2 = _Ccgfill->tr( Time1 + ex_time*2.0/3.0 );
   if(m->positive) eff1= max(eff1,0.0L);
   if(m->positive) eff2= max(eff2,0.0L);
 
+
+//  better 2 steps.
   fill_new2 = m->__step( eff1, fill_new2, ex_time/2.0, c );
   assert(is_number(fill_new2));
   fill_new2 = m->__step( eff2, fill_new2, ex_time/2.0, c );

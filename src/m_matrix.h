@@ -115,6 +115,7 @@
 #include "io_.h"
 #include <iostream>
 #include <fstream>
+#include <set>
 using namespace std;
 /*--------------------------------------------------------------------------*/
 class OMSTREAM;
@@ -135,6 +136,7 @@ private:
   T	_zero;		// always 0 but not const
   T	_trash;		// depository for row and col 0, write only
   T	_min_pivot;	// minimum pivot value
+  vector<set<unsigned> > _adj;
 public:
   enum REAL {_REAL};
   enum IMAG {_IMAG};
@@ -167,6 +169,10 @@ public:
   T* row(T*, unsigned);
   T* col(T*, unsigned);
   void		iwant(unsigned, unsigned);
+private:
+  int* _rcm;
+  void rcm(); // used by allocate.
+public:
   void		unallocate();
   void		allocate();
   void		reallocate()		{unallocate(); allocate();}
@@ -178,6 +184,7 @@ public:
   inline T*    rmul(T* b, const T* x)const; // returns A*x
   T 	d(unsigned r, unsigned  )const	{return *(_diaptr[r]);}
   T     s(unsigned r, unsigned c)const; 
+  bool n(unsigned row, unsigned col)const;
 private:
   T 	u(unsigned r, unsigned c)const	{ return _colptr[c][r];}
   T 	l(unsigned r, unsigned c)const	{ return *(_rowptr[r]-c);}
@@ -187,10 +194,10 @@ private:
   T&	m(unsigned r, unsigned c);
   T&	s(unsigned r, unsigned c);
 public:
-  template <class X>
-  friend ostream& operator<< ( ostream &o, const BSMATRIX<X>& m);
-  template <class X>
-  friend OMSTREAM& operator<< ( OMSTREAM &o, const BSMATRIX<X>& m);
+  template <class S,class X>
+  friend S& operator<< ( S &o, const BSMATRIX<X>& m);
+//  template <class X>
+//  friend OMSTREAM& operator<< ( OMSTREAM &o, const BSMATRIX<X>& m);
   void		load_diagonal_point(int i, T value);
   void		load_point(int i, int j, T value);
   void		load_couple(int i, int j, T value);
@@ -239,6 +246,11 @@ void BSMATRIX<T>::init(int ss)
   for (unsigned ii = 0;  ii <= size();  ++ii) {
     set_changed(ii, false);
   }
+
+
+  _adj.clear();
+  _adj.resize(size());
+
 }
 /*--------------------------------------------------------------------------*/
 template <class T>
@@ -322,6 +334,13 @@ void BSMATRIX<T>::iwant(unsigned node1, unsigned node2)
   assert(_lownode);
   assert(node1 <= size());
   assert(node2 <= size());
+
+#if 0
+  bsmatrix_iwant(this,node1,node2); ?
+
+  _adj[node1].insert(node2);
+  _adj[node2].insert(node1);
+#endif
 
   if (node1 <= 0  ||  node2 <= 0) {
     // node 0 is ground, and doesn't count as a connection
@@ -500,7 +519,6 @@ T& BSMATRIX<T>::m(unsigned r, unsigned c)
  *   Writing to trash is allowed and encouraged,
  *   but reading it gives a number not useful for anything.
  */
-#if 1
 template <class T>
 T BSMATRIX<T>::s(unsigned row, unsigned col)const
 {
@@ -533,6 +551,42 @@ T BSMATRIX<T>::s(unsigned row, unsigned col)const
   }
   unreachable();
 }
+/*--------------------------------------------------------------------------*/
+// the entry is allocated (non-zero)
+template <class T>
+bool BSMATRIX<T>::n(unsigned row, unsigned col)const
+{
+  assert(_lownode);
+  // assert(0 <= col);
+  assert(col <= size());
+  // assert(0 <= row);
+  assert(row <= size());
+  assert(_zero == 0.);
+
+  if (col == row) {
+    return true;
+  }else if (col > row) {	/* above the diagonal */
+    if (row == 0) {
+      return false;
+    }else if (row < _lownode[col]) {
+      return false;
+    }else{
+      return true;
+    }
+  }else{			/* below the diagonal */
+    assert(col < row);
+    if (col == 0) {
+      return false;
+    }else if (col < _lownode[row]) {
+      return false;
+    }else{
+      return true; 
+    }
+  }
+  unreachable();
+}
+/*--------------------------------------------------------------------------*/
+// rw access.
 template <class T>
 T& BSMATRIX<T>::s(unsigned row, unsigned col)
 {
@@ -565,7 +619,6 @@ T& BSMATRIX<T>::s(unsigned row, unsigned col)
   }
   unreachable();
 }
-#endif
 /*--------------------------------------------------------------------------*/
 template <class T>
 void BSMATRIX<T>::load_point(int i, int j, T value)

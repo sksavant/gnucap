@@ -1121,7 +1121,9 @@ void SOCK::veraop(){
   OPT::ITL itl = OPT::DCBIAS;
 
   trace0("SOCK::veraop homotopy");
-  _trace=tVERBOSE;
+  if(_dump_matrix) {
+    _trace=tVERBOSE;
+  }
   CARD_LIST::card_list.tr_begin();  // hier muesste eigentlich eine dc hin.
   try{
     solve_with_homotopy(itl,_trace);
@@ -1197,7 +1199,9 @@ void SOCK::verakons() {
   OPT::ITL itl = OPT::DCBIAS;
 
   trace0("SOCK::verakons, hot");
-  _trace=tVERBOSE;
+  if(_dump_matrix) { // Damit man mal was sieht L.H.
+    _trace=tVERBOSE;
+  }
   CARD_LIST::card_list.tr_begin();
   try{
     solve_with_homotopy(itl,_trace);
@@ -1342,8 +1346,8 @@ void SOCK::send_matrix()
   const BSMATRIX<double> G = _sim->_acx.real();
   const BSMATRIX<double> C = _sim->_acx.imag();
   if(_dump_matrix){
-    _out << "G\n" << G << "\n";
-    _out << "C\n" << C << "\n";
+     _out << "G\n" << G << "\n";
+     _out << "C\n" << C << "\n";
   }
   trace0("SOCK::send_matrix G");
   for (unsigned i=1; i <= n_vars; i++){

@@ -42,8 +42,7 @@ static void sign_on(void)
   IO::mstdout <<
     COMMENT_CHAR " Fucap "  PATCHLEVEL  "\n"
     COMMENT_CHAR " Copyright 2009-2011 Felix Salfelder\n"
-    COMMENT_CHAR " derived from\n"
-    COMMENT_CHAR " Gucap\n"
+    COMMENT_CHAR " derived from Gnucap\n"
     COMMENT_CHAR " Copyright 1982-2009, Albert Davis\n"
     COMMENT_CHAR " Gnucap comes with ABSOLUTELY NO WARRANTY\n"
     COMMENT_CHAR " This is free software, and you are welcome\n"

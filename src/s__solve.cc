@@ -54,6 +54,7 @@ bool SIM::solve(OPT::ITL itl, TRACE trace)
  
   do{
     if (trace >= tITERATION) {
+      trace1("SIM::solve results", _sim->sim_mode());
       SIM::print_results(static_cast<double>(-_sim->iteration_number()));
       // Hack: Added SIM:: / print_results has been overloade but puts out the wrong data
     }
@@ -89,6 +90,7 @@ bool SIM::solve(OPT::ITL itl, TRACE trace)
       assert(_sim->_loadq.empty());
       trace0("solve_equations");
       solve_equations();
+      trace0("solve_equations done");
     }
   }while (!converged && !_sim->exceeds_iteration_limit(itl));
 
@@ -275,14 +277,6 @@ void SIM::load_matrix()
 void SIM::solve_equations()
 {
 
-#ifdef DUMPMATRIX
-  std::cout << _sim->_aa << "\n( ";
-  for (int ii = 0 ; _sim->_lu.size() >= ii ; ++ii) {
-	  std::cout << (_sim->_i)[ii] << " ";
-  }
-  std::cout <<")\n(";
-#endif
-  
   ::status.lud.start();
   _sim->_lu.lu_decomp(_sim->_aa, bool(OPT::lubypass && _sim->is_inc_mode()));
   ::status.lud.stop();
@@ -301,12 +295,6 @@ void SIM::solve_equations()
     untested();
   }
 
-#ifdef DUMPMATRIX
-  for (int ii = 0 ; _sim->_lu.size() >= ii ; ++ii) {
-	  std::cout << (_sim->_v0)[ii] << " ";
-  }
-  std::cout <<")\n";
-#endif
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

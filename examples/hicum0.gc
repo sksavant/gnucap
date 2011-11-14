@@ -16,28 +16,31 @@ V1 nin 0  sin(frequency=1, amplitude=2.5, offset=2.5)
 .param a=1.0e-15
 
 
+* .tnom=20;
+* .is=a;
 
 .verilog
 
-paramset myhicum hicum0; 
-* .tnom=20;
-* .is=a;
+paramset mynpn hicum0; 
+.rcx=1;
+.re=1;
 endparamset
 
 
-myhicum Q1( c b 0 );
+mynpn Q1( nC b 0 );
 
 spice
 
 R1 nin b 10k
-R2 ncc c 10k
+R2 ncc nC 10k
 
 *    o ncc
 *    |
 *    |
 *    R
 *    |
-*   C|
+*    o nout
+*    |
 *    \  
 *     \|  B  ___
 *   npn|----[___]---o  nin
@@ -53,11 +56,12 @@ R2 ncc c 10k
 
 .print tran v(nodes)
 
-.tran .1 1 trace v
+
+.tran .1 1
 *trace v
 
 .param a=1.0e-16
 
-.tran 2
 
+.nodelist
 .end

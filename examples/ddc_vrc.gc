@@ -1,0 +1,27 @@
+
+spice
+*  CAP ohne uic
+
+V1 m1 0 1
+R1 m1 m2 100k
+C3 m2 0  400m
+
+*     V1        c3
+*  o---O--[R3]--||---o
+*  |                 |
+*  V                 V
+
+.print TRAN  v(nodes)
+.print ddc V(v1) V(c3)
+
+*.TRAN 0 12 0.1 uic trace iterations >rc-glied3_tran.out
+*.TRAN 0 15e-6 2e-7 uic >rc-glied3_tran.out
+
+* .dc uic2  >rc-glied3_dc.out
+
+*.TRAN 0 100m 10m uic2 
+
+.echo sweeping c1,c2
+.ddc  V1 0 1 0.5 c1 0 1 1 c2 -1 0 0.5   trace=v
+
+.end

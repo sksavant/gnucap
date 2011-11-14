@@ -69,7 +69,18 @@ private: // called by print_item
   virtual void print_comment(OMSTREAM&, const DEV_COMMENT*) = 0;
   virtual void print_command(OMSTREAM&, const DEV_DOT*) = 0;
 };
-OMSTREAM& operator<<(OMSTREAM& o, LANGUAGE* x);
+/*--------------------------------------------------------------------------*/
+template<class T>
+inline T& operator<<(T& o, LANGUAGE* x)
+{
+  if (x) {
+    return (o << x->name());
+  }else{
+    return (o << "none");
+  }
+}
+/*--------------------------------------------------------------------------*/
+
 bool Get(CS&, const std::string& key, LANGUAGE** val);
 /*--------------------------------------------------------------------------*/
 // This is for backward compatibility only.

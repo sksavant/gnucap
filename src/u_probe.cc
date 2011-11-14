@@ -38,28 +38,29 @@ PROBE::PROBE(const std::string& what,const CKT_BASE *brh)
    _override_label(""),
    _brh(brh),
    _lo(0.),
-   _hi(0.)
+   _hi(0.),
+   _next(0)
 {
   if (_brh) {
     _brh->inc_probes();
-    trace1( ( "PROBE::PROBE ++probe: " + _what +_override_label).c_str(),  _brh->probes());
+    trace3(  "PROBE::PROBE copy ++probe: 1 " , _what ,  _brh->probes(), label() );
   }else{
   }
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 PROBE::PROBE(const PROBE& p)
-  :_arg(p._arg),
-   _what(p._what),
-   _override_label(p._override_label),
-   _brh(p._brh),
-   _lo(p._lo),
-   _hi(p._hi),
-   _next(p._next)
+  : _what(p._what),
+    _override_label(p._override_label),
+    _brh(p._brh),
+    _lo(p._lo),
+    _hi(p._hi),
+    _next(p._next),
+    _arg(p._arg)
 {
   if (_brh) {
     _brh->inc_probes();
-    trace1( ( "PROBE::PROBE copy ++probe: " + _what +_override_label ).c_str(),  _brh->probes());
+    trace3(  "PROBE::PROBE copy ++probe: 2 " , _what ,  _brh->probes(), label() );
   }else{
   }
 }
@@ -94,8 +95,8 @@ PROBE& PROBE::operator=(const PROBE& p)
 void PROBE::detach()
 {
   if (_brh) {
-    _brh->dec_probes();
     trace1( ( "PROBE::detach --probe: " + label() ).c_str(),  _brh->probes());
+    _brh->dec_probes();
   }else{
     // could be measurement or probe(0) or something.
     //untested();
@@ -172,9 +173,15 @@ double PROBE::probe_node(void)const
     return _sim->_temp_c;
   }else if (Umatch(_what, "gain ")) {
     return _sim->_dT0/_sim->_dTmin;
-  }else if (Umatch(_what, "ttime ")) {untested();
+  }else if (Umatch(_what, "ltt ")) {
+    return _sim->_last_Time;
+  }else if (Umatch(_what, "ttime|tt0 ")) {
     return _sim->_Time0;
-  }else if (Umatch(_what, "time ")) {untested();
+  }else if (Umatch(_what, "dtt0 ")) {
+    return _sim->_dT0;
+  }else if (Umatch(_what, "tt1 ")) {
+    return _sim->_Time0 - _sim->_dT0;
+  }else if (Umatch(_what, "time ")) {
     return _sim->_time0;
   }else if (Umatch(_what, "event ")) {
     return ((_sim->_eq.empty())? -1.: _sim->_eq.top());
@@ -183,16 +190,112 @@ double PROBE::probe_node(void)const
   }
 }
 /*--------------------------------------------------------------------------*/
-void PROBE::push(PROBE* p)
+/*--------------------------------------------------------------------------*/
+MATH_PROBE::~MATH_PROBE(){
+  trace1("MATH_PROBE::~MATH_PROBE", label());
+
+  PROBE*  token=arg();
+
+  while( token){
+    PROBE* nt=token->next();
+    trace1("MATH_PROBE::~MATH_PROBE deleting", token->label());
+
+    // delete token;
+
+    token=nt;
+  }
+
+}
+/*--------------------------------------------------------------------------*/
+void MATH_PROBE::push(PROBE* p)
 {
-  std::cerr << "PROBE::push pushing probe\n";
-  PROBE* newp=new PROBE(*p);
+  trace1("probe::push", p->label());
+//  PROBE* newp = p->clone();
+  //
+  PROBE* newp = p;
   assert(p!=NULL);
   newp->set_next(arg());
   set_arg(newp);
 }
+//void PROBE::push(PROBE* p)
+//{
+//  assert(false);
+//  trace1("probe::push", p->label());
+//  PROBE* newp = new PROBE(*p);
+//  assert(p!=NULL);
+//  newp->set_next(arg());
+//  unreachable();
+//  //set_arg(newp);
+//}
 /*--------------------------------------------------------------------------*/
-MATH_PROBE::MATH_PROBE(const MATH_PROBE& p) : PROBE(p) {  _type = p._type ; }
+/*--------------------------------------------------------------------------*/
+MATH_PROBE::MATH_PROBE(const MATH_PROBE& p) : PROBE(p) {  _type = p._type ; _next=p._next; }
+/*--------------------------------------------------------------------------*/
+const string typelabel(const unsigned a){
+  switch(a){
+    case 64:
+      return "d";
+    case 65:
+      return "q";
+
+    default:
+      return ".";
+
+  }
+
+}
+/*--------------------------------------------------------------------------*/
+const string  MATH_PROBE::label()const{
+  if (is_unary(_type)){
+    char x = typetochar(_type);
+
+    return string(&x);
+  }
+
+  stringstream s;
+  char x = typetochar(_type);
+
+  s <<  "{";
+
+    PROBE*  token=arg();
+     
+      trace2("MATH_PROBE::label first arg", x, token->label());
+      s<<  token->label();
+
+      while( (token=token->next())){
+        trace0("MATH_PROBE::label another");
+        trace1("MATH_PROBE::label another", token->label());
+        s << x <<   token->label();
+      }
+  s<< "}";
+    trace1("MATH_PROBE::label done", s.str());
+  return s.str();
+}
+/*--------------------------------------------------------------------------*/
+char typetochar(MATH_OP _type ){
+  switch(_type){
+    case op_quot:
+      return '/';
+    case op_diff:
+      return '-';
+    case op_prod:
+      return '*';
+    case op_sum:
+      return '+';
+    case op_exp:
+      return 'e';
+    case op_abs:
+      return '|';
+    default:
+      return '?';
+  }
+
+}
+/*--------------------------------------------------------------------------*/
+void MATH_PROBE::set_arg( PROBE* p){
+  trace1("MATH_PROBE::set_arg()", p->label());
+  _arg=p;
+}
 /*--------------------------------------------------------------------------*/
 double MATH_PROBE::value(void)const
 {
@@ -201,7 +304,7 @@ double MATH_PROBE::value(void)const
   {
        return NOT_VALID; // not impl.
   }
-  PROBE*  token=arg();
+  PROBE* token = arg();
 
 //   std::cerr << "PROBE::mathvalue  getting tokenv from token" << token << " \n";
   double ret=token->value();

@@ -27,6 +27,7 @@
 #include "u_nodemap.h"
 #include "e_cardlist.h"
 #include "u_status.h"
+#include "e_subckt.h"
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::set_limit()
 {
@@ -37,6 +38,7 @@ void SIM_DATA::set_limit()
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::set_limit(double v)
 {
+//  trace1("SIM_DATA::set_limit", v);
   if (v+.4 > _vmax) {
     _vmax = v+.5;
     error(bTRACE, "new max = %g, new limit = %g\n", v, _vmax);
@@ -69,7 +71,6 @@ void SIM_DATA::put_v1_to_v0()
   for (uint_t ii = 1;  ii <= _total_nodes;  ++ii) {
     _v0[ii] = _vt1[ii];
   }
-
 }
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::restore_voltages()
@@ -128,9 +129,12 @@ void SIM_DATA::map__nodes()
     case oAUTO:		       order_auto();    break;
     case oREVERSE: untested(); order_reverse(); break;
     case oFORWARD: untested(); order_forward(); break;
+    case oTREE:    untested(); order_tree(); break;
+    case oCOMP:    untested(); order_comp(); break;
   }
   ::status.order.stop();
 }
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /* order_reverse: force ordering to reverse of user ordering
  *  subcircuits at beginning, results on border at the bottom
@@ -138,7 +142,7 @@ void SIM_DATA::map__nodes()
 void SIM_DATA::order_reverse()
 {untested();
   _nm[0] = 0;
-  for (uint_t node = 1;  node <= _total_nodes;  ++node) {untested();
+  for (uint_t node = 1;  node <= _total_nodes;  ++node) {
     _nm[node] = _total_nodes - node + 1;
   }
 }
@@ -159,12 +163,117 @@ void SIM_DATA::order_forward()
  */
 void SIM_DATA::order_auto()
 {
-  _nm[0] = 0;
-  for (uint_t node = 1;  node <= _total_nodes;  ++node) {
-    _nm[node] = _total_nodes - node + 1;
+  order_reverse();
+}
+/*--------------------------------------------------------------------------*/
+// component wise node sort. depth-first
+void SIM_DATA::order_comp( const CARD_LIST* scope, unsigned *c, bool *d)
+{
+  bool cleanup=false;
+  if (!c){
+    trace2("SIM_DATA::order_comp init", CKT_BASE::_sim->_total_nodes, c );
+    c = new unsigned();
+    *c=0;
+    d = new bool[CKT_BASE::_sim->_total_nodes+2] ;
+    for(unsigned k=1; CKT_BASE::_sim->_total_nodes+2>k ;++k) d[k]=0;
+
+    _nm[0]=0;
+    d[0]=1;
+
+    cleanup=true;
+  } else {
+    trace2("SIM_DATA::order_comp no init", CKT_BASE::_sim->_total_nodes ,*c );
+  }
+
+  for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
+//    trace1("SIM_DATA::order_comp " , (*i)->short_label());
+    for (CARD_LIST::const_iterator j = scope->begin(); j != scope->end(); ++j) {
+      const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*j);
+      if (s) {
+        order_comp(s->subckt(),c,d);
+      }
+    }
+
+    // for(unsigned k=0; k<(*i)->net_nodes();++k){
+    for(int k = (*i)->net_nodes()-1; k>=0 ;--k){
+      // FIXME: use node_map()
+
+      unsigned un = (*i)->n_(k).n_()->user_number();
+
+      if(!d[un]){
+        (*c)++;
+        _nm[ un ]=*c;
+        d[un]=true;
+        trace4("SIM_DATA::order_comp " , (*i)->long_label(), k ,un, *c);
+        assert(un<_total_nodes+1);
+      }
+    }
+
+
+
+  }
+
+  if (cleanup){
+    assert(c);
+    assert(d);
+    trace2("SIM_DATA::order_tree", *c,  CKT_BASE::_sim->_total_nodes );
+    if  (*c != CKT_BASE::_sim->_total_nodes ){
+      error(bDANGER, "c=%i, t=%i\n", *c, CKT_BASE::_sim->_total_nodes  );
+
+    }
+    assert  (*c == CKT_BASE::_sim->_total_nodes );
+    delete c;
+    delete d;
   }
 }
 /*--------------------------------------------------------------------------*/
+void SIM_DATA::order_tree( const CARD_LIST* scope, unsigned *c)
+{
+  bool cleanup=false;
+  if (!c){
+    c = new unsigned(0);
+    _nm[0]=0;
+
+    cleanup=true;
+  }
+  const NODE_MAP * nm = scope->nodes();
+
+  // nm = new unsigned[nm->how_many()];
+
+  /* node map (external to internal)	*/
+  /* node map (external to internal)	*/
+
+  for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
+    if (i->first != "0") {
+      (*c)++;
+      _nm[ i->second->user_number() ]=*c;
+      trace3("SIM_DATA::order_tree " , i->second->long_label(),
+           i->second->user_number() , *c);
+    }else{
+      // _out << "Zero Node  "  << "\n";
+    }
+  }
+
+  for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
+    const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i);
+    if (s) {
+      trace1("SIM_DATA::order_tree child ", s->long_label() );
+      order_tree(s->subckt(),c);
+    }
+  }
+
+//    nm[node] = ::status.total_nodes - node + 1;
+  if (cleanup){
+    trace2("SIM_DATA::order_tree", *c,  CKT_BASE::_sim->_total_nodes );
+    assert  (*c== CKT_BASE::_sim->_total_nodes );
+        delete c;
+  }
+}
+/*--------------------------------------------------------------------------*/
+int SIM_DATA::init_node_count(int user, int sub, int mod) {
+  trace3("SIM_DATA::init_node_count", user, sub, mod);
+  _user_nodes=user; _subckt_nodes=sub; _model_nodes=mod; return (_total_nodes=user+sub+mod);
+}
 /*--------------------------------------------------------------------------*/
 /* init: allocate, set up, etc ... for any type of simulation
  * also called by status and probe for access to internals and subckts
@@ -235,6 +344,7 @@ void SIM_DATA::alloc_vectors()
 {
   trace1("SIM_DATA::alloc_vectors",  _total_nodes);
   assert(_evalq1.empty());
+  if (! _evalq2.empty() ){ trace1("SIM_DATA::alloc_vectors", _evalq2);}
   assert(_evalq2.empty());
   assert(_evalq != _evalq_uc);
 

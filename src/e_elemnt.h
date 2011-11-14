@@ -29,6 +29,7 @@
 #include "m_cpoly.h"
 #include "l_denoise.h"
 #include "e_compon.h"
+#include "bm.h"
 /*--------------------------------------------------------------------------*/
 class INTERFACE ELEMENT : public COMPONENT {
 protected:
@@ -194,7 +195,7 @@ inline T ELEMENT::dampdiff(T* v0, const T& v1)
   if(*v0 != *v0){ 
     error(bDANGER,"ELEMENT::dampdiff: %s\n", short_label().c_str());
 //    std::cerr << "ungood: " << *v0 << "\n";
-    exit(2);
+    assert(false);
   }
   assert(v1 == v1);
   T diff = dn_diff(*v0, v1);
@@ -271,7 +272,7 @@ inline void ELEMENT::tr_load_source()
 
   assert(_m0.c0 == _m0.c0);
   hp_float_t d = dampdiff(&_m0.c0, _m1.c0);
-  trace1("ELEMENT::tr_load_source ", d);
+  trace2("ELEMENT::tr_load_source ", long_label(), d);
   if (d != 0.) {
     if (_n[OUT2].m_() != 0) { //gnd knoten
       _n[OUT2].i() += d;

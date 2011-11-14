@@ -109,7 +109,7 @@ NODE::NODE()
  */
 NODE_BASE::NODE_BASE(const NODE_BASE& p)
   : CKT_BASE(p),
-  _parent(0),
+  _parent(p._parent),
   _user_number(p._user_number)
    //_flat_number(p._flat_number)
    //_matrix_number(INVALID_NODE)
@@ -122,7 +122,7 @@ NODE::NODE(const NODE& p)
   unreachable();
 }
 /*--------------------------------------------------------------------------*/
-NODE_BASE::NODE_BASE(const std::string& s, int n, CARD_LIST* p)
+NODE_BASE::NODE_BASE(const std::string& s, int n, const CARD_LIST* p)
   :CKT_BASE(s),
    _parent(p),
    _user_number(n)
@@ -143,7 +143,7 @@ NODE::NODE(const NODE* p)
 /*--------------------------------------------------------------------------*/
 /* usual initializing constructor : name and index
  */
-NODE::NODE(const std::string& s, int n, CARD_LIST*p)
+NODE::NODE(const std::string& s, int n, const CARD_LIST*p)
   :NODE_BASE(s,n,p)
 {
 }
@@ -262,9 +262,13 @@ const std::string  NODE_BASE::long_label()const
 {
   string ret(short_label());
   if (_parent){
+    trace1("NODE_BASE::long_label, have parent", short_label());
     if( _parent->owner()){
       ret=_parent->owner()->long_label() + "." + ret;
     }
+  } else {
+    trace1("NODE_BASE::long_label, have no parent", short_label());
+
   }
   return ret;
 }
@@ -619,7 +623,7 @@ void node_t::new_node(const std::string& node_name, const CARD_LIST* scope)
 
   NODE_MAP* Map = scope->nodes();
   assert(Map);
-  _nnn = Map->new_node(node_name);
+  _nnn = Map->new_node(node_name, scope);
   _ttt = _nnn->user_number();
   assert(_nnn);
 }
@@ -632,16 +636,18 @@ void node_t::new_node(const std::string& node_name, const CARD_LIST* scope)
  */
 void node_t::new_model_node(const std::string& node_name, CARD* d)
 {
-  new_node(node_name, d);
-  _ttt = CKT_BASE::_sim->newnode_model(); // global user number
-  trace3("node_t::new_model_node", node_name, _ttt, _nnn->user_number());
-
-  //HACK: (no subckt/node tree yet)
-  // _nnn has its user number from the scope, which doesnt know about
-  // _sim->_total_nodes
+  // new_node(node_name, d);
+  assert (d->subckt());
+  new_node(node_name, d->subckt());
+  _ttt = CKT_BASE::_sim->newnode_model();
+  // _ttt = CKT_BASE::_sim->newnode_model(); // global user number
+  trace4("node_t::new_model_node", node_name, _ttt, _nnn->user_number(), CKT_BASE::_sim->_total_nodes);
   _nnn->set_user_number(_ttt);
 
-  //assert(_ttt == _nnn->flat_number());
+  // _nnn has its user number from the scope, which doesnt know about
+  // _sim->_total_nodes
+
+  assert(_ttt == _nnn->user_number());
 }
 /*--------------------------------------------------------------------------*/
 void node_t::new_sckt_node(const std::string& node_name, const CARD_LIST* scope)
@@ -649,19 +655,11 @@ void node_t::new_sckt_node(const std::string& node_name, const CARD_LIST* scope)
   assert(scope);
   new_node(node_name, scope);
   _ttt = CKT_BASE::_sim->newnode_subckt();
-  trace3("node_t::new_sckt_node", node_name, _ttt, _nnn->user_number());
+  trace4("node_t::new_sckt_node", node_name, _ttt, _nnn->user_number(), _nnn->scope() );
   //assert(_ttt == _nnn->flat_number());
-}
-/*--------------------------------------------------------------------------*/
-void node_t::hack_subckt_node(NODE* n, int i )
-{
-  if(_nnn){
-    trace4("node_t::hack_subckt_node already there", _nnn->short_label() ,
-         n->short_label() , i, _nnn->user_number());
-    assert(n==_nnn);
-  }
-  _nnn = n;
-  _nnn->set_user_number(i);
+  //
+  // later??
+  _nnn->set_user_number(_ttt);
 }
 /*--------------------------------------------------------------------------*/
 void node_t::map_subckt_node(uint_t* m, const CARD* d)

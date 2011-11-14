@@ -221,30 +221,10 @@ CARD_LIST& CARD_LIST::map_nodes()
   return *this;
 }
 /*--------------------------------------------------------------------------*/
-#ifdef DO_TRACEX
-#include "e_cardlist.h"
-#include "e_node.h"
-#include "u_nodemap.h"
-class NODE;
-class NODE_MAP;
-inline void trace_nodenames(const CARD_LIST* scope){
-  trace0("... tracing nodenames");
-  assert(scope);
-  NODE_MAP* nm = scope->nodes();
-  assert(nm);
-  for (NODE_MAP::const_iterator ni = nm->begin(); ni != nm->end(); ++ni) {
-    NODE* n = (*ni).second;
-    string label = (*ni).first;
-    trace2(":... nodename ", label, n->user_number() );
-  }
-}
-#endif
-/*--------------------------------------------------------------------------*/
 NODE* CARD_LIST::node(string s) const{
   const COMPONENT* o = dynamic_cast<const COMPONENT*>(owner());
   const CARD_LIST* scope = _origin;
-    trace1("CARD_LIST::node",s);
-
+  trace1("CARD_LIST::node",s);
 
   if (0 && scope){
     trace1("CARD_LIST::node have an origin scope " + s, scope->nodes()->how_many() );
@@ -632,7 +612,7 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
   trace1("model nodenames", *(model->subckt()->nodes()));
   trace1("... now own", *(owner->scope()->nodes())  );
   trace2("now own sckt", *nodes(), hp(nodes()));
-  NODE_MAP* nm = owner->scope()->nodes();
+//  NODE_MAP* nm = owner->scope()->nodes();
 
 //:w
 //trace_nodenames(owner->subckt());
@@ -666,6 +646,7 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
     
       // get new node numbers, and assign them to the remaining
       for (assert(i==model->net_nodes() + 1); i <= num_nodes_in_subckt; ++i) {
+        untested();
 	// for each remaining node in card_list
         // these are the internal nodes.
         string label = (*(model->subckt()->nodes())) [i] ;
@@ -690,7 +671,6 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
   // "map" now contains a translation list,
   // from subckt local numbers to matrix index numbers
 
-  // The node list (_nm) in an instance of a subckt does not exist.
   // Device nodes (type node_t) points to the NODE in the parent.
   // Mapping is done in node_t.
 

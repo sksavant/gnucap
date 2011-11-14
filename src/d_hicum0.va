@@ -35,13 +35,6 @@
 // **********************************************************************************
 
 
-//device(?)  Q   (a,b,c,d ) ;
-   //        ^^ devicename
-	// internal nodes? (spaeter)
-   // param A default 5 ~> COMMON
-   // nur wrapper.h erzeugen
-
-//enddevice
 
 //Default simulator: Spectre
 
@@ -55,11 +48,6 @@
  `define INITIAL_MODEL		@(initial_step)
 `endif
 
-
-//ADS
-//`include "constants.vams"
-//`include "disciplines.vams"
-//`include "compact.vams"
 
 `include "constants.h"
 `include "discipline.h"
@@ -460,6 +448,7 @@ module hicum0 (c,b,e,s,tnode);
 
   	real	Qbci,Qbe,Qbici,Qbiei;
 //Declaration of the variables: end
+	real test;
 
   
 //
@@ -467,6 +456,9 @@ module hicum0 (c,b,e,s,tnode);
 //
 
 analog begin
+	@ initial_step begin
+		test=5;
+	end
 
 // assign voltages with regard to transistor type
 

@@ -7,6 +7,7 @@ public:
 protected:
   void	fix_args(int);
   void	options(CS&, int);
+  bool _old_solver;
 private:
   void	sweep();
   void	sweep_recursive(int);
@@ -18,6 +19,9 @@ private:
 protected:
   explicit DDC_BASE();
   ~DDC_BASE() {}
+
+  void block_solver(); // solve block matrix ( C 0; G C )
+  void old_solver(); // solve using G^-1
   
 protected:
   enum {DCNEST = 4};
@@ -27,10 +31,14 @@ protected:
   PARAMETER<double> _step_in[DCNEST];
   double _step[DCNEST];
   bool _linswp[DCNEST];
-  double _sweepval[DCNEST];	/* pointer to thing to sweep, dc command */
+  double (_sweepval[DCNEST]);	/* pointer to thing to sweep, dc command */
 //  typedef void (*p)(double);
   ELEMENT* (_pushel[DCNEST]);	/* pointer to thing to sweep, dc command */
   ELEMENT* (_zap[DCNEST]);	/* to branch to zap, for re-expand */
+
+  vector<STORAGE*> _uic_caplist;
+  void set_uic_caps_constant(bool x=true);
+
   CARDSTASH _stash[DCNEST];	/* store std values of elements being swept */
   bool _loop[DCNEST];		/* flag: do it again backwards */
   bool _reverse_in[DCNEST];	/* flag: sweep backwards, input */
@@ -44,6 +52,8 @@ protected:
   double* U;
   double* CU;
   double* CUTCU;
+  double* A;
+  double* y;
   void ac_snapshot();
 };
 #endif
