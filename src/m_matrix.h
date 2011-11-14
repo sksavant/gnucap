@@ -115,6 +115,7 @@
 #include "io_.h"
 #include <iostream>
 #include <fstream>
+#include <set>
 using namespace std;
 /*--------------------------------------------------------------------------*/
 class OMSTREAM;
@@ -171,7 +172,7 @@ public:
 private:
   int* _rcm;
   void rcm(); // used by allocate.
-pubnlic:
+public:
   void		unallocate();
   void		allocate();
   void		reallocate()		{unallocate(); allocate();}
@@ -245,6 +246,11 @@ void BSMATRIX<T>::init(int ss)
   for (unsigned ii = 0;  ii <= size();  ++ii) {
     set_changed(ii, false);
   }
+
+
+  _adj.clear();
+  _adj.resize(size());
+
 }
 /*--------------------------------------------------------------------------*/
 template <class T>
@@ -329,8 +335,12 @@ void BSMATRIX<T>::iwant(unsigned node1, unsigned node2)
   assert(node1 <= size());
   assert(node2 <= size());
 
+#if 0
+  bsmatrix_iwant(this,node1,node2); ?
+
   _adj[node1].insert(node2);
   _adj[node2].insert(node1);
+#endif
 
   if (node1 <= 0  ||  node2 <= 0) {
     // node 0 is ground, and doesn't count as a connection
