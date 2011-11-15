@@ -39,7 +39,7 @@ public:
   explicit  NODE_MAP();
 	   ~NODE_MAP();
   NODE*     operator[](std::string);
-  NODE*     new_node(std::string, CARD_LIST* p=0);
+  NODE*     new_node(std::string,const  CARD_LIST* p=0);
 
   typedef std::map<const std::string, NODE*>::iterator iterator;
   typedef std::map<const std::string, NODE*>::const_iterator const_iterator;

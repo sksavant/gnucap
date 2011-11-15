@@ -51,10 +51,10 @@ void do_probe(CS& cmd, PROBELIST *probes)
   ONE_OF
     || Set(cmd, "tr{ansient}", &simtype, s_TRAN)
     || Set(cmd, "tw{ot}",      &simtype, s_TTT)
-    || Set(cmd, "tt",      &simtype, s_TTT)
+    || Set(cmd, "tt",          &simtype, s_TTT)
     || Set(cmd, "ac",	       &simtype, s_AC)
     || Set(cmd, "dc",	       &simtype, s_DC)
-    || Set(cmd, "ddc",         &simtype, s_DC)
+    || Set(cmd, "ddc",         &simtype, s_DDC)
     || Set(cmd, "op",	       &simtype, s_OP)
     || Set(cmd, "fo{urier}",   &simtype, s_FOURIER)
     ;
@@ -65,6 +65,7 @@ void do_probe(CS& cmd, PROBELIST *probes)
       probes[s_TTT].listing("tw");
       probes[s_AC].listing("ac");
       probes[s_DC].listing("dc");
+      probes[s_DDC].listing("ddc");
       probes[s_OP].listing("op");
       probes[s_FOURIER].listing("fourier");
     }else if (cmd.umatch("clear ")) {		/* clear all */

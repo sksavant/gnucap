@@ -42,10 +42,11 @@ class CKT_BASE;
 
 
 // this is c-ish. fixme
+// use parameter expressions and a list of probes instead.
 typedef enum{
-  op_null = MATH_OP_CONST,
+  op_null = MATH_OP_CONST, // constant value.
   op_pi,
-  op_sum = MATH_OP_SET,
+  op_sum = MATH_OP_SET, // argument is a set
   op_prod,
   op_exp = MATH_OP_UNARY,
   op_neg,
@@ -61,6 +62,15 @@ typedef enum{
 } MATH_OP;
 
 MATH_OP strtotype( std::string );
+char typetochar(MATH_OP );
+
+inline bool is_const(MATH_OP x){
+  return  x<32;
+}
+
+inline bool is_unary(MATH_OP x){
+  return  x>=MATH_OP_UNARY && x<MATH_OP_BINARY ;
+}
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -69,15 +79,14 @@ class INTERFACE PROBE {
     PROBE(){_brh=0;_next=0;itested();};
     explicit  PROBE(const std::string& what, const CKT_BASE *brh);
     PROBE(const PROBE& p);
-    ~PROBE(){
+    virtual ~PROBE(){
+      trace1("deleting probe",label());
       detach();
     }
 
     virtual double value()const;
-    void push( PROBE* );
-    void	    set_arg( PROBE* n  )	{ assert(this); _arg=n;}
-    void        set_override_label(const std::string _override)
-                   { _override_label=_override; } 
+
+    void        set_override_label(const std::string _override) { _override_label=_override; }  // ???
 
     PROBE* arg() const {return _arg;}
     std::string  override_label() const {return _override_label;}
@@ -85,7 +94,6 @@ class INTERFACE PROBE {
     virtual void expand(){}
     virtual void precalc_last(){}
   private:
-    PROBE* _arg;
   protected:
     std::string	_what;    
     std::string	_override_label;    
@@ -110,7 +118,8 @@ class INTERFACE PROBE {
 private:
   double	  probe_node()const;
 protected:
-  PROBE* _next;
+  PROBE* _next; 
+  PROBE* _arg; // ->MATH_PROBE
 
 public: // compare probes.
   bool operator==(const PROBE& p)const
@@ -135,16 +144,21 @@ public: // compare (for STL)
 /*--------------------------------------------------------------------------*/
 class MATH_PROBE : public PROBE {
   public:
-    MATH_PROBE(): PROBE() {_next=0;untested();};
-    MATH_PROBE(const MATH_OP type) { _type=type; _next=NULL; }
+    MATH_PROBE(): PROBE() {_next=0;untested(); _arg=0;};
+    MATH_PROBE(const MATH_OP type) { _type=type; _next=NULL; _arg=0; }
     MATH_PROBE(const MATH_PROBE& p);
     virtual PROBE* clone()const { return new MATH_PROBE(*this);}
     MATH_OP type()const{return(_type);}
     MATH_PROBE&    operator=(const MATH_PROBE& p);
+    void	   set_arg( PROBE*  );//	{ assert(this); _arg=n;}
+    ~MATH_PROBE();
   private:
     MATH_OP _type;
+    unsigned _arity;
   public:
     double value()const;
+    const std::string label()const;
+    void push( PROBE* ); 
 };
 /*--------------------------------------------------------------------------*/
 class EVAL_PROBE: public PROBE {

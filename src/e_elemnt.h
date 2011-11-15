@@ -29,6 +29,7 @@
 #include "m_cpoly.h"
 #include "l_denoise.h"
 #include "e_compon.h"
+#include "bm.h"
 /*--------------------------------------------------------------------------*/
 class INTERFACE ELEMENT : public COMPONENT {
 protected:
