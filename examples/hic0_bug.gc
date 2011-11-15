@@ -40,13 +40,14 @@ spice
 * I_{CE} = 100* I_{BE}
 
 
-.print dc i(Ib) v(nc) i(Vicq1)
+.print dc i(Ib) v(nc) i(Vicq1) gmin(0) conv(Q1) v(nb) v(Q1.nodes)
+
 
 *.dc Vce 0 2 0.1  Ib 0 10u 1u
 *.dc Ib 15u 20u 5u Vce 1 2 0.2  basic
 
 *.dc Ib 20u 20u 5u Vce 1 1 0.2 basic
-.dc Ib 20u 20u 5u Vce 1 1 0.2 basic
+.dc Ib 20u 20u 5u Vce 1 1 0.2 basic dm
 
 
 *.tran .1 1 trace v
