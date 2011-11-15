@@ -121,7 +121,8 @@ e_homebrew.cc \
 e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc e_adplist.cc\
 bm_value.cc bm.cc \
 c__cmd.cc c_attach.cc c_file.cc c_genrat.cc c_debug.cc \
-findbr.cc plot.cc globals.cc e_adp.cc e_adp_mos.cc
+findbr.cc plot.cc globals.cc e_adp.cc e_adp_mos.cc \
+startup.cc
 #------------------------------------------------------------------------
 RAW_HDRS = \
 md.h ap.h mode.h constant.h declare.h patchlev.h \
@@ -198,7 +199,12 @@ gnucap_LDADD += libgnucap.la
 gnucap_SOURCES = main.cc
 #EXTRA_gnucap_SOURCES = ${SRCS1} ${MODELSRCS} ${SRCS2}
 bin_PROGRAMS = gnucap 
+
+# kills dispatcher
 # gnucap_LDFLAGS = -all-static
+#
+# use ./configure --enable-static instead
+# gnucap_LDFLAGS = -static
 
 #ifdef static_binaries
 #gnucap_LDFLAGS = -static-libtool-libs 

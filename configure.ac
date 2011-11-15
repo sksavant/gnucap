@@ -280,7 +280,7 @@ fi
 AC_CHECK_LIB([dl], [dlopen])
 
 # LT_INIT([disable-static])
-LT_INIT([static])
+LT_INIT([static shared])
 
 # shared.
 #AC_DISABLE_STATIC
