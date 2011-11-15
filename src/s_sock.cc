@@ -921,7 +921,7 @@ void SOCK::verakons() {
 
   for (unsigned i=1; i <= n_vars; i++)
   {
-    stream >> _sim->_vdc[i];
+    stream >> _sim->_v0[i];
     trace2("verakons start ", i,  _sim->_v0[i] );
   }
   _sim->keep_voltages(); // v0->vdc
