@@ -279,8 +279,10 @@ void STORAGE::set_ic( double x ){
 void STORAGE::keep_ic( ){
   //hack can we use _sim->_v0 instead??
   // double x =  dn_diff(_sim->_vdc[_sim->_nm[IN1]],_sim->_vdc[_sim->_nm[IN2]] ); //tr_involts();
-  double x =  dn_diff(_n[IN1].v0(),_n[IN2].v0() ); //tr_involts();
-  trace2("STORAGE::keep_ic", long_label() , x);
+  //double x =  dn_diff(_n[IN1].v0(),_n[IN2].v0() ); //tr_involts();
+  double x =  dn_diff(_n[OUT1].v0(),_n[OUT2].v0() ); //tr_involts();
+
+  trace6("STORAGE::keep_ic", long_label() , x, _n[IN1].v0(), _n[IN2].v0(), _n[OUT1].v0(),_n[OUT2].v0()  );
   if(has_common()){
     trace1("D_CAP::keep_ic have common " +long_label(),x);
     mutable_common()->set_ic(x);
