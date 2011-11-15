@@ -113,13 +113,13 @@ bool DEV_CAPACITANCE::do_tr()
     _y[0].f0 = _y[0].x * _y[0].f1;
     assert(converged());
   }
-  trace1("DEV_CAPACITANCE::do_tr ", _y[0].f1 );
+  trace3("DEV_CAPACITANCE::do_tr ", _y[0].f1, _sim->more_uic_now(), is_constant() );
   store_values();
   q_load();
 
 
-    _i[0] = differentiate(_y, _i, _time, _method_a);
-    trace1("DEV_CAPACITANCE::do_tr m0 as if", _y[0]);
+    //_i[0] = differentiate(_y, _i, _time, _method_a);
+    //trace1("DEV_CAPACITANCE::do_tr m0 as if", _y[0]);
 
   if(_sim->more_uic_now() && is_constant() ){
     // BUG: only treat caps with _ic

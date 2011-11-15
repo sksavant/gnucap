@@ -195,16 +195,13 @@ void DEV_SUBCKT::expand()
   c->_params.set_try_again(pl);
   assert(c->_params._try_again);
 
-
-
   renew_subckt(model, this, scope(), &(c->_params));
-
   trace1("DEV_SUBCKT::expand renew done", *(subckt()->nodes()));
 
   assert(scope());
   for (unsigned i=model->net_nodes() + 1; i <= num_nodes_in_subckt; ++i) {
     // these are the internal nodes.
-    string label= (*(model->subckt()->nodes())) [i] ;
+    string label= (*(model->subckt()->nodes()))[i];
   //  trace3("adding internal node", label, long_label(),_sim->_total_nodes);
     //_n[i].new_sckt_node( label, subckt()); /// BUG? increases total_nodes
     trace3("DEV_SUBCKT::expand internal node", label, long_label(),_sim->_total_nodes);

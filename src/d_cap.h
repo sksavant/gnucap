@@ -29,6 +29,7 @@ protected: // override virtual
   void	   tr_load()		{tr_load_passive(); trace1("DEV_CAPACITANCE::tr_load", value());  }
 //  void	   tr_init(double )		;
   void	   tr_unload()		{tr_unload_passive();}
+public:
   hp_float_t   tr_involts()const	{
     if(_n[OUT1].v0() != _n[OUT1].v0()){
       error(bDANGER, "involts %E %s\n", _sim->_time0 , long_label().c_str());
@@ -37,6 +38,7 @@ protected: // override virtual
     }
     return tr_outvolts();
   }
+protected:
   hp_float_t   tr_involts_limited()const {return tr_outvolts_limited();}
   double   tr_probe_num(const std::string&)const;
   void	   ac_iwant_matrix()	{ac_iwant_matrix_passive();}
