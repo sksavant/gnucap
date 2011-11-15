@@ -1020,6 +1020,7 @@ double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "vds ")) {
     return  _n[n_d].v0() - _n[n_s].v0();
   }else if (Umatch(x, "dvth ")) { // hci???
+    assert(a);
     return a->delta_vth;
   }else if (Umatch(x, "dv_bti ")) { // hci???
     if (d->_BTI) return  ((const DEV_BUILT_IN_BTI*)(d->_BTI))->dvth();
@@ -1476,7 +1477,7 @@ bool DEV_BUILT_IN_MOS::do_tr()
   if( m->use_bti() ){
     if(  isconverged ){
       //std::cout << "* btieval " << _sim->iteration_number() << " \n";
-      _BTI->do_tr();
+//      _BTI->do_tr();
     } else {
       //std::cout << "* not btieval " << _sim->iteration_number() << " \n";
     }
