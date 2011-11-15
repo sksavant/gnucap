@@ -28,6 +28,7 @@
 #include "u_cardst.h"
 #include "e_elemnt.h"
 #include "s__.h"
+#include "m_matrix.h"
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
@@ -65,6 +66,8 @@ protected:
   TRACE _trace;			/* enum: show extended diagnostics */
   enum {ONE_PT, LIN_STEP, LIN_PTS, TIMES, OCTAVE, DECADE} _stepmode[DCNEST];
   static double temp_c_in;	/* ambient temperature, input and sweep variable */
+private:
+  bool _dump_matrix;
 };
 /*--------------------------------------------------------------------------*/
 double	DCOP::temp_c_in = 0.;
@@ -304,6 +307,7 @@ void DCOP::fix_args(int Nest)
 /*--------------------------------------------------------------------------*/
 void DCOP::options(CS& Cmd, int Nest)
 {
+  _dump_matrix=0;
   _sim->_uic = _loop[Nest] = _reverse_in[Nest] = false;
   unsigned here = Cmd.cursor();
   do{
@@ -312,6 +316,7 @@ void DCOP::options(CS& Cmd, int Nest)
       || (Cmd.is_float()	&& ((Cmd >> _step_in[Nest]), (_stepmode[Nest] = LIN_STEP)))
       || (Get(Cmd, "*",		  &_step_in[Nest]) && (_stepmode[Nest] = TIMES))
       || (Get(Cmd, "+",		  &_step_in[Nest]) && (_stepmode[Nest] = LIN_STEP))
+      || Get(Cmd, "dm",           &_dump_matrix)
       || (Get(Cmd, "by",	  &_step_in[Nest]) && (_stepmode[Nest] = LIN_STEP))
       || (Get(Cmd, "step",	  &_step_in[Nest]) && (_stepmode[Nest] = LIN_STEP))
       || (Get(Cmd, "d{ecade}",	  &_step_in[Nest]) && (_stepmode[Nest] = DECADE))
@@ -379,6 +384,17 @@ void DCOP::sweep_recursive(int Nest)
       CARD_LIST::card_list.tr_accept();
       ::status.accept.stop();
       _sim->keep_voltages();
+
+      if(_dump_matrix){
+        BSMATRIX<double> G = _sim->_aa;
+        _out << "G\n" << G << "\n";
+        _out << "I= ( " << _sim->_i[1];
+        for(unsigned a=2; a <= G.size(); ++a){
+          _out << " " <<  _sim->_i[a];
+        }
+        _out  << ") \n";
+      }
+
       outdata(*_sweepval[Nest]);
       itl = OPT::DCXFER;
     }else{

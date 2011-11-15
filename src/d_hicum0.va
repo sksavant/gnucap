@@ -470,7 +470,7 @@ analog begin
 	     HICUMtype	=  `PNP;
 	  else
 	     HICUMtype	=  `NPN;
-         end
+    end
 
 	Vbci  = HICUMtype*V(br_bci);
 	Vbici = HICUMtype*V(br_bici);
