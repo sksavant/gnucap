@@ -1,0 +1,221 @@
+
+spice
+
+.list
+
+Vcc ncc 0 5
+Vin nin 0 sin(frequency=1, amplitude=2.5, offset=2.5)
+
+.verilog
+
+paramset myhicum hicum0;
+	.tnom=20;
+	.is=1.0e-16;
+endparamset
+
+myhicum Q1( b2 b1 0 );
+myhicum Q2( b3 b2 0 );
+myhicum Q3( b4 b3 0 );
+myhicum Q4( b5 b4 0 );
+myhicum Q5( b6 b5 0 );
+myhicum Q6( b7 b6 0 );
+myhicum Q7( b8 b7 0 );
+myhicum Q8( b9 b8 0 );
+myhicum Q9( b10 b9 0 );
+myhicum Q10( b11 b10 0 );
+myhicum Q11( b12 b11 0 );
+myhicum Q12( b13 b12 0 );
+myhicum Q13( b14 b13 0 );
+myhicum Q14( b15 b14 0 );
+myhicum Q15( b16 b15 0 );
+myhicum Q16( b17 b16 0 );
+myhicum Q17( b18 b17 0 );
+myhicum Q18( b19 b18 0 );
+myhicum Q19( b20 b19 0 );
+myhicum Q20( b21 b20 0 );
+myhicum Q21( b22 b21 0 );
+myhicum Q22( b23 b22 0 );
+myhicum Q23( b24 b23 0 );
+myhicum Q24( b25 b24 0 );
+myhicum Q25( b26 b25 0 );
+myhicum Q26( b27 b26 0 );
+myhicum Q27( b28 b27 0 );
+myhicum Q28( b29 b28 0 );
+myhicum Q29( b30 b29 0 );
+myhicum Q30( b31 b30 0 );
+myhicum Q31( b32 b31 0 );
+myhicum Q32( b33 b32 0 );
+myhicum Q33( b34 b33 0 );
+myhicum Q34( b35 b34 0 );
+myhicum Q35( b36 b35 0 );
+myhicum Q36( b37 b36 0 );
+myhicum Q37( b38 b37 0 );
+myhicum Q38( b39 b38 0 );
+myhicum Q39( b40 b39 0 );
+myhicum Q40( b41 b40 0 );
+myhicum Q41( b42 b41 0 );
+myhicum Q42( b43 b42 0 );
+myhicum Q43( b44 b43 0 );
+myhicum Q44( b45 b44 0 );
+myhicum Q45( b46 b45 0 );
+myhicum Q46( b47 b46 0 );
+myhicum Q47( b48 b47 0 );
+myhicum Q48( b49 b48 0 );
+myhicum Q49( b50 b49 0 );
+myhicum Q50( b51 b50 0 );
+myhicum Q51( b52 b51 0 );
+myhicum Q52( b53 b52 0 );
+myhicum Q53( b54 b53 0 );
+myhicum Q54( b55 b54 0 );
+myhicum Q55( b56 b55 0 );
+myhicum Q56( b57 b56 0 );
+myhicum Q57( b58 b57 0 );
+myhicum Q58( b59 b58 0 );
+myhicum Q59( b60 b59 0 );
+myhicum Q60( b61 b60 0 );
+myhicum Q61( b62 b61 0 );
+myhicum Q62( b63 b62 0 );
+myhicum Q63( b64 b63 0 );
+myhicum Q64( b65 b64 0 );
+myhicum Q65( b66 b65 0 );
+myhicum Q66( b67 b66 0 );
+myhicum Q67( b68 b67 0 );
+myhicum Q68( b69 b68 0 );
+myhicum Q69( b70 b69 0 );
+myhicum Q70( b71 b70 0 );
+myhicum Q71( b72 b71 0 );
+myhicum Q72( b73 b72 0 );
+myhicum Q73( b74 b73 0 );
+myhicum Q74( b75 b74 0 );
+myhicum Q75( b76 b75 0 );
+myhicum Q76( b77 b76 0 );
+myhicum Q77( b78 b77 0 );
+myhicum Q78( b79 b78 0 );
+myhicum Q79( b80 b79 0 );
+myhicum Q80( b81 b80 0 );
+myhicum Q81( b82 b81 0 );
+myhicum Q82( b83 b82 0 );
+myhicum Q83( b84 b83 0 );
+myhicum Q84( b85 b84 0 );
+myhicum Q85( b86 b85 0 );
+myhicum Q86( b87 b86 0 );
+myhicum Q87( b88 b87 0 );
+myhicum Q88( b89 b88 0 );
+myhicum Q89( b90 b89 0 );
+myhicum Q90( b91 b90 0 );
+myhicum Q91( b92 b91 0 );
+myhicum Q92( b93 b92 0 );
+myhicum Q93( b94 b93 0 );
+myhicum Q94( b95 b94 0 );
+myhicum Q95( b96 b95 0 );
+myhicum Q96( b97 b96 0 );
+myhicum Q97( nout b97 0 );
+
+spice
+
+R0 nin b1 10k
+R1 ncc b2 10k
+R2 ncc b3 10k
+R3 ncc b4 10k
+R4 ncc b5 10k
+R5 ncc b6 10k
+R6 ncc b7 10k
+R7 ncc b8 10k
+R8 ncc b9 10k
+R9 ncc b10 10k
+R10 ncc b11 10k
+R11 ncc b12 10k
+R12 ncc b13 10k
+R13 ncc b14 10k
+R14 ncc b15 10k
+R15 ncc b16 10k
+R16 ncc b17 10k
+R17 ncc b18 10k
+R18 ncc b19 10k
+R19 ncc b20 10k
+R20 ncc b21 10k
+R21 ncc b22 10k
+R22 ncc b23 10k
+R23 ncc b24 10k
+R24 ncc b25 10k
+R25 ncc b26 10k
+R26 ncc b27 10k
+R27 ncc b28 10k
+R28 ncc b29 10k
+R29 ncc b30 10k
+R30 ncc b31 10k
+R31 ncc b32 10k
+R32 ncc b33 10k
+R33 ncc b34 10k
+R34 ncc b35 10k
+R35 ncc b36 10k
+R36 ncc b37 10k
+R37 ncc b38 10k
+R38 ncc b39 10k
+R39 ncc b40 10k
+R40 ncc b41 10k
+R41 ncc b42 10k
+R42 ncc b43 10k
+R43 ncc b44 10k
+R44 ncc b45 10k
+R45 ncc b46 10k
+R46 ncc b47 10k
+R47 ncc b48 10k
+R48 ncc b49 10k
+R49 ncc b50 10k
+R50 ncc b51 10k
+R51 ncc b52 10k
+R52 ncc b53 10k
+R53 ncc b54 10k
+R54 ncc b55 10k
+R55 ncc b56 10k
+R56 ncc b57 10k
+R57 ncc b58 10k
+R58 ncc b59 10k
+R59 ncc b60 10k
+R60 ncc b61 10k
+R61 ncc b62 10k
+R62 ncc b63 10k
+R63 ncc b64 10k
+R64 ncc b65 10k
+R65 ncc b66 10k
+R66 ncc b67 10k
+R67 ncc b68 10k
+R68 ncc b69 10k
+R69 ncc b70 10k
+R70 ncc b71 10k
+R71 ncc b72 10k
+R72 ncc b73 10k
+R73 ncc b74 10k
+R74 ncc b75 10k
+R75 ncc b76 10k
+R76 ncc b77 10k
+R77 ncc b78 10k
+R78 ncc b79 10k
+R79 ncc b80 10k
+R80 ncc b81 10k
+R81 ncc b82 10k
+R82 ncc b83 10k
+R83 ncc b84 10k
+R84 ncc b85 10k
+R85 ncc b86 10k
+R86 ncc b87 10k
+R87 ncc b88 10k
+R88 ncc b89 10k
+R89 ncc b90 10k
+R90 ncc b91 10k
+R91 ncc b92 10k
+R92 ncc b93 10k
+R93 ncc b94 10k
+R94 ncc b95 10k
+R95 ncc b96 10k
+R96 ncc b97 10k
+R97 ncc nout 10k
+
+.print tran v(nin, b1, nout)
+
+.tran .1 1
+*trace v
+
+.end
+
