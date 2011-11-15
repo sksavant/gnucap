@@ -43,8 +43,9 @@ d_cs.cc d_poly_g.cc d_poly_cap.cc d_res.cc d_switch.cc \
 d_trln.cc d_vcg.cc d_vcr.cc d_vcvs.cc d_vs.cc d_vcvs2.cc \
 d_rcd.cc d_bti.cc  d_branchvs.cc
 
+gnucap_LDADD=
 
-matrix_example_LDADD = libgnucap.la
+# matrix_example_LDADD = libgnucap.la
 
 #old/unused
 if IVERILOG_VVP
@@ -62,11 +63,9 @@ D_IVL_O = $(D_IVL:%.cc=%.o)
 if IVERILOG
 D_SRCS += D_IVL
 
-
 #	libvvpg_la_SOURCES = vvp_main.cc
 #  bin_PROGRAMS += libvvpg
 gnucap_LDADD += @IVERILOG@
-matrix_example_LDADD += @IVERILOG@
 endif
 
 
@@ -182,6 +181,7 @@ SRCS2= ${RAW_SRCS}
 # make all of the model object files depend on all of the model sources
 # this is a bit overkill, but for example the bjt model makes use of the
 # diode model and we want to be sure and capture that dependency
+#
 ${MODELOBJS}: ${MODELSRCS}
 
 ## Include the .model files in the distfile as well as the rest of the
@@ -194,22 +194,32 @@ Make2.g++ Make2.Debug Make2.mingw32 \
 Makefile.am
 
 
-bin_PROGRAMS= gnucap matrix_example
+gnucap_LDADD += libgnucap.la
+gnucap_SOURCES = main.cc
+#EXTRA_gnucap_SOURCES = ${SRCS1} ${MODELSRCS} ${SRCS2}
+bin_PROGRAMS = gnucap 
+# gnucap_LDFLAGS = -all-static
+
+#ifdef static_binaries
+#gnucap_LDFLAGS = -static-libtool-libs 
+#endif
+
+#matrix_example
 
 ## gnucap as a shared library
 #if SHARED?
 lib_LTLIBRARIES = libgnucap.la
 libgnucap_la_SOURCES = ${SRCS1} ${MODELSRCS} ${SRCS2}
+
 #endif
 
-# gnucap_LDADD = libgnucap.la
-gnucap_SOURCES =  ${SRCS1} ${MODELSRCS} ${SRCS2} main.cc
+
 
 libgnucap_includedir = $(includedir)/gnucap
 libgnucap_include_HEADERS = ${RAW_HDRS}
 
 ### Clean out the modelgen generated files
-CLEANFILES= ${MODELSRCS}
+# CLEANFILES= ${MODELSRCS}
 
 ## Suffix rules for modelgen.
 ##
