@@ -871,7 +871,9 @@ void SOCK::veraop(){
     _trace=tVERBOSE;
   }
   CARD_LIST::card_list.tr_begin();  // hier muesste eigentlich eine dc hin.
-  head(0,0," ");
+  if(_dump_matrix) {
+    head(0,0," ");
+  }
   try{
     solve_with_homotopy(itl,_trace);
   }catch( Exception e) {
@@ -952,8 +954,8 @@ void SOCK::verakons() {
   trace2("SOCK::verakons, hot", _sim->_phase, _sim->_more_uic);
   if(_dump_matrix) { // Damit man mal was sieht L.H.
     //_trace=tVERBOSE; // use trace=v
+    head(0,0," ");
   }
-  head(0,0," ");
   CARD_LIST::card_list.tr_begin();
 
   try{
