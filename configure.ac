@@ -447,7 +447,7 @@ AC_MSG_RESULT([
    debug:      $enable_debug
    modules:    $enable_modules
    admst:      $enable_adms
-   shared_lib: $shared_lib
+   shared_lib: $enable_lib
    doc:        $enable_doc
 
 ])
