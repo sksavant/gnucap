@@ -85,7 +85,7 @@ fi
 ])
 dnl ------------- modules -------------------
 dnl MODULES=
-AC_MSG_CHECKING([if modules should be compiled in])
+AC_MSG_CHECKING([if shared modules should be compiled and installed])
 AC_ARG_ENABLE([modules],
 [  --enable-modules            Enable building of modules. [[default: disabled]]],
 [
@@ -101,6 +101,25 @@ fi
 	enable_modules=no
 ])
 AM_CONDITIONAL([MODULES], [test x$enable_modules != xno] )
+
+dnl --------------- lib -----------------
+dnl SHARED_LIB=
+AC_MSG_CHECKING([if library shall be installed])
+AC_ARG_ENABLE([lib],
+[  --enable-lib            Build and install shared library. [[default: disabled]]],
+[
+if test "X$enable_lib" = "Xno" ; then
+	AC_MSG_RESULT([no])
+else
+	AC_MSG_RESULT([yes])
+	enable_lib=yes
+fi
+],
+[
+	AC_MSG_RESULT([no])
+	enable_lib=no
+])
+AM_CONDITIONAL([SHARED_LIB], [test x$enable_lib != xno] )
 
 dnl --------------- adms -----------------
 #ADMS=
@@ -428,7 +447,7 @@ AC_MSG_RESULT([
    debug:      $enable_debug
    modules:    $enable_modules
    admst:      $enable_adms
-   shared:     $shared
+   shared_lib: $enable_lib
    doc:        $enable_doc
 
 ])

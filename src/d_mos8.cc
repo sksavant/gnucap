@@ -2958,8 +2958,7 @@ void MODEL_BUILT_IN_MOS8::tr_eval(COMPONENT* brh)const
 {
   DEV_BUILT_IN_MOS* d = prechecked_cast<DEV_BUILT_IN_MOS*>(brh);
   assert(d);
-  const ADP_BUILT_IN_MOS8* a = (const ADP_BUILT_IN_MOS8*)(d->adp());
-  assert(a);
+  const ADP_BUILT_IN_MOS* a = asserted_cast<const ADP_BUILT_IN_MOS*>(d->adp());
   const COMMON_BUILT_IN_MOS* c = prechecked_cast<const COMMON_BUILT_IN_MOS*>(d->common());
   assert(c);
   const SDP_BUILT_IN_MOS8* s = prechecked_cast<const SDP_BUILT_IN_MOS8*>(c->sdp());

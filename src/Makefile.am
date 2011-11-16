@@ -195,12 +195,24 @@ Make2.g++ Make2.Debug Make2.mingw32 \
 Makefile.am
 
 
-gnucap_LDADD += libgnucap.la
-gnucap_SOURCES = main.cc
-#EXTRA_gnucap_SOURCES = ${SRCS1} ${MODELSRCS} ${SRCS2}
-bin_PROGRAMS = gnucap 
 
-# kills dispatcher
+#matrix_example
+bin_PROGRAMS = gnucap 
+gnucap_SOURCES = main.cc ${SRCS1} ${MODELSRCS} ${SRCS2}
+#gnucap_SOURCES += ${SRCS1} ${MODELSRCS} ${SRCS2}
+gnucap_CPPFLAGS = $(AM_CPPFLAGS)
+
+if SHARED_LIB
+
+lib_LTLIBRARIES = libgnucap.la
+libgnucap_la_SOURCES = ${SRCS1} ${MODELSRCS} ${SRCS2}
+#gnucap_LDADD += libgnucap.la
+#libgnucap_la_CFLAGS = $(AM_CFLAGS)
+
+#else
+
+
+# kills dispatcher (FIXME?!)
 # gnucap_LDFLAGS = -all-static
 #
 # use ./configure --enable-static instead
@@ -210,14 +222,8 @@ bin_PROGRAMS = gnucap
 #gnucap_LDFLAGS = -static-libtool-libs 
 #endif
 
-#matrix_example
 
-## gnucap as a shared library
-#if SHARED?
-lib_LTLIBRARIES = libgnucap.la
-libgnucap_la_SOURCES = ${SRCS1} ${MODELSRCS} ${SRCS2}
-
-#endif
+endif
 
 
 

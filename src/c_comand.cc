@@ -135,6 +135,7 @@ class CMD_ECHO : public CMD {
 			while(cmd.ns_more()){
 				char c = cmd.peek();
 				if(c=='>'){
+					out.reset();
 					out.outset(cmd);
 				   break;
 				}
