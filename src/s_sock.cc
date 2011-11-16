@@ -871,7 +871,7 @@ void SOCK::veraop(){
     _trace=tVERBOSE;
   }
   CARD_LIST::card_list.tr_begin();  // hier muesste eigentlich eine dc hin.
-  if(_dump_matrix) {
+  if(printlist().size()) {
     head(0,0," ");
   }
   try{
@@ -952,7 +952,7 @@ void SOCK::verakons() {
   OPT::ITL itl = OPT::DCBIAS;
 
   trace2("SOCK::verakons, hot", _sim->_phase, _sim->_more_uic);
-  if(_dump_matrix) { // Damit man mal was sieht L.H.
+  if(printlist().size()) { // Damit man mal was sieht L.H.
     //_trace=tVERBOSE; // use trace=v
     head(0,0," ");
   }
