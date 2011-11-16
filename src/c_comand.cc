@@ -131,18 +131,20 @@ class CMD_ECHO : public CMD {
 			//BUG// buffer problem
 			std::string what=cmd.tail();
 			string str;
-			OMSTREAM out = IO::mstdout;
+			OMSTREAM _out = IO::mstdout;
 			while(cmd.ns_more()){
 				char c = cmd.peek();
 				if(c=='>'){
-					out.reset();
-					out.outset(cmd);
+					//out.reset();
+					_out.outset(cmd);
 				   break;
 				}
 				str += cmd.ctoc();
 			}
-			out << "* " <<str << "\n";
-			out.reset();
+			if (str.size() )_out << "* ";
+			_out <<str ;
+			_out <<	'\n';
+			_out.reset(); // needed?
 		}
 } p6;
 DISPATCHER<CMD>::INSTALL d6(&command_dispatcher, "echo", &p6);

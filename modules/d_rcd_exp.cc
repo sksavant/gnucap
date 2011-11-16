@@ -38,7 +38,7 @@ class MODEL_BUILT_IN_RCD_EXP : public MODEL_BUILT_IN_RCD_SYM {
     void do_expand( COMPONENT*) const;
     ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
 //    region_t region(const COMPONENT*) const;
-    double dvth( const COMPONENT* brh) const;
+    double P( const COMPONENT* brh) const;
   private:
     double __dRe(double uin, const COMMON_COMPONENT* cc)const; // unneeded?
     double __dRc(double uin, const COMMON_COMPONENT* cc)const;
@@ -269,7 +269,7 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
 
   // sanitycheck (monotonicity)
   long double E_test = this->__step( uin_eff, E_old, CKT_BASE::_sim->_last_time, c );
-  double trvorher= _c->tr();
+  double trvorher = _c->tr();
   long double E_vorher = this->__step( trvorher , E_old, CKT_BASE::_sim->_last_time, c );
   if (fabs(E_test - E) < fabs(E_vorher-E)){
     trace6("MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last new uin better ",
@@ -497,7 +497,7 @@ void MODEL_BUILT_IN_RCD_EXP::do_precalc_last(COMMON_COMPONENT* ccc, const CARD_L
   assert( is_number( cc->_Rc0 ) );
 }
 /*-------------------------------------------------*/
-double MODEL_BUILT_IN_RCD_EXP::dvth( const COMPONENT* brh) const
+double MODEL_BUILT_IN_RCD_EXP::P( const COMPONENT* brh) const
 {
   const DEV_BUILT_IN_RCD* d = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
   const COMMON_BUILT_IN_RCD* c = prechecked_cast<const COMMON_BUILT_IN_RCD*>(brh->common());
@@ -505,6 +505,7 @@ double MODEL_BUILT_IN_RCD_EXP::dvth( const COMPONENT* brh) const
     if(positive && (d->_Ccgfill->get_tt() < c->_zero)){
       error(bDANGER,"not positive %f %f\n", double(d->_Ccgfill->get_tt()), double(c->_zero));
     }
+    return (_tr_fill - c->_zero) * c->_weight;
     return (d->_Ccgfill->get_tt() - c->_zero) * c->_weight;
   }else{
     assert(is_number( d->_Ccgfill->get_tt() * c->_weight));

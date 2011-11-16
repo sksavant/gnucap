@@ -203,8 +203,10 @@ OMSTREAM & OMSTREAM::ostream_char(char chr)
       }
       
       if (chr=='\n') {
-	_cpos[ii] = 0;
+	fputc(chr,IO::stream[ii]);
 	fflush(IO::stream[ii]);
+        suppress = true;
+	_cpos[ii] = 0;
       }else if (chr=='\r') {itested();
 	if (_cpos[ii] == 0) {untested();
 	  suppress = true;

@@ -57,7 +57,7 @@ class MODEL_BUILT_IN_RCD :public MODEL_CARD{
     virtual ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
   public: // override virtual
     virtual bool v2() const{return false;}
-    virtual double dvth(const COMPONENT*) const = 0;
+    virtual double P(const COMPONENT*) const = 0;
     virtual std::string dev_type()const;
     virtual void      set_dev_type(const std::string& nt);
     virtual CARD*     clone()const = 0;//{return new MODEL_BUILT_IN_RCD(*this);}
@@ -170,7 +170,7 @@ class MODEL_BUILT_IN_RCD_NET : public MODEL_BUILT_IN_RCD {
     std::string dev_type()const;
     CARD*     clone()const {return new MODEL_BUILT_IN_RCD_NET(*this);}
     // void     do_expand(const COMPONENT*) const;
-    double dvth(const COMPONENT* )const;
+    double P(const COMPONENT* )const;
 };
 /*--------------------------------------------------------------------------*/
 class COMMON_BUILT_IN_RCD :public COMMON_COMPONENT{
@@ -328,7 +328,7 @@ class DEV_BUILT_IN_RCD : public BASE_SUBCKT {
   public:
     double    involts()const;
     virtual double E()const {return 3;}
-    virtual double dvth() const;
+    virtual double P() const;
     static int  count() {return _count;}
   public: // may be used by models
   private: // not available even to models
