@@ -1409,7 +1409,10 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   if( _sim->_time0==0 ){
     assert( _Ccgfill->tr_lo == inf );
     assert( _Ccgfill->tr_hi == -inf );
+    // assert !tran_dynamic()?
   } else { // do not update tr_lo, tr_hi. could be wrong!
+
+    // assert tran_dynamic()?
 
     _Ccgfill->tr_lo = min(involts(), _Ccgfill->tr_lo);
     _Ccgfill->tr_hi = max(involts(), _Ccgfill->tr_hi);
@@ -1428,9 +1431,6 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
       throw(Exception("boundary error in " + long_label()));
     }
   }
-
-
-
 
   if (!h) {
     trace1("not h\n", _tr_fill);
