@@ -41,6 +41,7 @@ void DEV_BUILT_IN_RCD::tr_accept() {
   assert(is_number((double)_tr_fill));
   tr_stress();
   assert(is_number((double)_tr_fill));
+  q_eval();
 }
 /*--------------------------------------------------------------------------*/
 void SDP_BUILT_IN_RCD::init(const COMMON_COMPONENT* cc)
@@ -1028,8 +1029,9 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
     return  ( _Ccgfill->tr_rel_err() );
   }else if (Umatch(x, "E0|zero "    )) {
     return  ( c->_zero );
+  }else if (Umatch(x, "dE ")) {
+    return (double)_tr_fill - c->_zero ;
   }else if (Umatch(x, "E ")) {
-    untested();
     return (double)_tr_fill;
   }else if (Umatch(x, "te ")) {
       return  ( c->__tau_up(c->Uref) );
@@ -1331,7 +1333,8 @@ void DEV_BUILT_IN_RCD::stress_apply()
 
   double ex_time = _sim->_dT0 - _sim->_last_time;
   assert(ex_time = _sim->_last_Time);
-  
+
+  assert ( eff >= 0 || !m->positive);
   fill_new = m->__step( eff , fill_new, ex_time, c );
 
   long double eff1 = _Ccgfill->tr( Time1 + ex_time/3.0 );
@@ -1341,8 +1344,10 @@ void DEV_BUILT_IN_RCD::stress_apply()
 
 
 //  better 2 steps.
+  assert ( eff1 >= 0 || !m->positive);
   fill_new2 = m->__step( eff1, fill_new2, ex_time/2.0, c );
   assert(is_number(fill_new2));
+  assert ( eff2 >= 0 || !m->positive);
   fill_new2 = m->__step( eff2, fill_new2, ex_time/2.0, c );
   assert(is_number(fill_new2));
 
@@ -1399,33 +1404,32 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   }
 
 
+  assert(is_number(involts()));
+
   if( _sim->_time0==0 ){
     assert( _Ccgfill->tr_lo == inf );
     assert( _Ccgfill->tr_hi == -inf );
-  } else {
+  } else { // do not update tr_lo, tr_hi. could be wrong!
+
+    _Ccgfill->tr_lo = min(involts(), _Ccgfill->tr_lo);
+    _Ccgfill->tr_hi = max(involts(), _Ccgfill->tr_hi);
+
     assert( is_number(_Ccgfill->tr_lo) );
     assert( is_number(_Ccgfill->tr_hi) );
+    assert(fabs(_Ccgfill->tr_lo) < 1e5);
+    assert(fabs(_Ccgfill->tr_hi) < 1e5);
+
+    if( -15<  _Ccgfill->tr_hi &&  _Ccgfill->tr_hi < 100  &&
+        -15<  _Ccgfill->tr_lo &&  _Ccgfill->tr_lo < 100 ){
+    }else{
+      error(bDANGER, "%s something wrong with input range %f %f at time %E\n",
+          long_label().c_str(), _Ccgfill->tr_lo, _Ccgfill->tr_hi, _sim->_time0 );
+      assert(false);
+      throw(Exception("boundary error in " + long_label()));
+    }
   }
 
-  assert(is_number(involts()));
 
-  _Ccgfill->tr_lo = min(involts(), _Ccgfill->tr_lo);
-  _Ccgfill->tr_hi = max(involts(), _Ccgfill->tr_hi);
-
-  assert( is_number(_Ccgfill->tr_lo) );
-  assert( is_number(_Ccgfill->tr_hi) );
-  assert(fabs(_Ccgfill->tr_lo) < 1e5);
-  assert(fabs(_Ccgfill->tr_hi) < 1e5);
-
-
-  if( -15<  _Ccgfill->tr_hi &&  _Ccgfill->tr_hi < 100  &&
-      -15<  _Ccgfill->tr_lo &&  _Ccgfill->tr_lo < 100 ){
-  }else{
-    error(bDANGER, "%s something wrong with input range %f %f at time %E\n",
-        long_label().c_str(), _Ccgfill->tr_lo, _Ccgfill->tr_hi, _sim->_time0 );
-    assert(false);
-    throw(Exception("boundary error in " + long_label()));
-  }
 
 
   if (!h) {
@@ -1486,6 +1490,7 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
     case 1:
     default:
       trace0("DEV_BUILT_IN_RCD::tr_stress calling __step");
+      assert ( uin >= 0 || !m->positive);
       newfill = m->__step(uin, fill, h, c);
   }
   assert( newfill > -0.01 || !m->positive);
@@ -1614,10 +1619,11 @@ void DEV_BUILT_IN_RCD::tt_commit() { unreachable();
 // tt_begin??
 void DEV_BUILT_IN_RCD::tt_prepare()
 {
+  unreachable();
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
   assert(c);
   assert(c->model());
-  const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
+  //const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
 
   _tr_fill = _Ccgfill->tt();
 
@@ -1639,6 +1645,8 @@ void DEV_BUILT_IN_RCD::tt_begin()  {
 
   const MODEL_BUILT_IN_RCD* m = asserted_cast<const MODEL_BUILT_IN_RCD*>(c->model());
   m->do_tt_prepare(this);
+
+  q_eval();
 
 }
 ///*--------------------------------------------------------------------------*/
@@ -1731,6 +1739,9 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
   bool D=true;
   bool U=true;
 
+
+
+  assert(uin>=-0.001 || !m->positive);
   Euin = m->__step( uin, E_old, h, c );
   if(!is_number(Euin)) {
     error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter pl cannot evaluate E "
@@ -1850,6 +1861,7 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
 
     Q = fabs( dx_res / uin );
 
+    assert(uin>=-0.001 || !m->positive);
     Euin = m->__step( uin, E_old, h, c );
     deltaE_alt = deltaE;
     deltaE = Euin - Euin_alt; // Effektive Veraenderung

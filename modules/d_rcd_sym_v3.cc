@@ -282,6 +282,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE* _c,
 
   if (!linear_inversion){
     try{
+      assert(!m->positive ||  uin_eff>0);
       uin_eff = cc->__uin_iter(uin_eff, E_old, (double)E, _c->tr_lo, _c->tr_hi, dd );
     } catch (Exception &e) {
       error(bDANGER, "Exception in %s\n", long_label().c_str());

@@ -906,6 +906,10 @@ hp_float_t ADP_NODE::tr_rel( double dT ) const{
   }
 }
 /*---------------------------------*/
+// order:
+// 0 during 1st timeframe
+// 1 during 2nd timeframe.
+
 hp_float_t ADP_NODE::tr( double time ) const{
   long double Time1 = Time0() - dT0();
   long double now_rel = time - Time1; // dT0, oder?
