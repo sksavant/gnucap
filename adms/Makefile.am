@@ -1,3 +1,6 @@
+
+dist_bin_SCRIPTS=gnucap-adms
+
 COMMONS = hicum0 rtest
 
 DIR_INCLUDE_GNUCAP = gnucap_src

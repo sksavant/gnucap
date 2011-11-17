@@ -1,0 +1,57 @@
+spice
+
+.options numdgt=10
+* hicum0.gc
+* vorsicht: nodenames case-sensitive
+* .list
+
+Vce nci 0 2
+Ib 0 nb 10e-6
+vicq1 nci nc 0
+
+
+.verilog
+//hicum0;
+paramset myhicumdef hicum0;
+	.is = 1e-16
+	.rcx = 12.5
+endparamset
+	
+myhicumdef Q1( nc nb 0 );
+spice
+
+.list
+
+*    o nc
+*    |
+*    |
+*    |
+*    |
+*   C|
+*    \  
+*     \|  B  
+*   npn|------------o  nb
+*     /|
+*    /   
+*   E|
+*    |
+*    V
+*
+* I_{CE} = 100* I_{BE}
+
+
+.print dc i(Ib) v(nc) i(Vicq1) gmin(0) v(nodes) conv(Q1)
+
+*.dc Vce 0 2 0.1  Ib 0 10u 1u
+*.dc Ib 15u 20u 5u Vce 1 2 0.2  basic
+
+*.dc Ib 20u 20u 5u Vce 1 1 0.2 basic
+.dc Ib 15u 20u 5u Vce 1 1 0.2 basic trace=v
+
+
+
+*.tran .1 1 trace v
+*trace v
+*.tran 2
+
+.end
