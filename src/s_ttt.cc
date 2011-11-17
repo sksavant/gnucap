@@ -43,12 +43,10 @@
 #include "e_adp.h"
 #include "e_adplist.h"
 /*--------------------------------------------------------------------------*/
-#define sanitycheck()  assert ( 0.99 * _sim->_Time0 <= _Time1 + _sim->_dT0 );\
-                       assert ( 1.01 * _sim->_Time0 >= _Time1 + _sim->_dT0 );\
+#define sanitycheck()  assert ( is_almost(  _sim->_Time0 , _Time1 + _sim->_dT0 );\
                        assert ( _sim->_Time0 > _Time1 || _sim->tt_iteration_number()==0 );\
                        assert ( _sim->_dT0 == 0 || _sim->tt_iteration_number()!=0 );
 /*--------------------------------------------------------------------------*/
-
 namespace TT {
 /*--------------------------------------------------------------------------*/
 
@@ -476,6 +474,35 @@ void TTT::accept_tt()
 //  _sim->_last_Time = _sim->_Time0+_tstop;
 }
 /*--------------------------------------------------------------------------*/
+double TTT::voltage_dT(){
+  // we started at vdc (unchanged), before keep, compare v0<->vdc
+
+  double d=0;
+  for(unsigned i=1; i<=_sim->_total_nodes; ++i){
+    double delta = fabs(_sim->_v0[i]-_sim->_vdc[i]):
+    double sum = fabs(_sim->_v0[i])+fabs(_sim->_vdc[i]);
+
+    double err = delta - 
+  }
+
+}
+/*-----------------------------------------------------------*/
+// need to check that boundaries are consistent.
+double TTT::conchk(){
+
+  double a = OPT::abstol;
+  double r = OPT::reltol;
+
+  for(unsigned i=1; i<=_sim->_total_nodes; ++i){
+    double delta = fabs(_sim->_v0[i]-_sim->_vdc[i]):
+    double sum = fabs(_sim->_v0[i])+fabs(_sim->_vdc[i]);
+
+    if (std::abs(n-o) > (r * std::abs(n) + a))
+      return false;
+  }
+  return true;
+}
+/*--------------------------------------------------------------------------*/
 bool TTT::review_tt()
 {
   bool tmp=true;
@@ -493,6 +520,7 @@ bool TTT::review_tt()
   _dT_by_beh = OPT::behreltol/CKT_BASE::tt_behaviour_rel * _sim->_dT0;
   _dT_by_beh = max ( _dT_by_beh, (double) _tstop );
 
+  _dT_by_nodes = voltage_dT();// 1.0 / (1e-20+voltage_distance());
 
   _time_by_adp = _Time1 + _dT_by_adp;
   _time_by_beh = _Time1 + _dT_by_beh + 1e9;
