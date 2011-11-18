@@ -177,10 +177,10 @@ class Socket {
     Socket(): fd(0), port(0), _stream(0), port_tries(1){}
 
     Socket(SOCKET_TYPE type, short unsigned port=0 );
-    virtual ~Socket();
   protected: 
     short unsigned port_tries;
   public:
+    virtual ~Socket();
     virtual operator SocketStream() = 0;
     enum EOL {eol};
     template<class T>
