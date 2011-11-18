@@ -1,10 +1,10 @@
 #!/bin/bash
 
-usage=' type $0 some.va to generate some.cc and some.h. \n
+usage=" type $0 some.va to generate some.cc and some.h. \n
 \n
 to get a shared object type \n
 make some.so CPPFLAGS=`gnucap-conf --cppflags` LDFLAGS=`gnucap-conf --ldflags`
-'
+"
 
 function check_gnucap {
 [ -z `which gnucap-conf` ] &&  echo "need gnucap-conf" && exit 1 

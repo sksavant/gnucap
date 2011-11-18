@@ -41,9 +41,8 @@ static void sign_on(void)
 {
   if (OPT::quiet) return;
   IO::mstdout <<
-    COMMENT_CHAR " Fucap "  PATCHLEVEL  "\n"
+    COMMENT_CHAR " Gnucap "  PATCHLEVEL  "\n"
     COMMENT_CHAR " Copyright 2009-2011 Felix Salfelder\n"
-    COMMENT_CHAR " derived from Gnucap\n"
     COMMENT_CHAR " Copyright 1982-2009, Albert Davis\n"
     COMMENT_CHAR " Gnucap comes with ABSOLUTELY NO WARRANTY\n"
     COMMENT_CHAR " This is free software, and you are welcome\n"
@@ -119,7 +118,11 @@ static void process_cmd_line(int argc, const char *argv[])
 {
   for (int ii = 1;  ii < argc;  /*inside*/) {
     try {
-      if (   !strcasecmp(argv[ii], "-E")  
+      if (   !strcasecmp(argv[ii], "-v")  ){
+        // FIXME. use git hash for development versions.
+        cout << "gnucap " << PATCHLEVEL << endl;
+        exit(1);
+      } else if (   !strcasecmp(argv[ii], "-E")  
           || !strcasecmp(argv[ii], "-e") ) {
         ++ii;
 
@@ -188,8 +191,11 @@ int main(int argc, const char *argv[])
 {
   ENV::error = 0;
   // sigsetjmp unneeded here (isnt it?)
+  //
+  // FIXME:  parse -v and -q _now_
+  //
   read_startup_files();
-  sign_on();
+//  sign_on(); this sucks, as -q is parsed afterwards :(
 
   {
     SET_RUN_MODE xx(rBATCH);

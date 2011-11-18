@@ -543,7 +543,7 @@ void TTT::do_it(CS& Cmd, CARD_LIST* Scope)
     if(_trace>0 )
       _out << "* done setup\n";
   }catch (Exception& e) {itested();
-    error(bDANGER, e.message() + '\n');
+    error(bDANGER, "error: " + e.message() + '\n');
     throw(Exception("error TTT::do_it"));
   }
 
