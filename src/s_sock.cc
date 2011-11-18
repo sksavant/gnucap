@@ -452,6 +452,7 @@ void SOCK::sweep()
 
   //setup(Cmd);
   main_loop();
+  delete socket;
   // what am i doing here??
   return ;
 }
@@ -746,6 +747,10 @@ void SOCK::main_loop(){
 
     switch (opcode)  
     {
+      case '\0': // 0
+        trace0("Returning due to opcode 0");
+        return; 
+        break;
       case '3': // 51
         if(init_done) throw Exception("init twice??");
         verainit();
