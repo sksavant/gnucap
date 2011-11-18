@@ -291,6 +291,14 @@ void TTT::sweep_tt()
   if (_power_down){
     power_down(  _Tstop - _Tstart  );
     return;
+  }else if(_tstop==0. && _tstep==0. && (!_tt_cont) ){
+    trace0("TTT::sweep_tt just init nodes");
+    // set adp_nodes to initial values
+    CARD_LIST::card_list.do_forall( &CARD::tt_begin );
+
+    return;
+
+
   }else if( _Tstop == _Tstart ){
     trace0("TTT::sweep_tt just printing");
     if (_trace > 0 )
@@ -549,7 +557,6 @@ void TTT::do_it(CS& Cmd, CARD_LIST* Scope)
 
   try {
     allocate();
-
     ::status.set_up.stop();
     switch (ENV::run_mode) {untested();
       case rPRE_MAIN:	unreachable();		break;
@@ -594,8 +601,6 @@ void TTT::unallocate()
   _tt_store = NULL;
 
   PROBE_LISTS::store[s_TRAN].clear();
-
-
   //FIXME: delete waves;
 
 //  if (_fdata_tt) {
@@ -655,12 +660,7 @@ void TTT::options(CS& Cmd)
   }while (Cmd.more() && !Cmd.stuck(&here) && !tr);
 
   initio(_out);
-
-  trace1(( "TTT::options rest ||| " +Cmd.tail() ).c_str(), tr);
-
-  trace0("TTT::options tr options");
   TRANSIENT::options(Cmd); // parse options from tran. 
-  trace0("TTT::options tr opt done");
 
   _dtmax_in.e_val(BIGBIG, _scope);
   // _dTmin_in.e_val(OPT::dTmin, _scope);

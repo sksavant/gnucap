@@ -804,13 +804,13 @@ void DEV_BUILT_IN_RCD::expand()
   //subckt()->precalc();
   assert(!is_constant());
   if ( adp() == NULL ){
-    attach_adp( m->new_adp( (COMPONENT*) this ) );
+  //  attach_adp( m->new_adp( (COMPONENT*) this ) );
   }else{
     untested(); // rebuild circuit??
   }
 
   if (m->v2()){
-    incomplete();
+    // incomplete();
     // do_tt?
     // _Ccgfill->tt_set( -c->_wcorr );
   }

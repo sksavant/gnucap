@@ -646,7 +646,7 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
     
       // get new node numbers, and assign them to the remaining
       for (assert(i==model->net_nodes() + 1); i <= num_nodes_in_subckt; ++i) {
-        untested();
+        //untested();
 	// for each remaining node in card_list
         // these are the internal nodes.
         string label = (*(model->subckt()->nodes())) [i] ;
