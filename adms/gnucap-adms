@@ -1,17 +1,16 @@
 #!/bin/bash
 
-usage=" type $0 some.va to generate some.cc and some.h. \n
+usage="type \$0 some.va to generate some.cc and some.h. \n
 \n
 to get a shared object type \n
-make some.so CPPFLAGS=`gnucap-conf --cppflags` LDFLAGS=`gnucap-conf --ldflags`
-"
+make some.so CPPFLAGS=\$(gnucap-conf --cppflags) LDFLAGS=\$(gnucap-conf --ldflags) "
 
 function check_gnucap {
-[ -z `which gnucap-conf` ] &&  echo "need gnucap-conf" && exit 1 
+	[ -z `which gnucap-conf` ] &&  echo "need gnucap-conf" && exit 1 
 }
 
 function check_adms {
-[ -z `which admsXml` ] &&  echo "need admsXml" && exit 1 
+	[ -z `which admsXml` ] &&  echo "need admsXml" && exit 1 
 }
 
 check_gnucap
@@ -19,7 +18,8 @@ check_gnucap
 case "$1" in
 	*.va)
 		check_adms
-		admsXml `gnucap-conf --adms` $1
+		echo executing `gnucap-conf --adms` $1
+		`gnucap-conf --adms` $1
 
 		;;
 

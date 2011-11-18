@@ -30,13 +30,16 @@ EXTRA_DIST=	autogen.sh Makefile.template configure.old
 define GC
 #!/bin/bash
 
-case $1 in
-	--cppflags)
-	echo -IFOO/include
-	--ldflags)
-	echo -LPREFIX/lib -lgnucap
-	--adms)
-	echo admsXml -e zeux
+case $$1 in
+	"--cppflags")
+	echo -I$(libdir)/include
+	;;
+	"--ldflags")
+	echo -L$(prefix)/lib -lgnucap
+	;;
+	"--adms")
+	echo admsXml -e $(datarootdir)/gnucap.xml
+	;;
 esac
 
 endef
@@ -45,3 +48,4 @@ export GC
 
 gnucap-conf: Makefile
 	echo "$$GC" > $@
+	chmod +x $@
