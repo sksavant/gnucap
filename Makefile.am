@@ -32,7 +32,7 @@ define GC
 
 case $$1 in
 	"--cppflags")
-	echo -I$(libdir)/include
+	echo -I$(includedir)/gnucap
 	;;
 	"--ldflags")
 	echo -L$(prefix)/lib -lgnucap

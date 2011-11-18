@@ -228,7 +228,12 @@ endif
 
 
 libgnucap_includedir = $(includedir)/gnucap
-libgnucap_include_HEADERS = ${RAW_HDRS}
+libgnucap_include_HEADERS =   ${RAW_HDRS}
+ 
+#gnucap_include_HEADERS = ${RAW_HDRS}
+
+gnucap_includedir=$(includedir)/gnucap 
+
 
 ### Clean out the modelgen generated files
 # CLEANFILES= ${MODELSRCS}
@@ -266,6 +271,7 @@ ADMS_HTM_XML=../adms/admst_htm.xml
 
 if ADMS
 $(ADMS_SRCS): $(ADMS_GC_XML)
+libgnucap_include_HEADERS += e_adms.h
 
 $(ADMS_GC_XML):
 	make -C ../adms
