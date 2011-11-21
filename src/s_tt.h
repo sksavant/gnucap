@@ -51,6 +51,7 @@ class TTT : public TRANSIENT {
     bool	review_tt();
     void	options(CS&);
     void	sweep();
+	 void do_initial_dc();
     void	sweep_tt();
     double get_new_dT();
     void	accept_tt();

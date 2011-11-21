@@ -126,6 +126,7 @@ public: // other thiongs
 
   virtual void do_tr_stress( const COMPONENT* C ) const ;
   virtual void do_tr_stress_last( const COMPONENT*  ) const {
+	  unreachable();// old interface.
 	  //  MODEL_BUILT_IN_DIODE::do_tr_stress_last( C)
   }
 };

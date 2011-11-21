@@ -321,6 +321,7 @@ public:
   virtual void tt_accept();
   virtual void tt_commit();
   virtual void tr_stress_last();
+  virtual void stress_apply();
   double vthscale_bti ; //  exp ( 10000. * a->hci_stress->get() / c->w_in );
   double vthdelta_bti ;
   double eff(){return bti_eff_voltage;}

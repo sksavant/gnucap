@@ -29,54 +29,81 @@
 #include "c_comand.h"
 #include "globals.h"
 #include "e_node.h"
+#include "e_adp.h"
 #include <iostream>
 #include <fstream>
 #include <string>
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-void volts_load( fstream *in, CARD_LIST* )
-{
-  // fixme. -nan
-  std::string inss;
-  double ind;
-  uint_t i=1;
-  double Last;
-  *in >> Last;
-  trace1("volts_load", Last);
-  CKT_BASE::_sim->init();
-  assert(CKT_BASE::_sim->_vdc);
-  CKT_BASE::_sim->_last_Time = Last;
-  while ( ! (in->eof() ) ){
-    assert( i< CKT_BASE::_sim->_total_nodes +2 + CKT_BASE::_sim->_adp_nodes );
-    *in >> skipws;
+class CMD_NODESET : public CMD {
+public:
+  void do_it(CS& cmd, CARD_LIST* Scope)
+  {
 
-    if( '\n' ==  in->peek()
-       ||' ' ==  in->peek() ){
-      in->get();
-    } else if( 'n' ==  in->peek() ){
-      *in >> inss >> skipws;
-      if(inss=="nan"){
-        trace1(" putting nan ", i);
-        CKT_BASE::_sim->_vdc[i] = NAN;
-        i++;
-      }
-    } else if(*in >> ind){
-      *in >> skipws;
-      trace2(" putting ", i, ind);
-      CKT_BASE::_sim->_vdc[i] = ind;
-      ++i;
-    } else {
-      //*in >> skipws >> inss;
-      inss = (char) in->get();
-      trace1((" garbage ->" + inss + "<- ").c_str(), (int)inss[0]);
+    std::string what(cmd.ctos(TOKENTERM));/* parameter */
+        
+    unsigned paren = cmd.skip1b('(');
+    string name;
+
+    if(what=="V"||what=="v"){
+        name=  cmd.ctos();
+        trace1("CMD_NODESET::do_it", name);
+
+    }else{
+      incomplete();
+      assert(false);
+
     }
+
+    paren -= cmd.skip1b(')');
+
+    if (paren) {itested();
+      cmd.warn(bWARNING, "need )");
+      return;
+    }
+    double v;
+    cmd >> v;
+
+    CKT_BASE::_sim->init();
+
+    NODE_BASE* n = NODE_BASE::lookup_node(name, Scope);
+
+    NODE* x = dynamic_cast<NODE*>(n);
+    ADP_NODE* a = dynamic_cast<ADP_NODE*>(n);
+
+    if(x){
+      _sim->_vdc[ x->matrix_number() ] = 0;
+    } else if(a){
+      incomplete();
+
+    }
+
+
+
+
+
   }
-}
+} p1;
+DISPATCHER<CMD>::INSTALL d1(&command_dispatcher, "nodeset", &p1);
 /*--------------------------------------------------------------------------*/
-void volts_save(CS&, OMSTREAM out, CARD_LIST*)
+class CMD_DUMP : public CMD {
+  void dump(CS&, OMSTREAM out, CARD_LIST*);
+public:
+  void do_it(CS& cmd, CARD_LIST* Scope)
+  {
+    OMSTREAM out = IO::mstdout;
+    out.setfloatwidth(30);
+    out.outset(cmd);
+    dump(cmd, out, Scope);
+    out.outreset();
+  }
+} p2;
+DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "nodedump", &p2);
+/*--------------------------------------------------------------------------*/
+void CMD_DUMP::dump(CS&, OMSTREAM out, CARD_LIST*)
 {
-  CARD_LIST::card_list.precalc_first();
+//  CARD_LIST::card_list.precalc_first();
 
   //out.setfloatwidth(7);
   switch (ENV::run_mode) {
@@ -107,36 +134,6 @@ void volts_save(CS&, OMSTREAM out, CARD_LIST*)
     out <<  CKT_BASE::_sim->_vdc[i] << "\n";
   }
 }
-/*--------------------------------------------------------------------------*/
-class CMD_LIST : public CMD {
-public:
-  void do_it(CS& cmd, CARD_LIST* Scope)
-  {
-    std::string filename;
-    cmd >> filename;
-    fstream inFile(filename.c_str());
-    if (inFile.fail()) {
-      cerr << "Unable to open " << filename << " for reading." << endl;
-      return;
-    }
-    volts_load(&inFile, Scope);
-    inFile.close();
-  }
-} p1;
-DISPATCHER<CMD>::INSTALL d1(&command_dispatcher, "vload", &p1);
-/*--------------------------------------------------------------------------*/
-class CMD_SAVE : public CMD {
-public:
-  void do_it(CS& cmd, CARD_LIST* Scope)
-  {
-    OMSTREAM out = IO::mstdout;
-    out.setfloatwidth(30);
-    out.outset(cmd);
-    volts_save(cmd, out, Scope);
-    out.outreset();
-  }
-} p2;
-DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "vdump|vsave", &p2);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/

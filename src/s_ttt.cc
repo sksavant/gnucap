@@ -243,6 +243,19 @@ void TTT::first_after_interruption(){
   trace0("TTT::first_after_interruption done");
 }
 /*--------------------------------------------------------------*/
+void TTT::do_initial_dc(){
+    trace0("TTT::sweep_tt just init nodes");
+    // set adp_nodes to initial values
+    CARD_LIST::card_list.do_forall( &CARD::tt_begin );
+    CARD_LIST::card_list.do_forall( &CARD::tr_begin );
+    _sim->_phase = p_INIT_DC;
+    bool
+    _converged = solve_with_homotopy(OPT::DCBIAS,_trace);
+    assert(_converged);
+    //
+    _sim->keep_voltages();
+}
+/*--------------------------------------------------------------*/
 void TTT::power_down(double time)
 {
     if (_trace>0 )
@@ -292,12 +305,9 @@ void TTT::sweep_tt()
     power_down(  _Tstop - _Tstart  );
     return;
   }else if(_tstop==0. && _tstep==0. && (!_tt_cont) ){
-    trace0("TTT::sweep_tt just init nodes");
-    // set adp_nodes to initial values
-    CARD_LIST::card_list.do_forall( &CARD::tt_begin );
 
+    do_initial_dc();
     return;
-
 
   }else if( _Tstop == _Tstart ){
     trace0("TTT::sweep_tt just printing");
@@ -337,10 +347,10 @@ void TTT::sweep_tt()
     trace7( "TTT::sweep_tt loop start ", _sim->_Time0, _Time1, _sim->_dT0,
         _accepted, _accepted_tt, tt_iteration_number(), _sim->_last_Time ); 
     sanitycheck();
-    ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_commit );
 
-    // CARD_LIST::card_list.do_forall( &CARD::tt_commit ); // ?
-    
+    // sort of apply
+    trace0("TTT::sweep_tt ADP_NODE::tt_commit");
+    ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_commit );
     trace0("TTT::sweep CARD::stress_apply");
     CARD_LIST::card_list.stress_apply();
 

@@ -99,6 +99,8 @@ class NODE_BASE : public CKT_BASE {
     explicit NODE_BASE(const std::string& s, int n, const CARD_LIST* p=0);
     virtual ~NODE_BASE() {}
     NODE_BASE&	set_user_number(uint_t n){_user_number = n; return *this;}
+
+    static NODE_BASE* lookup_node(const string, const CARD_LIST* s=&CARD_LIST::card_list);
   public: // virtuals
     virtual double	tr_probe_num(const std::string&)const;
     virtual double	tt_probe_num(const std::string&)const;

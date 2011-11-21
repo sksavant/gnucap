@@ -121,6 +121,7 @@ e_homebrew.cc \
 e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc e_adplist.cc\
 bm_value.cc bm.cc \
 c__cmd.cc c_attach.cc c_file.cc c_genrat.cc c_debug.cc \
+c_nodeset.cc \
 findbr.cc plot.cc globals.cc e_adp.cc e_adp_mos.cc \
 startup.cc
 #------------------------------------------------------------------------
@@ -148,7 +149,8 @@ RAW_HDRS += d_vvp.h d_ivl.h e_ivl_compile.h d_ivl_ports.h
 endif
 
 if ADMS
-ADMS_SRCS = e_adms.cc d_hicum0.cc d_ota_simpl.cc d_ota_medium.cc d_opamp.cc
+ADMS_SRCS = e_adms.cc d_hicum0.cc d_ota_simpl.cc d_ota_medium.cc 
+#not yet d_opamp.cc
 RAW_SRCS += $(ADMS_SRCS)
 endif
 #------------------------------------------------------------------------ 

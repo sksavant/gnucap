@@ -31,6 +31,7 @@
 #include "e_node.h"
 #include "d_subckt.h"
 #include "e_subckt.h"
+#include "e_adp.h"
 #include "u_nodemap.h"
 #include "io_matrix.h"
 #include "u_sim_data.h"
@@ -284,6 +285,7 @@ void CMD_NL::print( OMSTREAM _out, const CARD_LIST* scope){
     const MODEL_SUBCKT* m = dynamic_cast<const MODEL_SUBCKT*>(*i);
     const COMPONENT* s = dynamic_cast<const COMPONENT*>(*i);
     //const CARD* s=*i;
+    //FIXME: is_device should do the trick (no m needed);
     if (!m && s)
     if (s->subckt()) {
       _out << "-" << s->long_label() <<"\n";
@@ -293,6 +295,32 @@ void CMD_NL::print( OMSTREAM _out, const CARD_LIST* scope){
 
 }
 
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+class CMD_ADP_NL : public CMD {
+public:
+  //void print(OMSTREAM, const CARD_LIST*);
+  void do_it(CS& cmd, CARD_LIST* )
+  {
+    OMSTREAM _out = IO::mstdout;
+    _out.setfloatwidth(3);
+    _out.outset(cmd);
+
+    _out << "name...\n";
+
+    CKT_BASE::_sim->init();
+
+    _out << "have " << _sim->_adp_nodes << " adp nodes.\n";
+    for(ADP_NODE_LIST::const_iterator ii = ADP_NODE_LIST::adp_node_list.begin( );
+          ii != ADP_NODE_LIST::adp_node_list.end(); ++ii ) {
+      _out << (*ii)->long_label() << "\n";
+    }
+    _out.outreset();
+  }
+} p6b;
+DISPATCHER<CMD>::INSTALL d6b(&command_dispatcher, "adpnl|listadpn", &p6b);
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 class CMD_I : public CMD {
 public:

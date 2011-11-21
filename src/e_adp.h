@@ -20,7 +20,7 @@ class ADP_CARD;
 class COMPONENT;
 /*--------------------------------------------------------------------------*/
 // collects transient (stress) data, sometimes extrapolates.
-class ADP_NODE: public CKT_BASE {
+class ADP_NODE: public NODE_BASE {
   public:
     // explicit ADP_NODE( const COMPONENT* );
     explicit ADP_NODE( const COMPONENT* , std::string name_in2 );//
