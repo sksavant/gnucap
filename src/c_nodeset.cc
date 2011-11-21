@@ -29,10 +29,12 @@
 #include "c_comand.h"
 #include "globals.h"
 #include "e_node.h"
+#include "u_nodemap.h"
 #include "e_adp.h"
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <iomanip>
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
@@ -80,61 +82,96 @@ public:
     }
 
 
-
-
-
   }
 } p1;
 DISPATCHER<CMD>::INSTALL d1(&command_dispatcher, "nodeset", &p1);
 /*--------------------------------------------------------------------------*/
 class CMD_DUMP : public CMD {
   void dump(CS&, OMSTREAM out, CARD_LIST*);
+  void printv( OMSTREAM _out, const CARD_LIST* scope);
 public:
   void do_it(CS& cmd, CARD_LIST* Scope)
   {
-    OMSTREAM out = IO::mstdout;
-    out.setfloatwidth(30);
-    out.outset(cmd);
-    dump(cmd, out, Scope);
-    out.outreset();
+    bool _adp=false;
+    bool _v=false;
+
+    OMSTREAM _out = IO::mstdout;
+    _out.setfloatwidth(30);
+
+    //out.setfloatwidth(7);
+    switch (ENV::run_mode) {
+      case rPRE_MAIN:
+        unreachable();
+        return;
+      case rPRESET:
+        /* do nothing */
+        return;
+      case rBATCH:		itested();
+      case rINTERACTIVE:	itested();
+      case rSCRIPT:
+                                /* keep going */
+                                break;
+    }
+
+    if (!OPT::language) {
+      throw Exception("no language");
+    }else{
+    }
+    unsigned here = cmd.cursor();
+    do{
+      ONE_OF
+        || Get(cmd, "adp",	   &_adp)
+        || Get(cmd, "voltages",	   &_v)
+        || _out.outset(cmd)
+        ;
+    }while (cmd.more() && !cmd.stuck(&here));
+
+    if (!_adp && !_v) _v=1;
+
+
+    if(_adp)
+    if (! CKT_BASE::_sim->_nstat ) return;
+    trace2( "save",  CKT_BASE::_sim->_total_nodes , CKT_BASE::_sim->_adp_nodes );
+
+    _out <<  CKT_BASE::_sim->_last_Time << "\n";
+
+    if (_v){
+      printv(_out, Scope);
+
+    }
+
+    _out.outreset();
   }
 } p2;
 DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "nodedump", &p2);
 /*--------------------------------------------------------------------------*/
-void CMD_DUMP::dump(CS&, OMSTREAM out, CARD_LIST*)
-{
-//  CARD_LIST::card_list.precalc_first();
-
-  //out.setfloatwidth(7);
-  switch (ENV::run_mode) {
-  case rPRE_MAIN:
-    unreachable();
-    return;
-  case rPRESET:
-    /* do nothing */
-    return;
-  case rBATCH:		itested();
-  case rINTERACTIVE:	itested();
-  case rSCRIPT:
-    /* keep going */
-    break;
-  }
-
-  if (!OPT::language) {
-    throw Exception("no language");
-  }else{
-  }
-
-  if (! CKT_BASE::_sim->_nstat ) return;
-  trace2( "save",  CKT_BASE::_sim->_total_nodes , CKT_BASE::_sim->_adp_nodes );
-  
-  out <<  CKT_BASE::_sim->_last_Time << "\n";
-
-  for ( uint_t i = 1;  CKT_BASE::_sim->_total_nodes + 1 + CKT_BASE::_sim->_adp_nodes > i ; ++i){
-    out <<  CKT_BASE::_sim->_vdc[i] << "\n";
-  }
-}
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/
+void CMD_DUMP::printv( OMSTREAM _out, const CARD_LIST* scope){
+
+  const NODE_MAP * nm = scope->nodes();
+  for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
+    if (i->first != "0") {
+      stringstream s;
+      _out << ".nodeset ";
+      s << setw(8) << i->second->long_label();
+      _out << s.str() <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
+    }else{
+      // _out << "Zero Node  "  << "\n";
+    }
+  }
+
+  for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
+    const COMPONENT* s = dynamic_cast<const COMPONENT*>(*i);
+    //const CARD* s=*i;
+    //FIXME: is_device should do the trick (no m needed);
+    if ((*i)->is_device() && s)
+    if (s->subckt()) {
+      _out << "-" << s->long_label() <<"\n";
+      printv(_out,s->subckt());
+    }
+  }
+
+}
 /*--------------------------------------------------------------------------*/
