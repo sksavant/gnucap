@@ -28,6 +28,9 @@
 #include "e_model.h"
 #include "e_elemnt.h"
 #include "io_trace.h"
+
+#include <typeinfo>
+
 /*--------------------------------------------------------------------------*/
 COMMON_COMPONENT::COMMON_COMPONENT(const COMMON_COMPONENT& p)
   :_tnom_c(p._tnom_c),
@@ -321,6 +324,9 @@ void COMMON_COMPONENT::tr_eval(ELEMENT*x)const
 {
   untested0( x->short_label().c_str()); // bug?
   assert(_model);
+
+  //printf("typeid(_model): %s", typeid(_model).name());
+
   _model->tr_eval(x);
 }
 /*--------------------------------------------------------------------------*/
@@ -1163,7 +1169,6 @@ void COMPONENT::attach_adp(ADP_CARD* a){
     std::cerr << "not attaching adpcard " << a << " to component " << this->short_label() << "\n";
     return;
   }
-
 
   if(_adp){
     untested();

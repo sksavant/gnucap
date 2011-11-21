@@ -41,6 +41,7 @@ void DEV_BUILT_IN_RCD::tr_accept() {
   assert(is_number((double)_tr_fill));
   tr_stress();
   assert(is_number((double)_tr_fill));
+  q_eval();
 }
 /*--------------------------------------------------------------------------*/
 void SDP_BUILT_IN_RCD::init(const COMMON_COMPONENT* cc)
@@ -98,14 +99,10 @@ MODEL_BUILT_IN_RCD::MODEL_BUILT_IN_RCD(const MODEL_BUILT_IN_RCD& p)
   }
 }
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD::dvth(const COMPONENT* ) const{
-  //const DEV_BUILT_IN_RCD* c = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
-  //const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(c->common());
-  // return _Ccgfill->get_tt() * cc->_weight * cc->_wcorr;
+double MODEL_BUILT_IN_RCD::P(const COMPONENT* ) const{
   assert(false);
   return ( NAN ); //c->_Ccgfill->get()+ _tr_fill ) * cc->_weight * cc->_wcorr;
 }
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 double MODEL_BUILT_IN_RCD::__Rc(double uin, const COMMON_COMPONENT* ccmp)const {
   const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(ccmp);
@@ -770,11 +767,6 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p)
   // overrides
 }
 /*--------------------------------------------------------------------------*/
-ADP_NODE_RCD* MODEL_BUILT_IN_RCD::new_adp_node(const COMPONENT*) const{
-  unreachable();
-  return NULL;
-}
-/*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::expand()
 {
   BASE_SUBCKT::expand(); // calls common->expand, attaches model
@@ -795,12 +787,11 @@ void DEV_BUILT_IN_RCD::expand()
   }
   if (_sim->is_first_expand()) {
     assert (!_Ccgfill);
-    _Ccgfill = new ADP_NODE((const COMPONENT*) this, short_label()+".C");
+    _Ccgfill = new ADP_NODE((const COMPONENT*) this, "C");
   }
 
 // idee: _Ccgfill:: tr_value <= udc
 //                  tt_value <= E
-  ADP_NODE_LIST::adp_node_list.push_back( _Ccgfill );
 //
  // _Udc = new ADP_NODE_UDC((const COMPONENT*) common()); //, _Ccgfill);
  // ADP_NODE_LIST::adp_node_list.push_back( _Udc );
@@ -812,19 +803,23 @@ void DEV_BUILT_IN_RCD::expand()
   //subckt()->precalc();
   assert(!is_constant());
   if ( adp() == NULL ){
-    attach_adp( m->new_adp( (COMPONENT*) this ) );
+  //  attach_adp( m->new_adp( (COMPONENT*) this ) );
   }else{
     untested(); // rebuild circuit??
   }
 
   if (m->v2()){
-    incomplete();
+    // incomplete();
     // do_tt?
     // _Ccgfill->tt_set( -c->_wcorr );
   }
   // _tr_fill = _Ccgfill->get();
 }
-/*--------------------------------------------------------------------------*/
+/*==================================*/
+ADP_NODE_RCD* MODEL_BUILT_IN_RCD::new_adp_node(const COMPONENT*) const{
+  unreachable();
+  return NULL;
+}
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::expand_sym() {
   assert(_n);
@@ -863,12 +858,12 @@ void DEV_BUILT_IN_RCD::expand_sym() {
   }
 }
 /*--------------------------------------------------------------------------*/
-double DEV_BUILT_IN_RCD::dvth()const {
+double DEV_BUILT_IN_RCD::P()const {
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
   assert(c);
   assert(c->model());
   const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
-  return m->dvth(this);
+  return m->P(this);
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::expand_net() {
@@ -1027,12 +1022,16 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "noise ")) {
     assert(_Ccgfill);
     return 0; // ( _Ccgfill->get_tr_noise() );
-  }else if (Umatch(x, "udc ")) {
-    return  ( NAN );
+  }else if (Umatch(x, "udc |ueff")) {
+    return  ( _Ccgfill->tr() );
   }else if (Umatch(x, "trr ")) {
     return  ( _Ccgfill->tr_rel_err() );
   }else if (Umatch(x, "E0|zero "    )) {
     return  ( c->_zero );
+  }else if (Umatch(x, "dE ")) {
+    return (double)_tr_fill - c->_zero ;
+  }else if (Umatch(x, "E ")) {
+    return (double)_tr_fill;
   }else if (Umatch(x, "te ")) {
       return  ( c->__tau_up(c->Uref) );
   }else if (Umatch(x, "tc ")) {
@@ -1051,9 +1050,12 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
     return  ( _Ccgfill->tr_abs_err() );
   }else if (Umatch(x, "uref ")) {
     return  ( c->Uref );
+  }else if (Umatch(x, "P ")) {
+    return  ( P() );
   }else if (Umatch(x, "dvth |vth ")) {
-    assert(is_number(  ( m->dvth(this) )));
-    return  ( m->dvth(this) );
+    unreachable();
+    assert(is_number(  P() ));
+    return  ( P() );
   }else if (Umatch(x, "vw{v} ")) {
     assert (c->_weight != .0);
     if (m->use_net()){
@@ -1068,7 +1070,7 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
       return _n[n_ic].v0() - _n[n_b].v0();
     else
       return (double)_tr_fill;
-  }else if (Umatch(x, "v{c} |E ")) {
+  }else if (Umatch(x, "v{c} ")) {
     if (m->use_net())
       return _n[n_ic].v0() - _n[n_b].v0();
     else
@@ -1101,15 +1103,21 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   // const ADP_BUILT_IN_RCD* a = prechecked_cast<const ADP_BUILT_IN_RCD*>(adp());
   //
   // FIXME 
-  //double lambda=1;
 
   if (Umatch(x, "vw{v} |dvth "))
-  { return  ( m->dvth(this) ); }
-  else if (Umatch(x, "vc "))  {
+  { unreachable(); // deprecated
+    return  ( P() );
+  } else if (Umatch(x, "P "))  {
+    return P();
+  } else if (Umatch(x, "vc "))  {
     if( m->use_net()){
+      assert(false);
       return  ( _n[n_ic].v0() - _n[n_b].v0() );
     }else{
-      return _Ccgfill->get_tt();
+      //  return _Ccgfill->get_tt();
+      //  depends on model!
+      assert(is_number(  ( P() )));
+      return  ( P() );
     }
   }
   else if (Umatch(x, "net "   )) { return( (double ) m->use_net()); }
@@ -1129,7 +1137,6 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   else if (Umatch(x, "wdt "   )) { return( _Ccgfill->wdT() ); }
   else if (Umatch(x, "region ")) { return( m->tt_region( this ) ); }
   else if (Umatch(x, "uref "  )) { return( c->Uref ); }
-  else if (Umatch(x, "trf "   )) { return( (double)_tr_fill ); }
   else if (Umatch(x, "udc "))    { return( _Ccgfill->tr() ); }
 
   else if (Umatch(x, "uend "  )) { return( c->Uref / (c->__Re(c->Uref) / c->__Rc(c->Uref) +1) * c->_wcorr ) * c->_weight; }
@@ -1278,6 +1285,7 @@ long double MODEL_BUILT_IN_RCD::__step(long double uin, long double cur,  double
 //   void tr_queue_eval()      {if(tr_needs_eval()){q_eval();}}
 ///*--------------------------------------------------------------------------*/
 //
+// tt_load...
 void DEV_BUILT_IN_RCD::stress_apply()
 {
   assert(_n);
@@ -1299,19 +1307,19 @@ void DEV_BUILT_IN_RCD::stress_apply()
     _tr_fill = _Ccgfill->tt();
     return;
   }
-  double Time1=_sim->_Time0 - _sim->_dT0;
+  double Time1 = _sim->_Time0 - _sim->_dT0;
 
   trace4("DEV_BUILT_IN_RCD::stress_apply ", _sim->_Time0, _sim->_dT0,
       tt_iteration_number(), _sim->_Time0);
   trace4("DEV_BUILT_IN_RCD::stress_apply ", 
       _Ccgfill->tr() , _Ccgfill->tr(_sim->_Time0 ), _Ccgfill->order(), _sim->_time0);
 
-  assert ( is_almost( _Ccgfill->tr() , _Ccgfill->tr_rel(_sim->_dT0 + _sim->_time0) ));
   if (! ( is_almost( _Ccgfill->tr1() , _Ccgfill->tr(Time1) )))
   {
       error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress !almost tr1 %E tr(T1) %E \n",
           _Ccgfill->tr1() , _Ccgfill->tr(Time1) );
   } 
+  assert ( is_almost( _Ccgfill->tr() , _Ccgfill->tr_rel(_sim->_dT0 + _sim->_time0) ));
   long double E_old = _Ccgfill->tt1();
   long double eff   = _Ccgfill->tr();
   if(m->positive) eff= max(eff,0.0L);
@@ -1323,16 +1331,22 @@ void DEV_BUILT_IN_RCD::stress_apply()
   long double fill_new2 = E_old;
 
   double ex_time = _sim->_dT0 - _sim->_last_time;
-  
+  assert(ex_time = _sim->_last_Time);
+
+  assert ( eff >= 0 || !m->positive);
   fill_new = m->__step( eff , fill_new, ex_time, c );
 
-  long double eff1=_Ccgfill->tr( Time1+ex_time/3.0 );
-  long double eff2=_Ccgfill->tr( Time1+ex_time*2.0/3.0 );
+  long double eff1 = _Ccgfill->tr( Time1 + ex_time/3.0 );
+  long double eff2 = _Ccgfill->tr( Time1 + ex_time*2.0/3.0 );
   if(m->positive) eff1= max(eff1,0.0L);
   if(m->positive) eff2= max(eff2,0.0L);
 
+
+//  better 2 steps.
+  assert ( eff1 >= 0 || !m->positive);
   fill_new2 = m->__step( eff1, fill_new2, ex_time/2.0, c );
   assert(is_number(fill_new2));
+  assert ( eff2 >= 0 || !m->positive);
   fill_new2 = m->__step( eff2, fill_new2, ex_time/2.0, c );
   assert(is_number(fill_new2));
 
@@ -1347,17 +1361,9 @@ void DEV_BUILT_IN_RCD::stress_apply()
 
   trace3("DEV_BUILT_IN_RCD::stress_apply", eff, _tr_fill, _sim->tt_iteration_number() );
 
-  hp_float_t fv = (hp_float_t) _tr_fill;
+//  hp_float_t fv = (hp_float_t) _tr_fill;
 
-  if( m->use_net() && _sim->analysis_is_tt() )
   {
-    _sim->_v0[_n[n_ic].m_()] = fv + _sim->_v0[_n[n_b].m_()];
-    _sim->_vt1[_n[n_ic].m_()] = fv + _sim->_vt1[_n[n_b].m_()];
-    _sim->_vdc[_n[n_ic].m_()] = fv + _sim->_vdc[_n[n_b].m_()];
-    ((STORAGE*) (_Ccg))->tr_init((hp_float_t)_tr_fill);
-
-    trace2("DEV_BUILT_IN_RCD::stress_apply n", _Ccgfill->get_tr(), _Ccgfill->get_tt());
-  } else {
     assert(is_number(fill_new));
     _Ccgfill->tt() = (double) fill_new;
     _tr_fill = fill_new;
@@ -1397,34 +1403,33 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   }
 
 
+  assert(is_number(involts()));
+
   if( _sim->_time0==0 ){
     assert( _Ccgfill->tr_lo == inf );
     assert( _Ccgfill->tr_hi == -inf );
-  } else {
+    // assert !tran_dynamic()?
+  } else { // do not update tr_lo, tr_hi. could be wrong!
+
+    // assert tran_dynamic()?
+
+    _Ccgfill->tr_lo = min(involts(), _Ccgfill->tr_lo);
+    _Ccgfill->tr_hi = max(involts(), _Ccgfill->tr_hi);
+
     assert( is_number(_Ccgfill->tr_lo) );
     assert( is_number(_Ccgfill->tr_hi) );
+    assert(fabs(_Ccgfill->tr_lo) < 1e5);
+    assert(fabs(_Ccgfill->tr_hi) < 1e5);
+
+    if( -15<  _Ccgfill->tr_hi &&  _Ccgfill->tr_hi < 100  &&
+        -15<  _Ccgfill->tr_lo &&  _Ccgfill->tr_lo < 100 ){
+    }else{
+      error(bDANGER, "%s something wrong with input range %f %f at time %E\n",
+          long_label().c_str(), _Ccgfill->tr_lo, _Ccgfill->tr_hi, _sim->_time0 );
+      assert(false);
+      throw(Exception("boundary error in " + long_label()));
+    }
   }
-
-  assert(is_number(involts()));
-
-  _Ccgfill->tr_lo = min(involts(), _Ccgfill->tr_lo);
-  _Ccgfill->tr_hi = max(involts(), _Ccgfill->tr_hi);
-
-  assert( is_number(_Ccgfill->tr_lo) );
-  assert( is_number(_Ccgfill->tr_hi) );
-  assert(fabs(_Ccgfill->tr_lo) < 1e5);
-  assert(fabs(_Ccgfill->tr_hi) < 1e5);
-
-
-  if( -15<  _Ccgfill->tr_hi &&  _Ccgfill->tr_hi < 100  &&
-      -15<  _Ccgfill->tr_lo &&  _Ccgfill->tr_lo < 100 ){
-  }else{
-    error(bDANGER, "%s something wrong with input range %f %f at time %E\n",
-        long_label().c_str(), _Ccgfill->tr_lo, _Ccgfill->tr_hi, _sim->_time0 );
-    assert(false);
-    throw(Exception("boundary error in " + long_label()));
-  }
-
 
   if (!h) {
     trace1("not h\n", _tr_fill);
@@ -1484,6 +1489,7 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
     case 1:
     default:
       trace0("DEV_BUILT_IN_RCD::tr_stress calling __step");
+      assert ( uin >= 0 || !m->positive);
       newfill = m->__step(uin, fill, h, c);
   }
   assert( newfill > -0.01 || !m->positive);
@@ -1612,20 +1618,35 @@ void DEV_BUILT_IN_RCD::tt_commit() { unreachable();
 // tt_begin??
 void DEV_BUILT_IN_RCD::tt_prepare()
 {
+  unreachable();
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
   assert(c);
   assert(c->model());
-  const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
-  assert(m);
+  //const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
 
   _tr_fill = _Ccgfill->tt();
 
   assert(_sim->_time0 == 0 );
 
   trace0(("DEV_BUILT_IN_RCD::tt_prepare " + short_label()).c_str());
-  m->do_tt_prepare(this);
 
   lasts = -inf;
+}
+/*--------------------------------------------------------------------------*/
+void DEV_BUILT_IN_RCD::tt_begin()  {
+  const COMMON_BUILT_IN_RCD* c = prechecked_cast<const COMMON_BUILT_IN_RCD*>(common());
+  trace1("DEV_BUILT_IN_RCD::tt_begin", c->_zero);
+  _tr_fill = c->_zero ;
+
+  _Ccgfill->set_tt(c->_zero);  // tt_load??
+  _Ccgfill->set_tr(-inf);
+
+
+  const MODEL_BUILT_IN_RCD* m = asserted_cast<const MODEL_BUILT_IN_RCD*>(c->model());
+  m->do_tt_prepare(this);
+
+  q_eval();
+
 }
 ///*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::tr_begin(){
@@ -1661,13 +1682,6 @@ bool DEV_BUILT_IN_RCD::do_tr()
 void DEV_BUILT_IN_RCD::precalc_last()  {
   trace0("DEV_BUILT_IN_RCD::precalc_last");
   COMPONENT::precalc_last(); assert(subckt()); subckt()->precalc_last();
-}
-/*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_RCD::tt_begin()  {
-  const COMMON_BUILT_IN_RCD* c = prechecked_cast<const COMMON_BUILT_IN_RCD*>(common());
-  trace0("DEV_BUILT_IN_RCD::tt_begin");
-  _Ccgfill->set_tt(c->_zero); 
-  _Ccgfill->set_tr(-inf);
 }
 /*--------------------------------------------------------------------------*/
 /* Newton iterator. finding effective DC value */
@@ -1724,6 +1738,9 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
   bool D=true;
   bool U=true;
 
+
+
+  assert(uin>=-0.001 || !m->positive);
   Euin = m->__step( uin, E_old, h, c );
   if(!is_number(Euin)) {
     error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter pl cannot evaluate E "
@@ -1843,6 +1860,7 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
 
     Q = fabs( dx_res / uin );
 
+    assert(uin>=-0.001 || !m->positive);
     Euin = m->__step( uin, E_old, h, c );
     deltaE_alt = deltaE;
     deltaE = Euin - Euin_alt; // Effektive Veraenderung
@@ -1906,7 +1924,7 @@ void DEV_BUILT_IN_RCD::tt_next(){
   q_accept();
 }
 /*--------------------------------------------------------------------------*/
-double MODEL_BUILT_IN_RCD_NET::dvth(const COMPONENT* c) const{
+double MODEL_BUILT_IN_RCD_NET::P(const COMPONENT* c) const{
   const DEV_BUILT_IN_RCD* d = asserted_cast<const DEV_BUILT_IN_RCD*>(c);
   const COMMON_BUILT_IN_RCD* cc = asserted_cast<const COMMON_BUILT_IN_RCD*>(d->common());
   // read from CAP. _Ccgfill is only updated after tr

@@ -109,7 +109,7 @@ NODE::NODE()
  */
 NODE_BASE::NODE_BASE(const NODE_BASE& p)
   : CKT_BASE(p),
-  _parent(0),
+  _parent(p._parent),
   _user_number(p._user_number)
    //_flat_number(p._flat_number)
    //_matrix_number(INVALID_NODE)
@@ -122,7 +122,7 @@ NODE::NODE(const NODE& p)
   unreachable();
 }
 /*--------------------------------------------------------------------------*/
-NODE_BASE::NODE_BASE(const std::string& s, int n, CARD_LIST* p)
+NODE_BASE::NODE_BASE(const std::string& s, int n, const CARD_LIST* p)
   :CKT_BASE(s),
    _parent(p),
    _user_number(n)
@@ -143,7 +143,7 @@ NODE::NODE(const NODE* p)
 /*--------------------------------------------------------------------------*/
 /* usual initializing constructor : name and index
  */
-NODE::NODE(const std::string& s, int n, CARD_LIST*p)
+NODE::NODE(const std::string& s, int n, const CARD_LIST*p)
   :NODE_BASE(s,n,p)
 {
 }
@@ -262,9 +262,13 @@ const std::string  NODE_BASE::long_label()const
 {
   string ret(short_label());
   if (_parent){
+    trace1("NODE_BASE::long_label, have parent", short_label());
     if( _parent->owner()){
       ret=_parent->owner()->long_label() + "." + ret;
     }
+  } else {
+    trace1("NODE_BASE::long_label, have no parent", short_label());
+
   }
   return ret;
 }
@@ -619,7 +623,7 @@ void node_t::new_node(const std::string& node_name, const CARD_LIST* scope)
 
   NODE_MAP* Map = scope->nodes();
   assert(Map);
-  _nnn = Map->new_node(node_name);
+  _nnn = Map->new_node(node_name, scope);
   _ttt = _nnn->user_number();
   assert(_nnn);
 }
@@ -651,7 +655,7 @@ void node_t::new_sckt_node(const std::string& node_name, const CARD_LIST* scope)
   assert(scope);
   new_node(node_name, scope);
   _ttt = CKT_BASE::_sim->newnode_subckt();
-  trace3("node_t::new_sckt_node", node_name, _ttt, _nnn->user_number());
+  trace4("node_t::new_sckt_node", node_name, _ttt, _nnn->user_number(), _nnn->scope() );
   //assert(_ttt == _nnn->flat_number());
   //
   // later??
@@ -677,3 +681,33 @@ double	NODE_BASE::tt_probe_num(const std::string& x)const{return tr_probe_num(x)
 XPROBE	NODE_BASE::ac_probe_ext(const std::string&)const{ return XPROBE(0);}
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+NODE_BASE* NODE_BASE::lookup_node(string nodelabel, const CARD_LIST* scope)
+{
+  std::string::size_type dotplace = nodelabel.find_first_of(".");
+  if (dotplace != std::string::npos) {
+    // has a dot, look deeper
+    std::string dev = nodelabel.substr(dotplace+1, std::string::npos);
+    std::string container = nodelabel.substr(0, dotplace);
+    for (CARD_LIST::const_iterator
+        i = scope->begin();  i != scope->end();  ++i) {
+      CARD* card = *i;
+      //         cerr << " Verilog Card Match " << container << " dev "<< dev << " param " << param 
+      //              << " long label " <<  card->long_label()
+      //              << " short label " <<  card->short_label() <<  std::endl;
+      if (card->is_device()
+          && card->subckt()
+          && wmatch(card->short_label(), container)) {
+        trace0( "PROBELIST::add_branches dot cont: " + container + " dev " + dev + " " +
+            card->long_label());
+        return lookup_node(nodelabel, card->subckt());
+      }else{
+      }
+    }
+  }else{ // no dots, look here
+    trace1("PROBELIST::add_branches looking up node ", nodelabel );
+    NODE* node = (*scope).node(nodelabel);
+    return node;
+
+  }
+  return NULL;
+}

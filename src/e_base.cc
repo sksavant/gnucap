@@ -49,10 +49,10 @@ double	CKT_BASE::tt_behaviour_rel =  0;
 /*--------------------------------------------------------------------------*/
 CKT_BASE::~CKT_BASE()
 {
-//  trace1("~CKT_BASE", _probes);
+  trace1("~CKT_BASE", _probes);
   PROBE_LISTS::purge(this);
   if(_probes!=0){
-    error(bDANGER ,"CKT_BASE::~CKT_BASE %s %i ", long_label().c_str() , _probes);
+    error(bDANGER ,"CKT_BASE::~CKT_BASE here %s, still %i probes ", long_label().c_str() , _probes);
   }
   assert(_probes==0);
 }

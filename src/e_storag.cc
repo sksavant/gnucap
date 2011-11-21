@@ -58,7 +58,8 @@ void STORAGE::precalc_last()
   ELEMENT::precalc_last();
 
   set_converged();
-  assert(!is_constant()); /* because of integration */
+  trace2("STORAGE::precalc_last", _sim->sim_mode(), _sim->phase());
+  assert(!is_constant() || _sim->analysis_is_ddc_op() ); /* because of integration */
  
   _method_a = method_select[OPT::method][_method_u];
   //assert(_loss0 == 0.);
@@ -248,6 +249,10 @@ double STORAGE::tr_probe_num(const std::string& x)const
 }
 /*--------------------------------------------------------------------------*/
 void STORAGE::set_ic( double x ){
+
+  trace1("STORAGE:set_ic(...)",x);
+
+
   if(has_common()){
     trace1("STORAGE::set_ic have common "+long_label(), x);
     mutable_common()->set_ic(x);
@@ -273,8 +278,11 @@ void STORAGE::set_ic( double x ){
 //} 
 void STORAGE::keep_ic( ){
   //hack can we use _sim->_v0 instead??
-  double x =  dn_diff(_sim->_vdc[_sim->_nm[IN1]],_sim->_vdc[_sim->_nm[IN2]] ); //tr_involts();
-  trace3("STORAGE::keep_ic", _sim->_nm[IN1], _sim->_nm[IN2] , x);
+  // double x =  dn_diff(_sim->_vdc[_sim->_nm[IN1]],_sim->_vdc[_sim->_nm[IN2]] ); //tr_involts();
+  //double x =  dn_diff(_n[IN1].v0(),_n[IN2].v0() ); //tr_involts();
+  double x =  dn_diff(_n[OUT1].v0(),_n[OUT2].v0() ); //tr_involts();
+
+  trace6("STORAGE::keep_ic", long_label() , x, _n[IN1].v0(), _n[IN2].v0(), _n[OUT1].v0(),_n[OUT2].v0()  );
   if(has_common()){
     trace1("D_CAP::keep_ic have common " +long_label(),x);
     mutable_common()->set_ic(x);

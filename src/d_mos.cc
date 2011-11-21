@@ -1020,6 +1020,7 @@ double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "vds ")) {
     return  _n[n_d].v0() - _n[n_s].v0();
   }else if (Umatch(x, "dvth ")) { // hci???
+    assert(a);
     return a->delta_vth;
   }else if (Umatch(x, "dv_bti ")) { // hci???
     if (d->_BTI) return  ((const DEV_BUILT_IN_BTI*)(d->_BTI))->dvth();
@@ -1316,7 +1317,7 @@ double DEV_BUILT_IN_MOS::tt_probe_num(const std::string& x)const
       return NA;
   }else if (Umatch(x, "wdt ")) {
     return  a->wdT();
-  }else if (Umatch(x, "hci |dvth_hci ")) {
+  }else if (Umatch(x, "hci{_raw} |dvth_hci ")) {
     return  a->tt_probe_num(x);
   }else if (Umatch(x, "use_bti ")) {
     return  m->use_bti();
@@ -1476,7 +1477,7 @@ bool DEV_BUILT_IN_MOS::do_tr()
   if( m->use_bti() ){
     if(  isconverged ){
       //std::cout << "* btieval " << _sim->iteration_number() << " \n";
-      _BTI->do_tr();
+//      _BTI->do_tr();
     } else {
       //std::cout << "* not btieval " << _sim->iteration_number() << " \n";
     }
@@ -1515,6 +1516,8 @@ bool DEV_BUILT_IN_MOS::do_tr()
   _BTI->q_accept();
 #endif
 //  q_accept();
+//
+// necessary? adp should care for itself.
   adp()->q_accept();
 }
 /*--------------------------------------------------------------------------*/
@@ -1536,6 +1539,7 @@ void DEV_BUILT_IN_MOS::tt_begin() // NOT const
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_stress_last( )
 {
+
   BASE_SUBCKT::tr_stress_last();
   // FIXME (put adp into sckt, or do not call sckt)
   if(adp()) adp()->tr_stress_last();
@@ -1543,6 +1547,7 @@ void DEV_BUILT_IN_MOS::tr_stress_last( )
   const COMMON_COMPONENT* cc = common();
   const MODEL_BUILT_IN_MOS_BASE* m = asserted_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
 
+  // obsolete. aging model in adp?
   m->do_tr_stress_last( this );
 }
 /*--------------------------------------------------------------------------*/
@@ -1780,13 +1785,19 @@ void DEV_BUILT_IN_MOS::stress_apply( )
   const COMMON_BUILT_IN_MOS* c = (const COMMON_BUILT_IN_MOS*) common();
   const MODEL_BUILT_IN_MOS_BASE* m = (const MODEL_BUILT_IN_MOS_BASE*)(c->model());
   assert(m);
-  BASE_SUBCKT::stress_apply();
-  if (adp()){
-    adp()->stress_apply(); // not yet part of subckt
-  }
-  m->do_stress_apply(this);
 
-    cout << "DEV_BUILT_IN_MOS::stress_apply\n";
+  // move to adp.
+  if(m->use_bti()){
+    _BTI->stress_apply();
+  }
+  //BASE_SUBCKT::stress_apply();
+
+  if (adp()){
+    adp()->stress_apply(); // not part of subckt
+  }
+
+  // do the hci stuff...
+  m->do_stress_apply(this);
 }
 /*-------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_accept(){

@@ -413,7 +413,8 @@ void MODEL_BUILT_IN_BTI_SUM::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
 
   size_t Nr = rcdparm.size();
   if(!Nr)
-    throw Exception("no summands");
+    untested();
+//    throw Exception("no summands");
 
   trace1("MODEL_BUILT_IN_BTI_SUM::attach_rcds", Nr);
 
@@ -1077,7 +1078,7 @@ double DEV_BUILT_IN_BTI::dvth()const{
   assert(s);
   const ADP_BUILT_IN_BTI* a = prechecked_cast<const ADP_BUILT_IN_BTI*>(adp()); a=a;
   double buf = 0;
-  int i=m->rcd_number;
+  int i = m->rcd_number;
   for(; i-->0;  buf += CARD::probe(_RCD[i],"dvth") );
   return buf * c->weight;
 }
@@ -1098,6 +1099,8 @@ double DEV_BUILT_IN_BTI::tr_probe_num(const std::string& x)const
     int i=m->rcd_number;
     for(; i-->0;  buf += CARD::probe(_RCD[i],"vc") );
     return buf;
+  }else if (Umatch(x, "rcdnumber ")) {
+    return m->rcd_number;
   }else if (Umatch(x, "dvth |vth ")) {
     double buf = 0;
     int i=m->rcd_number;

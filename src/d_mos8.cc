@@ -186,6 +186,7 @@ void SDP_BUILT_IN_MOS8::init(const COMMON_COMPONENT* cc)
   b0 = m->b0(L, W, 0.0, par_scope);
   b1 = m->b1(L, W, 0.0, par_scope);
   alpha0 = m->alpha0(L, W, 0.0, par_scope);
+  trace1("SDP_BUILT_IN_MOS_BASE::init", alpha0);
   beta0 = m->beta0(L, W, 30.0, par_scope);
   elm = m->elm(L, W, 5.0, par_scope);
   vfbcv = m->vfbcv(L, W, -1.0, par_scope);
@@ -2957,8 +2958,7 @@ void MODEL_BUILT_IN_MOS8::tr_eval(COMPONENT* brh)const
 {
   DEV_BUILT_IN_MOS* d = prechecked_cast<DEV_BUILT_IN_MOS*>(brh);
   assert(d);
-  const ADP_BUILT_IN_MOS8* a = (const ADP_BUILT_IN_MOS8*)(d->adp());
-  assert(a);
+  const ADP_BUILT_IN_MOS* a = asserted_cast<const ADP_BUILT_IN_MOS*>(d->adp());
   const COMMON_BUILT_IN_MOS* c = prechecked_cast<const COMMON_BUILT_IN_MOS*>(d->common());
   assert(c);
   const SDP_BUILT_IN_MOS8* s = prechecked_cast<const SDP_BUILT_IN_MOS8*>(c->sdp());
@@ -3070,7 +3070,7 @@ void MODEL_BUILT_IN_MOS8::tr_eval(COMPONENT* brh)const
 	    T1 = 1.0 + T0;
 	    t2 = s->dvt2w;
 	  }else{
-	    untested();
+	   // untested();
 	    /* Added to avoid any discontinuity problems caused by dvt2w */ 
 	    double T4 = 1.0 / (3.0 + 8.0 * T0);
 	    T1 = (1.0 + 3.0 * T0) * T4; 
@@ -3846,10 +3846,10 @@ void MODEL_BUILT_IN_MOS8::tr_eval(COMPONENT* brh)const
       /* calculate substrate current Isub */
       double Isub, Gbd, Gbb, Gbg;
       double tmp = s->alpha0 + s->alpha1 * s->leff;
-//        std::cerr << "ALFADBG " << s->alpha0  << " " << s->alpha1 << " " << s->leff <<  "\n";
+
       if ((tmp <= 0.0) || (s->beta0 <= 0.0)) {
 	Isub = Gbd = Gbb = Gbg = 0.0;
-	trace4("no-isub", Isub, Gbd, Gbb, Gbg);
+	trace7("no-isub", Isub, Gbd, Gbb, Gbg, tmp, s->beta0, s->alpha0);
       }else{
 	double T2 = tmp / s->leff;
 	double T1, dT1_dVg, dT1_dVd, dT1_dVb;
@@ -5155,7 +5155,7 @@ void MODEL_BUILT_IN_MOS8::tr_eval(COMPONENT* brh)const
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_MOS8::do_tr_stress( const COMPONENT*  ) const
+void MODEL_BUILT_IN_MOS8::do_tr_stress( const COMPONENT* ) const
 {
   assert(false);
 }
@@ -5173,8 +5173,10 @@ void ADP_BUILT_IN_MOS8::init(const COMPONENT* d)
   // ADP_BUILT_IN_MOS::init(d);
 
   if ( m->use_hci()){
-    hci_node = new ADP_NODE(d, "hci" );
-    ADP_NODE_LIST::adp_node_list.push_back( hci_node );
+    hci_node = new ADP_NODE( d, "hci" );
+
+    // done in init
+    // ADP_NODE_LIST::adp_node_list.push_back( hci_node );
 
     vthdelta_hci = 0;
     vthscale_hci = 1;
@@ -5195,6 +5197,9 @@ ADP_CARD* MODEL_BUILT_IN_MOS8::new_adp( COMPONENT* c)const
   trace0(( "MODEL_BUILT_IN_MOS8::new_adp for " + c->short_label() ).c_str() );
 
   //attach a generic adp for MOS8 effects
+  if (!use_hci()){
+    return new ADP_BUILT_IN_MOS(c,"dummy");
+  }
   ADP_BUILT_IN_MOS8* a = new ADP_BUILT_IN_MOS8(c,"adp");
 
   assert( c->adp() == NULL );
@@ -5219,8 +5224,11 @@ double DEV_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_MOS8::do_stress_apply(  COMPONENT* brh) const
+void MODEL_BUILT_IN_MOS8::do_stress_apply( COMPONENT* brh) const
 {
+
+  // BUG: put into adp.
+  deprecated();
   trace1("MODEL_BUILT_IN_MOS8::do_stress_apply", brh->long_label());
 
   // obsolete? maybe not.
@@ -5240,6 +5248,7 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply(  COMPONENT* brh) const
 
   if(use_hci()){
     assert(is_number( a->hci_node->tt() ));
+    assert(is_number(a->delta_vth));
     a->vthscale_hci = 1; //  exp ( 10000. * a->hci_node->get() / c->w_in );
     a->vthdelta_hci = polarity * pow( a->hci_node->tt() , 0.3 );
 
@@ -5251,8 +5260,9 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply(  COMPONENT* brh) const
           a->vthdelta_hci, a->hci_node->tt() );
     }
 
-    a->delta_vth += a->vthdelta_hci;
-    assert(is_number(a->delta_vth));
+//    a->delta_vth += a->vthdelta_hci;
+//    assert(is_number(a->delta_vth));
+//
 
     // std::cerr << "MODEL_BUILT_IN_MOS_BASE::do_stress_apply " << h0 << "\n";
     // assert (false); incomplete();

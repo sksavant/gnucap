@@ -43,8 +43,9 @@ d_cs.cc d_poly_g.cc d_poly_cap.cc d_res.cc d_switch.cc \
 d_trln.cc d_vcg.cc d_vcr.cc d_vcvs.cc d_vs.cc d_vcvs2.cc \
 d_rcd.cc d_bti.cc  d_branchvs.cc
 
-gnucap_LDADD = libgnucap.la
-matrix_example_LDADD = libgnucap.la
+gnucap_LDADD=
+
+# matrix_example_LDADD = libgnucap.la
 
 #old/unused
 if IVERILOG_VVP
@@ -62,11 +63,9 @@ D_IVL_O = $(D_IVL:%.cc=%.o)
 if IVERILOG
 D_SRCS += D_IVL
 
-
 #	libvvpg_la_SOURCES = vvp_main.cc
 #  bin_PROGRAMS += libvvpg
 gnucap_LDADD += @IVERILOG@
-matrix_example_LDADD += @IVERILOG@
 endif
 
 
@@ -122,7 +121,9 @@ e_homebrew.cc \
 e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc e_adplist.cc\
 bm_value.cc bm.cc \
 c__cmd.cc c_attach.cc c_file.cc c_genrat.cc c_debug.cc \
-findbr.cc plot.cc globals.cc e_adp.cc e_adp_mos.cc
+c_nodeset.cc \
+findbr.cc plot.cc globals.cc e_adp.cc e_adp_mos.cc \
+startup.cc
 #------------------------------------------------------------------------
 RAW_HDRS = \
 md.h ap.h mode.h constant.h declare.h patchlev.h \
@@ -148,7 +149,8 @@ RAW_HDRS += d_vvp.h d_ivl.h e_ivl_compile.h d_ivl_ports.h
 endif
 
 if ADMS
-ADMS_SRCS = e_adms.cc d_hicum0.cc d_ota_simpl.cc d_ota_medium.cc d_opamp.cc
+ADMS_SRCS = e_adms.cc d_hicum0.cc d_ota_simpl.cc d_ota_medium.cc 
+#not yet d_opamp.cc
 RAW_SRCS += $(ADMS_SRCS)
 endif
 #------------------------------------------------------------------------ 
@@ -165,8 +167,8 @@ MODELOBJS= ${MODELS:.model=.${OBJEXT}}
 
 # nodist_gnucap_SOURCES= ${SRCS1} ${MODELSRCS} ${SRCS2}
 # henjo:
-nodist_gnucap_SOURCES= main.cc
-nodist_matrix_example_SOURCES= m_matrix_example.cc
+# nodist_gnucap_SOURCES= main.cc
+# nodist_matrix_example_SOURCES= m_matrix_example.cc
 
 
 # gibsnich
@@ -182,6 +184,7 @@ SRCS2= ${RAW_SRCS}
 # make all of the model object files depend on all of the model sources
 # this is a bit overkill, but for example the bjt model makes use of the
 # diode model and we want to be sure and capture that dependency
+#
 ${MODELOBJS}: ${MODELSRCS}
 
 ## Include the .model files in the distfile as well as the rest of the
@@ -194,18 +197,48 @@ Make2.g++ Make2.Debug Make2.mingw32 \
 Makefile.am
 
 
-bin_PROGRAMS= gnucap matrix_example
 
-## gnucap as a shared library
+#matrix_example
+bin_PROGRAMS = gnucap 
+gnucap_SOURCES = main.cc ${SRCS1} ${MODELSRCS} ${SRCS2}
+#gnucap_SOURCES += ${SRCS1} ${MODELSRCS} ${SRCS2}
+gnucap_CPPFLAGS = $(AM_CPPFLAGS)
+
+if SHARED_LIB
+
 lib_LTLIBRARIES = libgnucap.la
-
 libgnucap_la_SOURCES = ${SRCS1} ${MODELSRCS} ${SRCS2}
+#gnucap_LDADD += libgnucap.la
+#libgnucap_la_CFLAGS = $(AM_CFLAGS)
+
+#else
+
+
+# kills dispatcher (FIXME?!)
+# gnucap_LDFLAGS = -all-static
+#
+# use ./configure --enable-static instead
+# gnucap_LDFLAGS = -static
+
+#ifdef static_binaries
+#gnucap_LDFLAGS = -static-libtool-libs 
+#endif
+
+
+endif
+
+
 
 libgnucap_includedir = $(includedir)/gnucap
-libgnucap_include_HEADERS = ${RAW_HDRS}
+libgnucap_include_HEADERS =   ${RAW_HDRS}
+ 
+#gnucap_include_HEADERS = ${RAW_HDRS}
+
+gnucap_includedir=$(includedir)/gnucap 
+
 
 ### Clean out the modelgen generated files
-CLEANFILES= ${MODELSRCS}
+# CLEANFILES= ${MODELSRCS}
 
 ## Suffix rules for modelgen.
 ##
@@ -240,6 +273,7 @@ ADMS_HTM_XML=../adms/admst_htm.xml
 
 if ADMS
 $(ADMS_SRCS): $(ADMS_GC_XML)
+libgnucap_include_HEADERS += e_adms.h
 
 $(ADMS_GC_XML):
 	make -C ../adms

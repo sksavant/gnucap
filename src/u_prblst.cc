@@ -39,6 +39,7 @@ void PROBE_LISTS::purge(CKT_BASE* brh)
     plot[i] .remove_one(brh);
     print[i].remove_one(brh);
     store[i].remove_one(brh);
+    expr[i].remove_one(brh);
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -70,7 +71,7 @@ void PROBELIST::erase( PROBELIST::iterator b, PROBELIST::iterator e )
   for (iterator i = b;  i != e;  ++i) {
     trace0("PROBELIST::erase " );
     assert (*i);
-    trace0(("PROBELIST::erase " + (*i)->label()).c_str());
+    trace1("PROBELIST::erase ", (*i)->label());
     delete(*i);
     //b++;
     trace0("PROBELIST::erase looop ");
@@ -178,13 +179,15 @@ PROBE* PROBELIST::add_list(CS& cmd, const CARD_LIST* scope)
 
         // switch arity...
 
-    trace2( ( "PROBELIST::add_list MATH_OP " + what ).c_str(), cmd.cursor(), (double) op);
+    trace3( "PROBELIST::add_list MATH_OP ", what, cmd.cursor(), (double) op);
     int paren = cmd.skip1b('(');		/* device, node, etc. */
 
     found_something = add_expr(what,op,&CARD_LIST::card_list, cmd, *this);
+    if(found_something) bag.push_back( found_something ); 
 
-    //trace << "pushing back mathop "<< what << " \n";
-    bag.push_back( found_something ); //FIXME
+    //delete(found_something);
+    //found_something=bag.back();
+
     paren -= cmd.skip1b(')');
 
   } else if( ( paren = cmd.skip1b('(')) ) {
@@ -268,7 +271,7 @@ void PROBELIST::push_probe( PROBE* p )
 void PROBELIST::merge_probe( PROBE* m )
 {
   for( iterator p = begin(); p!=end(); p++) {
-    if(  (*m) == (**p) ) return;
+    if( (*m) == (**p) ) return;
   }
   bag.push_back(m);
 }
@@ -276,6 +279,10 @@ void PROBELIST::merge_probe( PROBE* m )
 PROBE* PROBELIST::push_new_probe(const std::string& param,const CKT_BASE* object)
 {
   trace0("PROBELIST::push_new_probe " + param + " for " + (object?object->long_label():"0"));
+  if( dynamic_cast<const NODE*>(object) ){
+    trace1("this is a node", object->long_label());
+
+  }
   if (param=="V?") {
     cerr << "warning V? not supported" << std::endl;
   }
@@ -286,8 +293,12 @@ PROBE* PROBELIST::push_new_probe(const std::string& param,const CKT_BASE* object
 /*--------------------------------------------------------------------------*/
 void PROBELIST::add_all_nodes(const std::string& what, const CARD_LIST* scope)
 {
-  for (NODE_MAP::const_iterator
-       i = scope->nodes()->begin();
+
+  string devname="";
+  if( scope->owner())
+    devname= scope->owner()->long_label();
+
+  for (NODE_MAP::const_iterator i = scope->nodes()->begin();
        //i != CARD_LIST::card_list.nodes()->end();
        i != scope->nodes()->end();
        ++i) {
@@ -331,7 +342,7 @@ MATH_OP strtotype(std::string s)
   if(Umatch(s,"tan "))
     return op_tan;
 
-  trace0(( "MATH_OP " + s + ": not implemented").c_str());
+  trace0(( "MATH_OP " + s + ": not implementei/ not a math_op").c_str());
 
   return op_null;
 }
@@ -346,20 +357,30 @@ PROBE* PROBELIST::add_expr(const std::string& ,
 {
   untested();
   assert(scope);
-  trace1( "PROBELIST::add_expr ", cmd.cursor() );
+  trace2( "PROBELIST::add_expr ", cmd.cursor(), cmd.tail() );
   //trace0(( std::string("PROBELIST::add_expr ") + cmd.fullstring()).c_str() );
   //trace0(( std::string("PROBELIST::add_expr arg0 ") + cmd.cursor()).c_str() );
 
   PROBE* arg0 = PROBE_LISTS::expr[CKT_BASE::_sim->_mode].add_list(cmd);
+  trace2( "PROBELIST::add_expr added", typetochar(type), arg0->label()  );
 
   int komma = cmd.skip1b(',');		/* device, node, etc. */
   assert (komma);
 
   PROBE* arg1 = PROBE_LISTS::expr[CKT_BASE::_sim->_mode].add_list(cmd);
+  trace2( "PROBELIST::add_expr added1", typetochar(type), arg1->label()  );
 
-  PROBE* ret = new MATH_PROBE(type);
+  MATH_PROBE* ret = new MATH_PROBE(type);
   ret->push(arg1);
   ret->push(arg0);
+
+  trace0( "PROBELIST::add_expr returning");
+  trace1(" ", ret->label()  );
+
+  // hack. better put probes to expr[mode] and have expressions with pointers
+  // to those probes...
+//  PROBE_LISTS::expr[CKT_BASE::_sim->_mode].clear();
+
 
   return ret;
 }

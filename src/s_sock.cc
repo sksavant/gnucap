@@ -28,6 +28,7 @@
 #include "e_elemnt.h"
 #include "e_storag.h"
 #include "e_subckt.h"
+#include "d_subckt.h"
 #include "u_sock.h"
 #include "s_ddc.h"
 #include "io_error.h"
@@ -130,9 +131,9 @@ private: //vera stuff.
   void verainit();
   void verakons();
   void veraop();
-  void verainit_send();
-  void verakons_send();
-  void veraop_send();
+  void verainit_reply();
+  void verakons_reply();
+  void veraop_reply();
 
   char* var_names_buf;
 
@@ -451,274 +452,14 @@ void SOCK::sweep()
 
   //setup(Cmd);
   main_loop();
+  delete socket;
   // what am i doing here??
   return ;
-  assert(false);
-  head(_start[0], _stop[0], " ");
-  _sim->_bypass_ok = false;
-  _sim->set_inc_mode_bad();
-  if (_cont) {untested();
-    _sim->restore_voltages();
-  }else{
-  }
-
-  unsigned d = _sim->_total_nodes; // 3
-  U = new double[d*d];
-  CU = new double[d*d];
-  CUTCU = new double[d*d];
-  
-  _sim->clear_limit();
-  CARD_LIST::card_list.tr_begin();
-  sweep_recursive(_n_sweeps);
 }
 /*--------------------------------------------------------------------------*/
-void SOCK::sweep_recursive(int Nest)
+void SOCK::sweep_recursive(int )
 {
   assert(false);
-  unsigned d = _sim->_total_nodes; // 3
-
-  trace1("SOCK::sweep_recursive", Nest);
-  --Nest;
-  assert(Nest >= 0);
-  assert(Nest < DCNEST);
-
-  double iddc[d];
-  double dv[_sim->_total_nodes];
-
-  OPT::ITL itl = OPT::DCBIAS;
-  
-  first(Nest);
-  do {
-    trace0("SOCK::sweep_recursive loopstart");
-    _sim->_temp_c = temp_c_in;
-    if (Nest == 0) {
-      _sim->_time0 = _sim->_dt0 = 0.0;
-      _sim->_last_time = 0.0;
-      // _sim->zero_currents();
-      _sim->_uic=_sim->_more_uic=true;
-      int converged = solve_with_homotopy(itl,_trace);
-      if (!converged) {itested();
-	::error(bWARNING, "did not converge\n");
-        throw(Exception("foobar"));
-      }
-      ::status.accept.start();
-      _sim->set_limit();
-
-      if(_dump_matrix){
-        _out << " ======================== \n";
-        _out << "iddc ( " << _sim->_i[1];
-        for(unsigned a=2; a <= d; ++a){
-          _out << " " <<  _sim->_i[a];
-        }
-        _out  << ") \n";
-      }
-
-      for(unsigned a=0; a <= _sim->_total_nodes; ++a){
-        iddc[a]=_sim->_i[a];
-      }
-
-
-      CARD_LIST::card_list.tr_accept();
-      ::status.accept.stop();
-      _sim->keep_voltages(); // vdc = v0
-
-      _sim->_uic=_sim->_more_uic=false;
-
-      _sim->init();
-      ac_snapshot();
-
-      BSMATRIX<double> G = _sim->_acx.real();
-      BSMATRIX<double> C = _sim->_acx.imag();
-  //    BSMATRIX<double> S = _sim->_acx.sum();
-
-      if(_dump_matrix){
-        _out << "G\n" << G << "\n";
-        _out << "C\n" << C << "\n";
-      }
-
-      double Gul[d+1];
-      double* Gu = Gul+1;
-
-      // Gu = G * v0
-      G.rmul(Gul, _sim->_v0);
-
-      G.lu_decomp();
-
-      double col[d+1];
-      double CU[d*d];
-
-      // U = G^{-1} C (column-major)
-      for( unsigned i=0; i<d; ++i){
-        C.col(col,1+i);
-        double buf[d+1];
-
-        // compute ith column of U
-        G.fbsub(buf, col);
-        for (unsigned k=0; k<d; ++k ){
-            U[k+i*d] = buf[k+1];
-        }
-        if(_dump_matrix){
-          _out << "U row " << i << ":  " << U[0 + i*d];
-          for(unsigned a=1; a < d; ++a){
-            _out << " " <<  U[a + i*d ];
-          }
-          _out  << ") \n";
-        }
-      }
-
-      // CU=C*U (col maj)
-      for(unsigned i=0; i < d; ++i){
-        for(unsigned j=0; j < d; ++j){
-          CU[i+j*d] = 0;
-          for(unsigned k=0;k < d; ++k){
-            CU[i+j*d] += ((const BSMATRIX<double>)C).s(i+1,k+1) * U[k+j*d];
-          }
-        }
-      }
-
-      double RS[d];
-      double X[d];
-      // fetch rhs
-      for(unsigned a = 0; a < d; ++a){
-        RS[a] = - Gu[a] + _sim->_i[a+1] ;
-        X[a] = - Gu[a] + _sim->_i[a+1] ;
-      }
-
-      if(_dump_matrix){
-        _out << "RS ( " << RS[0];
-        for(unsigned a=1; a < d; ++a){
-          _out << " " <<  RS[a];
-        }
-        _out  << ") \n";
-      }
-
-      // X = CU.trans * App
-      //cblas_dgemv(CblasColMajor, 
-      //    CblasTrans, d, d,
-      //    1.0, 
-      //    CU, d,
-      //    RS, 1, 0,
-      //    X,1);
-
-      if(_dump_matrix){
-        _out << "X ( " << X[0];
-        for(unsigned a=1; a < d; ++a){
-          _out << " " <<  X[a];
-        }
-        _out  << ") \n";
-      }
-
-      // U = G^{-1} C
-      // want to solve C x = i - Gu, and G x = C y <=> x = U y
-      // solving C U y = i - Gu
-      
-      double alpha=1;
-      double wurk;
-      int rank;
-      int lwork=-1;
-      int info=0;
-      double rcond=0;
-      int D=d;
-      int one=1;
-
-      // does not work (no full rank)
-      // clapack_dgesv(CblasColMajor, d, 1,
-      //             CU, d, ipiv, X, d);
-
-
-
-//void dgels_(const char *trans, const int *M, const int *N, const int *nrhs,
-//    double *A, const int *lda, double *b, const int *ldb, double *work, const
-//    int * lwork, int *info);
-/*
-      dgels_("No transpose", &D,&D,&one, CU, &D, RS, &D, &wurk, &lwork, &info );
-      assert(!info);
-      lwork = (int)wurk;
-      double work[lwork];
-      dgels_("No transpose", &D,&D,&one, CU, &D, RS, &D, work, &lwork, &info );
-
-      */
-       double S[d]; //singular values
-       dgelss_(&D,&D,&one,CU, &D, RS, &D, S, &rcond, &rank, &wurk, &lwork, &info );
-       assert(!info);
-       lwork = (int)wurk;
-       double work[lwork];
-       dgelss_(&D,&D,&one,CU, &D, RS, &D, S, &rcond, &rank, work, &lwork, &info );
-      
-      if(info){
-        cout<<info << "\n";
-        exit(info);
-      }
-
-      if(_dump_matrix){
-        _out << "after dgels " << lwork  << " ( " << RS[0];
-        for(unsigned a=1; a < d; ++a){
-          _out << " " <<  RS[a];
-        }
-        _out  << ") \n";
-      }
-
-      // dv = U * app 
-      cblas_dgemv(CblasColMajor, 
-          CblasNoTrans, d, d,
-          1.0/alpha, 
-          U, d,
-          RS, 1, 0,
-          dv,1);
-
-
-      if(_dump_matrix){
-        _out << "Gu ( " << Gu[0];
-        for(unsigned a=1; a < d; ++a){
-          _out << " " <<  Gu[a];
-        }
-        _out  << ") \n";
-      }
-
-      for(unsigned a=0; a < d; ++a){
-        Gu[a] = - Gu[a] +  _sim->_i[a+1] ;
-      }
-
-
-      C.dezero( OPT::cmin ); 
-      C.lu_decomp();
-
-      _sim->_bypass_ok = false;
-      _sim->set_inc_mode_bad();
-
-      if (_do_tran_step) { 
-        do_tran_step();
-      } 
-        _sim->_mode = s_DC;
-
-      { // some more AC stuff
-
-        if(_dump_matrix){
-          _out << "RS ( " << Gu[0];
-          for(unsigned a=1; a < d; ++a){
-            _out << " " <<  Gu[a];
-          }
-          _out  << ") \n";
-        }
-
-//        irgendwoher di/du holen...
-        //C.fbsub( dv, Gu , dv );
-
-        for(unsigned a=0; a < d; ++a){
-          // stash hack
-          _sim->_vt1[a+1] = dv[a];
-        }
-      }
-       
-      outdata(_sweepval[Nest]);
-
-      // here??
-      CARD_LIST::card_list.tr_regress();
-      itl = OPT::DCXFER;
-    }else{
-      sweep_recursive(Nest);
-    }
-  } while (next(Nest));
 }
 /*--------------------------------------------------------------------------*/
 void SOCK::first(int Nest)
@@ -767,7 +508,11 @@ void SOCK::fillnames( const CARD_LIST* scope){
 
   //for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
   for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
-    if (   const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i) )
+    const MODEL_SUBCKT* m = dynamic_cast<const MODEL_SUBCKT*>(*i);
+    const COMPONENT* s = dynamic_cast<const COMPONENT*>(*i);
+    //const CARD* s=*i;
+    if (!m && s)
+    if ( s->subckt() )
     {
       fillnames( s->subckt() );
     }
@@ -1002,19 +747,23 @@ void SOCK::main_loop(){
 
     switch (opcode)  
     {
+      case '\0': // 0
+        trace0("Returning due to opcode 0");
+        return; 
+        break;
       case '3': // 51
         if(init_done) throw Exception("init twice??");
         verainit();
-        verainit_send();
+        verainit_reply();
         init_done=true;
         break;
       case '4':  // 52
         veraop();
-        veraop_send();
+        veraop_reply();
         break;
       case '5':  // 53
         verakons();
-        verakons_send();
+        verakons_reply();
         break;
 
       default:
@@ -1055,16 +804,17 @@ void SOCK::verainit(){
   {
     stream >> input_namen[i] >> 7;
     if(input_namen[i] == '\t'){
-      input_namen[i]=0;
-      input_names[n++]=string(input_namen+here);
+      input_namen[i] = 0;
+      trace1("input_namen", string(input_namen+here));
+      input_names[n++] = string(input_namen+here);
       here = i;
-      trace0(input_names[n-1]);
 
       trace1("looking out for", input_names[n-1]);
       CARD_LIST::fat_iterator ci = findbranch(input_names[n-1], &CARD_LIST::card_list);
       if (ci.is_end()){
         throw Exception("cannot find voltage source \"" +  input_names[n-1] +"\", giving up");
       }
+      trace0("found input device");
       input_devs[n-1] = (*ci);
       assert(input_devs[n-1]);
     }
@@ -1096,6 +846,7 @@ void SOCK::verainit(){
 
 /*-------------------------------------------------------------*/
 void SOCK::veraop(){
+  trace1("SOCK::veraop",n_vars);
   total = n_vars;
   assert(3*BUFSIZE*BUFSIZE >= total);
 
@@ -1118,10 +869,16 @@ void SOCK::veraop(){
   _sim->_bypass_ok = false;
   _sim->set_inc_mode_bad();
   OPT::ITL itl = OPT::DCBIAS;
+  _sim->_phase = p_INIT_DC;
 
-  trace0("SOCK::veraop homotopy");
-  _trace=tVERBOSE;
+  trace1("SOCK::veraop homotopy", _sim->_phase);
+  if(_dump_matrix) {
+    _trace=tVERBOSE;
+  }
   CARD_LIST::card_list.tr_begin();  // hier muesste eigentlich eine dc hin.
+  if(printlist().size()) {
+    head(0,0," ");
+  }
   try{
     solve_with_homotopy(itl,_trace);
   }catch( Exception e) {
@@ -1157,6 +914,7 @@ void SOCK::veraop(){
 //==========================================================
 void SOCK::verakons() {
   //        n_eingaenge == #caps?
+  _sim->_phase = p_INIT_DC;
   total =  n_eingaenge + n_vars + 1;
 
 
@@ -1170,8 +928,10 @@ void SOCK::verakons() {
 
   for (unsigned i=1; i <= n_vars; i++)
   {
-    stream >> _sim->_vdc[i];
+    stream >> _sim->_v0[i];
+    trace2("verakons start ", i,  _sim->_v0[i] );
   }
+  _sim->keep_voltages(); // v0->vdc
 
   error = 0; /* verakons(Dwork, x_new, q_dot, G, C); */
   //	n_vars = A->n_var;
@@ -1180,11 +940,12 @@ void SOCK::verakons() {
   // Es wird davon ausgegangen, das dc_werteA noch stimmt
   //
 
-  trace1("SOCK::verakons",_caplist.size());
   for( unsigned i = 0; i < _caplist.size(); i++)
   {
     _caplist[i]->keep_ic(); // latch voltage applied to _v0
-    _caplist[i]->set_constant(false);		// so it will be updated
+    trace2("SOCK::verakons",_caplist[i]->long_label(), _caplist[i]->tr_involts() );
+    _caplist[i]->set_constant(true);
+    _caplist[i]->q_eval();		// so it will be updated
   }
   //
   //================do_dc========
@@ -1195,9 +956,13 @@ void SOCK::verakons() {
 
   OPT::ITL itl = OPT::DCBIAS;
 
-  trace0("SOCK::verakons, hot");
-  _trace=tVERBOSE;
+  trace2("SOCK::verakons, hot", _sim->_phase, _sim->_more_uic);
+  if(printlist().size()) { // Damit man mal was sieht L.H.
+    //_trace=tVERBOSE; // use trace=v
+    head(0,0," ");
+  }
   CARD_LIST::card_list.tr_begin();
+
   try{
     solve_with_homotopy(itl,_trace);
   }catch( Exception e) {
@@ -1211,7 +976,7 @@ void SOCK::verakons() {
   _sim->keep_voltages();
 }
 /*-==========================================================*/
-void SOCK::verakons_send()
+void SOCK::verakons_reply()
 {
   stream << ((uint16_t)error); stream.pad(6);
   for (unsigned i=1; i <= n_vars; i++)  
@@ -1243,7 +1008,7 @@ void SOCK::verakons_send()
   for (unsigned i=1; i <= n_vars; i++)         /* Q-Punkt == I == RS */
   {
     //buffer[i+n_vars+1].double_val = q_punkt[i];
-    trace1("SOCK::verakons_send  dqdt", _sim->_i[i]);
+    trace1("SOCK::verakons_reply  dqdt", _sim->_i[i]);
     stream << -_sim->_i[i];
   }
 
@@ -1274,18 +1039,19 @@ void SOCK::verakons_send()
 
 }
 /*--------------------------------------------*/
-void SOCK::verainit_send()
+void SOCK::verainit_reply()
 {
   stream << error;   stream.pad(6);
   stream << int32_t (n_vars);  stream.pad(4);
   stream << int32_t (var_namen_total_size);  stream.pad(4);     /* Laenge des Namen Feldes */
 
-  trace4("SOCK::verainit_send ", error, n_vars, length, var_namen_total_size);
+  trace4("SOCK::verainit_reply ", error, n_vars, length, var_namen_total_size);
 
   assert(stream.tcur() == 24);
 
   for (unsigned i = 0; i < n_vars; i++) 
   {
+    trace2("SOCK::verainit_reply",  i, var_namen_arr[i]);
     putstring8( &stream, var_namen_arr[i]);
     stream << '\t'; stream.pad(7);
   }
@@ -1300,13 +1066,13 @@ void SOCK::verainit_send()
 //  }
   stream.flush();
 
-  trace0("done verainit_send");
+  trace0("done verainit_reply");
 }
 /*------------------------------------*/
-void SOCK::veraop_send()
+void SOCK::veraop_reply()
 {
   assert(n_vars==_sim->_total_nodes);
-  trace1("SOCK::veraop_send ", n_vars);
+  trace1("SOCK::veraop_reply ", n_vars);
   stream << error; stream.pad(6);
   for (unsigned i=1; i <= n_vars; i++)         /* Variablen-Werte */
   {
@@ -1320,12 +1086,12 @@ void SOCK::veraop_send()
     }
   }
 
-  trace0("SOCK::veraop_send taking ac snapshot (matrix only?).");
+  trace0("SOCK::veraop_reply taking ac snapshot (matrix only?).");
   ac_snapshot();
   send_matrix();
   stream << SocketStream::eol;
 
-  trace0("SOCK::veraop_send sent");
+  trace0("SOCK::veraop_reply sent");
 
   total = 2*n_vars_square+n_vars+1;
   assert(3*BUFSIZE*BUFSIZE >= total);
@@ -1341,8 +1107,8 @@ void SOCK::send_matrix()
   const BSMATRIX<double> G = _sim->_acx.real();
   const BSMATRIX<double> C = _sim->_acx.imag();
   if(_dump_matrix){
-    _out << "G\n" << G << "\n";
-    _out << "C\n" << C << "\n";
+     _out << "G\n" << G << "\n";
+     _out << "C\n" << C << "\n";
   }
   trace0("SOCK::send_matrix G");
   for (unsigned i=1; i <= n_vars; i++){

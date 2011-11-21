@@ -29,7 +29,9 @@
 #include "c_comand.h"
 #include "globals.h"
 #include "e_node.h"
+#include "d_subckt.h"
 #include "e_subckt.h"
+#include "e_adp.h"
 #include "u_nodemap.h"
 #include "io_matrix.h"
 #include "u_sim_data.h"
@@ -266,19 +268,26 @@ void CMD_NL::print( OMSTREAM _out, const CARD_LIST* scope){
   for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
     if (i->first != "0") {
       stringstream s;
-      s << setw(8) << i->second->long_label() << " , matrix_number " 
+      _out << "|";
+      s << setw(8) << i->second->long_label();
+      _out << s.str();
+      
+      _out << " , matrix_number " 
         << i->second->matrix_number() << " (" <<  i->second->m_() << 
         "), user_number " << i->second->user_number() << " nm[t] " <<
         " vdc " <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
-      _out << s.str();
     }else{
       // _out << "Zero Node  "  << "\n";
     }
   }
 
   for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
-    const BASE_SUBCKT* s = dynamic_cast<const BASE_SUBCKT*>(*i);
-    if (s) {
+    const MODEL_SUBCKT* m = dynamic_cast<const MODEL_SUBCKT*>(*i);
+    const COMPONENT* s = dynamic_cast<const COMPONENT*>(*i);
+    //const CARD* s=*i;
+    //FIXME: is_device should do the trick (no m needed);
+    if (!m && s)
+    if (s->subckt()) {
       _out << "-" << s->long_label() <<"\n";
       print(_out,s->subckt());
     }
@@ -286,6 +295,32 @@ void CMD_NL::print( OMSTREAM _out, const CARD_LIST* scope){
 
 }
 
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+class CMD_ADP_NL : public CMD {
+public:
+  //void print(OMSTREAM, const CARD_LIST*);
+  void do_it(CS& cmd, CARD_LIST* )
+  {
+    OMSTREAM _out = IO::mstdout;
+    _out.setfloatwidth(3);
+    _out.outset(cmd);
+
+    _out << "name...\n";
+
+    CKT_BASE::_sim->init();
+
+    _out << "have " << _sim->_adp_nodes << " adp nodes.\n";
+    for(ADP_NODE_LIST::const_iterator ii = ADP_NODE_LIST::adp_node_list.begin( );
+          ii != ADP_NODE_LIST::adp_node_list.end(); ++ii ) {
+      _out << (*ii)->long_label() << "\n";
+    }
+    _out.outreset();
+  }
+} p6b;
+DISPATCHER<CMD>::INSTALL d6b(&command_dispatcher, "adpnl|listadpn", &p6b);
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 class CMD_I : public CMD {
 public:

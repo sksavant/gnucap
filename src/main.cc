@@ -30,6 +30,7 @@
 #include "patchlev.h"
 #include "c_comand.h"
 #include "declare.h"	/* plclose */
+#include "startup.h"	
 // #define COMMENT_CHAR "*"
 /*--------------------------------------------------------------------------*/
 struct JMP_BUF{
@@ -40,44 +41,14 @@ static void sign_on(void)
 {
   if (OPT::quiet) return;
   IO::mstdout <<
-    COMMENT_CHAR " Fucap "  PATCHLEVEL  "\n"
+    COMMENT_CHAR " Gnucap "  PATCHLEVEL  "\n"
     COMMENT_CHAR " Copyright 2009-2011 Felix Salfelder\n"
-    COMMENT_CHAR " derived from\n"
-    COMMENT_CHAR " Gucap\n"
     COMMENT_CHAR " Copyright 1982-2009, Albert Davis\n"
     COMMENT_CHAR " Gnucap comes with ABSOLUTELY NO WARRANTY\n"
     COMMENT_CHAR " This is free software, and you are welcome\n"
     COMMENT_CHAR " to redistribute it under the terms of \n"
     COMMENT_CHAR " the GNU General Public License, version 3 or later.\n"
     COMMENT_CHAR " See the file \"COPYING\" for details.\n";
-}
-/*--------------------------------------------------------------------------*/
-static void read_startup_files(void)
-{
-  std::string name = findfile(SYSTEMSTARTFILE, SYSTEMSTARTPATH, R_OK);
-  if (name != "") {untested();
-    CMD::command("get " + name, &CARD_LIST::card_list);
-  }else{
-  }
-  name = findfile(USERSTARTFILE, PWD, R_OK);
-  if (name != "") {untested();
-    try{
-      CMD::command("get " + name, &CARD_LIST::card_list);
-    }catch(Exception e){
-      error(bDANGER, "loading %s failed: %s\n", name.c_str(), e.message().c_str());
-    }
-  }else{
-    name = findfile(USERSTARTFILE, USERSTARTPATH, R_OK);
-    if (name != "") {untested();
-      CMD::command("get " + name, &CARD_LIST::card_list);
-    }else{
-    }
-  }
-  CMD::command("clear", &CARD_LIST::card_list);
-  if (!OPT::language) {
-    CMD::command(std::string("options lang=") + DEFAULT_LANGUAGE, &CARD_LIST::card_list);
-  }else{
-  }
 }
 /*--------------------------------------------------------------------------*/
 /* sig_abrt: trap asserts
@@ -147,7 +118,11 @@ static void process_cmd_line(int argc, const char *argv[])
 {
   for (int ii = 1;  ii < argc;  /*inside*/) {
     try {
-      if (   !strcasecmp(argv[ii], "-E")  
+      if (   !strcasecmp(argv[ii], "-v")  ){
+        // FIXME. use git hash for development versions.
+        cout << "gnucap " << PATCHLEVEL << endl;
+        exit(1);
+      } else if (   !strcasecmp(argv[ii], "-E")  
           || !strcasecmp(argv[ii], "-e") ) {
         ++ii;
 
@@ -216,8 +191,11 @@ int main(int argc, const char *argv[])
 {
   ENV::error = 0;
   // sigsetjmp unneeded here (isnt it?)
+  //
+  // FIXME:  parse -v and -q _now_
+  //
   read_startup_files();
-  sign_on();
+//  sign_on(); this sucks, as -q is parsed afterwards :(
 
   {
     SET_RUN_MODE xx(rBATCH);

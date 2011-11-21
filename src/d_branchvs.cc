@@ -91,7 +91,7 @@ inline void DEV_BVS::ac_load()
   _sim->_acx.load_point(_n[BR].m_(), _n[OUT2].m_(), -d);
 
   assert (_n[BR].m_() != 0);
-  untested(); // does this do the right thing?
+  //  untested(); // does this do the right thing?
   /* load source */
   _n[BR].iac() += _acg; // mfactor() * _acg;
 
@@ -99,7 +99,13 @@ inline void DEV_BVS::ac_load()
 
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BVS::expand(){
+void DEV_BVS::expand()
+{
+    trace1("DEV_BVS::expand ", long_label() );
+    if (!subckt()) {
+            new_subckt();
+    }else{
+    }
 
     if (!(_n[BR].n_())) {
         _n[BR].new_model_node( long_label() + ".br", this);
@@ -146,7 +152,7 @@ void DEV_BVS::tr_iwant_matrix()
 inline void DEV_BVS::tr_load()
 /*----------shunt---------------------------------------------------------------*/
 {
-  cout << "trload trload trload " << value() <<" \n";
+  //  cout << "trload trload trload " << value() <<" \n";
   trace1("DEV_BVS::tr_load", _sim->_time0);
   trace3("DEV_BVS::tr_load", _n[OUT1].m_(), _n[OUT2].m_(), _n[BR].m_());
   assert(_one0 == _one0);
@@ -243,7 +249,7 @@ void DEV_BVS::do_ac()
     _acg = _ev;
   }else{itested();
     assert(_acg == 0.);
-    untested();
+    //  untested();
     _ev = value();
     _acg = _ev;
   }

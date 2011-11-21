@@ -44,6 +44,7 @@ void volts_load( fstream *in, CARD_LIST* )
   double Last;
   *in >> Last;
   trace1("volts_load", Last);
+  CKT_BASE::_sim->init();
   assert(CKT_BASE::_sim->_vdc);
   CKT_BASE::_sim->_last_Time = Last;
   while ( ! (in->eof() ) ){

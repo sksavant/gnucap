@@ -35,7 +35,7 @@ class MODEL_BUILT_IN_RCD_SYM : public MODEL_BUILT_IN_RCD {
     ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
 //    region_t region(const COMPONENT*) const;
     int  tt_region(const COMPONENT*) const;
-    virtual double dvth(const COMPONENT*) const;
+    virtual double P(const COMPONENT*) const;
     virtual double do_tr_error_last( double, const COMMON_COMPONENT*  ) const {unreachable(); return 0;}
   private:
 //    template <class T>

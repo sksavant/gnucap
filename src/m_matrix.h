@@ -115,6 +115,7 @@
 #include "io_.h"
 #include <iostream>
 #include <fstream>
+#include <set>
 using namespace std;
 /*--------------------------------------------------------------------------*/
 class OMSTREAM;
@@ -135,6 +136,7 @@ private:
   T	_zero;		// always 0 but not const
   T	_trash;		// depository for row and col 0, write only
   T	_min_pivot;	// minimum pivot value
+  vector<set<unsigned> > _adj;
 public:
   enum REAL {_REAL};
   enum IMAG {_IMAG};
@@ -167,6 +169,10 @@ public:
   T* row(T*, unsigned);
   T* col(T*, unsigned);
   void		iwant(unsigned, unsigned);
+private:
+  int* _rcm;
+  void rcm(); // used by allocate.
+public:
   void		unallocate();
   void		allocate();
   void		reallocate()		{unallocate(); allocate();}
@@ -188,10 +194,10 @@ private:
   T&	m(unsigned r, unsigned c);
   T&	s(unsigned r, unsigned c);
 public:
-  template <class X>
-  friend ostream& operator<< ( ostream &o, const BSMATRIX<X>& m);
-  template <class X>
-  friend OMSTREAM& operator<< ( OMSTREAM &o, const BSMATRIX<X>& m);
+  template <class S,class X>
+  friend S& operator<< ( S &o, const BSMATRIX<X>& m);
+//  template <class X>
+//  friend OMSTREAM& operator<< ( OMSTREAM &o, const BSMATRIX<X>& m);
   void		load_diagonal_point(int i, T value);
   void		load_point(int i, int j, T value);
   void		load_couple(int i, int j, T value);
@@ -240,6 +246,11 @@ void BSMATRIX<T>::init(int ss)
   for (unsigned ii = 0;  ii <= size();  ++ii) {
     set_changed(ii, false);
   }
+
+
+  _adj.clear();
+  _adj.resize(size());
+
 }
 /*--------------------------------------------------------------------------*/
 template <class T>
@@ -323,6 +334,13 @@ void BSMATRIX<T>::iwant(unsigned node1, unsigned node2)
   assert(_lownode);
   assert(node1 <= size());
   assert(node2 <= size());
+
+#if 0
+  bsmatrix_iwant(this,node1,node2); ?
+
+  _adj[node1].insert(node2);
+  _adj[node2].insert(node1);
+#endif
 
   if (node1 <= 0  ||  node2 <= 0) {
     // node 0 is ground, and doesn't count as a connection

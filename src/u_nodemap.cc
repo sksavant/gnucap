@@ -98,7 +98,7 @@ NODE* NODE_MAP::operator[](std::string s)
 /* return a pointer to a node given a string
  * creates a new one if it isn't already there.
  */
-NODE* NODE_MAP::new_node(std::string s, CARD_LIST* p)
+NODE* NODE_MAP::new_node(std::string s, const CARD_LIST* p)
 {  
   trace0("NODE_MAP::new_node " +s);
   if (OPT::case_insensitive) {
