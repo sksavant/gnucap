@@ -143,7 +143,7 @@ public:
 
       for(ADP_NODE_LIST::const_iterator ii = ADP_NODE_LIST::adp_node_list.begin( );
             ii != ADP_NODE_LIST::adp_node_list.end(); ++ii ) {
-        _out << dot << "nodeset a(" <<  (*ii)->long_label() << ")=" <<  "\n";
+        _out << dot << "nodeset a(" <<  (*ii)->long_label() << ")=" << _sim->_vdc[ (*ii)->m_() + _sim->_total_nodes +1 ]  <<"\n";
       }
 
 
