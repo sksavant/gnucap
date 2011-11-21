@@ -43,14 +43,17 @@ d_cs.cc d_poly_g.cc d_poly_cap.cc d_res.cc d_switch.cc \
 d_trln.cc d_vcg.cc d_vcr.cc d_vcvs.cc d_vs.cc d_vcvs2.cc \
 d_rcd.cc d_bti.cc  d_branchvs.cc
 
+
+RAW_HDRS=
 gnucap_LDADD=
+lib_LTLIBRARIES=
 
 # matrix_example_LDADD = libgnucap.la
 
 #old/unused
-if IVERILOG_VVP
-D_SRCS += d_vvp.cc extlib.cc
-endif
+#if IVERILOG_VVP
+#D_SRCS += d_vvp.cc extlib.cc
+#endif
 
 D_IVL = d_ivl_base.cc d_ivl_ports.cc \
 			 d_invert.cc d_clock.cc \
@@ -59,13 +62,25 @@ D_IVL = d_ivl_base.cc d_ivl_ports.cc \
 
 
 D_IVL_O = $(D_IVL:%.cc=%.o)
+libgnucap_ivl_la_CPPFLAGS=
+libgnucap_ivl_la_LDFLAGS=
 
 if IVERILOG
-D_SRCS += D_IVL
+# D_SRCS += D_IVL
+
+lib_LTLIBRARIES += libgnucap_ivl.la
+libgnucap_ivl_la_SOURCES = ${D_IVL}
 
 #	libvvpg_la_SOURCES = vvp_main.cc
 #  bin_PROGRAMS += libvvpg
+gnucap_LDADD += libgnucap_ivl.la
 gnucap_LDADD += @IVERILOG@
+
+RAW_HDRS += d_vvp.h d_ivl.h e_ivl_compile.h d_ivl_ports.h
+# doesnt work (?)
+#dvvp_lo_CFLAGS = -I$(IVERILOG_PATH)/include
+libgnucap_ivl_la_CPPFLAGS += -I$(IVERILOG_PATH)
+libgnucap_ivl_la_LDFLAGS += FOO
 endif
 
 
@@ -125,7 +140,7 @@ c_nodeset.cc \
 findbr.cc plot.cc globals.cc e_adp.cc e_adp_mos.cc \
 startup.cc
 #------------------------------------------------------------------------
-RAW_HDRS = \
+RAW_HDRS += \
 md.h ap.h mode.h constant.h declare.h patchlev.h \
 l_compar.h l_dispatcher.h l_denoise.h \
 l_lib.h l_stlextra.h l_timer.h \
@@ -142,11 +157,6 @@ d_coment.h d_dot.h d_logic.h d_subckt.h \
 bm.h \
 c_comand.h globals.h extlib.h d_cap.h
 
-if IVERILOG
-RAW_HDRS += d_vvp.h d_ivl.h e_ivl_compile.h d_ivl_ports.h
-# doesnt work (?)
-# dvvp_lo_CFLAGS = -I$(IVERILOG_PATH)/include
-endif
 
 if ADMS
 ADMS_SRCS = e_adms.cc d_hicum0.cc d_ota_simpl.cc d_ota_medium.cc 
@@ -206,7 +216,7 @@ gnucap_CPPFLAGS = $(AM_CPPFLAGS)
 
 if SHARED_LIB
 
-lib_LTLIBRARIES = libgnucap.la
+lib_LTLIBRARIES += libgnucap.la
 libgnucap_la_SOURCES = ${SRCS1} ${MODELSRCS} ${SRCS2}
 #gnucap_LDADD += libgnucap.la
 #libgnucap_la_CFLAGS = $(AM_CFLAGS)
