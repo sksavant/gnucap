@@ -64,6 +64,7 @@ public:
       cmd.warn(bWARNING, "need )");
       return;
     }
+    cmd.skip1b('=');
     double v;
     cmd >> v;
 
@@ -75,10 +76,12 @@ public:
     ADP_NODE* a = dynamic_cast<ADP_NODE*>(n);
 
     if(x){
-      _sim->_vdc[ x->matrix_number() ] = 0;
+      trace3(" setting node",  x->matrix_number(),  _sim->_vdc[ x->matrix_number()], v);
+      _sim->_vdc[ x->matrix_number() ] = v;
     } else if(a){
       incomplete();
-
+    } else{
+      cmd.warn(bWARNING, " no node "+ name);
     }
 
 
@@ -154,9 +157,8 @@ void CMD_DUMP::printv( OMSTREAM _out, const CARD_LIST* scope){
   for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
     if (i->first != "0") {
       stringstream s;
-      _out << ".nodeset ";
-      s << setw(8) << i->second->long_label();
-      _out << s.str() <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
+      _out << ".nodeset v(" << i->second->long_label() << ")="
+       << setw(8) <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
     }else{
       // _out << "Zero Node  "  << "\n";
     }
@@ -164,9 +166,7 @@ void CMD_DUMP::printv( OMSTREAM _out, const CARD_LIST* scope){
 
   for (CARD_LIST::const_iterator i = scope->begin(); i != scope->end(); ++i) {
     const COMPONENT* s = dynamic_cast<const COMPONENT*>(*i);
-    //const CARD* s=*i;
-    //FIXME: is_device should do the trick (no m needed);
-    if ((*i)->is_device() && s)
+    if ((*i)->is_device())
     if (s->subckt()) {
       _out << "-" << s->long_label() <<"\n";
       printv(_out,s->subckt());
