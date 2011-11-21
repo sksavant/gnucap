@@ -95,8 +95,8 @@ class CMD_DUMP : public CMD {
 public:
   void do_it(CS& cmd, CARD_LIST* Scope)
   {
-    bool _adp=false;
-    bool _v=false;
+    bool _adp = false;
+    bool _v = false;
 
     OMSTREAM _out = IO::mstdout;
     _out.setfloatwidth(30);
@@ -131,16 +131,27 @@ public:
 
     if (!_adp && !_v) _v=1;
 
+//    if spice
+    string dot=".";
 
-    if(_adp)
-    if (! CKT_BASE::_sim->_nstat ) return;
-    trace2( "save",  CKT_BASE::_sim->_total_nodes , CKT_BASE::_sim->_adp_nodes );
 
-    _out <<  CKT_BASE::_sim->_last_Time << "\n";
+    if(_adp){
+      if (! CKT_BASE::_sim->_nstat ) return;
+      trace2( "save",  CKT_BASE::_sim->_total_nodes , CKT_BASE::_sim->_adp_nodes );
+
+      _out <<  CKT_BASE::_sim->_last_Time << "\n";
+
+      for(ADP_NODE_LIST::const_iterator ii = ADP_NODE_LIST::adp_node_list.begin( );
+            ii != ADP_NODE_LIST::adp_node_list.end(); ++ii ) {
+        _out << dot << "nodeset a(" <<  (*ii)->long_label() << ")=" <<  "\n";
+      }
+
+
+    }
 
     if (_v){
+      _out << "*node voltages\n";
       printv(_out, Scope);
-
     }
 
     _out.outreset();
