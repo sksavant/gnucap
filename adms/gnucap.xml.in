@@ -2749,6 +2749,7 @@ private: // nodes / matrix indexes
 	<admst:text format=" };"/>
 	double* (_states[8]); // array of 8 pointers
 	double* _states_1;
+	int _num_caps;
 	int _num_states;
 	
 	int NIintegrate(int qcap);
@@ -2937,10 +2938,13 @@ $(DEV_NAME)::$(DEV_NAME)()
 	for (unsigned ii = 0; ii < matrix_nodes(); ++ii)
 		assert(!(_n[ii].n_()));
 
-	_num_states = %(count(source[dynamic='yes'])*2);
+	_num_caps = %(count(source[dynamic='yes']));
+        _num_states = _num_caps*2; // why twice??
 	assert(OPT::_keep_time_steps <= 8);
-	for (int ii=0; ii<8; ++ii)
-		_states[ii] = NULL;  
+        for (int ii=0; ii<8; ++ii){
+          // not here!
+          _states[ii] = NULL;
+        }  
 }
 // -------------------------------------------------------------------------- //
 $(DEV_NAME)::$(DEV_NAME)(const $(DEV_NAME)& p)
@@ -2949,6 +2953,7 @@ $(DEV_NAME)::$(DEV_NAME)(const $(DEV_NAME)& p)
    _model(p._model),
    _nodes(),
    _states_1(NULL),
+   _num_caps(p._num_caps),
    _num_states(p._num_states)
 {
 	std::fill_n(m_entries, %(count(jacobian)), 0);
@@ -3006,7 +3011,7 @@ void $(DEV_NAME)::Set_param_by_index(int /*i*/, std::string& /*new_value*/, int 
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::expand()
 {
-        trace0("$(DEV_NAME)::expand");
+  trace0("$(DEV_NAME)::expand");
   ADMS_BASE::expand();
 
   if (!subckt()) {
@@ -6475,7 +6480,7 @@ int $(DEV_NAME)::load(int mode)
       </admst:when>
       <admst:otherwise>
         <admst:if test="[name!='initial_model' and name!='initial_instance']">
-          <admst:text format="//bug?\n"/>
+          <admst:text format="//bug -- this has been done in tr_begin.\n"/>
           <admst:apply-templates select="." match="X3block"/>
           <admst:text format="// end bug?\n"/>
         </admst:if>
