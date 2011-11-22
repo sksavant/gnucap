@@ -261,26 +261,8 @@ void STORAGE::set_ic( double x ){
   }
 } 
 /*--------------------------------------------------------------------------*/
-//void STORAGE::keep_ic( ){
-//
-//  trace4("STORAGE::keep_ic",IN1,IN2,_n[IN1].m_(),_n[IN2].m_());
-//  double x =  dn_diff(_sim->_vdc[_n[IN1].m_()],_sim->_vdc[_n[IN2].m_()] ); //tr_involts();
-//  if(has_common()){
-//    trace2("STORAGE::keep_ic", x,long_label());
-//    mutable_common()->set_ic(x);
-//  } else {
-//    trace2("STORAGE::keep_ic b ", x,long_label());
-//  *(_value.pointer_hack()) = x;
-//  // do_tr();
-//  // tr_load();
-//  q_eval(); 
-//  }
-//} 
 void STORAGE::keep_ic( ){
-  //hack can we use _sim->_v0 instead??
-  // double x =  dn_diff(_sim->_vdc[_sim->_nm[IN1]],_sim->_vdc[_sim->_nm[IN2]] ); //tr_involts();
-  //double x =  dn_diff(_n[IN1].v0(),_n[IN2].v0() ); //tr_involts();
-  double x =  dn_diff(_n[OUT1].v0(),_n[OUT2].v0() ); //tr_involts();
+  double x =  dn_diff(_n[OUT1].v0(),_n[OUT2].v0() ); // == tr_involts() ??
 
   trace6("STORAGE::keep_ic", long_label() , x, _n[IN1].v0(), _n[IN2].v0(), _n[OUT1].v0(),_n[OUT2].v0()  );
   if(has_common()){

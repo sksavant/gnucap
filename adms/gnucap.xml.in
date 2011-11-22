@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?> <!-- vim:ts=8:sw=2:et: 
--->
+<?xml version="1.0" encoding="ISO-8859-1"?>
 
 <!DOCTYPE admst SYSTEM "admst.dtd">
 <admst version="2.3.0" xmlns:admst="http://mot-adms.sourceforge.net/xml-files/admst">
@@ -2637,7 +2636,7 @@ protected: // override virtual
 	void tr_iwant_matrix();
 	void tr_begin();
 	void tr_restore() {ADMS_BASE::tr_restore(); internal_precalc();}
-        void	   store_values();
+        void store_values();
         void dc_advance();
 	void tr_advance();
 	void tr_regress();
@@ -2662,7 +2661,10 @@ protected: // override virtual
 	COMPLEX ac_involts()const {unreachable();return NOT_VALID;}
 	COMPLEX ac_amps()const {unreachable();return NOT_VALID;}
 	XPROBE  ac_probe_ext(const std::string&)const {itested(); return XPROBE(NOT_VALID, mtNONE);}
-	uint_t tail_size()const {return TAIL_SIZE;}
+        uint_t tail_size()const {return TAIL_SIZE;}
+
+        //misc
+        void keep_ic();
 	
 public:	// ports
 	std::string port_name(uint_t i)const {
@@ -3322,10 +3324,17 @@ bool $(DEV_NAME)::do_tr()
 	if (_sim->analysis_is_tran_dynamic()) 
 	{
 		if ((_time[1] == 0) && _sim->is_first_iteration()) mode = MODETRAN | MODEINITTRAN;
-		else mode = MODETRAN | MODEINITFLOAT;
-	}
-	else
-	{
+                else mode = MODETRAN | MODEINITFLOAT;
+
+        } else if(_sim->more_uic_now() && is_constant() ) {
+          assert(false); 
+
+          assert(_time[0] == 0.);
+
+                // see d_cap.cc
+          //          _i[0] = FPOLY1( CPOLY1( 0., -_y[0].x  / (OPT::shortckt),         1/(OPT::shortckt)  ) ); 
+
+        } else {
 		if (_sim->analysis_is_tran_static()) 		mode = MODETRANOP;		
 		else if (_sim->analysis_is_tran_restore()) 	mode = MODETRAN;
 		else if (_sim->command_is_dc()) 			mode = MODEDCTRANCURVE;
@@ -3391,6 +3400,21 @@ bool $(DEV_NAME)::do_tr()
                 // if (needs_load)
         trace1("$(DEV_NAME)::do_tr done ", converged());
 	return converged();
+}
+
+void keep_ic(){
+  double x =  dn_diff(_n[OUT1].v0(),_n[OUT2].v0() ); // == tr_involts() ??
+
+  trace6("STORAGE::keep_ic", long_label() , x, _n[IN1].v0(), _n[IN2].v0(), _n[OUT1].v0(),_n[OUT2].v0()  );
+  if(has_common()){
+  trace1("D_CAP::keep_ic have common " +long_label(),x);
+
+    mutable_common()->set_ic(x);
+  } else {
+    trace1("D_CAP::keep_ic no common "+ long_label(),x);
+    error(bDANGER, "no common for %s\n", long_label().c_str() );
+    assert(false);
+  }
 }
 // -------------------------------------------------------------------------- //
 void	   $(DEV_NAME)::store_values()		{
@@ -6858,3 +6882,5 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 	
 </admst:template>
 
+<!-- vim:ts=8:sw=2:et: 
+-->

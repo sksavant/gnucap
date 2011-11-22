@@ -1,0 +1,32 @@
+// R-TEST - test for verilog-a code generation
+
+
+`include "discipline.h"
+
+module ctest (top,low);
+
+   inout top,low;
+   electrical top,low;
+
+   // Model parameters
+   parameter real c=1e-6 from [0:inf);
+   
+   // Declaration of variables
+   real v1, i1;
+   
+   analog begin
+      begin     //Bias-dependent model evaluation
+	 
+		   v1 = V(top,low);
+         i1 = c*ddt(v1);
+    
+      end       //Bias-dependent model evaluation
+
+      begin     //Define branch sources
+
+         I(top,low) <+ i1;
+
+      end 
+   end
+
+endmodule
