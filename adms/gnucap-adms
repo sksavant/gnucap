@@ -19,7 +19,7 @@ case "$1" in
 	*.va)
 		check_adms
 		echo executing `gnucap-conf --adms` $1
-		`gnucap-conf --adms` $1
+		`gnucap-conf --adms` $1 -o ${1%.va}
 
 		;;
 
