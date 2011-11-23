@@ -122,7 +122,7 @@ private:
   void cap_prepare();
   void cap_reset();
   vector<string> var_namen_arr;
-  vector<DEV_CAPACITANCE*> _caplist; // FIXME: use cardlist
+  vector<COMPONENT*> _caplist; // FIXME: use cardlist
   CARDSTASH* _capstash;
   uint16_t var_namen_total_size; 
 
@@ -521,10 +521,13 @@ void SOCK::fillnames( const CARD_LIST* scope){
 /*--------------------------------------------------------------------------*/
 void SOCK::findcaps( CARD_LIST* scope){
   for (CARD_LIST::iterator i = scope->begin(); i != scope->end(); ++i) {
-    if ( DEV_CAPACITANCE* cap = dynamic_cast< DEV_CAPACITANCE*>(*i) )
+    if ( COMPONENT* cap = dynamic_cast< COMPONENT*>(*i) )
     {
-      trace1("found cap", cap->long_label());
-      _caplist.push_back( cap );
+      if (cap->is_device() && cap->has_memory()){
+        trace1("found cap", cap->long_label());
+
+        _caplist.push_back( cap );
+      }
     }
     if ( BASE_SUBCKT* s = dynamic_cast< BASE_SUBCKT*>(*i) )
     {

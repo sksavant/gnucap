@@ -26,6 +26,19 @@
 <!-- prefix for local variables -->
 <admst:variable name="var_prefix" select="__"/>
 
+<admst:variable name="requiredderivateforddx" select="no"/>
+<admst:variable name="SkipFVariable" select="n"/>
+<admst:variable name="ddxinsidederivate" select="no"/>
+<admst:variable name="SkipFVariable" select="n"/>
+<admst:variable name="pprobe"/>
+<admst:variable name="qprobe"/>
+<admst:variable name="e"/>
+<admst:variable name="ep"/>
+<admst:variable name="eq"/>
+<admst:variable name="epq"/>
+<admst:variable name="keep_ic" select="no"/>
+<admst:variable name="eval_constant" select="no"/>
+
 <!-- ****************************** ngspiseVersion.xml ************************* -->
 
 <admst:template match=":new:jacobian">
@@ -1469,8 +1482,9 @@
     </admst:choose>
   </admst:if>
 </admst:template>
-<!-- ---------- analog//keep_ic ------------------------------- -->
-<admst:template match="keep_ic">
+<!-- ---------- analog//tr_eval_constant ------------------------------- -->
+<admst:template match="tr_eval_constant">
+  <admst:variable name="eval_constant" select="yes"/>
   <admst:apply-templates select="module/evaluation/variable" match="X3variable:declaration"/>
   <admst:reset select="module/evaluation/variable"/>
   <admst:for-each select="item">
@@ -1487,6 +1501,7 @@
 
           <admst:text format="{ //X3block \n"/>
 
+
           <admst:apply-templates select="item" match="X3%(adms/datatypename)"/>
           <admst:message format="done\n"/>
           <admst:text format="} //X3blovk \n"/>
@@ -1496,6 +1511,38 @@
       </admst:otherwise>
     </admst:choose>
   </admst:for-each>
+  <admst:variable name="eval_constant" select="no"/>
+</admst:template>
+<!-- ---------- analog//keep_ic ------------------------------- -->
+<admst:template match="keep_ic">
+  <admst:variable name="keep_ic" select="yes"/>
+  <admst:apply-templates select="module/evaluation/variable" match="X3variable:declaration"/>
+  <admst:reset select="module/evaluation/variable"/>
+  <admst:for-each select="item">
+    <admst:choose>
+      <admst:when test="adms[datatypename!='block']">
+        <admst:text format="// not a block\n"/>
+        <admst:apply-templates select="." match="X3%(adms/datatypename)"/>
+        <admst:text format="// not a block done\n"/>
+      </admst:when>
+      <admst:otherwise>
+        <admst:if test="[name!='initial_model' and name!='initial_instance']">
+          <admst:text format="// not initial_\n"/>
+          <!-- <admst:apply-templates select="." match="X3block"/> -->
+
+          <admst:text format="{ //X3block \n"/>
+
+
+          <admst:apply-templates select="item" match="X3%(adms/datatypename)"/>
+          <admst:message format="done\n"/>
+          <admst:text format="} //X3blovk \n"/>
+
+          <admst:text format="// done X3block\n"/>
+        </admst:if>
+      </admst:otherwise>
+    </admst:choose>
+  </admst:for-each>
+  <admst:variable name="keep_ic" select="no"/>
 </admst:template>
 <!-- ---------- analog//contribution ------------------------------- -->
 <admst:template match="contribution">
@@ -1535,7 +1582,6 @@
       <admst:variable name="SkipFVariable" select="n"/>
     </admst:when>
     <admst:otherwise>
-      <admst:text format="// nonoise contribution \n"/>
       <admst:apply-templates select="." match="X3contribution:nonoise"/>
     </admst:otherwise>
   </admst:choose>
@@ -2508,30 +2554,6 @@
 <admst:variable  name="myF_par2" select=""/>
 <admst:variable  name="myF_ret1" select=""/>
 
-<admst:template match="utils_print_matrixentries">
-	enum EMatrixEntries {
-	<admst:variable name="local_var" select="II"/>
-	<admst:for-each select="jacobian">
-		<admst:value-of select="column/name"/>
-		<admst:value-of select="row/name"/>
-		<admst:text format="\tm_%s_%s=%(position(.)-1)"/>
-		
-		<admst:variable name="local_var" select="$(local_var)I"/>
-		<admst:if test="[position(.)!=count(.)]">
-			<admst:text format=", "/>
-			<admst:if test="[$(local_var)='IIIIIII']">
-				<admst:variable name="local_var" select="I"/>
-				<admst:text format="\n\t"/>
-			</admst:if>	
-		</admst:if>
-		<admst:if test="[position(.)=count(.)]">
-			<admst:text format=" };"/>
-		</admst:if>	
-	</admst:for-each>
-	bool m_required[%(count(jacobian))];
-	double m_entries[%(count(jacobian))], m_entries_old[%(count(jacobian))];
-	double m_ac_static[%(count(jacobian))], m_ac_dynamic[%(count(jacobian))];
-</admst:template>
 
 <admst:template match="utils_compare_nodes_position">
 	<admst:variable  name="myF_ret1" select="not_found"/>
@@ -2706,6 +2728,7 @@ protected: // override virtual
 	bool do_tr();
 	void tr_load();
 	void tr_eval();
+	void tr_eval_constant();
         bool conv_check()const;
 	TIME_PAIR tr_review();
 	void tr_accept();
@@ -2727,6 +2750,7 @@ protected: // override virtual
 
         //misc
         void keep_ic();
+        bool has_memory(){return _num_ddts;}
 	
 public:	// ports
 	std::string port_name(uint_t i)const {
@@ -2797,9 +2821,38 @@ private: // nodes / matrix indexes
 
 	double BP2(  ENodes p,  ENodes n  ) const;
 	double it0[%(count(node[grounded='no']))];
-	double it1[%(count(node[grounded='no']))];
+        double it1[%(count(node[grounded='no']))];
+	double i_kept[%(count(node[grounded='no']))];
 	
-	<admst:apply-templates select="." match="utils_print_matrixentries"/>
+	enum EMatrixEntries {
+	<admst:variable name="local_var" select="II"/>
+	<admst:for-each select="jacobian">
+          <admst:value-of select="column/name"/>
+          <admst:value-of select="row/name"/>
+          <admst:text format="\tm_%s_%s=%(position(.)-1)"/>
+
+          <admst:variable name="local_var" select="$(local_var)I"/>
+          <admst:if test="[position(.)!=count(.)]">
+            <admst:text format=", "/>
+            <admst:if test="[$(local_var)='IIIIIII']">
+              <admst:variable name="local_var" select="I"/>
+              <admst:text format="\n\t"/>
+            </admst:if>	
+          </admst:if>
+          <admst:if test="[position(.)=count(.)]">
+            <admst:text format=" };"/>
+          </admst:if>	
+        </admst:for-each>
+
+              // what is this?
+        bool m_required[%(count(jacobian))];
+
+        double m_entries[%(count(jacobian))];
+        double m_entries_old[%(count(jacobian))];
+        double m_entries_kept[%(count(jacobian))]; // keep_ic, uic etc.
+
+        double m_ac_static[%(count(jacobian))]; // FIXME. reuse m_entries as m_ac_static.
+        double m_ac_dynamic[%(count(jacobian))];
 		
 	// states
 	enum EStates {
@@ -2832,16 +2885,6 @@ private: // nodes / matrix indexes
 <!-- ********************************* Make d_*.cc *********************************** -->
 <!-- ************************************************************************************* -->
 
-<admst:variable name="requiredderivateforddx" select="no"/>
-<admst:variable name="SkipFVariable" select="n"/>
-<admst:variable name="ddxinsidederivate" select="no"/>
-<admst:variable name="SkipFVariable" select="n"/>
-<admst:variable name="pprobe"/>
-<admst:variable name="qprobe"/>
-<admst:variable name="e"/>
-<admst:variable name="ep"/>
-<admst:variable name="eq"/>
-<admst:variable name="epq"/>
 
 <admst:variable name="globalanalogfunction"/>
 <admst:open file="$(filename).cc">
@@ -3386,6 +3429,15 @@ bool $(DEV_NAME)::tr_needs_eval()const
   return false;
 }
 // -------------------------------------------------------------------------- //
+void $(DEV_NAME)::tr_eval_constant()
+{
+
+  /*
+  <admst:apply-templates select="analog/code[datatypename='block']" match="tr_eval_constant" required="yes"/>
+  */
+
+}
+// -------------------------------------------------------------------------- //
 // MODEINITFLOAT = normal iteration
 // MODEINITPRED  = 1st iter at a new time point
 // MODEINITTRAN  = 1st iter at 1st time pt after initial DC
@@ -3402,16 +3454,16 @@ bool $(DEV_NAME)::do_tr()
 	int mode;
 	if (_sim->analysis_is_tran_dynamic()) 
 	{
-		if ((_time[1] == 0) && _sim->is_first_iteration()) mode = MODETRAN | MODEINITTRAN;
-                else mode = MODETRAN | MODEINITFLOAT;
+          if ((_time[1] == 0) && _sim->is_first_iteration()) mode = MODETRAN | MODEINITTRAN;
+          else mode = MODETRAN | MODEINITFLOAT;
+
+          tr_eval(); // if needed??
+          q_load(); 
 
         } else if(_sim->more_uic_now() && is_constant() ) {
-          assert(false); 
-
           assert(_time[0] == 0.);
 
-                // see d_cap.cc
-          //          _i[0] = FPOLY1( CPOLY1( 0., -_y[0].x  / (OPT::shortckt),         1/(OPT::shortckt)  ) ); 
+          tr_eval_constant();
 
         } else {
 		if (_sim->analysis_is_tran_static()) 		mode = MODETRANOP;		
@@ -3427,20 +3479,13 @@ bool $(DEV_NAME)::do_tr()
 		}
 		else 
 			if (_sim->is_initial_step()) mode |= MODEINITJCT;
-			else mode |= MODEINITFLOAT;
+                        else mode |= MODEINITFLOAT;
+
+
+          tr_eval(); // if needed??
+          q_load(); 
 	}
   
-	std::fill_n(it0, %(count(node[grounded='no'])), 0);
-	std::fill_n(m_entries, %(count(jacobian)), 0);
-
-	// (sets m_entries, it0)
-	//----- thish is what cap does.
-        tr_eval(); // if needed??
-        q_load(); 
-        //differntiate
-        // return converged();
-	//-----
-			
 	// convergence check -- gnucap method
 	set_converged(true);
 	for (unsigned ii = 0; ii < _num_states; ++ii) 
@@ -3487,44 +3532,43 @@ void $(DEV_NAME)::keep_ic()
 
   trace6("STORAGE::keep_ic", long_label() , x, _n[IN1].v0(), _n[IN2].v0(), _n[OUT1].v0(),_n[OUT2].v0()  );
 
-  for(unsigned a=0; a>_num_states; a++){
-  //  _keep_state[a]=rechneaus(nodes);
-  }
-
-
   /*
   <admst:apply-templates select="analog/code[datatypename='block']" match="keep_ic" required="yes"/>
   */
+
+  notstd::copy_n(m_entries, %(count(jacobian)) , m_entries_kept);
+
+  notstd::copy_n(it0,%(count(node[grounded='no'])) , i_kept);
+
 }
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::store_values() 
 {
-
-// element: y[0] -> y_1
+  // element: y[0] -> y_1
   notstd::copy_n(_states[0], _num_states, _states_1);
 }
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_load()
 {
-        trace0("$(DEV_NAME)::tr_load");
-		/// BUG: only dynamic!
-	<admst:text format="\n\tfor(int i=0; i<%(count(node[grounded='no'])); i++)"/>
-		tr_load_source_point(_n[i], &(it0[i]), &(it1[i]));
-	
-		/// BUG: only dynamic!
+  trace0("$(DEV_NAME)::tr_load");
+          /// BUG: only dynamic!
+  <admst:text format="\n\tfor(int i=0; i<%(count(node[grounded='no'])); i++)"/>
+          tr_load_source_point(_n[i], &(it0[i]), &(it1[i]));
+  
+          /// BUG: only load dynamic nodes!
 
-	<admst:for-each select="jacobian">
-	<admst:value-of select="column/name"/>
-	<admst:value-of select="row/name"/>
-	<admst:value-of select="column/name"/>
-	<admst:value-of select="row/name"/>
-	<admst:value-of select="column/name"/>
-	<admst:value-of select="row/name"/>
-	<admst:value-of select="column/name"/>
-	<admst:value-of select="row/name"/>
-	if( m_required[m_%s_%s] )
-  		tr_load_point(_n[%sNode], _n[%sNode], &(m_entries[m_%s_%s]), &(m_entries_old[m_%s_%s]));
-	</admst:for-each>
+  <admst:for-each select="jacobian">
+  <admst:value-of select="column/name"/>
+  <admst:value-of select="row/name"/>
+  <admst:value-of select="column/name"/>
+  <admst:value-of select="row/name"/>
+  <admst:value-of select="column/name"/>
+  <admst:value-of select="row/name"/>
+  <admst:value-of select="column/name"/>
+  <admst:value-of select="row/name"/>
+  if( m_required[m_%s_%s] )
+          tr_load_point(_n[%sNode], _n[%sNode], &(m_entries[m_%s_%s]), &(m_entries_old[m_%s_%s]));
+  </admst:for-each>
 }
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_unload()
@@ -3561,7 +3605,7 @@ void $(DEV_NAME)::tr_accept()
     assert(_dt == NOT_VALID || conchk(_dt, _time[0] - _time[1]));
     int mode;
     mode = MODEINITSMSIG;
-    load(mode);
+    // huh??    load(mode);
   } else { itested(); }
 }
 // -------------------------------------------------------------------------- //
@@ -3646,11 +3690,11 @@ int $(DEV_NAME)::NIintegrate(int qcap) // used by DEVload (not DC)
 	std::valarray<FPOLY1> q(OPT::_keep_time_steps);
         std::valarray<FPOLY1> i(OPT::_keep_time_steps);
 
-        unsigned k = min(4,OPT::_keep_time_steps);
+        unsigned k = OPT::_keep_time_steps;
         // stupid copy. fixme.
         // gnucap stores things more usable.
 	 
-	for (int ii = 0; ii < k; ii++) 
+	for (unsigned ii = 0; ii < k; ii++) 
 	{
 		assert( _states[ii][qcap] == _states[ii][qcap] );
 		assert( _states[ii][qcap+1] == _states[ii][qcap+1] );
@@ -3868,6 +3912,8 @@ bool $(DEV_NAME)::conv_check()const
 #define _DERIVATE
 void $(DEV_NAME)::tr_eval() 
 {
+  std::fill_n(it0, %(count(node[grounded='no'])), 0);
+  std::fill_n(m_entries, %(count(jacobian)), 0);
   int ChargeComputationNeeded = 1; // fixme!
   int mode=MODETRAN; // FIXME
 	
@@ -3876,20 +3922,11 @@ void $(DEV_NAME)::tr_eval()
   if (_time[1] != 0 && _method_a == mTRAP) CKTag0 = 2 / _dt;
   else CKTag0 = 1 / _dt;
 
-  <!--admst:for-each select="variable[input='no' and scope='global_instance']">
-      <admst:choose>
-                <admst:when test="[type='real']"><admst:text format="\n\tdouble %(.) = 0.0;"/></admst:when>
-                <admst:when test="[type='integer']"><admst:text format="\n\tint %(.) = 0;"/></admst:when>
-                  <admst:otherwise><admst:text format="\n\tstd::string %(.);"/></admst:otherwise>
-	</admst:choose>
-	</admst:for-each-->
 
-	<admst:text format="\n\tstd::fill_n(m_ac_static, %(count(jacobian)), 0);"/>
-	<admst:text format="\n\tstd::fill_n(m_ac_dynamic, %(count(jacobian)), 0);"/>
+  <admst:text format="\n\tstd::fill_n(m_ac_static, %(count(jacobian)), 0);"/>
+  <admst:text format="\n\tstd::fill_n(m_ac_dynamic, %(count(jacobian)), 0);"/>
 									
   {
-
-        //clear it0????
     trace0("$(DEV_NAME)::tr_eval()  loading hxx");
     #include "$module.hxx"
     trace0("$(DEV_NAME)::tr_eval()  loaded hxx");
@@ -6313,7 +6350,16 @@ int $(DEV_NAME)::load(int mode)
   </admst:if>
   <admst:choose>
     <admst:when test="[dynamic='yes']">
-      <admst:text format="  _eval_dynamic_"/>
+      <admst:choose>
+        <admst:when test="[$keep_ic='yes']">
+          <admst:message format="keepic\n"/>
+          <admst:text format="  _eval_keep_"/>
+        </admst:when>
+        <admst:otherwise>
+          <admst:message format="nokeepic\n"/>
+          <admst:text format="  _eval_dynamic_"/>
+        </admst:otherwise>
+      </admst:choose>
     </admst:when>
     <admst:otherwise>
       <admst:text format="  _eval_static_"/>
@@ -6841,6 +6887,9 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 // ******************** load definitions ***************************
 #define _eval_static_residual1(p,v)\
 	it0[p ## Node]-=v;
+#define _keep_static_residual2(p,n,v)\
+	kept[p ## Node]-=v;\
+	kept[n ## Node]+=v;		
 #define _eval_static_residual2(p,n,v)\
 	it0[p ## Node]-=v;\
 	it0[n ## Node]+=v;		
@@ -6877,6 +6926,14 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 	_eval_static_residual1(Sp,-v*NP(Pp))\
 	_write_ptr(Sp, Pp, v)\
 	_write_JS(Sp, Pp, v)	
+#define _keep_dynamic_residual2(p,n,v)\
+	{\
+		int error;\
+		_kept_states[state_##p##_##n]=v;\
+		_keep_static_residual2(p,n,_states[0][state_##p##_##n+1])\
+          }	
+
+/// FIXME: remove mode. mode is clear from the context.
 #define _eval_dynamic_residual2(p,n,v)\
 	if(ChargeComputationNeeded)\
 	{\

@@ -17,7 +17,7 @@ module ctest (top,low);
    analog begin
       begin
 
-		   v1 = V(top,low);
+		   v1 = V(top,low) ;
          I(top,low) <+ c*ddt(v1);
 
       end 

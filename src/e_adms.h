@@ -112,8 +112,7 @@ class ADMS_BASE : public BASE_SUBCKT {
 		void	   ac_load_diagonal_point(const node_t& no1, COMPLEX value);
 
 		template <class T>
-			void	   tr_load_point(const node_t& no1, const node_t& no2,
-					T* value, T* old_value);
+		void	   tr_load_point(const node_t& no1, const node_t& no2, T* value, T* old_value);
 		void	   ac_load_point(const node_t& no1, const node_t& no2,
 				COMPLEX value);
 
@@ -454,11 +453,10 @@ inline void ADMS_BASE::ac_load_diagonal_point(const node_t& no1, COMPLEX new_val
 	_sim->_acx.load_diagonal_point(no1.m_(), mfactor() * new_value);
 }
 /*--------------------------------------------------------------------------*/
-	template <class T>
+template <class T>
 inline void ADMS_BASE::tr_load_point(const node_t& no1, const node_t& no2,
 		T* new_value, T* old_value)
 {
-	itested();
 	T d = dampdiff(new_value, *old_value);
 	if (d != 0.) {
 		_sim->_aa.load_point(no1.m_(), no2.m_(), d);

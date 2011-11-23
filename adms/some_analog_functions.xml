@@ -881,3 +881,4 @@ double $(DEV_NAME)::d_$(function) (<admst:join select="variable[input='yes']" se
   </admst:for-each>
  </admst:template>
 </admst>
+
