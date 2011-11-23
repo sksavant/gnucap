@@ -87,11 +87,11 @@ public:
 class INTERFACE STORAGE_HEADLESS : public STORAGE {
   public:
     explicit STORAGE_HEADLESS()			
-      :STORAGE(), _method_u(meUNKNOWN), _method_a(mTRAPGEAR)  {}
+      :STORAGE() {}
     explicit STORAGE_HEADLESS(const STORAGE_HEADLESS& p)
-      :STORAGE(p), _method_u(p._method_u), _method_a(p._method_a) {}
+      :STORAGE(p){}
     ~STORAGE_HEADLESS() {}
-}
+};
 
 
 /*--------------------------------------------------------------------------*/
