@@ -37,7 +37,7 @@
 <admst:variable name="eq"/>
 <admst:variable name="epq"/>
 <admst:variable name="keep_ic" select="no"/>
-<admst:variable name="eval_constant" select="no"/>
+<admst:variable name="eval_kept" select="no"/>
 
 <!-- ****************************** ngspiseVersion.xml ************************* -->
 
@@ -639,7 +639,6 @@
   </admst:choose>
 </admst:template>
 <!-- ----------------------------------------- -->
-
 <admst:template match="function">
   <admst:choose>
     <admst:when test="[name='ddt']">
@@ -1482,24 +1481,34 @@
     </admst:choose>
   </admst:if>
 </admst:template>
-<!-- ---------- analog//tr_eval_constant ------------------------------- -->
-<admst:template match="tr_eval_constant">
-  <admst:variable name="eval_constant" select="yes"/>
+<!-- ---------- analog//tr_eval_kept ------------------------------- -->
+<admst:template match="tr_eval_kept">
+  <admst:variable name="eval_kept" select="yes"/>
+  <admst:variable name="keep_ic" select="no"/>
+
+
+  <admst:text format="// var decl\n"/>
   <admst:apply-templates select="module/evaluation/variable" match="X3variable:declaration"/>
+  <admst:text format="// var decl done\n"/>
+
+
   <admst:reset select="module/evaluation/variable"/>
   <admst:for-each select="item">
     <admst:choose>
       <admst:when test="adms[datatypename!='block']">
         <admst:text format="// not a block\n"/>
+  <admst:text format="// fetch states\n"/>
         <admst:apply-templates select="." match="X3%(adms/datatypename)"/>
+  <admst:text format="// fetched states\n"/>
         <admst:text format="// not a block done\n"/>
       </admst:when>
       <admst:otherwise>
         <admst:if test="[name!='initial_model' and name!='initial_instance']">
           <admst:text format="// not initial_\n"/>
-          <!-- <admst:apply-templates select="." match="X3block"/> -->
 
           <admst:text format="{ //X3block \n"/>
+
+          <admst:text select="item" format=" // X3%(adms/datatypename) \n"/>
 
 
           <admst:apply-templates select="item" match="X3%(adms/datatypename)"/>
@@ -1511,7 +1520,8 @@
       </admst:otherwise>
     </admst:choose>
   </admst:for-each>
-  <admst:variable name="eval_constant" select="no"/>
+  <admst:variable name="eval_kept" select="no"/>
+  <admst:variable name="keep_ic" select="no"/>
 </admst:template>
 <!-- ---------- analog//keep_ic ------------------------------- -->
 <admst:template match="keep_ic">
@@ -1568,6 +1578,7 @@
           <admst:if test="[$dependency!='constant']">
             <admst:text format="wnoise%(index($wnoise/item,.))="/>
           </admst:if>
+          <admst:text select="item" format=" // things 2...  \n"/>
           <admst:apply-templates select="rhs/tree/arguments[1]" match="X3%(adms/datatypename)"/>
           <admst:text format="$e;\n"/>
         </admst:if>
@@ -1582,6 +1593,8 @@
       <admst:variable name="SkipFVariable" select="n"/>
     </admst:when>
     <admst:otherwise>
+
+      <admst:text select="." format=" // X3contrib -&gt; nonoise \n"/>
       <admst:apply-templates select="." match="X3contribution:nonoise"/>
     </admst:otherwise>
   </admst:choose>
@@ -2728,7 +2741,7 @@ protected: // override virtual
 	bool do_tr();
 	void tr_load();
 	void tr_eval();
-	void tr_eval_constant();
+	void tr_eval_kept();
         bool conv_check()const;
 	TIME_PAIR tr_review();
 	void tr_accept();
@@ -3429,11 +3442,11 @@ bool $(DEV_NAME)::tr_needs_eval()const
   return false;
 }
 // -------------------------------------------------------------------------- //
-void $(DEV_NAME)::tr_eval_constant()
+void $(DEV_NAME)::tr_eval_kept()
 {
 
   /*
-  <admst:apply-templates select="analog/code[datatypename='block']" match="tr_eval_constant" required="yes"/>
+  <admst:apply-templates select="analog/code[datatypename='block']" match="tr_eval_kept" required="yes"/>
   */
 
 }
@@ -3463,7 +3476,7 @@ bool $(DEV_NAME)::do_tr()
         } else if(_sim->more_uic_now() && is_constant() ) {
           assert(_time[0] == 0.);
 
-          tr_eval_constant();
+          tr_eval_kept();
 
         } else {
 		if (_sim->analysis_is_tran_static()) 		mode = MODETRANOP;		
@@ -6029,6 +6042,7 @@ int $(DEV_NAME)::load(int mode)
 </admst:template>
 <!-- --------------------- analog//blockvariable ------------ -->
 <admst:template match="X3blockvariable">
+  <admst:text format="{ //X3blockvariable \n"/>
   <admst:text select="variable" format="%(X3vtype(.)) %(name);\n"/>
   <admst:if test="variable[insource='yes']/probe">
 
@@ -6215,10 +6229,10 @@ int $(DEV_NAME)::load(int mode)
         <admst:variable name="definedrequired" select="yes"/>
         <admst:choose>
           <admst:when test="[$ddxinsidederivate='yes']">
-            <admst:text format="#if defined(_DERIVATEFORDDX) // probe=%($lhs/probe) ddxprobe=%($lhs/ddxprobe) \n"/>
+            <admst:text format="#if defined(_DERIVATEFORDDX) \n // probe=%($lhs/probe) ddxprobe=%($lhs/ddxprobe) \n"/>
           </admst:when>
           <admst:when test="lhs/probe">
-            <admst:text format="#if defined(_DERIVATE) // probe=%($lhs/probe)  ddxprobe=%($lhs/ddxprobe) \n"/>
+            <admst:text format="#if defined(_DERIVATE) \n // probe=%($lhs/probe)  ddxprobe=%($lhs/ddxprobe) \n"/>
           </admst:when>
           <admst:otherwise>
             <admst:variable name="definedrequired" select="no"/>
@@ -6236,6 +6250,7 @@ int $(DEV_NAME)::load(int mode)
           </admst:if>
           <admst:variable name="qprobe"/>
           <admst:variable name="ep" select="0.0"/>
+          <admst:text format="// inthemiddle\n"/>
           <admst:apply-templates select="[$isinside='1']/$rhs/tree" match="X3%(adms/datatypename)"/>
           <admst:text test="[$ddxinsidederivate='yes' and $ddxinsidethisprobe='no']" 
                       format="#if defined(_DERIVATE)\n"/>
@@ -6254,9 +6269,18 @@ int $(DEV_NAME)::load(int mode)
         <admst:variable name="ddxinsidederivate" select="no"/>
       </admst:if>
       <admst:variable name="qprobe"/>
+      <admst:text format="// qprobe\n"/>
       <admst:apply-templates select="lhs" match="X3variable"/>
-      <admst:text format="$e=%(X3e(rhs/tree));\n"/>
+
+      <admst:if test="[$keep_ic='yes']">
+        <admst:text format="$e=state[nummer];\n"/>
+      </admst:if>
+      <admst:if test="[$keep_ic='no']">
+        <admst:text format="$e=%(X3e(rhs/tree));\n"/>
+      </admst:if>
+        
       <admst:text format="EXIT_IF_ISNAN($e)\n"/>
+      <admst:text format="// qprobe done\n"/>
     </admst:otherwise>
   </admst:choose>
   <admst:text test="rhs/function" format="}\n"/>
@@ -6334,6 +6358,7 @@ int $(DEV_NAME)::load(int mode)
 </admst:template>
 <!-- ---------------------------------------------------------- -->
 <admst:template match="X3contribution:nonoise">
+  <admst:text format="X3contribution\n"/>
   <admst:if test="rhs[not(nilled(function[class='builtin']))]">
     <admst:choose>
       <admst:when test="[dynamic='yes']">
@@ -6353,7 +6378,11 @@ int $(DEV_NAME)::load(int mode)
       <admst:choose>
         <admst:when test="[$keep_ic='yes']">
           <admst:message format="keepic\n"/>
-          <admst:text format="  _eval_keep_"/>
+          <admst:text format="  _keep_dynamic_"/>
+        </admst:when>
+        <admst:when test="[$eval_kept='yes']">
+          <admst:message format="keepic\n"/>
+          <admst:text format="  _eval_kept_dynamic_"/>
         </admst:when>
         <admst:otherwise>
           <admst:message format="nokeepic\n"/>
