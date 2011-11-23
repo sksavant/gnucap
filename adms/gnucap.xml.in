@@ -38,6 +38,7 @@
 <admst:variable name="epq"/>
 <admst:variable name="keep_ic" select="no"/>
 <admst:variable name="eval_kept" select="no"/>
+<admst:variable name="globalanalogfunction"/>
 
 <!-- ****************************** ngspiseVersion.xml ************************* -->
 
@@ -1601,94 +1602,7 @@
 </admst:template>
 <!-- ------------------------------------------- --> 
 <admst:template match="contribution:nonoise">
-  <admst:if test="rhs[not(nilled(function[class='builtin']))]">
-    <admst:choose>
-      <admst:when test="[dynamic='yes']">
-        <admst:text format="#if defined(_DYNAMIC)\n"/>
-      </admst:when>
-    </admst:choose>
-    <admst:text format="{\n"/>
-    <admst:for-each select="rhs/function">
-      <admst:value-of select="position(.)-1"/>
-      <admst:apply-templates select="." match="function:getname"/>
-      <admst:text format="double __%s_%s=0.0;\n"/>
-    </admst:for-each>
-    <admst:apply-templates select="." match="ddx:function:computation"/>
-  </admst:if>
-  <admst:apply-templates select="rhs" match="expression:stringify:noprobe"/>
-  <admst:choose>
-    <admst:when test="[dynamic='yes']">
-      <admst:text format="  _eval_dynamic_"/>
-    </admst:when>
-    <admst:otherwise>
-      <admst:text format="  _eval_static_"/>
-    </admst:otherwise>
-  </admst:choose>
-  <admst:choose>
-    <admst:when test="lhs/branch/nnode[grounded='no']">
-      <admst:value-of select="lhs/branch/nnode/name"/>
-      <admst:value-of select="lhs/branch/pnode/name"/>
-      <admst:text format="residual2(%s,%s,%s)\n"/>
-    </admst:when>
-    <admst:otherwise>
-      <admst:value-of select="lhs/branch/pnode/name"/>
-      <admst:text format="residual1(%s,%s)\n"/>
-    </admst:otherwise>
-  </admst:choose>
-  <admst:for-each select="rhs/probe">
-    <admst:value-of select="."/>
-    <admst:value-to select="/simulator/probe" value="%p"/>
-    <admst:apply-templates select="../tree" match="subexpression:differentiate"/>
-    <admst:value-of select="/simulator/ddx"/>
-    <admst:choose>
-      <admst:when test="..[dynamic='yes']">
-        <admst:text format="  _eval_dynamic_"/>
-      </admst:when>
-      <admst:otherwise>
-        <admst:text format="  _eval_static_"/>
-      </admst:otherwise>
-    </admst:choose>
-    <admst:if test="branch/pnode[grounded='no']">
-      <admst:if test="../../lhs/branch/pnode[grounded='no']">
-        <admst:choose>
-          <admst:when test="branch/nnode[grounded='no']">
-            <admst:if test="../../lhs/branch/nnode[grounded='no']">
-              <admst:value-of select="branch/nnode/name"/>
-              <admst:value-of select="branch/pnode/name"/>
-              <admst:value-of select="../../lhs/branch/nnode/name"/>
-              <admst:value-of select="../../lhs/branch/pnode/name"/>
-              <admst:text format="jacobian4(%s,%s,%s,%s,%s)\n"/>
-            </admst:if>
-            <admst:if test="../../lhs/branch/nnode[grounded='yes']">
-              <admst:value-of select="branch/nnode/name"/>
-              <admst:value-of select="branch/pnode/name"/>
-              <admst:value-of select="../../lhs/branch/pnode/name"/>
-              <admst:text format="jacobian2p(%s,%s,%s,%s)\n"/>
-            </admst:if>
-          </admst:when>
-          <admst:otherwise>
-            <admst:if test="../../lhs/branch/nnode[grounded='no']">
-              <admst:value-of select="branch/pnode/name"/>
-              <admst:value-of select="../../lhs/branch/nnode/name"/>
-              <admst:value-of select="../../lhs/branch/pnode/name"/>
-              <admst:text format="jacobian2s(%s,%s,%s,%s)\n"/>
-            </admst:if>
-            <admst:if test="../../lhs/branch/nnode[grounded='yes']">
-              <admst:value-of select="branch/pnode/name"/>
-              <admst:value-of select="../../lhs/branch/pnode/name"/>
-              <admst:text format="jacobian1(%s,%s,%s)\n"/>
-            </admst:if>
-          </admst:otherwise>
-        </admst:choose>
-      </admst:if>
-    </admst:if>
-  </admst:for-each>
-  <admst:if test="rhs[not(nilled(function[class='builtin']))]">
-    <admst:text format="}\n"/>
-    <admst:if test="[dynamic='yes']">
-      <admst:text format="#endif // _DYNAMIC \n"/>
-    </admst:if>
-  </admst:if>
+  <admst:fatal format="template not in use: remved\n"/>
 </admst:template>
 <!-- ----------------------  analog//conditional ------------------ -->
 <admst:template match="conditional">
@@ -2867,15 +2781,20 @@ private: // nodes / matrix indexes
         double m_ac_static[%(count(jacobian))]; // FIXME. reuse m_entries as m_ac_static.
         double m_ac_dynamic[%(count(jacobian))];
 		
-	// states
+	// states FIXME
+
+
 	enum EStates {
-	<admst:join select="source[dynamic='yes']" separator=", ">
-		<admst:value-of select="branch/nnode/name"/>
-		<admst:value-of select="branch/pnode/name"/>
-		<admst:text format="state_%s_%s=%((position(.)-1)*2)"/>
-	</admst:join>
-	<admst:text format=" };"/>
-	double* (_states[8]); // array of 8 pointers
+        <admst:for-each select="expression[dynamic='yes']" >
+          
+          <!--          <admst:apply-templates select="tree" match="X3af:print:expression"/> -->
+
+	</admst:for-each>
+        <admst:text format=" };"/>
+
+        
+
+	double* (_states[8]); // state history pointer array
 	double* _states_1;
 	unsigned _num_ddts;
 	unsigned _num_states;
@@ -2899,7 +2818,6 @@ private: // nodes / matrix indexes
 <!-- ************************************************************************************* -->
 
 
-<admst:variable name="globalanalogfunction"/>
 <admst:open file="$(filename).cc">
 #include <limits>
 
@@ -6272,10 +6190,10 @@ int $(DEV_NAME)::load(int mode)
       <admst:text format="// qprobe\n"/>
       <admst:apply-templates select="lhs" match="X3variable"/>
 
-      <admst:if test="[$keep_ic='yes']">
-        <admst:text format="$e=state[nummer];\n"/>
+      <admst:if test="[$eval_kept='yes']">
+        <admst:text format="$e= 0.1234 // %(X3e(rhs/tree));\n"/>
       </admst:if>
-      <admst:if test="[$keep_ic='no']">
+      <admst:if test="[$eval_kept='no']">
         <admst:text format="$e=%(X3e(rhs/tree));\n"/>
       </admst:if>
         
@@ -6358,7 +6276,7 @@ int $(DEV_NAME)::load(int mode)
 </admst:template>
 <!-- ---------------------------------------------------------- -->
 <admst:template match="X3contribution:nonoise">
-  <admst:text format="X3contribution\n"/>
+  <admst:text format="// X3contribution ... \n"/>
   <admst:if test="rhs[not(nilled(function[class='builtin']))]">
     <admst:choose>
       <admst:when test="[dynamic='yes']">
@@ -6425,17 +6343,11 @@ int $(DEV_NAME)::load(int mode)
         <admst:choose>
           <admst:when test="branch/nnode[grounded='no']">
             <admst:if test="../../lhs/branch/nnode[grounded='no']">
-              <admst:value-of select="branch/nnode/name"/>
-              <admst:value-of select="branch/pnode/name"/>
-              <admst:value-of select="../../lhs/branch/nnode/name"/>
-              <admst:value-of select="../../lhs/branch/pnode/name"/>
               <admst:text format="jacobian4(%s,%s,%s,%s,$ep)\n"/>
+              <admst:apply-templates select="." match="jacobian2s"/>
             </admst:if>
             <admst:if test="../../lhs/branch/nnode[grounded='yes']">
-              <admst:value-of select="branch/nnode/name"/>
-              <admst:value-of select="branch/pnode/name"/>
-              <admst:value-of select="../../lhs/branch/pnode/name"/>
-              <admst:text format="jacobian2p(%s,%s,%s,$ep)\n"/>
+              <admst:apply-templates select="." match="jacobian2p"/>
             </admst:if>
           </admst:when>
           <admst:otherwise>
@@ -6443,7 +6355,8 @@ int $(DEV_NAME)::load(int mode)
               <admst:value-of select="branch/pnode/name"/>
               <admst:value-of select="../../lhs/branch/nnode/name"/>
               <admst:value-of select="../../lhs/branch/pnode/name"/>
-              <admst:text format="jacobian2s(%s,%s,%s,$ep)\n"/>
+              <admst:text format="old jacobian2s(%s,%s,%s,$ep)\n"/>
+              <admst:apply-templates select="." match="jacobian2s"/>
             </admst:if>
             <admst:if test="../../lhs/branch/nnode[grounded='yes']">
               <admst:value-of select="branch/pnode/name"/>
@@ -6462,7 +6375,115 @@ int $(DEV_NAME)::load(int mode)
     </admst:if>
   </admst:if>
 </admst:template>
+<!-- ----------------------  jacobians ------------------ -->
+<admst:template match="jacobian4">
+  <admst:value-of select="branch/nnode/name"/>
+  <admst:value-of select="branch/pnode/name"/>
+  <admst:value-of select="../../lhs/branch/nnode/name"/>
+  <admst:value-of select="../../lhs/branch/pnode/name"/>
+  <admst:variable name="Sp" select="%s"/>
+  <admst:variable name="Sn" select="%s"/>
+  <admst:variable name="Pp" select="%s"/>
+  <admst:variable name="Pn" select="%s"/>
+  <admst:choose> 
+    <admst:when test="..[dynamic='yes']">
+      <admst:text format="  _eval_dynamic_ \n
+	if(ChargeComputationNeeded)\
+	{\
+		double geq=($ep)*(CKTag0);\
+		double ceq=geq*BP($Pp,Pn);\
+		_eval_static_residual2(Sn, Sp, ceq)\
+		_write_ptr(Sp, $Pp, geq)\
+		_write_ptr(Sn, Pn, geq)\
+		_write_ptr(Sp, Pn, -geq)\
+		_write_ptr(Sn, $Pp, -geq)\
+	}\
+	_write_JD(Sp, $Pp, $ep)\
+	_write_JD(Sn, Pn, $ep)\
+	_write_JD(Sp, Pn, -$ep)\
+        _write_JD(Sn, $Pp, -$ep)		\n"/>
+    </admst:when>
+    <admst:otherwise>
+      <admst:text format="  _eval_dynamic_ \n
 
+static
+	_eval_static_residual2(Sp,Sn,-$ep*BP($Pp,Pn))\
+	_write_ptr($Sp, $Pp, $ep)\
+	_write_ptr($Sn, $Pn, $ep)\
+	_write_ptr($Sp, $Pn, -$ep)\
+	_write_ptr($Sn, $Pp, -$ep)\
+	_write_JS($Sp, $Pp, $ep)\
+	_write_JS($Sn, $Pn, $ep)\
+	_write_JS($Sp, $Pn, -$ep)\
+        _write_JS($Sn, $Pp, -$ep)		\n"/>
+      </admst:otherwise>
+    </admst:choose>
+
+</admst:template>
+<admst:template match="jacobian2p">
+  <admst:value-of select="branch/nnode/name"/>
+  <admst:value-of select="branch/pnode/name"/>
+  <admst:value-of select="../../lhs/branch/pnode/name"/>
+  <admst:variable name="Sp" select="%s"/>
+  <admst:variable name="Pp" select="%s"/>
+  <admst:variable name="Pn" select="%s"/>
+
+
+  <admst:choose> 
+    <admst:when test="..[dynamic='yes']">
+      <admst:text format="  _eval_dynamic_ \n
+  if(ChargeComputationNeeded)\
+  {\
+          double geq=(v)*(CKTag0);\
+          double ceq=geq*BP(Pp,Pn);\
+          _eval_static_residual1($Sp, -ceq)\
+          _write_ptr($Sp, $Pp, geq)\
+          _write_ptr($Sp, $Pn, -geq)\
+  }\
+  _write_JD($Sp, $Pp, v)\
+  _write_JD($Sp, $Pn, -v)	\n"/>
+    </admst:when>
+    <admst:text format="  _eval_static_ \n
+      <admst:otherwise>
+        _eval_static_residual1(Sp,-v*BP(Pp,Pn))\
+        _write_ptr(Sp, Pp, v)\
+        _write_ptr(Sp, Pn, -v)\
+        _write_JS(Sp, Pp, v)\
+        _write_JS(Sp, Pn, -v)\n	"/>
+    </admst:otherwise>
+  </admst:choose>
+</admst:template>
+<admst:template match="jacobian2s">
+  <admst:value-of select="branch/pnode/name"/>
+  <admst:value-of select="../../lhs/branch/nnode/name"/>
+  <admst:value-of select="../../lhs/branch/pnode/name"/>
+  <admst:variable name="Sp" select="%s"/>
+  <admst:variable name="Sn" select="%s"/>
+  <admst:variable name="Pp" select="%s"/>
+  <admst:choose> 
+    <admst:when test="..[dynamic='yes']">
+      <admst:text format="  _eval_dynamic_ \n
+	if(ChargeComputationNeeded)\
+	{\
+		double geq=($e)*(CKTag0);\
+		double ceq=geq*NP($Pp);\
+		_eval_static_residual2($Sn, $Sp, ceq)\
+		_write_ptr($Sp, $Pp, geq)\
+		_write_ptr($Sn, $Pp, -geq)\
+	}\
+	_write_JD($Sp, $Pp, $e)\
+        _write_JD($Sn, $Pp, -$e) \n" />
+    </admst:when>
+    <admst:otherwise>
+      <admst:text format=" //  _eval_static_\n"/>
+	_eval_static_residual2($Sp,$Sn,-$e*NP($Pp))\
+	_write_ptr($Sp, $Pp, $e)\
+	_write_ptr($Sn, $Pp, -$e)\
+	_write_JS($Sp, $Pp, $e)\
+        _write_JS($Sn, $Pp, -$e)\n "/>
+    </admst:otherwise>
+  </admst:choose>
+</admst:template>
 <!-- analog//conditional -->
 <admst:template match="X3conditional">
   <admst:text select="if[dynamic='yes']" format="#ifdef _DYNAMIC\n"/>
@@ -6929,7 +6950,7 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 #define _write_JD(S1, S2, value) \
 	m_ac_dynamic[m_ ## S1 ## _ ## S2]+=value;
 
-#define _eval_static_jacobian4(Sp,Sn,Pp,Pn,v)\
+#define deprecated_eval_static_jacobian4(Sp,Sn,Pp,Pn,v)\
 	_eval_static_residual2(Sp,Sn,-v*BP(Pp,Pn))\
 	_write_ptr(Sp, Pp, v)\
 	_write_ptr(Sn, Pn, v)\
@@ -6939,13 +6960,13 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 	_write_JS(Sn, Pn, v)\
 	_write_JS(Sp, Pn, -v)\
 	_write_JS(Sn, Pp, -v)		
-#define _eval_static_jacobian2s(Sp,Sn,Pp,v)\
+#define deprecated_eval_static_jacobian2s(Sp,Sn,Pp,v)\
 	_eval_static_residual2(Sp,Sn,-v*NP(Pp))\
 	_write_ptr(Sp, Pp, v)\
 	_write_ptr(Sn, Pp, -v)\
 	_write_JS(Sp, Pp, v)\
 	_write_JS(Sn, Pp, -v)		
-#define _eval_static_jacobian2p(Sp,Pp,Pn,v)\
+#define deprecated_eval_static_jacobian2p(Sp,Pp,Pn,v)\
 	_eval_static_residual1(Sp,-v*BP(Pp,Pn))\
 	_write_ptr(Sp, Pp, v)\
 	_write_ptr(Sp, Pn, -v)\
@@ -6959,8 +6980,14 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 	{\
 		int error;\
 		_kept_states[state_##p##_##n]=v;\
-		_keep_static_residual2(p,n,_states[0][state_##p##_##n+1])\
-          }	
+        }	
+
+#define _eval_kept_dynamic_residual2(p,n,v)\
+	if(ChargeComputationNeeded)\
+	{\
+          it0[p ## Node] -= _kept_states[state_##p##_##n+1]);\
+          it0[n ## Node] += _kept_states[state_##p##_##n+1]);\
+        }	
 
 /// FIXME: remove mode. mode is clear from the context.
 #define _eval_dynamic_residual2(p,n,v)\
@@ -6989,7 +7016,7 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 			_states[1][state_##p##_GND+1] = _states[0][state_##p##_GND+1];\
 		_eval_static_residual1(p,_states[0][state_##p##_GND+1])\
 	}
-#define _eval_dynamic_jacobian4(Sp,Sn,Pp,Pn,v)\
+#define depr_eval_dynamic_jacobian4(Sp,Sn,Pp,Pn,v)\
 	if(ChargeComputationNeeded)\
 	{\
 		double geq=(v)*(CKTag0);\
@@ -7004,7 +7031,7 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 	_write_JD(Sn, Pn, v)\
 	_write_JD(Sp, Pn, -v)\
 	_write_JD(Sn, Pp, -v)		
-#define _eval_dynamic_jacobian2s(Sp,Sn,Pp,v)\
+#define deprecated_eval_dynamic_jacobian2s(Sp,Sn,Pp,v)\
 	if(ChargeComputationNeeded)\
 	{\
 		double geq=(v)*(CKTag0);\

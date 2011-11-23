@@ -252,7 +252,6 @@ void STORAGE::set_ic( double x ){
 
   trace1("STORAGE:set_ic(...)",x);
 
-
   if(has_common()){
     trace1("STORAGE::set_ic have common "+long_label(), x);
     mutable_common()->set_ic(x);
