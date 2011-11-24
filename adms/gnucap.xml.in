@@ -1531,6 +1531,10 @@
 </admst:template>
 <!-- ---------- analog//keep_ic ------------------------------- -->
 <admst:template match="keep_ic">
+  <admst:for-each select="item">
+    <admst:text format=" //keep_ic looking around: have here: %(adms/datatypename) \n"/>
+  </admst:for-each>
+
   <admst:variable name="keep_ic" select="yes"/>
   <admst:apply-templates select="module/evaluation/variable" match="X3variable:declaration"/>
   <admst:reset select="module/evaluation/variable"/>
@@ -1538,7 +1542,8 @@
     <admst:choose>
       <admst:when test="adms[datatypename!='block']">
         <admst:text format="// not a block\n"/>
-        <admst:apply-templates select="." match="X3%(adms/datatypename)"/>
+        <admst:warning format="keep ic takes a block\n"/>
+        <!-- <admst:apply-templates select="." match="X3%(adms/datatypename)"/> -->
         <admst:text format="// not a block done\n"/>
       </admst:when>
       <admst:otherwise>
@@ -1604,10 +1609,6 @@
       <admst:apply-templates select="." match="X3contribution:nonoise"/>
     </admst:otherwise>
   </admst:choose>
-</admst:template>
-<!-- ------------------------------------------- --> 
-<admst:template match="contribution:nonoise">
-  <admst:fatal format="template not in use: remved\n"/>
 </admst:template>
 <!-- ----------------------  analog//conditional ------------------ -->
 <admst:template match="conditional">
@@ -2484,339 +2485,44 @@
 <admst:variable name="finddt" select="'no'"/>
 
 
-<!-- find-ddt stuff  from X3contribution-->
-<admst:template match="find_ddt">
-  <admst:choose>
-    <admst:when test="[whitenoise='yes' or flickernoise='yes']">
-      <admst:fatal format="not implemented\n"/>
-    </admst:when>
-    <admst:otherwise>
-      <admst:variable name="finddt" select="'yes'"/>
-      <!-- <admst:apply-templates select="." match="X3contribution:nonoise"/> -->
-      <!-- <admst:apply-templates select="." match="find_ddt:nonoise"/> -->
-      <admst:variable name="finddt" select="'no'"/>
-    </admst:otherwise>
-  </admst:choose>
+<!-- find-ddt stuff -->
+<admst:template match="find_ddt_states">
+
+  <admst:for-each select="item">
+    <admst:text format=" // looking around: have here: %(adms/datatypename) \n"/>
+  </admst:for-each>
+
+  <admst:variable name="finddt" select="'yes'"/>
+
+  <admst:variable name="ddt-prefix" select="a_"/>
+  <admst:text format="//assignments... \n"/>
+
+  <admst:text select="item" format=" // have here: %(adms/datatypename) \n"/>
+
+  <admst:for-each select="item" > 
+    <admst:text format="// --- : : ...%(adms/datatypename)  \n"/>
+    //    <admst:apply-templates select="." match="find_ddt_states"/>
+
+  </admst:for-each> 
+
+
+
+  <admst:message format="done find_ddt_assignment\n"/>
+  <admst:text format="// done assignment... \n"/>
+
+  <admst:variable name="ddt-prefix" select="c_"/>
+  <admst:text format="//contribs... \n"/>
+  <admst:for-each select="item[adms/datatypename='contribution']" >
+    <admst:text format="// --- :contribution : ...%(adms/datatypename)  \n"/>
+
+    <!--      <admst:apply-templates select="." match="X3%(adms/datatypename)"/>  -->
+  </admst:for-each> 
+
+  <admst:variable name="finddt" select="'no'"/>
 </admst:template>
 <!-- ------------------------------------------- --> 
 <admst:template match="X3:ddtfunction">
   <admst:fatal format="???"/>
-  <admst:choose>
-    <admst:when test="[name='absdelay']">
-      <admst:apply-templates select="arguments[1]" match="X3ddx"/>
-      <admst:variable name="e" select="$e"/>
-    </admst:when>
-    <admst:when test="[name='ddt']">
-      <admst:apply-templates select="arguments[1]" match="X3ddx"/>
-      <admst:variable name="x" select="$e"/>
-      <admst:variable name="xp" select="$ep"/>
-      <admst:variable name="xq" select="$eq"/>
-      <admst:variable name="xpq" select="$epq"/>
-      <admst:variable name="e" select="_DDT($x,$x)"/>
-      <admst:text format="\n DDT_$(ddtcount) // $x\n"/>
-      <admst:variable name="ddtcount" select="$(ddtcount)_"/>
-
-    </admst:when>
-    <admst:when test="[name='\$given']">
-      <admst:variable name="arg1" select="%(arguments[1])"/>
-      <admst:assert test="$arg1/adms[datatypename='variable']" format="\$given: argument is not a variable\n"/>
-      <admst:assert test="$arg1/[input='yes']" format="\$given(%(name)): argument is not a parameter\n"/>
-      <admst:choose>
-        <admst:when test="$arg1/[parametertype='model']">
-          <admst:variable name="e" select="_mpg(%(name),%(name)Given)"/>
-        </admst:when>
-        <admst:when test="$arg1/[parametertype='instance']">
-          <admst:variable name="e" select="_ipg(%(name),%(name)Given)"/>
-        </admst:when>
-        <admst:otherwise>
-          <admst:fatal format="$given(): should not be reached\n"/>
-        </admst:otherwise>
-      </admst:choose>
-    </admst:when>
-    <admst:when test="[name='\$temperature']">
-      <admst:assert test="[nilled(arguments)]" format="%(name): should not have arguments\n"/>
-      <admst:variable name="e" select="(_circuit_tnom)"/>
-    </admst:when>
-    <admst:when test="[name='\$mfactor']">
-      <admst:assert test="[nilled(arguments)]" format="%(name): should not have arguments\n"/>
-      <admst:variable name="e" select="MFACTOR"/>
-    </admst:when>
-    <admst:when test="[name='\$vt']">
-      <admst:choose>
-        <admst:when test="[nilled(arguments)]">
-          <admst:variable name="e" select="(BOLTZMANN*(_circuit_tnom)/ELECTRON_CHARGE)"/>   
-        </admst:when>
-        <admst:when test="arguments[count(.)=1]">
-          <admst:apply-templates select="arguments[1]" match="X3ddx"/>
-          <admst:variable name="x" select="$e"/>
-          <admst:variable name="xp" select="$ep"/>
-          <admst:variable name="xq" select="$eq"/>
-          <admst:variable name="xpq" select="$epq"/>
-          <admst:variable name="e" select="(BOLTZMANN*$x/ELECTRON_CHARGE)"/>   
-        </admst:when>
-      </admst:choose>
-    </admst:when>   
-    <admst:when test="[name='\$scale']">
-      <admst:assert test="[nilled(arguments)]" format="%(name): should not have arguments\n"/>
-      <admst:variable name="e" select="_scale"/>
-    </admst:when>
-    <admst:when test="[name='\$abstime']">
-      <admst:assert test="[nilled(arguments)]" format="%(name): should not have arguments\n"/>
-      <admst:variable name="e" select="_abstime"/>
-    </admst:when>
-    <admst:when test="[name='ddx']">
-      <admst:assert test="arguments[count(.)=2]" format="%(name): should have two arguments exactly\n"/>
-      <admst:assert test="arguments[2]/adms[datatypename='probe']" format="%(name): second argument is not a probe\n"/>
-      <admst:apply-templates select="arguments[1]" match="X3ddx"/>
-      <admst:variable name="e" select="0.0 /*ddx should be top node of expression!*/"/>
-    </admst:when>
-    <admst:when test="[name='floor']">
-      <admst:assert test="arguments[count(.)=1]" format="%(name): should have one argument exactly\n"/>
-      <admst:apply-templates select="arguments[1]" match="X3ddx"/>
-      <admst:variable name="e" select="floor($e)"/>
-    </admst:when>
-    <admst:when test="[name='ceil']">
-      <admst:assert test="arguments[count(.)=1]" format="%(name): should have one argument exactly\n"/>
-      <admst:apply-templates select="arguments[1]" match="X3ddx"/>
-      <admst:variable name="e" select="ceil($e)"/>
-    </admst:when>
-    <admst:when test="[$SkipFVariable='y']">
-      <admst:variable name="fname" select="%(X3funcname(.)/[name='fname']/value)"/>
-      <admst:variable name="args" select=""/>
-      <admst:for-each select="arguments">
-        <admst:if test="[$args!='']">
-          <admst:variable name="args" select="$args,"/>
-        </admst:if>
-        <admst:apply-templates select="." match="X3ddx"/>
-        <admst:variable name="args" select="$args$e"/>
-      </admst:for-each>
-      <admst:variable name="e" select="$(fname)($args)"/>
-    </admst:when>
-    <admst:when test="[name='abs' or name='acos' or name='asin' or name='atan'
-                    or name='cos' or name='cosh' or name='exp' or name='hypot'
-                    or name='limexp' or name='ln' or name='log' or name='sin'
-                    or name='sinh' or name='sqrt' or name='tan' or name='tanh']">
-      <admst:assert test="arguments[count(.)=1]" format="%(name): should have one argument exactly\n"/>
-      <admst:variable name="index" select="%(index(subexpression/expression/function,.))"/>
-      <admst:variable name="fname" select="%(X3funcname(.)/[name='fname']/value)"/>
-      <admst:apply-templates select="arguments[1]" match="X3ddx"/>
-      <admst:variable name="x" select="$e"/>
-      <admst:variable name="xp" select="$ep"/>
-      <admst:variable name="xq" select="$eq"/>
-      <admst:variable name="xpq" select="$epq"/>
-      <admst:variable name="e" select="d00_$(fname)$index"/>
-    </admst:when>
-    <admst:when test="[name='div' or name='pow' or name='hypot' or name='min' or name='max']">
-      <admst:assert test="arguments[count(.)=2]" format="%(name): should have two argument exactly\n"/>
-      <admst:variable name="index" select="%(index(./subexpression/expression/function,.))"/>
-      <admst:variable name="fname" select="%(X3funcname(.)/[name='fname']/value)"/>
-      <admst:apply-templates select="arguments[1]" match="X3ddx"/>
-      <admst:variable name="x" select="$e"/>
-      <admst:variable name="xp" select="$ep"/>
-      <admst:variable name="xq" select="$eq"/>
-      <admst:variable name="xpq" select="$epq"/>
-      <admst:apply-templates select="arguments[2]" match="X3ddx"/>
-      <admst:variable name="y" select="$e"/>
-      <admst:variable name="yp" select="$ep"/>
-      <admst:variable name="yq" select="$eq"/>
-      <admst:variable name="ypq" select="$epq"/>
-      <admst:variable name="e" select="d00_$(fname)$index"/>
-    </admst:when>
-    <admst:otherwise>
-      <admst:variable name="fname" select="%(X3funcname(.)/[name='fname']/value)"/>
-      <admst:variable name="args" select=""/>
-      <admst:for-each select="arguments">
-        <admst:if test="[$args!='']">
-          <admst:variable name="args" select="$args,"/>
-        </admst:if>
-        <admst:apply-templates select="." match="X3ddx"/>
-        <admst:variable name="args" select="$args$e"/>
-      </admst:for-each>
-      <admst:variable name="dargs" select=""/>
-      <admst:for-each select="arguments">
-        <admst:if test="[$dargs!='']">
-          <admst:variable name="dargs" select="$dargs,"/>
-        </admst:if>
-        <admst:apply-templates select="." match="X3ddx"/>
-        <admst:variable name="dargs" select="$dargs$ep"/>
-      </admst:for-each>
-      <admst:variable name="e" select="$(fname)($args)"/>
-    </admst:otherwise>
-  </admst:choose>
-
-  <admst:variable name="ep" select="0.0"/>
-  <admst:choose>
-    <admst:when test="[name='absdelay']">
-    </admst:when>
-    <admst:when test="[name='\$given']">
-    </admst:when>
-    <admst:when test="[name='\$temperature']">
-    </admst:when>
-    <admst:when test="[name='\$mfactor']">
-    </admst:when>
-    <admst:when test="[name='\$vt']">
-      <admst:choose>
-        <admst:when test="[nilled(arguments)]">
-          <admst:variable name="ep" select="0.0"/>
-        </admst:when>
-        <admst:when test="arguments[count(.)=1]">
-          <admst:variable name="ep" select="(BOLTZMANN*$xp/ELECTRON_CHARGE)"/>   
-        </admst:when>
-      </admst:choose>
-    </admst:when>   
-    <admst:when test="[name='\$scale']">
-    </admst:when>
-    <admst:when test="[name='\$abstime']">
-    </admst:when>
-    <admst:when test="[name='ddx']">
-    </admst:when>
-    <admst:when test="[name='floor']">
-    </admst:when>
-    <admst:when test="[name='ceil']">
-    </admst:when>
-    <admst:when test="[$SkipFVariable='y']">
-    </admst:when>
-    <admst:when test="[name='ddt']">
-      <admst:variable name="ep" select="$xp"/>
-    </admst:when>
-    <admst:when test="[name='abs' or name='acos' or name='asin' or name='atan' 
-                    or name='cos' or name='cosh' or name='exp' or name='hypot'
-                    or name='limexp' or name='ln' or name='log' or name='sin'
-                    or name='sinh' or name='sqrt' or name='tan' or name='tanh']">
-      <admst:variable name="index" select="%(index(subexpression/expression/function,.))"/>
-      <admst:choose>
-        <admst:when test="[$xp='0.0']">
-          <admst:variable name="ep" select="0.0"/>
-        </admst:when>
-        <admst:otherwise>
-          <admst:variable name="ep" select="$xp*d10_$(fname)$index"/>
-        </admst:otherwise>
-      </admst:choose>
-    </admst:when>
-    <admst:when test="[name='div' or name='pow' or name='hypot' or name='min' or name='max']">
-      <admst:variable name="index" select="%(index(./subexpression/expression/function,.))"/>
-      <admst:choose>
-        <admst:when test="[$xp='0.0' and $yp='0.0']">
-          <admst:variable name="ep" select="0.0"/>
-        </admst:when>
-        <admst:when test="[$xp='0.0']">
-          <admst:variable name="ep" select="(d11_$(fname)$index*$yp)"/>
-        </admst:when>
-        <admst:when test="[$yp='0.0']">
-          <admst:variable name="ep" select="(d10_$(fname)$index*$xp)"/>
-        </admst:when>
-        <admst:otherwise>
-          <admst:variable name="ep" select="(d10_$(fname)$index*$xp+d11_$(fname)$index*$yp)"/>
-        </admst:otherwise>
-      </admst:choose>
-    </admst:when>
-    <admst:otherwise>
-      <admst:variable name="ep" select="d_$(fname)($args,$dargs)"/>
-    </admst:otherwise>
-  </admst:choose>
-  <admst:if test="$qprobe">
-
-  <admst:variable name="eq" select="0.0"/>
-  <admst:choose>
-    <admst:when test="[name='absdelay']">
-    </admst:when>
-    <admst:when test="[name='\$given']">
-    </admst:when>
-    <admst:when test="[name='\$temperature']">
-    </admst:when>
-    <admst:when test="[name='\$mfactor']">
-    </admst:when>
-    <admst:when test="[name='\$vt']">
-      <admst:choose>
-        <admst:when test="[nilled(arguments)]">
-          <admst:variable name="eq" select="0.0"/>
-        </admst:when>
-        <admst:when test="arguments[count(.)=1]">
-          <admst:variable name="eq" select="(BOLTZMANN*$xq/ELECTRON_CHARGE)"/>   
-        </admst:when>
-      </admst:choose>
-    </admst:when>   
-    <admst:when test="[name='\$scale']">
-    </admst:when>
-    <admst:when test="[name='\$abstime']">
-    </admst:when>
-    <admst:when test="[name='ddx']">
-    </admst:when>
-    <admst:when test="[name='floor']">
-    </admst:when>
-    <admst:when test="[name='ceil']">
-    </admst:when>
-    <admst:when test="[$SkipFVariable='y']">
-    </admst:when>
-    <admst:when test="[name='ddt']">
-      <admst:variable name="eq" select="$xq"/>
-    </admst:when>
-    <admst:when test="[name='abs' or name='acos' or name='asin' or name='atan'
-                       or name='cos' or name='cosh' or name='exp' or name='hypot' 
-                       or name='limexp' or name='ln' or name='log' or name='sin' or name='sinh' 
-                       or name='sqrt' or name='tan' or name='tanh']">
-      <admst:variable name="index" select="%(index(subexpression/expression/function,.))"/>
-      <admst:choose>
-        <admst:when test="[$xq='0.0']">
-          <admst:variable name="eq" select="0.0"/>
-        </admst:when>
-        <admst:otherwise>
-          <admst:variable name="eq" select="$xq*d10_$(fname)$index"/>
-        </admst:otherwise>
-      </admst:choose>
-    </admst:when>
-    <admst:when test="[name='div' or name='pow' or name='hypot' or name='min' or name='max']">
-      <admst:variable name="index" select="%(index(./subexpression/expression/function,.))"/>
-      <admst:choose>
-        <admst:when test="[$xq='0.0' and $yq='0.0']">
-          <admst:variable name="eq" select="0.0"/>
-        </admst:when>
-        <admst:when test="[$xq='0.0']">
-          <admst:variable name="eq" select="(d11_$(fname)$index*$yq)"/>
-        </admst:when>
-        <admst:when test="[$yq='0.0']">
-          <admst:variable name="eq" select="(d10_$(fname)$index*$xq)"/>
-        </admst:when>
-        <admst:otherwise>
-          <admst:variable name="eq" select="(d10_$(fname)$index*$xq+d11_$(fname)$index*$yq)"/>
-        </admst:otherwise>
-      </admst:choose>
-    </admst:when>
-    <admst:otherwise>
-      <admst:variable name="eq" select="d_$(fname)($args,$dargs)"/>
-    </admst:otherwise>
-  </admst:choose>
-
-  <admst:choose>
-    <admst:when test="[name='abs' or name='acos' or name='asin' or name='atan'
-                       or name='cos' or name='cosh' or name='exp' or name='hypot'
-                       or name='limexp' or name='ln' or name='log' or name='sin'
-                       or name='sinh' or name='sqrt' or name='tan' or name='tanh']">
-      <admst:variable name="index" select="%(index(./subexpression/expression/function,.))"/>
-      <admst:variable name="fname" select="%(X3funcname(.)/[name='fname']/value)"/>
-      <admst:choose>
-        <admst:when test="[$x='0.0']">
-          <admst:variable name="epq" select="0.0"/>
-        </admst:when>
-        <admst:when test="[$xp='0.0']">
-          <admst:variable name="epq" select="0.0"/>
-        </admst:when>
-        <admst:when test="[$xq='0.0']">
-          <admst:variable name="epq" select="0.0"/>
-        </admst:when>
-        <admst:otherwise>
-          <admst:variable name="epq" select="(m20_$(fname)($x)*$xq*$xp+d10_$(fname)$index*$xpq)"/>
-        </admst:otherwise>
-      </admst:choose>
-    </admst:when>
-    <admst:when test="[name='div' or name='pow' or name='hypot' or name='min' or name='max']">
-      <admst:variable name="epq" select="fixme"/>
-      <admst:if test="[$requiredderivateforddx='yes']">
-        <admst:warning format="%(name): ddx dependency not implemented\n"/>
-      </admst:if>
-    </admst:when>
-  </admst:choose>
-  </admst:if>
 </admst:template>
 
 <!-- -------------------------------------------------- -->
@@ -2953,14 +2659,14 @@
 
 <admst:open file="$(filename).h">
 #include  "math.h"
-  <admst:apply-templates select="." match="c:math_h"/>
+<admst:apply-templates select="." match="c:math_h"/>
 <admst:for-each select="/module">
-<admst:value-of select="attribute[name='ngspicename']/value"/>
-<admst:variable name="module" select="%s"/>
-#ifndef $(module)_header__
-#define $(module)_header__
-<admst:variable name="DEV_NAME" select="DEV_%(upper-case(name))"/>
-<admst:variable name="MODEL_NAME" select="MODEL_%(upper-case(name))"/>
+  <admst:value-of select="attribute[name='ngspicename']/value"/>
+  <admst:variable name="module" select="%s"/>
+  #ifndef $(module)_header__
+  #define $(module)_header__
+  <admst:variable name="DEV_NAME" select="DEV_%(upper-case(name))"/>
+  <admst:variable name="MODEL_NAME" select="MODEL_%(upper-case(name))"/>
 
 #include <stdio.h>
 
@@ -3246,22 +2952,23 @@ private: // nodes / matrix indexes
                 <admst:value-of select="branch/pnode/name"/>
                 <admst:text format="state_%s_%s=%((position(.)-1)*2)"/>
         </admst:join>
+        <admst:text format=" };\n"/>
+
+        <admst:text select="analog/code" format=" // before start: have here: %(adms/datatypename) \n"/>
+
+        enum EStates {
+
+        <admst:apply-templates select="analog/code[datatypename='block']/item" match="find_ddt_states"/> 
+
+        <!--      <admst:apply-templates select="." match="find_ddt_states"/> -->
+
         <admst:text format=" };"/>
 
+        // testing keep_ic
 
-	enum EStates {
-
-        <admst:variable name="ddt-prefix" select="a_"/>
-        <admst:text format="//assignments... \n"/>
-        <admst:for-each select="assignment[dynamic='yes']" >
-          <!--<admst:apply-templates select="rhs" match="find_ddt"/> -->
-          <!--       <admst:apply-templates select="rhs" match="X3contribution"/>  -->
-          <admst:apply-templates select="." match="X3%(adms/datatypename)"/>
-         </admst:for-each> 
-        <admst:text format=" };"/>
-
+        <admst:apply-templates select="analog/code[datatypename='block']" match="keep_ic"/> 
         
-
+        //
 	double* (_states[8]); // state history pointer array
 	double* _states_1;
 	unsigned _num_ddts;
