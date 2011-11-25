@@ -34,6 +34,10 @@
 <admst:variable name="_DERIVATE" select="yes"/>
 <admst:variable name="_DERIVATE2" select="yes"/>
 <admst:variable name="_DERIVATEFORDDX" select="yes"/>
+<admst:variable name="do_tr"/>
+<admst:variable name="do_ac"/>
+<admst:variable name="tr_begin"/>
+
 <admst:variable name="requiredderivateforddx" select="no"/>
 <admst:variable name="SkipFVariable" select="n"/>
 <admst:variable name="ddxinsidederivate" select="no"/>
@@ -4850,7 +4854,6 @@ int $(DEV_NAME)::load(int )
 </admst:template>
 <!-- -------------------------------------------------- -->
 <admst:template match="X3mapply_binary">
-  <admst:text format="//X3mapply_binary begin:ep $ep\n"/>
   <admst:apply-templates select="arg1" match="X3ddx"/>
   <admst:variable name="x" select="$e"/>
   <admst:variable name="xp" select="$ep"/>
@@ -4957,10 +4960,10 @@ int $(DEV_NAME)::load(int )
             <admst:variable name="ep" select="0.0"/>
           </admst:when>
           <admst:when test="[$xp='0.0']">
-            <admst:variable name="ep" select="( 0+$yp )"/>
+            <admst:variable name="ep" select="$yp"/>
           </admst:when>
           <admst:when test="[$yp='0.0']">
-            <admst:variable name="ep" select="($xp+0)"/>
+            <admst:variable name="ep" select="$xp"/>
           </admst:when>
           <admst:otherwise>
             <admst:variable name="ep" select="($xp+$yp)"/>
@@ -5280,7 +5283,6 @@ int $(DEV_NAME)::load(int )
       </admst:when>
     </admst:choose>
   </admst:if>
-  <admst:text format="//X3mapply_binary end:ep $ep %(name)\n"/>
 </admst:template>
 <!-- -------------------------------------------------- -->
 <admst:template match="X3mapply_ternary">
@@ -5306,13 +5308,6 @@ int $(DEV_NAME)::load(int )
 </admst:template>
 <!-- -------------------------------------------------- -->
 <admst:template match="DDT">
-  <admst:apply-templates select="arguments[1]" match="X3ddx"/>
-  <admst:variable name="x" select="$e"/>
-  <admst:variable name="xp" select="$ep"/>
-  <admst:variable name="xq" select="$eq"/>
-  <admst:variable name="xpq" select="$epq"/>
-  <admst:variable name="ddt_cur" select="$(ddt_cur)_"/> 
-  <admst:variable name="e" select="_DDT($x, $(state_prefix)$(ddt_cur) ) "/>
 
   <admst:if test="[$finddt='yes']">
     <admst:text test="[$ddt_cur!='0_']" format=","/>
@@ -5331,9 +5326,28 @@ int $(DEV_NAME)::load(int )
       <admst:variable name="e" select="$e"/>
     </admst:when>
     <admst:when test="[name='ddt']">
+
+
+      <!-- --------------i
+      <admst:text  format="//before  DDT: ep $ep\n"/>
       <admst:variable name="xp"/>
-      <admst:apply-templates select="." match="DDT"/>
-      <admst:text  format="//after  DDT: ep $ep\n"/>
+      <admst:apply-templates select="." match="DDT"/> ------ -->
+
+      <admst:apply-templates select="arguments[1]" match="X3ddx"/>
+      <admst:variable name="x" select="$e"/>
+      <admst:variable name="xp" select="$ep"/>
+      <admst:variable name="xq" select="$eq"/>
+      <admst:variable name="xpq" select="$epq"/>
+      <admst:variable name="e" select="_DDT($x, $(state_prefix)$(ddt_cur) ) "/>
+      <admst:variable name="ddt_cur" select="$(ddt_cur)_"/> 
+
+      <admst:apply-templates select="." match="DDT"/> 
+
+
+      <!-- ------------------------ -->
+
+
+      <admst:text  format="//after  DDT: ep $ep xp $xp\n"/>
     </admst:when>
     <admst:when test="[name='\$given']">
       <admst:variable name="arg1" select="%(arguments[1])"/>
@@ -5462,6 +5476,7 @@ int $(DEV_NAME)::load(int )
     </admst:otherwise>
   </admst:choose>
 
+  <!--  ???? ----- -->
   <admst:variable name="ep" select="0.0"/>
   <admst:choose>
     <admst:when test="[name='absdelay']">
@@ -5495,7 +5510,7 @@ int $(DEV_NAME)::load(int )
     <admst:when test="[$SkipFVariable='y']">
     </admst:when>
     <admst:when test="[name='ddt']">
-      <admst:variable name="ep" select="$xp"/>
+      <admst:variable name="ep" select="$xp"/> <!-- ??? -->
     </admst:when>
     <admst:when test="[name='abs' or name='acos' or name='asin' or name='atan' 
                     or name='cos' or name='cosh' or name='exp' or name='hypot'
@@ -6123,30 +6138,37 @@ int $(DEV_NAME)::load(int )
   <admst:choose> 
     <admst:when test="..[dynamic='yes']">
       <admst:text format=" {  // former_eval_dynamic_jac4\
-		double geq=($ep)*(CKTag0);\
+        double ep=$ep; \
+		double geq=(ep)*(CKTag0);\
 		double ceq=geq*BP($Pp,$Pn);\
 		_eval_static_residual2($Sn, $Sp, ceq)\
 		_write_ptr($Sp, $Pp, geq)\
 		_write_ptr($Sn, $Pn, geq)\
 		_write_ptr($Sp, $Pn, -geq)\
-		_write_ptr($Sn, $Pp, -geq)\
-	}\
-	_write_JD($Sp, $Pp, $ep)\
-	_write_JD($Sn, $Pn, $ep)\
-	_write_JD($Sp, $Pn, -$ep)\
-        _write_JD($Sn, $Pp, -$ep)		\n"/>
+                _write_ptr($Sn, $Pp, -geq)\n"/>
+
+
+                 <admst:text test="[$do_ac='yes']" format=" \
+	_write_JD($Sp, $Pp, ep)\
+	_write_JD($Sn, $Pn, ep)\
+	_write_JD($Sp, $Pn, -ep)\
+        _write_JD($Sn, $Pp, -ep)"/>
+
+         <admst:text format=" \n}	\n"/>
     </admst:when>
     <admst:otherwise>
-      <admst:text format=" // former_eval_stat_j4 \n
-	_eval_static_residual2(Sp,Sn,-$ep*BP($Pp,$Pn))\
-	_write_ptr($Sp, $Pp, $ep)\
-	_write_ptr($Sn, $Pn, $ep)\
-	_write_ptr($Sp, $Pn, -$ep)\
-	_write_ptr($Sn, $Pp, -$ep)\
-	_write_JS($Sp, $Pp, $ep)\
-	_write_JS($Sn, $Pn, $ep)\
-	_write_JS($Sp, $Pn, -$ep)\
-        _write_JS($Sn, $Pp, -$ep)		\n"/>
+      <admst:text format=" { // former_eval_stat_j4 \n
+        double ep=$ep; \
+	_eval_static_residual2($Sp,$Sn,-ep*BP($Pp,$Pn))\
+	_write_ptr($Sp, $Pp, ep)\
+	_write_ptr($Sn, $Pn, ep)\
+	_write_ptr($Sp, $Pn, -ep)\
+        _write_ptr($Sn, $Pp, -ep)"/>
+       <admst:text test="[$do_ac='yes']" format=" \
+	_write_JS($Sp, $Pp, ep)\
+	_write_JS($Sn, $Pn, ep)\
+	_write_JS($Sp, $Pn, -ep)\
+        _write_JS($Sn, $Pp, -ep)\n}\n"/>
       </admst:otherwise>
     </admst:choose>
 </admst:template>
@@ -6682,6 +6704,8 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 	m_entries[m_## S1 ## _ ## S2 ]+=value;
 #define _write_JS(S1, S2, value) \
 	m_ac_static[m_ ## S1 ## _ ## S2]+=value;	
+
+        // FIXME: do_AC
 #define _write_JD(S1, S2, value) \
 	m_ac_dynamic[m_ ## S1 ## _ ## S2]+=value;
 
