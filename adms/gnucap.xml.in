@@ -6023,25 +6023,19 @@ int $(DEV_NAME)::load(int )
           <admst:text format="  _eval_kept_dynamic_"/>
         </admst:when>
         <admst:otherwise>
-          <admst:message format="nokeepic\n"/>
-          <admst:text format=" // remove:  _eval_dynamic_ \n "/>
         </admst:otherwise>
       </admst:choose>
     </admst:when>
     <admst:otherwise>
-      <admst:text format=" //remove:  _eval_static_\n"/>
     </admst:otherwise>
   </admst:choose>
   <admst:choose>
     <admst:when test="lhs/branch/nnode[grounded='no']">
-      <admst:value-of select="lhs/branch/nnode/name"/>
-      <admst:value-of select="lhs/branch/pnode/name"/>
-      <admst:text format="//residual2(%s,%s,%(rhs/tree))//rhs/tree\n"/>
       <admst:apply-templates select="." match="residual2"/>
     </admst:when>
     <admst:otherwise>
       <admst:value-of select="lhs/branch/pnode/name"/>
-      <admst:text format="residual1(%s,%(X3e(rhs/tree)))\n"/>
+      <admst:text format="/*fixme*/ residual1(%s,%(X3e(rhs/tree)))\n"/>
     </admst:otherwise>
   </admst:choose>
   <admst:for-each select="rhs/probe">
@@ -6051,14 +6045,6 @@ int $(DEV_NAME)::load(int )
     <admst:variable name="probennodename" select="%($probennode/name)"/>
     <admst:variable name="pprobe" select="%(.)"/>
     <admst:apply-templates select="../tree" match="X3%(adms/datatypename)"/>
-    <admst:choose>
-      <admst:when test="..[dynamic='yes']">
-        <admst:text format=" // remove:  _eval_dynamic_ \n"/>
-      </admst:when>
-      <admst:otherwise>
-        <admst:text format=" //remove  _eval_static_ \n"/>
-      </admst:otherwise>
-    </admst:choose>
     <admst:if test="branch/pnode[grounded='no']">
       <admst:if test="../../lhs/branch/pnode[grounded='no']">
         <admst:choose>
@@ -6072,16 +6058,12 @@ int $(DEV_NAME)::load(int )
           </admst:when>
           <admst:otherwise>
             <admst:if test="../../lhs/branch/nnode[grounded='no']">
-              <!-- <admst:value-of select="branch/pnode/name"/>
-              <admst:value-of select="../../lhs/branch/nnode/name"/>
-              <admst:value-of select="../../lhs/branch/pnode/name"/>
-              <admst:text format="old jacobian2s(%s,%s,%s,$ep)\n"/> -->
               <admst:apply-templates select="." match="jacobian2s"/>
             </admst:if>
             <admst:if test="../../lhs/branch/nnode[grounded='yes']">
               <admst:value-of select="branch/pnode/name"/>
               <admst:value-of select="../../lhs/branch/pnode/name"/>
-              <admst:text format="jacobian1(%s,%s,$ep)\n"/>
+              <admst:text format="/*fixme*/ jacobian1(%s,%s,$ep)\n"/>
             </admst:if>
           </admst:otherwise>
         </admst:choose>
@@ -6115,10 +6097,7 @@ int $(DEV_NAME)::load(int )
 
     </admst:when>
     <admst:otherwise>
-
-      <admst:text format=" // former_eval_static_residual2 \n
-        //  #define _eval_static_residual2(p,n,v)\
-        { \
+      <admst:text format=" { // former_eval_static_residual2 \n
         double v=%(X3e(rhs/tree)); \
 	it0[$node_prefix$Pp]-=v;\
         it0[$node_prefix$Pn]+=v;\n}\n" />
@@ -6218,7 +6197,8 @@ int $(DEV_NAME)::load(int )
 		double ceq=geq*NP($Pp);\
 		_eval_static_residual2($Sn, $Sp, ceq)\
 		_write_ptr($Sp, $Pp, geq)\
-		_write_ptr($Sn, $Pp, -geq)\
+                _write_ptr($Sn, $Pp, -geq)\n"/>
+                 <admst:text test="[$do_ac='yes']" format=" \
 	_write_JD($Sp, $Pp, e)\
         _write_JD($Sn, $Pp, -e)\n } \n" />
     </admst:when>
