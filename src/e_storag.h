@@ -83,7 +83,7 @@ public:
 
 /*--------------------------------------------------------------------------*/
 
-// storage should do. use this to be sure
+// storage should do. I might use this to be sure
 class INTERFACE STORAGE_HEADLESS : public STORAGE {
   public:
     explicit STORAGE_HEADLESS()			
