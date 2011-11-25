@@ -1,0 +1,35 @@
+
+spice
+
+.options abstol=1e-13
+.options numdgt 10
+.options reltol=1e-4
+
+* vorsicht: nodenames case-sensitive
+
+.param vdd 1.7
+
+V1 nin 0  sin(frequency=1, amplitude=0.01, offset=0)
+
+
+.list
+
+.verilog
+
+paramset mycap ctest;  
+.c=0.3u;
+endparamset
+
+mcap c1 (nout,0);
+
+spice
+
+R1 nout nin 100k
+
+
+
+.print tran v(nodes) 
+
+.tran .1 1 
+
+.end

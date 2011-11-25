@@ -1069,6 +1069,11 @@
   <admst:variable name="keep_ic" select="no"/>
 </admst:template>
 <!-- ---------- analog//contribution ------------------------------- -->
+<admst:template match="ac_load">
+  incomplete();
+</admst:template>
+<!-- ---------- analog//contribution ------------------------------- -->
+
 <admst:template match="contribution">
   <admst:choose>
     <admst:when test="[whitenoise='no' and flickernoise='no']">
@@ -3238,7 +3243,9 @@ void $(DEV_NAME)::do_ac()
   std::fill_n(m_entries_old, %(count(jacobian)), 0);
     
   pzLoad(_sim->_jomega);
-  //acLoad();
+  #if 0
+  <admst:apply-templates select="analog/code[datatypename='block']" match="ac_load" required="yes"/>
+  #endif
 }
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::ac_load()
@@ -5784,7 +5791,6 @@ int $(DEV_NAME)::load(int )
 </admst:template>
 <!-- ---------------------------------------------------------- -->
 <admst:template match="X3assignment">
-  <admst:message format="X3assignment %(adms/datatypename)\n"/>
   <admst:variable name="assignment" select="%(.)"/>
   <admst:variable name="rhs" select="%(rhs)"/>
   <admst:variable name="lhs" select="%(lhs)"/>
@@ -6088,12 +6094,13 @@ int $(DEV_NAME)::load(int )
   <admst:variable name="Pp" select="%s"/>
   <admst:variable name="Pn" select="%s"/>
   <admst:choose> 
-    <admst:when test="..[dynamic='yes']">
+    <admst:when test="[dynamic='yes']">
       <admst:text format=" {  // former_eval_dynamic_residual2\
-		int error;\
-                _states[0][state_##p##_##n]=%(X3e(rhs/tree)) ;\
-		error = NIintegrate(state_##p##_##n);\
-		assert(!error); \n"/>
+        // rhs/tree should contain a ddt...
+        double v=%(X3e(rhs/tree)) ;\
+        //error = NIintegrate(state_##p##_##n);\
+        _eval_static_residual2($Pp,$Pn,v) }\n \
+                "/>
 
     </admst:when>
     <admst:otherwise>
@@ -6118,38 +6125,39 @@ int $(DEV_NAME)::load(int )
     <admst:when test="..[dynamic='yes']">
       <admst:text format=" {  // former_eval_dynamic_jac4\
         double ep=$ep; \
-		double geq=(ep)*(CKTag0);\
-		double ceq=geq*BP($Pp,$Pn);\
-		_eval_static_residual2($Sn, $Sp, ceq)\
-		_write_ptr($Sp, $Pp, geq)\
-		_write_ptr($Sn, $Pn, geq)\
-		_write_ptr($Sp, $Pn, -geq)\
-                _write_ptr($Sn, $Pp, -geq)\n"/>
+        double geq=(ep)*(CKTag0);\
+        double ceq=geq*BP($Pp,$Pn);\
+        _eval_static_residual2($Sn, $Sp, ceq)\
+        _write_ptr($Sp, $Pp, geq)\
+        _write_ptr($Sn, $Pn, geq)\
+        _write_ptr($Sp, $Pn, -geq)\
+        _write_ptr($Sn, $Pp, -geq)\n"/>
 
 
-                 <admst:text test="[$do_ac='yes']" format=" \
-	_write_JD($Sp, $Pp, ep)\
-	_write_JD($Sn, $Pn, ep)\
-	_write_JD($Sp, $Pn, -ep)\
+      <admst:text test="[$do_ac='yes']" format=" \
+        _write_JD($Sp, $Pp, ep)\
+        _write_JD($Sn, $Pn, ep)\
+        _write_JD($Sp, $Pn, -ep)\
         _write_JD($Sn, $Pp, -ep)"/>
 
-         <admst:text format=" \n}	\n"/>
+      <admst:text format=" \n}	\n"/>
     </admst:when>
     <admst:otherwise>
       <admst:text format=" { // former_eval_stat_j4 \n
         double ep=$ep; \
-	_eval_static_residual2($Sp,$Sn,-ep*BP($Pp,$Pn))\
-	_write_ptr($Sp, $Pp, ep)\
-	_write_ptr($Sn, $Pn, ep)\
-	_write_ptr($Sp, $Pn, -ep)\
+        _eval_static_residual2($Sp,$Sn,-ep*BP($Pp,$Pn))\
+        _write_ptr($Sp, $Pp, ep)\
+        _write_ptr($Sn, $Pn, ep)\
+        _write_ptr($Sp, $Pn, -ep)\
         _write_ptr($Sn, $Pp, -ep)"/>
-       <admst:text test="[$do_ac='yes']" format=" \
-	_write_JS($Sp, $Pp, ep)\
-	_write_JS($Sn, $Pn, ep)\
-	_write_JS($Sp, $Pn, -ep)\
-        _write_JS($Sn, $Pp, -ep)\n}\n"/>
-      </admst:otherwise>
-    </admst:choose>
+      <admst:text test="[$do_ac='yes']" format=" \
+        _write_JS($Sp, $Pp, ep)\
+        _write_JS($Sn, $Pn, ep)\
+        _write_JS($Sp, $Pn, -ep)\
+        _write_JS($Sn, $Pp, -ep)\n"/>
+      <admst:text format=" } "/>
+    </admst:otherwise>
+  </admst:choose>
 </admst:template>
 <admst:template match="jacobian2p">
   <admst:value-of select="branch/nnode/name"/>
@@ -6191,24 +6199,26 @@ int $(DEV_NAME)::load(int )
   <admst:variable name="Pp" select="%s"/>
   <admst:choose> 
     <admst:when test="..[dynamic='yes']">
-      <admst:text format="  { // former_eval_dynamic_jacobian2s \n
-        double e=$e;
-		double geq=e*(CKTag0);\
-		double ceq=geq*NP($Pp);\
-		_eval_static_residual2($Sn, $Sp, ceq)\
-		_write_ptr($Sp, $Pp, geq)\
-                _write_ptr($Sn, $Pp, -geq)\n"/>
-                 <admst:text test="[$do_ac='yes']" format=" \
-	_write_JD($Sp, $Pp, e)\
+      <admst:text format="  { // former_eval_dynamic_jacobian2s  \n
+        double e=$ep;
+        double geq=e*(CKTag0);\
+        double ceq=geq*NP($Pp);\
+        _eval_static_residual2($Sn, $Sp, ceq)\
+        _write_ptr($Sp, $Pp, geq)\
+        _write_ptr($Sn, $Pp, -geq)\n"/>
+      <admst:text test="[$do_ac='yes']" format=" \
+        _write_JD($Sp, $Pp, e)\
         _write_JD($Sn, $Pp, -e)\n } \n" />
+      <admst:text format="  }\n"/>
     </admst:when>
+
     <admst:otherwise>
       <admst:text format="{ // former_eval_static_jacobian2s\n
         double e=$e;
-	_eval_static_residual2($Sp,$Sn,-e*NP($Pp))\
-	_write_ptr($Sp, $Pp, e)\
-	_write_ptr($Sn, $Pp, -e)\
-	_write_JS($Sp, $Pp, e)\
+        _eval_static_residual2($Sp,$Sn,-e*NP($Pp))\
+        _write_ptr($Sp, $Pp, e)\
+        _write_ptr($Sn, $Pp, -e)\
+        _write_JS($Sp, $Pp, e)\
         _write_JS($Sn, $Pp, -e)\n}\n "/>
     </admst:otherwise>
   </admst:choose>
@@ -6689,6 +6699,7 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 #define _write_JD(S1, S2, value) \
 	m_ac_dynamic[m_ ## S1 ## _ ## S2]+=value;
 
+        <!-- 
 #define deprecated_eval_static_jacobian4(Sp,Sn,Pp,Pn,v)\
 	_eval_static_residual2(Sp,Sn,-v*BP(Pp,Pn))\
 	_write_ptr(Sp, Pp, v)\
@@ -6726,7 +6737,7 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 	{\
           it0[$(node_prefix)p] -= _kept_states[state_##p##_##n+1]);\
           it0[$(node_prefix)n] += _kept_states[state_##p##_##n+1]);\
-        }	
+          }	
 
 /// FIXME: remove mode. mode is clear from the context.
 #define _eval_dynamic_residual2(p,n,v)\
@@ -6781,7 +6792,7 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 	}\
 	_write_JD(Sp, Pp, v)\
 	_write_JD(Sn, Pp, -v)		
-#define _eval_dynamic_jacobian2p(Sp,Pp,Pn,v)\
+#define old_eval_dynamic_jacobian2p(Sp,Pp,Pn,v)\
 	if(ChargeComputationNeeded)\
 	{\
 		double geq=(v)*(CKTag0);\
@@ -6792,7 +6803,7 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 	}\
 	_write_JD(Sp, Pp, v)\
 	_write_JD(Sp, Pn, -v)	
-#define _eval_dynamic_jacobian1(Sp,Pp,v)\
+#define old_eval_dynamic_jacobian1(Sp,Pp,v)\
 	if(ChargeComputationNeeded)\
 	{\
 		double geq=(v)*(CKTag0);\
@@ -6801,6 +6812,7 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 		_write_ptr(Sp, Pp, geq)\
 	}\
 	_write_JD(Sp, Pp, v)
+          -->
 	
 </admst:template>
 
