@@ -42,6 +42,7 @@ using namespace std;
 #undef unreachable
 #undef incomplete
 /*--------------------------------------------------------------------------*/
+#define USE(x) (void)x
 
 #ifndef hashpointer_
 # define hashpointer_
