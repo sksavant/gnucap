@@ -217,6 +217,7 @@
 
 <!-- mapply_binary !-->
 <admst:template match="mapply_binary">
+  <admst:fatal format="foo"/>
 </admst:template>
 
 <!-- mapply_ternary-->
@@ -4849,6 +4850,7 @@ int $(DEV_NAME)::load(int )
 </admst:template>
 <!-- -------------------------------------------------- -->
 <admst:template match="X3mapply_binary">
+  <admst:text format="//X3mapply_binary begin:ep $ep\n"/>
   <admst:apply-templates select="arg1" match="X3ddx"/>
   <admst:variable name="x" select="$e"/>
   <admst:variable name="xp" select="$ep"/>
@@ -4955,10 +4957,10 @@ int $(DEV_NAME)::load(int )
             <admst:variable name="ep" select="0.0"/>
           </admst:when>
           <admst:when test="[$xp='0.0']">
-            <admst:variable name="ep" select="$yp"/>
+            <admst:variable name="ep" select="( 0+$yp )"/>
           </admst:when>
           <admst:when test="[$yp='0.0']">
-            <admst:variable name="ep" select="$xp"/>
+            <admst:variable name="ep" select="($xp+0)"/>
           </admst:when>
           <admst:otherwise>
             <admst:variable name="ep" select="($xp+$yp)"/>
@@ -5011,10 +5013,10 @@ int $(DEV_NAME)::load(int )
             <admst:variable name="ep" select="(($xp*$y)+$x)"/>
           </admst:when>
           <admst:when test="[$x='1.0']">
-            <admst:variable name="ep" select="$yp"/>
+            <admst:variable name="ep" select="($yp)"/>
           </admst:when>
           <admst:when test="[$y='1.0']">
-            <admst:variable name="ep" select="$xp"/>
+            <admst:variable name="ep" select="( $xp)"/>
           </admst:when>
           <admst:otherwise>
             <admst:variable name="ep" select="(($xp*$y)+($x*$yp))"/>
@@ -5065,7 +5067,7 @@ int $(DEV_NAME)::load(int )
           <admst:otherwise>
             <admst:choose>
               <admst:when test="[$y='1.0']">
-                <admst:variable name="ep" select="$xp"/>
+                <admst:variable name="ep" select="( $xp )"/>
               </admst:when>
               <admst:when test="[$yp='0.0']">
                 <admst:variable name="ep" select="($xp/$y)"/>
@@ -5278,6 +5280,7 @@ int $(DEV_NAME)::load(int )
       </admst:when>
     </admst:choose>
   </admst:if>
+  <admst:text format="//X3mapply_binary end:ep $ep %(name)\n"/>
 </admst:template>
 <!-- -------------------------------------------------- -->
 <admst:template match="X3mapply_ternary">
@@ -5863,11 +5866,11 @@ int $(DEV_NAME)::load(int )
               </admst:if>
               <admst:variable name="qprobe"/>
               <admst:variable name="ep" select="0.0"/>
-              <admst:text format="// inside %(.) : %(adms/datatypename) doing: %([$isinside='1']/$rhs/tree), %([$isinside='1']/$rhs/tree/adms/datatypename)   ep:$ep\n"/>
+              <admst:text format="// inside %(.) : %(adms/datatypename) doing: %([$isinside='1']/$rhs/tree), %([$isinside='1']/$rhs/tree/name)   ep:$ep\n"/>
               <admst:apply-templates select="[$isinside='1']/$rhs/tree" match="X3%(adms/datatypename)"/>
               <admst:text format="//// inside ep:  $ep  \n"/>
               <admst:text test="[$ddxinsidederivate='yes' and $ddxinsidethisprobe='no']" format="#if defined(_DERIVATE) // FIXME 8\n"/>
-              <admst:text test="[$finddt='no']" format="%(X3dxname($lhs)/[name='dxname']/value) = /*someass*/ $ep; // \n"/>
+              <admst:text test="[$finddt='no']" format="%(X3dxname($lhs)/[name='dxname']/value) = /*ep*/ $ep; // \n"/>
               <admst:text test="[$ddxinsidederivate='yes' and $ddxinsidethisprobe='no']" format="#endif //3\n"/>
               <admst:text test="[$ddxinsidethisprobe='yes']" format="#if defined(_DERIVATE2)\n"/>
               <admst:for-each select="$lhs[$ddxinsidethisprobe='yes']/probe">
