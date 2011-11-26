@@ -595,4 +595,22 @@ inline void ADMS_BASE::ac_eval()
 #define m20_sqrt(v00)         (-0.25/(v00)/sqrt(v00))
 #define m20_fabs(v00)         0.0
 /*--------------------------------------------------------------------------*/
+#define jacobian(a,b) m_required[m_##a##_##b]=true;	
+#define static_jacobian4(p,q,r,s)  jacobian(p,r) jacobian(p,s) jacobian(q,r) jacobian(q,s)
+#define static_jacobian2s(p,q,r)   jacobian(p,r) jacobian(q,r)
+#define static_jacobian2p(p,r,s)   jacobian(p,r) jacobian(p,s)
+#define static_jacobian1(p,r)      jacobian(p,r)
+#define dynamic_jacobian4(p,q,r,s) jacobian(p,r) jacobian(p,s) jacobian(q,r) jacobian(q,s)
+#define dynamic_jacobian2s(p,q,r)  jacobian(p,r) jacobian(q,r)
+#define dynamic_jacobian2p(p,r,s)  jacobian(p,r) jacobian(p,s)
+#define dynamic_jacobian1(p,r)     jacobian(p,r)
+#define whitenoise_jacobian4(p,q,r,s)
+#define whitenoise_jacobian2s(p,q,r)
+#define whitenoise_jacobian2p(p,r,s)
+#define whitenoise_jacobian1(p)
+#define flickernoise_jacobian4(p,q,r,s)
+#define flickernoise_jacobian2s(p,q,r)
+#define flickernoise_jacobian2p(p,r,s)
+#define flickernoise_jacobian1(p)
+/*--------------------------------------------------------------------------*/
 #endif
