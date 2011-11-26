@@ -27,7 +27,7 @@
 <admst:variable name="var_prefix" select="__"/>
 <admst:variable name="node_prefix" select="n_"/>
 <admst:variable name="state_prefix" select="ddt_"/>
-  <admst:variable name="ddt_type" select="x_"/>
+<admst:variable name="ddt_type" select="x_"/>
 
 <admst:variable name="_DYNAMIC" select="yes"/>
 <admst:variable name="_STATIC" select="yes"/>
@@ -1697,7 +1697,7 @@
     </admst:when>
     <admst:otherwise>
       <admst:value-of select="branch/pnode/name"/>
-      <admst:value-to select="/simulator/tmp" value="NP(%s)"/>
+      <admst:value-to select="/simulator/tmp" value="NP(n_%s)"/>
     </admst:otherwise>
   </admst:choose>
 </admst:template>
@@ -2199,10 +2199,7 @@
 <!-- analog/![initializeModel|initializeInstance|initial_model|initial_instance|initial_step|noise] -->
 
 <admst:template match="analog:evaluate">
-
   // evaluate template
-
-
   <admst:if test="code">
     <admst:assert test="code/adms[datatypename='block']" format="expecting datatypename=block\n"/>
     <admst:for-each select="code/item">
@@ -2578,6 +2575,8 @@
 // customization - gnucap specific constants
 #define VALUE_NAME "#"
 #define TAIL_SIZE 1
+#define _DDX
+#define _DERIVATEFORDDX
 
 #define SPICE_LETTER "\0"
 #define DEVICE_TYPE "dev_$(module)"
@@ -2588,6 +2587,10 @@
 #define MAX_NET_NODES %(count(node[grounded='no' and location='external']))
 #define INTERNAL_NODES %(count(node[grounded='no' and location='internal']))
 const int MATRIX_NODES = %(count(node[grounded='no']));
+
+#define NP(p) min(100.,max(-100., _N(p).v0()) )
+#define BP(p,n) (BP2( $node_prefix ## p, $node_prefix ## n ))
+
 
 <admst:text format="static std::string port_names[] = {"/>
 <admst:join select="node[grounded='no' and location='external']" separator=", ">
@@ -2687,7 +2690,8 @@ class $(DEV_NAME) : public ADMS_BASE
 
   private:
     unsigned current_state;
-    unsigned _next_state(){ assert (current_state<_num_states); return current_state++;  } 
+    unsigned _next_state(){  current_state++;  assert (current_state<=_num_states); 
+                return current_state; } 
 
 
 private:
@@ -2867,7 +2871,9 @@ private: // nodes / matrix indexes
                <admst:apply-templates select="tree" match="ddtcounter"/>
                <admst:for-each select="tree"> 
                </admst:for-each>
-        </admst:for-each>
+           </admst:for-each>
+        <admst:variable name="_num_states" select="$numddt"/>
+
         unsigned num_ddt(){return $numddt;}
 
         // we could use plain numbers as identifiers, but what would reduce
@@ -2898,6 +2904,11 @@ private: // nodes / matrix indexes
         <admst:text select="$wnoise/item" format="\n\tdouble wnoise%(index($wnoise/item,.));"/>
 
 };
+
+inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  ) const{
+	assert(is_number( _n[p].v0() - _n[n].v0() ));
+	return  min( 100. , max (  _n[p].v0() - _n[n].v0(), -100. ));
+}
 
 </admst:for-each>
 #endif
@@ -3523,13 +3534,15 @@ bool $(DEV_NAME)::do_tr()
 	}
   
 	// convergence check -- gnucap method
-	set_converged(true);
+        set_converged(true);
+#if $_num_states
 	for (unsigned ii = 0; ii < _num_states; ++ii) 
 	{
 		set_converged(converged() && conchk(_states[0][ii], _states_1[ii]));
 		trace3("", ii, _states_1[ii], _states[0][ii]);
 		_states_1[ii] = _states[0][ii];
-	}	
+                }	
+#endif
 	
 	<admst:text format="\n\tfor(int i=0; converged() && i<%(count(node[grounded='no'])); i++)"/>
 	{ 
@@ -3564,18 +3577,20 @@ bool $(DEV_NAME)::do_tr()
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::keep_ic()
 {
-#if 0
   //double x =  dn_diff(_n[OUT1].v0(),_n[OUT2].v0() ); // == tr_involts() ??
+  const COMMON_COMPONENT* c = asserted_cast<const COMMON_COMPONENT*>(common());
+  const $(MODEL_NAME)* m = asserted_cast<const $(MODEL_NAME)*>(c->model());
+    USE(m);
 
   trace6("STORAGE::keep_ic", long_label() , x, _n[IN1].v0(), _n[IN2].v0(), _n[OUT1].v0(),_n[OUT2].v0()  );
 
   <!-- <admst:apply-templates select="analog/code[datatypename='block']/item" match="keep_ic" required="yes"/> -->
-  <admst:apply-templates select="analog/code" match="keep_ic" required="yes"/>
+
+  <admst:apply-templates select="analog/code" match="X3analog:evaluate" required="yes"/>
 
   notstd::copy_n(m_entries, %(count(jacobian)) , m_entries_kept);
 
   notstd::copy_n(it0,%(count(node[grounded='no'])) , i_kept);
-#endif
 
 }
 // -------------------------------------------------------------------------- //
@@ -3913,22 +3928,17 @@ void $(DEV_NAME)::pzLoad(COMPLEX s)
 </admst:for-each>
 }
 // -------------------------------------------------------------------------- //
-#define NP(p) min(100.,max(-100., _N(p).v0()) )
-#define BP(p,n) (BP2( $node_prefix ## p, $node_prefix ## n ))
-
-inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  ) const{
-	assert(is_number( _n[p].v0() - _n[n].v0() ));
-	return  min( 100. , max (  _n[p].v0() - _n[n].v0(), -100. ));
-}
 
 // -------------------------------------------------------------------------- //
 bool $(DEV_NAME)::conv_check()const
 {
+#if $_num_states
   for (unsigned ii = 0; ii < _num_states; ++ii) 
   {
     if (! conchk(_states[0][ii], _states_1[ii]))
       return false;
-  }	
+      }	
+#endif
 
   <admst:text format="\n\tfor(unsigned i=0; converged() && i<%(count(node[grounded='no'])); i++)"/>
   { 
@@ -6448,7 +6458,7 @@ int $(DEV_NAME)::load(int )
 </admst:template>
 <!-- ---------------------------------------------------------- -->
 <admst:template match="X3contribution:nonoise:mint">
-  <admst:text test="[dynamic='yes']" format="#if defined(_DYNAMIC)\n"/>
+  <admst:text test="[dynamic='yes']" format="#if defined(_DYNAMIC) // fixm4\n"/>
   <admst:text test="rhs/function" format="{\n"/>
   <admst:apply-templates select="rhs/function" match="X3function:precomputation"/>
   <admst:apply-templates select="rhs[not(nilled(function))]" match="X3function:derivate:precomputation"/>
@@ -6522,7 +6532,7 @@ int $(DEV_NAME)::load(int )
   <admst:if test="rhs[not(nilled(function[class='builtin']))]">
     <admst:choose>
       <admst:when test="[dynamic='yes']">
-        <admst:text format="#if defined(_DYNAMIC)\n"/>
+        <admst:text format="#if defined(_DYNAMIC)//fixme5\n"/>
       </admst:when>
     </admst:choose>
     <admst:text format="{\n"/>
@@ -6618,12 +6628,15 @@ int $(DEV_NAME)::load(int )
   <admst:variable name="Pn" select="%s"/>
   <admst:choose> 
     <admst:when test="[dynamic='yes']">
-      <admst:text format=" {  // former_eval_dynamic_residual2\
+       {  // former_eval_dynamic_residual2
         // rhs/tree should contain a ddt...
-        double v=%(X3e(rhs/tree)) ;\
-        //error = NIintegrate(state_##p##_##n);\
-        _eval_static_residual2($Pp,$Pn,v) }\n \
-                "/>
+        double v=%(X3e(rhs/tree)) ;
+        //error = NIintegrate(state_##p##_##n);
+        //_eval_static_residual2($Pp,$Pn,v);
+        it0[$(node_prefix)$Pp]-= v;
+	it0[$(node_prefix)$Pn]+= v;
+
+        }
 
     </admst:when>
     <admst:otherwise>
@@ -6714,15 +6727,17 @@ int $(DEV_NAME)::load(int )
   <admst:variable name="Pn" select="%s"/>
   <admst:choose> 
     <admst:when test="..[dynamic='yes']">
-      <admst:text format=" {  // former_eval_dynamic_jac4\
-        double ep=$ep; \
-        double geq=(ep)*(CKTag0);\
-        double ceq=geq*BP($Pp,$Pn);\
-        _eval_static_residual2($Sn, $Sp, ceq)\
-        _write_ptr($Sp, $Pp, geq)\
-        _write_ptr($Sn, $Pn, geq)\
-        _write_ptr($Sp, $Pn, -geq)\
-        _write_ptr($Sn, $Pp, -geq)\n"/>
+       {  // former_eval_dynamic_jac4
+        double ep=$ep; 
+        double geq=(ep)*(CKTag0);
+        double ceq=geq*BP($Pp,$Pn);
+        // _eval_static_residual2($Sn, $Sp, ceq)
+	it0[$(node_prefix)$Sp]+=ceq;
+	it0[$(node_prefix)$Sn]-=ceq;
+        _write_ptr($Sp, $Pp, geq);
+        _write_ptr($Sn, $Pn, geq);
+        _write_ptr($Sp, $Pn, -geq);
+        _write_ptr($Sn, $Pp, -geq);
 
       <admst:text test="[$do_ac='yes']" format=" \
         _write_JD($Sp, $Pp, ep)\
@@ -6733,13 +6748,15 @@ int $(DEV_NAME)::load(int )
       <admst:text format=" \n}	\n"/>
     </admst:when>
     <admst:otherwise>
-      <admst:text format=" { // former_eval_stat_j4 \n
-        double ep=$ep; \
-        _eval_static_residual2($Sp,$Sn,-ep*BP($Pp,$Pn))\
-        _write_ptr($Sp, $Pp, ep)\
-        _write_ptr($Sn, $Pn, ep)\
-        _write_ptr($Sp, $Pn, -ep)\
-        _write_ptr($Sn, $Pp, -ep)"/>
+        { // former_eval_stat_j4 
+        double ep=$ep; 
+        // _eval_static_residual2($Sp,$Sn,-ep*BP($Pp,$Pn));
+	it0[$(node_prefix)$Sp]= ep*BP($Pp,$Pn);
+	it0[$(node_prefix)$Sn]-= ep*BP($Pp,$Pn);
+        _write_ptr($Sp, $Pp, ep);
+        _write_ptr($Sn, $Pn, ep);
+        _write_ptr($Sp, $Pn, -ep);
+        _write_ptr($Sn, $Pp, -ep);
       <admst:text test="[$do_ac='yes']" format=" \
         _write_JS($Sp, $Pp, ep)\
         _write_JS($Sn, $Pn, ep)\
@@ -6793,13 +6810,16 @@ int $(DEV_NAME)::load(int )
   <admst:variable name="Pp" select="%s"/>
   <admst:choose> 
     <admst:when test="..[dynamic='yes']">
-      <admst:text format="  { // former_eval_dynamic_jacobian2s  \n
+       { // former_eval_dynamic_jacobian2s  
         double e=$ep;
-        double geq=e*(CKTag0);\
-        double ceq=geq*NP($Pp);\
-        _eval_static_residual2($Sn, $Sp, ceq)\
-        _write_ptr($Sp, $Pp, geq)\
-        _write_ptr($Sn, $Pp, -geq)\n"/>
+        double geq=e*(CKTag0);
+        double ceq=geq*NP($Pp);
+        // _eval_static_residual2($Sn, $Sp, ceq);
+	it0[$(node_prefix)$Sp ]-=ceq;
+	it0[$(node_prefix)$Sn]+=ceq;
+        _write_ptr($Sp, $Pp, geq);
+        _write_ptr($Sn, $Pp, -geq);
+
       <admst:text test="[$do_ac='yes']" format=" \
         _write_JD($Sp, $Pp, e)\
         _write_JD($Sn, $Pp, -e)\n } \n" />
@@ -6809,10 +6829,12 @@ int $(DEV_NAME)::load(int )
     <admst:otherwise>
       <admst:text format="{ // former_eval_static_jacobian2s\n
         double e=$e;
-        _eval_static_residual2($Sp,$Sn,-e*NP($Pp))\
-        _write_ptr($Sp, $Pp, e)\
-        _write_ptr($Sn, $Pp, -e)\
-        _write_JS($Sp, $Pp, e)\
+        //_eval_static_residual2($Sp,$Sn,-e*NP($Pp));
+	it0[$(node_prefix)$Sp ]+=e*NP($Pp);
+	it0[$(node_prefix)$Sn]-=e*NP($Pp);		
+        _write_ptr($Sp, $Pp, e);
+        _write_ptr($Sn, $Pp, -e);
+        _write_JS($Sp, $Pp, e);
         _write_JS($Sn, $Pp, -e)\n}\n "/>
     </admst:otherwise>
   </admst:choose>
@@ -6887,7 +6909,9 @@ int $(DEV_NAME)::load(int )
     </admst:for-each>
   </admst:new>
   <admst:if test="block/adms[datatypename='module']">
-    <admst:text test="[static='no' and dynamic='yes']" format="#if defined(_DYNAMIC)\n"/>
+    <admst:text test="[static='no' and dynamic='yes']" format="// #if defined(_DYNAMIC) // fixme\n"/>
+    <admst:if   test="[static='yes' or dynamic='no' or $_DYNAMIC='yes']">
+
     <admst:text test="[scope='local']" format="%(X3vtype(.)) %(name);\n"/>
     <admst:if test="[insource='yes']/probe">
       <admst:for-each select="probe">
@@ -6923,7 +6947,8 @@ int $(DEV_NAME)::load(int )
       <!-- <admst:text format="#endif // FIX 5\n"/> -->
       </admst:if>
     </admst:if>
-    <admst:text test="[static='no' and dynamic='yes']" format="#endif\n"/>
+    </admst:if>
+    <admst:text test="[static='no' and dynamic='yes']" format="// #endif _DYNAMIC\n"/>
   </admst:if>
 </admst:template>
 <admst:template match="X3block:local:declaration">
@@ -6956,15 +6981,22 @@ int $(DEV_NAME)::load(int )
     fenoise%(index($fnoise/item,.))=0.0;\n"/>
   <admst:text select="$tnoise/item" format="tnoise%(index($tnoise/item,.))=0.0;\n"/>
   <admst:text select="$wnoise/item" format="wnoise%(index($wnoise/item,.))=0.0;\n"/>
+
+  <!-- local variable declarations. move to template? -->
   <admst:for-each select="item">
     <admst:if test="adms[datatypename='block']/..[name!='initial_model' and name!='initial_instance']">
+      <admst:text format="// declaration1\n"/>
       <admst:apply-templates select="." match="X3block:local:declaration"/>
     </admst:if>
     <admst:if test="adms[datatypename!='block']">
+      <admst:text format="// declaration2\n"/>
       <admst:apply-templates select="." match="X3block:local:declaration"/>
     </admst:if>
   </admst:for-each>
+  <admst:text format="// declaration3\n"/>
   <admst:apply-templates select="module/evaluation/variable" match="X3variable:declaration"/>
+  <!-- local variable declarations -->
+
   <admst:reset select="module/evaluation/variable"/>
   <admst:for-each select="item">
     <admst:choose>
@@ -7112,60 +7144,6 @@ int $(DEV_NAME)::load(int )
 <!-- ------------------------------------ -->
 <admst:template match="X3c:math_h">
 // *** arithmetics ***
-#define EXP90 1.220403294317841e+039
-#define m00_hypot(v00,x,y)      v00 = sqrt((x)*(x)+(y)*(y));
-#define m10_hypot(v10,v00,x,y)  v10 = (x)/(v00);
-#define m11_hypot(v11,v00,x,y)  v11 = (y)/(v00);
-#define m00_max(v00,x,y)        v00 = ((x)>(y))?(x):(y);
-#define m10_max(v10,v00,x,y)    v10 = ((x)>(y))?1.0:0.0;
-#define m11_max(v11,v00,x,y)    v11 = ((x)>(y))?0.0:1.0;
-#define m00_min(v00,x,y)        v00 = ((x)<(y))?(x):(y);
-#define m10_min(v10,v00,x,y)    v10 = ((x)<(y))?1.0:0.0;
-#define m11_min(v11,v00,x,y)    v11 = ((x)<(y))?0.0:1.0;
-#define m00_pow(v00,x,y)        v00 = pow(x,y);
-#define m10_pow(v10,v00,x,y)    v10 = (x==0.0)?0.0:(v00)*(y)/(x);
-#define m11_pow(v11,v00,x,y)    v11 = (x==0.0)?0.0:(log(x)*(v00));
-#define m00_div(v00,v10,x,y)    double v10=1/(y); double v00=(x)*v10;
-#define m10_div(v10,v00,vv,x,y)
-#define m11_div(v11,v00,vv,x,y) double v11 = -v00*vv;
-#define m00_mult(v00,v10,v11,x,y) double v10=(x); double v11=(y); double v00=v10*v11;
-#define m00_add(v00,x,y)        double v00=(x)+(y);
-#define m00_cos(v00,x)          v00 = cos(x);
-#define m10_cos(v10,v00,x)      v10 = (-sin(x));
-#define m00_sin(v00,x)          v00 = sin(x);
-#define m10_sin(v10,v00,x)      v10 = (cos(x));
-#define m00_tan(v00,x)          v00 = tan(x);
-#define m10_tan(v10,v00,x)      v10 = (1.0/cos(x)/cos(x));
-#define m00_cosh(v00,x)         v00 = cosh(x);
-#define m10_cosh(v10,v00,x)     v10 = (sinh(x));
-#define m00_sinh(v00,x)         v00 = sinh(x);
-#define m10_sinh(v10,v00,x)     v10 = (cosh(x));
-#define m00_tanh(v00,x)         v00 = tanh(x);
-#define m10_tanh(v10,v00,x)     v10 = (1.0/cosh(x)/cosh(x));
-#define m00_acos(v00,x)         v00 = acos(x);
-#define m10_acos(v10,v00,x)     v10 = (-1.0/sqrt(1-x*x));
-#define m00_asin(v00,x)         v00 = asin(x);
-#define m10_asin(v10,v00,x)     v10 = (+1.0/sqrt(1-x*x));
-#define m00_atan(v00,x)         v00 = atan(x);
-#define m10_atan(v10,v00,x)     v10 = (+1.0/(1+x*x));
-#define m00_logE(v00,x)         v00 = log(x);
-#define m10_logE(v10,v00,x)     v10 = (1.0/x);
-#define m00_log10(v00,x)        v00 = log10(x);
-#define m10_log10(v10,v00,x)    v10 = (1.0/x/log(10));
-#define m00_sqrt(v00,x)         v00 = sqrt(x);
-#define m10_sqrt(v10,v00,x)     v10 = (0.5/v00);
-#define m00_fabs(v00,x)         v00 = fabs(x);
-#define m10_fabs(v10,v00,x)     v10 = (((x)>=0)?(+1.0):(-1.0));
-#define m00_exp(v00,x)          v00 = exp(x); assert(is_number(x));
-#define m10_exp(v10,v00,x)      v10 = v00;
-#define m00_abs(v00)            ((v00)<(0)?(-(v00)):(v00))
-#define m00_limexp(v00,x)       v00 = ((x)<90.0?exp(x):EXP90*(x-89.0));
-#define m10_limexp(v10,v00,x)   v10 = ((x)<90.0?(v00):EXP90);
-#define m20_logE(v00)         (-1.0/v00/v00)
-#define m20_exp(v00)          exp(v00)
-#define m20_limexp(v00)       ((v00)<90.0?exp(v00):0.0)
-#define m20_sqrt(v00)         (-0.25/(v00)/sqrt(v00))
-#define m20_fabs(v00)         0.0
 <admst:text format="\n\n"/>
 </admst:template>
 <!-- ------------------------------------------- -->
@@ -7174,8 +7152,6 @@ int $(DEV_NAME)::load(int )
 #define m _model
 
 
-#define _DDX
-#define _DERIVATEFORDDX
 <admst:if test="/module/variable[derivate='yes' and insource='yes']">
 <admst:variable name="requiredderivateforddx" select="yes"/>
 </admst:if>
@@ -7202,19 +7178,6 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 //	simulatorVersion            : The simulator version.
 //	sourceScaleFactor           : Multiplicative factor for independent sources for source stepping homotopy convergence algorithm.
 //	tnom degrees       (Celsius): Default value of temperature at which model parameters were extracted.
-#define _circuit_gdev                (OPT::gmin)
-#define _circuit_gmin                (OPT::gmin)
-#define _circuit_imax                1.0
-#define _circuit_imelt               1.0
-#define _circuit_iteration           1.0
-#define _circuit_scale               1.0
-#define _circuit_shrink              1.0
-#define _circuit_simulatorSubversion 0
-#define _circuit_simulatorVersion    3.5
-#define _circuit_sourceScaleFactor   1.0
-#define _circuit_tnom                (OPT::tnom_c + CONSTCtoK)
-#define _circuit_temp      (CKT_BASE::_sim->_temp_c + CONSTCtoK)
-#define _scale             1.0
 
 #define _cos(val,arg)            val = cos(arg);
 #define _d_cos(val,dval,arg)     val = cos(arg);     dval = (-sin(arg));
@@ -7284,14 +7247,6 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 #define _eval_static_residual2(p,n,v)\
 	it0[$node_prefix ##p ]-=v;\
 	it0[$node_prefix ##n]+=v;		
-#define _write_ptr(S1, S2, value) \
-	m_entries[m_## S1 ## _ ## S2 ]+=value;
-#define _write_JS(S1, S2, value) \
-	m_ac_static[m_ ## S1 ## _ ## S2]+=value;	
-
-        // FIXME: do_AC
-#define _write_JD(S1, S2, value) \
-	m_ac_dynamic[m_ ## S1 ## _ ## S2]+=value;
 
         <!-- 
 #define deprecated_eval_static_jacobian4(Sp,Sn,Pp,Pn,v)\

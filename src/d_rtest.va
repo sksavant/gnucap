@@ -10,17 +10,21 @@ module rtest (top,low);
    electrical top,low;
 
    // Model parameters
-   parameter real R1=10000 from [0:inf) 
+   parameter real R1=10000 from (0:inf) 
                   `P(info="Resistor [Ohm]");
    
    // Declaration of variables
-   real v1, i1;
-   
+   real v1, i1, g;
+
    analog begin
+		@(initial_model) begin
+			g=1/R1;
+		end
+   
       begin     //Bias-dependent model evaluation
 	 
 		   v1 = V(top,low);
-         i1 = v1/ R1;
+         i1 = v1*g;
     
       end       //Bias-dependent model evaluation
 
