@@ -1518,7 +1518,7 @@
         <admst:warning format=" not implemented.\n"/>
     </admst:when>
     <admst:otherwise>
-      <admst:apply-templates select="." match="X3contribution:nonoise:ddt"/>
+      <admst:apply-templates select="." match="X3contribution:nonoise:ddt"/> <!-- ??? -->
     </admst:otherwise>
   </admst:choose>
 </admst:template>
@@ -2205,6 +2205,7 @@
 
   // evaluate template
 
+
   <admst:if test="code">
     <admst:assert test="code/adms[datatypename='block']" format="expecting datatypename=block\n"/>
     <admst:for-each select="code/item">
@@ -2450,6 +2451,7 @@
 
   <admst:text format="//now contribs... \n"/>
   <admst:for-each select="item[adms/datatypename='contribution']" >
+    <admst:text format="// %(.) \n"/>
     <admst:apply-templates select="." match="X3%(adms/datatypename):ddt"/> 
   </admst:for-each> 
 
@@ -2502,18 +2504,18 @@
   </admst:choose>
   <admst:choose>
     <admst:when test="lhs/branch/nnode[grounded='no']">
-      <admst:value-of select="lhs/branch/nnode/name"/>
-      <admst:value-of select="lhs/branch/pnode/name"/>
-      <admst:message format="//founnd (%s,%s,%(rhs/tree))//rhs/tree\n"/>
-      <admst:message format="//founnde $e\n"/>
+      <admst:text format="//exec %X3e(rhs/tree))\n"/>
+      <admst:text format=" $e\n"/>
     </admst:when>
     <admst:otherwise>
       <admst:value-of select="lhs/branch/pnode/name"/>
-      <admst:text format="// found residual1(%s,%(rhs/tree))\n"/>
+      <admst:text format="// exec residual1(%s,%X3e(rhs/tree))\n"/>
       <admst:text format="//founnde $e"/>
     </admst:otherwise>
   </admst:choose>
   <admst:for-each select="rhs/probe">
+    <admst:text format="// Rhsp %(.)\n"/>
+
     <admst:variable name="probepnode" select="%(branch/pnode)"/>
     <admst:variable name="probennode" select="%(branch/nnode)"/>
     <admst:variable name="probepnodename" select="%($probepnode/name)"/>
@@ -2674,16 +2676,21 @@ public:
 	std::string _level;
         PARAM_LIST  _params;
 
+
 };
 
 /* ========================================================= */
 
 class $(DEV_NAME) : public ADMS_BASE 
 {
-private:	
-	std::string _modelname;
-	const $(MODEL_NAME)* _model;
-	node_t _nodes[ %(count(node[grounded='no'])) ];
+  private:	
+    std::string _modelname;
+    const $(MODEL_NAME)* _model;
+    node_t _nodes[ %(count(node[grounded='no'])) ];
+
+  private:
+    unsigned current_state;
+    unsigned _next_state(){ assert (current_state<_num_states); return current_state++;  } 
 
 
 private:
@@ -2743,7 +2750,7 @@ protected: // override virtual
 
         //misc
         void keep_ic();
-        bool has_memory(){return _num_ddts;}
+        bool has_memory(){return _num_states;}
 	
 public:	// ports
 	std::string port_name(uint_t i)const {
@@ -2857,19 +2864,28 @@ private: // nodes / matrix indexes
         </admst:join>
         <admst:text format=" };\n"/>
 
+        <admst:variable name="numddt" select="0"/>
+        <admst:for-each select="expression"> 
+          <admst:message format="counting ddt $numddt in %(.)\n"/>
+               <admst:apply-templates select="tree" match="ddtcounter"/>
+               <admst:for-each select="tree"> 
+               </admst:for-each>
+        </admst:for-each>
+        unsigned num_ddt(){return $numddt;}
+
         // we could use plain numbers as identifiers, but what would reduce
         // future flexibility/readability.
         enum EStates {
 
-        <admst:apply-templates select="analog/code[datatypename='block']" match="find_ddt_states"/>  
-        <admst:text format=" };//states"/>
+        <!--  <admst:apply-templates select="analog/code[datatypename='block']" match="find_ddt_states"/> -->
+          _num_states = $numddt // does not work yet. don't use\n
 
-  <admst:variable name="finddt" select="no"/>
+         };
+
+        <admst:variable name="finddt" select="no"/>
 
 	double* _states[OPT::_keep_time_steps]; // state history pointer array
-	double* _states_1;
-	unsigned _num_ddts;
-	unsigned _num_states;
+        double* _states_1; // ?
 	
         int NIintegrate(int qcap);
 
@@ -2884,14 +2900,6 @@ private: // nodes / matrix indexes
 	<admst:text select="$tnoise/item" format="\n\tdouble tnoise%(index($tnoise/item,.));"/>
         <admst:text select="$wnoise/item" format="\n\tdouble wnoise%(index($wnoise/item,.));"/>
 
-        <admst:variable name="numddt" select="0"/>
-        <admst:for-each select="expression"> 
-          <admst:message format="counting ddt $numddt in %(.)\n"/>
-               <admst:apply-templates select="tree" match="ddtcounter"/>
-               <admst:for-each select="tree"> 
-               </admst:for-each>
-        </admst:for-each>
-        unsigned num_ddt(){return $numddt;}
 };
 
 </admst:for-each>
@@ -3102,9 +3110,9 @@ $(DEV_NAME)::$(DEV_NAME)(const $(DEV_NAME)& p)
    _modelname(p._modelname),
    _model(p._model),
    _nodes(),
-   _states_1(NULL),
-   _num_ddts(p._num_ddts),
-   _num_states(p._num_states)
+   _states_1(NULL)
+   /// _num_ddts(p._num_ddts), static...
+   /// _num_states(p._num_states) static...
 {
 	std::fill_n(m_entries, %(count(jacobian)), 0);
 	std::fill_n(m_entries_old, %(count(jacobian)), 0);
@@ -3649,7 +3657,7 @@ double $(DEV_NAME)::tr_probe_num(const std::string& x)const
   }
 
   // all of the "states" in state array
-  int num_probe_states = std::min(_num_states, unsigned(sizeof(state_names)/sizeof(std::string)));
+  int num_probe_states = std::min((unsigned)_num_states, unsigned(sizeof(state_names)/sizeof(std::string)));
   for (int ii=0; ii<num_probe_states && state_names[ii]!=""; ++ii) 
           if (Umatch(x, state_names[ii] + ' ')) 
                   return _states[0][ii];
@@ -3968,6 +3976,7 @@ void $(DEV_NAME)::tr_eval()
 									
   {
     trace0("$(DEV_NAME)::tr_eval()  loading hxx");
+    current_state=0;
     #include "$module.hxx"
     trace0("$(DEV_NAME)::tr_eval()  loaded hxx");
   }
@@ -4007,6 +4016,7 @@ int $(DEV_NAME)::load(int )
         <admst:text format="\n\tstd::fill_n(m_ac_dynamic, %(count(jacobian)), 0);"/>
 									
 	{
+        current_state=0;
 	#include "$module.hxx"
 	}
 
@@ -5758,7 +5768,8 @@ int $(DEV_NAME)::load(int )
 <admst:template match="DDT">
 
   <admst:if test="[$finddt='yes']">
-    <admst:text test="[$ddt_cur!='0']" format=","/>
+  <!--
+    <admst:text test="[$ddt_cur!='0']" format=","/> -->
 
     <admst:text format="ddt_$ddt_cur // $(ddt_type)%(.) \n"/>
     <!--    <admst:variable name="ddt_cur" select="%($(ddt_cur)+1)"/> -->
@@ -5787,15 +5798,18 @@ int $(DEV_NAME)::load(int )
       <admst:variable name="xp" select="$ep"/>
       <admst:variable name="xq" select="$eq"/>
       <admst:variable name="xpq" select="$epq"/>
-      <admst:variable name="e" select="_DDT($x, $(state_prefix)$(ddt_cur) ) "/>
+      <admst:variable test="[$finddt='no']" name="e" 
+        select="_DDT($x, _next_state() ) "/>
+      <admst:variable test="[$finddt='yes']" name="e" select="// DDTFOUND, $x"/>
+      <admst:variable test="[$finddt='yes']" name="e" select="$e\n$(state_prefix)$(ddt_cur), "/>
 
-      <admst:apply-templates select="." match="DDT"/> 
+      <!-- <admst:apply-templates select="." match="DDT"/>  -->
+
+      <admst:variable name="ddt_cur" select="$(ddt_cur)_"/> 
 
 
       <!-- ------------------------ -->
 
-
-      <admst:text  format="//after  DDT: ep $ep xp $xp\n"/>
     </admst:when>
     <admst:when test="[name='\$given']">
       <admst:variable name="arg1" select="%(arguments[1])"/>
@@ -6156,6 +6170,7 @@ int $(DEV_NAME)::load(int )
   <admst:text format="//precq\n"/>
   <admst:variable name="index" select="%(index(../function,.))"/>
   <admst:variable name="fname" select="%(X3funcname(.)/[name='fname']/value)"/>
+  //precompyes
   %(X3e(.))
 </admst:template>
 
@@ -6550,10 +6565,12 @@ int $(DEV_NAME)::load(int )
     </admst:when>
     <admst:otherwise>
       <admst:value-of select="lhs/branch/pnode/name"/>
-      <admst:text format="/*fixme*/ residual1(%s,%(X3e(rhs/tree)))\n"/>
+      <admst:text format="//fixme residual1(%s,%((rhs/tree)))\n"/>
+      <admst:apply-templates select="." match="residual1"/>
     </admst:otherwise>
   </admst:choose>
   <admst:for-each select="rhs/probe">
+    <admst:text format="//Rhsp %(.)\n"/>
     <admst:variable name="probepnode" select="%(branch/pnode)"/>
     <admst:variable name="probennode" select="%(branch/nnode)"/>
     <admst:variable name="probepnodename" select="%($probepnode/name)"/>
@@ -6579,6 +6596,7 @@ int $(DEV_NAME)::load(int )
               <admst:value-of select="branch/pnode/name"/>
               <admst:value-of select="../../lhs/branch/pnode/name"/>
               <admst:text format="/*fixme*/ jacobian1(%s,%s,$ep)\n"/>
+              <admst:apply-templates select="." match="jacobian1"/>
             </admst:if>
           </admst:otherwise>
         </admst:choose>
@@ -6620,6 +6638,73 @@ int $(DEV_NAME)::load(int )
     </admst:otherwise>
     </admst:choose>
 </admst:template>
+<admst:template match="residual1">
+  <!-- <admst:value-of select="lhs/branch/pnode[grounded=yes]"/> -->
+  <admst:value-of select="lhs/branch/pnode/name"/>
+  <admst:text format="//fixme residual1(%s,%((rhs/tree)))\n"/>
+
+  <admst:value-of select="lhs/branch/pnode/name"/>
+  <admst:variable name="Pp" select="%s"/>
+  <admst:choose> 
+    <admst:when test="[dynamic='yes']">
+      <admst:text format=" {  // former_eval_dynamic_residual2\
+        // rhs/tree should contain a ddt...
+        double v=%(X3e(rhs/tree)) ;\
+        //_eval_static_residual1($Pp,v) }\n \
+	it0[n_$Pp]-=v; \
+                "/>
+
+    </admst:when>
+    <admst:otherwise>
+      <admst:text format=" { // former_eval_static_residual2 \n
+        double v=%(X3e(rhs/tree)); \
+        it0[$node_prefix$Pp]-=v;\n}\n" />
+    </admst:otherwise>
+  </admst:choose>
+
+</admst:template>
+<!-- ----------------------  jacobians ------------------ -->
+<admst:template match="jacobian1">
+  <admst:value-of select="branch/nnode/name"/>
+  <admst:value-of select="branch/pnode/name"/>
+  <admst:value-of select="../../lhs/branch/nnode/name"/>
+  <admst:value-of select="../../lhs/branch/pnode/name"/>
+  <admst:variable name="Sp" select="%s"/>
+  <admst:variable name="Sn" select="%s"/>
+  <admst:variable name="Pp" select="%s"/>
+  <admst:variable name="Pn" select="%s"/>
+  <admst:choose> 
+    <admst:when test="..[dynamic='yes']">
+
+      { // former_eval_dynamic_jacobian1 \
+        double ep=$ep; \
+		double geq=(v)*(CKTag0);\
+		double ceq=geq*NP($Pp);\
+                // _eval_static_residual1($Sp, -ceq)\
+	it0[n_$Sp]-=ceq; \
+		_write_ptr($Sp, $Pp, geq)\
+                }\
+
+      <admst:text test="[$do_ac='yes']" format=" \
+        _write_JS($Sp, $Pp, ep);" />
+
+        }
+
+      <admst:text format=" \n}	\n"/>
+    </admst:when>
+    <admst:otherwise>
+       { // former_eval_stat_jacobian1 \n
+        double ep=$ep; 
+	_eval_static_residual1($Sp,-ep*NP(*Pp));
+        _write_ptr($Sp, $Pp, v);
+
+      <admst:text test="[$do_ac='yes']" format=" \
+        _write_JS($Sp, $Pp, ep);" />
+
+        }
+    </admst:otherwise>
+  </admst:choose>
+</admst:template>
 <!-- ----------------------  jacobians ------------------ -->
 <admst:template match="jacobian4">
   <admst:value-of select="branch/nnode/name"/>
@@ -6641,7 +6726,6 @@ int $(DEV_NAME)::load(int )
         _write_ptr($Sn, $Pn, geq)\
         _write_ptr($Sp, $Pn, -geq)\
         _write_ptr($Sn, $Pp, -geq)\n"/>
-
 
       <admst:text test="[$do_ac='yes']" format=" \
         _write_JD($Sp, $Pp, ep)\
