@@ -1443,12 +1443,9 @@
           <admst:text format="// not initial_\n"/>
 
           <admst:text format="{ //X3block \n"/>
-
           <admst:text select="item" format=" // X3%(adms/datatypename) \n"/>
-
-
           <admst:apply-templates select="item" match="X3%(adms/datatypename)"/>
-          <admst:text format="} //X3blovk \n"/>
+          <admst:text format="} //X3blovk.. \n"/>
 
           <admst:text format="// done X3block\n"/>
         </admst:if>
@@ -1486,7 +1483,7 @@
 
 
           <admst:apply-templates select="item" match="X3%(adms/datatypename)"/>
-          <admst:text format="} //X3blovk \n"/>
+          <admst:text format="} //X3blovk. \n"/>
 
           <admst:text format="// done X3block\n"/>
         </admst:if>
@@ -3361,8 +3358,8 @@ void $(DEV_NAME)::tr_begin()
 
         // d_vs...
         //for(int ii=0; ii<OPT::_keep_time_steps; ii++)
-        std::fill_n(_states[0], _num_states, 0);
-        std::fill_n(_states_1, _num_states, 0);
+        std::fill_n(_states[0], (unsigned)_num_states, 0);
+        std::fill_n(_states_1, (unsigned)_num_states, 0);
 
           // like d_vs.
 	<admst:text format="\n\tfor(int i=0; i<%(count(node[grounded='no'])); i++)"/>
@@ -3403,7 +3400,7 @@ void $(DEV_NAME)::tr_begin()
 void $(DEV_NAME)::dc_advance(){
        ADMS_BASE::dc_advance(); internal_precalc();
        for (int i = 1;  i < OPT::_keep_time_steps;  ++i) {
-        notstd::copy_n(_states[0], _num_states, _states[i]);
+        notstd::copy_n(_states[0], (unsigned)_num_states, _states[i]);
         //_i[i] = _i[0];
       }
 
@@ -3428,7 +3425,7 @@ void $(DEV_NAME)::tr_advance()
   _states[0] = t;
 
   //initial guess.
-  notstd::copy_n(_states[1], _num_states, _states[0]);
+  notstd::copy_n(_states[1], (unsigned) _num_states, _states[0]);
 
 
 // storage would do:
@@ -3585,7 +3582,7 @@ void $(DEV_NAME)::keep_ic()
 void $(DEV_NAME)::store_values() 
 {
   // element: y[0] -> y_1
-  notstd::copy_n(_states[0], _num_states, _states_1);
+  notstd::copy_n(_states[0],(unsigned) _num_states, _states_1);
 }
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_load()
@@ -5049,7 +5046,7 @@ int $(DEV_NAME)::load(int )
       <admst:variable name="e" select="$(var_prefix)%(name)"/>
     </admst:when>
     <admst:otherwise>
-      <admst:variable name="e" select="%(name) /*name*/"/>
+      <admst:variable name="e" select="%(name)"/>
     </admst:otherwise>
   </admst:choose>
 
@@ -6405,9 +6402,7 @@ int $(DEV_NAME)::load(int )
               </admst:if>
               <admst:variable name="qprobe"/>
               <admst:variable name="ep" select="0.0"/>
-              <admst:text format="// inside %(.) : %(adms/datatypename) doing: %([$isinside='1']/$rhs/tree), %([$isinside='1']/$rhs/tree/name)   ep:$ep\n"/>
               <admst:apply-templates select="[$isinside='1']/$rhs/tree" match="X3%(adms/datatypename)"/>
-              <admst:text format="//// inside ep:  $ep  \n"/>
               <admst:text test="[$ddxinsidederivate='yes' and $ddxinsidethisprobe='no']" format="#if defined(_DERIVATE) // FIXME 8\n"/>
               <admst:text test="[$finddt='no']" format="%(X3dxname($lhs)/[name='dxname']/value) = /*ep*/ $ep; // \n"/>
               <admst:text test="[$ddxinsidederivate='yes' and $ddxinsidethisprobe='no']" format="#endif //3\n"/>
@@ -6438,11 +6433,8 @@ int $(DEV_NAME)::load(int )
             <admst:text format="$e = "/> %(X3e(rhs/tree)) ; <admst:text format=" /*tree $finddt*/ \n"/> 
           </admst:if>
         </admst:if>
-        <admst:text format="// FIXME ..... ?\n"/>
 
-        <admst:if test="[$finddt='yes']">
-          <admst:text format="// ddt from ass \n %(X3e(rhs/tree))\n"/>
-        </admst:if>
+        <admst:text test="[$finddt='yes']"  format="// ddt from ass \n %(X3e(rhs/tree))\n"/>
 
         <!--<admst:text format="EXIT_IF_ISNAN($e)\n"/>-->
       </admst:otherwise>
@@ -6593,9 +6585,15 @@ int $(DEV_NAME)::load(int )
               <admst:apply-templates select="." match="jacobian2s"/>
             </admst:if>
             <admst:if test="../../lhs/branch/nnode[grounded='yes']">
+              <!-- move up -->
+              <admst:value-of select="branch/nnode/name"/>
               <admst:value-of select="branch/pnode/name"/>
+              <admst:value-of select="../../lhs/branch/nnode/name"/>
               <admst:value-of select="../../lhs/branch/pnode/name"/>
-              <admst:text format="/*fixme*/ jacobian1(%s,%s,$ep)\n"/>
+              <admst:variable name="Sp" select="%s"/>
+              <admst:variable name="Sn" select="%s"/>
+              <admst:variable name="Pp" select="%s"/>
+              <admst:variable name="Pn" select="%s"/>
               <admst:apply-templates select="." match="jacobian1"/>
             </admst:if>
           </admst:otherwise>
@@ -6604,10 +6602,8 @@ int $(DEV_NAME)::load(int )
     </admst:if>
   </admst:for-each>
   <admst:if test="rhs[not(nilled(function[class='builtin']))]">
-    <admst:text format="}\n"/>
-    <admst:if test="[dynamic='yes']">
-      <admst:text format="#endif /* _DYNAMIC */\n"/>
-    </admst:if>
+    <admst:text format="} // // \n"/>
+    <admst:text test="[dynamic='yes']" format="#endif /* _DYNAMIC */\n"/>
   </admst:if>
 </admst:template>
 <!-- ----------------------  residuals ------------------ -->
@@ -6665,25 +6661,26 @@ int $(DEV_NAME)::load(int )
 </admst:template>
 <!-- ----------------------  jacobians ------------------ -->
 <admst:template match="jacobian1">
-  <admst:value-of select="branch/nnode/name"/>
-  <admst:value-of select="branch/pnode/name"/>
-  <admst:value-of select="../../lhs/branch/nnode/name"/>
-  <admst:value-of select="../../lhs/branch/pnode/name"/>
-  <admst:variable name="Sp" select="%s"/>
-  <admst:variable name="Sn" select="%s"/>
-  <admst:variable name="Pp" select="%s"/>
-  <admst:variable name="Pn" select="%s"/>
+  <!-- why??? -->
+              <admst:value-of select="branch/nnode/name"/>
+              <admst:value-of select="branch/pnode/name"/>
+              <admst:value-of select="../../lhs/branch/nnode/name"/>
+              <admst:value-of select="../../lhs/branch/pnode/name"/>
+              <admst:variable name="Sp" select="%s"/>
+              <admst:variable name="Sn" select="%s"/>
+              <admst:variable name="Pp" select="%s"/>
+              <admst:variable name="Pn" select="%s"/>
   <admst:choose> 
     <admst:when test="..[dynamic='yes']">
 
-      { // former_eval_dynamic_jacobian1 \
-        double ep=$ep; \
-		double geq=(v)*(CKTag0);\
-		double ceq=geq*NP($Pp);\
-                // _eval_static_residual1($Sp, -ceq)\
-	it0[n_$Sp]-=ceq; \
-		_write_ptr($Sp, $Pp, geq)\
-                }\
+      { // former_eval_dynamic_jacobian1 
+        double ep=$ep; 
+		double geq=(ep)*(CKTag0);
+		double ceq=geq*NP($Pp);
+                // _eval_static_residual1($Sp, -ceq)
+	it0[n_$Sp]-=ceq; 
+		_write_ptr($Sp, $Pp, geq);
+                
 
       <admst:text test="[$do_ac='yes']" format=" \
         _write_JS($Sp, $Pp, ep);" />
@@ -6695,11 +6692,11 @@ int $(DEV_NAME)::load(int )
     <admst:otherwise>
        { // former_eval_stat_jacobian1 \n
         double ep=$ep; 
-	_eval_static_residual1($Sp,-ep*NP(*Pp));
-        _write_ptr($Sp, $Pp, v);
+        // _eval_static_residual1($Sp,-ep*NP(Pp));
+	it0[n_$Sp]-=ep*NP($Pp); \
+        _write_ptr($Sp, $Pp, ep);
 
-      <admst:text test="[$do_ac='yes']" format=" \
-        _write_JS($Sp, $Pp, ep);" />
+      <admst:text test="[$do_ac='yes']" format=" _write_JS($Sp, $Pp, ep);" />
 
         }
     </admst:otherwise>
@@ -6765,7 +6762,9 @@ int $(DEV_NAME)::load(int )
       <admst:text format=" { //  _eval_dynamic_ \n
           double geq=($ep)*(CKTag0);\
           double ceq=geq*BP(Pp,Pn);\
-          _eval_static_residual1($Sp, -ceq)\
+          // _eval_static_residual1($Sp, -ceq)\
+	  it0[n_$Sp]+=ceq;
+
           _write_ptr($Sp, $Pp, geq)\
           _write_ptr($Sp, $Pn, -geq)\
   }\
@@ -6773,12 +6772,14 @@ int $(DEV_NAME)::load(int )
   _write_JD($Sp, $Pn, -$ep)	\n"/>
     </admst:when>
       <admst:otherwise>
-        <admst:text format=" { // old  _eval_static_ \n
-        _eval_static_residual1(Sp,-$ep*BP(Pp,Pn))\
-        _write_ptr($Sp, $Pp, $ep)\
-        _write_ptr($Sp, $Pn, -$ep)\
-        _write_JS($Sp, $Pp, $ep)\
-        _write_JS($Sp, $Pn, -$ep)\n	}\n"/>
+        <admst:text format=" { // former_eval_static_ \n
+          double ep=$ep;
+          //        _eval_static_residual1(Sp,-ep*BP(Pp,Pn))
+	  it0[n_$Sp] += ep*BP($Pp,$Pn);
+        _write_ptr($Sp, $Pp, ep);
+        _write_ptr($Sp, $Pn, -ep);
+        _write_JS($Sp, $Pp, ep);
+        _write_JS($Sp, $Pn, -ep);\n}\n"/>
     </admst:otherwise>
   </admst:choose>
 </admst:template>
