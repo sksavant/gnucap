@@ -2718,7 +2718,17 @@ protected: // override virtual
 	// tr
 	void tr_call_iwants(int m_1, int m_2);
 	void tr_iwant_matrix();
-	void tr_begin();
+        void tr_begin();
+        const $(MODEL_NAME)* model(){
+          //FIXME fetch model from COMMON
+          //const COMMON_COMPONENT* c = asserted_cast<const COMMON_COMPONENT*>(common());
+          // const $(MODEL_NAME)* m = prechecked_cast<const $(MODEL_NAME)*>(c->model());
+
+            const $(MODEL_NAME)* m = prechecked_cast<const $(MODEL_NAME)*>(_model);
+              return m;
+      }
+
+
 	void tr_restore() {ADMS_BASE::tr_restore(); internal_precalc();}
         void store_values();
         void dc_advance();
@@ -3133,13 +3143,14 @@ $(DEV_NAME)::$(DEV_NAME)(const $(DEV_NAME)& p)
 // -------------------------------------------------------------------------- //
 $(DEV_NAME)::~$(DEV_NAME)()
 {
-	if (_states[0]) 
-	{
-		for (int ii=0; ii<OPT::_keep_time_steps; ++ii) 
-		{
-      		assert(_states[ii]);
-      		delete [] _states[ii];
-    	}
+#if $_num_states
+  if (_states[0]) 
+  {
+          for (int ii=0; ii<OPT::_keep_time_steps; ++ii) 
+          {
+          assert(_states[ii]);
+          delete [] _states[ii];
+  }
     	assert(_states_1);
     	delete [] _states_1;
   	}
@@ -3148,7 +3159,9 @@ $(DEV_NAME)::~$(DEV_NAME)()
     	for (int ii=0; ii<8; ++ii) 
     		assert(!_states[ii]);    
     	assert(!_states_1);
-  	}
+        }
+
+#endif
 }
 // ---------------- all analog functions from verilog-module here: ---------- //
 
@@ -3182,8 +3195,8 @@ void $(DEV_NAME)::expand()
   }else{
   }
 
-  // attach model
-  _model = dynamic_cast<const $(MODEL_NAME)*>(find_model(_modelname));
+  // attach model?! FIXME
+  _model = model();
   if (!_model) 
           throw Exception_Model_Type_Mismatch(long_label(), _modelname, DEVICE_TYPE);
 
@@ -3281,9 +3294,10 @@ void $(DEV_NAME)::precalc_last()
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::internal_precalc()
 {
-	temperature();
-	set_converged();
-	assert(!is_constant());
+  trace1(" $(DEV_NAME)::internal_precalc()", long_label());
+  temperature();
+  set_converged();
+  assert(!is_constant());
 }
 // -------------------------------------------------------------------------- //
 void inline $(DEV_NAME)::tr_call_iwants(int m_1, int m_2)
@@ -3357,6 +3371,10 @@ void $(DEV_NAME)::ac_iwant_matrix()
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_begin()
 {
+  const COMMON_COMPONENT* c = asserted_cast<const COMMON_COMPONENT*>(common());
+  const $(MODEL_NAME)* m = prechecked_cast<const $(MODEL_NAME)*>(model());
+  assert(m);
+  USE(m);
         trace0("$(DEV_NAME)::tr_begin");
 	ADMS_BASE::tr_begin();
 
@@ -3577,10 +3595,10 @@ void $(DEV_NAME)::keep_ic()
 {
   //double x =  dn_diff(_n[OUT1].v0(),_n[OUT2].v0() ); // == tr_involts() ??
   const COMMON_COMPONENT* c = asserted_cast<const COMMON_COMPONENT*>(common());
-  const $(MODEL_NAME)* m = asserted_cast<const $(MODEL_NAME)*>(c->model());
+  const $(MODEL_NAME)* m = asserted_cast<const $(MODEL_NAME)*>(model());
     USE(m);
 
-  trace6("STORAGE::keep_ic", long_label() , x, _n[IN1].v0(), _n[IN2].v0(), _n[OUT1].v0(),_n[OUT2].v0()  );
+    trace1("$(DEV_NAME)::keep_ic", long_label() );
 
   <!-- 
 
@@ -3773,8 +3791,10 @@ int $(DEV_NAME)::NIintegrate(int qcap) // used by DEVload (not DC)
 // #define _DERIVATE
 void $(DEV_NAME)::temperature()
 {
+  trace1(" $(DEV_NAME)::temperature()", long_label());
   const COMMON_COMPONENT* c = asserted_cast<const COMMON_COMPONENT*>(common());
-  const $(MODEL_NAME)* m = asserted_cast<const $(MODEL_NAME)*>(c->model());
+  const $(MODEL_NAME)* m = prechecked_cast<const $(MODEL_NAME)*>(model());
+    assert(m);
     USE(m);
 
   <admst:apply-templates select="analog" match="analog:initial_model" required="yes"/>
@@ -3955,7 +3975,7 @@ void $(DEV_NAME)::ac_eval()
   std::fill_n(m_entries, %(count(jacobian)), 0);
 
   const COMMON_COMPONENT* c = asserted_cast<const COMMON_COMPONENT*>(common());
-  const $(MODEL_NAME)* m = asserted_cast<const $(MODEL_NAME)*>(c->model());
+  const $(MODEL_NAME)* m = asserted_cast<const $(MODEL_NAME)*>(model());
   USE(m);
 	
   double CKTag0;
@@ -3985,7 +4005,7 @@ void $(DEV_NAME)::tr_eval()
   //int mode=MODETRAN; // FIXME
 
   const COMMON_COMPONENT* c = asserted_cast<const COMMON_COMPONENT*>(common());
-  const $(MODEL_NAME)* m = asserted_cast<const $(MODEL_NAME)*>(c->model());
+  const $(MODEL_NAME)* m = asserted_cast<const $(MODEL_NAME)*>(model());
   USE(m);
 	
   double CKTag0;
