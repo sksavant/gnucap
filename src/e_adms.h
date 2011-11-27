@@ -519,12 +519,11 @@ inline void ADMS_BASE::ac_eval()
 /*--------------------------------------------------------------------------*/
 #define _write_ptr(S1, S2, value) \
 	m_entries[m_## S1 ## _ ## S2 ]+=value;
-#define _write_JS(S1, S2, value) \
-	m_ac_static[m_ ## S1 ## _ ## S2]+=value;	
 
-        // FIXME: do_AC
+#define _write_JS(S1, S2, value) \
+	m_entries[m_ ## S1 ## _ ## S2]+=value;	
 #define _write_JD(S1, S2, value) \
-	m_ac_dynamic[m_ ## S1 ## _ ## S2]+=value;
+	m_entries_old[m_ ## S1 ## _ ## S2]+=value;
 /*--------------------------------------------------------------------------*/
 #define _circuit_gdev                (OPT::gmin)
 #define _circuit_gmin                (OPT::gmin)

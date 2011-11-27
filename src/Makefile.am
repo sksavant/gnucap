@@ -260,9 +260,17 @@ MAKEDEPEND = gcc -M $(CPPFLAGS) -o $*.d $<
 
 IVL=`which iverilog` -v
 
-# if iverilog ...
-%.cc : %.v $(IVERILOG_PATH)/compile_wrap.h # $(IVERILOG_PREFIX)/lib/ivl/gc.tgt
+if IVERILOG 
+# FIXME: compile_wrap not there...
+iverilog-info:
+	@echo $(IVERILOG_PATH)
+
+# $(IVERILOG_PREFIX)/lib/ivl/gc.tgt
+
+%.cc : %.v
 	$(IVL) -tgc $< -o $@
+
+endif
 
 %.cc : %.model %.h ${MODELGEN}${EXEEXT}
 	${MODELGEN} -cc $<

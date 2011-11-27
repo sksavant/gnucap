@@ -1444,7 +1444,7 @@
           <admst:text format="{ //X3block \n"/>
           <admst:text select="item" format=" // X3%(adms/datatypename) \n"/>
           <admst:apply-templates select="item" match="X3%(adms/datatypename)"/>
-          <admst:text format="} //X3blovk.. \n"/>
+          <admst:text format="} //X3blovk... \n"/>
 
           <admst:text format="// done X3block\n"/>
         </admst:if>
@@ -2742,6 +2742,7 @@ protected: // override virtual
 	void ac_iwant_matrix();
 	void ac_begin();
 	void do_ac();
+        void ac_eval(); // -> COMMON?
 	void ac_load();
 	COMPLEX ac_involts()const {unreachable();return NOT_VALID;}
 	COMPLEX ac_amps()const {unreachable();return NOT_VALID;}
@@ -3976,9 +3977,6 @@ void $(DEV_NAME)::ac_eval()
 
   return; 
 }
-#define _STATIC
-#define _DYNAMIC
-#define _DERIVATE
 void $(DEV_NAME)::tr_eval() 
 {
   std::fill_n(it0, %(count(node[grounded='no'])), 0);
@@ -4009,9 +4007,6 @@ void $(DEV_NAME)::tr_eval()
   set_converged(conv_check());
   return; 
 }
-#undef _STATIC
-#undef _DYNAMIC
-#undef _DERIVATE
 // -------------------------------------------------------------------------- //
 // -------------------------------------------------------------------------- //
 #if 0
@@ -6397,10 +6392,14 @@ void $(DEV_NAME)::tr_eval()
               <admst:variable name="qprobe"/>
               <admst:variable name="ep" select="0.0"/>
               <admst:apply-templates select="[$isinside='1']/$rhs/tree" match="X3%(adms/datatypename)"/>
-              <admst:text test="[$ddxinsidederivate='yes' and $ddxinsidethisprobe='no']" format="#if defined(_DERIVATE) // FIXME 8\n"/>
-              <admst:text test="[$finddt='no']" format="%(X3dxname($lhs)/[name='dxname']/value) = /*ep*/ $ep; // \n"/>
-              <admst:text test="[$ddxinsidederivate='yes' and $ddxinsidethisprobe='no']" format="#endif //3\n"/>
-              <!-- <admst:text test="[$ddxinsidethisprobe='yes']" format="#if defined(_DERIVATE2)\n"/> -->
+              <!-- <admst:text test="[$ddxinsidederivate='yes' and $ddxinsidethisprobe='no']"
+                   format="#if defined(_DERIVATE) // FIXME 8\n"/> -->
+              <admst:if  test="[$ddxinsidederivate='no' and $ddxinsidethisprobe='yes' or $_DERIVATE='yes']" >
+                <admst:text test="[$finddt='no']" format="%(X3dxname($lhs)/[name='dxname']/value) = /*ep*/ $ep; // \n"/>
+              </admst:if>
+              <!-- <admst:text test="[$ddxinsidederivate='yes' and $ddxinsidethisprobe='no']" 
+                   format="#endif //3\n"/>
+              <admst:text test="[$ddxinsidethisprobe='yes']" format="#if defined(_DERIVATE2)\n"/> -->
               <admst:if test="[$ddxinsidethisprobe='no' or $_DERIVATE2='yes' ]">
                 <admst:for-each select="$lhs[$ddxinsidethisprobe='yes']/probe">
                   <admst:variable name="epq" select="0.0"/>
@@ -6753,11 +6752,12 @@ void $(DEV_NAME)::tr_eval()
       </admst:if>
 
       <admst:if test="[$eval_mode='ac']">
-          _write_JS($Sp, $Pp, ep)\
-          _write_JS($Sn, $Pn, ep)\
-          _write_JS($Sp, $Pn, -ep)\
-          _write_JS($Sn, $Pp, -ep)\n"/>
-      </admst:if>
+          _write_JS($Sp, $Pp, ep);
+          _write_JS($Sn, $Pn, ep);
+          _write_JS($Sp, $Pn, -ep);
+          _write_JS($Sn, $Pp, -ep);
+        </admst:if>
+        }
     </admst:otherwise>
   </admst:choose>
 </admst:template>
@@ -6812,12 +6812,15 @@ void $(DEV_NAME)::tr_eval()
         // _eval_static_residual2($Sn, $Sp, ceq);
 	it0[$(node_prefix)$Sp ]-=ceq;
 	it0[$(node_prefix)$Sn]+=ceq;
+        <admst:if test="[$eval_mode='tr']">
         _write_ptr($Sp, $Pp, geq);
         _write_ptr($Sn, $Pp, -geq);
+      </admst:if>
 
-      <admst:text test="[$do_ac='yes']" format=" \
+        <admst:if test="[$eval_mode='ac']">
         _write_JD($Sp, $Pp, e)\
-        _write_JD($Sn, $Pp, -e)\n } \n" />
+        _write_JD($Sn, $Pp, -e);
+      </admst:if>
       <admst:text format="  }\n"/>
     </admst:when>
 
@@ -6837,19 +6840,19 @@ void $(DEV_NAME)::tr_eval()
 <!-- analog//conditional -->
 <admst:template match="X3conditional">
   <admst:text select="if[dynamic='yes']" format="#ifdef _DYNAMIC\n"/>
-  <admst:text test="if/function" format="{\n"/>
+  <admst:text test="if/function" format="{ // X3conditional\n"/>
   <admst:apply-templates select="if/function" match="X3function:precomputation"/>
-  <admst:text format="if\n(%(X3e(if/tree)))\n"/>
+  <admst:text format="if\n(%(X3e(if/tree))) //X3conditional \n"/>
   <admst:text select="then/adms[datatypename!='block']" format="{\n"/>
   <admst:apply-templates select="then" match="X3%(adms/datatypename)"/>
-  <admst:text select="then/adms[datatypename!='block']" format="}\n"/>
+  <admst:text select="then/adms[datatypename!='block']" format="}//X3conditional\n"/>
   <admst:if test="else">
-    <admst:text format="else\n"/>
-    <admst:text test="else/adms[datatypename!='block']" format="{\n"/>
+    <admst:text format="else // X3conditional\n"/>
+    <admst:text test="else/adms[datatypename!='block']" format="{ // X3conditional.\n"/>
     <admst:apply-templates select="else" match="X3%(adms/datatypename)"/>
-    <admst:text test="else/adms[datatypename!='block']" format="}\n"/>
+    <admst:text test="else/adms[datatypename!='block']" format="} // X3conditional.\n"/>
   </admst:if>
-  <admst:text test="if/function" format="}\n"/>
+  <admst:text test="if/function" format="} // X3conditional\n"/>
   <admst:text select="if[dynamic='yes']" format="#endif /* if(...) */\n"/>
 </admst:template>
 

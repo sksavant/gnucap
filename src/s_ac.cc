@@ -232,8 +232,9 @@ void AC::solve()
   CARD_LIST::card_list.ac_load();
   ::status.load.stop();
 
-  _out << "b4 solve\n";
-  _out << _sim->_acx << "\n" ;
+  if (_dump_matrix){
+    _out << _sim->_acx << "\n" ;
+  }
   ::status.lud.start();
   _sim->_acx.lu_decomp();
   ::status.lud.stop();
