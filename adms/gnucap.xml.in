@@ -3146,20 +3146,23 @@ $(DEV_NAME)::~$(DEV_NAME)()
 #if $_num_states
   if (_states[0]) 
   {
-          for (int ii=0; ii<OPT::_keep_time_steps; ++ii) 
-          {
-          assert(_states[ii]);
-          delete [] _states[ii];
+    trace1("cleaning up states", long_label());
+    for (int ii=0; ii<OPT::_keep_time_steps; ++ii) 
+    {
+      assert(_states[ii]);
+      delete [] _states[ii];
+      _states[ii] = 0;
+    }
+
+    assert(_states_1);
+    delete [] _states_1;
+    _states_1=0;
+
+  } else {    
+    for (int ii=0; ii<8; ++ii) 
+      assert(!_states[ii]);    
+    assert(!_states_1);
   }
-    	assert(_states_1);
-    	delete [] _states_1;
-  	}
-  	else
-  	{    
-    	for (int ii=0; ii<8; ++ii) 
-    		assert(!_states[ii]);    
-    	assert(!_states_1);
-        }
 
 #endif
 }
@@ -3187,7 +3190,7 @@ void $(DEV_NAME)::Set_param_by_index(int /*i*/, std::string& /*new_value*/, int 
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::expand()
 {
-  trace0("$(DEV_NAME)::expand");
+  trace1("$(DEV_NAME)::expand", _modelname);
   ADMS_BASE::expand();
 
   if (!subckt()) {
@@ -3196,16 +3199,21 @@ void $(DEV_NAME)::expand()
   }
 
   // attach model?! FIXME
-  _model = model();
+  _model = dynamic_cast<const $(MODEL_NAME)*>(find_model(_modelname));
   if (!_model) 
-          throw Exception_Model_Type_Mismatch(long_label(), _modelname, DEVICE_TYPE);
+    throw Exception_Model_Type_Mismatch(long_label(), _modelname, DEVICE_TYPE);
+
+    // something like this.  
+    // attach_model(_model);
+
 
   // set m_required
   guesstopology();
-  //allocate state vectors
-  if (!_states[0])  
-  {
-    // initialise in tr_begin()
+  // allocate state vectors
+
+#if $_num_states
+  if (!_states[0]) {
+    // initialise in tr_begin() ?
     for (int ii=0; ii<OPT::_keep_time_steps; ++ii)  // >
     {
       assert(!_states[ii]);
@@ -3213,13 +3221,12 @@ void $(DEV_NAME)::expand()
     }
     assert(!_states_1);
     _states_1 = new double[_num_states];
-  }
-  else
-  {
+  } else {
     for (int ii=0; ii<OPT::_keep_time_steps; ++ii) //>
             assert(_states[ii]);
     assert(_states_1);
   }
+#endif
 
 
   std::fill_n(it1, %(count(node[grounded='no'])), 0);
@@ -6633,7 +6640,7 @@ void $(DEV_NAME)::tr_eval()
     <admst:when test="[dynamic='yes']">
        {  // former_eval_dynamic_residual2
         // rhs/tree should contain a ddt...
-        double v=%(X3e(rhs/tree)) ;
+        double v = %(X3e(rhs/tree)) ;
         //error = NIintegrate(state_##p##_##n);
         //_eval_static_residual2($Pp,$Pn,v);
         it0[$(node_prefix)$Pp]-= v;
@@ -6643,10 +6650,11 @@ void $(DEV_NAME)::tr_eval()
 
     </admst:when>
     <admst:otherwise>
-      <admst:text format=" { // former_eval_static_residual2 \n
-        double v=%(X3e(rhs/tree)); \
-	it0[$node_prefix$Pp]-=v;\
-        it0[$node_prefix$Pn]+=v;\n}\n" />
+        { // former_eval_static_residual2  (recheck: same as dynamic?)
+        double v=%(X3e(rhs/tree)); 
+	it0[$node_prefix$Pp]-=v;
+        it0[$node_prefix$Pn]+=v;
+        }
     </admst:otherwise>
     </admst:choose>
 </admst:template>
@@ -6659,18 +6667,19 @@ void $(DEV_NAME)::tr_eval()
   <admst:variable name="Pp" select="%s"/>
   <admst:choose> 
     <admst:when test="[dynamic='yes']">
-      <admst:text format=" {  // former_eval_dynamic_residual2\
+      <admst:if format=" {  // former_eval_dynamic_residual2\
         // rhs/tree should contain a ddt...
-        double v=%(X3e(rhs/tree)) ;\
-        //_eval_static_residual1($Pp,v) }\n \
-	it0[n_$Pp]-=v; \
-                "/>
+        double v = %(X3e(rhs/tree));
+        //_eval_static_residual1($Pp,v);
+        it0[n_$Pp]-=v; 
+        }
 
     </admst:when>
     <admst:otherwise>
-      <admst:text format=" { // former_eval_static_residual2 \n
-        double v=%(X3e(rhs/tree)); \
-        it0[$node_prefix$Pp]-=v;\n}\n" />
+       { // former_eval_static_residual2 \n
+        double v=%(X3e(rhs/tree)); 
+        it0[$node_prefix$Pp]-=v;
+        }
     </admst:otherwise>
   </admst:choose>
 
@@ -6691,10 +6700,11 @@ void $(DEV_NAME)::tr_eval()
 
       { // former_eval_dynamic_jacobian1 
         double ep=$ep; 
-		double geq=(ep)*(CKTag0);
-		double ceq=geq*NP($Pp);
-                // _eval_static_residual1($Sp, -ceq)
+        double geq=(ep)*(CKTag0);
+        double ceq=geq*NP($Pp);
+        // _eval_static_residual1($Sp, -ceq)
         it0[n_$Sp]-=ceq; 
+
         <admst:if test="[$eval_mode='tr']">
           _write_ptr($Sp, $Pp, geq);
         </admst:if>
@@ -6715,12 +6725,9 @@ void $(DEV_NAME)::tr_eval()
         _write_ptr($Sp, $Pp, ep);
       </admst:if>
       <admst:if test="[$eval_mode='ac']">
-
         _write_JS($Sp, $Pp, ep);
       </admst:if>
-
-
-        }
+      }
     </admst:otherwise>
   </admst:choose>
 </admst:template>
@@ -6797,21 +6804,29 @@ void $(DEV_NAME)::tr_eval()
           // _eval_static_residual1($Sp, -ceq)\
 	  it0[n_$Sp]+=ceq;
 
-          _write_ptr($Sp, $Pp, geq)\
-          _write_ptr($Sp, $Pn, -geq)\
-  }\
-  _write_JD($Sp, $Pp, $ep)\
-  _write_JD($Sp, $Pn, -$ep)	\n"/>
+      <admst:if test="[$eval_mode='tr']">
+          _write_ptr($Sp, $Pp, geq);
+          _write_ptr($Sp, $Pn, -geq);
+        </admst:if>
+      <admst:if test="[$eval_mode='ac']">
+          _write_JD($Sp, $Pp, $ep);
+          _write_JD($Sp, $Pn, -$ep);
+        </admst:if>
+  }
     </admst:when>
       <admst:otherwise>
         <admst:text format=" { // former_eval_static_ \n
           double ep=$ep;
           //        _eval_static_residual1(Sp,-ep*BP(Pp,Pn))
 	  it0[n_$Sp] += ep*BP($Pp,$Pn);
+      <admst:if test="[$eval_mode='tr']">
         _write_ptr($Sp, $Pp, ep);
         _write_ptr($Sp, $Pn, -ep);
+        </admst:if>
+      <admst:if test="[$eval_mode='ac']">
         _write_JS($Sp, $Pp, ep);
         _write_JS($Sp, $Pn, -ep);\n}\n"/>
+        </admst:if>
     </admst:otherwise>
   </admst:choose>
 </admst:template>
@@ -6850,10 +6865,15 @@ void $(DEV_NAME)::tr_eval()
         //_eval_static_residual2($Sp,$Sn,-e*NP($Pp));
 	it0[$(node_prefix)$Sp ]+=e*NP($Pp);
 	it0[$(node_prefix)$Sn]-=e*NP($Pp);		
+      <admst:if test="[$eval_mode='tr']">
         _write_ptr($Sp, $Pp, e);
         _write_ptr($Sn, $Pp, -e);
+        </admst:if>
+      <admst:if test="[$eval_mode='ac']">
         _write_JS($Sp, $Pp, e);
-        _write_JS($Sn, $Pp, -e)\n}\n "/>
+        _write_JS($Sn, $Pp, -e);
+        </admst:if>
+        }
     </admst:otherwise>
   </admst:choose>
 </admst:template>
