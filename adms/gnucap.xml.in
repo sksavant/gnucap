@@ -2901,6 +2901,7 @@ private: // nodes / matrix indexes
         int NIintegrate(int qcap);
 
         double _DDT(double q, unsigned stateno){
+          _states[0][stateno]=q;
           NIintegrate(stateno*2);\
           return q;
         }
