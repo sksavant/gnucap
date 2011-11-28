@@ -1,9 +1,7 @@
 
 spice
 
-.options abstol=1e-13
-.options numdgt 10
-.options reltol=1e-4
+.options numdgt 30
 
 .param vdd 1.7
 
@@ -16,22 +14,23 @@ paramset mycap ctest;
 .c=3u;
 endparamset
 
-mycap c1 (nout,0);
+mycap c1 (nout1,0);
 
 // C #(.c=3u) c1 (nout,0);
 
 spice
 .list
 
-*C1 nout 0 3u
+C1 nout2 0 3u
 
-R1 nout nin 1000k
+R1 nout1 nin 1000k
+R2 nout2 nin 1000k
 
 .print tran v(nodes) 
 .print dc v(nodes) 
 
 .nodelist
-.dc trace=v dm
+.dc trace=v
 .tran .1m 1m  
 *dm
 
