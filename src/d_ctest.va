@@ -18,7 +18,7 @@ module ctest (top,low);
       begin
 
 		   v1 = V(top,low) ;
-         I(top,low) <+ c*ddt(v1);
+         I(top,low) <+ ddt(c*v1);
 
       end 
    end

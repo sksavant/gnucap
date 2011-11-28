@@ -7,23 +7,29 @@ spice
 
 .param vdd 1.7
 
-V1 nin 0  sin(frequency=1, amplitude=0.01, offset=0)
+V1 nin 0  sin(frequency=1k, amplitude=1, offset=0)
 .list
 
 .verilog
 
 paramset mycap ctest;  
-.c=0.3u;
+.c=3u;
 endparamset
 
 mycap c1 (nout,0);
 
-spice
+// C #(.c=3u) c1 (nout,0);
 
-R1 nout nin 100k
+spice
+.list
+
+*C1 nout 0 3u
+
+R1 nout nin 1000k
 
 .print tran v(nodes) 
 
-.tran .1 1 trace v
+.nodelist
+.tran .1m 1m trace=v dm
 
 .end
