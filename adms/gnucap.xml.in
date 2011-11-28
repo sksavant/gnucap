@@ -3490,28 +3490,39 @@ void $(DEV_NAME)::tr_regress()
 // -------------------------------------------------------------------------- //
 bool $(DEV_NAME)::tr_needs_eval()const
 {
-  trace1("$(DEV_NAME)::tr_needs_eval", converged());
+  trace3("$(DEV_NAME)::tr_needs_eval", converged(), is_q_for_eval(), _sim->is_advance_iteration());
   if (is_q_for_eval()) return false;
   if (!converged()) return true;
   if (_sim->is_advance_iteration()) return true;
-  if (_time[1] == 0) return true;  //BUG// needed for ngspice jfet, but not for spice3f5 jfet
+  if (_time[1] == 0){
+    trace0("tr_needs_eval: //BUG// needed?? for ngspice jfet, but not for spice3f5 jfet");
+    return true;
+  }
 
   // check the node voltages, reference to ground
   for (unsigned ii=0; ii<matrix_nodes(); ++ii) 
     // probably simpler: if (!conchk(_sim->_n[ii].vt1(), _n[ii].v0(), 0, OPT::reltol*OPT::bypasstol)) 
-    if (!conchk(_sim->_vt1[_n[ii].m_()], _n[ii].v0(), 0, OPT::reltol*OPT::bypasstol)) 
+    if (!conchk(_sim->_vt1[_n[ii].m_()], _n[ii].v0(), 0, OPT::reltol*OPT::bypasstol)) {
+      trace1("$(DEV_NAME)::tr_needs_eval node", ii);
       return true;
+    }
 
   // check the node voltages, reference to each other
-  for (unsigned ii=0; ii<matrix_nodes(); ++ii)
+  for (unsigned ii=0; ii<matrix_nodes(); ++ii){
     for (unsigned jj=0; jj<ii; ++jj) {
       // node_t has no vt1... if (!conchk( ( _n[ii].vt1()  - _n[jj].vt1() ),
       // assert(  _n[ii].vt1() = _sim->_vt1[_n[ii].m_()] );
       if (!conchk((_sim->_vt1[_n[ii].m_()] - _sim->_vt1[_n[jj].m_()]),
         (_n[ii].v0() - _n[jj].v0()), 0, OPT::reltol*OPT::bypasstol)) {
+
+         trace2("$(DEV_NAME)::tr_needs_eval", ii, jj);
+        
         return true;
       }
     }
+  }
+
+  trace0("$(DEV_NAME)::tr_needs_eval: no");
 
   return false;
 }
