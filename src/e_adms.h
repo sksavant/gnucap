@@ -35,24 +35,24 @@ class ADMS_BASE : public BASE_SUBCKT {
 
 		~ADMS_BASE() {}
 
-		void	   store_values()		{assert(_y[0]==_y[0]); _y1=_y[0];}
+		virtual void	   store_values()=0;
 		//void   reject_values()		{ _y0 = _y1;}
 	public:
 
 		bool	   skip_dev_type(CS&);
 
 		virtual  void tr_save_amps(int n);
-	public: // override virtual
-		bool	   print_type_in_spice()const {return false;}
-		void	   precalc_last();
-		void	   tr_begin();
-		void	   tr_restore();
-		void	   dc_advance();
-		void	   tr_advance();
-		void	   tr_regress();
-		bool	   tr_needs_eval()const;
+	public: 
+		virtual bool	   print_type_in_spice()const {return false;}
+		virtual void	   precalc_last();
+		virtual void	   tr_begin();
+		virtual void	   tr_restore();
+		virtual void	   dc_advance();
+		virtual void	   tr_advance();
+		virtual void	   tr_regress();
+		virtual bool	   tr_needs_eval()const;
 		virtual bool do_tr() { unreachable(); return false; }
-		void	   tr_queue_eval(); // why not const?
+		virtual void	   tr_queue_eval(); // why not const?
 			
 		TIME_PAIR tr_review();
 		virtual void  tr_stress() {

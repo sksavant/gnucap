@@ -191,7 +191,7 @@ void ADMS_BASE::tr_advance()
 	for (int i=OPT::_keep_time_steps-1; i>0; --i) {
 		assert(_time[i] < _time[i-1] || _time[i] == 0.);
 		_time[i] = _time[i-1];
-		_y[i] = _y[i-1];
+//		_y[i] = _y[i-1];
 	}
 	_time[0] = _sim->_time0;
 
