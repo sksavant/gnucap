@@ -68,7 +68,6 @@ protected:
   enum {ONE_PT, LIN_STEP, LIN_PTS, TIMES, OCTAVE, DECADE} _stepmode[DCNEST];
   static double temp_c_in;	/* ambient temperature, input and sweep variable */
 private:
-  bool _dump_matrix;
 };
 /*--------------------------------------------------------------------------*/
 double	DCOP::temp_c_in = 0.;
@@ -308,7 +307,7 @@ void DCOP::fix_args(int Nest)
 /*--------------------------------------------------------------------------*/
 void DCOP::options(CS& Cmd, int Nest)
 {
-  _dump_matrix=0;
+  bool _dump_matrix=false;
   _sim->_uic = _loop[Nest] = _reverse_in[Nest] = false;
   unsigned here = Cmd.cursor();
   do{
@@ -343,6 +342,10 @@ void DCOP::options(CS& Cmd, int Nest)
       || outset(Cmd,&_out)
       ;
   }while (Cmd.more() && !Cmd.stuck(&here));
+
+  if(_dump_matrix) {
+    _trace = (TRACE) (_trace | (int)tMATRIX);
+  }
 }
 /*--------------------------------------------------------------------------*/
 void DCOP::sweep()

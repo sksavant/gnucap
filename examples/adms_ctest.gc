@@ -7,7 +7,7 @@ spice
 
 .param vdd 1.7
 
-V1 nin 0  sin(frequency=1k, amplitude=1, offset=0)
+V1 nin 0  sin(frequency=1k, amplitude=1, offset=1)
 .list
 
 .verilog
@@ -28,8 +28,11 @@ spice
 R1 nout nin 1000k
 
 .print tran v(nodes) 
+.print dc v(nodes) 
 
 .nodelist
-.tran .1m 1m trace=v dm
+.dc trace=v dm
+.tran .1m 1m  
+*dm
 
 .end

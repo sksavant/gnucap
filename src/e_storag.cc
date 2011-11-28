@@ -152,6 +152,7 @@ bool STORAGE::tr_needs_eval()const
 FPOLY1 differentiate(const FPOLY1* q, const FPOLY1* i, double* time, METHOD method)
 {
   if (CKT_BASE::_sim->analysis_is_static()) {
+    trace1("differentiate static", q[0].x);
     assert(time[0] == 0.);
     return FPOLY1(q[0].x, 0., 0.);
   }else if (CKT_BASE::_sim->analysis_is_restore()) {

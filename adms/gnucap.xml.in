@@ -2895,15 +2895,18 @@ private: // nodes / matrix indexes
         <admst:variable name="finddt" select="no"/>
 
 	double* _states[OPT::_keep_time_steps]; // state history pointer array
-        double* _states_1; // ?
+        double* _states_1; // state at time[1]
         double* _states_kept;
+
+        //even states: _y
+        // odd states: _i
 	
-        int NIintegrate(int qcap);
+        double NIintegrate(int qcap);
 
         double _DDT(double q, unsigned stateno){
           _states[0][stateno]=q;
-          NIintegrate(stateno*2);\
-          return q;
+          return NIintegrate(stateno*2);\
+          // return _states[0][stateno+1];
         }
 	void CKTterr(int qcap, double *time_step);	
 	
@@ -3447,11 +3450,19 @@ void $(DEV_NAME)::tr_begin()
 }
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::dc_advance(){
-       ADMS_BASE::dc_advance(); internal_precalc();
-       for (int i = 1;  i < OPT::_keep_time_steps;  ++i) {
-        notstd::copy_n(_states[0], 2*(unsigned)_num_states, _states[i]);
-        //_i[i] = _i[0];
-      }
+  trace0("$(DEV_NAME)::dc_advance");
+
+  // ELEMENT:: does nothing
+
+  ADMS_BASE::dc_advance(); 
+
+  for (int i = 1;  i < OPT::_keep_time_steps;  ++i) {
+  //  notstd::copy_n(_states[0], 2*(unsigned)_num_states, _states[i]);
+    //_i[i] = _i[0]; <= what STORAGE does
+    for( unsigned i=0; i<_num_states; ++i){
+          _states_1[2*i+1]=_states[0][2*i+1];
+    }
+  }
 
 
 }
@@ -3652,8 +3663,15 @@ void $(DEV_NAME)::keep_ic()
 void $(DEV_NAME)::store_values() 
 {
   trace1("$(DEV_NAME)::store_values", long_label());
-  // element: y[0] -> y_1
-  notstd::copy_n(_states[0],(unsigned) 2*_num_states, _states_1);
+
+
+  // notstd::copy_n(_states[0],(unsigned) 2*_num_states, _states_1);
+
+  for( unsigned i=0; i<_num_states; ++i){
+        _states_1[2*i]=_states[0][2*i];
+  }
+
+  // ELEMENT does y[0] -> y_1
 }
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_load()
@@ -3813,7 +3831,7 @@ void $(DEV_NAME)::CKTterr(int qcap, double *time_step)
 	*time_step = std::min(tr_review_trunc_error(&q[0]), *time_step);
 }
 // -------------------------------------------------------------------------- //
-int $(DEV_NAME)::NIintegrate(int qcap) // used by DEVload (not DC)
+double $(DEV_NAME)::NIintegrate(int qcap) // used by DEVload (not DC)
 { 
         trace1("$(DEV_NAME)::NIintegrate", qcap);
 	assert(_dt != 0.0);
@@ -3830,7 +3848,7 @@ int $(DEV_NAME)::NIintegrate(int qcap) // used by DEVload (not DC)
 	 
 	for (unsigned ii = 0; ii < k; ii++) 
 	{
-          trace5("$(DEV_NAME)::NIintegrate", qcap, ii,  _states[ii][qcap], _time[0], _time[1] );
+          trace5("$(DEV_NAME)::NIintegrate", ii, _states[ii][qcap], _states[ii][qcap+1], _time[0], _time[1] );
           assert( _states[ii][qcap] == _states[ii][qcap] );
           assert( _states[ii][qcap+1] == _states[ii][qcap+1] );
           q[ii] = FPOLY1(NOT_VALID, _states[ii][qcap], 0.0);
@@ -3842,9 +3860,10 @@ int $(DEV_NAME)::NIintegrate(int qcap) // used by DEVload (not DC)
 	assert(i[0].f0 == i[0].f0);
 	assert(i[0].f1 == i[0].f1);
 
+        //	_states[0][qcap] = i[0].x;
 	_states[0][qcap+1] = i[0].f0;
 
-	return 0;
+	return i[0].f0;
 }
 // -------------------------------------------------------------------------- 
 #define _STATIC
@@ -6692,11 +6711,11 @@ void $(DEV_NAME)::tr_eval()
     <admst:when test="[dynamic='yes']">
        {  // former_eval_dynamic_residual2
         // rhs/tree should contain a ddt...
-        double v = %(X3e(rhs/tree)) ;
+        double _i = %(X3e(rhs/tree)) ;
         //error = NIintegrate(state_##p##_##n);
         //_eval_static_residual2($Pp,$Pn,v);
-        it0[$(node_prefix)$Pp]-= v;
-	it0[$(node_prefix)$Pn]+= v;
+        it0[$(node_prefix)$Pp]-= _i;
+	it0[$(node_prefix)$Pn]+= _i;
         }
 
     </admst:when>

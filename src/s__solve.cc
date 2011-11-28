@@ -279,7 +279,7 @@ void SIM::solve_equations(TRACE trace)
   if(trace & tMATRIX /* && printhere */) {
     _out << "\n--- aa -------\n" <<  _sim->_aa << "\n--- i ----\n";
     for (unsigned i=0; i<_sim->_total_nodes; ++i){
-      _out << _sim->_i[i] << ", ";
+      _out << _sim->_i[i+1] << ", ";
     }
     _out << "\n-----\n";
   }
