@@ -2872,6 +2872,13 @@ private: // nodes / matrix indexes
         </admst:join>
         <admst:text format=" };\n"/>
 
+
+        unsigned num_ddt(){return $numddt;}
+
+        // we could use plain numbers as identifiers, but what would reduce
+        // future flexibility/readability.
+    enum EStates {
+
         <admst:variable name="numddt" select="0"/>
         <admst:for-each select="expression"> 
           <admst:message format="counting ddt $numddt in %(.)\n"/>
@@ -2880,12 +2887,6 @@ private: // nodes / matrix indexes
                </admst:for-each>
            </admst:for-each>
         <admst:variable name="_num_states" select="$numddt"/>
-
-        unsigned num_ddt(){return $numddt;}
-
-        // we could use plain numbers as identifiers, but what would reduce
-        // future flexibility/readability.
-        enum EStates {
 
         <!--  <admst:apply-templates select="analog/code[datatypename='block']" match="find_ddt_states"/> -->
           _num_states = $numddt // does not work yet. don't use\n
@@ -2934,7 +2935,7 @@ inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  )
 <admst:template match="ddtcounter">
   <admst:if test="[(adms/datatypename)='function' and name='ddt']">
     <admst:variable name="numddt" select="$numddt+1"/>
-    <admst:text format="// ddtfound: %(.)\n"/>
+    <admst:text format="      _state_%(adms/id(.)), // %(.)\n"/>
   </admst:if>
 
   <admst:if test="[datatypename='mapply_unary'
