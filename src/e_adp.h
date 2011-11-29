@@ -274,8 +274,8 @@ class ADP_NODE_RCD : public ADP_NODE {
     ADP_NODE_RCD( const ADP_NODE_RCD& );
     ADP_NODE_RCD( const ADP_NODE& );
 
-    double get_udc() const {return udc;}
-    void set_udc(double x) {udc=x;}
+    double get_udc() const { assert(false); return udc;}
+    void set_udc(double x) { assert(false); udc=x;}
 
    // virtual ADP_NODE(){ return ADP_NODE_RCD(*this); };
    void tr_expect_1();

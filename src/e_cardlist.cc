@@ -698,4 +698,15 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
   }
 }
 /*--------------------------------------------------------------------------*/
+ADP_NODE* CARD_LIST::new_adp_node{
+  assert(d);
+  assert(d->scope());
+
+  NODE_MAP* Map = nodes();
+  assert(Map);
+  ADP_NODE* a Map->new_adp_node(node_name);
+  trace2("CARDLIST::new_adp_node", node_name, _nnn->user_number());
+  assert(_nnn);
+}
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
