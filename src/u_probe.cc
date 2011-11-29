@@ -163,6 +163,8 @@ double PROBE::probe_node(void)const
     return OPT::bypass + 10*_sim->_bypass_ok;
   }else if (Umatch(_what, "control ")) {
     return ::status.control;
+  }else if (Umatch(_what, "gmin ")) {
+    return OPT::gmin;
   }else if (Umatch(_what, "damp ")) {untested();
     return _sim->_damp;
   }else if (Umatch(_what, "gen{erator} ")) {untested();

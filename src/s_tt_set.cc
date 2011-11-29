@@ -64,7 +64,8 @@ namespace TT {
 				_Tstep  = arg3;
 				_Tstop  = arg4;
 				_Tstart = 0; //HACK?
-				assert((double)_tstep!=0);
+				assert((double)_tstep!=0 || !_tstop);
+				if (!_tstop) untested();
 
 				trace4("TTT::setup ", _tstep, _tstop , _Tstep , _Tstop);
 
@@ -156,8 +157,9 @@ namespace TT {
 
 		if (!_tstep.has_good_value()) {
 			throw Exception("transient: Time step is required");
-		}else if (_tstep==0.) {itested();
-			throw Exception("Time step = 0");
+		}else if (_tstep==0. && _tstop ) {
+			untested();
+			throw Exception("Time step == 0 while tend");
 		}else{
 		}
 
@@ -215,8 +217,8 @@ namespace TT {
 
 		if (!_tstep.has_good_value()) {
 			throw Exception("transient: time step is required");
-		}else if (_tstep==0.) {itested();
-			throw Exception("time step = 0");
+		}else if (_tstep==0. && _tstop ) {itested();
+			throw Exception("time step == 0 and tstop");
 		}else{
 		}
 

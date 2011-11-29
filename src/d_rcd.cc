@@ -787,12 +787,11 @@ void DEV_BUILT_IN_RCD::expand()
   }
   if (_sim->is_first_expand()) {
     assert (!_Ccgfill);
-    _Ccgfill = new ADP_NODE((const COMPONENT*) this, short_label()+".C");
+    _Ccgfill = new ADP_NODE((const COMPONENT*) this, "C");
   }
 
 // idee: _Ccgfill:: tr_value <= udc
 //                  tt_value <= E
-  ADP_NODE_LIST::adp_node_list.push_back( _Ccgfill );
 //
  // _Udc = new ADP_NODE_UDC((const COMPONENT*) common()); //, _Ccgfill);
  // ADP_NODE_LIST::adp_node_list.push_back( _Udc );
@@ -804,13 +803,13 @@ void DEV_BUILT_IN_RCD::expand()
   //subckt()->precalc();
   assert(!is_constant());
   if ( adp() == NULL ){
-    attach_adp( m->new_adp( (COMPONENT*) this ) );
+  //  attach_adp( m->new_adp( (COMPONENT*) this ) );
   }else{
     untested(); // rebuild circuit??
   }
 
   if (m->v2()){
-    incomplete();
+    // incomplete();
     // do_tt?
     // _Ccgfill->tt_set( -c->_wcorr );
   }
@@ -1315,12 +1314,12 @@ void DEV_BUILT_IN_RCD::stress_apply()
   trace4("DEV_BUILT_IN_RCD::stress_apply ", 
       _Ccgfill->tr() , _Ccgfill->tr(_sim->_Time0 ), _Ccgfill->order(), _sim->_time0);
 
-  assert ( is_almost( _Ccgfill->tr() , _Ccgfill->tr_rel(_sim->_dT0 + _sim->_time0) ));
   if (! ( is_almost( _Ccgfill->tr1() , _Ccgfill->tr(Time1) )))
   {
       error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress !almost tr1 %E tr(T1) %E \n",
           _Ccgfill->tr1() , _Ccgfill->tr(Time1) );
   } 
+  assert ( is_almost( _Ccgfill->tr() , _Ccgfill->tr_rel(_sim->_dT0 + _sim->_time0) ));
   long double E_old = _Ccgfill->tt1();
   long double eff   = _Ccgfill->tr();
   if(m->positive) eff= max(eff,0.0L);

@@ -1,0 +1,20 @@
+spice
+
+
+V1 nin 0 AC 1 DC 0
+R1 nin nout 1k
+C1 nout 0 5m
+
+
+*         _R1
+*  in o--[_]--o out
+*     |       |
+*     = V1    = C1
+*     |       |
+*     V       V
+
+.print dc v(nodes)
+.dc
+.print ac v(nodes)
+.ac 1 100 1 > ac_lp.out
+.end

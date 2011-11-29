@@ -59,6 +59,9 @@ class hp{
 
 #endif 
 
+#define deprecated() (fprintf(stderr, "@!@#$\n@@@deprecated:%s:%u:%s\n", \
+			   __FILE__, __LINE__, __func__))
+
 #ifdef DO_TRACE
 
 #define trace_line() (fprintf(stderr, "@@#\n@#@:%s:%u:%s\n", \

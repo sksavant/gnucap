@@ -5173,8 +5173,10 @@ void ADP_BUILT_IN_MOS8::init(const COMPONENT* d)
   // ADP_BUILT_IN_MOS::init(d);
 
   if ( m->use_hci()){
-    hci_node = new ADP_NODE(d, "hci" );
-    ADP_NODE_LIST::adp_node_list.push_back( hci_node );
+    hci_node = new ADP_NODE( d, "hci" );
+
+    // done in init
+    // ADP_NODE_LIST::adp_node_list.push_back( hci_node );
 
     vthdelta_hci = 0;
     vthscale_hci = 1;
@@ -5222,8 +5224,11 @@ double DEV_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 
 }
 /*--------------------------------------------------------------------------*/
-void MODEL_BUILT_IN_MOS8::do_stress_apply(  COMPONENT* brh) const
+void MODEL_BUILT_IN_MOS8::do_stress_apply( COMPONENT* brh) const
 {
+
+  // BUG: put into adp.
+  deprecated();
   trace1("MODEL_BUILT_IN_MOS8::do_stress_apply", brh->long_label());
 
   // obsolete? maybe not.

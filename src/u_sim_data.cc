@@ -140,7 +140,7 @@ void SIM_DATA::map__nodes()
  *  subcircuits at beginning, results on border at the bottom
  */
 void SIM_DATA::order_reverse()
-{untested();
+{
   _nm[0] = 0;
   for (uint_t node = 1;  node <= _total_nodes;  ++node) {
     _nm[node] = _total_nodes - node + 1;

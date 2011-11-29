@@ -396,8 +396,8 @@ fi
 
 
 AM_CONDITIONAL([ADMS], [test x$enable_adms != xno] )
-AM_CONDITIONAL(IVERILOG, test x$with_iverilog != xno )
-AM_CONDITIONAL(IVERILOG_VVP, test x$iverilog_vvp_old = xyes )
+AM_CONDITIONAL([IVERILOG], [test "x$with_iverilog" != xno] )
+#AM_CONDITIONAL(IVERILOG_VVP, test x$iverilog_vvp_old = xyes )
 
 AC_OUTPUT([
 	Makefile
@@ -438,7 +438,6 @@ AC_MSG_RESULT([
    prefix:     $prefix
    exec_prefix:$exec_prefix
    libdir:     $libdir
-   Icarus V:   $iverilog
    CPPFLAGS:   $CPPFLAGS
    CFLAGS:     $CFLAGS
    CXXFLAGS:   $CXXFLAGS
@@ -449,6 +448,7 @@ AC_MSG_RESULT([
    admst:      $enable_adms
    shared_lib: $enable_lib
    doc:        $enable_doc
+   Icarus V:   $with_iverilog
 
 ])
 

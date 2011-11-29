@@ -45,8 +45,20 @@ double ADP_BUILT_IN_MOS::tt_probe_num(const std::string& x)const
 	}
 }
 /*--------------------------------------------------------------------------*/
+void ADP_BUILT_IN_MOS::stress_apply() {
+	trace1("ADP_BUILT_IN_MOS8::stress_apply", long_label());
+	// HIER
+	const DEV_BUILT_IN_MOS* d = asserted_cast<const DEV_BUILT_IN_MOS*>(owner());
+	const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
+	const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
+
+	bti_stress->set_tt(0.5);
+
+}
+/*--------------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS::tt_commit()
 {
+	assert(false);
 	unreachable();
 
 
@@ -110,12 +122,15 @@ void ADP_BUILT_IN_MOS::init(const COMPONENT* c)
 	btistress_taken = 0;
 	bti_eff_voltage = 0;
 }
+//*******************************************//
 
 void ADP_BUILT_IN_MOS::tr_stress_last() {
 	// bti here?
 	// not yet
 }
 
+/*--------------------------------------------------------------------------*/
+// MOS8
 /*--------------------------------------------------------------------------*/
 double ADP_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 {
@@ -132,8 +147,6 @@ double ADP_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 }
 /*--------------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS8::tr_accept(){
-
-
 	const DEV_BUILT_IN_MOS* d = prechecked_cast<const DEV_BUILT_IN_MOS*>(owner());
 	assert(d);
 	const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
@@ -185,7 +198,8 @@ void ADP_BUILT_IN_MOS8::tr_accept(){
 					double ig = d->probe_num("ig");
 					hcis = ( Wg/Hg * pow( fabs(ig)/W, mg ) 
 							+ (1-Wg)*Ids/H/W * pow(Isub/fabs(Ids), exponent));
-					trace8( "ADP_BUILT_IN_MOS8::tr_accept pmos", d->long_label(), d->isb, d->idb, W/Hg, Isub, Ids, H, hcis);
+					trace8( "ADP_BUILT_IN_MOS8::tr_accept pmos", d->long_label(),
+							d->isb, d->idb, W/Hg, Isub, Ids, H, hcis);
 					assert(is_number(hcis));
 					break;
 			}

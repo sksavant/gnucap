@@ -1170,7 +1170,6 @@ void COMPONENT::attach_adp(ADP_CARD* a){
     return;
   }
 
-
   if(_adp){
     untested();
     return;

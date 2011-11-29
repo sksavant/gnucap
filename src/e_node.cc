@@ -681,3 +681,33 @@ double	NODE_BASE::tt_probe_num(const std::string& x)const{return tr_probe_num(x)
 XPROBE	NODE_BASE::ac_probe_ext(const std::string&)const{ return XPROBE(0);}
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+NODE_BASE* NODE_BASE::lookup_node(string nodelabel, const CARD_LIST* scope)
+{
+  std::string::size_type dotplace = nodelabel.find_first_of(".");
+  if (dotplace != std::string::npos) {
+    // has a dot, look deeper
+    std::string dev = nodelabel.substr(dotplace+1, std::string::npos);
+    std::string container = nodelabel.substr(0, dotplace);
+    for (CARD_LIST::const_iterator
+        i = scope->begin();  i != scope->end();  ++i) {
+      CARD* card = *i;
+      //         cerr << " Verilog Card Match " << container << " dev "<< dev << " param " << param 
+      //              << " long label " <<  card->long_label()
+      //              << " short label " <<  card->short_label() <<  std::endl;
+      if (card->is_device()
+          && card->subckt()
+          && wmatch(card->short_label(), container)) {
+        trace0( "PROBELIST::add_branches dot cont: " + container + " dev " + dev + " " +
+            card->long_label());
+        return lookup_node(nodelabel, card->subckt());
+      }else{
+      }
+    }
+  }else{ // no dots, look here
+    trace1("PROBELIST::add_branches looking up node ", nodelabel );
+    NODE* node = (*scope).node(nodelabel);
+    return node;
+
+  }
+  return NULL;
+}

@@ -1516,6 +1516,8 @@ bool DEV_BUILT_IN_MOS::do_tr()
   _BTI->q_accept();
 #endif
 //  q_accept();
+//
+// necessary? adp should care for itself.
   adp()->q_accept();
 }
 /*--------------------------------------------------------------------------*/
@@ -1537,6 +1539,7 @@ void DEV_BUILT_IN_MOS::tt_begin() // NOT const
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_stress_last( )
 {
+
   BASE_SUBCKT::tr_stress_last();
   // FIXME (put adp into sckt, or do not call sckt)
   if(adp()) adp()->tr_stress_last();
@@ -1544,6 +1547,7 @@ void DEV_BUILT_IN_MOS::tr_stress_last( )
   const COMMON_COMPONENT* cc = common();
   const MODEL_BUILT_IN_MOS_BASE* m = asserted_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
 
+  // obsolete. aging model in adp?
   m->do_tr_stress_last( this );
 }
 /*--------------------------------------------------------------------------*/
@@ -1781,12 +1785,19 @@ void DEV_BUILT_IN_MOS::stress_apply( )
   const COMMON_BUILT_IN_MOS* c = (const COMMON_BUILT_IN_MOS*) common();
   const MODEL_BUILT_IN_MOS_BASE* m = (const MODEL_BUILT_IN_MOS_BASE*)(c->model());
   assert(m);
-  BASE_SUBCKT::stress_apply();
-  if (adp()){
-    adp()->stress_apply(); // not yet part of subckt
-  }
-  m->do_stress_apply(this);
 
+  // move to adp.
+  if(m->use_bti()){
+    _BTI->stress_apply();
+  }
+  //BASE_SUBCKT::stress_apply();
+
+  if (adp()){
+    adp()->stress_apply(); // not part of subckt
+  }
+
+  // do the hci stuff...
+  m->do_stress_apply(this);
 }
 /*-------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_accept(){
