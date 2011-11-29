@@ -2864,7 +2864,7 @@ private: // nodes / matrix indexes
 
 	// states FIXME
 
- enum EStates_branch_old {
+		enum EStates_branch_old {
         <admst:join select="source[dynamic='yes']" separator=", ">
                 <admst:value-of select="branch/nnode/name"/>
                 <admst:value-of select="branch/pnode/name"/>
@@ -2877,7 +2877,7 @@ private: // nodes / matrix indexes
 
         // we could use plain numbers as identifiers, but what would reduce
         // future flexibility/readability.
-    enum EStates {
+		enum EStates {
 
         <admst:variable name="numddt" select="0"/>
         <admst:for-each select="expression"> 
@@ -2925,7 +2925,7 @@ inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  )
 
 </admst:for-each>
 #endif
-// vim:ts=8:sw=2:et:
+// vim should work with any ts=sw
 </admst:open>
 
 <!-- ************************************************************************************* -->
@@ -2935,7 +2935,7 @@ inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  )
 <admst:template match="ddtcounter">
   <admst:if test="[(adms/datatypename)='function' and name='ddt']">
     <admst:variable name="numddt" select="$numddt+1"/>
-    <admst:text format="      _state_%(adms/id(.)), // %(.)\n"/>
+    <admst:text format="\t\t\t_state_%(adms/id(.)), // %(.)\n"/>
   </admst:if>
 
   <admst:if test="[datatypename='mapply_unary'
@@ -7364,5 +7364,3 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 	
 </admst:template>
 
-<!-- vim:ts=8:sw=2:et: 
--->
