@@ -52,36 +52,59 @@ public:
         name=  cmd.ctos();
         trace1("CMD_NODESET::do_it", name);
 
+        paren -= cmd.skip1b(')');
+
+        if (paren) {itested();
+          cmd.warn(bWARNING, "need )");
+          return;
+        }
+        cmd.skip1b('=');
+        double v;
+        cmd >> v;
+
+        CKT_BASE::_sim->init();
+
+        NODE_BASE* n = NODE_BASE::lookup_node(name, Scope);
+
+        ADP_NODE* a = dynamic_cast<ADP_NODE*>(n);
+        NODE* x = dynamic_cast<NODE*>(n);
+
+        if(x){
+          trace3(" setting node",  x->matrix_number(),  _sim->_vdc[ x->matrix_number()], v);
+          _sim->_vdc[ x->matrix_number() ] = v;
+        } else if(a){
+          incomplete();
+        } else{
+          cmd.warn(bWARNING, " no node "+ name);
+        }
+
+    }else if(what=="a"){
+        CKT_BASE::_sim->init();
+        NODE_BASE* n = NODE_BASE::lookup_node(name, Scope);
+        ADP_NODE* a = dynamic_cast<ADP_NODE*>(n);
+        name=  cmd.ctos();
+
+        paren -= cmd.skip1b(')');
+
+        if (paren) {itested();
+          cmd.warn(bWARNING, "need )");
+          return;
+        }
+        cmd.skip1b('=');
+        double v;
+        cmd >> v;
+
+        if(a){
+          trace3(" setting node",  x->matrix_number(),  _sim->_vdc[ x->matrix_number()], v);
+          a->reset();
+          a->set_tt(v);
+        }
+
+
     }else{
       incomplete();
       assert(false);
 
-    }
-
-    paren -= cmd.skip1b(')');
-
-    if (paren) {itested();
-      cmd.warn(bWARNING, "need )");
-      return;
-    }
-    cmd.skip1b('=');
-    double v;
-    cmd >> v;
-
-    CKT_BASE::_sim->init();
-
-    NODE_BASE* n = NODE_BASE::lookup_node(name, Scope);
-
-    NODE* x = dynamic_cast<NODE*>(n);
-    ADP_NODE* a = dynamic_cast<ADP_NODE*>(n);
-
-    if(x){
-      trace3(" setting node",  x->matrix_number(),  _sim->_vdc[ x->matrix_number()], v);
-      _sim->_vdc[ x->matrix_number() ] = v;
-    } else if(a){
-      incomplete();
-    } else{
-      cmd.warn(bWARNING, " no node "+ name);
     }
 
 
@@ -139,7 +162,8 @@ public:
       if (! CKT_BASE::_sim->_nstat ) return;
       trace2( "save",  CKT_BASE::_sim->_total_nodes , CKT_BASE::_sim->_adp_nodes );
 
-      _out <<  CKT_BASE::_sim->_last_Time << "\n";
+//      _out <<  CKT_BASE::_sim->_last_Time << "\n";
+      _out <<  "\n";
 
       for(ADP_NODE_LIST::const_iterator ii = ADP_NODE_LIST::adp_node_list.begin( );
             ii != ADP_NODE_LIST::adp_node_list.end(); ++ii ) {
