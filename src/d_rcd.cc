@@ -14,6 +14,7 @@
 #include "globals.h"
 #include "e_elemnt.h"
 #include "d_rcd.h"
+#include "u_nodemap.h"
 
 /*--------------------------------------------------------------------------*/
 class ADP_NODE;
@@ -787,7 +788,9 @@ void DEV_BUILT_IN_RCD::expand()
   }
   if (_sim->is_first_expand()) {
     assert (!_Ccgfill);
-    _Ccgfill = scope()->new_adp_node((const COMPONENT*) this, "C");
+    _Ccgfill = prechecked_cast<ADP_NODE*>( scope()->nodes()->new_adp_node("C") );
+    assert(_Ccgfill);
+    _Ccgfill->set_owner(this);
   }
 
 // idee: _Ccgfill:: tr_value <= udc

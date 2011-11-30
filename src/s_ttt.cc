@@ -43,7 +43,7 @@
 #include "e_adp.h"
 #include "e_adplist.h"
 /*--------------------------------------------------------------------------*/
-#define sanitycheck()  assert ( is_almost(  _sim->_Time0 , _Time1 + _sim->_dT0 );\
+#define sanitycheck()  assert ( is_almost(  _sim->_Time0 , _Time1 + _sim->_dT0 ));\
                        assert ( _sim->_Time0 > _Time1 || _sim->tt_iteration_number()==0 );\
                        assert ( _sim->_dT0 == 0 || _sim->tt_iteration_number()!=0 );
 /*--------------------------------------------------------------------------*/
@@ -492,16 +492,21 @@ void TTT::accept_tt()
 //  _sim->_last_Time = _sim->_Time0+_tstop;
 }
 /*--------------------------------------------------------------------------*/
-double TTT::voltage_dT(){
+double TTT::time_by_voltages(){
   // we started at vdc (unchanged), before keep, compare v0<->vdc
 
   double d=0;
   for(unsigned i=1; i<=_sim->_total_nodes; ++i){
-    double delta = fabs(_sim->_v0[i]-_sim->_vdc[i]):
+    double delta = fabs(_sim->_v0[i]-_sim->_vdc[i]);
     double sum = fabs(_sim->_v0[i])+fabs(_sim->_vdc[i]);
+    USE(sum);
 
-    double err = delta - 
+    double err = delta ;
+    USE(err);
   }
+
+  incomplete();
+  return(0);
 
 }
 /*-----------------------------------------------------------*/

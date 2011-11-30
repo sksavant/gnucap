@@ -80,6 +80,7 @@ class TTT : public TRANSIENT {
     double _Time1;
     int    steps_total_tt;
     double behaviour_time();
+    double time_by_voltages();
     double _time_by_adp;
     double _dT_by_adp;
     double _time_by_beh;

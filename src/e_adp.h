@@ -29,6 +29,7 @@ class ADP_NODE: public NODE_BASE {
     //  { init(); _c=cin;  name=std::string(name_in); a=ac; }
     ~ADP_NODE( );
     ADP_NODE( const ADP_NODE& );
+    void set_owner(const CARD* x){_owner=x;}
   private:
     unsigned _number;
   protected:
@@ -256,8 +257,8 @@ class ADP_NODE_UDC : public ADP_NODE {
     ADP_NODE_UDC( const ADP_NODE_UDC& );
     ADP_NODE_UDC( const ADP_NODE& );
 
-    double get_udc() const {return udc;}
-    void set_udc(double x) {udc=x;}
+//    double get_udc() const {return udc;}
+//    void set_udc(double x) {udc=x;}
 
     void tr_expect_1();
     void tr_expect_2();

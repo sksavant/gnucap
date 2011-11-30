@@ -86,8 +86,8 @@ public:
 // necessary?
 class NODE_BASE : public CKT_BASE {
     const CARD_LIST* _parent;
-    const CARD* _owner;
   protected:
+    const CARD* _owner;
     explicit NODE_BASE();
     explicit NODE_BASE(const NODE_BASE& p);
   protected:
