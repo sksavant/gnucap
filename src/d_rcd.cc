@@ -788,9 +788,10 @@ void DEV_BUILT_IN_RCD::expand()
   }
   if (_sim->is_first_expand()) {
     assert (!_Ccgfill);
-    _Ccgfill = prechecked_cast<ADP_NODE*>( scope()->nodes()->new_adp_node("C") );
+    _Ccgfill =
+      scope()->nodes()->new_adp_node("C", this );
     assert(_Ccgfill);
-    _Ccgfill->set_owner(this);
+    //_Ccgfill->set_owner(this);
   }
 
 // idee: _Ccgfill:: tr_value <= udc

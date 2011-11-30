@@ -155,7 +155,7 @@ public:	// tt
   virtual void   tt_commit(){}
   virtual void   tt_accept(){}
 //  virtual void   tt_prepare()           {}
-  virtual void  tt_prepare(){unreachable();}      // older tt_begin
+//  virtual void  tt_prepare(){unreachable();}      // older tt_begin
   virtual void  tt_init_i(){}       // save unstressed parameters
   virtual void	 tr_stress(){}      // calculate stress during tr
   virtual void	 tr_stress_last(){} // calculate stress during tr

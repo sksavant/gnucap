@@ -37,6 +37,7 @@ class CARD;
 class PARAM_LIST;
 class NODE_MAP;
 class NODE;
+class NODE_BASE;
 class LANGUAGE;
 class TIME_PAIR;
 /*--------------------------------------------------------------------------*/
@@ -153,7 +154,7 @@ public:
   CARD_LIST& tt_behaviour_commit();
 
   NODE_MAP*   nodes()const {assert(_nm); return _nm;}
-  NODE*       node(std::string)const;
+  NODE_BASE*       node(std::string)const;
   PARAM_LIST* params();
   PARAM_LIST* params()const;
 

@@ -43,6 +43,7 @@
 #include "d_bti.h"
 #include "e_adp.h"
 #include "e_adplist.h"
+#include "u_nodemap.h" // fixme
 
 /*--------------------------------------------------------------------------*/
 const double NA(NOT_INPUT);
@@ -5173,7 +5174,8 @@ void ADP_BUILT_IN_MOS8::init(const COMPONENT* d)
   // ADP_BUILT_IN_MOS::init(d);
 
   if ( m->use_hci()){
-    hci_node = new ADP_NODE( d, "hci" );
+    assert(!hci_node);
+    hci_node = scope()->nodes()->new_adp_node( "hci", d );
 
     // done in init
     // ADP_NODE_LIST::adp_node_list.push_back( hci_node );

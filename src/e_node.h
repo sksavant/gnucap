@@ -110,6 +110,7 @@ class NODE_BASE : public CKT_BASE {
     const CARD_LIST* scope()const{return _parent;}
 };
 /*--------------------------------------------------------------------------*/
+#define CKT_NODE NODE
 class NODE : public NODE_BASE {
 protected:
   explicit NODE();
@@ -290,7 +291,7 @@ private:
   }
 
 private:
-  NODE* _nnn;
+  CKT_NODE* _nnn;
   unsigned _ttt;	// m == nm[_ttt] if properly set up
   int _m;		// mapped, after reordering
 

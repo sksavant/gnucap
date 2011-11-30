@@ -611,7 +611,7 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_precalc_last(COMMON_COMPONENT* ccmp, const CA
   assert( is_number( cc->_Rc0 ) );
 }
 /*--------------------------------------------------------------------------*/
-ADP_NODE_RCD* MODEL_BUILT_IN_RCD_SYM_V3::new_adp_node(const COMPONENT* c) const
-{
-  return new ADP_NODE_RCD(c);
-}
+//ADP_NODE_RCD* MODEL_BUILT_IN_RCD_SYM_V3::new_adp_node(const COMPONENT* c) const
+//{
+//  return new ADP_NODE_RCD(c);
+//}

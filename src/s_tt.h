@@ -67,6 +67,7 @@ class TTT : public TRANSIENT {
     void	print_stored_results_tt(double); 
     void	power_down(double ); 
   private:
+	 bool conchk() const;
     TRACE _trace;		// enum: show extended diagnostics
     bool _power_down;
     PARAMETER<double> _Tstart;	// unused?

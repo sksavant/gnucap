@@ -561,6 +561,7 @@ void MODEL_BUILT_IN_MOS_BASE::do_tr_stress( const COMPONENT* c ) const
   const COMMON_COMPONENT* cc = c->common();
   const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
   assert(m);
+  untested();
   // ADP_BUILT_IN_MOS* a = (ADP_BUILT_IN_MOS*) c->adp();
   // double dt=  ( _sim->_dt0 );
   //hp_float_t btistress = 0.0; //  m->polarity * ((ELEMENT*)(d->_RCD_bti[0]))->tr_outvolts();

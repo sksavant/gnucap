@@ -39,7 +39,7 @@ class MODEL_BUILT_IN_RCD_SYM_V4 : public MODEL_BUILT_IN_RCD_SYM {
     };
     CARD* clone()const {return new MODEL_BUILT_IN_RCD_SYM_V4(*this);}
     void do_expand( COMPONENT*) const;
-    ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
+//    ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
 //    region_t region(const COMPONENT*) const;
     int  tt_region(const COMPONENT*) const;
     double __Re(double uin, const COMMON_COMPONENT* cc)const;
@@ -472,7 +472,7 @@ void MODEL_BUILT_IN_RCD_SYM_V4::do_precalc_last(COMMON_COMPONENT* ccmp, const CA
   assert( is_number( cc->_Rc0 ) );
 }
 /*--------------------------------------------------------------------------*/
-ADP_NODE_RCD* MODEL_BUILT_IN_RCD_SYM_V4::new_adp_node(const COMPONENT* c) const
-{
-  return new ADP_NODE_RCD(c);
-}
+//ADP_NODE_RCD* MODEL_BUILT_IN_RCD_SYM_V4::new_adp_node(const COMPONENT* c) const
+//{
+//  return new ADP_NODE_RCD(c);
+//}

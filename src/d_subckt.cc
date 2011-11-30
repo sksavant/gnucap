@@ -199,6 +199,7 @@ void DEV_SUBCKT::expand()
   trace1("DEV_SUBCKT::expand renew done", *(subckt()->nodes()));
 
   assert(scope());
+#ifdef DO_TRACE
   for (unsigned i=model->net_nodes() + 1; i <= num_nodes_in_subckt; ++i) {
     // these are the internal nodes.
     string label= (*(model->subckt()->nodes()))[i];
@@ -206,6 +207,7 @@ void DEV_SUBCKT::expand()
     //_n[i].new_sckt_node( label, subckt()); /// BUG? increases total_nodes
     trace3("DEV_SUBCKT::expand internal node", label, long_label(),_sim->_total_nodes);
   }
+#endif
 
 
   subckt()->expand();
@@ -213,20 +215,24 @@ void DEV_SUBCKT::expand()
 //  subckt()->set_(model);
   trace1("",model->subckt());
 // map nodes done. .. //////////////////////////////
+#ifdef DO_TRACE
   for (unsigned i=model->net_nodes() + 1; i <= num_nodes_in_subckt; ++i) {
     // these are the internal nodes.
     string label= (*(model->subckt()->nodes())) [i] ;
  //   _n[i].new_sckt_node( label, subckt());
     trace3("DEV_SUBCKT::expand internal node 2", label, long_label(),_sim->_total_nodes);
   }
+#endif
 
   for (unsigned i=model->net_nodes() ; i < num_nodes_in_subckt; ++i) {
 
+#ifdef DO_TRACE
     string label= (*(model->subckt()->nodes())) [i] ;
-
     trace4("DEV_SUBCKT::expand internal node", i, label, long_label(),  _n[i].t_());
     assert(_n[i].n_());
     trace1("DEV_SUBCKT::expand internal node",  _n[i].n_()->user_number());
+#endif
+
     _n[i].n_()->set_user_number( _n[i].t_());
 
   }

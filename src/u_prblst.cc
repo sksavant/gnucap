@@ -305,10 +305,11 @@ void PROBELIST::add_all_nodes(const std::string& what, const CARD_LIST* scope)
     if ((i->first != "0") ) {
     //if ((i->first != "0") && (i->first.find('.') == std::string::npos)) {
 
-      NODE* node = i->second;
-      assert (node);
-      trace0("PROBELIST::add_all_nodes " + what + " i " + i->second->long_label() );
-      push_new_probe(what, node);
+      NODE* node = dynamic_cast<NODE*>(i->second);
+      if (node){
+        trace0("PROBELIST::add_all_nodes " + what + " i " + i->second->long_label() );
+        push_new_probe(what, node);
+      }
     }else{
     }
 //     if ((i->first != "0") && (i->first.find('.') == std::string::npos)) {
@@ -457,18 +458,19 @@ PROBE* PROBELIST::add_branches(const std::string&device,
               i->second->long_label());
         
           if (i->first != "0") {
-            NODE* node = i->second;
-            assert (node);
-             
-            string paramn(param);
-            if (param=="V?") {
-              paramn="V";
-            }
-              
-            trace0(( "Node match " +  node->short_label()).c_str() );
-            if (wmatch(node->short_label(), device)) {
-              found_something = push_new_probe(paramn, node);
-            }else{
+            CKT_NODE* node = dynamic_cast<CKT_NODE*>(i->second);
+            if (node){
+
+              string paramn(param);
+              if (param=="V?") {
+                paramn="V";
+              }
+
+              trace0(( "Node match " +  node->short_label()).c_str() );
+              if (wmatch(node->short_label(), device)) {
+                found_something = push_new_probe(paramn, node);
+              }else{
+              }
             }
           }else{
           }
@@ -559,7 +561,7 @@ PROBE* PROBELIST::add_branches(const std::string&device,
       // no wild card.  do fast search for one
       { // nodes
         trace0("PROBELIST::add_branches looking up node "+device );
-        NODE* node = (*scope).node(device);
+        CKT_NODE* node = dynamic_cast<CKT_NODE*>((*scope).node(device));
         if (node) {
           found_something = push_new_probe(param, node);
         }else{

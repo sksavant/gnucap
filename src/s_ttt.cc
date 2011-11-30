@@ -220,7 +220,8 @@ void TTT::first_after_interruption(){
 
   outdata_b4(_sim->_Time0);
   CARD_LIST::card_list.tt_next(); // does things with tr history?
-  CARD_LIST::card_list.do_forall( &CARD::tt_prepare ); // lasts==0 hack
+//  CARD_LIST::card_list.do_forall( &CARD::tt_prepare ); // lasts==0 hack
+  //CARD_LIST::card_list.do_forall( &CARD::tt_prepare ); // lasts==0 hack
 
   for (uint_t ii = 1;  ii <= _sim->_total_nodes;  ++ii) {
     _sim->_nstat[_sim->_nm[ii]].set_last_change_time(0);
@@ -264,16 +265,20 @@ void TTT::power_down(double time)
     _sim->_dT0 = 0;
 
     // CARD_LIST::card_list.do_forall( &CARD::stress_apply ); // nicht gut.
-    CARD_LIST::card_list.do_forall( &CARD::tt_prepare ); // lasts==0 hack
+    CARD_LIST::card_list.do_forall( &CARD::tt_begin ); 
     print_results_tt( _sim->_Time0 );
 
     incomplete(); // tr_stress no longer used.
-    CARD_LIST::card_list.do_forall( &CARD::tr_stress ); // better tr_accept??
+    CARD_LIST::card_list.do_forall( &CARD::tr_accept );
     CARD_LIST::card_list.do_forall( &CARD::tr_stress_last );
     CARD_LIST::card_list.do_forall( &CARD::stress_apply );
 
     print_results_tt( _Tstop );
     _sim->_last_Time = _Tstop;
+
+    tt_accept();
+
+    _sim->keep_voltages();
 
 }
 /*--------------------------------------------------------------------------*/
@@ -496,6 +501,7 @@ double TTT::time_by_voltages(){
   // we started at vdc (unchanged), before keep, compare v0<->vdc
 
   double d=0;
+  USE(d);
   for(unsigned i=1; i<=_sim->_total_nodes; ++i){
     double delta = fabs(_sim->_v0[i]-_sim->_vdc[i]);
     double sum = fabs(_sim->_v0[i])+fabs(_sim->_vdc[i]);
@@ -511,14 +517,14 @@ double TTT::time_by_voltages(){
 }
 /*-----------------------------------------------------------*/
 // need to check that boundaries are consistent.
-double TTT::conchk(){
+bool TTT::conchk() const{
 
   double a = OPT::abstol;
   double r = OPT::reltol;
 
   for(unsigned i=1; i<=_sim->_total_nodes; ++i){
-    double delta = fabs(_sim->_v0[i]-_sim->_vdc[i]):
-    double sum = fabs(_sim->_v0[i])+fabs(_sim->_vdc[i]);
+    double n = fabs(_sim->_v0[i]);
+    double o = fabs(_sim->_vdc[i]);
 
     if (std::abs(n-o) > (r * std::abs(n) + a))
       return false;
@@ -543,7 +549,7 @@ bool TTT::review_tt()
   _dT_by_beh = OPT::behreltol/CKT_BASE::tt_behaviour_rel * _sim->_dT0;
   _dT_by_beh = max ( _dT_by_beh, (double) _tstop );
 
-  _dT_by_nodes = voltage_dT();// 1.0 / (1e-20+voltage_distance());
+//  double _dT_by_nodes = time_by_voltages();// 1.0 / (1e-20+voltage_distance());//
 
   _time_by_adp = _Time1 + _dT_by_adp;
   _time_by_beh = _Time1 + _dT_by_beh + 1e9;

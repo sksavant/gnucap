@@ -244,11 +244,13 @@ void SIM_DATA::order_tree( const CARD_LIST* scope, unsigned *c)
   /* node map (external to internal)	*/
 
   for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
+    CKT_NODE* s=dynamic_cast<CKT_NODE*>(i->second );
+    if (!s) continue;
     if (i->first != "0") {
       (*c)++;
-      _nm[ i->second->user_number() ]=*c;
-      trace3("SIM_DATA::order_tree " , i->second->long_label(),
-           i->second->user_number() , *c);
+      _nm[ s->user_number() ]=*c;
+      trace3("SIM_DATA::order_tree " , s->long_label(),
+           s->user_number() , *c);
     }else{
       // _out << "Zero Node  "  << "\n";
     }

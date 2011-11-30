@@ -36,36 +36,75 @@ uint_t ADP_NODE::order() const{
   return( min( (int) _order,(int) CKT_BASE::_sim->get_tt_order() ) );
 } // order used for extrapolation.
 /*----------------------------------------------------------------------------*/
-ADP_NODE::ADP_NODE( const ADP_NODE& p ) :
-  NODE_BASE(p),
-  _number(p._number)
-{
-  unreachable();
-  std::cout << "copy?? (should not happen)\n";
-  assert(false);
-  tr_lo = inf;
-  tr_hi = -inf;
-}
+//ADP_NODE::ADP_NODE( const ADP_NODE& p ) :
+//  // NODE(p),
+//  _number(p._number)
+//{
+//  unreachable();
+//  std::cout << "copy?? (should not happen)\n";
+//  assert(false);
+//  tr_lo = inf;
+//  tr_hi = -inf;
+//}
 /*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-ADP_NODE::ADP_NODE( const COMPONENT* c, const std::string n ) :
+ADP_NODE::ADP_NODE( const std::string n, const COMPONENT* c):
   NODE_BASE(),
   _number(0),
   dbg(0),
   tr_noise(0)
 {
-  trace0("ADP_NODE::ADP_NODE ");
-  init(c,n);
+  trace2("ADP_NODE::ADP_NODE ", n, c->long_label());
+  set_label( c->long_label() + "." + n );
+  tr_value = (0.);
+  tr_noise = 0;
+  dbg=0;
+
+  tt_value = 0.;
+  _delta_expect = 0.;
+  _positive = true; //hack
+  //_debug = 0;
+  _order = 0;
+  _wdT = 0;
+  _rel_tr_err = 0;
+  _rel_tt_err = 0;
+  _abs_tr_err = 0;
+  _abs_tt_err = 0;
+  dbg++;
+
+  _number=_sim->newnode_adp();
+  ADP_NODE_LIST::adp_node_list.push_back( this );
+
+  trace1(("ADP_NODE::init " + long_label()).c_str(), _number );
+
+  // tt_value3=NAN; //FIXME
+  tt_expect=NAN; //FIXME
+  tr_value3=NAN; //FIXME
+
+  // _n[n_ic].new_model_node("." + long_label() + ".ic", this);
   assert(c);
   tr_lo = inf;
   tr_hi = -inf;
 }
 /*----------------------------------------------------------------------------*/
-ADP_NODE_UDC::ADP_NODE_UDC( const COMPONENT* c ) : ADP_NODE(c, "udc") { }
+//ADP_NODE::ADP_NODE( const COMPONENT* c, const std::string n ) :
+//  NODE(),
+//  _number(0),
+//  dbg(0),
+//  tr_noise(0)
+//{
+//  assert(false);
+//  trace0("ADP_NODE::ADP_NODE ");
+//  init(c,n);
+//  assert(c);
+//  tr_lo = inf;
+//  tr_hi = -inf;
+//}
 /*----------------------------------------------------------------------------*/
-ADP_NODE_RCD::ADP_NODE_RCD( const COMPONENT* c ) : ADP_NODE(c, "rcd"), udc(.2)
-{}
+// ADP_NODE_UDC::ADP_NODE_UDC( const COMPONENT* c ) : ADP_NODE(c, "udc") { }
 /*----------------------------------------------------------------------------*/
+// ADP_NODE_RCD::ADP_NODE_RCD( const COMPONENT* c ) : ADP_NODE(c, "rcd"), udc(.2) {}
+/*----------------------------------------------------------------------------*/
+// obsolete
 void ADP_NODE::init(const COMPONENT* c, const std::string name_in){
   set_label( c->long_label() + "." +  name_in );
   tr_value = (0.);
@@ -873,7 +912,7 @@ void ADP_NODE::tt_commit( )
   // sets _delta_expect and tt_expect
   if(!is_number( tr1()) && CKT_BASE::_sim->tt_iteration_number()>=2 )
   {
-    error(bDANGER,"ADP_NODE::tt_commit history broken %s, step %i\n", long_label().c_str(), _sim->tt_iteration_number());
+    error(bDANGER,"ADP_NODE::tt_commit history broken %s, %i, step %i\n", long_label().c_str(), m_(), _sim->tt_iteration_number());
     assert(false);
   }
   tr_expect_();

@@ -40,8 +40,10 @@ d_bjt.model d_diode.model d_diode2.model
 D_SRCS = \
 d_admit.cc d_cap.cc d_cccs.cc d_ccvs.cc d_coil.cc \
 d_cs.cc d_poly_g.cc d_poly_cap.cc d_res.cc d_switch.cc \
-d_trln.cc d_vcg.cc d_vcr.cc d_vcvs.cc d_vs.cc d_vcvs2.cc \
+d_trln.cc d_vcg.cc d_vcr.cc d_vcvs.cc d_vs.cc  \
 d_rcd.cc d_bti.cc  d_branchvs.cc
+
+#d_vcvs2.cc 
 
 
 RAW_HDRS=
@@ -55,10 +57,10 @@ lib_LTLIBRARIES=
 #D_SRCS += d_vvp.cc extlib.cc
 #endif
 
+D_IVL_DEV =  d_invert.cc d_clock.cc  d_latch.cc d_lfsr.cc  
+
 D_IVL = d_ivl_base.cc d_ivl_ports.cc \
-			 d_invert.cc d_clock.cc \
-		  	 d_latch.cc d_lfsr.cc  \
-			 e_ivl_compile.cc
+			 e_ivl_compile.cc $(D_IVL_DEV)
 
 
 D_IVL_O = $(D_IVL:%.cc=%.o)
@@ -132,7 +134,6 @@ u_prblst.cc u_probe.cc u_sim_data.cc u_xprobe.cc \
 s__init.cc s__out.cc s__solve.cc \
 d_subckt.cc d_logic.cc d_logicmod.cc \
 e_base.cc e_card.cc e_node.cc e_model.cc e_compon.cc \
-e_homebrew.cc \
 e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc e_adplist.cc\
 bm_value.cc bm.cc \
 c__cmd.cc c_attach.cc c_file.cc c_genrat.cc c_debug.cc \
@@ -151,7 +152,7 @@ u_cardst.h u_function.h u_lang.h u_limit.h u_nodemap.h u_opt.h u_parameter.h \
 u_prblst.h u_probe.h u_sim_data.h u_sdp.h u_status.h u_time_pair.h u_xprobe.h \
 s__.h s_tr.h e_adp.h s_tt.h\
 e_base.h e_card.h e_node.h e_aux.h e_model.h e_compon.h e_subckt.h \
-e_homebrew.h e_adplist.h \
+e_adplist.h \
 e_elemnt.h e_ccsrc.h e_storag.h e_cardlist.h \
 d_coment.h d_dot.h d_logic.h d_subckt.h \
 bm.h \
@@ -267,7 +268,7 @@ iverilog-info:
 
 # $(IVERILOG_PREFIX)/lib/ivl/gc.tgt
 
-%.cc : %.v
+$(D_IVL_DEV): %.cc : %.v
 	$(IVL) -tgc $< -o $@
 
 endif

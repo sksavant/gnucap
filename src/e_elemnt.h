@@ -160,9 +160,7 @@ public:
   virtual  COMPLEX ac_involts()const		= 0;
   virtual  COMPLEX ac_amps()const;
   virtual void tt_next() ;// !const
-  virtual void tt_prepare(){
-	  COMPONENT::tt_prepare();
-  }
+//  virtual void tt_prepare(){ COMPONENT::tt_prepare(); }
 
   virtual int order()const		{return OPT::trsteporder;}
   virtual double error_factor()const	{return OPT::trstepcoef[OPT::trsteporder];}

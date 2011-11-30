@@ -589,7 +589,7 @@ void node_t::set_to_ground(CARD* d)
 
   NODE_MAP* Map = d->scope()->nodes();
   assert(Map);
-  _nnn = (*Map)["0"];
+  _nnn = dynamic_cast<CKT_NODE*>((*Map)["0"]);
   _ttt = 0;
   assert(_nnn);
 }
@@ -609,7 +609,7 @@ void node_t::new_node(const std::string& node_name, const CARD* d)
 
   NODE_MAP* Map = d->scope()->nodes();
   assert(Map);
-  _nnn = Map->new_node(node_name);
+  _nnn = (CKT_NODE*) Map->new_node(node_name);
   trace2("node_t::new_node", node_name, _nnn->user_number());
   _ttt = _nnn->user_number();
   assert(_nnn);
@@ -623,7 +623,7 @@ void node_t::new_node(const std::string& node_name, const CARD_LIST* scope)
 
   NODE_MAP* Map = scope->nodes();
   assert(Map);
-  _nnn = Map->new_node(node_name, scope);
+  _nnn = (CKT_NODE*) Map->new_node(node_name, scope);
   _ttt = _nnn->user_number();
   assert(_nnn);
 }
@@ -705,7 +705,7 @@ NODE_BASE* NODE_BASE::lookup_node(string nodelabel, const CARD_LIST* scope)
     }
   }else{ // no dots, look here
     trace1("PROBELIST::add_branches looking up node ", nodelabel );
-    NODE* node = (*scope).node(nodelabel);
+    NODE_BASE* node = (*scope).node(nodelabel);
     return node;
 
   }

@@ -1,6 +1,7 @@
 
 //#include "d_mos.h"
 #include "d_mos8.h"
+#include "u_nodemap.h" // fixme?
 
 // aging helpers.
 // alpha version
@@ -51,8 +52,9 @@ void ADP_BUILT_IN_MOS::stress_apply() {
 	const DEV_BUILT_IN_MOS* d = asserted_cast<const DEV_BUILT_IN_MOS*>(owner());
 	const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
 	const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
+	USE(m);
 
-	bti_stress->set_tt(0.5);
+	bti_stress->set_tt(0); // not in use (yet?)
 
 }
 /*--------------------------------------------------------------------------*/
@@ -103,7 +105,8 @@ void ADP_BUILT_IN_MOS::init(const COMPONENT* c)
 
 	assert(bti_stress == 0);
 	if( m->use_bti()){
-		bti_stress = new ADP_NODE( c, "bti" );
+		bti_stress = 
+      scope()->nodes()->new_adp_node("BTI", c );
 	} 
 	// ADP_NODE_LIST::adp_node_list.push_back( bti_stress );
 
@@ -144,6 +147,18 @@ double ADP_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 		return ADP_BUILT_IN_MOS::tt_probe_num(x);
 	}
 		return -1;
+}
+/*--------------------------------------------------------------------------*/
+void ADP_BUILT_IN_MOS::tr_accept(){
+	const DEV_BUILT_IN_MOS* d = prechecked_cast<const DEV_BUILT_IN_MOS*>(owner());
+	assert(d);
+	const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
+	const MODEL_BUILT_IN_MOS_BASE* m = asserted_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
+	if(m->use_bti()){
+		assert(bti_stress);
+		bti_stress->set_tt(0); // not in use (yet?)
+		bti_stress->set_tr(0); // not in use (yet?)
+	}
 }
 /*--------------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS8::tr_accept(){
@@ -214,6 +229,7 @@ void ADP_BUILT_IN_MOS8::tr_accept(){
 		//    a->hci_node->add_tr( hcis );
 
 	} // end hci
+
 
 	q_eval();
 }

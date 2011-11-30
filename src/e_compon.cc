@@ -1139,14 +1139,14 @@ void COMPONENT::tr_do_behaviour(){
 
 
 /*--------------------------------------------------------------------------*/
-void COMPONENT::tt_prepare(){
-
-  if(_amps==NULL){
-    _amps = (double*) malloc(sizeof (double) * net_nodes() * TRANSIENT::steps_total_out() );
-    _amps[0]=8888;
-    trace0( "COMPON::tt_accept amps " + short_label() );
-  }
-}
+//void COMPONENT::tt_prepare(){
+//
+//  if(_amps==NULL){
+//    _amps = (double*) malloc(sizeof (double) * net_nodes() * TRANSIENT::steps_total_out() );
+//    _amps[0]=8888;
+//    trace0( "COMPON::tt_accept amps " + short_label() );
+//  }
+//}
 /*--------------------------------------------------------------------------*/
 void COMPONENT::tt_accept()
 {

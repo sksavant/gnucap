@@ -149,9 +149,6 @@ class ADMS_BASE : public BASE_SUBCKT {
 		virtual  COMPLEX ac_involts()const		= 0;
 		virtual  COMPLEX ac_amps()const;
 		virtual void tt_next() ;// !const
-		virtual void tt_prepare(){
-			COMPONENT::tt_prepare();
-		}
 
 		int param_count()const {return (0 + COMPONENT::param_count());}
 	protected:

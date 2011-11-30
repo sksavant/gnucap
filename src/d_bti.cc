@@ -994,7 +994,7 @@ void DEV_BUILT_IN_BTI::expand()
       if (!_Ubti) {
         const CARD* p ;
         if (!m->is_v2()){
-          p = device_dispatcher["vcvs2"];
+          p = device_dispatcher["vcvs"];
           if (m->uref==NOT_INPUT )
             Ubti_par=1;
           else
@@ -1175,12 +1175,12 @@ void DEV_BUILT_IN_BTI::tt_commit() { unreachable();
   subckt()->do_forall( &CARD::tt_commit ); // sort of tt_prepare?
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_BTI::tt_prepare() {
-  trace0("DEV_BUILT_IN_BTI::tt_prepare");
-  //FIXME, subckt default
-  //        RCD reicht!
-  subckt()->do_forall( &CARD::tt_prepare ); // sort of tt_prepare?
-}
+//void DEV_BUILT_IN_BTI::tt_prepare() {
+//  trace0("DEV_BUILT_IN_BTI::tt_prepare");
+//  //FIXME, subckt default
+//  //        RCD reicht!
+//  subckt()->do_forall( &CARD::tt_prepare ); // sort of tt_prepare?
+//}
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_BTI::stress_apply() {
   itested();

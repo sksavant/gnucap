@@ -32,7 +32,7 @@ class MODEL_BUILT_IN_RCD_SYM : public MODEL_BUILT_IN_RCD {
     };
     virtual CARD* clone()const {return new MODEL_BUILT_IN_RCD_SYM(*this);}
     void do_expand( COMPONENT*) const;
-    ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
+//    ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
 //    region_t region(const COMPONENT*) const;
     int  tt_region(const COMPONENT*) const;
     virtual double P(const COMPONENT*) const;

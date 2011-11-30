@@ -221,7 +221,7 @@ CARD_LIST& CARD_LIST::map_nodes()
   return *this;
 }
 /*--------------------------------------------------------------------------*/
-NODE* CARD_LIST::node(string s) const{
+NODE_BASE* CARD_LIST::node(string s) const{
   const COMPONENT* o = dynamic_cast<const COMPONENT*>(owner());
   const CARD_LIST* scope = _origin;
   trace1("CARD_LIST::node",s);
@@ -230,9 +230,9 @@ NODE* CARD_LIST::node(string s) const{
     trace1("CARD_LIST::node have an origin scope " + s, scope->nodes()->how_many() );
     trace1("",scope);
 
-    NODE* n = scope->node(s);
+    NODE_BASE* n = scope->node(s);
     if(n){
-      uint_t nn = n->user_number();
+      uint_t nn = 0; // n->user_number();
       trace1("CARD_LIST::node found " + s, nn);
       node_t* N = &(o->n_(nn));
       assert(N);
@@ -248,7 +248,7 @@ NODE* CARD_LIST::node(string s) const{
 
   trace0("CARD_LIST::node falling back to nodes " + s);
   NODE_MAP* NM=nodes();
-  NODE* ret = (*NM)[s];
+  NODE_BASE* ret = (*NM)[s];
   trace1("CARD_LIST::node ", hp(ret));
   return(ret);
 }
@@ -471,15 +471,6 @@ CARD_LIST& CARD_LIST::tt_begin()
   return *this;
 }
 /*--------------------------------------------------------------------------*/
-CARD_LIST& CARD_LIST::tt_prepare()
-{
-  for (iterator ci=begin(); ci!=end(); ++ci) {
-    trace_func_comp();
-    (**ci).tt_prepare();
-  }
-  return *this;
-}
-/*--------------------------------------------------------------------------*/
 TIME_PAIR CARD_LIST::tt_review()
 {
   TIME_PAIR time_by;
@@ -649,7 +640,7 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
         //untested();
 	// for each remaining node in card_list
         // these are the internal nodes.
-        string label = (*(model->subckt()->nodes())) [i] ;
+        string label = (*(model->subckt()->nodes())) [i] ; // HACK!
         assert(this);
         unsigned k = CKT_BASE::_sim->_total_nodes;
         owner->n_(i-1).new_sckt_node( label, this); // this correct??

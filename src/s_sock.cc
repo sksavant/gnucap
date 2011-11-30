@@ -495,11 +495,13 @@ void SOCK::fillnames( const CARD_LIST* scope){
   const NODE_MAP * nm = scope->nodes();
   for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
     if (i->first != "0") {
-      stringstream s;
-      string myname(i->second->long_label());
 
-      var_namen_arr[i->second->matrix_number()-1] = myname;
-      var_namen_total_size = static_cast<uint16_t>( var_namen_total_size + static_cast<uint16_t>(myname.length()) + 1 );
+      if (const NODE* a= dynamic_cast<const NODE*>(i->second)){
+        stringstream s;
+        string myname(a->long_label());
+        var_namen_arr[a->matrix_number()-1] = myname;
+        var_namen_total_size = static_cast<uint16_t>( var_namen_total_size + static_cast<uint16_t>(myname.length()) + 1 );
+      }
 
     }else{
       // _out << "Zero Node  "  << "\n";

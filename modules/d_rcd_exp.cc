@@ -36,7 +36,7 @@ class MODEL_BUILT_IN_RCD_EXP : public MODEL_BUILT_IN_RCD_SYM {
     };
     CARD* clone()const {return new MODEL_BUILT_IN_RCD_EXP(*this);}
     void do_expand( COMPONENT*) const;
-    ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
+//    ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
 //    region_t region(const COMPONENT*) const;
     double P( const COMPONENT* brh) const;
   private:
@@ -556,9 +556,9 @@ double MODEL_BUILT_IN_RCD_EXP::P( const COMPONENT* brh) const
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-ADP_NODE_RCD* MODEL_BUILT_IN_RCD_EXP::new_adp_node(const COMPONENT* c) const
-{
-  return new ADP_NODE_RCD(c);
-}
+//ADP_NODE_RCD* MODEL_BUILT_IN_RCD_EXP::new_adp_node(const COMPONENT* c) const
+//{
+//  return new ADP_NODE_RCD(c);
+//}
 
 // vim:ts=8:sw=2:et:

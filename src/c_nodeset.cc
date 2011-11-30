@@ -192,8 +192,14 @@ void CMD_DUMP::printv( OMSTREAM _out, const CARD_LIST* scope){
   for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
     if (i->first != "0") {
       stringstream s;
-      _out << ".nodeset v(" << i->second->long_label() << ")="
-       << setw(8) <<  CKT_BASE::_sim->_vdc[i->second->matrix_number()] <<"\n";
+      _out << ".nodeset v(" << i->second->long_label() << ")=";
+
+      if(CKT_NODE* s=dynamic_cast<CKT_NODE*>(i->second)){
+        _out  << setw(8) <<  CKT_BASE::_sim->_vdc[s->matrix_number()];
+      
+      }
+     _out <<"\n";
+
     }else{
       // _out << "Zero Node  "  << "\n";
     }
