@@ -55,6 +55,7 @@ void ADP_BUILT_IN_MOS::stress_apply() {
 	USE(m);
 
 	bti_stress->set_tt(0); // not in use (yet?)
+	bti_stress->set_tr(0); // not in use (yet?)
 
 }
 /*--------------------------------------------------------------------------*/
@@ -253,7 +254,7 @@ double ADP_BUILT_IN_MOS8::tr_probe_num(const std::string& x)const
 
 }
 /*--------------------------------------------------------------------------*/
-void ADP_BUILT_IN_MOS8::tt_begin()  // FIXME: tt_begin
+void ADP_BUILT_IN_MOS8::tt_begin() 
 {
 	const DEV_BUILT_IN_MOS* d = asserted_cast<const DEV_BUILT_IN_MOS*>(owner());
 	const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
@@ -289,6 +290,12 @@ void ADP_BUILT_IN_MOS8::tr_stress_last() {
 
 		hci_node->tt() += _hci_tr; // tt at last_Time.
 		hci_node->set_tr(double(_hci_tr/_sim->_last_time)); 
+
+		if(!_sim->_last_time){
+			assert(_sim->phase() == p_PD);
+			hci_node->set_tr(0);
+		}
+		assert(is_number(hci_node->tr()));
 		hci_node->set_tr_noise(0 );
 		trace2("ADP_BUILT_IN_MOS8::tr_stress_last", hci_node->tt(), _hci_tr);
 		_hci_tr = 0;
@@ -308,26 +315,39 @@ void ADP_BUILT_IN_MOS8::stress_apply() {
 
 	if (m->use_hci()){
 
-
-		//		_last_Time is end of last Timeframe
-
 		double eff_now = hci_node->tr( _sim->_Time0 ); // fixme: faster?
 		double eff_last_timeframe = hci_node->tr( _sim->_last_Time  ); 
 
 		double ex_time =  _sim->_dT0 - _sim->_last_time; // stress that long
 
+		if(_sim->phase() == p_PD){
+			ex_time = 0;
+		}
+
+		//		_last_Time is end of last Timeframe
+
+		assert(ex_time>=0);
+
 		// stress is integral_{ex_time}  eff1
 
 		double fill_new =  hci_node->tt1(); // tt @ last_Time (?)
+
+		// order>1?
 		fill_new += ex_time * (  eff_last_timeframe + eff_now ) / 2.0 ;
+
+		if(_sim->phase() == p_PD) {
+			//hack
+			 fill_new =  hci_node->tt1();
+		}
+
+
+		assert(is_number(fill_new));
 
 		hci_node->tt() = 0;
 		hci_node->tt() = (double) fill_new;
 		assert(!_hci_tr);
 
 		vthdelta_hci = pow(hci_node->tt(),0.3);
-
-		
 	}
 	q_eval();
 }

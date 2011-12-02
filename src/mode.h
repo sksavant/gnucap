@@ -64,10 +64,11 @@ enum SIM_PHASE { // which of the many steps...
   p_DC_SWEEP,	/* DC analysis sweep, in progress		*/
   p_TRAN, 	/* transient, in progress			*/
   p_AC, 	/* plain AC analysis    			*/
+  p_PD,  	/* powerdown			*/
   p_RESTORE	/* transient restore after stop			*/
 };
 const std::string SIM_PHASE_label[] = {"NONE", "INIT_DC", "DC_SWEEP", "TRAN", 
-  "AC", "RESTORE"};
+  "AC", "RESTORE", "POWERDOWN"};
 
 template<class T>
 inline T& operator<<(T& o, SIM_PHASE t) {

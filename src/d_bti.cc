@@ -939,6 +939,7 @@ bool DEV_BUILT_IN_BTI::do_tr() { // untested0(long_label().c_str());
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_BTI::expand()
 {
+  trace0("DEV_BUILT_IN_BTI::expand");
   BASE_SUBCKT::expand(); // calls common->expand, attaches model
   assert(_n);
   assert(common());

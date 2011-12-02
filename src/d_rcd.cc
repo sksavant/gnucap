@@ -770,6 +770,7 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p)
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::expand()
 {
+  trace0("DEV_BUILT_IN_RCD::expand");
   BASE_SUBCKT::expand(); // calls common->expand, attaches model
   assert(_n);
   assert(common());
@@ -788,8 +789,8 @@ void DEV_BUILT_IN_RCD::expand()
   }
   if (_sim->is_first_expand()) {
     assert (!_Ccgfill);
-    _Ccgfill =
-      scope()->nodes()->new_adp_node("C", this );
+    _Ccgfill = subckt()->nodes()->new_adp_node("C", this );
+    trace1("DEV_BUILT_IN_RCD::expand have new adpnode", hp(_Ccgfill));
     assert(_Ccgfill);
     //_Ccgfill->set_owner(this);
   }
@@ -1233,7 +1234,7 @@ long double MODEL_BUILT_IN_RCD::__step(long double uin, long double cur,  double
 {
   cout << "v3\n";
   if (!is_number(uin)){
-    error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress no number %E ", uin);
+    error(bDANGER, "DEV_BUILT_IN_RCD:: no number %E ", uin);
     throw(Exception("no number in __step"));
   }
 
@@ -1305,7 +1306,12 @@ void DEV_BUILT_IN_RCD::stress_apply()
 
   assert(_sim->_time0 == 0 || _sim->_mode==s_TRAN ); //?
 
-  trace2("DEV_BUILT_IN_RCD::stress_apply ",  _sim->_dT0, _Ccgfill->tt() );
+  trace4("DEV_BUILT_IN_RCD::stress_apply ",  _sim->_dT0, _Ccgfill->tt(), _sim->_Time0, _Ccgfill->tr() );
+  if(_sim->phase() == p_PD){
+    untested();
+    _Ccgfill->tr() =0; // check: what is tr()?
+  }
+
   
   if(_sim->_dT0==0){
     _tr_fill = _Ccgfill->tt();
@@ -1313,8 +1319,8 @@ void DEV_BUILT_IN_RCD::stress_apply()
   }
   double Time1 = _sim->_Time0 - _sim->_dT0;
 
-  trace4("DEV_BUILT_IN_RCD::stress_apply ", _sim->_Time0, _sim->_dT0,
-      tt_iteration_number(), _sim->_Time0);
+  trace5("DEV_BUILT_IN_RCD::stress_apply ", _sim->_Time0, _sim->_dT0,
+      tt_iteration_number(), _sim->_Time0, _sim->_time0);
   trace4("DEV_BUILT_IN_RCD::stress_apply ", 
       _Ccgfill->tr() , _Ccgfill->tr(_sim->_Time0 ), _Ccgfill->order(), _sim->_time0);
 
@@ -1323,7 +1329,9 @@ void DEV_BUILT_IN_RCD::stress_apply()
       error(bDANGER, "DEV_BUILT_IN_RCD::tr_stress !almost tr1 %E tr(T1) %E \n",
           _Ccgfill->tr1() , _Ccgfill->tr(Time1) );
   } 
-  assert ( is_almost( _Ccgfill->tr() , _Ccgfill->tr_rel(_sim->_dT0 + _sim->_time0) ));
+  assert(is_number(_Ccgfill->tr_rel(_sim->_dT0 )));
+
+
   long double E_old = _Ccgfill->tt1();
   long double eff   = _Ccgfill->tr();
   if(m->positive) eff= max(eff,0.0L);
@@ -1379,7 +1387,7 @@ void MODEL_BUILT_IN_RCD_NET::do_stress_apply( COMPONENT*  ) const
 {
 }
 ///*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_RCD::tr_stress() // called from accept
+void DEV_BUILT_IN_RCD::tr_stress()
 {
   const DEV_BUILT_IN_RCD* rcd = this;
   double h = _sim->_dt0;
@@ -1391,12 +1399,16 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
   assert(c->sdp());
   assert(_Ccgfill);
 
-  trace2("DEV_BUILT_IN_RCD::tr_stress " + long_label(), _sim->_time0, lasts );
+  trace3("DEV_BUILT_IN_RCD::tr_stress " + long_label(), _sim->_time0, lasts, hp(_Ccgfill) );
 
   if( _sim->_time0 > lasts ){
     lasts = _sim->_time0;
   }else {
     trace1("DEV_BUILT_IN_RCD::tr_stress again?? bug??", _sim->_time0 );
+
+    error(bDANGER,"DEV_BUILT_IN_RCD::tr_stress unequal now: %E lasts: %E at %E\n",
+          _sim->_time0, lasts, _sim->_Time0 );
+
     if (! (_sim->_time0 == lasts) ){
 
       error(bDANGER,"DEV_BUILT_IN_RCD::tr_stress unequal now: %E lasts: %E at %E\n",
@@ -1413,6 +1425,10 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
     assert( _Ccgfill->tr_lo == inf );
     assert( _Ccgfill->tr_hi == -inf );
     // assert !tran_dynamic()?
+
+    _Ccgfill->tr_lo = min(involts(), _Ccgfill->tr_lo);
+    _Ccgfill->tr_hi = max(involts(), _Ccgfill->tr_hi);
+
   } else { // do not update tr_lo, tr_hi. could be wrong!
 
     // assert tran_dynamic()?
@@ -1433,6 +1449,13 @@ void DEV_BUILT_IN_RCD::tr_stress() // called from accept
       assert(false);
       throw(Exception("boundary error in " + long_label()));
     }
+  }
+
+  ADP_NODE* _c=_Ccgfill;
+  if(_sim->phase()==p_PD){
+        assert(!_c->tr_lo);
+        assert(!_c->tr_hi);
+
   }
 
   if (!h) {
@@ -1539,33 +1562,29 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
   assert(m);
   assert(c->sdp());
 
+  if( _sim->phase()==p_PD){
+        assert(!_c->tr_lo);
+        assert(!_c->tr_hi);
+  }
+
   if(m->positive){
         _c->tr_lo = max(.0,_c->tr_lo);
         _c->tr_hi = max(.0,_c->tr_hi);
   } 
   assert( _c->tr_lo <= _c->tr_hi );
-  if(m->use_net()){
-    assert(false);
-    incomplete();
-    _tr_fill = ((ELEMENT*)_Ccg)->tr_involts();
 
-
-    trace3("DEV_BUILT_IN_RCD::tr_stress_last n ", _Ccgfill->get_tt(),
-        _Ccgfill->get_tr(), _Ccgfill->get_total() );
-  }else{
-    trace3("DEV_BUILT_IN_RCD::tr_stress_last s ", _Ccgfill->get_tt(),
-        _Ccgfill->get_tr(), _Ccgfill->get_total() );
-    // fixme. move to common.
-    assert(is_number(_tr_fill));
-    try{
-      // calculate udc
-      m->do_tr_stress_last(_tr_fill,_Ccgfill, this);
-    }catch( Exception &e) {
-      error(bDANGER, "%s\n", long_label().c_str());
-      throw(e);
-    }
-    assert(is_number(_tr_fill));
+  trace3("DEV_BUILT_IN_RCD::tr_stress_last s ", _Ccgfill->get_tt(),
+      _Ccgfill->get_tr(), _Ccgfill->get_total() );
+  // fixme. move to common.
+  assert(is_number(_tr_fill));
+  try{
+    // calculate udc
+    m->do_tr_stress_last(_tr_fill,_Ccgfill, this);
+  }catch( Exception &e) {
+    error(bDANGER, "%s\n", long_label().c_str());
+    throw(e);
   }
+  assert(is_number(_tr_fill));
 
   double uin_eff = cap->tr(); 
 
@@ -1595,6 +1614,8 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
   // assert( cap->tr_hi > cap->tr() || fabs( cap->tr() - cap->tr_hi ) < OPT::abstol || fabs((cap->tr() - cap->tr_hi)/ cap->tr_hi  ) < OPT::reltol );
   // assert( cap->tr_lo < cap->tr() || fabs( cap->tr() - cap->tr_lo ) < OPT::abstol || fabs((cap->tr() - cap->tr_lo)/ cap->tr()  ) < OPT::reltol );
 
+  assert(is_number(cap->tr()));
+  //
   // tt_value not needed for rollback.
   _Ccgfill->set_tt(double(_tr_fill));
 }
@@ -1645,6 +1666,8 @@ void DEV_BUILT_IN_RCD::tt_begin()  {
   _Ccgfill->set_tt(c->_zero);  // tt_load??
   _Ccgfill->set_tr(-inf);
 
+  _Ccgfill->tr_lo = inf;
+  _Ccgfill->tr_hi = -inf;
 
   const MODEL_BUILT_IN_RCD* m = asserted_cast<const MODEL_BUILT_IN_RCD*>(c->model());
   m->do_tt_prepare(this);

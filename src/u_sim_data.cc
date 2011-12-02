@@ -453,8 +453,9 @@ void SIM_DATA::update_tt_order()
 }
 /*--------------------------------------------------------------------------*/
 uint_t SIM_DATA::get_tt_order() const {
-	assert (_tt_order <= tt_iteration_number());
-	return _tt_order;
+  trace2("SIM_DATA::get_tt_order", iteration_number(), tt_iteration_number());
+  assert (_tt_order <= tt_iteration_number());
+  return _tt_order;
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

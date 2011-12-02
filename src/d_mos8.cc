@@ -5230,8 +5230,8 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply( COMPONENT* brh) const
 {
 
   // BUG: put into adp.
+  trace2("MODEL_BUILT_IN_MOS8::do_stress_apply", brh->long_label(), _sim->_Time0);
   deprecated();
-  trace1("MODEL_BUILT_IN_MOS8::do_stress_apply", brh->long_label());
 
   // obsolete? maybe not.
   MODEL_BUILT_IN_MOS_BASE::do_stress_apply(brh);
@@ -5249,7 +5249,12 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply( COMPONENT* brh) const
  // double H = .0001;
 
   if(use_hci()){
-    assert(is_number( a->hci_node->tt() ));
+    assert(a->hci_node);
+    if(!is_number( a->hci_node->tt() )){
+
+      error(bDANGER, "!is_number tt, %E %E %i %i %i\n", _sim->_time0, _sim->_Time0, _sim->tt_iteration_number(),  a->hci_node->m_(),(int) hp(_sim->_tt) );
+      assert(is_number( a->hci_node->tt() ));
+    }
     assert(is_number(a->delta_vth));
     a->vthscale_hci = 1; //  exp ( 10000. * a->hci_node->get() / c->w_in );
     a->vthdelta_hci = polarity * pow( a->hci_node->tt() , 0.3 );

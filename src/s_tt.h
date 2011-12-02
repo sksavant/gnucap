@@ -60,7 +60,8 @@ class TTT : public TRANSIENT {
     void	head_tt(double,double,const std::string&);
     void	set_step_tt_cause(STEP_CAUSE);
     void	first();
-    void  first_after_interruption();
+    void after_interruption_prep();
+    void first_after_interruption();
     void	fohead(const PROBE&);
     void	store_results(double); // override virtual
     void	store_results_tt(double); 

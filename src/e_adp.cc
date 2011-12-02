@@ -885,7 +885,6 @@ void ADP_NODE::tt_commit_first( )
   _integrator = 0;
   _corrector = 0;
 
-
   tt_first_time = CKT_BASE::_sim->_Time0;
   assert(_delta_expect != HUGE_VAL );
 }
@@ -913,7 +912,7 @@ void ADP_NODE::tt_commit( )
   if(!is_number( tr1()) && CKT_BASE::_sim->tt_iteration_number()>=2 )
   {
     error(bDANGER,"ADP_NODE::tt_commit history broken %s, %i, step %i\n", long_label().c_str(), m_(), _sim->tt_iteration_number());
-    assert(false);
+    assert( is_number( tr1()) || CKT_BASE::_sim->tt_iteration_number()<2   );
   }
   tr_expect_();
 

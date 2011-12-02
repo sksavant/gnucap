@@ -181,7 +181,7 @@ public:
     _out.outreset();
   }
 } p2;
-DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "nodedump", &p2);
+DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "nodedump|dumpnodes", &p2);
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 }
