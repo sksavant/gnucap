@@ -1290,7 +1290,7 @@ long double MODEL_BUILT_IN_RCD::__step(long double uin, long double cur,  double
 //   void tr_queue_eval()      {if(tr_needs_eval()){q_eval();}}
 ///*--------------------------------------------------------------------------*/
 //
-// tt_load...
+// do this at begin of timeframe.
 void DEV_BUILT_IN_RCD::stress_apply()
 {
   assert(_n);
@@ -1309,10 +1309,10 @@ void DEV_BUILT_IN_RCD::stress_apply()
   trace4("DEV_BUILT_IN_RCD::stress_apply ",  _sim->_dT0, _Ccgfill->tt(), _sim->_Time0, _Ccgfill->tr() );
   if(_sim->phase() == p_PD){
     untested();
-    _Ccgfill->tr() =0; // check: what is tr()?
+    _Ccgfill->tr() = 0; // check: what is tr()?
+                        // maybe extrapolated tr by ADP_NODE::tt_commit?
   }
 
-  
   if(_sim->_dT0==0){
     _tr_fill = _Ccgfill->tt();
     return;
@@ -1369,7 +1369,6 @@ void DEV_BUILT_IN_RCD::stress_apply()
 
   assert(is_number(_tr_fill));
   assert(is_number(fill_new));
-  assert(is_number(_tr_fill));
 
   trace3("DEV_BUILT_IN_RCD::stress_apply", eff, _tr_fill, _sim->tt_iteration_number() );
 
@@ -1428,6 +1427,8 @@ void DEV_BUILT_IN_RCD::tr_stress()
 
     _Ccgfill->tr_lo = min(involts(), _Ccgfill->tr_lo);
     _Ccgfill->tr_hi = max(involts(), _Ccgfill->tr_hi);
+
+    // _Ccgfill->set_tr(_Ccgfill->tt());
 
   } else { // do not update tr_lo, tr_hi. could be wrong!
 
@@ -1678,6 +1679,8 @@ void DEV_BUILT_IN_RCD::tt_begin()  {
 ///*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::tr_begin(){
   BASE_SUBCKT::tr_begin();
+
+  // _tr_fill = _Ccgfill->tt();??
 
   q_accept();
 }

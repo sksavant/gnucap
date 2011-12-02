@@ -919,7 +919,6 @@ void ADP_NODE::tt_commit( )
 
   // this is before sweep....
   assert( CKT_BASE::_sim->_last_time >0 );
-
   assert( tt_value == tt_value );
   assert( tt_value >=0 || !_positive );
   // tr_value will be printed as "tr"

@@ -349,6 +349,10 @@ void ADP_BUILT_IN_MOS8::stress_apply() {
 
 		vthdelta_hci = pow(hci_node->tt(),0.3);
 	}
+	if(m->use_bti()){
+		 bti_stress->set_tt(0); //unused node
+		 bti_stress->set_tr(0); //unused node
+	}
 	q_eval();
 }
 /*------------------------------------------------------------------*/
