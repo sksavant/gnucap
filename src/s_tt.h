@@ -4,6 +4,7 @@
 
 #include "s_tr.h"
 #include "u_probe.h"
+#include "u_prblst.h"
 
 namespace TT {
 
@@ -34,7 +35,7 @@ class TTT : public TRANSIENT {
     explicit TTT(const TTT&): 
       TRANSIENT(),
       _trace(tNONE),
-      _Tstart(0.), // ?? unused?
+      _Tstart(0.),
       _Tstop(0.),
       _Tstep(0.),
       _timesteps(0),
@@ -97,6 +98,7 @@ class TTT : public TRANSIENT {
     bool   _accepted_tt;
     COMPLEX** _fdata_tt;	/* storage to allow postprocessing */
     double*   _tt_store;
+	 PROBELIST oldstore; //save tr_store (which is abused for caching/measurements)
 }; // TTT : TRANSIENT
 
 }

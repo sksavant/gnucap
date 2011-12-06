@@ -159,7 +159,7 @@ public:
   virtual  hp_float_t  tr_amps()const;
   virtual  COMPLEX ac_involts()const		= 0;
   virtual  COMPLEX ac_amps()const;
-  virtual void tt_next() ;// !const
+  virtual void tt_advance() ;// !const
 //  virtual void tt_prepare(){ COMPONENT::tt_prepare(); }
 
   virtual int order()const		{return OPT::trsteporder;}

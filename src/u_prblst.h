@@ -49,7 +49,7 @@ public:
   void	  remove_list(CS&);
   void     remove_one(CKT_BASE*);
   void push_probe(PROBE*);
-  void merge_probe(PROBE*);
+  PROBE* merge_probe(PROBE*&);
 
   PROBE*     add_list(CS& cmd)
   { return add_list( cmd, &CARD_LIST::card_list ); }

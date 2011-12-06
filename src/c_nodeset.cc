@@ -95,11 +95,13 @@ public:
         cmd >> v;
 
         if(a){
-          trace3(" setting node",  x->matrix_number(),  _sim->_vdc[ x->matrix_number()], v);
+//          trace3(" setting node",  x->matrix_number(),  _sim->_vdc[ x->matrix_number()], v);
           a->reset();
           a->set_tt(v);
+        }else{
+          cmd.warn(bWARNING, "no adpnode?)");
+          return;
         }
-
 
     }else{
       incomplete();
@@ -112,9 +114,14 @@ public:
 } p1;
 DISPATCHER<CMD>::INSTALL d1(&command_dispatcher, "nodeset", &p1);
 /*--------------------------------------------------------------------------*/
+enum NODETYPE {
+  nCKT = 1,
+  nADP = 2
+};
+
 class CMD_DUMP : public CMD {
   void dump(CS&, OMSTREAM out, CARD_LIST*);
-  void printv( OMSTREAM _out, const CARD_LIST* scope);
+  void printv( OMSTREAM _out, const CARD_LIST* scope, unsigned what=nCKT);
 public:
   void do_it(CS& cmd, CARD_LIST* Scope)
   {
@@ -186,7 +193,7 @@ DISPATCHER<CMD>::INSTALL d2(&command_dispatcher, "nodedump|dumpnodes", &p2);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/
-void CMD_DUMP::printv( OMSTREAM _out, const CARD_LIST* scope){
+void CMD_DUMP::printv( OMSTREAM _out, const CARD_LIST* scope, unsigned what){
 
   const NODE_MAP * nm = scope->nodes();
   for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
@@ -194,9 +201,11 @@ void CMD_DUMP::printv( OMSTREAM _out, const CARD_LIST* scope){
       stringstream s;
       _out << ".nodeset v(" << i->second->long_label() << ")=";
 
-      if(CKT_NODE* s=dynamic_cast<CKT_NODE*>(i->second)){
-        _out  << setw(8) <<  CKT_BASE::_sim->_vdc[s->matrix_number()];
-      
+
+      CKT_NODE* N=dynamic_cast<CKT_NODE*>(i->second);
+
+      if(N && (what & nCKT) ){
+        _out  << setw(8) <<  CKT_BASE::_sim->_vdc[N->matrix_number()];
       }
      _out <<"\n";
 
@@ -209,7 +218,7 @@ void CMD_DUMP::printv( OMSTREAM _out, const CARD_LIST* scope){
     const COMPONENT* s = dynamic_cast<const COMPONENT*>(*i);
     if ((*i)->is_device())
     if (s->subckt()) {
-      _out << "-" << s->long_label() <<"\n";
+      _out << "* -" << s->long_label() <<"\n";
       printv(_out,s->subckt());
     }
   }

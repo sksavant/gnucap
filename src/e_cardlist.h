@@ -149,8 +149,7 @@ public:
   CARD_LIST& tt_begin();
   TIME_PAIR tt_review();
   CARD_LIST& tt_advance();
-  CARD_LIST& tt_next();
-  CARD_LIST& tt_prepare();
+  CARD_LIST& tt_prepare(); // wech
   CARD_LIST& tt_behaviour_commit();
 
   NODE_MAP*   nodes()const {assert(_nm); return _nm;}

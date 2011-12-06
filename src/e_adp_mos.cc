@@ -314,6 +314,7 @@ void ADP_BUILT_IN_MOS8::stress_apply() {
 	const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
 
 	if (m->use_hci()){
+		// FIXME: use adp_node for extrapolation... ??
 
 		double eff_now = hci_node->tr( _sim->_Time0 ); // fixme: faster?
 		double eff_last_timeframe = hci_node->tr( _sim->_last_Time  ); 
@@ -330,21 +331,23 @@ void ADP_BUILT_IN_MOS8::stress_apply() {
 
 		// stress is integral_{ex_time}  eff1
 
-		double fill_new =  hci_node->tt1(); // tt @ last_Time (?)
+		double hci_new =  hci_node->tt1(); // tt @ last_Time (?)
 
 		// order>1?
-		fill_new += ex_time * (  eff_last_timeframe + eff_now ) / 2.0 ;
+		hci_new += ex_time * (  eff_last_timeframe + eff_now ) / 2.0 ;
 
 		if(_sim->phase() == p_PD) {
 			//hack
-			 fill_new =  hci_node->tt1();
+			 hci_new =  hci_node->tt1();
+		} 
+
+		if (!is_number(hci_new)){
+			error(bDANGER, "mos8 stress_apply Time0 %E last %E ordr %i \n", _sim->_Time0, _sim->_last_Time, hci_node->order() );
+			assert(is_number(hci_new));
 		}
 
-
-		assert(is_number(fill_new));
-
 		hci_node->tt() = 0;
-		hci_node->tt() = (double) fill_new;
+		hci_node->tt() = (double) hci_new;
 		assert(!_hci_tr);
 
 		vthdelta_hci = pow(hci_node->tt(),0.3);

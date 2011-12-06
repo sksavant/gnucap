@@ -268,12 +268,17 @@ void PROBELIST::push_probe( PROBE* p )
   bag.push_back(p);
 }
 /*--------------------------------------------------------------------------*/
-void PROBELIST::merge_probe( PROBE* m )
+PROBE* PROBELIST::merge_probe( PROBE* &m )
 {
   for( iterator p = begin(); p!=end(); p++) {
-    if( (*m) == (**p) ) return;
+    if( (*m) == (**p) ) {
+      if (m != *p) delete(m);
+      m=*p;
+      return *p;
+    }
   }
   bag.push_back(m);
+  return m;
 }
 /*--------------------------------------------------------------------------*/
 PROBE* PROBELIST::push_new_probe(const std::string& param,const CKT_BASE* object)

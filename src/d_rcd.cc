@@ -15,6 +15,7 @@
 #include "e_elemnt.h"
 #include "d_rcd.h"
 #include "u_nodemap.h"
+#include <iomanip>
 
 /*--------------------------------------------------------------------------*/
 class ADP_NODE;
@@ -1070,10 +1071,9 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
       return  ( _n[n_ic].v0() - _n[n_b].v0() ) * c->_weight * c->_wcorr;
     } else
       return _Ccgfill->get_total() * c->_weight * c->_wcorr;
+  }else if (Umatch(x, "tt ")) {
+      return (double)_Ccgfill->tt();
   }else if (Umatch(x, "fill ")) {
-    if (m->use_net())
-      return _n[n_ic].v0() - _n[n_b].v0();
-    else
       return (double)_tr_fill;
   }else if (Umatch(x, "v{c} ")) {
     if (m->use_net())
@@ -1109,8 +1109,11 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   //
   // FIXME 
 
-  if (Umatch(x, "vw{v} |dvth "))
+  if (Umatch(x, "vw{v} "))
   { unreachable(); // deprecated
+    return  ( P() );
+  } else if (Umatch(x, "dvth "))  {
+    unreachable(); //dep
     return  ( P() );
   } else if (Umatch(x, "P "))  {
     return P();
@@ -1310,7 +1313,8 @@ void DEV_BUILT_IN_RCD::stress_apply()
   if(_sim->phase() == p_PD){
     untested();
     _Ccgfill->tr() = 0; // check: what is tr()?
-                        // maybe extrapolated tr by ADP_NODE::tt_commit?
+                        // probably extrapolated/guessed tr by ADP_NODE::tt_commit?
+                        // why not use tr(0) and leave tr alone?
   }
 
   if(_sim->_dT0==0){
@@ -1319,10 +1323,8 @@ void DEV_BUILT_IN_RCD::stress_apply()
   }
   double Time1 = _sim->_Time0 - _sim->_dT0;
 
-  trace5("DEV_BUILT_IN_RCD::stress_apply ", _sim->_Time0, _sim->_dT0,
-      tt_iteration_number(), _sim->_Time0, _sim->_time0);
-  trace4("DEV_BUILT_IN_RCD::stress_apply ", 
-      _Ccgfill->tr() , _Ccgfill->tr(_sim->_Time0 ), _Ccgfill->order(), _sim->_time0);
+  trace5("DEV_BUILT_IN_RCD::stress_apply ", _sim->_Time0, _sim->_dT0, tt_iteration_number(), _sim->_Time0, _sim->_time0);
+  trace4("DEV_BUILT_IN_RCD::stress_apply ", _Ccgfill->tr() , _Ccgfill->tr(_sim->_Time0 ), _Ccgfill->order(), _sim->_time0);
 
   if (! ( is_almost( _Ccgfill->tr1() , _Ccgfill->tr(Time1) )))
   {
@@ -1333,10 +1335,8 @@ void DEV_BUILT_IN_RCD::stress_apply()
 
 
   long double E_old = _Ccgfill->tt1();
-  long double eff   = _Ccgfill->tr();
-  if(m->positive) eff= max(eff,0.0L);
+  // cout << setprecision(30) << _sim->_Time0 << " " << E_old << "\n";
 
-  assert (is_number(eff));
   assert (is_number(E_old));
 
   long double fill_new  = E_old;
@@ -1345,8 +1345,6 @@ void DEV_BUILT_IN_RCD::stress_apply()
   double ex_time = _sim->_dT0 - _sim->_last_time;
   assert(ex_time = _sim->_last_Time);
 
-  assert ( eff >= 0 || !m->positive);
-  fill_new = m->__step( eff , fill_new, ex_time, c );
 
   long double eff1 = _Ccgfill->tr( Time1 + ex_time/3.0 );
   long double eff2 = _Ccgfill->tr( Time1 + ex_time*2.0/3.0 );
@@ -1362,15 +1360,19 @@ void DEV_BUILT_IN_RCD::stress_apply()
   fill_new2 = m->__step( eff2, fill_new2, ex_time/2.0, c );
   assert(is_number(fill_new2));
 
+  if(ex_time<1e-18){
+    assert(is_almost(double(fill_new2) , double (E_old)));
+  }
+
 
   fill_new = fill_new2;
 
-  trace4("DEV_BUILT_IN_RCD::stress_apply ", fill_new, E_old, eff, fill_new-_tr_fill );
+  trace3("DEV_BUILT_IN_RCD::stress_apply ", fill_new, E_old, fill_new-_tr_fill );
 
   assert(is_number(_tr_fill));
   assert(is_number(fill_new));
 
-  trace3("DEV_BUILT_IN_RCD::stress_apply", eff, _tr_fill, _sim->tt_iteration_number() );
+  trace2("DEV_BUILT_IN_RCD::stress_apply", _tr_fill, _sim->tt_iteration_number() );
 
 //  hp_float_t fv = (hp_float_t) _tr_fill;
 
@@ -1412,7 +1414,7 @@ void DEV_BUILT_IN_RCD::tr_stress()
 
       error(bDANGER,"DEV_BUILT_IN_RCD::tr_stress unequal now: %E lasts: %E at %E\n",
           _sim->_time0, lasts, _sim->_Time0 );
-      throw(Exception("time mismatch in " + long_label()));
+      throw(Exception("time mismatch in %s: time0: %f lasts: %f " , long_label().c_str(), _sim->_time0, lasts));
     }
     return;
   }
@@ -1487,8 +1489,6 @@ void DEV_BUILT_IN_RCD::tr_stress()
     }
   }
 
-  if( m->use_net()) { incomplete(); return; }
-  // m->do_tr_stress(this);
   /*----------------------------------------------------------------------------*/
 
   long double fill=_tr_fill;
@@ -1534,6 +1534,8 @@ void DEV_BUILT_IN_RCD::tr_stress()
 
   _tr_fill = newfill;
   trace5("DEV_BUILT_IN_RCD::tr_stress ", fill, h, (newfill-fill)/h, newfill, h );
+
+  assert(_tr_fill<1.001);
 
   assert(is_number(_tr_fill));
   assert(h > 0);
@@ -1642,6 +1644,7 @@ void DEV_BUILT_IN_RCD::tt_commit() { unreachable();
 ///*--------------------------------------------------------------------------*/
 //
 // tt_begin??
+// // probably nonsense. move to tt_advance/tt_begin
 void DEV_BUILT_IN_RCD::tt_prepare()
 {
   unreachable();
@@ -1673,6 +1676,7 @@ void DEV_BUILT_IN_RCD::tt_begin()  {
   const MODEL_BUILT_IN_RCD* m = asserted_cast<const MODEL_BUILT_IN_RCD*>(c->model());
   m->do_tt_prepare(this);
 
+  lasts = -inf;
   q_eval();
 
 }
@@ -1806,7 +1810,7 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
           Edu, Euin, E, fu, delta_u);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter s=%i%i%i%i%i putres=%i\n",
           A, B, C, D, U, putres);
-      throw(Exception("does not converge: %s\n", dd->long_label().c_str()));
+      throw(Exception("does not converge in [%f,%f]: %s\n", dd->long_label().c_str(), bound_lo, bound_hi  ));
       break;
     }
     if(!is_number(uin)){
@@ -1941,13 +1945,11 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
       deltaE, df_fres, Edu, E, E_old);
   trace5("COMMON_BUILT_IN_RCD::__uin_iter done", (E-Euin), ustart,i, putres, delta_u );
 
-
-
   assert(uin>=-0.001 || !m->positive);
   return uin;
 }
 /*-----------------*/
-void DEV_BUILT_IN_RCD::tt_next(){
+void DEV_BUILT_IN_RCD::tt_advance(){
   lasts = -inf;
   _Ccgfill->tr_hi = -inf;
   _Ccgfill->tr_lo = inf;

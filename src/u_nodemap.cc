@@ -125,7 +125,7 @@ CKT_NODE* NODE_MAP::new_node(std::string s, const CARD_LIST* p)
   // increments how_many() when lookup fails (new s)  
   if (!node) {
     node = new CKT_NODE(s, how_many(), p);
-    trace2("NODE_MAP::new_node", s, node->user_number());
+    //trace2("NODE_MAP::new_node", s, node->user_number());
     //                 ^^^^ is really the map number of the new node
     _node_map[s] = dynamic_cast<NODE_BASE*>( node);
   }

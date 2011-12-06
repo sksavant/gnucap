@@ -94,7 +94,7 @@ protected: // override virtual
 
   virtual void	tt_begin() { assert(subckt()); subckt()->tt_begin( );}  
   //                  why   ^^^^^^^^^^^^^^ ? ( .subctk ) !
-  virtual void	  tt_next()      { assert(subckt()); subckt()->tt_next( );}
+  virtual void	tt_advance() { assert(subckt()); subckt()->tt_advance( );}
   virtual void	tt_commit() 
          { assert(subckt()); subckt()->do_forall( &CARD::tt_commit );}
   virtual void	tt_accept() // !const (beh)

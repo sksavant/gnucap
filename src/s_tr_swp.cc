@@ -62,10 +62,12 @@ void TRANSIENT::sweep()
   _sim->set_inc_mode_bad();
  
   if ( _inside_tt ) {
+    trace0("TRANSIENT::sweep inside tt");
     assert(  _sim->_mode == s_TTT );
 
     _sim->restore_voltages();
     CARD_LIST::card_list.do_tr();
+
   } else if ( _cont ) {  // use the data from last time
     _sim->_phase = p_RESTORE;
     _sim->restore_voltages();
@@ -83,7 +85,7 @@ void TRANSIENT::sweep()
     trace0("TRAN: more UIC now ");
     advance_time();
     _sim->zero_voltages();
-    CARD_LIST::card_list.do_tr();    //evaluate_models
+    CARD_LIST::card_list.do_tr();
     while (!_sim->_late_evalq.empty()) {itested(); //BUG// encapsulation violation
       _sim->_late_evalq.front()->do_tr_last();
       _sim->_late_evalq.pop_front();

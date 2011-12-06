@@ -111,8 +111,9 @@ protected:
   bool _tt_cont;	// 
   bool _inside_tt;// hack: tell tr_swp to not reinit circuit
   //int _stepno;		// count of visible (saved) steps
-private:
+protected:
   TRACE _trace;		// enum: show extended diagnostics
+private:
   double _time_by_iteration_count;
   double _time_by_user_request;
   double _time_by_error_estimate;
