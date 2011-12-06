@@ -764,8 +764,6 @@ void TTT::unallocate()
 	PROBELIST* transtore = &PROBE_LISTS::store[s_TRAN];
 
 	transtore->clear();
-
-
 	// insert previous store probes
 	for (PROBELIST::const_iterator p=oldstore.begin();
 			p!=oldstore.end(); ++p) {

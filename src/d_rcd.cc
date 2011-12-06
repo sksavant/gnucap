@@ -1333,24 +1333,23 @@ void DEV_BUILT_IN_RCD::stress_apply()
   } 
   assert(is_number(_Ccgfill->tr_rel(_sim->_dT0 )));
 
-
   long double E_old = _Ccgfill->tt1();
   // cout << setprecision(30) << _sim->_Time0 << " " << E_old << "\n";
 
   assert (is_number(E_old));
 
+  cout << setprecision(20) << E_old << "\n";
+
   long double fill_new  = E_old;
   long double fill_new2 = E_old;
 
   double ex_time = _sim->_dT0 - _sim->_last_time;
-  assert(ex_time = _sim->_last_Time);
-
+  // assert(ex_time = _sim->_last_Time);
 
   long double eff1 = _Ccgfill->tr( Time1 + ex_time/3.0 );
   long double eff2 = _Ccgfill->tr( Time1 + ex_time*2.0/3.0 );
-  if(m->positive) eff1= max(eff1,0.0L);
-  if(m->positive) eff2= max(eff2,0.0L);
-
+  if(m->positive) eff1 = max(eff1,0.0L);
+  if(m->positive) eff2 = max(eff2,0.0L);
 
 //  better 2 steps.
   assert ( eff1 >= 0 || !m->positive);
@@ -1376,12 +1375,11 @@ void DEV_BUILT_IN_RCD::stress_apply()
 
 //  hp_float_t fv = (hp_float_t) _tr_fill;
 
-  {
-    assert(is_number(fill_new));
-    _Ccgfill->tt() = (double) fill_new;
-    _tr_fill = fill_new;
-    trace2("DEV_BUILT_IN_RCD::stress_apply done ", fill_new, _tr_fill );
-  }
+  assert(is_number(fill_new));
+  _Ccgfill->tt() = (double) fill_new;
+  _tr_fill = fill_new;
+  trace2("DEV_BUILT_IN_RCD::stress_apply done ", fill_new, _tr_fill );
+
 }
 ///*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_RCD_NET::do_stress_apply( COMPONENT*  ) const
