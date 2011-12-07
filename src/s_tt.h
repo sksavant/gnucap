@@ -100,6 +100,7 @@ class TTT : public TRANSIENT {
     COMPLEX** _fdata_tt;	/* storage to allow postprocessing */
     double*   _tt_store;
 	 PROBELIST oldstore; //save tr_store (which is abused for caching/measurements)
+	 void probeexpand();
 }; // TTT : TRANSIENT
 
 }

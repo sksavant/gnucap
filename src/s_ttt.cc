@@ -392,7 +392,6 @@ void TTT::sweep_tt()
 	_sim->_tt_iter = 0;
 	_sim->_tt_done = 0;
 
-	//end fixme
 	head_tt(_tstart, _tstop, "TTime");
 	assert( _sim->_mode  == s_TTT );
 	assert( _sim->_Time0 >= 0 );
@@ -702,6 +701,31 @@ void TTT::do_it(CS& Cmd, CARD_LIST* Scope)
 	::status.total.stop();
 }
 /*--------------------------------------------------------------------------*/
+void TTT::probeexpand()
+{
+	PROBELIST* transtore = &PROBE_LISTS::store[s_TRAN];
+
+	PROBELIST measstore;
+	for (PROBELIST::const_iterator
+			p=printlist().begin();  p!=printlist().end();  ++p) {
+		MEAS_PROBE* w = dynamic_cast<MEAS_PROBE*>(*p);
+		if(w){
+			w->expand(); // FIXME precalc!
+			string probe_name = w->probe_name;
+			CS* c = new CS(CS::_STRING,probe_name);
+			measstore.add_list(*c);
+			delete c;
+		}
+	}
+
+// merge some more measure nodes.
+	for (PROBELIST::const_iterator p=measstore.begin();
+			p!=measstore.end();  ++p) {
+		PROBE* x=((*p)->clone());
+		transtore->merge_probe(x);
+	}
+}
+/*--------------------------------------------------------------------------*/
 /* allocate:  allocate space for tt
 */
 void TTT::allocate()
@@ -718,7 +742,6 @@ void TTT::allocate()
 		oldstore.push_probe((*p)->clone());
 	}
 	PROBE_LISTS::store[s_TRAN].clear();
-
 
 	_sim->_mode=s_TRAN;
 
@@ -737,6 +760,8 @@ void TTT::allocate()
 	}
 
 	_sim->_mode = s_TTT;
+
+	probeexpand();
 
 }
 /*--------------------------------------------------------------------------*/
@@ -934,13 +959,10 @@ bool TTT::next()
 void TTT::head_tt(double start, double stop, const std::string& col1)
 {
 	trace2("TTT::head_tt", start, stop);
-	SIM_MODE oldmode = _sim->_mode;
 	_sim->_mode=s_TTT;
 	PROBELIST* transtore = &PROBE_LISTS::store[s_TRAN];
 
-	PROBELIST measstore;
-
-
+	print_tr_probe_number = printlist().size();
 
 
 	if (!plopen(start, stop, plotlist())) {
@@ -954,43 +976,14 @@ void TTT::head_tt(double start, double stop, const std::string& col1)
 
 		for (PROBELIST::const_iterator
 				p=printlist().begin();  p!=printlist().end();  ++p) {
-			MEAS_PROBE* w = dynamic_cast<MEAS_PROBE*>(*p);
-			if(w){
-				w->expand(); // FIXME precalc!
-				string probe_name = w->probe_name;
-				CS* c = new CS(CS::_STRING,probe_name);
-				measstore.add_list(*c);
-				delete c;
-			}
-
-		}
-		for (PROBELIST::const_iterator
-				p=printlist().begin();  p!=printlist().end();  ++p) {
 			_out.form(format, ' ', (*p)->label().c_str());
+			if ( !(--print_tr_probe_number) ) break;
 		}
 		_out << '\n';
 
 	}else{
 	}
 	_sim->_mode=s_TRAN;
-
-
-	print_tr_probe_number = printlist().size();
-
-
-//	for (PROBELIST::const_iterator p=oldstore.begin();
-//			p!=oldstore.end();  ++p) {
-//		PROBE* x=((*p)->clone());
-//		transtore->merge_probe(x);
-//	}
-//
-//
-// merge some more measure nodes. FIXME. not here...
-	for (PROBELIST::const_iterator p=measstore.begin();
-			p!=measstore.end();  ++p) {
-		PROBE* x=((*p)->clone());
-		transtore->merge_probe(x);
-	}
 
 
 	trace3("TTT::tt_head probe TRAN", printlist().size(), storelist().size(), oldstore.size());
@@ -1004,7 +997,6 @@ void TTT::head_tt(double start, double stop, const std::string& col1)
 		(*p)->precalc_last();
 		_sim->_mode=s_TTT;
 	}
-	_sim->_mode = oldmode;
 }
 /*--------------------------------------------------------------------------*/
 /* SIM::head: initialize waves
