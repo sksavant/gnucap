@@ -1556,8 +1556,20 @@ void DEV_BUILT_IN_MOS::tr_stress( )
   assert(false); // use_tr_accept!
 }
 /*--------------------------------------------------------------------------*/
+void DEV_BUILT_IN_MOS::tt_advance()
+{
+  unreachable();
+  if (adp())
+    adp()->tt_advance();
+
+
+  // FIXME (put adp into sckt, or something)
+//  BASE_SUBCKT::tt_next();
+}
+/*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tt_next( )
 {
+  unreachable(); // obsolete.
   if (adp())
     adp()->tt_next();
 

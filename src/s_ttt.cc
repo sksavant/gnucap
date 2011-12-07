@@ -247,7 +247,6 @@ void TTT::first_after_interruption(){
 		do_initial_dc();
 		outdata_b4(_sim->_Time0);
 	}else{
-		trace1("TTT::first_after_interruption initdc",);
 		//do_initial_dc();
 		outdata_b4(_sim->_Time0);
 	}
@@ -296,7 +295,6 @@ void TTT::power_down(double until)
 	_sim->force_tt_order(0);
 	double time = until-_sim->_last_Time;
 	trace2("TTT::power_down... ", _sim->_last_Time, until);
-	_sim->_phase = p_PD;
 
 	/// only if _cont?
 	//
@@ -339,6 +337,9 @@ void TTT::power_down(double until)
 	for(unsigned i=0; i<_sim->_adp_nodes;i++ ){
 		trace2("TTT::power_down... ",i, _sim->_tr[i]);
 	}
+
+	// NOW do the powerdown.
+	_sim->_phase = p_PD;
 
 	_sim->zero_some_voltages();
 

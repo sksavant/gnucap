@@ -54,8 +54,10 @@ void ADP_BUILT_IN_MOS::stress_apply() {
 	const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
 	USE(m);
 
-	bti_stress->set_tt(0); // not in use (yet?)
-	bti_stress->set_tr(0); // not in use (yet?)
+	if (m->use_bti()){
+		bti_stress->set_tt(0); // not in use (yet?)
+		bti_stress->set_tr(0); // not in use (yet?)
+	}
 
 }
 /*--------------------------------------------------------------------------*/
@@ -321,11 +323,11 @@ void ADP_BUILT_IN_MOS8::stress_apply() {
 
 		double ex_time =  _sim->_dT0 - _sim->_last_time; // stress that long
 
+		if(fabs(ex_time)<=1e-18) ex_time=0;
+
 		if(_sim->phase() == p_PD){
 			ex_time = 0;
 		}
-
-		//		_last_Time is end of last Timeframe
 
 		assert(ex_time>=0);
 
@@ -333,16 +335,25 @@ void ADP_BUILT_IN_MOS8::stress_apply() {
 
 		double hci_new =  hci_node->tt1(); // tt @ last_Time (?)
 
+		if (!is_number(hci_new)){
+			error(bDANGER, "ADP_BUILT_IN_MOS8::stress_apply hci hist bug Time0 %E last %E ordr %i \n", _sim->_Time0, _sim->_last_Time, hci_node->order() );
+			assert(is_number(hci_new));
+		}
+
 		// order>1?
-		hci_new += ex_time * (  eff_last_timeframe + eff_now ) / 2.0 ;
+		if(hci_node->order()>0)
+			hci_new += ex_time * (  eff_last_timeframe + eff_now ) / 2.0 ;
+		else
+			hci_new += ex_time * (  eff_now ) ;
+
 
 		if(_sim->phase() == p_PD) {
-			//hack
+			//hack ?
 			 hci_new =  hci_node->tt1();
 		} 
 
 		if (!is_number(hci_new)){
-			error(bDANGER, "mos8 stress_apply Time0 %E last %E ordr %i \n", _sim->_Time0, _sim->_last_Time, hci_node->order() );
+			error(bDANGER, "mos8 stress_apply Time0 %E last %E ordr %i, %f, ex_time %f eff_now %f \n", _sim->_Time0, _sim->_last_Time, hci_node->order(), hci_node->tt1(), ex_time, eff_now  );
 			assert(is_number(hci_new));
 		}
 

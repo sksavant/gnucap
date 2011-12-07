@@ -42,10 +42,14 @@ void TRANSIENT::setup(CS& Cmd)
 
   _cont = true;
   if (Cmd.match1("'\"({") || Cmd.is_pfloat()) {
+    trace0("TRANSIENT::setup parsing args");
     PARAMETER<double> arg1, arg2, arg3;
     Cmd >> arg1;
+    arg1.e_val(0.0,_scope);
     if (Cmd.match1("'\"({") || Cmd.is_float()) {
       Cmd >> arg2;
+      arg2.e_val(0.0,_scope);
+
     }else{itested();
     }
     if (Cmd.match1("'\"({") || Cmd.is_float()) {
@@ -201,7 +205,7 @@ void TRANSIENT::options(CS& Cmd)
       || _out.outset(Cmd)
       ;
   }while (Cmd.more() && !Cmd.stuck(&here));
-  Cmd.check(bWARNING, "what's this?");
+  Cmd.check(bWARNING, "TRopt what's this?");
 
   IO::plotout = (ploton) ? IO::mstdout : OMSTREAM();
   initio(_out);

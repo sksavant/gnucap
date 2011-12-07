@@ -284,6 +284,7 @@ private:
   void stress_apply();
   void tt_prepare( ){unreachable();}
   void tt_next( ); //NOT const?
+  void tt_advance( ); //NOT const
 public:
   virtual void tt_commit( ); //NOT const
 protected:
