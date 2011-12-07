@@ -1563,8 +1563,8 @@ void DEV_BUILT_IN_MOS::tt_advance()
     adp()->tt_advance();
 
 
-  // FIXME (put adp into sckt, or something)
-//  BASE_SUBCKT::tt_next();
+  // tt_advance also resets time[] in elements.
+  BASE_SUBCKT::tt_advance();
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tt_next( )

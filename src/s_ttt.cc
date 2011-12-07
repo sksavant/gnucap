@@ -161,8 +161,6 @@ void TTT::first()
 	_sim->_Time0 = _Tstart; //  _Time_by_user_request;
 	assert(_sim->_Time0 >= 0 );
 
-	trace0("TTT::first no prepare...");
-	// CARD_LIST::card_list.do_forall( &CARD::tt_prepare );
 	advance_Time();
 
 	_sim->set_command_tt();
@@ -513,7 +511,7 @@ void TTT::sweep_tt()
 void TTT::sweep() // tr sweep wrapper.
 {
 	_sim->_mode = s_TRAN;
-	trace1("TTT::sweep", storelist().size() );
+	trace2("TTT::sweep", storelist().size() , _sim->tt_iteration_number());
 	for ( int i = storelist().size(); i --> 0; ) _sim->_waves[i].initialize();
 	_sim->_mode = s_TTT;
 
@@ -915,6 +913,8 @@ bool TTT::next()
 
 	_sim->restore_voltages();
 
+	trace0("praparing nodes nodes");
+
 	for (uint_t ii = 1;  ii <= _sim->_total_nodes;  ++ii) {
 		_sim->_nstat[_sim->_nm[ii]].set_last_change_time(0);
 		_sim->_nstat[_sim->_nm[ii]].store_old_last_change_time();
@@ -1300,9 +1300,11 @@ void TTT::store_results(double x)
 void TTT::advance_Time(void)
 {
 	trace0("TTT::advance_Time() .. ");
-	CARD_LIST::card_list.tt_advance(); // fixme: merge to tt_adv.
-	trace0("TTT::advance_Time() done tt_next");
 	::status.tt_advance.start();
+
+	CARD_LIST::card_list.tt_advance();
+	trace0("TTT::advance_Time() done tt_advance");
+
 	static double last_iter_time;
 	_sim->_time0 = 0.;
 	if (_sim->_Time0 > 0) {
@@ -1315,14 +1317,6 @@ void TTT::advance_Time(void)
 			_sim->_tt_rejects = 0;
 			_sim->update_tt_order();
 
-//			if ( _trace > 0 )
-//				_out << "* advance_Time to " << _sim->_Time0 << 
-//					" iteration number " << _sim->tt_iteration_number() << 
-//					" have "<<  _sim->_adp_nodes << " nodes " << "\n";
-
-			//trace2("TTT::advance_Time ", _sim->_tr[0], _sim->_tt[0]);
-			//trace2("TTT::advance_Time ", _sim->_tr1[0], _sim->_tt1[0]);
-
 			notstd::copy_n(_sim->_tr2, _sim->_adp_nodes, _sim->_tr3);
 			notstd::copy_n(_sim->_tr1, _sim->_adp_nodes, _sim->_tr2);
 			notstd::copy_n(_sim->_tr, _sim->_adp_nodes, _sim->_tr1);
@@ -1333,8 +1327,6 @@ void TTT::advance_Time(void)
 			std::fill_n(_sim->_tr, _sim->_adp_nodes, NAN);
 			std::fill_n(_sim->_tt, _sim->_adp_nodes, NAN);
 
-			//ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_advance ); // HACK!
-			//CARD_LIST::card_list.tt_advance(); //necessary??
 			trace3("TTT::advance_Time ", _sim->_tr[0], _sim->_tt[0], _sim->_Time0);
 			trace2("TTT::advance_Time ", _sim->_tr1[0], _sim->_tt1[0]);
 
@@ -1342,12 +1334,7 @@ void TTT::advance_Time(void)
 			assert(is_number(_sim->_tt1[0]));
 
 		}else{				/* moving backward */
-		//	if (_trace>5 )
-		//		_out << "* advance_Time back " << _sim->_Time0 << "  "<<last_iter_time<<" \n";
-			/* don't save voltages.  They're wrong! */
-			/* instead, restore a clean start for iteration */
-			// notstd::copy_n(_sim->_vt1, _sim->_total_nodes+1, _sim->_v0);
-			// CARD_LIST::card_list.tr_regress();
+
 		}
 	}else{
 		trace0("TTT::advance_Time osolete call?");

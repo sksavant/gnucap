@@ -97,6 +97,7 @@ void TRANSIENT::sweep()
   }else if (_sim->uic_now() || _inside_tt ) {
     trace3("TRANSIENT::sweep uic_now solve", time1, _sim->_time0, _inside_tt);
     advance_time();
+    trace0("TRANSIENT::sweep advanced");
     if (!_inside_tt) {
       _sim->zero_voltages(); // ?
     }
@@ -113,9 +114,12 @@ void TRANSIENT::sweep()
     }else{
     }
   }
+  trace0("TRANSIENT::sweep review...");
   review(); 
+  trace0("TRANSIENT::sweep reviewed");
   _accepted = true;
   accept();
+  trace0("TRANSIENT::sweep accepted");
 
   {
     bool printnow = (_sim->_time0 == _tstart || _trace >= tALLTIME);
@@ -138,6 +142,7 @@ void TRANSIENT::sweep()
                                 // CAUSE == user.
                                 // the second step is always caused by initial guess...
                                 // BUG?
+  trace2("TRANSIENT::sweep entering loop", step_cause(), _sim->_time0);
   while (next()) {
     trace2("TRANSIENT::sweep next ... ", step_cause(), _sim->_time0);
     _sim->_bypass_ok = false;

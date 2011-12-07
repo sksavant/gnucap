@@ -586,6 +586,7 @@ void ELEMENT::keep_ic()
 /*--------------------------------------------------------------------------*/
 void ELEMENT::tt_advance()
 {
+  cout << "ELEMENT::tt_advance\n";
   // das tut das hier?
   // untested0(("tt_advance for " + short_label()).c_str());
   trace2(("ELEMENT::tt_advance for " + short_label()).c_str(), _sim->_time0, _sim->_dt0);
