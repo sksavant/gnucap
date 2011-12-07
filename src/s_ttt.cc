@@ -220,6 +220,8 @@ void TTT::first_after_interruption(){
 	notstd::copy_n(_sim->_tt, _sim->_adp_nodes, _sim->_tt1);
 
 	CARD_LIST::card_list.tt_advance(); // does things with tr history.
+
+	notstd::copy_n(_sim->_tr, _sim->_adp_nodes, _sim->_tr1);
 	//  CARD_LIST::card_list.do_forall( &CARD::tt_prepare ); // lasts==0 hack
 	//CARD_LIST::card_list.do_forall( &CARD::tt_prepare ); // lasts==0 hack
 
@@ -442,7 +444,7 @@ void TTT::sweep_tt()
 		sanitycheck();
 
 		trace0("TTT::sweep_tt ADP_NODE::tt_commit");
-		ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_commit );
+//		ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_commit );
 		trace0("TTT::sweep CARD::stress_apply");
 		CARD_LIST::card_list.stress_apply();
 
@@ -1295,8 +1297,6 @@ void TTT::advance_Time(void)
 	trace0("TTT::advance_Time() .. ");
 	::status.tt_advance.start();
 
-	CARD_LIST::card_list.tt_advance();
-	trace0("TTT::advance_Time() done tt_advance");
 
 	static double last_iter_time;
 	_sim->_time0 = 0.;
@@ -1310,6 +1310,9 @@ void TTT::advance_Time(void)
 			_sim->_tt_rejects = 0;
 			_sim->update_tt_order();
 
+			trace3("TTT::advance_Time", _sim->_tr[0], _sim->_tt[0], _sim->_Time0);
+			trace2("TTT::advance_Time", _sim->_tr1[0], _sim->_tt1[0]);
+
 			notstd::copy_n(_sim->_tr2, _sim->_adp_nodes, _sim->_tr3);
 			notstd::copy_n(_sim->_tr1, _sim->_adp_nodes, _sim->_tr2);
 			notstd::copy_n(_sim->_tr, _sim->_adp_nodes, _sim->_tr1);
@@ -1320,8 +1323,8 @@ void TTT::advance_Time(void)
 			std::fill_n(_sim->_tr, _sim->_adp_nodes, NAN);
 			std::fill_n(_sim->_tt, _sim->_adp_nodes, NAN);
 
-			trace3("TTT::advance_Time ", _sim->_tr[0], _sim->_tt[0], _sim->_Time0);
-			trace2("TTT::advance_Time ", _sim->_tr1[0], _sim->_tt1[0]);
+			trace3("TTT::advance_Time done", _sim->_tr[0], _sim->_tt[0], _sim->_Time0);
+			trace2("TTT::advance_Time done", _sim->_tr1[0], _sim->_tt1[0]);
 
 			assert(is_number(_sim->_tr1[0]));
 			assert(is_number(_sim->_tt1[0]));
@@ -1335,6 +1338,12 @@ void TTT::advance_Time(void)
 	}
 	last_iter_time = _sim->_Time0;
 	trace0("TTT::advance_Time stop");
+
+	ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_advance ); 
+
+	/// AFTER tr and tt have been shifted.
+	CARD_LIST::card_list.tt_advance();
+	trace0("TTT::advance_Time() done tt_advance");
 	::status.tt_advance.stop();
 }
 /*--------------------------------------------------------------------------*/

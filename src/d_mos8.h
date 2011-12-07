@@ -48,7 +48,7 @@ class ADP_BUILT_IN_MOS8
 	 double _hci_tr;
 public:
   explicit ADP_BUILT_IN_MOS8( COMPONENT* c, const std::string n):
-    ADP_BUILT_IN_MOS(c,n)
+    ADP_BUILT_IN_MOS(c,n), hci_node(0)
     {init(c);}
 protected:
   void init(const COMPONENT*);

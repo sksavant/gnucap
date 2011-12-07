@@ -379,21 +379,10 @@ void ADP_NODE::tt_accept_first( )
 // accept, print, advance.
 /*----------------------------------------------------------------------------*/
 void ADP_NODE::tt_advance(){
-  unreachable();
 
-//  trace4(("ADP_NODE::tt_advance() " + short_label()).c_str(), get_tt(), _tt[0], _tt[1], tt_iteration_number());
-//
-//  // this is no logner valid, since tr_value has been corrected.
-//  //  assert(tr_value == _delta[0]);
-//  // _debug = 0;
-//  tr_value = NAN;  //invalidate
-//
-//
-//  assert(is_number(_tt[2])|| CKT_BASE::_sim->tt_iteration_number() < 2);
-//  assert(is_number(_tt[1])|| CKT_BASE::_sim->tt_iteration_number() < 1);
-//
-//  trace3(("ADP_NODE::tt_advance done " + short_label()).c_str(), get_tt(1), get_tr(1),_tt[0]);
-//  assert (( !_positive || _tt[1] >=0 ) || CKT_BASE::_sim->tt_iteration_number() < 1 );
+  if (_sim->_dT0)
+    _order = min(_order+1,CKT_BASE::_sim->get_tt_order());
+
 }
 /*---------------------------------*/
 hp_float_t ADP_NODE::get_total() const{

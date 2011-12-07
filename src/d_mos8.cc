@@ -5162,36 +5162,6 @@ void MODEL_BUILT_IN_MOS8::do_tr_stress( const COMPONENT* ) const
 }
 /*--------------------------------------------------------------------------*/
 // FIXME: use DEV for hci?
-void ADP_BUILT_IN_MOS8::init(const COMPONENT* d)
-{
-  const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
-  const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
-
-  assert(c);
-  trace0( "ADP_BUILT_IN_MOS8::init\n" );
-  
-  // constructor does that. (init is intentionally non-virtual)
-  // ADP_BUILT_IN_MOS::init(d);
-
-  if ( m->use_hci()){
-    assert(!hci_node);
-    hci_node = scope()->nodes()->new_adp_node( "hci", d );
-
-    // done in init
-    // ADP_NODE_LIST::adp_node_list.push_back( hci_node );
-
-    vthdelta_hci = 0;
-    vthscale_hci = 1;
-
-  }else{
-    vthdelta_hci = vthscale_hci = NAN;
-    hci_node = NULL;
-  }
-	//  vto=m->vto;
-	//
-  // vthdelta=0; delta_vth
-}
-/*--------------------------------------------------------------------------*/
 ADP_CARD* MODEL_BUILT_IN_MOS8::new_adp( COMPONENT* c)const
 {
   assert(c);

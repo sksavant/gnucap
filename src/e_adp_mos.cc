@@ -85,15 +85,6 @@ void ADP_BUILT_IN_MOS::tt_commit()
 	unreachable();
 
 
-	//SIM_DATA* sim = CKT_BASE::_sim;
-
-	//const COMMON_COMPONENT* cc = prechecked_cast<const COMMON_COMPONENT*>(_c->common());
-	//const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
-
-	//??
-	//  double stressdelta = bti_stress->get() - btistress_taken ;
-	//   bti_eff_voltage = log(stressdelta/sim->_dT0);
-
 }
 /*--------------------------------------------------------------------------*/
 double ADP_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
@@ -112,7 +103,7 @@ double ADP_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
 /*--------------------------------------------------------------------------*/
 ADP_BUILT_IN_MOS::ADP_BUILT_IN_MOS( COMPONENT* c, const std::string n) :
 	ADP_BUILT_IN_DIODE(c,n),
-	bti_stress(0)
+	bti_stress(0), _tr_last_acc(-inf)
 {init(c);}
 /*--------------------------------------------------------------------------*/
 //expand?
@@ -270,7 +261,7 @@ void ADP_BUILT_IN_MOS8::tt_advance() {
 	if (m->use_hci()){
 		assert(hci_node);
 		_hci_tr=0;
-		hci_node->set_tr(0);
+		hci_node->set_tr( 0 );
 	}
 }
 /*--------------------------------------------------------------------------*/
@@ -299,9 +290,9 @@ void ADP_BUILT_IN_MOS8::tr_stress_last() {
 	const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
 
 
-	trace2("ADP_BUILT_IN_MOS8::tr_stress_last", long_label(), _sim->tt_iteration_number());
+	trace3("ADP_BUILT_IN_MOS8::tr_stress_last", long_label(), _sim->tt_iteration_number(), m->use_hci());
 	if(m->use_hci()){
-		trace2("ADP_BUILT_IN_MOS::tr_stress_last hci", _sim->_last_time, _hci_tr/_sim->_last_time );
+		trace2("ADP_BUILT_IN_MOS8::tr_stress_last hci", _sim->_last_time, _hci_tr/_sim->_last_time );
 
 		hci_node->tt() += _hci_tr; // tt at last_Time.
 		hci_node->set_tr(double(_hci_tr/_sim->_last_time));  // tr= d(tt)/dt
@@ -310,9 +301,10 @@ void ADP_BUILT_IN_MOS8::tr_stress_last() {
 			assert(_sim->phase() == p_PD);
 			hci_node->set_tr(0);
 		}
+
 		assert(is_number(hci_node->tr()));
 		hci_node->set_tr_noise(0 );
-		trace2("ADP_BUILT_IN_MOS8::tr_stress_last", hci_node->tt(), _hci_tr);
+		trace2("ADP_BUILT_IN_MOS8::tr_stress_last", hci_node->tt(), hci_node->tr());
 		_hci_tr = 0;
 		vthdelta_hci = pow(hci_node->tt(),0.3);
 	}
@@ -322,7 +314,7 @@ void ADP_BUILT_IN_MOS8::tr_stress_last() {
 }
 /*------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS8::stress_apply() {
-	trace1("ADP_BUILT_IN_MOS8::stress_apply", long_label());
+	trace3("ADP_BUILT_IN_MOS8::stress_apply", long_label(), _sim->_Time0, _sim->_last_Time );
 	// HIER
 	const DEV_BUILT_IN_MOS* d = asserted_cast<const DEV_BUILT_IN_MOS*>(owner());
 	const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
@@ -333,6 +325,8 @@ void ADP_BUILT_IN_MOS8::stress_apply() {
 
 		double eff_now = hci_node->tr( _sim->_Time0 ); // fixme: faster?
 		double eff_last_timeframe = hci_node->tr( _sim->_last_Time  ); 
+
+		trace5("ADP_BUILT_IN_MOS8::stress_apply", eff_last_timeframe, eff_now, hci_node->tt1(), hci_node->order(), hci_node->tr1() );
 
 		double ex_time =  _sim->_dT0 - _sim->_last_time; // stress that long
 
@@ -383,6 +377,36 @@ void ADP_BUILT_IN_MOS8::stress_apply() {
 	q_eval();
 }
 /*------------------------------------------------------------------*/
+void ADP_BUILT_IN_MOS8::init(const COMPONENT* d)
+{
+  const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
+  const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
+
+  assert(c);
+  trace0( "ADP_BUILT_IN_MOS8::init\n" );
+  
+  // constructor does that. (init is intentionally non-virtual)
+  // ADP_BUILT_IN_MOS::init(d);
+
+  if ( m->use_hci()){
+    assert(!hci_node);
+    hci_node = scope()->nodes()->new_adp_node( "hci", d );
+
+    // done in init
+    // ADP_NODE_LIST::adp_node_list.push_back( hci_node );
+
+    vthdelta_hci = 0;
+    vthscale_hci = 1;
+
+  }else{
+    vthdelta_hci = vthscale_hci = NAN;
+    hci_node = NULL;
+  }
+	//  vto=m->vto;
+	//
+  // vthdelta=0; delta_vth
+}
+/*--------------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS8::tt_accept() {
 
 	ADP_BUILT_IN_MOS::tt_accept();
