@@ -317,6 +317,7 @@ public:
 private:
   double btistress_taken;
   double bti_eff_voltage;
+  double _tr_last_acc;
 
 public:
   virtual void tt_accept();

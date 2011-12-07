@@ -195,9 +195,9 @@ void TTT::first()
 
 } //first
 /*--------------------------------------------------------------------------*/
-void TTT::after_interruption_prep()
-{
-
+// FIXME: directly run into loop
+void TTT::first_after_interruption(){
+	trace3("TTT::first_after_interruption", _tt_cont, _sim->_tt[0], _sim->_tr[0]);
 	_Time1 = _sim->_last_Time;
 	_sim->_Time0 = _sim->_last_Time;
 	assert(tt_iteration_number() == 0);
@@ -219,7 +219,7 @@ void TTT::after_interruption_prep()
 	// start at age stored in tt.
 	notstd::copy_n(_sim->_tt, _sim->_adp_nodes, _sim->_tt1);
 
-	CARD_LIST::card_list.tt_advance(); // does things with tr history?
+	CARD_LIST::card_list.tt_advance(); // does things with tr history.
 	//  CARD_LIST::card_list.do_forall( &CARD::tt_prepare ); // lasts==0 hack
 	//CARD_LIST::card_list.do_forall( &CARD::tt_prepare ); // lasts==0 hack
 
@@ -228,16 +228,9 @@ void TTT::after_interruption_prep()
 		_sim->_nstat[_sim->_nm[ii]].store_old_last_change_time();
 		_sim->_nstat[_sim->_nm[ii]].set_final_time(0);
 	}
-}
-/*--------------------------------------------------------------------------*/
-// FIXME: directly run into loop
-void TTT::first_after_interruption(){
-	trace1("TTT::first_after_interruption", _tt_cont);
-	after_interruption_prep();
 	_sim->force_tt_order(0);
 
 
-	CARD_LIST::card_list.tt_advance();
 	CARD_LIST::card_list.stress_apply();
 
 	if(!_tt_cont){

@@ -54,7 +54,6 @@ void TTT::options(CS& Cmd)
 	}
 	if(_continue){
 		_tt_cont=true;
-
 	}
 
 	_dtmax_in.e_val(BIGBIG, _scope);
@@ -228,6 +227,14 @@ void TTT::setup(CS& Cmd)
 		double oldrange = _Tstop - _Tstart;
 		_Tstart = _sim->_last_Time;
 		_Tstop  = _sim->_last_Time + oldrange;
+
+		if(_sim->_last_Time==0){
+			trace0("TTT::setup no args at beginning");
+			_Tstop=0;
+			_tstep=0;
+			_tstop=0;
+
+		}
 	}
 
 	if (_sim->_last_Time <= 0 ) {

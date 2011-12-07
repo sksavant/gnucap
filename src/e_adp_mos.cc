@@ -61,6 +61,24 @@ void ADP_BUILT_IN_MOS::stress_apply() {
 
 }
 /*--------------------------------------------------------------------------*/
+void ADP_BUILT_IN_MOS::tr_accept(){
+	const DEV_BUILT_IN_MOS* d = prechecked_cast<const DEV_BUILT_IN_MOS*>(owner());
+	assert(d);
+	const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
+	const MODEL_BUILT_IN_MOS_BASE* m = asserted_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
+	if(m->use_bti()){
+		assert(bti_stress);
+		bti_stress->set_tt(0); // not in use (yet?)
+		bti_stress->set_tr(0); // not in use (yet?)
+	}
+
+	if(_sim->_time0 <= _tr_last_acc) {
+			error(bWARNING, "tr ADP accepting twice %s\n", d->long_label().c_str());
+	}
+
+	_tr_last_acc = _sim->_time0;
+}
+/*--------------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS::tt_commit()
 {
 	assert(false);
@@ -152,30 +170,19 @@ double ADP_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 		return -1;
 }
 /*--------------------------------------------------------------------------*/
-void ADP_BUILT_IN_MOS::tr_accept(){
-	const DEV_BUILT_IN_MOS* d = prechecked_cast<const DEV_BUILT_IN_MOS*>(owner());
-	assert(d);
-	const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
-	const MODEL_BUILT_IN_MOS_BASE* m = asserted_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
-	if(m->use_bti()){
-		assert(bti_stress);
-		bti_stress->set_tt(0); // not in use (yet?)
-		bti_stress->set_tr(0); // not in use (yet?)
-	}
-}
-/*--------------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS8::tr_accept(){
 	const DEV_BUILT_IN_MOS* d = prechecked_cast<const DEV_BUILT_IN_MOS*>(owner());
 	assert(d);
 	const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
 	const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
 	//ADP_BUILT_IN_MOS8* a = (ADP_BUILT_IN_MOS8*) this;
-	trace1("ADP_BUILT_IN_MOS8::tr_accept ", m->polarity );
+	trace4("ADP_BUILT_IN_MOS8::tr_accept ", m->polarity, _sim->_time0, d->long_label(), m->use_hci() );
 	ADP_BUILT_IN_MOS::tr_accept();
 
 	//  const COMMON_BUILT_IN_MOS* cprime = prechecked_cast<const COMMON_BUILT_IN_MOS*>(d->common());
 	const SDP_BUILT_IN_MOS8* s = prechecked_cast<const SDP_BUILT_IN_MOS8*>(c->sdp());
 
+	
 	double exponent = 3; // which is m in [4]
 	hp_float_t hcis = 0;
 	double Wg = 0.8;
@@ -217,13 +224,13 @@ void ADP_BUILT_IN_MOS8::tr_accept(){
 					hcis = ( Wg/Hg * pow( fabs(ig)/W, mg ) 
 							+ (1-Wg)*Ids/H/W * pow(Isub/fabs(Ids), exponent));
 					trace8( "ADP_BUILT_IN_MOS8::tr_accept pmos", d->long_label(),
-							d->isb, d->idb, W/Hg, Isub, Ids, H, hcis);
+							d->isb, d->idb, _sim->_time0, Isub, Ids, H, hcis);
 					assert(is_number(hcis));
 					break;
 			}
 			if (hcis > 1e-10)
 			{
-		}
+			}
 
 		}
 
@@ -241,7 +248,7 @@ double ADP_BUILT_IN_MOS8::tr_probe_num(const std::string& x)const
 {
 	double ret=771;
 	if( Umatch("hci_raw ", x) ){
-		if(hci_node) return hci_node->tt();
+		if(hci_node) ret= _hci_tr;
 	}else	if( Umatch("hci ", x) ){
 		if(!hci_node) return -1;
 		ret= hci_node->tr();
@@ -254,6 +261,17 @@ double ADP_BUILT_IN_MOS8::tr_probe_num(const std::string& x)const
 
 	return ret;
 
+}
+/*--------------------------------------------------------------------------*/
+void ADP_BUILT_IN_MOS8::tt_advance() {
+	const DEV_BUILT_IN_MOS* d = asserted_cast<const DEV_BUILT_IN_MOS*>(owner());
+	const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
+	const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
+	if (m->use_hci()){
+		assert(hci_node);
+		_hci_tr=0;
+		hci_node->set_tr(0);
+	}
 }
 /*--------------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS8::tt_begin() 
@@ -274,11 +292,6 @@ void ADP_BUILT_IN_MOS8::tt_begin()
 	q_eval();
 }
 /*------------------------------------------------------------------*/
-void ADP_BUILT_IN_MOS8::tt_commit() {
-	incomplete();
-	ADP_BUILT_IN_MOS::tt_commit();
-}
-/*------------------------------------------------------------------*/
 void ADP_BUILT_IN_MOS8::tr_stress_last() {
 	ADP_BUILT_IN_MOS::tr_stress_last();
 	const DEV_BUILT_IN_MOS* d = asserted_cast<const DEV_BUILT_IN_MOS*>(owner());
@@ -288,10 +301,10 @@ void ADP_BUILT_IN_MOS8::tr_stress_last() {
 
 	trace2("ADP_BUILT_IN_MOS8::tr_stress_last", long_label(), _sim->tt_iteration_number());
 	if(m->use_hci()){
-		trace1("ADP_BUILT_IN_MOS::tr_stress_last hci", _sim->_last_time);
+		trace2("ADP_BUILT_IN_MOS::tr_stress_last hci", _sim->_last_time, _hci_tr/_sim->_last_time );
 
 		hci_node->tt() += _hci_tr; // tt at last_Time.
-		hci_node->set_tr(double(_hci_tr/_sim->_last_time)); 
+		hci_node->set_tr(double(_hci_tr/_sim->_last_time));  // tr= d(tt)/dt
 
 		if(!_sim->_last_time){
 			assert(_sim->phase() == p_PD);

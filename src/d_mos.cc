@@ -1027,7 +1027,7 @@ double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
     return(NA);
   }else if (Umatch(x, "bti_stress ")) { 
     return  a->bti_stress->tr_get();
-  }else if (Umatch(x, "hci |bti ")) { 
+  }else if (Umatch(x, "hci{_raw} |bti ")) { 
     return  a->tr_probe_num(x);
   }else if (Umatch(x, "vgs ")) {
     return  _n[n_g].v0() - _n[n_s].v0();
@@ -1558,7 +1558,6 @@ void DEV_BUILT_IN_MOS::tr_stress( )
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tt_advance()
 {
-  unreachable();
   if (adp())
     adp()->tt_advance();
 

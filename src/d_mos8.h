@@ -67,7 +67,7 @@ public:
 private: // overrides
   void tt_begin();
   void tt_accept();
-  void tt_commit();
+  void tt_advance();
   void tr_accept();
   void tr_stress_last();
   void stress_apply();
