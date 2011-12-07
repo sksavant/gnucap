@@ -1,0 +1,48 @@
+
+verilog
+
+
+// ( delay=NA( 1.n) vmax=NA( 5.) vmin=NA( 0.)
+//+ unknown=NA( 2.5) rise=NA( 500.p) fall=NA( 500.p) rs=NA( 100.) rw=NA( 1.G)
+//+thh=NA( 0.75) thl=NA( 0.25) mr=NA( 5.) mf=NA( 5.) over=NA( 0.1)
+//+ tnom=NA( 27.))
+
+
+paramset fastinvert invert; \
+.delay=0.1n; \
+endparamset
+
+paramset slowinvert invert; \
+ .tnom=20; \
+endparamset
+
+
+spice
+.model cmos logic
+.param vdd=5
+.param iv=0
+.model default_logic LOGIC 
+
+V1 ndd 0 vdd
+Vpulse nin 0 pulse( iv={iv*vdd} pv={(1-iv)*vdd}, rise=2n, fall=2n, width=3n, period=10n )
+*Vpulse nin2 0 pulse( iv=vdd pv=0, rise=2n, fall=2n, width=3n, period=10n )
+
+*U1 nout2 vdd vdd 0 nin2 cmos inv
+.verilog
+
+fastinvert i1 ( 0, ndd, nfast, nin );
+//slowinvert i2 ( 0, ndd, nslow, nin );
+
+
+spice
+R1 nfast 0 10k
+.list
+.nodelist
+
+.print tran v(nin) l(nin) v(nin2) l(nin2) next(i1) delay(i1) st(i1) l(nfast) event(0) l(i_in) 
+*.tran 0 20p 2p  trace=a
+.tran 0 30n 2n  trace=a
+
+.end
+
+
