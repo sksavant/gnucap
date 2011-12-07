@@ -1080,7 +1080,7 @@ double DEV_BUILT_IN_BTI::dvth()const{
   const ADP_BUILT_IN_BTI* a = prechecked_cast<const ADP_BUILT_IN_BTI*>(adp()); a=a;
   double buf = 0;
   int i = m->rcd_number;
-  for(; i-->0;  buf += CARD::probe(_RCD[i],"dvth") );
+  for(; i-->0;  buf += CARD::probe(_RCD[i],"P") );
   return buf * c->weight;
 }
 /*--------------------------------------------------------------------------*/

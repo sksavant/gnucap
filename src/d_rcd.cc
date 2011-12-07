@@ -1334,14 +1334,10 @@ void DEV_BUILT_IN_RCD::stress_apply()
   assert(is_number(_Ccgfill->tr_rel(_sim->_dT0 )));
 
   long double E_old = _Ccgfill->tt1();
-  // cout << setprecision(30) << _sim->_Time0 << " " << E_old << "\n";
 
   assert (is_number(E_old));
 
-  cout << setprecision(20) << E_old << "\n";
-
   long double fill_new  = E_old;
-  long double fill_new2 = E_old;
 
   double ex_time = _sim->_dT0 - _sim->_last_time;
   // assert(ex_time = _sim->_last_Time);
@@ -1350,21 +1346,18 @@ void DEV_BUILT_IN_RCD::stress_apply()
   long double eff2 = _Ccgfill->tr( Time1 + ex_time*2.0/3.0 );
   if(m->positive) eff1 = max(eff1,0.0L);
   if(m->positive) eff2 = max(eff2,0.0L);
-
-//  better 2 steps.
   assert ( eff1 >= 0 || !m->positive);
-  fill_new2 = m->__step( eff1, fill_new2, ex_time/2.0, c );
-  assert(is_number(fill_new2));
   assert ( eff2 >= 0 || !m->positive);
-  fill_new2 = m->__step( eff2, fill_new2, ex_time/2.0, c );
-  assert(is_number(fill_new2));
 
-  if(ex_time<1e-18){
-    assert(is_almost(double(fill_new2) , double (E_old)));
+  fill_new = m->__step( eff1, fill_new, ex_time/2.0, c );
+  assert(is_number(fill_new));
+  fill_new = m->__step( eff2, fill_new, ex_time/2.0, c );
+  assert(is_number(fill_new));
+
+  if( ex_time < 1e-18 ){
+    assert(is_almost(double(fill_new) , double (E_old)));
   }
 
-
-  fill_new = fill_new2;
 
   trace3("DEV_BUILT_IN_RCD::stress_apply ", fill_new, E_old, fill_new-_tr_fill );
 
@@ -1405,12 +1398,12 @@ void DEV_BUILT_IN_RCD::tr_stress()
   }else {
     trace1("DEV_BUILT_IN_RCD::tr_stress again?? bug??", _sim->_time0 );
 
-    error(bDANGER,"DEV_BUILT_IN_RCD::tr_stress unequal now: %E lasts: %E at %E\n",
-          _sim->_time0, lasts, _sim->_Time0 );
+    error(bDANGER,"DEV_BUILT_IN_RCD::tr_stress unequal now: %E lasts: %E at %E in [%f %f]\n",
+          _sim->_time0, lasts, _sim->_Time0, _Ccgfill->tr_lo , _Ccgfill->tr_hi  );
 
     if (! (_sim->_time0 == lasts) ){
 
-      error(bDANGER,"DEV_BUILT_IN_RCD::tr_stress unequal now: %E lasts: %E at %E\n",
+      error(bDANGER,"DEV_BUILT_IN_RCD::tr_stress criticaly unequal now: %E lasts: %E at %E\n",
           _sim->_time0, lasts, _sim->_Time0 );
       throw(Exception("time mismatch in %s: time0: %f lasts: %f " , long_label().c_str(), _sim->_time0, lasts));
     }
@@ -1465,7 +1458,15 @@ void DEV_BUILT_IN_RCD::tr_stress()
   }
   double uin = rcd->involts();
   trace5("DEV_BUILT_IN_RCD::tr_stress ", long_label(), _tr_fill, h, m->positive, (_tr_fill-c->_zero)*c->_weight );
-  if(uin>0) assert(m->__E_end(uin,c) > c->_zero);
+
+  if(uin>0){ 
+    
+    if(m->__E_end(uin,c) <= (1-1e-16)*c->_zero){
+        error(bDANGER, "nonmonotony at %f: %f < %f\n", uin, c->_zero, m->__E_end(uin,c)  );
+    }
+    assert(m->__E_end(uin,c) > (1-1e-15)*c->_zero);
+
+  }
 
   trace1("DEV_BUILT_IN_RCD::tr_stress" ,  m->__E_end_0(c)-  m->__E_end(0.l,c)  );
 //  assert( m->__E_end_0(c) == c->_zero );
@@ -1808,7 +1809,7 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
           Edu, Euin, E, fu, delta_u);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter s=%i%i%i%i%i putres=%i\n",
           A, B, C, D, U, putres);
-      throw(Exception("does not converge in [%f,%f]: %s\n", dd->long_label().c_str(), bound_lo, bound_hi  ));
+      throw(Exception("does not converge in [%f,%f]: %s in tt %i\n", dd->long_label().c_str(), bound_lo, bound_hi,_sim->tt_iteration_number()  ));
       break;
     }
     if(!is_number(uin)){

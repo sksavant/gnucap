@@ -50,6 +50,7 @@ class TTT : public TRANSIENT {
     void	outdata_tt(double);
     void	outdata_b4(double);
     bool	review_tt();
+    void tt_begin();
     void	options(CS&);
     void	sweep();
 	 void do_initial_dc();

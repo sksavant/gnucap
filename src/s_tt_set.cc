@@ -135,6 +135,9 @@ void TTT::setup(CS& Cmd)
 			assert((double)_tstep!=0 || !_tstop);
 			if (!_tstop) untested();
 
+			if(double( _Tstart) == 0) 
+				_tt_cont=false;
+
 			trace4("TTT::setup ", _tstep, _tstop , _Tstep , _Tstop);
 
 		} else if (arg4.has_hard_value()) {	    // 4 args: TT TT tt tt
@@ -284,7 +287,6 @@ void TTT::setup(CS& Cmd)
 		_tt_cont = false;
 		_Time1 = _sim->_Time0 = 0.;
 	}else{
-		untested();
 		_tt_cont = true;
 		_Time1 = _sim->_Time0 = _sim->_last_Time;
 	}
