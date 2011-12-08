@@ -307,6 +307,8 @@ void SIM_DATA::init()
   _dT1=0;
   _dT2=0;
   _expect_file=0;
+  _waves=0;
+  _waves_tt=0;
 }
 /*--------------------------------------------------------------------------*/
 /* alloc_hold_vectors:

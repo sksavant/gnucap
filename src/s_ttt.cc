@@ -145,7 +145,6 @@ void TTT::first()
 	// tell gnuplot that we start from the beginning.
 	_out << "\n";
 
-
 	assert(_sim->get_tt_order() == 0 );
 
 	assert(_sim->_Time0 <= _Tstart);
@@ -280,6 +279,7 @@ void TTT::do_initial_dc(){
 	//
 	_sim->keep_voltages();
 	trace0("TTT::do_initial_dc done");
+	_sim->_mode = s_TTT;
 }
 /*--------------------------------------------------------------*/
 void TTT::power_down(double until)
@@ -408,6 +408,7 @@ void TTT::sweep_tt()
 	}else if ( !_tt_cont ){
 		trace0("TTT::sweep_tt from 0");
 		tt_begin();
+		print_head_tr();
 		do_initial_dc();
 
 		outdata_tt( _sim->_Time0);
@@ -420,6 +421,7 @@ void TTT::sweep_tt()
 		trace0("TTT::sweep_tt first done");
 	}else if(_tstop==0. && _tstep==0. && (!_tt_cont) ){
 
+		print_head_tr();
 		do_initial_dc();
 		return;
 
@@ -555,6 +557,7 @@ void TTT::sweep() // tr sweep wrapper.
 	// hier gibs noch kein behaviour.  
 	// ::status.tran.stop();
 	_inside_tt=false;
+	_sim->_mode = s_TTT;
 }
 /*--------------------------------------------------------------------------*/
 void TTT::accept_tt()
@@ -703,15 +706,36 @@ void TTT::do_it(CS& Cmd, CARD_LIST* Scope)
 /*--------------------------------------------------------------------------*/
 void TTT::probeexpand()
 {
+	trace0("TTT::probeexpand");
+
+	_sim->_mode=s_TRAN;
 	PROBELIST* transtore = &PROBE_LISTS::store[s_TRAN];
+
+	// append prior prints to store (aligned)
+	for (PROBELIST::const_iterator p=printlist().begin();
+			p!=printlist().end();  ++p) {
+		PROBE* x=((*p)->clone());
+		transtore->push_probe(x);
+	}
+	
+	// additionally store during TR as user wishes. (if necessary)
+	for (PROBELIST::const_iterator p=oldstore.begin();
+			p!=oldstore.end();  ++p) {
+		PROBE* x=((*p)->clone());
+		transtore->merge_probe(x);
+	}
+
+	_sim->_mode = s_TTT;
+
 
 	PROBELIST measstore;
 	for (PROBELIST::const_iterator
 			p=printlist().begin();  p!=printlist().end();  ++p) {
 		MEAS_PROBE* w = dynamic_cast<MEAS_PROBE*>(*p);
 		if(w){
-			w->expand(); // FIXME precalc!
+			w->expand(); 
 			string probe_name = w->probe_name;
+			trace1("TTT::probeexpand", probe_name);
 			CS* c = new CS(CS::_STRING,probe_name);
 			measstore.add_list(*c);
 			delete c;
@@ -743,25 +767,15 @@ void TTT::allocate()
 	}
 	PROBE_LISTS::store[s_TRAN].clear();
 
-	_sim->_mode=s_TRAN;
-
-	// append prior prints to store (aligned)
-	for (PROBELIST::const_iterator p=printlist().begin();
-			p!=printlist().end();  ++p) {
-		PROBE* x=((*p)->clone());
-		transtore->push_probe(x);
-	}
-	
-	// additionally store during TR as user wishes. (if necessary)
-	for (PROBELIST::const_iterator p=oldstore.begin();
-			p!=oldstore.end();  ++p) {
-		PROBE* x=((*p)->clone());
-		transtore->merge_probe(x);
-	}
-
-	_sim->_mode = s_TTT;
 
 	probeexpand();
+
+	assert(!_sim->_waves_tt);
+	assert(!_sim->_waves);
+	_sim->_waves_tt = new WAVE [storelist().size()];
+	_sim->_mode=s_TRAN;
+	_sim->_waves = new WAVE[storelist().size()];
+	_sim->_mode=s_TTT;
 
 }
 /*--------------------------------------------------------------------------*/
@@ -955,15 +969,13 @@ bool TTT::next()
 /* SIM::head: print column headings and draw plot borders
 */
 
-// FIXME: do probestuff another time.
 void TTT::head_tt(double start, double stop, const std::string& col1)
 {
 	trace2("TTT::head_tt", start, stop);
 	_sim->_mode=s_TTT;
-	PROBELIST* transtore = &PROBE_LISTS::store[s_TRAN];
+	//PROBELIST* transtore = &PROBE_LISTS::store[s_TRAN];
 
 	print_tr_probe_number = printlist().size();
-
 
 	if (!plopen(start, stop, plotlist())) {
 		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -988,7 +1000,7 @@ void TTT::head_tt(double start, double stop, const std::string& col1)
 
 	trace3("TTT::tt_head probe TRAN", printlist().size(), storelist().size(), oldstore.size());
 
-	_sim->_waves = new WAVE[storelist().size()];
+//	_sim->_waves = new WAVE[storelist().size()];
 
 	_sim->_mode=s_TTT;
 	for (PROBELIST::const_iterator
@@ -1005,6 +1017,7 @@ void TTT::head(double /* start */ , double /* stop */, const std::string& )
 {
 	trace0("TTT::head");
 	assert( _sim->_mode==s_TTT );
+	assert(_sim->_waves_tt);
 	{
 		trace0("TTT::head tr ttt WAVE");
 
@@ -1015,13 +1028,12 @@ void TTT::head(double /* start */ , double /* stop */, const std::string& )
 			}
 		}else{
 			trace0("TTT::head no waves yet");
-			_sim->_waves_tt = new WAVE [storelist().size()];
 		}
 	}
 	_sim->_mode=s_TRAN;
 	if (_sim->tt_iteration_number() == 0){
 		TRANSIENT::_out.setfloatwidth(OPT::numdgt, OPT::numdgt+6);
-		print_head_tr();
+		// print_head_tr();
 	}
 
 	_sim->_mode=s_TTT;
@@ -1032,9 +1044,11 @@ void TTT::head(double /* start */ , double /* stop */, const std::string& )
 */
 void TTT::print_head_tr()
 {
-	assert( _sim->_mode==s_TRAN );
-	SIM_MODE oldmode=_sim->_mode;
-	_sim->_mode=s_TRAN;
+	trace0("TTT::print_head_tr");
+
+	//assert( _sim->_mode==s_TRAN );
+	_sim->_mode = s_TRAN;
+	SIM_MODE oldmode = _sim->_mode;
 
 	if( printlist().size() == 0 )
 	{
@@ -1090,7 +1104,7 @@ void TTT::outdata(double time0)
 	_sim->set_command_tran();
 	if(_sim->tt_iteration_number()==0 && printlist().size() != 0 )
 	{
-		TRANSIENT::_out << (double)_sim->_Time0;
+		TRANSIENT::_out << (double)_sim->_Time0 ;
 		TRANSIENT::print_results(time0);
 	} else {
 		// store_results(time0);
@@ -1123,13 +1137,13 @@ void TTT::outdata_b4(double time)
 /*--------------------------------------------------------------------------*/
 void TTT::outdata_tt(double now) // print at end of timeframe.
 {
+	assert( _sim->_mode  == s_TTT );
 	if ( _sim->_dT0 &&  !is_almost (_sim->_dT0 + _sim->_last_Time , now )){
 		error(bWARNING, "EOF: %.9f, last_Time: %.9f, dT0: %f, now: %f\n", _sim->_Time0+_tstop, _sim->_last_Time, _sim->_dT0,now );
 	}
 	trace0("TTT::outdata_tt()");
-	assert( _sim->_mode  == s_TTT );
 	::status.output.start();
-	print_results_tr(0); //transient print?
+	print_results_tr( now ); //transient print?
 	print_results_tt( now );
 	_sim->reset_iteration_counter(iPRINTSTEP);
 	::status.hidden_steps = 0;
@@ -1159,12 +1173,12 @@ void TTT::print_results_tr(double )
 
 	if (!IO::plotout.any() && _sim->tt_iteration_number() > 0 ) {
 		TRANSIENT::_out.setfloatwidth(OPT::numdgt, OPT::numdgt+6);
-		w=&(_sim->_waves[0]);
-		print_head_tr();
+		w = &(_sim->_waves[0]);
+		//print_head_tr();
 
 		int ii=0;
 		// FIXME: how many?
-		WAVE::const_iterator myiterators[100];
+		WAVE::const_iterator myiterators[_sim->_waves->size()];
 
 		for (PROBELIST::const_iterator p = printlist().begin();
 				p!=printlist().end();  ++p) {
@@ -1239,7 +1253,7 @@ void TTT::store_results_tt(double x)
 /*--------------------------------------------------------------------------*/
 void TTT::print_results_tt(double x)
 {
-	trace0("TTT::print_results_tt()");
+	trace1("TTT::print_results_tt()",x);
 
 	if ( printlist().size() == 0)
 	{
@@ -1254,6 +1268,7 @@ void TTT::print_results_tt(double x)
 		_out << x;
 		for (PROBELIST::const_iterator
 				p=printlist().begin();  p!=printlist().end();  ++p) {
+			trace1("TTT::print_results_tt", (*p)->label());
 			_out <<  (*p)->value();
 		}
 		_out << '\n';
@@ -1294,8 +1309,6 @@ void TTT::advance_Time(void)
 	_sim->_time0 = 0.;
 	if (_sim->_Time0 > 0) {
 		if (_sim->_dT0 == 0) {
-//			if (_trace>5 )
-//				_out << "* advance_Time zero step to "<< _sim->_Time0 << "\n";
 
 		}else if (_sim->_Time0 > last_iter_time && _accepted_tt ) {	/* moving forward */
 			_sim->_tt_iter++;

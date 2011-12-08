@@ -48,6 +48,7 @@ public:
   WAVE&	   operator*=(double x);
   const_iterator begin()const {return _w.begin();}
   const_iterator end()const {return _w.end();}
+  size_t size()const {return _w.size();}
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
