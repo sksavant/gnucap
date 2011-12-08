@@ -27,7 +27,6 @@ protected: // override virtual
   bool	   do_tr();
   void	   tr_accept(); // uic. possibly a hack
   void	   tr_load()		{tr_load_passive(); trace1("DEV_CAPACITANCE::tr_load", value());  }
-//  void	   tr_init(double )		;
   void	   tr_unload()		{tr_unload_passive();}
 public:
   hp_float_t   tr_involts()const	{

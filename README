@@ -1,14 +1,12 @@
 Readme for iverilog module
 
-1a) iverilog: autoconf
-1b) configure iverilog with --enable-shared --prefix=$foo
+1) configure iverilog with --enable-shared --prefix=/some/prefix
    for example: ./configure --enable-shared --prefix=$HOME/.local/
 2) install icarus-verilog
 
-3) configure gnucap with --with-iverilog=/path/to/library/include/iverilog
-                         LDFLAGS=-L/path/to/library/lib
+3) configure gnucap with --with-iverilog=/path/to/library/include/iverilog \
+                         LDFLAGS=-L/some/prefix/lib
    for example: LDFLAGS=-L~/.local/lib ./configure --prefix=~/.local --with-iverilog=~/.local/include/iverilog/
-4) install gnucap
 
 #### ADMS ####
 if admsXml is in $PATH, some adms-va devices will be compiled.

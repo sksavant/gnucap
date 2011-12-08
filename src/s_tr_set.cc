@@ -173,6 +173,8 @@ void TRANSIENT::options(CS& Cmd)
   _out = IO::mstdout;
   _out.reset(); //BUG// don't know why this is needed
 
+  bool _dump_matrix = false;
+
   _sim->_temp_c = OPT::temp_c;
   bool ploton = IO::plotset  &&  plotlist().size() > 0;
   _sim->_uic = _cold = false;
@@ -189,6 +191,7 @@ void TRANSIENT::options(CS& Cmd)
       || Get(Cmd, "sk{ip}",	   &_skip_in)
       || Get(Cmd, "te{mperature}", &_sim->_temp_c)
       || Get(Cmd, "uic",	   &_sim->_uic)
+      || Get(Cmd, "dm",            &_dump_matrix)
       || (Cmd.umatch("tr{ace} {=}") &&
 	  (ONE_OF
 	   || Set(Cmd, "n{one}",      &_trace, tNONE)
@@ -206,6 +209,10 @@ void TRANSIENT::options(CS& Cmd)
       ;
   }while (Cmd.more() && !Cmd.stuck(&here));
   Cmd.check(bWARNING, "TRopt what's this?");
+
+  if(_dump_matrix) {
+    _trace = (TRACE) (_trace | (int)tMATRIX);
+  }
 
   IO::plotout = (ploton) ? IO::mstdout : OMSTREAM();
   initio(_out);

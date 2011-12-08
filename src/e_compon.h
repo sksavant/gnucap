@@ -128,7 +128,7 @@ public:
   virtual bool	has_tr_eval()const	{untested0( name().c_str() ); return false;}
   virtual bool	has_ac_eval()const	{untested(); return false;}
   virtual void  set_ic(double){}
-  virtual void  keep_ic(){}
+  // virtual void  keep_ic(){}??
 
 public:
   virtual bool	has_tt_eval()const	{untested(); return false;}
@@ -208,6 +208,8 @@ public:	// dc-tran
   TIME_PAIR tr_review();
   void      tr_accept();
   double    tr_probe_num(const std::string&)const;
+  virtual bool has_memory() {return false;}
+  virtual void  keep_ic(){};
   //--------------------------------------------------------------------
 public:   // tt-tran
   double    tt_probe_num(const std::string&)const;

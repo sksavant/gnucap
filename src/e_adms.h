@@ -35,24 +35,24 @@ class ADMS_BASE : public BASE_SUBCKT {
 
 		~ADMS_BASE() {}
 
-		void	   store_values()		{assert(_y[0]==_y[0]); _y1=_y[0];}
+		virtual void	   store_values()=0;
 		//void   reject_values()		{ _y0 = _y1;}
 	public:
 
 		bool	   skip_dev_type(CS&);
 
 		virtual  void tr_save_amps(int n);
-	public: // override virtual
-		bool	   print_type_in_spice()const {return false;}
-		void	   precalc_last();
-		void	   tr_begin();
-		void	   tr_restore();
-		void	   dc_advance();
-		void	   tr_advance();
-		void	   tr_regress();
-		bool	   tr_needs_eval()const;
+	public: 
+		virtual bool	   print_type_in_spice()const {return false;}
+		virtual void	   precalc_last();
+		virtual void	   tr_begin();
+		virtual void	   tr_restore();
+		virtual void	   dc_advance();
+		virtual void	   tr_advance();
+		virtual void	   tr_regress();
+		virtual bool	   tr_needs_eval()const;
 		virtual bool do_tr() { unreachable(); return false; }
-		void	   tr_queue_eval(); // why not const?
+		virtual void	   tr_queue_eval(); // why not const?
 			
 		TIME_PAIR tr_review();
 		virtual void  tr_stress() {
@@ -112,8 +112,7 @@ class ADMS_BASE : public BASE_SUBCKT {
 		void	   ac_load_diagonal_point(const node_t& no1, COMPLEX value);
 
 		template <class T>
-			void	   tr_load_point(const node_t& no1, const node_t& no2,
-					T* value, T* old_value);
+		void	   tr_load_point(const node_t& no1, const node_t& no2, T* value, T* old_value);
 		void	   ac_load_point(const node_t& no1, const node_t& no2,
 				COMPLEX value);
 
@@ -451,11 +450,10 @@ inline void ADMS_BASE::ac_load_diagonal_point(const node_t& no1, COMPLEX new_val
 	_sim->_acx.load_diagonal_point(no1.m_(), mfactor() * new_value);
 }
 /*--------------------------------------------------------------------------*/
-	template <class T>
+template <class T>
 inline void ADMS_BASE::tr_load_point(const node_t& no1, const node_t& no2,
 		T* new_value, T* old_value)
 {
-	itested();
 	T d = dampdiff(new_value, *old_value);
 	if (d != 0.) {
 		_sim->_aa.load_point(no1.m_(), no2.m_(), d);
@@ -516,5 +514,99 @@ inline void ADMS_BASE::ac_eval()
 	}
 }
 /*--------------------------------------------------------------------------*/
+#define _write_ptr(S1, S2, value) \
+	m_entries[m_## S1 ## _ ## S2 ]+=value;
+
+#define _write_JS(S1, S2, value) \
+	m_entries[m_ ## S1 ## _ ## S2]+=value;	
+#define _write_JD(S1, S2, value) \
+	m_entries_old[m_ ## S1 ## _ ## S2]+=value;
+/*--------------------------------------------------------------------------*/
+#define _circuit_gdev                (OPT::gmin)
+#define _circuit_gmin                (OPT::gmin)
+#define _circuit_imax                1.0
+#define _circuit_imelt               1.0
+#define _circuit_iteration           1.0
+#define _circuit_scale               1.0
+#define _circuit_shrink              1.0
+#define _circuit_simulatorSubversion 0
+#define _circuit_simulatorVersion    3.5
+#define _circuit_sourceScaleFactor   1.0
+#define _circuit_tnom                (OPT::tnom_c + CONSTCtoK)
+#define _circuit_temp      (CKT_BASE::_sim->_temp_c + CONSTCtoK)
+#define _scale             1.0
+/*--------------------------------------------------------------------------*/
+#define EXP90 1.220403294317841e+039
+#define m00_hypot(v00,x,y)      v00 = sqrt((x)*(x)+(y)*(y));
+#define m10_hypot(v10,v00,x,y)  v10 = (x)/(v00);
+#define m11_hypot(v11,v00,x,y)  v11 = (y)/(v00);
+#define m00_max(v00,x,y)        v00 = ((x)>(y))?(x):(y);
+#define m10_max(v10,v00,x,y)    v10 = ((x)>(y))?1.0:0.0;
+#define m11_max(v11,v00,x,y)    v11 = ((x)>(y))?0.0:1.0;
+#define m00_min(v00,x,y)        v00 = ((x)<(y))?(x):(y);
+#define m10_min(v10,v00,x,y)    v10 = ((x)<(y))?1.0:0.0;
+#define m11_min(v11,v00,x,y)    v11 = ((x)<(y))?0.0:1.0;
+#define m00_pow(v00,x,y)        v00 = pow(x,y);
+#define m10_pow(v10,v00,x,y)    v10 = (x==0.0)?0.0:(v00)*(y)/(x);
+#define m11_pow(v11,v00,x,y)    v11 = (x==0.0)?0.0:(log(x)*(v00));
+#define m00_div(v00,v10,x,y)    double v10=1/(y); double v00=(x)*v10;
+#define m10_div(v10,v00,vv,x,y)
+#define m11_div(v11,v00,vv,x,y) double v11 = -v00*vv;
+#define m00_mult(v00,v10,v11,x,y) double v10=(x); double v11=(y); double v00=v10*v11;
+#define m00_add(v00,x,y)        double v00=(x)+(y);
+#define m00_cos(v00,x)          v00 = cos(x);
+#define m10_cos(v10,v00,x)      v10 = (-sin(x));
+#define m00_sin(v00,x)          v00 = sin(x);
+#define m10_sin(v10,v00,x)      v10 = (cos(x));
+#define m00_tan(v00,x)          v00 = tan(x);
+#define m10_tan(v10,v00,x)      v10 = (1.0/cos(x)/cos(x));
+#define m00_cosh(v00,x)         v00 = cosh(x);
+#define m10_cosh(v10,v00,x)     v10 = (sinh(x));
+#define m00_sinh(v00,x)         v00 = sinh(x);
+#define m10_sinh(v10,v00,x)     v10 = (cosh(x));
+#define m00_tanh(v00,x)         v00 = tanh(x);
+#define m10_tanh(v10,v00,x)     v10 = (1.0/cosh(x)/cosh(x));
+#define m00_acos(v00,x)         v00 = acos(x);
+#define m10_acos(v10,v00,x)     v10 = (-1.0/sqrt(1-x*x));
+#define m00_asin(v00,x)         v00 = asin(x);
+#define m10_asin(v10,v00,x)     v10 = (+1.0/sqrt(1-x*x));
+#define m00_atan(v00,x)         v00 = atan(x);
+#define m10_atan(v10,v00,x)     v10 = (+1.0/(1+x*x));
+#define m00_logE(v00,x)         v00 = log(x);
+#define m10_logE(v10,v00,x)     v10 = (1.0/x);
+#define m00_log10(v00,x)        v00 = log10(x);
+#define m10_log10(v10,v00,x)    v10 = (1.0/x/log(10));
+#define m00_sqrt(v00,x)         v00 = sqrt(x);
+#define m10_sqrt(v10,v00,x)     v10 = (0.5/v00);
+#define m00_fabs(v00,x)         v00 = fabs(x);
+#define m10_fabs(v10,v00,x)     v10 = (((x)>=0)?(+1.0):(-1.0));
+#define m00_exp(v00,x)          v00 = exp(x); assert(is_number(x));
+#define m10_exp(v10,v00,x)      v10 = v00;
+#define m00_abs(v00)            ((v00)<(0)?(-(v00)):(v00))
+#define m00_limexp(v00,x)       v00 = ((x)<90.0?exp(x):EXP90*(x-89.0));
+#define m10_limexp(v10,v00,x)   v10 = ((x)<90.0?(v00):EXP90);
+#define m20_logE(v00)         (-1.0/v00/v00)
+#define m20_exp(v00)          exp(v00)
+#define m20_limexp(v00)       ((v00)<90.0?exp(v00):0.0)
+#define m20_sqrt(v00)         (-0.25/(v00)/sqrt(v00))
+#define m20_fabs(v00)         0.0
+/*--------------------------------------------------------------------------*/
+#define jacobian(a,b) m_required[m_##a##_##b]=true;	
+#define static_jacobian4(p,q,r,s)  jacobian(p,r) jacobian(p,s) jacobian(q,r) jacobian(q,s)
+#define static_jacobian2s(p,q,r)   jacobian(p,r) jacobian(q,r)
+#define static_jacobian2p(p,r,s)   jacobian(p,r) jacobian(p,s)
+#define static_jacobian1(p,r)      jacobian(p,r)
+#define dynamic_jacobian4(p,q,r,s) jacobian(p,r) jacobian(p,s) jacobian(q,r) jacobian(q,s)
+#define dynamic_jacobian2s(p,q,r)  jacobian(p,r) jacobian(q,r)
+#define dynamic_jacobian2p(p,r,s)  jacobian(p,r) jacobian(p,s)
+#define dynamic_jacobian1(p,r)     jacobian(p,r)
+#define whitenoise_jacobian4(p,q,r,s)
+#define whitenoise_jacobian2s(p,q,r)
+#define whitenoise_jacobian2p(p,r,s)
+#define whitenoise_jacobian1(p)
+#define flickernoise_jacobian4(p,q,r,s)
+#define flickernoise_jacobian2s(p,q,r)
+#define flickernoise_jacobian2p(p,r,s)
+#define flickernoise_jacobian1(p)
 /*--------------------------------------------------------------------------*/
 #endif

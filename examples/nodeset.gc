@@ -5,13 +5,15 @@ R1 1 0 2
 V1 1 0 2
 
 .nodelist
-.echo setting v(1) to 1
+.echo setting v(1) to 1 ===========================
 .nodeset v(1)=1
+
+.echo listing nodes =========================
 .nodelist
 
 .print dc v(nodes)
 
-.dc
+.dc c trace=v
 .nodedump
 .end
 
