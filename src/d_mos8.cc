@@ -5198,7 +5198,6 @@ double DEV_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_MOS8::do_stress_apply( COMPONENT* brh) const
 {
-
   // BUG: put into adp.
   trace2("MODEL_BUILT_IN_MOS8::do_stress_apply", brh->long_label(), _sim->_Time0);
   deprecated();

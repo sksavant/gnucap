@@ -54,7 +54,11 @@ struct INTERFACE SIM_DATA {
   double _genout;	/* tr dc input to circuit (generator) */
   bool   _bypass_ok;	/* flag: ok to bypass model evaluation */
   bool   _fulldamp; 	/* flag: big iter. jump. use full (min) damp */
+private:
   double _last_time;	/* time at which "volts" is valid */
+public:
+  double last_time(){return _last_time;}
+  void tr_reset(){_last_time=0;}
   double _last_Time;	/* end of last accepted timeframe */
   bool _freezetime;	/* flag: don't advance stored time */
   int _iter[iCOUNT];

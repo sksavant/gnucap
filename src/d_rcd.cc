@@ -1339,8 +1339,8 @@ void DEV_BUILT_IN_RCD::stress_apply()
 
   long double fill_new  = E_old;
 
-  double ex_time = _sim->_dT0 - _sim->_last_time;
-  // assert(ex_time = _sim->_last_Time);
+  double ex_time = _sim->_dT0 - _sim->last_time();
+  assert(ex_time >= 0);
 
   long double eff1 = _Ccgfill->tr( Time1 + ex_time/3.0 );
   long double eff2 = _Ccgfill->tr( Time1 + ex_time*2.0/3.0 );
@@ -1731,14 +1731,14 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
   const COMMON_BUILT_IN_RCD* c = asserted_cast<const COMMON_BUILT_IN_RCD*>(dd->common());
   const MODEL_BUILT_IN_RCD* m = dynamic_cast<const MODEL_BUILT_IN_RCD*>(c->model());
   DEV_BUILT_IN_RCD* d = asserted_cast<DEV_BUILT_IN_RCD*>(dd);
-  trace5("COMMON_BUILT_IN_RCD::__uin_iter: ", uin, E_old, E, E-E_old,  CKT_BASE::_sim->_last_time );
+  trace5("COMMON_BUILT_IN_RCD::__uin_iter: ", uin, E_old, E, E-E_old,  CKT_BASE::_sim->last_time() );
   assert (E<1.000001);
   
   if (E>1) {
     untested0("COMMON_BUILT_IN_RCD::__uin_iter aligned E");
     E=1;
   }
-  double h = BASE_SUBCKT::_sim->_last_time;
+  double h = BASE_SUBCKT::_sim->last_time();
 
   long double Euin = 0;
   long double Euin_alt = 0;

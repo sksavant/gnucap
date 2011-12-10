@@ -2,6 +2,7 @@
 //#include "d_mos.h"
 #include "d_mos8.h"
 #include "u_nodemap.h" // fixme?
+#include "d_bti.h"
 
 // aging helpers.
 // alpha version
@@ -55,7 +56,8 @@ void ADP_BUILT_IN_MOS::stress_apply() {
 	USE(m);
 
 	if (m->use_bti()){
-		bti_stress->set_tt(0); // not in use (yet?)
+		const DEV_BUILT_IN_BTI* bti = asserted_cast<const DEV_BUILT_IN_BTI*>(d->BTI()); // hack, in a way
+		bti_stress->set_tt( bti->dvth() ); 
 		bti_stress->set_tr(0); // not in use (yet?)
 	}
 
@@ -138,10 +140,28 @@ void ADP_BUILT_IN_MOS::init(const COMPONENT* c)
 	bti_eff_voltage = 0;
 }
 //*******************************************//
-
+//
+/// make sure the nodes are up to date (for nodedump)
 void ADP_BUILT_IN_MOS::tr_stress_last() {
-	// bti here?
-	// not yet
+
+	trace1("ADP_BUILT_IN_MOS8::stress_apply", long_label());
+	// HIER
+	const DEV_BUILT_IN_MOS* d = asserted_cast<const DEV_BUILT_IN_MOS*>(owner());
+	const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
+	const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
+	USE(m);
+
+	if (m->use_bti()){
+		const DEV_BUILT_IN_BTI* bti = prechecked_cast<const DEV_BUILT_IN_BTI*>(d->BTI()); // hack, in a way
+		if (!bti){
+			error(bDANGER,"no bti here? %i %i %f\n", _sim->tt_iteration_number(), _sim->iteration_number(),
+					_sim->_Time0);
+			assert(bti);
+		}
+
+		bti_stress->set_tt( bti->dvth() ); 
+		bti_stress->set_tr(0); // not in use (yet?)
+	}
 }
 
 /*--------------------------------------------------------------------------*/
@@ -292,12 +312,12 @@ void ADP_BUILT_IN_MOS8::tr_stress_last() {
 
 	trace3("ADP_BUILT_IN_MOS8::tr_stress_last", long_label(), _sim->tt_iteration_number(), m->use_hci());
 	if(m->use_hci()){
-		trace2("ADP_BUILT_IN_MOS8::tr_stress_last hci", _sim->_last_time, _hci_tr/_sim->_last_time );
+		trace2("ADP_BUILT_IN_MOS8::tr_stress_last hci", _sim->last_time(), _hci_tr/_sim->last_time() );
 
 		hci_node->tt() += _hci_tr; // tt at last_Time.
-		hci_node->set_tr(double(_hci_tr/_sim->_last_time));  // tr= d(tt)/dt
+		hci_node->set_tr(double(_hci_tr/_sim->last_time()));  // tr= d(tt)/dt
 
-		if(!_sim->_last_time){
+		if(!_sim->last_time()){
 			assert(_sim->phase() == p_PD);
 			hci_node->set_tr(0);
 		}
@@ -328,7 +348,7 @@ void ADP_BUILT_IN_MOS8::stress_apply() {
 
 		trace5("ADP_BUILT_IN_MOS8::stress_apply", eff_last_timeframe, eff_now, hci_node->tt1(), hci_node->order(), hci_node->tr1() );
 
-		double ex_time =  _sim->_dT0 - _sim->_last_time; // stress that long
+		double ex_time =  _sim->_dT0 - _sim->last_time(); // stress that long
 
 		if(fabs(ex_time)<=1e-18) ex_time=0;
 

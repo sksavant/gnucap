@@ -42,8 +42,8 @@ public:
   explicit  NODE_MAP();
 	   ~NODE_MAP();
   NODE_BASE*     operator[](std::string);
-  CKT_NODE*     new_node(std::string,const  CARD_LIST* p=0);
-  ADP_NODE*     new_adp_node(std::string,const COMPONENT* p);
+  CKT_NODE*     new_node(string,const CARD_LIST* p=0);
+  ADP_NODE*     new_adp_node(string, const COMPONENT* p);
 
   typedef std::map<const std::string, NODE_BASE*>::iterator iterator;
   typedef std::map<const std::string, NODE_BASE*>::const_iterator const_iterator;

@@ -107,9 +107,18 @@ NODE_BASE* NODE_MAP::operator[](std::string s)
 /* return a pointer to a node given a string
  * creates a new one if it isn't already there.
  */
-CKT_NODE* NODE_MAP::new_node(std::string s, const CARD_LIST* p)
+CKT_NODE* NODE_MAP::new_node(std::string s_in, const CARD_LIST* p)
 {  
-  trace0("NODE_MAP::new_node " +s);
+
+  std::string::size_type dotplace = s_in.find_last_of(".");
+  string s = s_in;
+  if(dotplace != std::string::npos){
+    untested();
+    trace1("NODE_MAP::new_node name too long (BUG).", s_in);
+    string s = s_in.substr(dotplace+1, std::string::npos);
+  }
+
+  trace1("NODE_MAP::new_node " ,s);
   if (OPT::case_insensitive) {
     notstd::to_lower(&s);
   }else{
@@ -148,7 +157,7 @@ ADP_NODE* NODE_MAP::new_adp_node(std::string s, const COMPONENT* p)
     anode = new ADP_NODE(s, p);
     node = prechecked_cast<NODE_BASE*>(anode);
     assert(node);
-    trace2("NODE_MAP::new_node", s, node->user_number());
+    trace1("NODE_MAP::new_node", s);
     //                 ^^^^ is really the map number of the new node
     _node_map[s] = node;
   }

@@ -32,12 +32,12 @@
 /*--------------------------------------------------------------------------*/
 #define trace_func_comp() trace0((__func__ + (":" + (**ci).long_label())).c_str())
 /*--------------------------------------------------------------------------*/
-CARD_LIST::CARD_LIST()
+CARD_LIST::CARD_LIST(const CARD* owner)
   :_parent(NULL),
    _nm(new NODE_MAP),
    _params(NULL),
    _language(NULL),
-   _owner(NULL),
+   _owner(owner),
    _origin(NULL)
 {
 }

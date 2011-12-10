@@ -58,4 +58,5 @@
 - added std::vector and matrix PARAMETER
 - node order method "oTREE" sorts according to tree-structure (alpha)
 - matrix use visualization. new allocator (allocate component-wise)
-- nodeset.
+- nodeset/nodedump
+- gnucap-conf script. helps with compiling after install

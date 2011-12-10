@@ -13,9 +13,9 @@ template<class S>
 inline S& operator<<( S& o, const NODE_MAP& nm){
 	o<<"\n";
 	for (NODE_MAP::const_iterator ni = nm.begin(); ni != nm.end(); ++ni) {
-		NODE* n = (*ni).second;
+		NODE_BASE* n = (*ni).second;
 		string label = (*ni).first;
-		o<<"(" <<  label << ":" <<  n->user_number() << ")";
+		o<<"(" <<  label << ":" << ")";
 
 	}
 	return o;

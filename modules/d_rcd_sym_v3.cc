@@ -250,8 +250,8 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE* _c,
   assert( !positive || uin_high >= 0 );
   assert (uin_high>=uin_low);
 
-  E_high = __step( uin_high, E_old, CKT_BASE::_sim->_last_time, c);
-  E_low  = __step( uin_low,  E_old, CKT_BASE::_sim->_last_time, c); 
+  E_high = __step( uin_high, E_old, CKT_BASE::_sim->last_time(), c);
+  E_low  = __step( uin_low,  E_old, CKT_BASE::_sim->last_time(), c); 
 
   assert (E_low>=0);
 
@@ -293,10 +293,10 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE* _c,
   }
 
   // sanitycheck (monotonicity)
-  long double E_test = __step( uin_eff, E_old, CKT_BASE::_sim->_last_time, c );
+  long double E_test = __step( uin_eff, E_old, CKT_BASE::_sim->last_time(), c );
   double trvorher= _c->tr();
   if(positive) trvorher=max(0.0,trvorher);
-  long double E_vorher = __step( trvorher , E_old, CKT_BASE::_sim->_last_time, c );
+  long double E_vorher = __step( trvorher , E_old, CKT_BASE::_sim->last_time(), c );
   if (fabs(E_test - E) < fabs(E_vorher-E)){
     trace6("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last new uin better ",
         uin_eff, _c->tr(), E_test - E, E_vorher-E,1-E , linear_inversion);
@@ -346,8 +346,8 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE* _c,
   if (m->positive)
     uin_low = max(0.0L, uin_low);
 
-  E_high = __step( uin_high, E_old, CKT_BASE::_sim->_last_time, c );
-  E_low  = __step( uin_low,  E_old, CKT_BASE::_sim->_last_time, c ); 
+  E_high = __step( uin_high, E_old, CKT_BASE::_sim->last_time(), c );
+  E_low  = __step( uin_low,  E_old, CKT_BASE::_sim->last_time(), c ); 
   trace6(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + _c->label()).c_str(),
       uin_eff,  E-E_low, E_high - E_low, E, 1-E, E_high-E );
   trace3(("MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last E" + _c->label()).c_str(), 
@@ -391,9 +391,9 @@ void MODEL_BUILT_IN_RCD_SYM_V3::do_tr_stress_last( long double E, ADP_NODE* _c,
   long double u_oben  = max ( uin + OPT::abstol, uin * (1+OPT::reltol) );
   long double u_unten = min ( uin - OPT::abstol, uin * (1-OPT::reltol) );
   if(m->positive) u_unten=max(u_unten,0.0L);
-  long double E_hier  = cc->__step( uin , E_old, BASE_SUBCKT::_sim->_last_time );
-  long double E_oben  = cc->__step( u_oben , E_old, BASE_SUBCKT::_sim->_last_time );
-  long double E_unten = cc->__step( u_unten, E_old, BASE_SUBCKT::_sim->_last_time );
+  long double E_hier  = cc->__step( uin , E_old, BASE_SUBCKT::_sim->last_time() );
+  long double E_oben  = cc->__step( u_oben , E_old, BASE_SUBCKT::_sim->last_time() );
+  long double E_unten = cc->__step( u_unten, E_old, BASE_SUBCKT::_sim->last_time() );
 
   trace3("COMMON_BUILT_IN_RCD:: sanitycheck", uin, u_oben ,u_unten );
   trace6("COMMON_BUILT_IN_RCD:: sanitycheck", E,E_hier, E - 1, E_oben - E,E- E_unten, E_oben );
@@ -451,7 +451,7 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__E(double uin, long double cur, const CO
   long double Rc0=cc->_Rc0;
   long double Re0=cc->_Re0;
   long double Rc1=cc->_Rc1;
-  long double t=_sim->_last_time;
+  long double t=_sim->last_time();
 
   return ( -(1.0/(1.0 + exp(-Rc1*uin) * Re0/uin/Rc0) - cur) 
        * exp( -(Rc0*uin*exp(Rc1*uin)/Re0 + 1)*t*exp(-Rc1*uin)/Rc0 )
@@ -486,7 +486,7 @@ long double MODEL_BUILT_IN_RCD_SYM_V3::__dstepds(long double uin, long double cu
   long double Rc0=c->_Rc0;
   long double Re0=c->_Re0;
   long double Rc1=c->_Rc1;
-  long double t=_sim->_last_time;
+  long double t=_sim->last_time();
 
 //return ( -((cur - 1)*Rc0*Rc0*Rc0*t*uin*uin*exp(3*Rc1*uin) -
 //          Rc1*Re0*Re0*Re0*cur*t - (Rc0*Rc0*Rc1*Re0*Re0*uin + Rc0*Rc0*Re0*Re0)*exp(2*Rc1*uin +

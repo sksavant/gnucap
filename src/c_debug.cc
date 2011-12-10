@@ -270,8 +270,8 @@ void CMD_NL::print( OMSTREAM _out, const CARD_LIST* scope){
   for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
     if (i->first != "0") {
       stringstream s;
-      _out << "|";
-      s << setw(8) << i->second->long_label();
+      _out << i->first << " long/short label: ";
+      s << setw(8) << i->second->long_label() << "(" << i->second->short_label() <<")";
       _out << s.str();
 
       const CKT_NODE* c = (dynamic_cast<const CKT_NODE*>(i->second));

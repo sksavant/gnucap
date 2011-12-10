@@ -202,7 +202,8 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
   assert(m);
   assert(is_number(_c->tt()));
   double E_old = _c->tt();
-
+  double trtime = CKT_BASE::_sim->last_time();
+  assert(trtime>=0);
 
   if (_c->tr() == -inf) _c->tr() = ( _c->tr_lo+_c->tr_hi)/2.0;
   if (!is_number(_c->tr())) _c->tr() = (_c->tr_lo+_c->tr_hi)/2.0;
@@ -237,9 +238,9 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
   assert (uin_high>=uin_low);
 
   assert(uin_low>=-0.001 || !m->positive);
-  E_high = __step( uin_high, E_old, CKT_BASE::_sim->_last_time, c );
+  E_high = __step( uin_high, E_old, trtime, c );
   assert(uin_high>=-0.001 || !m->positive);
-  E_low  = __step( uin_low,  E_old, CKT_BASE::_sim->_last_time, c ); 
+  E_low  = __step( uin_low,  E_old, trtime, c ); 
 
   assert (E_low>=0);
 
@@ -298,11 +299,11 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
   // sanitycheck (monotonicity)
   assert(uin_eff >= -0.001 || !m->positive);
     
-  long double E_test = this->__step( uin_eff, E_old, CKT_BASE::_sim->_last_time, c );
+  long double E_test = this->__step( uin_eff, E_old, trtime, c );
 
 #if 0 
   double trvorher = _c->tr();
-  long double E_vorher = this->__step( trvorher , E_old, CKT_BASE::_sim->_last_time, c );
+  long double E_vorher = this->__step( trvorher , E_old, CKT_BASE::_sim->last_time(), c );
   if (fabs(E_test - E) < fabs(E_vorher-E)){
     trace6("MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last new uin better ",
         uin_eff, _c->tr(), E_test - E, E_vorher-E,1-E , linear_inversion);
@@ -333,8 +334,8 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
   trace3(("MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last E" + _c->label()).c_str(),
       uin_low, uin_eff, uin_high);
 
-  E_high = __step( uin_high, E_old, CKT_BASE::_sim->_last_time, c );
-  E_low  = __step( uin_low,  E_old, CKT_BASE::_sim->_last_time, c ); 
+  E_high = __step( uin_high, E_old, trtime, c );
+  E_low  = __step( uin_low,  E_old, trtime, c ); 
   trace6(("MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last E" + _c->label()).c_str(),
       uin_eff,  E-E_low, E_high - E_low, E, 1-E, E_high-E );
   trace3(("MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last E" + _c->label()).c_str(), 
@@ -344,8 +345,10 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
     _c->set_order(0);
 
   if ((double)E_high<(double)E_low - 1.5e-19){
-    error( bDANGER, "MODEL_BUILT_IN_RCD_EXP:: sanitycheck (delta %LE ) in %s\n", E_high - E_low, dd->long_label().c_str());
-    error( bDANGER, "MODEL_BUILT_IN_RCD_EXP:: sanitycheck (abs %LE ) in %s\n", E_high, dd->long_label().c_str());
+    error( bDANGER, "MODEL_BUILT_IN_RCD_EXP:: sanitycheck (delta %LE ) in %s\n",
+        E_high - E_low, dd->long_label().c_str());
+    error( bDANGER, "MODEL_BUILT_IN_RCD_EXP:: sanitycheck (abs %LE ) in %s\n",
+        E_high, dd->long_label().c_str());
     throw(Exception("sanitycheck failed"));
   }
 
@@ -355,9 +358,13 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
   //
   //
   assert(is_number(E_high-E_low));
+  assert(is_number(E));
   //assert( (double) E_high-(double) E_low >= 0);
   ///assert((double) E_high>= (double) E_low);
-  assert(E_low <= E || double(E)==1.0 || double(E_high)==1.0 || !linear_inversion);
+  if (!(E_low <= E + 1.5e-19 || double(E)==1.0 || double(E_high)==1.0 || !linear_inversion)){
+    untested3("MODEL_BUILT_IN_RCD_EXP::", E_high, E, E_low);
+    assert (E_low <= E || double(E)==1.0 || double(E_high)==1.0 || !linear_inversion);
+  }
 
   if(E > E_high && E!=1){
     untested1("MODEL_IN_RCD_EXP::", linear_inversion);
@@ -414,6 +421,7 @@ double MODEL_BUILT_IN_RCD_EXP::__Ge(double s, const COMMON_COMPONENT* c ) const
 long double MODEL_BUILT_IN_RCD_EXP::__step(long double s, long double cur, double deltat, const COMMON_COMPONENT* c ) const 
 {
   //cout << "exp step\n";
+  assert(deltat>=0);
   assert(is_number(s));
   assert(is_number(cur));
   const COMMON_BUILT_IN_RCD* cc = dynamic_cast<const COMMON_BUILT_IN_RCD*>(c);
@@ -430,12 +438,16 @@ long double MODEL_BUILT_IN_RCD_EXP::__step(long double s, long double cur, doubl
   trace5("MODEL_BUILT_IN_RCD_EXP::__step ", Eend, deltat, s,  ret,  logl(fabsl(cur-Eend ) ) );
 //  assert(is_almost(retalt ,ret));
 
+#ifndef NDEBUG
   if (!is_number(ret) || ret < -0.1){
-    trace4("COMMON_BUILT_IN_RCD::__step ", Eend, deltat, s, logl(fabsl(cur-Eend ) ) );
+    error(bDANGER,"COMMON_BUILT_IN_RCD::__step Eend T=%f tt=%i\n", _sim->_Time0, _sim->tt_iteration_number() );
+    error(bDANGER,"COMMON_BUILT_IN_RCD::__step Eend %f deltat %f s=%f logl=%LE, tauinv=%LE",
+        double(Eend), deltat, (double)s, logl(fabsl(cur-Eend ) ), tauinv );
     trace4("COMMON_BUILT_IN_RCD::__step ", cur-Eend, deltat, s, fabsl(cur-Eend )  );
     trace3("COMMON_BUILT_IN_RCD::__step ", cur, deltat, s  );
     assert(false);
   }
+#endif
 
   return(ret);
 
@@ -449,7 +461,7 @@ long double MODEL_BUILT_IN_RCD_EXP::__dstepds(long double uin, long double cur, 
   long double Re0=c->_Re0;
   long double Rc1=c->_Rc1;
   long double Re1=c->_Re1;
-  long double t=_sim->_last_time;
+  long double t=_sim->last_time();
 
   return 1;
 

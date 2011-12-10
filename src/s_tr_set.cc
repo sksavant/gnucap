@@ -89,7 +89,7 @@ void TRANSIENT::setup(CS& Cmd)
 	_tstop  = arg2;
 	/* _tstep unchanged */
       }else if (arg1 >= arg2) {		    /* 2 args: _tstop, _tstep */
-	_tstart = _sim->_last_time;
+	_tstart = _sim->last_time();
 	_tstop  = arg1;
 	_tstep  = arg2;
       }else{ /* arg1 < arg2 */		    /* 2 args: _tstep, _tstop */
@@ -100,8 +100,8 @@ void TRANSIENT::setup(CS& Cmd)
     }else{itested();
       assert(arg1.has_hard_value());
       arg1.e_val(0.,_scope);
-      if (arg1 > _sim->_last_time) {untested();	    /* 1 arg: _tstop */
-	_tstart = _sim->_last_time;
+      if (arg1 > _sim->last_time()) {untested();	    /* 1 arg: _tstop */
+	_tstart = _sim->last_time();
 	_tstop  = arg1;
 	/* _tstep unchanged */
       }else if (arg1 == 0.) {itested();	    /* 1 arg: _tstart */
@@ -109,17 +109,17 @@ void TRANSIENT::setup(CS& Cmd)
 	_tstart = 0.;
 	_tstop  = oldrange;
 	/* _tstep unchanged */
-      }else{untested(); /* arg1 < _sim->_last_time, but not 0 */  /* 1 arg: _tstep */
+      }else{untested(); /* arg1 < _sim->last_time(), but not 0 */  /* 1 arg: _tstep */
 	double oldrange = _tstop - _tstart;
-	_tstart = _sim->_last_time;
-	_tstop  = _sim->_last_time + oldrange;
+	_tstart = _sim->last_time();
+	_tstop  = _sim->last_time() + oldrange;
 	_tstep  = arg1;
       }
     }
   }else{ /* no args */
     double oldrange = _tstop - _tstart;
-    _tstart = _sim->_last_time;
-    _tstop  = _sim->_last_time + oldrange;
+    _tstart = _sim->last_time();
+    _tstop  = _sim->last_time() + oldrange;
     /* _tstep unchanged */
   }
   if (Cmd.match1("'\"({") || Cmd.is_pfloat()) {
@@ -132,12 +132,12 @@ void TRANSIENT::setup(CS& Cmd)
   _tstop.e_val(NOT_INPUT, _scope);
   _tstep.e_val(NOT_INPUT, _scope);
 
-  if  (_cold || _tstart < _sim->_last_time  ||  _sim->_last_time <= 0.) {
+  if  (_cold || _tstart < _sim->last_time()  ||  _sim->last_time() <= 0.) {
     _cont = false;
     time1 = _sim->_time0 = 0.;
   }else{
     _cont = true;
-    time1 = _sim->_time0 = _sim->_last_time;
+    time1 = _sim->_time0 = _sim->last_time();
   }
   _sim->_freq = ((_tstop > _tstart) ? (1 / (_tstop - _tstart)) : (0.));
 

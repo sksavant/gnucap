@@ -50,7 +50,7 @@ private:
   LANGUAGE* _language;
   std::list<CARD*> _cl;
   const CARD* _owner;       // stupid hack
-  const CARD_LIST* _origin; // stupid hack
+  const CARD_LIST* _origin; // even more stupid hack
 public:
   // internal types
   typedef std::list<CARD*>::iterator iterator;
@@ -165,7 +165,7 @@ public:
 
  // ADP_NODE* new_adp_node(const CARD* c, string name);
 
-  explicit CARD_LIST();
+  explicit CARD_LIST(const CARD* owner=0);
   CARD_LIST(const CARD* model, CARD* owner, const CARD_LIST* scope,
   	    PARAM_LIST* p);
   ~CARD_LIST();

@@ -153,7 +153,7 @@ void ADP_NODE::set_tt( hp_float_t x ){
 /*----------------------------------------------------------------------------*/
 hp_float_t ADP_NODE::get_aft_1() const { return tt1() + _delta[1] ; }
 /*----------------------------------------------------------------------------*/
-double ADP_NODE::tr_duration()const{ return CKT_BASE::_sim->_last_time; }
+double ADP_NODE::tr_duration()const{ return CKT_BASE::_sim->last_time(); }
 /*----------------------------------------------------------------------------*/
 // called right after tr
 TIME_PAIR ADP_NODE_RCD::tt_review( ) {
@@ -245,6 +245,7 @@ void ADP_NODE::tr_add( double x ) const {
   tr() += x;
 }
 /*----------------------------------------------------------------------------*/
+// FIXME: remove
 void ADP_NODE::reset() {
   trace2( "ADP_NODE::reset()", CKT_BASE::_sim->_Time0, tr_value );
   std::cout << "rst " << label() << "\n";
@@ -262,7 +263,7 @@ void ADP_NODE::tt_accept()
   trace4(("ADP_NODE::tt_accept() " + long_label()).c_str(),
       tr_value, tt_value, CKT_BASE::_sim->tt_iteration_number(), CKT_BASE::_sim->get_tt_order());
   assert( is_number(tr_value) );
-  assert( CKT_BASE::_sim->_last_time >0 );
+  assert( CKT_BASE::_sim->last_time() >0 );
 
   uint_t order=CKT_BASE::_sim->get_tt_order();
 
@@ -729,8 +730,8 @@ void ADP_NODE::tr_expect_3_exp_fit(){
   assert( _delta_expect == _delta_expect );
 
   hp_float_t E = - c/alpha;
-  hp_float_t delta = E * ( - exp( t3*alpha ) + exp(t2*alpha) )/ CKT_BASE::_sim->_last_time ;
-  hp_float_t delta_trapez = (_delta[1] + _delta_expect)/2 * Time_delta() / CKT_BASE::_sim->_last_time;
+  hp_float_t delta = E * ( - exp( t3*alpha ) + exp(t2*alpha) )/ CKT_BASE::_sim->last_time() ;
+  hp_float_t delta_trapez = (_delta[1] + _delta_expect)/2 * Time_delta() / CKT_BASE::_sim->last_time();
 
   trace4("ADP_NODE::tt_expect3_exp", delta, delta_trapez, tt1(), get() );
   delta_trapez = delta_trapez; // unused_variable...
@@ -785,7 +786,7 @@ void ADP_NODE::tr_expect_3_quadratic(){
   _delta_expect = -(((_delta[2] - tr_value3)/dT2() - (_delta[1] - _delta[2])/dT1())*(dT0() + dT1())/(dT1() + dT2()) -
     (_delta[2] - tr_value3)/dT2())*(dT0() + dT1() + dT2()) + tr_value3;
 
-  hp_float_t diff = (_delta[1] + _delta_expect)/2 * Time_delta() / CKT_BASE::_sim->_last_time;
+  hp_float_t diff = (_delta[1] + _delta_expect)/2 * Time_delta() / CKT_BASE::_sim->last_time();
   tt_expect = get() + diff;
   assert (tt_expect == tt_expect);
 }
@@ -797,7 +798,7 @@ double ADP_NODE::debug(){
 void ADP_NODE::tr_expect_2_something(){
   assert(order()==2);
   _delta_expect = _delta[1] + (_delta[1] - _delta[2]) * dT0()/dT1();
-  tt_expect = get1() + ( Time_delta() ) / CKT_BASE::_sim->_last_time;
+  tt_expect = get1() + ( Time_delta() ) / CKT_BASE::_sim->last_time();
   trace2(( "ADP_NODE::tt_expect2_something "+short_label()).c_str(), get1(), tt_expect );
 }
 /*---------------------------------*/
@@ -806,7 +807,7 @@ void ADP_NODE::tr_expect_1_const(){
   trace2(( "ADP_NODE::tt_expect_1_const() "+short_label()).c_str(),
        tr(), tr1() );
   trace3(( "ADP_NODE::tt_expect_1_const() "+short_label()).c_str(),
-      Time_delta(), CKT_BASE::_sim->_time0, CKT_BASE::_sim->_last_time );
+      Time_delta(), CKT_BASE::_sim->_time0, CKT_BASE::_sim->last_time() );
 
   tr() = tr1();
 //  _corrector = &ADP_NODE::tr_correct_1_const;
@@ -907,7 +908,7 @@ void ADP_NODE::tt_commit( )
 
 
   // this is before sweep....
-  assert( CKT_BASE::_sim->_last_time >0 );
+  assert( CKT_BASE::_sim->last_time() >0 );
   assert( tt_value == tt_value );
   assert( tt_value >=0 || !_positive );
   // tr_value will be printed as "tr"
@@ -1036,7 +1037,7 @@ void ADP_NODE::tr_expect_1_exp(){
   trace3(( "ADP_NODE::tt_expect_1_exp() "+short_label()).c_str(),
      tr_value, _delta[0], _delta[1] );
   trace3(( "ADP_NODE::tt_expect_1_exp() "+short_label()).c_str(),
-      Time_delta(), CKT_BASE::_sim->_time0, CKT_BASE::_sim->_last_time );
+      Time_delta(), CKT_BASE::_sim->_time0, CKT_BASE::_sim->last_time() );
 
   _delta_expect = _delta[1];
   assert (_delta_expect < 0.1);

@@ -948,7 +948,7 @@ void SOCK::verakons() {
   for( unsigned i = 0; i < _caplist.size(); i++)
   {
     _caplist[i]->keep_ic(); // latch voltage applied to _v0
-    trace2("SOCK::verakons",_caplist[i]->long_label(), _caplist[i]->tr_involts() );
+    trace1("SOCK::verakons",_caplist[i]->long_label());
     _caplist[i]->set_constant(true);
     _caplist[i]->q_eval();		// so it will be updated
   }
@@ -1143,7 +1143,7 @@ void SOCK::cap_prepare(void){
       _caplist[ii]->set_constant(false);		// so it will be updated
     }else{
       untested();
-      trace1("SOCK::cap_prepare, attaching common", *_caplist[ii]);
+      trace1("SOCK::cap_prepare, attaching common", _caplist[ii]->long_label());
       //      _sweepval[ii] = _zap[ii]->set__value();	// point to value to patch
       COMMON_COMPONENT* c = bm_dispatcher.clone("eval_bm_value");
       c->set_value( _caplist[ii]->value() );
@@ -1152,7 +1152,7 @@ void SOCK::cap_prepare(void){
       //
       _caplist[ii]->set_value(_caplist[ii]->value(),dc);	// zap out extensions
       _caplist[ii]->set_constant(false);		// so it will be updated
-      trace1("SOCK::cap_prepare", *_caplist[ii]);
+      trace1("SOCK::cap_prepare", _caplist[ii]->long_label());
       _caplist[ii]->precalc_first();
       _caplist[ii]->precalc_last();
       _caplist[ii]->tr_begin();

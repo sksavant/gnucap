@@ -216,7 +216,7 @@ TIME_PAIR CARD::tr_review()
 void CARD::new_subckt()
 {
   delete _subckt;
-  _subckt = new CARD_LIST;
+  _subckt = new CARD_LIST(this);
 }
 /*--------------------------------------------------------------------------*/
 void CARD::new_subckt(const CARD* Model, CARD* Owner,

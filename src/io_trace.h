@@ -156,11 +156,16 @@ class hp{
 			   __FILE__, __LINE__, __func__, s, #x, (double)(x)))
 #define untested2(s,x,y) (fprintf(stderr, "@@#\n@@@:%s:%u:%s: %s  %s=%g, %s=%g\n", \
 			   __FILE__, __LINE__, __func__, s, #x, (double)(x), #y, (double)(y) ))
+#define untested3(s,x,y,z) ( cerr <<  "@@#\n@@@" << s << "  " << #x << "=" << (x)  \
+		                                      << "  " << #y << "=" << (y)  \
+		                                      << "  " << #z << "=" << z  \
+		                                      << endl )
 #else
 #define untested()
 #define untested0(s)
 #define untested1(s,x)
 #define untested2(s,x,y)
+#define untested3(s,x,y,z)
 #endif
 
 #ifdef TRACE_ITESTED

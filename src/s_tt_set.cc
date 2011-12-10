@@ -123,7 +123,7 @@ void TTT::setup(CS& Cmd)
 			arg3.e_val(0.,_scope);
 			arg4.e_val(0.,_scope);
 			_sim->_last_Time = .0; // ?
-			_sim->_last_time = .0;
+			_sim->tr_reset();
 
 			_tstep  = arg1;
 			_tstop  = arg2;
@@ -149,7 +149,7 @@ void TTT::setup(CS& Cmd)
 			arg2.e_val(0.,_scope);
 			arg3.e_val(0.,_scope);
 			_sim->_last_Time = .0;
-			_sim->_last_time = .0;
+			_sim->tr_reset();
 
 			_tstep  = arg1;
 			_tstop  = arg2;
@@ -171,8 +171,8 @@ void TTT::setup(CS& Cmd)
 		} else if (arg2.has_hard_value() ) {
 			trace0("TTT::setup have 2");
 			_Tstart = _sim->_last_Time;
-			_sim->_time0=0;
-			_sim->_last_time=0;
+			_sim->_time0 = 0;
+			_sim->tr_reset();
 			if ((double)_Tstart == 0){
 				trace0("TTT::setup latching tr times");
 				_tstep = arg1;
@@ -201,8 +201,8 @@ void TTT::setup(CS& Cmd)
 			trace1("TTT::setup have 1", _sim->_last_Time);
 			_Tstart = _sim->_last_Time;
 			_Tstop  = arg1; // as tran
-			_sim->_time0=0;
-			_sim->_last_time=0;
+			_sim->_time0 = 0;
+			_sim->tr_reset();
 
 			// to trigger prints... (hack?)
 			if(double(_Tstop) == 0) _Tstop = double( _Tstart );

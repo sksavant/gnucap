@@ -208,7 +208,7 @@ void TTT::first_after_interruption(){
 	_sim->_time0 = 0;
 	_sim->force_tt_order(0); assert(_sim->get_tt_order() == 0 );
 	time1 = 0.;
-	//    _sim->_dT0 =_sim->_last_time;
+	//    _sim->_dT0 =_sim->last_time();
 	advance_Time(); // fix last_iter time (dT0==0);
 
 	// bug. too early
@@ -396,10 +396,17 @@ void TTT::sweep_tt()
 	assert( _sim->_mode  == s_TTT );
 	assert( _sim->_Time0 >= 0 );
 
+	if (!_tt_cont){
+		tt_begin();
+	}
+
 	if( _power_down ){
 		trace1("TTT::sweep_tt pd until", _Tstop );
 		power_down(  _Tstop  );
 		trace0("TTT::sweep_tt pd done");
+		return;
+	}else if( _Tstop == _Tstart || double(_Tstop) == 0 ){
+		trace0("TTT::sweep_tt just tt_begin");
 		return;
 	}else if( _Tstop == _Tstart ){
 		trace0("TTT::sweep_tt just printing");
@@ -407,7 +414,6 @@ void TTT::sweep_tt()
 		return;
 	}else if ( !_tt_cont ){
 		trace0("TTT::sweep_tt from 0");
-		tt_begin();
 		print_head_tr();
 		do_initial_dc();
 
@@ -444,9 +450,11 @@ void TTT::sweep_tt()
 				_accepted, _accepted_tt, tt_iteration_number(), _sim->_last_Time ); 
 		sanitycheck();
 
+
 		trace0("TTT::sweep_tt ADP_NODE::tt_commit");
 //		ADP_NODE_LIST::adp_node_list.do_forall( &ADP_NODE::tt_commit );
-		trace0("TTT::sweep CARD::stress_apply");
+		trace2("TTT::sweep CARD::stress_apply", _sim->_dT0, _sim->last_time());
+		assert(  _sim->_dT0 - _sim->last_time() >= 0);
 		CARD_LIST::card_list.stress_apply();
 
 		trace2( "TTT::sweep calling TTT::sweep", _cont, _sim->_Time0 );
@@ -524,7 +532,7 @@ void TTT::sweep() // tr sweep wrapper.
 
 	try{
 		_cont = true;
-		trace3("TTT::sweep calling sweep", _sim->_time0, _sim->_last_time, _tstep);
+		trace3("TTT::sweep calling sweep", _sim->_time0, _sim->last_time(), _tstep);
 		_inside_tt=1;
 		TRANSIENT::sweep();
 		assert(_accepted);
@@ -532,6 +540,8 @@ void TTT::sweep() // tr sweep wrapper.
 
 	}catch (Exception& e) {
 		untested();
+		assert(_sim->_dT0 > _sim->last_time()); // = means zero step
+		                                       // if this fails, something is wrong.
 		error(bDANGER, "Sweep exception %s at %E, dT0 %E, step %i\n",
 				e.message().c_str(), _sim->_Time0, _sim->_dT0, tt_iteration_number());
 		_out << "* tt sweep failed: "<< e.message() <<"\n";
@@ -545,8 +555,8 @@ void TTT::sweep() // tr sweep wrapper.
 		}
 	}
 
-	trace2("TTT done TRANSIENT::sweep", _sim->_last_time, _sim->_Time0);
-	//  std::cout << "* sweep done. last time: " << _sim->_last_time << " tstop " << _tstop << "\n";
+	trace2("TTT done TRANSIENT::sweep", _sim->last_time(), _sim->_Time0);
+	//  std::cout << "* sweep done. last time: " << _sim->last_time() << " tstop " << _tstop << "\n";
 
 	CKT_BASE::tt_behaviour_rel /= (_sim->_dT0);
 	CKT_BASE::tt_behaviour_del /= (_sim->_dT0);
@@ -862,7 +872,7 @@ bool TTT::next()
 				_dT_by_adp << " " << _sim->_dT1  << " " << _sim->_dT0   << " )\n";
 
 	} else { // accepted step. calculating new_dT
-		// _sim->_last_Time = _sim->_Time0+_sim->_last_time;   
+		// _sim->_last_Time = _sim->_Time0+_sim->last_time();   
 
 		_Time1 = _sim->_Time0;
 
@@ -873,7 +883,6 @@ bool TTT::next()
 //		if ( _trace > 0 ) 
 //			_out << "* new step " << new_dT << " ( just accepted: " << _sim->_dT0   << 
 //				", adp "<< _dT_by_adp <<" last_Time" << _sim->_last_Time << " )\n";
-
 
 		if(new_dT < _dTmin){
 			error(bWARNING, "step too small %e %e adp %e\n", new_dT, _dTmin, _dT_by_adp );
@@ -928,8 +937,6 @@ bool TTT::next()
 	} else {
 		trace5("TTT::next another step ", _sim->_Time0, new_dT, _Time1, _Tstop, _sim->_dT0 );
 	}
-
-	// new_dT = max( 0.0, new_dT );
 
 	_sim->_Time0 = new_Time0;
 
@@ -1338,7 +1345,7 @@ void TTT::advance_Time(void)
 
 		}
 	}else{
-		trace0("TTT::advance_Time osolete call?");
+		trace0("TTT::advance_Time obsolete call?");
 		untested();
 	}
 	last_iter_time = _sim->_Time0;

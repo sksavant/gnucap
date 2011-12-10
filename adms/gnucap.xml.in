@@ -2873,7 +2873,6 @@ private: // nodes / matrix indexes
         <admst:text format=" };\n"/>
 
 
-        unsigned num_ddt(){return $numddt;}
 
         // we could use plain numbers as identifiers, but what would reduce
         // future flexibility/readability.
@@ -2891,7 +2890,9 @@ private: // nodes / matrix indexes
         <!--  <admst:apply-templates select="analog/code[datatypename='block']" match="find_ddt_states"/> -->
           _num_states = $numddt // does not work yet. don't use\n
 
-         };
+			 };
+
+        unsigned num_ddt(){return $numddt;}
 
         <admst:variable name="finddt" select="no"/>
 
@@ -2935,7 +2936,7 @@ inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  )
 <admst:template match="ddtcounter">
   <admst:if test="[(adms/datatypename)='function' and name='ddt']">
     <admst:variable name="numddt" select="$numddt+1"/>
-    <admst:text format="\t\t\t_state_%(adms/id(.)), // %(.)\n"/>
+    <admst:text format="\t\t\t_ddt_%(adms/id(.)), // %(.)\n"/>
   </admst:if>
 
   <admst:if test="[datatypename='mapply_unary'
@@ -3451,20 +3452,28 @@ void $(DEV_NAME)::tr_begin()
 }
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::dc_advance(){
-  trace0("$(DEV_NAME)::dc_advance");
+	trace0("$(DEV_NAME)::dc_advance");
 
-  // ELEMENT:: does nothing
+	// ELEMENT:: does nothing
 
-  ADMS_BASE::dc_advance(); 
+	ADMS_BASE::dc_advance(); 
 
-  for (int i = 1;  i < OPT::_keep_time_steps;  ++i) {
-  //  notstd::copy_n(_states[0], 2*(unsigned)_num_states, _states[i]);
-    //_i[i] = _i[0]; <= what STORAGE does
-    for( unsigned i=0; i<_num_states; ++i){
-          _states_1[2*i+1]=_states[0][2*i+1];
-    }
-  }
+#if ($_num_states)
+	for (int t = 1;  t < OPT::_keep_time_steps;  ++t) {
+		//  notstd::copy_n(_states[0], 2*(unsigned)_num_states, _states[i]);
+		//_i[t] = _i[0]; <= what STORAGE does
 
+		for( unsigned i=0; i<_num_states; ++i){
+			_states[t][2*i+1]=_states[0][2*i+1];
+		}
+
+	}
+#endif
+	// ??
+	//		for( unsigned i=0; i<_num_states; ++i){
+	//			_states_1[2*i+1]=_states[0][2*i+1];
+	//		}
+	//
 
 }
 // -------------------------------------------------------------------------- //
@@ -3609,16 +3618,20 @@ bool $(DEV_NAME)::do_tr()
 	for(int i=0; converged() && i<%(count(node[grounded='no'])); i++)
 	{ 
 		bool conv= conchk(it0[i], it1[i]);	
-                if (!conv) trace6("tr_eval: not converged ", i , it0[i], it1[i], _sim->iteration_number(), it0[i]-it1[i], conv );
-		set_converged(conv);	
+		if (!conv) {
+		  trace6("tr_eval: not converged ", i , it0[i], it1[i], _sim->iteration_number(), it0[i]-it1[i], conv );
+			set_converged(false);	
+		}
 	}
 	
 	
 	<admst:text format="\n\tfor(int i=0; converged() && i<%(count(jacobian)); i++)"/>
         if (m_entries[i]){
 		bool conv = conchk(m_entries[i], m_entries_old[i]);
-		if (!conv) { trace4("tr_eval: not converged", i , m_entries[i], m_entries_old[i], _sim->iteration_number() );}
-		set_converged(conv);
+		if (!conv) {
+			trace4("tr_eval: not converged", i , m_entries[i], m_entries_old[i], _sim->iteration_number() );
+			set_converged(conv);
+		}
 	}
 
 	bool needs_load = !converged();
@@ -3668,9 +3681,12 @@ void $(DEV_NAME)::store_values()
 
   // notstd::copy_n(_states[0],(unsigned) 2*_num_states, _states_1);
 
+#if ($_num_states)
+
   for( unsigned i=0; i<_num_states; ++i){
         _states_1[2*i]=_states[0][2*i];
-  }
+		  }
+#endif
 
   // ELEMENT does y[0] -> y_1
 }
@@ -3728,10 +3744,10 @@ void $(DEV_NAME)::tr_unload()
 // -------------------------------------------------------------------------- //
 TIME_PAIR $(DEV_NAME)::tr_review()
 {
-  trace0("$(DEV_NAME)::tr_review");
-  assert(_dt == NOT_VALID || conchk(_dt, _time[0] - _time[1]));
+	trace0("$(DEV_NAME)::tr_review");
+	assert(_dt == NOT_VALID || conchk(_dt, _time[0] - _time[1]));
 
-    double timestep = NEVER;
+	double timestep = NEVER;
     //----- (DEVtrunc)
 	<admst:for-each select="source[dynamic='yes']">
 	<admst:value-of select="branch/nnode/name"/>
@@ -4054,27 +4070,29 @@ bool $(DEV_NAME)::conv_check()const
 // matrix and matrix_old
 void $(DEV_NAME)::ac_eval() 
 {
-  std::fill_n(it0, %(count(node[grounded='no'])), 0);
-  std::fill_n(m_entries, %(count(jacobian)), 0);
+	std::fill_n(it0, %(count(node[grounded='no'])), 0);
+	std::fill_n(m_entries, %(count(jacobian)), 0);
 
-  const COMMON_COMPONENT* c = asserted_cast<const COMMON_COMPONENT*>(common());
-  const $(MODEL_NAME)* m = asserted_cast<const $(MODEL_NAME)*>(model());
-  USE(m);
-  double CKTag0=0;
-	
+	const COMMON_COMPONENT* c = asserted_cast<const COMMON_COMPONENT*>(common());
+	USE(c);
+	const $(MODEL_NAME)* m = asserted_cast<const $(MODEL_NAME)*>(model());
+	USE(m);
+	double CKTag0=0;
 
-  <admst:text format="\n\tstd::fill_n(m_entries, %(count(jacobian)), 0);"/>
-  <admst:text format="\n\tstd::fill_n(m_entries_old, %(count(jacobian)), 0);"/>
+
+	<admst:text format="\n\tstd::fill_n(m_entries, %(count(jacobian)), 0);"/>
+	<admst:text format="\n\tstd::fill_n(m_entries_old, %(count(jacobian)), 0);"/>
 									
-  { // analog:eval
-    <admst:variable name="eval_mode" select="ac"/>
-    current_state=0; // FIXME
-    <admst:apply-templates select="analog/code" match="X3analog:evaluate" required="yes"/>
+	{ // analog:eval
+
+	 <admst:variable name="eval_mode" select="ac"/>
+	 current_state=0; // FIXME
+	 <admst:apply-templates select="analog/code" match="X3analog:evaluate" required="yes"/>
 
 
-  } // analog:eval
+	} // analog:eval
 
-  return; 
+	return; 
 }
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_eval() 
@@ -4085,6 +4103,7 @@ void $(DEV_NAME)::tr_eval()
   //int mode=MODETRAN; // FIXME
 
   const COMMON_COMPONENT* c = asserted_cast<const COMMON_COMPONENT*>(common());
+  USE(c);
   const $(MODEL_NAME)* m = asserted_cast<const $(MODEL_NAME)*>(model());
   USE(m);
 	
@@ -5884,7 +5903,7 @@ void $(DEV_NAME)::tr_eval()
       <admst:variable name="xq" select="$eq"/>
       <admst:variable name="xpq" select="$epq"/>
       <admst:variable test="[$finddt='no']" name="e" 
-        select="_DDT($x, _next_state() ) "/>
+		select="_DDT($x, _ddt_%(adms/id(.)) ) "/>
       <admst:variable test="[$finddt='yes']" name="e" select="// DDTFOUND, $x"/>
       <admst:variable test="[$finddt='yes']" name="e" select="$e\n$(state_prefix)$(ddt_cur), "/>
 

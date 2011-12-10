@@ -1795,15 +1795,15 @@ void    DEV_BUILT_IN_MOS::tr_unload(){
 /*-------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::stress_apply( )
 {
+  BASE_SUBCKT::stress_apply();
   const COMMON_BUILT_IN_MOS* c = (const COMMON_BUILT_IN_MOS*) common();
   const MODEL_BUILT_IN_MOS_BASE* m = (const MODEL_BUILT_IN_MOS_BASE*)(c->model());
   assert(m);
 
-  // move to adp.
+  // move to adp?
   if(m->use_bti()){
     _BTI->stress_apply();
   }
-  //BASE_SUBCKT::stress_apply();
 
   if (adp()){
     adp()->stress_apply(); // not part of subckt

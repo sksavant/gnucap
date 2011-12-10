@@ -163,8 +163,12 @@ void TRANSIENT::sweep()
             || _sim->_time0 == _tstop );
 	++(_sim->_stepno);
         trace1("TRANSIENT::sweep delivered req", _time_by_user_request);
-	_time_by_user_request += _tstep;	/* advance user time */
-        // _time_by_user_request = min(_time_by_user_request, (double)_tstop);
+        if (_time_by_user_request<_tstop){
+          _time_by_user_request += _tstep;	/* advance user time */
+          _time_by_user_request = min(_time_by_user_request, (double)_tstop);
+        } else {
+          _time_by_user_request += _tstep;	/* advance user time */
+        }
       }else{
       }
       assert(_sim->_time0 <= _time_by_user_request);
@@ -180,6 +184,8 @@ void TRANSIENT::sweep()
 			  || (step_cause() == scUSER && _sim->_time0+_sim->_dtmin > _tstart)));
       if (printnow) {
         _sim->keep_voltages();
+        trace2("TRANSIENT::sweep" ,_sim->last_time(), (double)_tstop);
+        assert(_sim->last_time() <= _tstop);
 
         outdata(_sim->_time0);
         CKT_BASE::tr_behaviour_del = 0;
@@ -547,6 +553,7 @@ bool TRANSIENT::next()
       set_step_cause(scUSER);
     }else{untested();
     }
+    assert (newtime<=_tstop);
     set_step_cause(scZERO);
     check_consistency2();
   }else{
@@ -581,8 +588,7 @@ bool TRANSIENT::next()
   if(time1 < _tstop - _sim->_dtmin 
       && _sim->_time0 > _tstop + _sim->_dtmin ) {
     untested();
-    _sim->_time0=_tstop;
-
+    _sim->_time0 = _tstop;
   }
 
   check_consistency2();
@@ -590,6 +596,7 @@ bool TRANSIENT::next()
   ++steps_total_;
   ::status.review.stop();
   bool ret= _sim->_time0 < _tstop + _sim->_dtmin;
+  assert (_sim->_time0<=_tstop || !ret);
   return (ret);
 }
 /*--------------------------------------------------------------------------*/
