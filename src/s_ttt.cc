@@ -137,7 +137,7 @@ void TTT::first()
 	_dT_by_adp = _tstop;
 
 	if (_sim->_loadq.size()){
-		untested();
+		// untested();
 		trace0("TTT::first loadq nonempty -- clearing");
 		_sim->_loadq.clear() ; // why?
 	}
@@ -1167,7 +1167,7 @@ void TTT::print_results(double time)
 /*--------------------------------------------------------------------------*/
 void TTT::print_results_tr(double )
 {
-	trace0("TTT::print_results_tr()");
+	trace1("TTT::print_results_tr()", tt_iteration_number());
 	SIM_MODE oldmode=_sim->_mode;
 	_sim->set_command_tran();
 	WAVE* w =NULL;
@@ -1181,7 +1181,7 @@ void TTT::print_results_tr(double )
 	if (!IO::plotout.any() && _sim->tt_iteration_number() > 0 ) {
 		TRANSIENT::_out.setfloatwidth(OPT::numdgt, OPT::numdgt+6);
 		w = &(_sim->_waves[0]);
-		//print_head_tr();
+		print_head_tr();
 
 		int ii=0;
 		// FIXME: how many?
@@ -1193,6 +1193,7 @@ void TTT::print_results_tr(double )
 			ii++;
 		}
 		for (WAVE::const_iterator i = w->begin(); i < w->end(); i++ ) {
+			trace1("TRANSIENT::_out" , _sim->_Time0);
 			TRANSIENT::_out << _sim->_Time0;
 			TRANSIENT::_out << i->first;
 
@@ -1323,7 +1324,7 @@ void TTT::advance_Time(void)
 			_sim->update_tt_order();
 
 			trace3("TTT::advance_Time", _sim->_tr[0], _sim->_tt[0], _sim->_Time0);
-			trace2("TTT::advance_Time", _sim->_tr1[0], _sim->_tt1[0]);
+//			trace2("TTT::advance_Time", _sim->_tr1[0], _sim->_tt1[0]);
 
 			notstd::copy_n(_sim->_tr2, _sim->_adp_nodes, _sim->_tr3);
 			notstd::copy_n(_sim->_tr1, _sim->_adp_nodes, _sim->_tr2);

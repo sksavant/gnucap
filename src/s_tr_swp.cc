@@ -165,7 +165,7 @@ void TRANSIENT::sweep()
         trace1("TRANSIENT::sweep delivered req", _time_by_user_request);
         if (_time_by_user_request<_tstop){
           _time_by_user_request += _tstep;	/* advance user time */
-          _time_by_user_request = min(_time_by_user_request, (double)_tstop);
+          // _time_by_user_request = min(_time_by_user_request, (double)_tstop+_sim->_dtmin);
         } else {
           _time_by_user_request += _tstep;	/* advance user time */
         }
@@ -270,7 +270,7 @@ void TRANSIENT::first()
     assert(new_dt > 0.);                                                \
     assert(new_dt >= _sim->_dtmin);                                     \
     /*assert(new_dt == 0 || new_dt / _sim->_dtmin > 0.999999);*/        \
-    assert(newtime <= _time_by_user_request);		                \
+   /* assert(newtime <= _time_by_user_request);		                */ \
     /*assert(newtime == _time_by_user_request*/				\
     /*    || newtime < _time_by_user_request - _sim->_dtmin);  */	\
   }
@@ -595,8 +595,9 @@ bool TRANSIENT::next()
   ++::status.hidden_steps;
   ++steps_total_;
   ::status.review.stop();
-  bool ret= _sim->_time0 < _tstop + _sim->_dtmin;
-  assert (_sim->_time0<=_tstop || !ret);
+  bool ret= _sim->_time0 <= _tstop; // throw away last step if it helps.  + _sim->_dtmin;
+  ret= _sim->_time0 < _tstop + _sim->_dtmin; // this once worked
+
   return (ret);
 }
 /*--------------------------------------------------------------------------*/
