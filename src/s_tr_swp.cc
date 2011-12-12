@@ -61,7 +61,14 @@ void TRANSIENT::sweep()
   _sim->_bypass_ok = false;
   _sim->set_inc_mode_bad();
  
-  if ( _inside_tt ) {
+  if ( _print_only ) {
+    _sim->_phase = p_RESTORE;
+    _sim->restore_voltages();
+    CARD_LIST::card_list.tr_restore();
+      outdata(_sim->_time0);
+      return;
+
+  } else if ( _inside_tt ) {
     trace0("TRANSIENT::sweep inside tt");
     assert(  _sim->_mode == s_TTT );
 
@@ -185,7 +192,7 @@ void TRANSIENT::sweep()
       if (printnow) {
         _sim->keep_voltages();
         trace2("TRANSIENT::sweep" ,_sim->last_time(), (double)_tstop);
-        assert(_sim->last_time() <= _tstop);
+        assert(_sim->last_time() < _tstop+_sim->_dtmin);
 
         outdata(_sim->_time0);
         CKT_BASE::tr_behaviour_del = 0;
@@ -653,6 +660,7 @@ void TRANSIENT::accept()
   _sim->set_limit();
   if (OPT::traceload) {
     while (!_sim->_acceptq.empty()) {
+      trace1("TRANSIENT::accept", _sim->_acceptq.back()->long_label());
       _sim->_acceptq.back()->tr_accept();
       _sim->_acceptq.pop_back();
     }

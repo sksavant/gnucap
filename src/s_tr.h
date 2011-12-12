@@ -63,7 +63,8 @@ public:
     _time_by_error_estimate(0.),
     _time_by_ambiguous_event(0.),
     _converged(false),
-    _accepted(false)
+    _accepted(false),
+	 _print_only(false)
   {
 	  trace4( "TRANSIENT()",  steps_total_out_, _tstep , _tstop, _tstart );
   }
@@ -121,6 +122,7 @@ private:
 protected:
   bool _converged;
   bool _accepted;
+  bool _print_only;
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 private:
   static int steps_accepted_;

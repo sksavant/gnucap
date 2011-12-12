@@ -397,6 +397,7 @@ void TTT::sweep_tt()
 	assert( _sim->_Time0 >= 0 );
 
 	if (!_tt_cont){
+		trace0("TTT::sweep_tt tt_begin");
 		tt_begin();
 	}
 
@@ -406,7 +407,10 @@ void TTT::sweep_tt()
 		trace0("TTT::sweep_tt pd done");
 		return;
 	}else if( _Tstop == _Tstart || double(_Tstop) == 0 ){
-		trace0("TTT::sweep_tt just tt_begin");
+		trace0("TTT::sweep_tt just apply");
+		advance_Time();
+		CARD_LIST::card_list.stress_apply();
+		_sim->_acceptq.clear();
 		return;
 	}else if( _Tstop == _Tstart ){
 		trace0("TTT::sweep_tt just printing");
