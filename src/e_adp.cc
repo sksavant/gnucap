@@ -55,6 +55,8 @@ ADP_NODE::ADP_NODE( const std::string n, const COMPONENT* c):
 {
   trace2("ADP_NODE::ADP_NODE ", n, c->long_label());
   set_label( c->long_label() + "." + n );
+  set_label( n );
+  set_owner( c );
   tr_value = (0.);
   tr_noise = 0;
   dbg=0;

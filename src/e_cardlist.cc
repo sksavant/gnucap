@@ -600,9 +600,9 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
   assert(model->subckt());
   assert(model->subckt()->nodes());
   assert(owner);
-  trace1("model nodenames", *(model->subckt()->nodes()));
-  trace1("... now own", *(owner->scope()->nodes())  );
-  trace2("now own sckt", *nodes(), hp(nodes()));
+  //trace1("model nodenames", *(model->subckt()->nodes()));
+  //trace1("... now own", *(owner->scope()->nodes())  );
+  //trace2("now own sckt", *nodes(), hp(nodes()));
 //  NODE_MAP* nm = owner->scope()->nodes();
 
 //:w
@@ -654,7 +654,7 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
         //owner->n_(i-1).new_sckt_node( label, subckt());
 
       }
-      trace1("CARD_LIST::map_subckt_nodes done map", *nodes());
+      //trace1("CARD_LIST::map_subckt_nodes done map", *nodes());
 
     }
   }

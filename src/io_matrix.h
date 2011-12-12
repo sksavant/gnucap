@@ -14,7 +14,7 @@ using namespace std;
 //}
 
 template <class T, class S>
-inline S operator<<( S o, const BSMATRIX<T> &m)
+inline S& operator<<( S& o, const BSMATRIX<T> &m)
 {
   unsigned size=m.size();
   unsigned i,j;

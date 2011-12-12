@@ -503,9 +503,9 @@ inline void trace_nodenames(const CARD_LIST* scope){
   trace0("CARD_LIST tracing nodenames");
   NODE_MAP* nm = scope->nodes();
   for (NODE_MAP::const_iterator ni = nm->begin(); ni != nm->end(); ++ni) {
-    NODE* n = (*ni).second;
+    NODE_BASE* n = (*ni).second;
     string label = (*ni).first;
-    trace2("CARD_LIST:... nodename ", label, n->user_number() );
+    //trace2("CARD_LIST:... nodename ", label, n->user_number() );
   }
 }
 #else

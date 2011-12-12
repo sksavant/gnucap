@@ -35,6 +35,8 @@
 #include "d_subckt.h"
 #include "u_nodemap.h"
 #include "io_node.h"
+#include "io_misc.h"
+
 /*--------------------------------------------------------------------------*/
 int DEV_SUBCKT::_count = -1;
 int COMMON_SUBCKT::_count = -1;
@@ -237,9 +239,10 @@ void DEV_SUBCKT::expand()
 
   }
   ////////////////////////////
+  //??
+  subckt()->set_owner(this);
 
-  /// hack
-  trace3("expand done. my nodes", long_label(), hp(subckt()->nodes()), *(subckt()->nodes()));
+  trace4("expand done.", long_label(), hp(subckt()->nodes()), *(subckt()->nodes()), *(subckt()));
 }
 /*--------------------------------------------------------------------------*/
 void DEV_SUBCKT::precalc_first()

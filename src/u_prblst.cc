@@ -34,12 +34,13 @@
 /*--------------------------------------------------------------------------*/
 void PROBE_LISTS::purge(CKT_BASE* brh)
 {
+  trace1("PROBE_LISTS::purge", brh->long_label());
   for (int i = 0;  i < sCOUNT;  ++i) {
     alarm[i].remove_one(brh);
     plot[i] .remove_one(brh);
     print[i].remove_one(brh);
     store[i].remove_one(brh);
-    expr[i].remove_one(brh);
+    expr[i] .remove_one(brh);
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -48,12 +49,14 @@ void PROBELIST::listing(const std::string& label)const
   IO::mstdout.form("%-7s", label.c_str());
   for (const_iterator p = begin();  p != end();  ++p) {
     IO::mstdout << ' ' << (*p)->label();
+    //IO::mstdout << ' ' << (*p)->object()->long_label();
     if ((*p)->range() != 0.) {untested();
       IO::mstdout.setfloatwidth(5) 
 	<< '(' << (*p)->lo() << ',' << (*p)->hi() << ')';
     }else{
     }
   }
+//  IO::mstdout << " total: "  << size() << '\n';
   IO::mstdout << '\n';
 }
 /*--------------------------------------------------------------------------*/
@@ -66,12 +69,13 @@ void PROBELIST::clear(void)
   erase(begin(), end());
 }
 /*--------------------------------------------------------------------------*/
-void PROBELIST::erase( PROBELIST::iterator b, PROBELIST::iterator e )
+void     PROBELIST::erase(PROBELIST::iterator b, PROBELIST::iterator e)
 {
+  trace0("PROBELIST::erase ");
   for (iterator i = b;  i != e;  ++i) {
-    trace0("PROBELIST::erase " );
+    trace2("PROBELIST::erase ", (*i)->object()->long_label(), hp( (*i)->object() ) );
     assert (*i);
-    trace1("PROBELIST::erase ", (*i)->label());
+    trace1("PROBELIST::erase deleting", (*i)->label());
     delete(*i);
     //b++;
     trace0("PROBELIST::erase looop ");
@@ -88,7 +92,8 @@ bool operator==(const PROBE* prb, const std::string& par)
 bool operator!=(const PROBE* prb, const std::string& par)
 { return *prb != par; }
 bool operator==(const PROBE* prb, const CKT_BASE& brh)
-{ return *prb == brh; }
+{ trace0("ph");
+  return *prb == brh; }
 bool operator!=(const PROBE* prb, const CKT_BASE& brh)
 { return *prb != brh; }
 
@@ -144,13 +149,37 @@ void PROBELIST::remove_list(CS& cmd)
 /* remove a brh from a PROBELIST
  * removes all probes on brh
  */
+#include <algorithm>
+#include <functional>
+
+static struct probe_finder_deleter
+{
+  CKT_BASE* b;
+  bool operator()(PROBE*& p) // important to take pointer by reference!
+  { 
+    if (p == *b) // there could be a variant just comparing pointers...
+    {
+      trace6("probe_deleter deleting", p->label(), hp(p->object()), b->long_label(), b->probes(), hp(p), hp(b));
+      delete p;
+      p = NULL;
+      return true;
+    }
+    return false;
+  }
+} d_;
+
 void PROBELIST::remove_one(CKT_BASE *brh)
 {
-  // trace0("PROBELIST::remove_one");
+  CARD* c=dynamic_cast<CARD*>(brh);
+  trace4("PROBELIST::remove_one, stuff from brh", brh->long_label(), brh->short_label(), hp(c), hp(brh));
   assert(brh);
-  iterator x = remove(begin(), end(), *brh);
 
-  erase( x, end());
+  d_.b = brh;
+// for_each( begin(), end(), d_ );
+// iterator new_end = remove(begin(), end(), static_cast<PROBE*>(NULL));
+  iterator new_end = remove_if ( begin(), end(), d_ );
+  bag.erase( new_end, end());
+  trace0("PROBELIST::remove_one done");
 }
 /*--------------------------------------------------------------------------*/
 /* add_list: add a "list" of probes, usually only one

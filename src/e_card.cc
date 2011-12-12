@@ -75,6 +75,7 @@ CARD::~CARD()
 /*--------------------------------------------------------------------------*/
 const std::string CARD::long_label()const
 {
+  trace0("CARD::long_label");
   std::string buffer(short_label());
   for (const CARD* brh = owner(); exists(brh); brh = brh->owner()) {
     buffer = brh->short_label() + '.' + buffer;

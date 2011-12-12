@@ -147,7 +147,7 @@ l_compar.h l_dispatcher.h l_denoise.h \
 l_lib.h l_stlextra.h l_timer.h \
 m_cpoly.h m_divdiff.h m_interp.h m_matrix.h m_spline.h m_wave.h \
 m_base.h m_expression.h m_phase.h \
-io_.h io_error.h io_trace.h io_matrix.h \
+io_.h io_error.h io_trace.h io_matrix.h io_misc.h \
 u_cardst.h u_function.h u_lang.h u_limit.h u_nodemap.h u_opt.h u_parameter.h \
 u_prblst.h u_probe.h u_sim_data.h u_sdp.h u_status.h u_time_pair.h u_xprobe.h \
 s__.h s_tr.h e_adp.h s_tt.h\

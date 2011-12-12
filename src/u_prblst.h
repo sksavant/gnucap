@@ -65,7 +65,7 @@ public:
   friend std::ostream& operator<< ( std::ostream&, const PROBELIST& );
 
 private:
-  void     erase(iterator , iterator );// {bag.erase(b,e);}
+  void     erase(iterator b, iterator e); //  {bag.erase(b,e);}
   PROBE*	  push_new_probe(const std::string& param, const CKT_BASE* object);
   MEAS_PROBE*	  push_new_meas_probe(const std::string& param);
 

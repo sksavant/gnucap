@@ -144,7 +144,7 @@ CKT_NODE* NODE_MAP::new_node(std::string s_in, const CARD_LIST* p)
 /*--------------------------------------------------------------------------*/
 ADP_NODE* NODE_MAP::new_adp_node(std::string s, const COMPONENT* p)
 {  
-  trace0("NODE_MAP::new_node " +s);
+  trace1("NODE_MAP::new_node ", s);
   if (OPT::case_insensitive) {
     notstd::to_lower(&s);
   }else{

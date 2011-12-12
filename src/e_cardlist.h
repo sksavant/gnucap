@@ -170,7 +170,8 @@ public:
   	    PARAM_LIST* p);
   ~CARD_LIST();
 private:
-  explicit CARD_LIST(const CARD_LIST&) {unreachable(); incomplete();}
+  // needed to parr to <<
+  // explicit CARD_LIST(const CARD_LIST&) {unreachable(); incomplete();}
 public:
   static CARD_LIST card_list; // in globals.cc
 };

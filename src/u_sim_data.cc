@@ -418,6 +418,7 @@ void SIM_DATA::unalloc_vectors()
  */
 void SIM_DATA::uninit()
 {
+  //trace0("SIM_DATA::uninit");
   // fixme adp?
   if (_vdc) {
     _acx.reinit(0);

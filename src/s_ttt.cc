@@ -883,6 +883,7 @@ bool TTT::next()
 		new_dT = min( (double) _dT_by_adp, (_sim->_dT0 + _Tstep)/2 ) ; 
 		new_dT = min( (double) new_dT, _sim->_dT0 * OPT::ttstepgrow) ; 
 		new_dT = max( new_dT, (double) _tstop ) ; // fmin( get_new_dT(), _Tstep );
+		new_dT = max( new_dT, (double) _sim->last_time() ) ; // fmin( get_new_dT(), _Tstep );
 
 //		if ( _trace > 0 ) 
 //			_out << "* new step " << new_dT << " ( just accepted: " << _sim->_dT0   << 
@@ -950,6 +951,9 @@ bool TTT::next()
 		_sim->_dT1 = _sim->_dT0;
 	}
 	_sim->_dT0 = new_dT;
+
+	assert(  _sim->_dT0 - _sim->last_time() >= 0);
+
 	time1 = 0.;
 
 	assert( _sim->_Time0 < 1+ _Time1 + _sim->_dT0 );

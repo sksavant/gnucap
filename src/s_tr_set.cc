@@ -42,7 +42,7 @@ void TRANSIENT::setup(CS& Cmd)
 
   _cont = true;
   if (Cmd.match1("'\"({") || Cmd.is_pfloat()) {
-    trace0("TRANSIENT::setup parsing args");
+    trace1("TRANSIENT::setup parsing args", printlist().size());
     PARAMETER<double> arg1, arg2, arg3;
     Cmd >> arg1;
     arg1.e_val(0.0,_scope);
