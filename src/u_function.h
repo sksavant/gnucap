@@ -30,23 +30,36 @@ class CS;
 class CARD_LIST;
 class WAVE;
 /*--------------------------------------------------------------------------*/
-class FUNCTION {
+// more general function... 
+class FUNCTION_BASE{
 public:
-  virtual FUNCTION* clone()const {unreachable(); return 0;}
-  virtual void expand(CS&, const CARD_LIST*){}
-  virtual fun_t eval(CS&, const CARD_LIST*)const {return 888;}
+  virtual void expand(CS&, const CARD_LIST*) = 0;
+  virtual fun_t eval(CS&, const CARD_LIST*)const =0; // const {return 888;}
+  virtual string label() const =0;
+  virtual FUNCTION_BASE* clone()const=0;
 };
 /*--------------------------------------------------------------------------*/
-class WAVE_FUNCTION : public FUNCTION{
+// ordinary function. as in gnucap-2009-12
+class FUNCTION : public FUNCTION_BASE {
+public:
+  virtual void expand(CS&, const CARD_LIST*){ } // ordinary functions dont need to be expanded.
+  virtual fun_t eval(CS&, const CARD_LIST*)const =0; // const {return 888;}
+  virtual string label() const {return "ordinary";}
+  virtual FUNCTION_BASE* clone()const {assert(0); return 0;}
+};
+/*--------------------------------------------------------------------------*/
+class WAVE_FUNCTION : public FUNCTION_BASE {
   protected:
     WAVE* w;
   public:
-    virtual FUNCTION* clone()const {return NULL;}
+//    virtual FUNCTION* clone()const {return NULL;}
     WAVE_FUNCTION():w(0),probe_name("unset"){}
-    virtual fun_t eval(CS&, const CARD_LIST*)const{ incomplete(); return 0; }
-    virtual fun_t wave_eval()const { unreachable(); return 888; }
+    // virtual fun_t eval(CS&, const CARD_LIST*)const{ incomplete(); return 0; }
+    virtual fun_t wave_eval() const = 0;
     string probe_name;
     void set_wave(WAVE* ww);// { w=ww; }
+
+    fun_t eval(CS&, const CARD_LIST*) const {return wave_eval();} 
 
   protected:
     WAVE* find_wave(const std::string& probe_name)const;

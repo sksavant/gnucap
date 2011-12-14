@@ -27,18 +27,19 @@
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class MEASURE : public WAVE_FUNCTION {
+class MAX : public WAVE_FUNCTION {
   PARAMETER<double> before;
   PARAMETER<double> after;
   bool last;
   bool arg;
 public:
-  MEASURE() :
+  MAX() :
     WAVE_FUNCTION(),
     before(BIGBIG), 
     after(-BIGBIG),
     last(false), arg(false) {}
-  virtual FUNCTION* clone()const { return new MEASURE(*this);}
+  virtual FUNCTION_BASE* clone()const { return new MAX(*this);}
+  string label()const{return "max";}
   void expand(CS& Cmd, const CARD_LIST* Scope)
   {
 
@@ -95,7 +96,7 @@ public:
     }
   }
 } p1;
-DISPATCHER<FUNCTION>::INSTALL d1(&measure_dispatcher, "max", &p1);
+DISPATCHER<FUNCTION_BASE>::INSTALL d1(&measure_dispatcher, "max", &p1);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/

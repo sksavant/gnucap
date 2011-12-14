@@ -3107,7 +3107,7 @@ void MODEL_BUILT_IN_MOS8::tr_eval(COMPONENT* brh)const
       trace4("", T0, T1, tmp2, T3);
       double T4;
       if (T3 < 1.0e-4) {
-	untested();
+	itested(); // not really.
 	/* avoid  discontinuity problems caused by etab */ 
 	double T9 = 1.0 / (3.0 - 2.0e4 * T3);
 	T3 = (2.0e-4 - T3) * T9;

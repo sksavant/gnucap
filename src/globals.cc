@@ -40,7 +40,7 @@ DISPATCHER<MODEL_CARD> model_dispatcher;
 DISPATCHER<CARD> device_dispatcher;
 DISPATCHER<LANGUAGE> language_dispatcher;
 DISPATCHER<FUNCTION> function_dispatcher;
-DISPATCHER<FUNCTION> measure_dispatcher;
+DISPATCHER<FUNCTION_BASE> measure_dispatcher;
 DISPATCHER<CKT_BASE> status_dispatcher;
 DISPATCHER<CKT_BASE> help_dispatcher;
 DISPATCHER<PROBELIST> probe_dispatcher;

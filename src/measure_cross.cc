@@ -28,14 +28,14 @@
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class MEASURE : public WAVE_FUNCTION {
+class CROSS : public WAVE_FUNCTION {
   PARAMETER<double> before;
   PARAMETER<double> after;
   PARAMETER<double> cross;
   int slope;
   bool last;
 public:
-  MEASURE():
+  CROSS():
     WAVE_FUNCTION(),
     before(BIGBIG),
     after(-BIGBIG),
@@ -43,8 +43,8 @@ public:
     slope(1),
     last(false)
   {}
-  virtual FUNCTION* clone()const { return new MEASURE(*this);}
-
+  virtual FUNCTION_BASE* clone()const { return new CROSS(*this);}
+  string label()const{return "cross";}
   void expand(CS& Cmd, const CARD_LIST* Scope)
   { 
     unsigned here = Cmd.cursor();
@@ -123,7 +123,7 @@ public:
     }
   }
 } p4;
-DISPATCHER<FUNCTION>::INSTALL d4(&measure_dispatcher, "cross", &p4);
+DISPATCHER<FUNCTION_BASE>::INSTALL d4(&measure_dispatcher, "cross", &p4);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/

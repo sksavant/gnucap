@@ -34,14 +34,19 @@ class CMD_MEASURE : public CMD {
 public:
   void do_it(CS& Cmd, CARD_LIST* Scope)
   {
+    trace1("CMD_MEASURE::do_it", (string(Cmd)));
     std::string assign_to, function;
     Cmd >> assign_to >> '=' >> function >> '(';
-    if (FUNCTION* f = measure_dispatcher[function]) {
+    if (FUNCTION_BASE* f = measure_dispatcher[function]) {
+      trace1("CMD_MEASURE::do_it", f->label());
       f->expand(Cmd,Scope);
+      trace1("CMD_MEASURE::do_it 1", f->label());
       WAVE_FUNCTION* ff= dynamic_cast<WAVE_FUNCTION*>(f);
-      assert(f);
+      USE(ff);
+//      assert(ff);
       
-      fun_t value = ff->wave_eval();
+      trace3("CMD_MEASURE::do_it 2", f->label(), hp(ff), hp(f));
+      fun_t value = f->eval(Cmd, Scope); // FIXME?
       if (!Cmd.skip1b(')')) {
 	Cmd.warn(bWARNING, "need )");
       }else{

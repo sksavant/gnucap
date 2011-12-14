@@ -171,6 +171,7 @@ static struct probe_finder_deleter
 void PROBELIST::remove_one(CKT_BASE *brh)
 {
   CARD* c=dynamic_cast<CARD*>(brh);
+  USE(c);
   trace4("PROBELIST::remove_one, stuff from brh", brh->long_label(), brh->short_label(), hp(c), hp(brh));
   assert(brh);
 

@@ -1364,6 +1364,11 @@ void TTT::advance_Time(void)
 
 	/// AFTER tr and tt have been shifted.
 	CARD_LIST::card_list.tt_advance();
+
+	//else
+	//CARD_LIST::card_list.tt_regress();
+	//?
+
 	trace0("TTT::advance_Time() done tt_advance");
 	::status.tt_advance.stop();
 }

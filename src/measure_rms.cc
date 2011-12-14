@@ -27,17 +27,17 @@
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class MEASURE : public WAVE_FUNCTION {
+class RMS : public WAVE_FUNCTION {
   PARAMETER<double> before;
   PARAMETER<double> after;
 public:
-  MEASURE():
+  RMS():
     WAVE_FUNCTION(),
     before(BIGBIG),
     after(-BIGBIG)
   {}
-  virtual FUNCTION* clone()const { return new MEASURE(*this);}
-
+  virtual FUNCTION_BASE* clone()const { return new RMS(*this);}
+  string label()const{return "rms";}
   void expand(CS& Cmd, const CARD_LIST* Scope){
     
     unsigned here = Cmd.cursor();
@@ -89,7 +89,7 @@ public:
     }
   }
 } p4;
-DISPATCHER<FUNCTION>::INSTALL d4(&measure_dispatcher, "rms", &p4);
+DISPATCHER<FUNCTION_BASE>::INSTALL d4(&measure_dispatcher, "rms", &p4);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/

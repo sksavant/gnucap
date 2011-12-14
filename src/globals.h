@@ -29,6 +29,7 @@ class MODEL_CARD;
 class CARD;
 class LANGUAGE;
 class FUNCTION;
+class FUNCTION_BASE;
 class CKT_BASE;
 class PROBELIST;
 
@@ -38,7 +39,7 @@ extern INTERFACE DISPATCHER<MODEL_CARD> model_dispatcher;
 extern INTERFACE DISPATCHER<CARD> device_dispatcher;
 extern INTERFACE DISPATCHER<LANGUAGE> language_dispatcher;
 extern INTERFACE DISPATCHER<FUNCTION> function_dispatcher;
-extern INTERFACE DISPATCHER<FUNCTION> measure_dispatcher;
+extern INTERFACE DISPATCHER<FUNCTION_BASE> measure_dispatcher;
 extern INTERFACE DISPATCHER<CKT_BASE> status_dispatcher;
 extern INTERFACE DISPATCHER<CKT_BASE> help_dispatcher;
 extern INTERFACE DISPATCHER<PROBELIST> probe_dispatcher;
