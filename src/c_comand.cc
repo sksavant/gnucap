@@ -152,6 +152,8 @@ DISPATCHER<CMD>::INSTALL d6(&command_dispatcher, "echo", &p6);
 class CMD_PING : public CMD {
 	public:
 		void do_it(CS& cmd, CARD_LIST*) {itested();
+			trace0("CMD_PING::do_it");
+			cerr.flush();
 			string str;
 			OMSTREAM _out = IO::mstdout;
 			while(cmd.ns_more()){
