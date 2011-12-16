@@ -27,3 +27,11 @@ gnucap/src/.deps
 
 gnucap/stamp-h1
 
+
+#automatic files which are checked in anyway
+Makefile.in
+aclocal.m4
+config.h.in
+configure
+install-sh
+missing
