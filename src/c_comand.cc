@@ -128,15 +128,17 @@ DISPATCHER<CMD>::INSTALL d4(&command_dispatcher, "title", &p4);
 class CMD_ECHO : public CMD {
 	public:
 		void do_it(CS& cmd, CARD_LIST*) {itested();
+			trace0("CMD_ECHO");
 			//BUG// buffer problem
 			std::string what=cmd.tail();
-			string str;
+			std::string str;
 			OMSTREAM _out = IO::mstdout;
 			while(cmd.ns_more()){
 				char c = cmd.peek();
 				if(c=='>'){
 					//out.reset();
-					_out.outset(cmd);
+					// _out.outset(cmd);
+					outset(cmd,&_out);
 				   break;
 				}
 				str += cmd.ctoc();
@@ -152,13 +154,15 @@ DISPATCHER<CMD>::INSTALL d6(&command_dispatcher, "echo", &p6);
 class CMD_PING : public CMD {
 	public:
 		void do_it(CS& cmd, CARD_LIST*) {itested();
-			string str;
+			trace0("CMD_PING");
+			std::string str;
 			OMSTREAM _out = IO::mstdout;
 			while(cmd.ns_more()){
 				char c = cmd.peek();
 				if(c=='>'){
 					//out.reset();
-					_out.outset(cmd);
+					// _out.outset(cmd);
+					outset(cmd,&_out);
 				   break;
 				}
 				str += cmd.ctoc();
