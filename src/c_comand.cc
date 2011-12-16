@@ -167,8 +167,8 @@ class CMD_PING : public CMD {
 			_out << "pong\n" ;
 			_out.reset(); // needed?
 		}
-} p6;
-DISPATCHER<CMD>::INSTALL d6(&command_dispatcher, "ping", &p6);
+} p7;
+DISPATCHER<CMD>::INSTALL d7(&command_dispatcher, "ping", &p7);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
