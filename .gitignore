@@ -65,3 +65,11 @@ d_latch.h
 d_clock.cc
 d_clock.h
 
+
+#automatic files which are checked in anyway
+Makefile.in
+aclocal.m4
+config.h.in
+configure
+install-sh
+missing
