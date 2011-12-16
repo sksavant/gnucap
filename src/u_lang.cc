@@ -27,6 +27,19 @@
 #include "e_model.h"
 #include "u_lang.h"
 /*--------------------------------------------------------------------------*/
+std::string LANGUAGE::getlines(FILE *fileptr)
+{
+  assert(fileptr);
+  const int buffer_size = BIGBUFLEN;
+
+  char buffer[buffer_size+1];
+  char* got_something = fgets(buffer, buffer_size, fileptr);
+
+  if (got_something)
+	  return std::string(got_something);
+  throw Exception_End_Of_Input("");
+}
+/*--------------------------------------------------------------------------*/
 void LANGUAGE::parse_top_item(CS& cmd, CARD_LIST* Scope)
 {
   cmd.get_line(I_PROMPT);
