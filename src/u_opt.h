@@ -181,10 +181,20 @@ public:
   explicit SET_RUN_MODE(RUN_MODE rm)
     :_old_run_mode(ENV::run_mode) 
   {
+	 if (rm==rPIPE){
+
+		 //good idea?
+		// setvbuf(std::cin,(char*)0,_IONBF,0);
+		 //std::cin.rdbuf()->pubsetbuf(0,0);
+	 }
+
     ENV::run_mode = rm;
   }
   ~SET_RUN_MODE()
   {
+	 if (ENV::run_mode==rPIPE){
+		// FIXME: reset buffer.
+	 }
     ENV::run_mode = _old_run_mode;
   }
 };

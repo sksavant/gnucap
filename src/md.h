@@ -196,7 +196,8 @@ enum RUN_MODE {
 		/* simulation command will do it this way.	*/
   rINTERACTIVE,	/* run the commands, interactively		*/
   rSCRIPT,	/* execute now, as a command, then restore mode	*/
-  rBATCH	/* execute now, as a command, then exit		*/
+  rBATCH,	/* execute now, as a command, then exit		*/
+  rPIPE // unbuffered, like script.
 };
 class INTERFACE ENV {
 public:

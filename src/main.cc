@@ -180,6 +180,10 @@ static void process_cmd_line(int argc, const char *argv[])
 /*--------------------------------------------------------------------------*/
 int main(int argc, const char *argv[])
 {
+  // not necessary...
+  //std::cin.rdbuf()->pubsetbuf(0,0);
+  //assert(!setvbuf(stdin, 0,_IONBF, 0 ));
+
   {
     SET_RUN_MODE xx(rBATCH);
     //sign_on();
