@@ -141,6 +141,7 @@ class CMD_ECHO : public CMD {
 				}
 				str += cmd.ctoc();
 			}
+			trace1("CMD_ECHO", str);
 			if (str.size() )_out << "* ";
 			_out <<str ;
 			_out <<	'\n';

@@ -55,7 +55,6 @@ public:
     _dtmax(0.),
     _cold(false),
     _cont(false),
-    _tt_cont(false),
     _inside_tt(false),
     _trace(tNONE),
     _time_by_iteration_count(0.),
@@ -109,7 +108,6 @@ protected:
   double _dtmax;	// max internal step size (step / _skip)
   bool _cold;		// flag: start time=0, all voltages=0
   bool _cont;		// flag: continue from previous run
-  bool _tt_cont;	// 
   bool _inside_tt;// hack: tell tr_swp to not reinit circuit
   //int _stepno;		// count of visible (saved) steps
 protected:

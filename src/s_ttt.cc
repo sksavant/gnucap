@@ -25,11 +25,13 @@
  *	do this in a loop:
  *
  * - set T, dT
- *	- tt_begin/tt_advance
- *	- tt_apply_stress
- *	- TR::sweep (calls tr_accept)
- *	- tr_stress_last
- *	- tt_review
+ *	- tt_begin/tt_continue
+ *	-  tt_advance
+ *	-  tt_apply_stress
+ *	-  TR::sweep (calls tr_accept)
+ *	-  tr_stress_last
+ *	-  tt_review
+ *	- tt_last/tt_apply?
  *
  */
 #include "m_phase.h"
@@ -235,7 +237,7 @@ void TTT::first_after_interruption(){
 	CARD_LIST::card_list.stress_apply();
 
 	if(!_tt_cont){
-		tt_begin();
+		begin();
 		do_initial_dc();
 		outdata_b4(_sim->_Time0);
 	}else{
@@ -256,16 +258,26 @@ void TTT::first_after_interruption(){
 	trace0("TTT::first_after_interruption done");
 }
 /*--------------------------------------------------------------*/
-void TTT::tt_begin() {
+void TTT::begin() {
 		_sim->_dT0 = 0;
 		_sim->_dT1 = 0;
 		_sim->_dT2 = 0;
 	trace0("TTT::tt_begin");
 	_sim->_stepno = 0;
+	_sim->_tt_uic = false;
 	CARD_LIST::card_list.do_forall( &CARD::tt_begin );
 }
 /*--------------------------------------------------------------*/
-
+void TTT::cont() {
+		_sim->_dT0 = 0;
+		_sim->_dT1 = 0;
+		_sim->_dT2 = 0;
+	trace0("TTT::tt_begin");
+	_sim->_stepno = 0;
+	_sim->_tt_uic = true;
+	CARD_LIST::card_list.do_forall( &CARD::tt_begin );
+}
+/*--------------------------------------------------------------*/
 void TTT::do_initial_dc(){
 	// set adp_nodes to initial values
 	CARD_LIST::card_list.do_forall( &CARD::tr_begin );

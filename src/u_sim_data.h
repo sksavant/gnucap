@@ -78,6 +78,7 @@ public:
   double _vmin;
   bool _uic;		/* flag: use initial conditions (spice-like) */
   bool _more_uic;       /* flag: also do storage initial cond */
+  bool _tt_uic;         /* flag: use saved state in tt */
   TRI_STATE _inc_mode;	/* flag: make incremental changes (3 state) */
   SIM_MODE _mode;	/* simulation type (AC, DC, ...) */
   SIM_PHASE _phase;	/* phase of simulation (iter, init-dc,) */
