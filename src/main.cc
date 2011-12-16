@@ -132,7 +132,8 @@ static void process_cmd_line(int argc, const char *argv[])
 {
   for (int ii = 1;  ii < argc;  /*inside*/) {
     try {
-      if (strcasecmp(argv[ii], "-i") == 0) {itested();
+      if (strcasecmp(argv[ii], "-q") == 0) { ++ii; } // just ignore and be quiet anyway
+      else if (strcasecmp(argv[ii], "-i") == 0) {itested();
 	++ii;
 	if (ii < argc) {itested();
 	  CMD::command(std::string("include ") + argv[ii++], &CARD_LIST::card_list);
@@ -181,7 +182,7 @@ int main(int argc, const char *argv[])
 {
   {
     SET_RUN_MODE xx(rBATCH);
-    sign_on();
+    //sign_on();
     if (!sigsetjmp(env.p, true)) {
       try {
 	read_startup_files();
@@ -230,3 +231,4 @@ int main(int argc, const char *argv[])
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+// vim:ts=8:sw=2:et:
