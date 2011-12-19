@@ -35,6 +35,7 @@ public:
     cmd.check(bDANGER, "syntax error");
     Expression r(e, Scope);
     std::cout << e << '=' << r << '\n';
+	 std::cout.flush(); // hack?
   }
 } p0;
 DISPATCHER<CMD>::INSTALL d0(&command_dispatcher, "exp|eval", &p0);
