@@ -35,18 +35,18 @@
 #undef incomplete
 /*--------------------------------------------------------------------------*/
 #ifdef DO_TRACE
-#define trace_line() (printf("@@#\n@#@:%s:%u:%s\n", \
+#define trace_line() (fprintf(stderr,"@@#\n@#@:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))
-#define trace0(s) (printf("@#@%s\n", s))
-#define trace1(s,x) (printf("@#@%s  %s=%g\n", s, #x, (double)(x)))
-#define trace2(s,x,y) (printf("@#@%s  %s=%g  %s=%g\n",\
+#define trace0(s) (fprintf(stderr,"@#@%s\n", s))
+#define trace1(s,x) (fprintf(stderr,"@#@%s  %s=%g\n", s, #x, (double)(x)))
+#define trace2(s,x,y) (fprintf(stderr,"@#@%s  %s=%g  %s=%g\n",\
 	s, #x, (double)(x), #y, (double)(y)))
-#define trace3(s,x,y,z) (printf("@#@%s  %s=%g  %s=%g  %s=%g\n",\
+#define trace3(s,x,y,z) (fprintf(stderr,"@#@%s  %s=%g  %s=%g  %s=%g\n",\
 	s, #x, (double)(x), #y, (double)(y), #z, (double)(z)))
-#define trace4(s,w,x,y,z)(printf("@#@%s  %s=%g  %s=%g  %s=%g  %s=%g\n",\
+#define trace4(s,w,x,y,z)(fprintf(stderr,"@#@%s  %s=%g  %s=%g  %s=%g  %s=%g\n",\
 	s, #w, (double)(w), #x, (double)(x), #y, (double)(y), #z, (double)(z)))
 #define trace5(s,v,w,x,y,z)\
-	(printf("@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g\n",\
+	(fprintf(stderr,"@#@%s  %s=%g  %s=%g  %s=%g  %s=%g  %s=%g\n",\
 	s, #v, (double)(v), #w, (double)(w), #x, (double)(x),\
 	#y, (double)(y), #z, (double)(z)))
 #else
@@ -59,21 +59,21 @@
 #define trace5(s,v,w,x,y,z)
 #endif
 
-#define unreachable() (printf("@@#\n@@@unreachable:%s:%u:%s\n", \
+#define unreachable() (fprintf(stderr,"@@#\n@@@unreachable:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))
 
-#define incomplete() (printf("@@#\n@@@incomplete:%s:%u:%s\n", \
+#define incomplete() (fprintf(stderr,"@@#\n@@@incomplete:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))
 
 #ifdef TRACE_UNTESTED
-#define untested() (printf("@@#\n@@@:%s:%u:%s\n", \
+#define untested() (fprintf(stderr,"@@#\n@@@:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))
 #else
 #define untested()
 #endif
 
 #ifdef TRACE_ITESTED
-#define itested() (printf("@@#\n@@@:%s:%u:%s\n", \
+#define itested() (fprintf(stderr,"@@#\n@@@:%s:%u:%s\n", \
 			   __FILE__, __LINE__, __func__))
 #else
 #define itested()

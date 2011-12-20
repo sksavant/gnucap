@@ -148,6 +148,7 @@ class CMD_ECHO : public CMD {
 			_out <<str ;
 			_out <<	'\n';
 			_out.reset(); // needed?
+			fflush(stdout); //hack
 		}
 } p6;
 DISPATCHER<CMD>::INSTALL d6(&command_dispatcher, "echo", &p6);
