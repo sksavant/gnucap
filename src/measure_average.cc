@@ -36,8 +36,8 @@ public:
     before(BIGBIG),
     after(-BIGBIG)
   {}
-  virtual FUNCTION* clone()const { return new MEASURE(*this);}
-
+  virtual FUNCTION_BASE* clone()const { return new MEASURE(*this);}
+  string label()const {return "average";}
   void expand(CS& Cmd, const CARD_LIST* Scope)
   {
     std::string probe_name;
@@ -91,7 +91,7 @@ public:
     }
   }
 } p4;
-DISPATCHER<FUNCTION>::INSTALL d4(&measure_dispatcher, "average|mean", &p4);
+DISPATCHER<FUNCTION_BASE>::INSTALL d4(&measure_dispatcher, "average|mean", &p4);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/

@@ -49,7 +49,7 @@ double	CKT_BASE::tt_behaviour_rel =  0;
 /*--------------------------------------------------------------------------*/
 CKT_BASE::~CKT_BASE()
 {
-  trace1("~CKT_BASE", _probes);
+  trace2("~CKT_BASE purging probes", long_label(), _probes);
   PROBE_LISTS::purge(this);
   if(_probes!=0){
     error(bDANGER ,"CKT_BASE::~CKT_BASE here %s, still %i probes ", long_label().c_str() , _probes);
@@ -59,6 +59,7 @@ CKT_BASE::~CKT_BASE()
 /*--------------------------------------------------------------------------*/
 const std::string CKT_BASE::long_label()const
 {
+  trace0("CKT_BASE::long_label");
   //incomplete();
   std::string buffer(short_label());
   //for (const CKT_BASE* brh = owner(); exists(brh); brh = brh->owner()) {
@@ -72,12 +73,12 @@ double CKT_BASE::probe_num(const std::string& what)const
   trace0(("CKT_BASE::probe_num "+ what).c_str() );
   double x;
   if (_sim->analysis_is_tt()){
-	  x= tt_probe_num(what) ;
-          if (x == NOT_VALID)  x = tr_probe_num(what);
+    x= tt_probe_num(what) ;
+    if (x == NOT_VALID)  x = tr_probe_num(what);
   }else  if (_sim->analysis_is_ac()) {
-	  x = ac_probe_num(what);
+    x = ac_probe_num(what);
   }else{
-	  x = tr_probe_num(what);
+    x = tr_probe_num(what);
   }
   // FIXME, HACK
   return x; // (std::abs(x)>=1) ? x : floor(x/OPT::floor + .5) * OPT::floor;

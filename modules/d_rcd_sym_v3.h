@@ -31,7 +31,7 @@ class MODEL_BUILT_IN_RCD_SYM_V3 : public MODEL_BUILT_IN_RCD_SYM {
     };
     CARD* clone()const {return new MODEL_BUILT_IN_RCD_SYM_V3(*this);}
     void do_expand( COMPONENT*) const;
-    ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
+//    ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
 //    region_t region(const COMPONENT*) const;
     int  tt_region(const COMPONENT*) const;
     double __Re(double uin, const COMMON_COMPONENT* cc)const;

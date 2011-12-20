@@ -45,11 +45,13 @@ protected:
     tREJECTED  ,	/* show rejected time steps			*/
     tITERATION ,	/* show every iteration, including nonconverged	*/
     tVERBOSE   ,	/* show extended diagnostics			*/
-    tDEBUG     
+    tMATRIX    = 16,	/* dump matrix.			*/
+    tDEBUG     = 32
   };
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   CARD_LIST* _scope;
   OMSTREAM   _out;		/* places to send the results		*/
+  bool _dump_matrix;
 public:
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
 private:
@@ -96,7 +98,7 @@ protected:
 	void	evaluate_models();
 	void	set_damp();
 	void	load_matrix();
-	void	solve_equations();
+	void	solve_equations(TRACE);
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

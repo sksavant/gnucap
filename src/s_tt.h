@@ -4,6 +4,7 @@
 
 #include "s_tr.h"
 #include "u_probe.h"
+#include "u_prblst.h"
 
 namespace TT {
 
@@ -34,7 +35,7 @@ class TTT : public TRANSIENT {
     explicit TTT(const TTT&): 
       TRANSIENT(),
       _trace(tNONE),
-      _Tstart(0.), // ?? unused?
+      _Tstart(0.),
       _Tstop(0.),
       _Tstep(0.),
       _timesteps(0),
@@ -49,6 +50,7 @@ class TTT : public TRANSIENT {
     void	outdata_tt(double);
     void	outdata_b4(double);
     bool	review_tt();
+    void tt_begin();
     void	options(CS&);
     void	sweep();
 	 void do_initial_dc();
@@ -60,13 +62,15 @@ class TTT : public TRANSIENT {
     void	head_tt(double,double,const std::string&);
     void	set_step_tt_cause(STEP_CAUSE);
     void	first();
-    void  first_after_interruption();
+    void after_interruption_prep();
+    void first_after_interruption();
     void	fohead(const PROBE&);
     void	store_results(double); // override virtual
     void	store_results_tt(double); 
     void	print_stored_results_tt(double); 
     void	power_down(double ); 
   private:
+	 bool conchk() const;
     TRACE _trace;		// enum: show extended diagnostics
     bool _power_down;
     PARAMETER<double> _Tstart;	// unused?
@@ -80,6 +84,7 @@ class TTT : public TRANSIENT {
     double _Time1;
     int    steps_total_tt;
     double behaviour_time();
+    double time_by_voltages();
     double _time_by_adp;
     double _dT_by_adp;
     double _time_by_beh;
@@ -94,6 +99,8 @@ class TTT : public TRANSIENT {
     bool   _accepted_tt;
     COMPLEX** _fdata_tt;	/* storage to allow postprocessing */
     double*   _tt_store;
+	 PROBELIST oldstore; //save tr_store (which is abused for caching/measurements)
+	 void probeexpand();
 }; // TTT : TRANSIENT
 
 }

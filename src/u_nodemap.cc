@@ -24,6 +24,7 @@
  */
 //testing=script,complete 2006.07.14
 #include "e_node.h"
+#include "e_adp.h"
 #include "u_nodemap.h"
 /*--------------------------------------------------------------------------*/
 NODE ground_node("0",0);
@@ -44,10 +45,12 @@ NODE_MAP::NODE_MAP(const NODE_MAP& p)
   unreachable();
   for (iterator i = _node_map.begin(); i != _node_map.end(); ++i) {
     untested();
-    if (i->first != "0") {
+    CKT_NODE* s=dynamic_cast<CKT_NODE*>(i->second);
+
+    if (i->first != "0" && s) {
       untested();
       assert(i->second);
-      i->second = new NODE(i->second);
+      i->second = (NODE_BASE*) new CKT_NODE(s);
     }else{
       untested();
     }
@@ -65,23 +68,29 @@ NODE_MAP::~NODE_MAP()
   }  
 }
 /*--------------------------------------------------------------------------*/
+//#ifdef DO_TRACE FIXME!
 // slow/stupid for debugging only!
 string NODE_MAP::operator[](unsigned x)const {
+  USE(x);
 
   for (NODE_MAP::const_iterator ni = _node_map.begin(); ni != _node_map.end(); ++ni) {
-    NODE* n = (*ni).second;
+    NODE_BASE* n = (*ni).second;
+    USE(n);
     string label = (*ni).first;
-    if (n->user_number() == x){ return label; };
+
+    CKT_NODE* c = dynamic_cast<CKT_NODE*>(n);
+    if(c && c->user_number() == x){ return label; };
   }
   assert(false);
   return("erorr");
 
 }
+//#endif
 /*--------------------------------------------------------------------------*/
 /* return a pointer to a node given a string
  * returns NULL pointer if no match
  */
-NODE* NODE_MAP::operator[](std::string s)
+NODE_BASE* NODE_MAP::operator[](std::string s)
 {
   const_iterator i = _node_map.find(s);
   if (i != _node_map.end()) {
@@ -98,24 +107,61 @@ NODE* NODE_MAP::operator[](std::string s)
 /* return a pointer to a node given a string
  * creates a new one if it isn't already there.
  */
-NODE* NODE_MAP::new_node(std::string s, const CARD_LIST* p)
+CKT_NODE* NODE_MAP::new_node(std::string s_in, const CARD_LIST* p)
 {  
-  trace0("NODE_MAP::new_node " +s);
+
+  std::string::size_type dotplace = s_in.find_last_of(".");
+  string s = s_in;
+  if(dotplace != std::string::npos){
+    untested();
+    trace1("NODE_MAP::new_node name too long (BUG).", s_in);
+    string s = s_in.substr(dotplace+1, std::string::npos);
+  }
+
+  trace1("NODE_MAP::new_node " ,s);
   if (OPT::case_insensitive) {
     notstd::to_lower(&s);
   }else{
   }
-  NODE* node = _node_map[s];
+  NODE_BASE* node = _node_map[s];
+  CKT_NODE* cnode=dynamic_cast<CKT_NODE*>(node);
+
+  if(node && !cnode){
+    incomplete(); // type/name collision
+    assert(false);
+  }
 
   // increments how_many() when lookup fails (new s)  
   if (!node) {
-    node = new NODE(s, how_many(), p);
-    trace2("NODE_MAP::new_node", s, node->user_number());
+    node = new CKT_NODE(s, how_many(), p);
+    //trace2("NODE_MAP::new_node", s, node->user_number());
+    //                 ^^^^ is really the map number of the new node
+    _node_map[s] = dynamic_cast<NODE_BASE*>( node);
+  }
+  assert(node);
+  return dynamic_cast<CKT_NODE*>(node); 
+}
+/*--------------------------------------------------------------------------*/
+ADP_NODE* NODE_MAP::new_adp_node(std::string s, const COMPONENT* p)
+{  
+  trace1("NODE_MAP::new_node ", s);
+  if (OPT::case_insensitive) {
+    notstd::to_lower(&s);
+  }else{
+  }
+  NODE_BASE* node = _node_map[s];
+  ADP_NODE* anode = dynamic_cast<ADP_NODE*>(node);
+
+  // increments how_many() when lookup fails (new s)  
+  if (!node) {
+    anode = new ADP_NODE(s, p);
+    node = prechecked_cast<NODE_BASE*>(anode);
+    assert(node);
+    trace1("NODE_MAP::new_node", s);
     //                 ^^^^ is really the map number of the new node
     _node_map[s] = node;
   }
-  assert(node);
-  return node;
+  assert(_node_map[s]);
+  return anode;
 }
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

@@ -46,7 +46,7 @@ const PROBELIST& SIM::plotlist()const
 }
 const PROBELIST& SIM::printlist()const
 {
-//  trace1("SIM::printlist", _sim->_mode );
+  trace2("SIM::printlist", _sim->_mode, PROBE_LISTS::print[_sim->_mode].size() );
   return PROBE_LISTS::print[_sim->_mode];
 }
 const PROBELIST& SIM::storelist()const
@@ -162,7 +162,7 @@ void SIM::head(double start, double stop, const std::string& col1)
 	   p=printlist().begin();  p!=printlist().end();  ++p) {
       _out.form(format, ' ', (*p)->label().c_str());
     }
-    _out << '\n';
+    _out <<  printlist().size() << '\n';
   }else{
   }
 }
@@ -174,9 +174,10 @@ void SIM::print_results(double x)
 {
   trace2("SIM::print_results", printlist().size(), x);
   unsigned i=0;
-  if (_sim->expect_file()){
-    assert( fabs (_sim->_expect_raw[i] - x) < 1e-20);
-  }
+
+  //if (_sim->expect_file()){
+  //  assert( fabs (_sim->_expect_raw[i] - x) < 1e-20);
+  //}
 
   if (!IO::plotout.any()) {
     _out.setfloatwidth(OPT::numdgt, OPT::numdgt+6);
@@ -184,6 +185,7 @@ void SIM::print_results(double x)
     _out << x;
     for (PROBELIST::const_iterator
 	   p=printlist().begin();  p!=printlist().end();  ++p) {
+      trace1("SIM::print_results", (*p)->label());
       double v= (*p)->value(); 
       if(_sim->expect_file()){ 
         i++;

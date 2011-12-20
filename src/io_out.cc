@@ -43,6 +43,11 @@
 /*--------------------------------------------------------------------------*/
 unsigned OMSTREAM::_cpos[MAXHANDLE+1];         /* character counter    */
 /*--------------------------------------------------------------------------*/
+OMSTREAM::~OMSTREAM(){
+  trace0("OMSTREAM::~OMSTREAM");
+}
+
+/*--------------------------------------------------------------------------*/
 /* octal: make octal string for an int
  */
 const char* octal(int x)
@@ -193,6 +198,9 @@ OMSTREAM & OMSTREAM::ostream_char(char chr)
   
   for (int ii=0, mm=1;   ii<=MAXHANDLE;   ++ii, mm<<=1) {
     if (_mask & mm) {
+      if(!IO::stream[ii]){
+        error(bDANGER,"no stream?!%i printing %c\n", ii, chr);
+      }
       assert(IO::stream[ii]);
       if (chr=='\b') {untested();
 	--_cpos[ii];

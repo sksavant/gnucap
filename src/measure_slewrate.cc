@@ -28,7 +28,7 @@
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class MEASURE : public WAVE_FUNCTION {
+class SLEW : public WAVE_FUNCTION {
   PARAMETER<double> before;
   PARAMETER<double> after;
   PARAMETER<double> start_val;
@@ -36,15 +36,15 @@ class MEASURE : public WAVE_FUNCTION {
   bool last;
   bool expression;
 public:
-  MEASURE() :
+  SLEW() :
     WAVE_FUNCTION(),
     before(BIGBIG),
     after(-BIGBIG),
     last(false),
     expression(false)
   {}
-  virtual FUNCTION* clone()const { return new MEASURE(*this);}
-
+  virtual FUNCTION_BASE* clone()const { return new SLEW(*this);}
+  string label()const{return "slewrate";}
   void expand(CS& Cmd, const CARD_LIST* Scope)
   {
 
@@ -171,7 +171,7 @@ public:
     return to_fun_t(888);
   }
 } p3;
-DISPATCHER<FUNCTION>::INSTALL d3(&measure_dispatcher, "ddt|slewrate|slope", &p3);
+DISPATCHER<FUNCTION_BASE>::INSTALL d3(&measure_dispatcher, "ddt|slewrate|slope", &p3);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/

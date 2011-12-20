@@ -91,7 +91,7 @@ private: // override virtuals
   void	   ac_iwant_matrix();
   void	   ac_begin();
   void	   do_ac()	{untested();  assert(subckt());  subckt()->do_ac();}
-  void	   tt_next();
+  void	   tt_advance();
   void	   ac_load()	{untested();  assert(subckt());  subckt()->ac_load();}
   XPROBE   ac_probe_ext(const std::string&)const;
 
@@ -163,7 +163,7 @@ private: // override virtuals
   void	   ac_iwant_matrix();
   void	   ac_begin();
   void	   do_ac()	{untested();  assert(subckt());  subckt()->do_ac();}
-  void	   tt_next();
+  void	   tt_advance();
   void	   ac_load()	{untested();  assert(subckt());  subckt()->ac_load();}
   XPROBE   ac_probe_ext(const std::string&)const;
 

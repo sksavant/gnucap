@@ -21,14 +21,19 @@ class COMPONENT;
 /*--------------------------------------------------------------------------*/
 // collects transient (stress) data, sometimes extrapolates.
 class ADP_NODE: public NODE_BASE {
+   private:
+     friend class NODE_MAP;
+    explicit ADP_NODE( string name, const COMPONENT* owner  );// new one
   public:
     // explicit ADP_NODE( const COMPONENT* );
-    explicit ADP_NODE( const COMPONENT* , std::string name_in2 );//
-    explicit ADP_NODE( ADP_CARD* ac, const COMPONENT* cin, const char name_in[] );
+//    explicit ADP_NODE( const COMPONENT* owner , std::string name_in2 );// obsolete
+//
+//    explicit ADP_NODE( ADP_CARD* ac, const COMPONENT* cin, const char name_in[] );
     //: dbg(0)
     //  { init(); _c=cin;  name=std::string(name_in); a=ac; }
     ~ADP_NODE( );
     ADP_NODE( const ADP_NODE& );
+    void set_owner(const CARD* x){_owner=x;}
   private:
     unsigned _number;
   protected:
@@ -49,24 +54,25 @@ class ADP_NODE: public NODE_BASE {
       assert (_sim->_tr);
       return _sim->_tr[m_()];
     }
-    hp_float_t tr1( )const	{
+    hp_float_t tr1()const	{
       assert(m_() != INVALID_NODE);
       assert(m_() <= _sim->_adp_nodes);
       assert (_sim->_tr1);
+      assert(this);
       return _sim->_tr1[m_()];
     }
-    hp_float_t tr2( )const	{
+    hp_float_t tr2()const	{
       assert(m_() != INVALID_NODE);
       assert(m_() <= _sim->_adp_nodes);
       return _sim->_tr2[m_()];
     }
-    hp_float_t tr3( )const	{
+    hp_float_t tr3()const	{
       assert(m_() != INVALID_NODE);
       assert(m_() <= _sim->_adp_nodes);
       return _sim->_tr3[m_()];
     }
 
-    hp_float_t tt1( )const	{
+    hp_float_t tt1()const	{
       assert(m_() != INVALID_NODE);
       assert(m_() <= _sim->_adp_nodes);
       return _sim->_tt1[m_()];
@@ -252,12 +258,12 @@ class BTI_ADP : public ADP_NODE {
 /*--------------------------------------------------------------------------*/
 class ADP_NODE_UDC : public ADP_NODE {
   public:
-    explicit ADP_NODE_UDC( const COMPONENT* c);
-    ADP_NODE_UDC( const ADP_NODE_UDC& );
-    ADP_NODE_UDC( const ADP_NODE& );
+//    explicit ADP_NODE_UDC( const COMPONENT* c);
+//    ADP_NODE_UDC( const ADP_NODE_UDC& );
+//    ADP_NODE_UDC( const ADP_NODE& );
 
-    double get_udc() const {return udc;}
-    void set_udc(double x) {udc=x;}
+//    double get_udc() const {return udc;}
+//    void set_udc(double x) {udc=x;}
 
     void tr_expect_1();
     void tr_expect_2();
@@ -270,12 +276,12 @@ class ADP_NODE_UDC : public ADP_NODE {
 /*--------------------------------------------------------------------------*/
 class ADP_NODE_RCD : public ADP_NODE {
   public:
-    explicit ADP_NODE_RCD( const COMPONENT* c);
-    ADP_NODE_RCD( const ADP_NODE_RCD& );
-    ADP_NODE_RCD( const ADP_NODE& );
+//    explicit ADP_NODE_RCD( const COMPONENT* c);
+//    ADP_NODE_RCD( const ADP_NODE_RCD& );
+//    ADP_NODE_RCD( const ADP_NODE& );
 
-    double get_udc() const {return udc;}
-    void set_udc(double x) {udc=x;}
+    double get_udc() const { assert(false); return udc;}
+    void set_udc(double x) { assert(false); udc=x;}
 
    // virtual ADP_NODE(){ return ADP_NODE_RCD(*this); };
    void tr_expect_1();

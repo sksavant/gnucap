@@ -307,11 +307,11 @@ bool DEV_LOGIC::do_tr()
   return converged();
 }
 /*--------------------------------------------------------------------------*/
-void DEV_LOGIC::tt_next()
+void DEV_LOGIC::tt_advance()
 {
   assert(subckt());
-  subckt()->tt_next();
-  ELEMENT::tt_next();
+  subckt()->tt_advance();
+  ELEMENT::tt_advance();
 }
 /*--------------------------------------------------------------------------*/
 void DEV_LOGIC::tr_load()

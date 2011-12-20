@@ -122,7 +122,7 @@ private:
   void cap_prepare();
   void cap_reset();
   vector<string> var_namen_arr;
-  vector<DEV_CAPACITANCE*> _caplist; // FIXME: use cardlist
+  vector<COMPONENT*> _caplist; // FIXME: use cardlist
   CARDSTASH* _capstash;
   uint16_t var_namen_total_size; 
 
@@ -495,11 +495,13 @@ void SOCK::fillnames( const CARD_LIST* scope){
   const NODE_MAP * nm = scope->nodes();
   for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
     if (i->first != "0") {
-      stringstream s;
-      string myname(i->second->long_label());
 
-      var_namen_arr[i->second->matrix_number()-1] = myname;
-      var_namen_total_size = static_cast<uint16_t>( var_namen_total_size + static_cast<uint16_t>(myname.length()) + 1 );
+      if (const NODE* a= dynamic_cast<const NODE*>(i->second)){
+        stringstream s;
+        string myname(a->long_label());
+        var_namen_arr[a->matrix_number()-1] = myname;
+        var_namen_total_size = static_cast<uint16_t>( var_namen_total_size + static_cast<uint16_t>(myname.length()) + 1 );
+      }
 
     }else{
       // _out << "Zero Node  "  << "\n";
@@ -521,10 +523,13 @@ void SOCK::fillnames( const CARD_LIST* scope){
 /*--------------------------------------------------------------------------*/
 void SOCK::findcaps( CARD_LIST* scope){
   for (CARD_LIST::iterator i = scope->begin(); i != scope->end(); ++i) {
-    if ( DEV_CAPACITANCE* cap = dynamic_cast< DEV_CAPACITANCE*>(*i) )
+    if ( COMPONENT* cap = dynamic_cast< COMPONENT*>(*i) )
     {
-      trace1("found cap", cap->long_label());
-      _caplist.push_back( cap );
+      if (cap->is_device() && cap->has_memory()){
+        trace1("found cap", cap->long_label());
+
+        _caplist.push_back( cap );
+      }
     }
     if ( BASE_SUBCKT* s = dynamic_cast< BASE_SUBCKT*>(*i) )
     {
@@ -943,7 +948,7 @@ void SOCK::verakons() {
   for( unsigned i = 0; i < _caplist.size(); i++)
   {
     _caplist[i]->keep_ic(); // latch voltage applied to _v0
-    trace2("SOCK::verakons",_caplist[i]->long_label(), _caplist[i]->tr_involts() );
+    trace1("SOCK::verakons",_caplist[i]->long_label());
     _caplist[i]->set_constant(true);
     _caplist[i]->q_eval();		// so it will be updated
   }
@@ -1138,7 +1143,7 @@ void SOCK::cap_prepare(void){
       _caplist[ii]->set_constant(false);		// so it will be updated
     }else{
       untested();
-      trace1("SOCK::cap_prepare, attaching common", *_caplist[ii]);
+      trace1("SOCK::cap_prepare, attaching common", _caplist[ii]->long_label());
       //      _sweepval[ii] = _zap[ii]->set__value();	// point to value to patch
       COMMON_COMPONENT* c = bm_dispatcher.clone("eval_bm_value");
       c->set_value( _caplist[ii]->value() );
@@ -1147,7 +1152,7 @@ void SOCK::cap_prepare(void){
       //
       _caplist[ii]->set_value(_caplist[ii]->value(),dc);	// zap out extensions
       _caplist[ii]->set_constant(false);		// so it will be updated
-      trace1("SOCK::cap_prepare", *_caplist[ii]);
+      trace1("SOCK::cap_prepare", _caplist[ii]->long_label());
       _caplist[ii]->precalc_first();
       _caplist[ii]->precalc_last();
       _caplist[ii]->tr_begin();

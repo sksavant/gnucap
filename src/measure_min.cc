@@ -27,20 +27,21 @@
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class MEASURE : public WAVE_FUNCTION {
+class MIN : public WAVE_FUNCTION {
   PARAMETER<double> before;
   PARAMETER<double> after;
   bool last;
   bool arg;
 public:
-  MEASURE(): 
+  MIN(): 
     WAVE_FUNCTION(),
     before(BIGBIG),
     after(-BIGBIG),
     last(false),
     arg(false)
   {}
-  virtual FUNCTION* clone()const { return new MEASURE(*this);}
+  virtual FUNCTION_BASE* clone()const { return new MIN(*this);}
+  string label()const{return "min";}
   void expand(CS& Cmd, const CARD_LIST* Scope)
   {
     unsigned here = Cmd.cursor();
@@ -96,7 +97,7 @@ public:
     }
   }
 } p2;
-DISPATCHER<FUNCTION>::INSTALL d2(&measure_dispatcher, "min", &p2);
+DISPATCHER<FUNCTION_BASE>::INSTALL d2(&measure_dispatcher, "min", &p2);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/

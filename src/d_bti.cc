@@ -939,6 +939,7 @@ bool DEV_BUILT_IN_BTI::do_tr() { // untested0(long_label().c_str());
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_BTI::expand()
 {
+  trace0("DEV_BUILT_IN_BTI::expand");
   BASE_SUBCKT::expand(); // calls common->expand, attaches model
   assert(_n);
   assert(common());
@@ -994,7 +995,7 @@ void DEV_BUILT_IN_BTI::expand()
       if (!_Ubti) {
         const CARD* p ;
         if (!m->is_v2()){
-          p = device_dispatcher["vcvs2"];
+          p = device_dispatcher["vcvs"];
           if (m->uref==NOT_INPUT )
             Ubti_par=1;
           else
@@ -1079,7 +1080,11 @@ double DEV_BUILT_IN_BTI::dvth()const{
   const ADP_BUILT_IN_BTI* a = prechecked_cast<const ADP_BUILT_IN_BTI*>(adp()); a=a;
   double buf = 0;
   int i = m->rcd_number;
-  for(; i-->0;  buf += CARD::probe(_RCD[i],"dvth") );
+  //for(; i-->0;  buf += CARD::probe(_RCD[i],"P") );
+  for(; i-->0; ){
+    const DEV_BUILT_IN_RCD* R = asserted_cast< const DEV_BUILT_IN_RCD* > ( _RCD[i] );
+    buf += R->P();
+  }
   return buf * c->weight;
 }
 /*--------------------------------------------------------------------------*/
@@ -1175,12 +1180,12 @@ void DEV_BUILT_IN_BTI::tt_commit() { unreachable();
   subckt()->do_forall( &CARD::tt_commit ); // sort of tt_prepare?
 }
 /*--------------------------------------------------------------------------*/
-void DEV_BUILT_IN_BTI::tt_prepare() {
-  trace0("DEV_BUILT_IN_BTI::tt_prepare");
-  //FIXME, subckt default
-  //        RCD reicht!
-  subckt()->do_forall( &CARD::tt_prepare ); // sort of tt_prepare?
-}
+//void DEV_BUILT_IN_BTI::tt_prepare() {
+//  trace0("DEV_BUILT_IN_BTI::tt_prepare");
+//  //FIXME, subckt default
+//  //        RCD reicht!
+//  subckt()->do_forall( &CARD::tt_prepare ); // sort of tt_prepare?
+//}
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_BTI::stress_apply() {
   itested();

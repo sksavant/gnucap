@@ -117,7 +117,6 @@ bool DEV_CAPACITANCE::do_tr()
   store_values();
   q_load();
 
-
     //_i[0] = differentiate(_y, _i, _time, _method_a);
     //trace1("DEV_CAPACITANCE::do_tr m0 as if", _y[0]);
 

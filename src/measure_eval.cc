@@ -28,19 +28,25 @@
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class MEASURE : public FUNCTION {
+class EVAL : public FUNCTION_BASE {
+PARAMETER<double> arg;
 public:
+  string label()const {return "eval";}
   fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
-    trace0("eval");
-    PARAMETER<double> arg;
-    Cmd >> arg;
+    trace1("EVAL::eval", (string)Cmd);
     arg.e_val(BIGBIG, Scope);
      // std::cout << to_string(double(arg));
     return to_fun_t(double(arg));
   }
+  void expand(CS& Cmd, const CARD_LIST* Scope){
+    Cmd >> arg;
+    trace2("EVAL::expand", (string)Cmd, arg);
+
+  } 
+  virtual FUNCTION_BASE* clone()const { return new EVAL(*this);}
 } p1;
-DISPATCHER<FUNCTION>::INSTALL d1(&measure_dispatcher, "eval", &p1);
+DISPATCHER<FUNCTION_BASE>::INSTALL d1(&measure_dispatcher, "eval", &p1);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/

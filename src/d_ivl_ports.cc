@@ -303,11 +303,11 @@ bool DEV_LOGIC_AD::do_tr()
   return converged();
 }
 /*--------------------------------------------------------------------------*/
-void DEV_LOGIC_AD::tt_next()
+void DEV_LOGIC_AD::tt_advance()
 {
   assert(subckt());
-  subckt()->tt_next();
-  ELEMENT::tt_next();
+  subckt()->tt_advance();
+  ELEMENT::tt_advance();
 }
 /*--------------------------------------------------------------------------*/
 void DEV_LOGIC_AD::tr_load()
@@ -996,11 +996,11 @@ bool DEV_LOGIC_DA::do_tr()
   return converged();
 }
 /*--------------------------------------------------------------------------*/
-void DEV_LOGIC_DA::tt_next()
+void DEV_LOGIC_DA::tt_advance()
 {
   assert(subckt());
-  subckt()->tt_next();
-  ELEMENT::tt_next();
+  subckt()->tt_advance();
+  ELEMENT::tt_advance();
 }
 /*--------------------------------------------------------------------------*/
 void DEV_LOGIC_DA::tr_load()

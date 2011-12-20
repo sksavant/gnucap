@@ -49,7 +49,7 @@ public:
   void	  remove_list(CS&);
   void     remove_one(CKT_BASE*);
   void push_probe(PROBE*);
-  void merge_probe(PROBE*);
+  PROBE* merge_probe(PROBE*&);
 
   PROBE*     add_list(CS& cmd)
   { return add_list( cmd, &CARD_LIST::card_list ); }
@@ -65,7 +65,7 @@ public:
   friend std::ostream& operator<< ( std::ostream&, const PROBELIST& );
 
 private:
-  void     erase(iterator , iterator );// {bag.erase(b,e);}
+  void     erase(iterator b, iterator e); //  {bag.erase(b,e);}
   PROBE*	  push_new_probe(const std::string& param, const CKT_BASE* object);
   MEAS_PROBE*	  push_new_meas_probe(const std::string& param);
 

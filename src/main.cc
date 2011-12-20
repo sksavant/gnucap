@@ -137,7 +137,6 @@ static void process_cmd_line(int argc, const char *argv[])
         }
       }else if (strcasecmp(argv[ii], "-q") == 0) {
         ++ii;
-          fprintf( stderr, "quiet mode" );
           // doesnt do anything.
       }else if (strcasecmp(argv[ii], "-i") == 0) {itested();
 	++ii;
@@ -254,3 +253,4 @@ int main(int argc, const char *argv[])
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+// vim:ts=8:sw=2:et:

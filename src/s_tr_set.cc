@@ -42,10 +42,14 @@ void TRANSIENT::setup(CS& Cmd)
 
   _cont = true;
   if (Cmd.match1("'\"({") || Cmd.is_pfloat()) {
+    trace1("TRANSIENT::setup parsing args", printlist().size());
     PARAMETER<double> arg1, arg2, arg3;
     Cmd >> arg1;
+    arg1.e_val(0.0,_scope);
     if (Cmd.match1("'\"({") || Cmd.is_float()) {
       Cmd >> arg2;
+      arg2.e_val(0.0,_scope);
+
     }else{itested();
     }
     if (Cmd.match1("'\"({") || Cmd.is_float()) {
@@ -85,7 +89,7 @@ void TRANSIENT::setup(CS& Cmd)
 	_tstop  = arg2;
 	/* _tstep unchanged */
       }else if (arg1 >= arg2) {		    /* 2 args: _tstop, _tstep */
-	_tstart = _sim->_last_time;
+	_tstart = _sim->last_time();
 	_tstop  = arg1;
 	_tstep  = arg2;
       }else{ /* arg1 < arg2 */		    /* 2 args: _tstep, _tstop */
@@ -96,8 +100,8 @@ void TRANSIENT::setup(CS& Cmd)
     }else{itested();
       assert(arg1.has_hard_value());
       arg1.e_val(0.,_scope);
-      if (arg1 > _sim->_last_time) {untested();	    /* 1 arg: _tstop */
-	_tstart = _sim->_last_time;
+      if (arg1 > _sim->last_time()) {untested();	    /* 1 arg: _tstop */
+	_tstart = _sim->last_time();
 	_tstop  = arg1;
 	/* _tstep unchanged */
       }else if (arg1 == 0.) {itested();	    /* 1 arg: _tstart */
@@ -105,17 +109,17 @@ void TRANSIENT::setup(CS& Cmd)
 	_tstart = 0.;
 	_tstop  = oldrange;
 	/* _tstep unchanged */
-      }else{untested(); /* arg1 < _sim->_last_time, but not 0 */  /* 1 arg: _tstep */
+      }else{untested(); /* arg1 < _sim->last_time(), but not 0 */  /* 1 arg: _tstep */
 	double oldrange = _tstop - _tstart;
-	_tstart = _sim->_last_time;
-	_tstop  = _sim->_last_time + oldrange;
+	_tstart = _sim->last_time();
+	_tstop  = _sim->last_time() + oldrange;
 	_tstep  = arg1;
       }
     }
   }else{ /* no args */
     double oldrange = _tstop - _tstart;
-    _tstart = _sim->_last_time;
-    _tstop  = _sim->_last_time + oldrange;
+    _tstart = _sim->last_time();
+    _tstop  = _sim->last_time() + oldrange;
     /* _tstep unchanged */
   }
   if (Cmd.match1("'\"({") || Cmd.is_pfloat()) {
@@ -128,12 +132,12 @@ void TRANSIENT::setup(CS& Cmd)
   _tstop.e_val(NOT_INPUT, _scope);
   _tstep.e_val(NOT_INPUT, _scope);
 
-  if  (_cold || _tstart < _sim->_last_time  ||  _sim->_last_time <= 0.) {
+  if  (_cold || _tstart < _sim->last_time()  ||  _sim->last_time() <= 0.) {
     _cont = false;
     time1 = _sim->_time0 = 0.;
   }else{
     _cont = true;
-    time1 = _sim->_time0 = _sim->_last_time;
+    time1 = _sim->_time0 = _sim->last_time();
   }
   _sim->_freq = ((_tstop > _tstart) ? (1 / (_tstop - _tstart)) : (0.));
 
@@ -169,6 +173,8 @@ void TRANSIENT::options(CS& Cmd)
   _out = IO::mstdout;
   _out.reset(); //BUG// don't know why this is needed
 
+  bool _dump_matrix = false;
+
   _sim->_temp_c = OPT::temp_c;
   bool ploton = IO::plotset  &&  plotlist().size() > 0;
   _sim->_uic = _cold = false;
@@ -180,11 +186,13 @@ void TRANSIENT::options(CS& Cmd)
       || Get(Cmd, "dte{mp}",	   &_sim->_temp_c,  mOFFSET, OPT::temp_c)
       || Get(Cmd, "dtma{x}",	   &_dtmax_in)
       || Get(Cmd, "dtmi{n}",	   &_dtmin_in)
+      || Get(Cmd, "p{rint}",	   &_print_only)
       || Get(Cmd, "dtr{atio}",	   &_dtratio_in)
       || Get(Cmd, "pl{ot}",	   &ploton)
       || Get(Cmd, "sk{ip}",	   &_skip_in)
       || Get(Cmd, "te{mperature}", &_sim->_temp_c)
       || Get(Cmd, "uic",	   &_sim->_uic)
+      || Get(Cmd, "dm",            &_dump_matrix)
       || (Cmd.umatch("tr{ace} {=}") &&
 	  (ONE_OF
 	   || Set(Cmd, "n{one}",      &_trace, tNONE)
@@ -201,7 +209,11 @@ void TRANSIENT::options(CS& Cmd)
       || _out.outset(Cmd)
       ;
   }while (Cmd.more() && !Cmd.stuck(&here));
-  Cmd.check(bWARNING, "what's this?");
+  Cmd.check(bWARNING, "TRopt what's this?");
+
+  if(_dump_matrix) {
+    _trace = (TRACE) (_trace | (int)tMATRIX);
+  }
 
   IO::plotout = (ploton) ? IO::mstdout : OMSTREAM();
   initio(_out);

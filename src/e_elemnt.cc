@@ -584,11 +584,11 @@ void ELEMENT::keep_ic()
   unreachable();
 }
 /*--------------------------------------------------------------------------*/
-void ELEMENT::tt_next()
+void ELEMENT::tt_advance()
 {
   // das tut das hier?
-  // untested0(("tt_next for " + short_label()).c_str());
-  trace2(("ELEMENT::tt_next for " + short_label()).c_str(), _sim->_time0, _sim->_dt0);
+  // untested0(("tt_advance for " + short_label()).c_str());
+  trace2(("ELEMENT::tt_advance for " + short_label()).c_str(), _sim->_time0, _sim->_dt0);
   if (_time[0] > _sim->_time0) {itested();
     for (int i=0  ; i<OPT::_keep_time_steps-1; ++i) {itested();
       _time[i] = _time[i+1];
@@ -604,11 +604,11 @@ void ELEMENT::tt_next()
 
   //assert(_time[0] == _sim->_time0);
   if (_time[0] != _sim->_time0) {itested();
-    trace1("ELEMENT::tt_next timedelta ", _time[0] - _sim->_time0 );
-    trace2( ( "HACK? " + short_label() + ": ELEMENT::tt_next, time mismatch, setting back to 0 " ).c_str(),
+    trace1("ELEMENT::tt_advance timedelta ", _time[0] - _sim->_time0 );
+    trace2( ( "HACK? " + short_label() + ": ELEMENT::tt_advance, time mismatch, setting back to 0 " ).c_str(),
         _sim->_time0, _time[0] );
   }else{
-    trace2(("tt_next for " + short_label()).c_str(), _time[0], _sim->_time0);
+    trace2(("tt_advance for " + short_label()).c_str(), _time[0], _sim->_time0);
   }
 
   for (int i=OPT::_keep_time_steps-1; i>=0; --i) {

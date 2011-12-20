@@ -27,6 +27,7 @@
 #define E_CARDLIST_H
 #include "md.h"
 #include "ap.h"
+
 /*--------------------------------------------------------------------------*/
 // defined here
 class CARD_LIST;
@@ -36,6 +37,7 @@ class CARD;
 class PARAM_LIST;
 class NODE_MAP;
 class NODE;
+class NODE_BASE;
 class LANGUAGE;
 class TIME_PAIR;
 /*--------------------------------------------------------------------------*/
@@ -48,7 +50,7 @@ private:
   LANGUAGE* _language;
   std::list<CARD*> _cl;
   const CARD* _owner;       // stupid hack
-  const CARD_LIST* _origin; // stupid hack
+  const CARD_LIST* _origin; // even more stupid hack
 public:
   // internal types
   typedef std::list<CARD*>::iterator iterator;
@@ -147,12 +149,11 @@ public:
   CARD_LIST& tt_begin();
   TIME_PAIR tt_review();
   CARD_LIST& tt_advance();
-  CARD_LIST& tt_next();
-  CARD_LIST& tt_prepare();
+  CARD_LIST& tt_prepare(); // wech
   CARD_LIST& tt_behaviour_commit();
 
   NODE_MAP*   nodes()const {assert(_nm); return _nm;}
-  NODE*       node(std::string)const;
+  NODE_BASE*       node(std::string)const;
   PARAM_LIST* params();
   PARAM_LIST* params()const;
 
@@ -161,12 +162,16 @@ public:
   void shallow_copy(const CARD_LIST*);
   void map_subckt_nodes(const CARD* model, const CARD* owner);
 
-  explicit CARD_LIST();
+
+ // ADP_NODE* new_adp_node(const CARD* c, string name);
+
+  explicit CARD_LIST(const CARD* owner=0);
   CARD_LIST(const CARD* model, CARD* owner, const CARD_LIST* scope,
   	    PARAM_LIST* p);
   ~CARD_LIST();
 private:
-  explicit CARD_LIST(const CARD_LIST&) {unreachable(); incomplete();}
+  // needed to parr to <<
+  // explicit CARD_LIST(const CARD_LIST&) {unreachable(); incomplete();}
 public:
   static CARD_LIST card_list; // in globals.cc
 };

@@ -3,6 +3,6 @@
 - (more) tests
 - OPT:: doesnt read from params
 - Inf-Inf repair (nan)
-- tw powerdown.
-- aging hold vectors (initial cond?)
-- V(U1.1)
+- make adms work
+- rcm node ordering
+- fix/reenable modelgen (or replace)

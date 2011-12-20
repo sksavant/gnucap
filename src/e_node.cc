@@ -95,7 +95,7 @@ LOGIC_NODE::LOGIC_NODE()
  */
 NODE_BASE::NODE_BASE() 
   : CKT_BASE(),
-  _parent(0),
+  _scope(0),
   _user_number(INVALID_NODE)
 {
 }
@@ -109,7 +109,7 @@ NODE::NODE()
  */
 NODE_BASE::NODE_BASE(const NODE_BASE& p)
   : CKT_BASE(p),
-  _parent(p._parent),
+  _scope(p._scope),
   _user_number(p._user_number)
    //_flat_number(p._flat_number)
    //_matrix_number(INVALID_NODE)
@@ -124,11 +124,17 @@ NODE::NODE(const NODE& p)
 /*--------------------------------------------------------------------------*/
 NODE_BASE::NODE_BASE(const std::string& s, int n, const CARD_LIST* p)
   :CKT_BASE(s),
-   _parent(p),
+   _scope(p),
    _user_number(n)
    //_flat_number(n)
    //_matrix_number(INVALID_NODE)
 {
+  std::string::size_type dotplace = s.find_last_of(".");
+  if(dotplace != std::string::npos){
+    error(bWARNING, " dots in shortlabel? %s \n", s.c_str());
+
+  }
+
   trace1("NODE_BASE::NODE_BASE()" + s, n);
 }
 /*--------------------------------------------------------------------------*/
@@ -143,10 +149,7 @@ NODE::NODE(const NODE* p)
 /*--------------------------------------------------------------------------*/
 /* usual initializing constructor : name and index
  */
-NODE::NODE(const std::string& s, int n, const CARD_LIST*p)
-  :NODE_BASE(s,n,p)
-{
-}
+NODE::NODE(const string& s, int n, const CARD_LIST*p) : NODE_BASE(s,n,p) { }
 /*--------------------------------------------------------------------------*/
 node_t::node_t()
   :_nnn(0),
@@ -261,11 +264,12 @@ double LOGIC_NODE::tr_probe_num(const std::string& x)const
 const std::string  NODE_BASE::long_label()const
 {
   string ret(short_label());
-  if (_parent){
+  if (_scope){
     trace1("NODE_BASE::long_label, have parent", short_label());
-    if( _parent->owner()){
-      ret=_parent->owner()->long_label() + "." + ret;
+    if( _scope->owner()){
+      return (_scope->owner()->long_label() + "." + ret);
     }
+    return ("?"+ret);
   } else {
     trace1("NODE_BASE::long_label, have no parent", short_label());
 
@@ -589,7 +593,7 @@ void node_t::set_to_ground(CARD* d)
 
   NODE_MAP* Map = d->scope()->nodes();
   assert(Map);
-  _nnn = (*Map)["0"];
+  _nnn = dynamic_cast<CKT_NODE*>((*Map)["0"]);
   _ttt = 0;
   assert(_nnn);
 }
@@ -609,7 +613,7 @@ void node_t::new_node(const std::string& node_name, const CARD* d)
 
   NODE_MAP* Map = d->scope()->nodes();
   assert(Map);
-  _nnn = Map->new_node(node_name);
+  _nnn = (CKT_NODE*) Map->new_node(node_name);
   trace2("node_t::new_node", node_name, _nnn->user_number());
   _ttt = _nnn->user_number();
   assert(_nnn);
@@ -623,7 +627,7 @@ void node_t::new_node(const std::string& node_name, const CARD_LIST* scope)
 
   NODE_MAP* Map = scope->nodes();
   assert(Map);
-  _nnn = Map->new_node(node_name, scope);
+  _nnn = (CKT_NODE*) Map->new_node(node_name, scope);
   _ttt = _nnn->user_number();
   assert(_nnn);
 }
@@ -634,14 +638,24 @@ void node_t::new_node(const std::string& node_name, const CARD_LIST* scope)
  * Supposedly equivalent to new_node() then map_subckt_node()
  * but it does it without building a map
  */
-void node_t::new_model_node(const std::string& node_name, CARD* d)
+void node_t::new_model_node(const std::string& s_in, CARD* d)
 {
+
+  std::string::size_type dotplace = s_in.find_last_of(".");
+  string s=s_in;
+  if(dotplace != std::string::npos){
+    trace1("node_t::new_model_node too long (BUG).", s_in);
+    s = s_in.substr(dotplace+1, std::string::npos);
+  }else{
+    trace1("node_t::new_model_node name ok.", s_in);
+  }
+
   // new_node(node_name, d);
   assert (d->subckt());
-  new_node(node_name, d->subckt());
+  new_node(s, d->subckt());
   _ttt = CKT_BASE::_sim->newnode_model();
   // _ttt = CKT_BASE::_sim->newnode_model(); // global user number
-  trace4("node_t::new_model_node", node_name, _ttt, _nnn->user_number(), CKT_BASE::_sim->_total_nodes);
+  trace4("node_t::new_model_node", s, _ttt, _nnn->user_number(), CKT_BASE::_sim->_total_nodes);
   _nnn->set_user_number(_ttt);
 
   // _nnn has its user number from the scope, which doesnt know about
@@ -652,6 +666,10 @@ void node_t::new_model_node(const std::string& node_name, CARD* d)
 /*--------------------------------------------------------------------------*/
 void node_t::new_sckt_node(const std::string& node_name, const CARD_LIST* scope)
 {
+
+  std::string::size_type dotplace = node_name.find_last_of(".");
+  assert(dotplace == std::string::npos) ;
+
   assert(scope);
   new_node(node_name, scope);
   _ttt = CKT_BASE::_sim->newnode_subckt();
@@ -681,31 +699,32 @@ double	NODE_BASE::tt_probe_num(const std::string& x)const{return tr_probe_num(x)
 XPROBE	NODE_BASE::ac_probe_ext(const std::string&)const{ return XPROBE(0);}
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+
+/* FIXME: throw exceptions if device doesnt exist */
 NODE_BASE* NODE_BASE::lookup_node(string nodelabel, const CARD_LIST* scope)
 {
+  trace1("NODE_BASE::lookup_node", nodelabel);
   std::string::size_type dotplace = nodelabel.find_first_of(".");
   if (dotplace != std::string::npos) {
-    // has a dot, look deeper
-    std::string dev = nodelabel.substr(dotplace+1, std::string::npos);
-    std::string container = nodelabel.substr(0, dotplace);
+    string nodename_shorter = nodelabel.substr(dotplace+1, std::string::npos);
+    string container = nodelabel.substr(0, dotplace);
+    trace2("NODE_BASE::lookup_node has dot ", nodename_shorter, container);
     for (CARD_LIST::const_iterator
         i = scope->begin();  i != scope->end();  ++i) {
       CARD* card = *i;
-      //         cerr << " Verilog Card Match " << container << " dev "<< dev << " param " << param 
-      //              << " long label " <<  card->long_label()
-      //              << " short label " <<  card->short_label() <<  std::endl;
+      trace1("NODE_BASE::lookup_node... ",  card->short_label());
+
       if (card->is_device()
           && card->subckt()
           && wmatch(card->short_label(), container)) {
-        trace0( "PROBELIST::add_branches dot cont: " + container + " dev " + dev + " " +
-            card->long_label());
-        return lookup_node(nodelabel, card->subckt());
+        trace1( "NODE_BASE::lookup_node dot cont: " + container + " nodename_shorter " + nodename_shorter ,     card->long_label());
+        return lookup_node(nodename_shorter, card->subckt());
       }else{
       }
     }
   }else{ // no dots, look here
-    trace1("PROBELIST::add_branches looking up node ", nodelabel );
-    NODE* node = (*scope).node(nodelabel);
+    trace1("PROBELIST::add_branches no dots ", nodelabel );
+    NODE_BASE* node = (*scope).node(nodelabel);
     return node;
 
   }

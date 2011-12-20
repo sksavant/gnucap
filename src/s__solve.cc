@@ -28,6 +28,7 @@
 #include "u_status.h"
 #include "e_node.h"
 #include "s__.h"
+#include "io_matrix.h"
 /*--------------------------------------------------------------------------*/
 //	bool	SIM::solve(int,int);
 //	void	SIM::finish_building_evalq();
@@ -53,7 +54,7 @@ bool SIM::solve(OPT::ITL itl, TRACE trace)
   _sim->_damp = OPT::dampmax; // default 1.0
  
   do{
-    if (trace >= tITERATION) {
+    if (( trace & (tMATRIX-1) ) >= tITERATION) {
       trace1("SIM::solve results", _sim->sim_mode());
       SIM::print_results(static_cast<double>(-_sim->iteration_number()));
       // Hack: Added SIM:: / print_results has been overloade but puts out the wrong data
@@ -89,7 +90,7 @@ bool SIM::solve(OPT::ITL itl, TRACE trace)
       load_matrix();
       assert(_sim->_loadq.empty());
       trace0("solve_equations");
-      solve_equations();
+      solve_equations(trace);
       trace0("solve_equations done");
     }
   }while (!converged && !_sim->exceeds_iteration_limit(itl));
@@ -272,10 +273,16 @@ void SIM::load_matrix()
 }
 /*--------------------------------------------------------------------------*/
 
-// #define DUMPMATRIX
-
-void SIM::solve_equations()
+void SIM::solve_equations(TRACE trace)
 {
+  trace1("SIM::solve_equations", trace);
+  if(trace & tMATRIX /* && printhere */) {
+    _out << "\n--- aa -------\n" <<  _sim->_aa << "\n--- i ----\n";
+    for (unsigned i=0; i<_sim->_total_nodes; ++i){
+      _out << _sim->_i[i+1] << ", ";
+    }
+    _out << "\n-----\n";
+  }
 
   ::status.lud.start();
   _sim->_lu.lu_decomp(_sim->_aa, bool(OPT::lubypass && _sim->is_inc_mode()));

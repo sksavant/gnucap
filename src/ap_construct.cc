@@ -32,6 +32,7 @@
 #include <string>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include "u_lang.h"
 
 #ifdef HAVE_LIBREADLINE
   #include <readline/readline.h>
@@ -238,7 +239,7 @@ CS& CS::get_line(const std::string& prompt)
 {
   ++_line_number;
   if (is_file()) {
-    _cmd = getlines(_file);
+    _cmd = OPT::language->getlines(_file);
     _cnt = 0;
     _length = static_cast<unsigned>(_cmd.length());
     _ok = true;
@@ -324,50 +325,5 @@ char *getcmd(const char *prompt, char *buffer, int buflen)
   }
 }
 /*--------------------------------------------------------------------------*/
-static std::string getlines(FILE *fileptr)
-{
-  assert(fileptr);
-  const int buffer_size = BIGBUFLEN;
-  std::string s;
-
-  bool need_to_get_more = true;  // get another line (extend)
-  while (need_to_get_more) {
-    char buffer[buffer_size+1];
-    char* got_something = fgets(buffer, buffer_size, fileptr);
-    if (!got_something) { // probably end of file
-      need_to_get_more = false;
-      if (s == "") {
-	throw Exception_End_Of_Input("");
-      }else{untested();
-      }
-    }else{
-      trim(buffer);
-      size_t count = strlen(buffer);
-//      trace1("getlines", count);
-      if ( count > 0 && buffer[count-1] == '\\') {itested();
-	buffer[count-1] = '\0';
-      }else{
-	// look ahead at next line
-	//int c = fgetc(fileptr);
-	int c;
-	while (isspace(c = fgetc(fileptr))) {
-	  // skip
-	}
-	if (c == '+') {
-	  need_to_get_more = true;
-	}else if (c == '\n') {unreachable();
-	  need_to_get_more = true;
-	  ungetc(c,fileptr);
-	}else{
-	  need_to_get_more = false;
-	  ungetc(c,fileptr);
-	}
-      }
-      s += buffer;
-      s += ' ';
-    }
-  }
-  return s;
-}
 /*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
+// vim:ts=8:sw=2:et:

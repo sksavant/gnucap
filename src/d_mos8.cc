@@ -43,6 +43,7 @@
 #include "d_bti.h"
 #include "e_adp.h"
 #include "e_adplist.h"
+#include "u_nodemap.h" // fixme
 
 /*--------------------------------------------------------------------------*/
 const double NA(NOT_INPUT);
@@ -3106,7 +3107,7 @@ void MODEL_BUILT_IN_MOS8::tr_eval(COMPONENT* brh)const
       trace4("", T0, T1, tmp2, T3);
       double T4;
       if (T3 < 1.0e-4) {
-	untested();
+	itested(); // not really.
 	/* avoid  discontinuity problems caused by etab */ 
 	double T9 = 1.0 / (3.0 - 2.0e4 * T3);
 	T3 = (2.0e-4 - T3) * T9;
@@ -5161,35 +5162,6 @@ void MODEL_BUILT_IN_MOS8::do_tr_stress( const COMPONENT* ) const
 }
 /*--------------------------------------------------------------------------*/
 // FIXME: use DEV for hci?
-void ADP_BUILT_IN_MOS8::init(const COMPONENT* d)
-{
-  const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
-  const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
-
-  assert(c);
-  trace0( "ADP_BUILT_IN_MOS8::init\n" );
-  
-  // constructor does that. (init is intentionally non-virtual)
-  // ADP_BUILT_IN_MOS::init(d);
-
-  if ( m->use_hci()){
-    hci_node = new ADP_NODE( d, "hci" );
-
-    // done in init
-    // ADP_NODE_LIST::adp_node_list.push_back( hci_node );
-
-    vthdelta_hci = 0;
-    vthscale_hci = 1;
-
-  }else{
-    vthdelta_hci = vthscale_hci = NAN;
-    hci_node = NULL;
-  }
-	//  vto=m->vto;
-	//
-  // vthdelta=0; delta_vth
-}
-/*--------------------------------------------------------------------------*/
 ADP_CARD* MODEL_BUILT_IN_MOS8::new_adp( COMPONENT* c)const
 {
   assert(c);
@@ -5226,10 +5198,9 @@ double DEV_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 /*--------------------------------------------------------------------------*/
 void MODEL_BUILT_IN_MOS8::do_stress_apply( COMPONENT* brh) const
 {
-
   // BUG: put into adp.
+  trace2("MODEL_BUILT_IN_MOS8::do_stress_apply", brh->long_label(), _sim->_Time0);
   deprecated();
-  trace1("MODEL_BUILT_IN_MOS8::do_stress_apply", brh->long_label());
 
   // obsolete? maybe not.
   MODEL_BUILT_IN_MOS_BASE::do_stress_apply(brh);
@@ -5247,7 +5218,12 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply( COMPONENT* brh) const
  // double H = .0001;
 
   if(use_hci()){
-    assert(is_number( a->hci_node->tt() ));
+    assert(a->hci_node);
+    if(!is_number( a->hci_node->tt() )){
+
+      error(bDANGER, "!is_number tt, %E %E %i %i %i\n", _sim->_time0, _sim->_Time0, _sim->tt_iteration_number(),  a->hci_node->m_(),(int) hp(_sim->_tt) );
+      assert(is_number( a->hci_node->tt() ));
+    }
     assert(is_number(a->delta_vth));
     a->vthscale_hci = 1; //  exp ( 10000. * a->hci_node->get() / c->w_in );
     a->vthdelta_hci = polarity * pow( a->hci_node->tt() , 0.3 );

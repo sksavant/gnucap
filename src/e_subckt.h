@@ -93,11 +93,8 @@ protected: // override virtual
   void	  ac_load()	{assert(subckt()); subckt()->ac_load();}
 
   virtual void	tt_begin() { assert(subckt()); subckt()->tt_begin( );}  
-  void	  tt_prepare() 
-         { COMPONENT::tt_prepare();  // behaviour (not implemented)
-           assert(subckt()); subckt()->tt_prepare( );}
   //                  why   ^^^^^^^^^^^^^^ ? ( .subctk ) !
-  virtual void	  tt_next()      { assert(subckt()); subckt()->tt_next( );}
+  virtual void	tt_advance() { assert(subckt()); subckt()->tt_advance( );}
   virtual void	tt_commit() 
          { assert(subckt()); subckt()->do_forall( &CARD::tt_commit );}
   virtual void	tt_accept() // !const (beh)

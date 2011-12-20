@@ -85,9 +85,9 @@ public:
 /*--------------------------------------------------------------------------*/
 // necessary?
 class NODE_BASE : public CKT_BASE {
-    const CARD_LIST* _parent;
-    const CARD* _owner;
+    const CARD_LIST* _scope;
   protected:
+    const CARD* _owner; //?? not necessary, is it?
     explicit NODE_BASE();
     explicit NODE_BASE(const NODE_BASE& p);
   protected:
@@ -107,9 +107,10 @@ class NODE_BASE : public CKT_BASE {
     virtual XPROBE	ac_probe_ext(const std::string&)const;
     const std::string  long_label()const;
   public:
-    const CARD_LIST* scope()const{return _parent;}
+    const CARD_LIST* scope()const{return _scope;}
 };
 /*--------------------------------------------------------------------------*/
+#define CKT_NODE NODE
 class NODE : public NODE_BASE {
 protected:
   explicit NODE();
@@ -290,7 +291,7 @@ private:
   }
 
 private:
-  NODE* _nnn;
+  CKT_NODE* _nnn;
   unsigned _ttt;	// m == nm[_ttt] if properly set up
   int _m;		// mapped, after reordering
 

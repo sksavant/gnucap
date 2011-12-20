@@ -49,6 +49,12 @@ PROBE::PROBE(const std::string& what,const CKT_BASE *brh)
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+bool PROBE::operator==(const CKT_BASE& brh)const
+{
+  trace3("PROBE::operator==(const CKT_BASE& brh)",object()->long_label(), brh.long_label(), (object() == &brh) );
+  return (object() == &brh); 
+}
+/*--------------------------------------------------------------------------*/
 PROBE::PROBE(const PROBE& p)
   : _what(p._what),
     _override_label(p._override_label),
@@ -63,6 +69,11 @@ PROBE::PROBE(const PROBE& p)
     trace3(  "PROBE::PROBE copy ++probe: 2 " , _what ,  _brh->probes(), label() );
   }else{
   }
+}
+/*--------------------------------------------------------------------------*/
+PROBE::~PROBE(){
+  trace2("PROBE::deleting probe",label(),object()->long_label());
+  detach();
 }
 /*--------------------------------------------------------------------------*/
 /* operator=  ...  assignment
@@ -113,11 +124,14 @@ void PROBE::detach()
 const std::string PROBE::label(void)const
 {
   if (_brh) {
-    if ( _override_label.compare("")!=0 ) {
-      return _override_label;
-    } else {
+
+// this is probably a bug
+//  label() is used to identify probe (garbage collection)
+//    if ( _override_label.compare("")!=0 ) {
+//      return _override_label;
+//    } else {
       return _what + '(' + _brh->long_label() + ')';
-    }
+//    }
   }else{
     return _what + "(0)";
   }

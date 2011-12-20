@@ -1027,7 +1027,8 @@ double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
     return(NA);
   }else if (Umatch(x, "bti_stress ")) { 
     return  a->bti_stress->tr_get();
-  }else if (Umatch(x, "hci |bti ")) { 
+  }else if (Umatch(x, "hci{_raw} |bti ")) { 
+    assert(a);
     return  a->tr_probe_num(x);
   }else if (Umatch(x, "vgs ")) {
     return  _n[n_g].v0() - _n[n_s].v0();
@@ -1318,6 +1319,7 @@ double DEV_BUILT_IN_MOS::tt_probe_num(const std::string& x)const
   }else if (Umatch(x, "wdt ")) {
     return  a->wdT();
   }else if (Umatch(x, "hci{_raw} |dvth_hci ")) {
+    assert(a);
     return  a->tt_probe_num(x);
   }else if (Umatch(x, "use_bti ")) {
     return  m->use_bti();
@@ -1556,8 +1558,19 @@ void DEV_BUILT_IN_MOS::tr_stress( )
   assert(false); // use_tr_accept!
 }
 /*--------------------------------------------------------------------------*/
+void DEV_BUILT_IN_MOS::tt_advance()
+{
+  if (adp())
+    adp()->tt_advance();
+
+
+  // tt_advance also resets time[] in elements.
+  BASE_SUBCKT::tt_advance();
+}
+/*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tt_next( )
 {
+  unreachable(); // obsolete.
   if (adp())
     adp()->tt_next();
 
@@ -1782,15 +1795,15 @@ void    DEV_BUILT_IN_MOS::tr_unload(){
 /*-------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::stress_apply( )
 {
+  BASE_SUBCKT::stress_apply();
   const COMMON_BUILT_IN_MOS* c = (const COMMON_BUILT_IN_MOS*) common();
   const MODEL_BUILT_IN_MOS_BASE* m = (const MODEL_BUILT_IN_MOS_BASE*)(c->model());
   assert(m);
 
-  // move to adp.
+  // move to adp?
   if(m->use_bti()){
     _BTI->stress_apply();
   }
-  //BASE_SUBCKT::stress_apply();
 
   if (adp()){
     adp()->stress_apply(); // not part of subckt
@@ -1819,10 +1832,13 @@ void DEV_BUILT_IN_MOS::tr_accept(){
   if(adp()) adp()->tr_accept();
 
 
-  if(_sim->analysis_is_tt()){
-    untested();
-    m->do_tr_stress(this) ;
-  }
+
+
+  // if trage?
+//  if(_sim->analysis_is_tt()){
+//    untested();
+//    m->do_tr_stress(this) ;
+//  }
 
 }  
 /*-------------------------------------------------------*/

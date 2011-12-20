@@ -76,13 +76,10 @@ inline bool is_unary(MATH_OP x){
 /*--------------------------------------------------------------------------*/
 class INTERFACE PROBE {
   public:
-    PROBE(){_brh=0;_next=0;itested();};
+    PROBE(): _brh(0),_next(0) { itested();}
     explicit  PROBE(const std::string& what, const CKT_BASE *brh);
     PROBE(const PROBE& p);
-    virtual ~PROBE(){
-      trace1("deleting probe",label());
-      detach();
-    }
+    virtual ~PROBE();
 
     virtual double value()const;
 
@@ -101,7 +98,6 @@ class INTERFACE PROBE {
     const CKT_BASE* _brh;
     double _lo,_hi;
   public:
-
 
     void	    set_limit(double Lo,double Hi)	{_lo = Lo; _hi = Hi;}
     void	    set_next( PROBE* n  )	{ assert(this); _next=n;}
@@ -124,14 +120,13 @@ protected:
 public: // compare probes.
   bool operator==(const PROBE& p)const
   { return ( ( _what == p._what )
-           &&( _override_label == p._override_label ) 
+       //    &&( _override_label == p._override_label )  ???
            &&(  _brh == p._brh  )); 
   
   }
 
 public: // compare (for STL)
-  bool operator==(const CKT_BASE& brh)const
-  { return (object() == &brh); }
+  bool operator==(const CKT_BASE& brh)const;
   bool operator!=(const CKT_BASE& brh)const
   { untested(); return (object() != &brh); }
   bool operator==(const std::string& par)const

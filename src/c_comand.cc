@@ -25,6 +25,7 @@
 #include "constant.h"
 #include "c_comand.h"
 #include "globals.h"
+#include "u_sim_data.h"
 /*--------------------------------------------------------------------------*/
 extern std::string head;
 /*--------------------------------------------------------------------------*/
@@ -59,11 +60,13 @@ public:
       break;
     case rBATCH:
       if (OPT::acct) {itested();
-	command("status", Scope);
+			command("status", Scope);
       }else{
       }
       command("quit", Scope);
       break;
+	 default:
+		break;
     }
   }
 } p0;
@@ -90,6 +93,7 @@ public:
     switch (ENV::run_mode) {
     case rPRE_MAIN:	unreachable(); break;
     case rINTERACTIVE:	itested();
+	 case rPIPE:untested();
     case rSCRIPT:
 	 case rBATCH:	command("clear", Scope); exit(ENV::error); break;
     case rPRESET:	untested(); /*nothing*/ break;
@@ -128,15 +132,17 @@ DISPATCHER<CMD>::INSTALL d4(&command_dispatcher, "title", &p4);
 class CMD_ECHO : public CMD {
 	public:
 		void do_it(CS& cmd, CARD_LIST*) {itested();
+			trace0("CMD_ECHO");
 			//BUG// buffer problem
 			std::string what=cmd.tail();
-			string str;
+			std::string str;
 			OMSTREAM _out = IO::mstdout;
 			while(cmd.ns_more()){
 				char c = cmd.peek();
 				if(c=='>'){
 					//out.reset();
-					_out.outset(cmd);
+					// _out.outset(cmd);
+					outset(cmd,&_out);
 				   break;
 				}
 				str += cmd.ctoc();
@@ -145,10 +151,50 @@ class CMD_ECHO : public CMD {
 			_out <<str ;
 			_out <<	'\n';
 			_out.reset(); // needed?
+			fflush(stdout); //hack
 		}
 } p6;
 DISPATCHER<CMD>::INSTALL d6(&command_dispatcher, "echo", &p6);
 /*--------------------------------------------------------------------------*/
-}
+class CMD_PING : public CMD {
+	public:
+		void do_it(CS& cmd, CARD_LIST*) {itested();
+			trace0("CMD_PING::do_it");
+			string str;
+			OMSTREAM _out = IO::mstdout;
+			while(cmd.ns_more()){
+				char c = cmd.peek();
+				if(c=='>'){
+					//out.reset();
+					// _out.outset(cmd);
+					outset(cmd,&_out);
+				   break;
+				}
+				str += cmd.ctoc();
+			}
+			if (str.size() )_out << "* ";
+			_out << "pong\n" ;
+			_out.reset(); // needed?
+		}
+} p7;
+DISPATCHER<CMD>::INSTALL d7(&command_dispatcher, "ping", &p7);
+/*--------------------------------------------------------------------------*/
+class CMD_NOP : public CMD {
+	public:
+		void do_it(CS& , CARD_LIST*) {
+			trace0("CMD_NOP");
+		}
+} p8;
+DISPATCHER<CMD>::INSTALL d8(&command_dispatcher, "", &p8);
+/*--------------------------------------------------------------------------*/
+class CMD_MODE : public CMD {
+	public:
+		void do_it(CS&, CARD_LIST*) {
+			std::cout << _sim->_mode << "\n";
+		}
+} p9;
+DISPATCHER<CMD>::INSTALL d9(&command_dispatcher, "mode", &p9);
+/*--------------------------------------------------------------------------*/
+} // namespace
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

@@ -76,9 +76,25 @@ protected:
   static METHOD method_select[meNUM_METHODS][meNUM_METHODS];
   void set_ic(double); // protected?? bug??
 public:
+  bool has_memory(){return true;}
   void keep_ic();
 
 };
+
+/*--------------------------------------------------------------------------*/
+
+// storage should do. I might use this to be sure
+class INTERFACE STORAGE_HEADLESS : public STORAGE {
+  public:
+    explicit STORAGE_HEADLESS()			
+      :STORAGE() {}
+    explicit STORAGE_HEADLESS(const STORAGE_HEADLESS& p)
+      :STORAGE(p){}
+    ~STORAGE_HEADLESS() {}
+};
+
+
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 #endif
+// vim:ts=8:sw=2:et

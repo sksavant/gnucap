@@ -287,12 +287,12 @@ void FOURIER::setup(CS& Cmd)
   }
 
   _timesteps = to_pow_of_2(_fstop*2 / _fstep) + 1;
-  if (_cold  ||  _sim->_last_time <= 0.) {
+  if (_cold  ||  _sim->last_time() <= 0.) {
     _cont = false;
     _tstart = 0.;
   }else{
     _cont = true;
-    _tstart = _sim->_last_time;
+    _tstart = _sim->last_time();
   }
   _tstop = _tstart + 1. / _fstep;
   _tstep = 1. / _fstep / (_timesteps-1);

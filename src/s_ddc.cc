@@ -394,11 +394,11 @@ void DDC_BASE::sweep_recursive(int Nest)
     _sim->_temp_c = temp_c_in;
     if (Nest == 0) {
       _sim->_time0 = _sim->_dt0 = 0.0;
-      _sim->_last_time = 0.0;
+      _sim->tr_reset();
       // _sim->zero_currents();
       //
       // why not?
-      _sim->_uic=_sim->_more_uic=true;
+      _sim->_uic = _sim->_more_uic = true;
       _sim->_phase = p_INIT_DC;
 
       set_uic_caps_constant();

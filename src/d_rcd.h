@@ -295,7 +295,6 @@ class DEV_BUILT_IN_RCD : public BASE_SUBCKT {
     void      precalc_last();
     //void    map_nodes();         //BASE_SUBCKT
     void    tr_begin();    // BASE_SUBCKT
-    void tt_next(); //{  } // HACK
     void    tr_stress(); //BASE_SUBCKT
     void    tr_stress_();
     //void    tr_restore();        //BASE_SUBCKT
@@ -303,6 +302,7 @@ class DEV_BUILT_IN_RCD : public BASE_SUBCKT {
     void tt_begin();
     void tt_commit(); 
     void tt_prepare();         //BASE_SUBCKT
+    void tt_advance(); //{  } // HACK
     void dc_advance() {set_not_converged(); BASE_SUBCKT::dc_advance();}
     void tr_advance() {set_not_converged(); BASE_SUBCKT::tr_advance();}
     void tr_regress() {set_not_converged(); BASE_SUBCKT::tr_regress();}

@@ -284,6 +284,7 @@ private:
   void stress_apply();
   void tt_prepare( ){unreachable();}
   void tt_next( ); //NOT const?
+  void tt_advance( ); //NOT const
 public:
   virtual void tt_commit( ); //NOT const
 protected:
@@ -291,10 +292,7 @@ protected:
 private:
   void      stress_eval( ) {  std::cerr << "DEV-Stress " << ids << "\n" ;}
 public:
-  COMPONENT* BTI() const {
-	  assert(_BTI);
-	  return(_BTI);
-  }
+  COMPONENT* BTI() const { return(_BTI); } // HACK.
   void tr_stress_last( );
 };
 /*--------------------------------------------------------------------------*/
@@ -316,6 +314,7 @@ public:
 private:
   double btistress_taken;
   double bti_eff_voltage;
+  double _tr_last_acc;
 
 public:
   virtual void tt_accept();
@@ -328,7 +327,7 @@ public:
   virtual double wdT()const;
   double delta_vth ;
 
-  virtual void tr_accept(){ }
+  virtual void tr_accept();
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

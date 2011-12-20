@@ -86,11 +86,11 @@ private: // override virtuals
   void	   ac_iwant_matrix();
   void	   ac_begin();
   void	   do_ac()	{untested();  assert(subckt());  subckt()->do_ac();}
-  void	   tt_next();
   void	   ac_load()	{untested();  assert(subckt());  subckt()->ac_load();}
   COMPLEX  ac_involts()const		{unreachable(); return 0.;}
   COMPLEX  ac_amps()const		{unreachable(); return 0.;}
   XPROBE   ac_probe_ext(const std::string&)const;
+  void	   tt_advance();
 
   std::string port_name(uint_t)const {untested();
     incomplete();

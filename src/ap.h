@@ -111,8 +111,8 @@ public:
 
   // character tests - non-consuming, no _ok
   bool	      match1(char c)const{return (peek()==c);}
-  bool	      match1(const std::string& c)const
-		{return ns_more() && strchr(c.c_str(),peek());}
+  bool	      match1(const std::string& s)const // next char is one of those in s
+		{return ns_more() && strchr(s.c_str(),peek());}
   size_t      find1(const std::string& c)const
 	{return ((ns_more()) ? c.find_first_of(peek()) : std::string::npos);}
   bool	      is_xdigit()const
@@ -121,7 +121,7 @@ public:
   bool	      is_pfloat()const	{return (match1(".0123456789"));}
   bool	      eat_lines();
   // inf support is a hack, but hackish anyway
-  bool	      is_float()const	{return (match1("+-.0123456789") || match1("iI") );} // BUG // FIXME: implement inf as constant global param
+  bool	      is_float()const	{return (match1("+-.0123456789"));} // || match1("iI") );} // BUG // FIXME: implement inf as constant global param
   //bool	      is_float()const	{return (match1("+-.0123456789"));}
   bool	      is_argsym()const	{return (match1("*?$%_&@"));}
   bool	      is_alpha()const	{return !!isalpha(toascii(peek()));}

@@ -35,8 +35,8 @@ public:
     WAVE_FUNCTION(),
     derivative(false)
   {}
-  virtual FUNCTION* clone()const { return new MEASURE(*this);}
-
+  virtual FUNCTION_BASE* clone()const { return new MEASURE(*this);}
+  string label() const{return "at";}
   void expand(CS& Cmd, const CARD_LIST* Scope){
     unsigned here = Cmd.cursor();
     Cmd >> probe_name;
@@ -73,7 +73,7 @@ public:
     }
   }
 } p1;
-DISPATCHER<FUNCTION>::INSTALL d1(&measure_dispatcher, "at", &p1);
+DISPATCHER<FUNCTION_BASE>::INSTALL d1(&measure_dispatcher, "at", &p1);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/

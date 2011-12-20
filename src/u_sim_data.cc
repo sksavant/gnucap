@@ -62,7 +62,7 @@ void SIM_DATA::keep_voltages()
       _vdc[ii] = _v0[ii];
     }
     _last_time = (_time0 > 0.) ? _time0 : 0.;
-  }else{untested();
+  }else{itested();
   }
 }
 /*--------------------------------------------------------------------------*/
@@ -244,11 +244,13 @@ void SIM_DATA::order_tree( const CARD_LIST* scope, unsigned *c)
   /* node map (external to internal)	*/
 
   for (NODE_MAP::const_iterator i = nm->begin(); i != nm->end(); ++i) {
+    CKT_NODE* s=dynamic_cast<CKT_NODE*>(i->second );
+    if (!s) continue;
     if (i->first != "0") {
       (*c)++;
-      _nm[ i->second->user_number() ]=*c;
-      trace3("SIM_DATA::order_tree " , i->second->long_label(),
-           i->second->user_number() , *c);
+      _nm[ s->user_number() ]=*c;
+      trace3("SIM_DATA::order_tree " , s->long_label(),
+           s->user_number() , *c);
     }else{
       // _out << "Zero Node  "  << "\n";
     }
@@ -304,6 +306,9 @@ void SIM_DATA::init()
   _dT0=0;
   _dT1=0;
   _dT2=0;
+  _expect_file=0;
+  _waves=0;
+  _waves_tt=0;
 }
 /*--------------------------------------------------------------------------*/
 /* alloc_hold_vectors:
@@ -413,6 +418,7 @@ void SIM_DATA::unalloc_vectors()
  */
 void SIM_DATA::uninit()
 {
+  //trace0("SIM_DATA::uninit");
   // fixme adp?
   if (_vdc) {
     _acx.reinit(0);
@@ -451,8 +457,9 @@ void SIM_DATA::update_tt_order()
 }
 /*--------------------------------------------------------------------------*/
 uint_t SIM_DATA::get_tt_order() const {
-	assert (_tt_order <= tt_iteration_number());
-	return _tt_order;
+  trace2("SIM_DATA::get_tt_order", iteration_number(), tt_iteration_number());
+  assert (_tt_order <= tt_iteration_number());
+  return _tt_order;
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

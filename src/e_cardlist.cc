@@ -32,12 +32,12 @@
 /*--------------------------------------------------------------------------*/
 #define trace_func_comp() trace0((__func__ + (":" + (**ci).long_label())).c_str())
 /*--------------------------------------------------------------------------*/
-CARD_LIST::CARD_LIST()
+CARD_LIST::CARD_LIST(const CARD* owner)
   :_parent(NULL),
    _nm(new NODE_MAP),
    _params(NULL),
    _language(NULL),
-   _owner(NULL),
+   _owner(owner),
    _origin(NULL)
 {
 }
@@ -192,14 +192,14 @@ CARD_LIST& CARD_LIST::precalc_first()
   return *this;
 }
 /*--------------------------------------------------------------------------*/
-CARD_LIST& CARD_LIST::tt_next()
-{
-  for (iterator ci=begin(); ci!=end(); ++ci) {
-    trace_func_comp();
-    (**ci).tt_next();
-  }
-  return *this;
-}
+//CARD_LIST& CARD_LIST::tt_next()
+//{
+//  for (iterator ci=begin(); ci!=end(); ++ci) {
+//    trace_func_comp();
+//    (**ci).tt_next();
+//  }
+//  return *this;
+//}
 /*--------------------------------------------------------------------------*/
 CARD_LIST& CARD_LIST::precalc_last()
 {
@@ -221,7 +221,7 @@ CARD_LIST& CARD_LIST::map_nodes()
   return *this;
 }
 /*--------------------------------------------------------------------------*/
-NODE* CARD_LIST::node(string s) const{
+NODE_BASE* CARD_LIST::node(string s) const{
   const COMPONENT* o = dynamic_cast<const COMPONENT*>(owner());
   const CARD_LIST* scope = _origin;
   trace1("CARD_LIST::node",s);
@@ -230,9 +230,9 @@ NODE* CARD_LIST::node(string s) const{
     trace1("CARD_LIST::node have an origin scope " + s, scope->nodes()->how_many() );
     trace1("",scope);
 
-    NODE* n = scope->node(s);
+    NODE_BASE* n = scope->node(s);
     if(n){
-      uint_t nn = n->user_number();
+      uint_t nn = 0; // n->user_number();
       trace1("CARD_LIST::node found " + s, nn);
       node_t* N = &(o->n_(nn));
       assert(N);
@@ -248,7 +248,7 @@ NODE* CARD_LIST::node(string s) const{
 
   trace0("CARD_LIST::node falling back to nodes " + s);
   NODE_MAP* NM=nodes();
-  NODE* ret = (*NM)[s];
+  NODE_BASE* ret = (*NM)[s];
   trace1("CARD_LIST::node ", hp(ret));
   return(ret);
 }
@@ -368,7 +368,7 @@ CARD_LIST& CARD_LIST::tt_advance()
 {
   for (iterator ci=begin(); ci!=end(); ++ci) {
     trace_func_comp();
-    (**ci).tr_advance();
+    (**ci).tt_advance();
   }
   return *this;
 }
@@ -467,15 +467,6 @@ CARD_LIST& CARD_LIST::tt_begin()
   for (iterator ci=begin(); ci!=end(); ++ci) {
     trace_func_comp();
     (**ci).tt_begin();
-  }
-  return *this;
-}
-/*--------------------------------------------------------------------------*/
-CARD_LIST& CARD_LIST::tt_prepare()
-{
-  for (iterator ci=begin(); ci!=end(); ++ci) {
-    trace_func_comp();
-    (**ci).tt_prepare();
   }
   return *this;
 }
@@ -609,9 +600,9 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
   assert(model->subckt());
   assert(model->subckt()->nodes());
   assert(owner);
-  trace1("model nodenames", *(model->subckt()->nodes()));
-  trace1("... now own", *(owner->scope()->nodes())  );
-  trace2("now own sckt", *nodes(), hp(nodes()));
+  //trace1("model nodenames", *(model->subckt()->nodes()));
+  //trace1("... now own", *(owner->scope()->nodes())  );
+  //trace2("now own sckt", *nodes(), hp(nodes()));
 //  NODE_MAP* nm = owner->scope()->nodes();
 
 //:w
@@ -649,7 +640,7 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
         //untested();
 	// for each remaining node in card_list
         // these are the internal nodes.
-        string label = (*(model->subckt()->nodes())) [i] ;
+        string label = (*(model->subckt()->nodes())) [i] ; // HACK!
         assert(this);
         unsigned k = CKT_BASE::_sim->_total_nodes;
         owner->n_(i-1).new_sckt_node( label, this); // this correct??
@@ -663,7 +654,7 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
         //owner->n_(i-1).new_sckt_node( label, subckt());
 
       }
-      trace1("CARD_LIST::map_subckt_nodes done map", *nodes());
+      //trace1("CARD_LIST::map_subckt_nodes done map", *nodes());
 
     }
   }
@@ -697,5 +688,16 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
     }
   }
 }
+/*--------------------------------------------------------------------------*/
+///ADP_NODE* CARD_LIST::new_adp_node{
+///  assert(d);
+///  assert(d->scope());
+///
+///  NODE_MAP* Map = nodes();
+///  assert(Map);
+///  ADP_NODE* a Map->new_adp_node(node_name);
+///  trace2("CARDLIST::new_adp_node", node_name, _nnn->user_number());
+///  assert(_nnn);
+///}
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

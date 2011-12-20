@@ -63,7 +63,8 @@ public:
     _time_by_error_estimate(0.),
     _time_by_ambiguous_event(0.),
     _converged(false),
-    _accepted(false)
+    _accepted(false),
+	 _print_only(false)
   {
 	  trace4( "TRANSIENT()",  steps_total_out_, _tstep , _tstop, _tstart );
   }
@@ -111,8 +112,9 @@ protected:
   bool _tt_cont;	// 
   bool _inside_tt;// hack: tell tr_swp to not reinit circuit
   //int _stepno;		// count of visible (saved) steps
-private:
+protected:
   TRACE _trace;		// enum: show extended diagnostics
+private:
   double _time_by_iteration_count;
   double _time_by_user_request;
   double _time_by_error_estimate;
@@ -120,6 +122,7 @@ private:
 protected:
   bool _converged;
   bool _accepted;
+  bool _print_only;
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 private:
   static int steps_accepted_;

@@ -36,7 +36,8 @@ public:
     before(BIGBIG),
     after(-BIGBIG)
   {}
-  virtual FUNCTION* clone()const { return new MEASURE(*this);}
+  virtual FUNCTION_BASE* clone()const { return new MEASURE(*this);}
+  string label()const{return "integral";}
   void expand(CS& Cmd, const CARD_LIST* Scope)
   {
     
@@ -89,7 +90,7 @@ public:
     }
   }
 } p4;
-DISPATCHER<FUNCTION>::INSTALL d4(&measure_dispatcher, "integrate|integral|area", &p4);
+DISPATCHER<FUNCTION_BASE>::INSTALL d4(&measure_dispatcher, "integrate|integral|area", &p4);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/
