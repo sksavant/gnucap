@@ -43,6 +43,11 @@
 /*--------------------------------------------------------------------------*/
 unsigned OMSTREAM::_cpos[MAXHANDLE+1];         /* character counter    */
 /*--------------------------------------------------------------------------*/
+OMSTREAM::~OMSTREAM(){
+  trace0("OMSTREAM::~OMSTREAM");
+}
+
+/*--------------------------------------------------------------------------*/
 /* octal: make octal string for an int
  */
 const char* octal(int x)

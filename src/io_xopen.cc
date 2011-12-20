@@ -34,6 +34,7 @@
 void xclose(FILE **fn)
 {
   if (*fn) {
+    trace1("closing", *fn);
     fclose(*fn);
     *fn = NULL;
   }
@@ -47,6 +48,7 @@ void xclose(FILE **fn)
  */
 FILE *xopen(CS& cmd, const char *ext, const char *how)
 {
+  trace3("xopen",(string)cmd, how, ext);
   char fname[BIGBUFLEN];
   
   cmd.skipbl();
@@ -98,16 +100,17 @@ FILE *xopen(CS& cmd, const char *ext, const char *how)
     std::string msg = std::string(fname) + " exists.  replace? ";
     getcmd(msg.c_str(), buffer, BUFLEN);
     if (Umatch(buffer,"y{es} ")) {untested(); 	/* should be new file, but	    */
-      code = fopen(fname,how);		/* file already exists,  ask	    */
+      code = fopen(fname,how);                  /* file already exists,  ask	    */
     }else{untested();
       return NULL;
     }
   }else{
+    trace1("opening", fname);
     code = fopen(fname,how);
   }
   
   if (code && fileno(code)>MAXHANDLE) {untested(); 
-    error(bWARNING, "internal error: files: %d\n", fileno(code));
+    error(bWARNING, "internal error: too many files: %d\n", fileno(code));
     fclose(code);
     code = NULL;
   }
@@ -120,3 +123,4 @@ FILE *xopen(CS& cmd, const char *ext, const char *how)
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+// vim:ts=8:sw=2:et:
