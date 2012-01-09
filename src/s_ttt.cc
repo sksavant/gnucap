@@ -700,6 +700,7 @@ void TTT::do_it(CS& Cmd, CARD_LIST* Scope)
 		::status.set_up.stop();
 		switch (ENV::run_mode) {untested();
 			case rPRE_MAIN:	unreachable();		break;
+			case rPIPE:
 			case rBATCH:
 			case rINTERACTIVE:  itested();
 			case rSCRIPT:  sweep_tt();

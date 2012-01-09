@@ -228,7 +228,7 @@ std::string PARAMETER<std::string>::e_val(const std::string& def, const CARD_LIS
     // blank string means to use default value
     _v = def;
     if (recursion > 1) {
-      error(bWARNING, " parameter " + *first_name + " has no value\n");
+      error(bWARNING, " string parameter " + *first_name + " has no value\n");
     }else{
     }
   }else if (_s == "{") {
@@ -237,7 +237,7 @@ std::string PARAMETER<std::string>::e_val(const std::string& def, const CARD_LIS
     if (recursion <= OPT::recursion) {
       _v = lookup_solve(def, scope);
       if (_v == "") {untested();itested();
-	error(bDANGER, "parameter " + *first_name + " has no value\n");
+	error(bDANGER, " string parameter " + *first_name + " has no value\n");
       }else{
       }
     }else{untested();

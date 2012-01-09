@@ -113,7 +113,7 @@ std::string LANG_SPICE::getlines(FILE *fileptr)
         // look ahead at next line
         //int c = fgetc(fileptr);
 
-        char c;
+        int c;
         while (isspace(c = fgetc(fileptr)));
 		  assert(c!='\n');
         if (c == '+') {

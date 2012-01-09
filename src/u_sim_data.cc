@@ -57,6 +57,7 @@ void SIM_DATA::clear_limit()
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::keep_voltages()
 {
+  trace1("SIM_DATA::keep_voltages", _freezetime);
   if (!_freezetime) {
     for (uint_t ii = 1;  ii <= _total_nodes;  ++ii) {
       _vdc[ii] = _v0[ii];
@@ -75,6 +76,7 @@ void SIM_DATA::put_v1_to_v0()
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::restore_voltages()
 {
+  trace1("SIM_DATA::restore_voltages", _freezetime);
   for (uint_t ii = 1;  ii <= _total_nodes;  ++ii) {
     _vt1[ii] = _v0[ii] = _vdc[ii];
     //_nstat[_nm[ii]].set_last_change_time(0);

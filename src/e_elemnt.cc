@@ -126,8 +126,11 @@ void ELEMENT::tr_restore()
   //if( _time[0] != _sim->_time0 )
 //  assert(_time[0] == _sim->_time0);
   if (_time[0] != _sim->_time0) {itested();
-    error(bDANGER, "//BUG// restore time mismatch.  t0=%.12f, s->t=%.12f\n",
+    error(bDANGER, "//BUG// %s restore time mismatch.  t0=%.12f, s->t=%.12f\n", long_label().c_str(),
 	 _time[0], _sim->_time0);
+
+  for (int i=OPT::_keep_time_steps-1; i>=0; --i) 
+     _time[i] =  _sim->_time0;
     //BUG// happens when continuing after a ^c,
     // when the last step was not printed
     // _time[0] is the non-printed time.  _sim->_time0 is the printed time.
@@ -149,6 +152,7 @@ void ELEMENT::dc_advance()
     trace2(( "ELEMENT::dc_advance " + long_label()).c_str(), i, _time[i]);
     ass &= _time[i] == 0.;
   }
+  if(!ass)error(bDANGER, "//BUG// %s simtime: %f here: %f\n",long_label().c_str(),  _sim->_time0, _time[0]);
   assert(ass);
 
   _dt = NOT_VALID;
