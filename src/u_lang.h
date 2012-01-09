@@ -51,6 +51,7 @@ public: // used by obsolete_callback
 public: // real public interface
   virtual void		parse_top_item(CS&, CARD_LIST*);
   virtual CARD*		parse_item(CS&, CARD*);
+  virtual std::string getlines(FILE*);
 public: // called by commands and parse_item
   virtual DEV_COMMENT*	parse_comment(CS&, DEV_COMMENT*) = 0;
   virtual DEV_DOT*	parse_command(CS&, DEV_DOT*) = 0;

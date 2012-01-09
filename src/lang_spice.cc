@@ -76,15 +76,59 @@ private: // local
   void print_ports(OMSTREAM&, const COMPONENT*);
 };
 /*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 class LANG_SPICE : public LANG_SPICE_BASE {
 public:
   std::string name()const {return "spice";}
   bool case_insensitive()const {return true;}
   UNITS units()const {return uSPICE;}
   void parse_top_item(CS&, CARD_LIST*);
+  std::string getlines(FILE*);
 } lang_spice;
 DISPATCHER<LANGUAGE>::INSTALL
 	ds(&language_dispatcher, lang_spice.name(), &lang_spice);
+/*--------------------------------------------------------------------------*/
+std::string LANG_SPICE::getlines(FILE *fileptr)
+{
+  assert(fileptr);
+  const int buffer_size = BIGBUFLEN;
+  std::string s;
+
+  bool need_to_get_more = true;  // get another line (extend)
+  while (need_to_get_more) {
+    char buffer[buffer_size+1];
+    char* got_something = fgets(buffer, buffer_size, fileptr);
+    if (!got_something) { // probably end of file
+      need_to_get_more = false;
+      if (s == "") {
+	throw Exception_End_Of_Input("");
+      }else{untested();
+      }
+    }else{
+      trim(buffer);
+      size_t count = strlen(buffer);
+      if (buffer[count-1] == '\\') {itested();
+        buffer[count-1] = '\0';
+      }else{
+        // look ahead at next line
+        //int c = fgetc(fileptr);
+
+        int c;
+        while (isspace(c = fgetc(fileptr)));
+		  assert(c!='\n');
+        if (c == '+') {
+          need_to_get_more = true;
+        }else{
+          need_to_get_more = false;
+          ungetc(c,fileptr);
+        }
+      }
+      s += buffer;
+      s += ' ';
+    }
+  }
+  return s;
+}
 /*--------------------------------------------------------------------------*/
 class LANG_ACS : public LANG_SPICE_BASE {
 public:

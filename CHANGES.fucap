@@ -62,3 +62,4 @@
 - getopt (stub)
 
 - gnucap-conf script. helps with compiling after install
+- tr: "cont" switch: start from (current/previously marked) dc-point.

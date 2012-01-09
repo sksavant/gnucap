@@ -159,6 +159,7 @@ FPOLY1 differentiate(const FPOLY1* q, const FPOLY1* i, double* time, METHOD meth
     /* leave it alone to restart from a previous solution */
     /* it goes this way to continue a transient analysis */
     assert(time[0] > 0);
+    //assert(time[0] > CKT_BASE::_sim->last_time());
     return i[0];
   }else{
     trace1("differentiate " + SIM_MODE_label[CKT_BASE::_sim->_mode],

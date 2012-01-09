@@ -35,7 +35,8 @@ public:
     Expression e(cmd);
     cmd.check(bDANGER, "syntax error parsing expression");
     Expression r(e, Scope);
-    cout << e << "=" << r << '\n';
+	 std::cout << e << "=" << r << '\n';
+	 // cout.flush(); use .echo
   }
 } p0;
 DISPATCHER<CMD>::INSTALL d0(&command_dispatcher, "exp|eval", &p0);

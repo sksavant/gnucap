@@ -93,6 +93,7 @@ void OMSTREAM::outreset(void)
       to_pipe = NULL;
    }else{
    }
+   trace1("OMSTREAM::outreset", xclose);
    xclose(&fn);
    IO::formaat = 0;
    IO::incipher = false;
@@ -145,6 +146,7 @@ OMSTREAM* OMSTREAM::outset(CS& cmd)
       // open a file for write or append
       const char *rwaflag;
       rwaflag = (cmd.umatch(">")) ? "a" : "w";
+      trace1("OMSTREAM::outset", (string)cmd.tail());
       fn = file_open(cmd,"",rwaflag,fn);
       (*out).attach(fn);
       IO::formaat = ftos_EXP;

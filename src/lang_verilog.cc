@@ -290,7 +290,7 @@ std::string LANG_VERILOG::find_type_in_string(CS& cmd)
   unsigned here = cmd.cursor();
   std::string type;
   if ((cmd >> "//")) {
-    assert(here == 0);
+    assert(here == 0); // BUG. why not "\t//"?
     type = "dev_comment";
   }else{
     cmd >> type;

@@ -108,6 +108,8 @@ protected:
   double _dtmax;	// max internal step size (step / _skip)
   bool _cold;		// flag: start time=0, all voltages=0
   bool _cont;		// flag: continue from previous run
+  bool _cont_dc;	// continue from current dc point.
+  bool _tt_cont;	// 
   bool _inside_tt;// hack: tell tr_swp to not reinit circuit
   //int _stepno;		// count of visible (saved) steps
 protected:

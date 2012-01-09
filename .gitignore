@@ -53,6 +53,7 @@ src/d_rtest.h
 src/d_rtest.cc
 #FIXME
 src/*.hxx
+src/.d*adms
 
 
 #verilog stuff
@@ -64,4 +65,5 @@ d_latch.cc
 d_latch.h
 d_clock.cc
 d_clock.h
+
 

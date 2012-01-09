@@ -1,0 +1,20 @@
+spice
+
+R1 1 0 1
+C1 1 0 1
+I1 0 1 a
+
+.param a=2
+
+.print dc v(nodes)
+.print tran v(nodes)
+
+.dc
+
+.tran 0 1 0.5  trace=v cont
+
+.param a=1.9
+.tran 0 1 0.5  trace=v cont
+
+
+.end

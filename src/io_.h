@@ -47,6 +47,7 @@ private:
   OMSTREAM(int m)
     :_mask(m),_fltdig(7),_fltwid(0),_format(0),_cipher(false),_pack(false) {}
 public:
+  ~OMSTREAM();
   explicit OMSTREAM(FILE* f = 0)
     :_mask(0),_fltdig(7),_fltwid(0),_format(0),_cipher(false), _pack(false)
     {_mask = (f) ? 1<<fileno(f) : 0;}
@@ -174,11 +175,11 @@ public:
 };
 /*--------------------------------------------------------------------------*/
 /* contrl */ INTERFACE void	   initio(OMSTREAM&);
-		       void	   outreset();
-	     INTERFACE OMSTREAM*   outset(CS&,OMSTREAM*);
+  void	   outreset();
+  INTERFACE OMSTREAM*   outset(CS&,OMSTREAM*);
 /* findf */	       std::string findfile(const std::string&,const std::string&,int);
 /* xopen */	       void	   xclose(FILE**);
-		       FILE*	   xopen(CS&,const char*,const char*);
+  FILE*	   xopen(CS&,const char*,const char*);
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
