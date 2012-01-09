@@ -53,6 +53,7 @@ src/d_rtest.h
 src/d_rtest.cc
 #FIXME
 src/*.hxx
+src/.d*adms
 
 
 #verilog stuff
