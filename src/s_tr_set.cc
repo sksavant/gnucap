@@ -40,7 +40,7 @@ void TRANSIENT::setup(CS& Cmd)
   _tstop.e_val(NOT_INPUT, _scope);
   _tstep.e_val(NOT_INPUT, _scope);
 
-  _cont = true;
+  _cont=false;
   if (Cmd.match1("'\"({") || Cmd.is_pfloat()) {
     trace1("TRANSIENT::setup parsing args", printlist().size());
     PARAMETER<double> arg1, arg2, arg3;
@@ -132,7 +132,7 @@ void TRANSIENT::setup(CS& Cmd)
   _tstop.e_val(NOT_INPUT, _scope);
   _tstep.e_val(NOT_INPUT, _scope);
 
-  if  (_cold || _tstart < _sim->last_time()  ||  _sim->last_time() <= 0.) {
+  if  ((_cold || _tstart < _sim->last_time()  ||  _sim->last_time() <= 0.) && !_cont ) {
     _cont = false;
     time1 = _sim->_time0 = 0.;
   }else{
@@ -164,6 +164,7 @@ void TRANSIENT::setup(CS& Cmd)
     // use larger of soft values
     _sim->_dtmin = std::max(double(_dtmin_in), _dtmax/_dtratio_in);
   }
+  trace3("TRANSIENT::setup done", _cont, _sim->_time0, time1);
 }
 /*--------------------------------------------------------------------------*/
 /* tr_options: set options common to transient and fourier analysis
@@ -183,6 +184,7 @@ void TRANSIENT::options(CS& Cmd)
   do{
     ONE_OF
       || Get(Cmd, "c{old}",	   &_cold)
+      || Get(Cmd, "cont",	   &_cont_dc)
       || Get(Cmd, "dte{mp}",	   &_sim->_temp_c,  mOFFSET, OPT::temp_c)
       || Get(Cmd, "dtma{x}",	   &_dtmax_in)
       || Get(Cmd, "dtmi{n}",	   &_dtmin_in)

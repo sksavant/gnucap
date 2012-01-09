@@ -9,3 +9,4 @@
 - some inconsistency about internal device vs internal subckt node in prblist
 - probe bug found in ddc. R(R1) or something (garbage coll)
 - OMSTREAM needs rework (based on ostream or something)
+- lang_verilog does not allow whitespace before comment (bug?)

@@ -56,6 +56,7 @@ namespace TR {
 /*--------------------------------------------------------------------------*/
 void TRANSIENT::sweep()
 {
+  trace2("TRANSIENT::sweep", _cont, _cont_dc);
   _sim->_phase = p_INIT_DC;
   head(_tstart, _tstop, "Time");
   _sim->_bypass_ok = false;
@@ -67,6 +68,13 @@ void TRANSIENT::sweep()
     CARD_LIST::card_list.tr_restore();
       outdata(_sim->_time0);
       return;
+
+  } else if (_cont_dc){ // continue from DC point.
+  //  _sim->_phase = p_RESTORE;
+    //_sim->restore_voltages();
+    _sim->clear_limit();
+    CARD_LIST::card_list.tr_begin();
+    _sim->restore_voltages();
 
   } else if ( _inside_tt ) {
     trace0("TRANSIENT::sweep inside tt");

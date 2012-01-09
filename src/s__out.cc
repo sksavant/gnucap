@@ -162,7 +162,8 @@ void SIM::head(double start, double stop, const std::string& col1)
 	   p=printlist().begin();  p!=printlist().end();  ++p) {
       _out.form(format, ' ', (*p)->label().c_str());
     }
-    _out <<  printlist().size() << '\n';
+    //    _out <<  printlist().size() << '\n';
+    _out << '\n';
   }else{
   }
 }

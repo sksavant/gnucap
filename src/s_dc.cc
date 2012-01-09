@@ -361,6 +361,7 @@ void DCOP::sweep()
   _sim->clear_limit();
   CARD_LIST::card_list.tr_begin();
   sweep_recursive(_n_sweeps);
+  //_sim->keep_voltages();
 }
 /*--------------------------------------------------------------------------*/
 void DCOP::sweep_recursive(int Nest)
