@@ -57,7 +57,7 @@ R2 ncc nC 10k
 .print tran v(nodes)
 
 
-.tran .1 1
+.tran .02 1
 *trace v
 
 .param a=1.0e-16

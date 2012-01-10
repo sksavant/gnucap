@@ -63,7 +63,7 @@ class ADMS_BASE : public BASE_SUBCKT {
 		//void   map_nodes();
 		void	   tr_iwant_matrix() = 0;
 		void	   ac_iwant_matrix() = 0;
-		double   tr_probe_num(const std::string&)const;
+		virtual double   tr_probe_num(const std::string&)const;
 		XPROBE   ac_probe_ext(const std::string&)const;
 
 	protected: // inline, below
