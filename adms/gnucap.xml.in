@@ -4134,6 +4134,8 @@ void $(DEV_NAME)::tr_eval()
   //int ChargeComputationNeeded = 1; // fixme!
   //int mode=MODETRAN; // FIXME
 
+<admst:apply-templates select="analog/code[datatypename='block']/variable" match="generate_c:declare_variable"/>
+
   const COMMON_COMPONENT* c = asserted_cast<const COMMON_COMPONENT*>(common());
   USE(c);
   const $(MODEL_NAME)* m = asserted_cast<const $(MODEL_NAME)*>(model());
@@ -6258,7 +6260,7 @@ void $(DEV_NAME)::tr_eval()
 </admst:template>
 <!-- --------------------- analog//blockvariable ------------ -->
 <admst:template match="X3blockvariable">
-  <admst:text format="{ //X3blockvariable \n"/>
+  <admst:text format="// { //X3blockvariable \n"/>
   <admst:text select="variable" format="%(X3vtype(.)) %(name);\n"/>
   <admst:if test="variable[insource='yes']/probe">
 
@@ -6271,12 +6273,10 @@ void $(DEV_NAME)::tr_eval()
             <admst:variable name="ddxinsidethisprobe" select="yes"/>
 			</admst:if>
 
-			HIER
-          <admst:text test="[$ddxinsidethisprobe='yes']" format="#if defined(_DERIVATEFORDDX)\n"/>
-          <admst:text test="[$ddxinsidethisprobe='no']" format="#if defined(_DERIVATE) // FIXME B\n"/>
-          <admst:text format="double %($myvariable/name)_%(nature/access)%(branch/pnode/name)_%(branch/nnode/name);\n"/>
-			 <admst:text format="#endif\n"/>
-			DA
+    <admst:if test="[($ddxinsidederivate='yes' and $_DERIVATEFORDDX='yes'  ) 
+		 or ($ddxinsidederivate='no'  and $_DERIVATE='yes' )]">
+			 <admst:text format="double %($myvariable/name)_%(nature/access)%(branch/pnode/name)_%(branch/nnode/name);\n"/>
+		 </admst:if>
 
       </admst:for-each>
     </admst:for-each>
@@ -6302,7 +6302,10 @@ void $(DEV_NAME)::tr_eval()
       </admst:for-each>
       <admst:text test="$ddxprobes/item" format="#endif\n"/>
     </admst:for-each>
-  </admst:if>
+ </admst:if>
+
+ // } // X3lockvariable  FIXME \n
+
 </admst:template>
 
 <!-- ------ analog//function: ddx handling ---- -->

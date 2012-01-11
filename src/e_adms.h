@@ -609,4 +609,15 @@ inline void ADMS_BASE::ac_eval()
 #define flickernoise_jacobian2p(p,r,s)
 #define flickernoise_jacobian1(p)
 /*--------------------------------------------------------------------------*/
+
+
+// temp hacks
+#define _stop() assert(false)
+// Boltzmann's constant in joules/kelvin
+#define BOLTZMANN 1.3806503e-23
+// coulombs of an electron
+#define ELECTRON_CHARGE 1.602176462e-19
+
+
+
 #endif
