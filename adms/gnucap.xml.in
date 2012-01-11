@@ -2193,6 +2193,14 @@
 
 <!-- **************************** functions for old files **************************** -->
 
+<admst:template match="generate_c:declare_variable">
+	<admst:if test="[type='integer']">\tint %(name);</admst:if>
+	<admst:if test="[type='real']">\tdouble %(name) = std::numeric_limits&lt;double&gt;::quiet_NaN();</admst:if>
+	<admst:if test="[type='string']">\tchar* %(name);</admst:if>
+    	_used(%(name));
+
+</admst:template>
+
 <!-- ******************* functions for old files: DEV_xxx::load() ******************** -->
 
 <!-- analog/![initializeModel|initializeInstance|initial_model|initial_instance|initial_step|noise] -->
@@ -2314,7 +2322,15 @@
   </admst:choose>
 </admst:template>
 
+
 <admst:template match="ngspiseMODULEguesstopology.cevaluatetopology">
+  
+  <admst:if test="[datatypename='block']">
+	{ // begin of adms-block
+
+	<admst:apply-templates select="variable" match="generate_c:declare_variable"/>
+  </admst:if>
+
   <admst:choose>
     <admst:when test="[datatypename='callfunction']"/>
     <admst:when test="[datatypename='whileloop']">
@@ -2329,7 +2345,8 @@
             <admst:apply-templates select="if" match="expression:stringify:noprobe"/>
             <admst:text format="if\n(%s)\n"/>
             <admst:text format="{\n"/>
-            <admst:apply-templates select="then" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
+		<!--admst:apply-templates select="then/variable" match="generate_c:declare_variable"/-->
+            	<admst:apply-templates select="then" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
             <admst:text format="}\n"/>
             <admst:if test="[exists(else)]">
               <admst:text format="else\n"/>
@@ -2418,6 +2435,12 @@
       <admst:fatal format="%(datatypename): adms element not implemented\n"/>
     </admst:otherwise>
   </admst:choose>
+
+  <admst:if test="[datatypename='block']">
+	} // end of adms-block
+
+  </admst:if>
+
 </admst:template>
 
 <admst:variable name="localvariables"/>
@@ -2552,17 +2575,8 @@
 
 
 <admst:open file="$(filename).h">
-#include  "math.h"
-<admst:apply-templates select="." match="c:math_h"/>
-<admst:for-each select="/module">
-  <admst:value-of select="attribute[name='ngspicename']/value"/>
-  <admst:variable name="module" select="%s"/>
-  #ifndef $(module)_header__
-  #define $(module)_header__
-  <admst:variable name="DEV_NAME" select="DEV_%(upper-case(name))"/>
-  <admst:variable name="MODEL_NAME" select="MODEL_%(upper-case(name))"/>
-
 #include <stdio.h>
+#include  "math.h"
 
 #include "u_xprobe.h"
 #include "d_subckt.h"
@@ -2570,6 +2584,14 @@
 #include "e_model.h"
 #include "e_adms.h"
 #include "u_parameter.h"
+
+<admst:for-each select="/module">
+  <admst:value-of select="attribute[name='ngspicename']/value"/>
+  <admst:variable name="module" select="%s"/>
+  <admst:variable name="DEV_NAME" select="DEV_%(upper-case(name))"/>
+  <admst:variable name="MODEL_NAME" select="MODEL_%(upper-case(name))"/>
+#ifndef $(module)_header__
+#define $(module)_header__
 
 // customization - gnucap specific constants
 #define VALUE_NAME "#"
@@ -2589,7 +2611,6 @@ const int MATRIX_NODES = %(count(node[grounded='no']));
 
 #define NP(p) min(100.,max(-100., _N(p).v0()) )
 #define BP(p,n) (BP2( $node_prefix ## p, $node_prefix ## n ))
-
 
 <admst:text format="static std::string port_names[] = {"/>
 <admst:join select="node[grounded='no' and location='external']" separator=", ">
@@ -2924,8 +2945,12 @@ inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  )
 }
 
 </admst:for-each>
+
 #endif
 // vim should work with any ts=sw
+
+<admst:apply-templates select="." match="c:math_h"/>
+
 </admst:open>
 
 <!-- ************************************************************************************* -->
@@ -3947,10 +3972,11 @@ void $(DEV_NAME)::temperature()
 <!-- --------------------------------------------------------------- -->
 void $(DEV_NAME)::guesstopology ()
 {
-  for(int i=0; i<%(count(jacobian)); i++)
-        m_required[i] = false;
+	for(int i=0; i<%(count(jacobian)); i++)
+        	m_required[i] = false;
+	
 
-  <admst:for-each select="analog/code[datatypename='block']/item">
+  <!--admst:for-each select="analog/code[datatypename='block']/item">
     <admst:if test="[(datatypename!='block') or (datatypename='block'
       and name!='initial_model' and name!='initializeModel' and name!='initial_instance'
       and name!='initializeInstance')]">
@@ -3959,13 +3985,10 @@ void $(DEV_NAME)::guesstopology ()
   </admst:for-each>
 
   <admst:for-each select="$localvariables">
-    <admst:if test="[type='integer']">int %(name);\n</admst:if>
-    <admst:if test="[type='real']">double %(name)=std::numeric_limits&lt;double&gt;::quiet_NaN();\n</admst:if>
-    <admst:if test="[type='string']">char* %(name);\n</admst:if>
-  </admst:for-each>
-  <admst:for-each select="$localvariables">
-    _used(%(name));
-  </admst:for-each>
+	<admst:apply-templates select="" match="generate_c:declare_variable"/>
+  </admst:for-each-->
+
+  <admst:apply-templates select="analog/code[datatypename='block']/variable" match="generate_c:declare_variable"/>
   
   <admst:for-each select="analog/code[datatypename='block']/item">
     <admst:if test="[(datatypename!='block') or (datatypename='block'
@@ -4078,6 +4101,7 @@ bool $(DEV_NAME)::conv_check()const
 // matrix and matrix_old
 void $(DEV_NAME)::ac_eval() 
 {
+<!--
 	std::fill_n(it0, %(count(node[grounded='no'])), 0);
 	std::fill_n(m_entries, %(count(jacobian)), 0);
 
@@ -4099,7 +4123,7 @@ void $(DEV_NAME)::ac_eval()
 
 
 	} // analog:eval
-
+-->
 	return; 
 }
 // -------------------------------------------------------------------------- //
@@ -6245,11 +6269,15 @@ void $(DEV_NAME)::tr_eval()
           <admst:variable name="ddxinsidethisprobe" select="no"/>
           <admst:if test="$myvariable/ddxprobe/branch/pnode[.=$pprobe/branch/pnode or .=$pprobe/branch/nnode]">
             <admst:variable name="ddxinsidethisprobe" select="yes"/>
-          </admst:if>
+			</admst:if>
+
+			HIER
           <admst:text test="[$ddxinsidethisprobe='yes']" format="#if defined(_DERIVATEFORDDX)\n"/>
           <admst:text test="[$ddxinsidethisprobe='no']" format="#if defined(_DERIVATE) // FIXME B\n"/>
           <admst:text format="double %($myvariable/name)_%(nature/access)%(branch/pnode/name)_%(branch/nnode/name);\n"/>
-          <admst:text format="#endif\n"/>
+			 <admst:text format="#endif\n"/>
+			DA
+
       </admst:for-each>
     </admst:for-each>
 
@@ -7254,7 +7282,7 @@ void $(DEV_NAME)::tr_eval()
 
 <!-- ******************************      .hxx        ********************************************* -->
 <!-- Do not create temp variables for functions inside while(), for()-->
-<admst:for-each select="/module">
+<!--admst:for-each select="/module">
   <admst:variable name="module" select="%(name)"/>
   <admst:choose>
     <admst:when test="attribute[name='desc']">
@@ -7276,11 +7304,11 @@ void $(DEV_NAME)::tr_eval()
 
 <admst:variable name="ddt_cur" select="0"/>
     <admst:apply-templates select="analog/code" match="X3analog:evaluate"/>
-    <!--admst:message format="$file: created\n"/-->
+    
 // vim:ts=8:sw=2:et:
 
   </admst:open>
-</admst:for-each>
+</admst:for-each-->
 <!-- ------------------------------------ -->
 <admst:template match="X3c:math_h">
 // *** arithmetics ***
