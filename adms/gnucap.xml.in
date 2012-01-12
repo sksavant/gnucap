@@ -3688,10 +3688,10 @@ bool $(DEV_NAME)::do_tr()
 	
 	for(int i=0; converged() && i<%(count(node[grounded='no'])); i++)
 	{
-  	assert(is_number(it0[i]));	
+		assert(is_number(it0[i]));	
 		bool conv= conchk(it0[i], it1[i]);	
 		if (!conv) {
-		  trace6("tr_eval: i not converged ", i , it0[i], it1[i], _sim->iteration_number(), it0[i]-it1[i], conv );
+			trace6("tr_eval: i not converged ", i , it0[i], it1[i], _sim->iteration_number(), it0[i]-it1[i], conv );
 			set_converged(false);	
 		}
 	}
@@ -3707,10 +3707,10 @@ bool $(DEV_NAME)::do_tr()
 	}
 
 	bool needs_load = !converged();
-        <admst:text format="\n\tfor (int i = 0; !needs_load && i < %(count(node[grounded='no'])); i++)"/>
-        if (m_required[i]){
-          needs_load = !conchk(it0[i], it1[i], 0, OPT::reltol*OPT::loadtol);
-        }
+		<admst:text format="\n\tfor (int i = 0; !needs_load && i < %(count(node[grounded='no'])); i++)"/>
+		if (m_required[i]){
+			needs_load = !conchk(it0[i], it1[i], 0, OPT::reltol*OPT::loadtol);
+		}
 			
   for(int i=0; !needs_load && i<%(count(jacobian)); i++)
     if (m_required[i]){
@@ -3768,11 +3768,11 @@ void $(DEV_NAME)::tr_load()
 	trace0("$(DEV_NAME)::tr_load");
 	/// BUG: only dynamic!
 	for(int i=0; i<%(count(node[grounded='no'])); i++){
-	trace3("tr_load", "i",     (it0[i]),  (it1[i]));
-	tr_load_source_point(_n[i], &(it0[i]), &(it1[i]));
+		trace3("tr_load", "i",     (it0[i]),  (it1[i]));
+		tr_load_source_point(_n[i], &(it0[i]), &(it1[i]));
 
-  trace3("tr_load done", "i",     (it0[i]),  (it1[i]));
-  }
+		trace3("tr_load done", "i",     (it0[i]),  (it1[i]));
+	}
   
           /// BUG: only load dynamic nodes! ?
 
@@ -3898,8 +3898,8 @@ void $(DEV_NAME)::do_ac()
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::ac_load()
 {
-  for(int i=0; i<%(count(node[grounded='no'])); i++)
-    ac_load_source_point(_n[i], COMPLEX(it0[i], it1[i]));
+	for(int i=0; i<%(count(node[grounded='no'])); i++)
+	ac_load_source_point(_n[i], COMPLEX(it0[i], it1[i]));
 		
 	<admst:for-each select="jacobian">
 	<admst:value-of select="column/name"/>
@@ -4097,7 +4097,7 @@ bool $(DEV_NAME)::conv_check()const
 
   <admst:text format="\n\tfor(unsigned i=0; converged() && i<%(count(node[grounded='no'])); i++)"/>
   { 
-    bool conv= conchk(it0[i], it1[i]);	
+    bool conv = conchk(it0[i], it1[i]);	
     if (!conv) {
         return false;
     }
@@ -4181,8 +4181,7 @@ void $(DEV_NAME)::tr_eval()
 #endif
 // -------------------------------------------------------------------------- //
 
-</admst:for-each>
-// vim:ts=8:sw=2:et:
+  </admst:for-each>
 </admst:open>
 
 <!-- ****************************** ngspiceMODULE.hxx.xml ************************* -->
@@ -6783,22 +6782,24 @@ void $(DEV_NAME)::tr_eval()
   <admst:variable name="Pn" select="%s"/>
   <admst:choose> 
     <admst:when test="[dynamic='yes']">
-       {  // former_eval_dynamic_residual2
+	{  // former_eval_dynamic_residual2
         // rhs/tree should contain a ddt...
-        double _i = %(X3e(rhs/tree)) ;
+		double _i = %(X3e(rhs/tree));
+		assert(is_number(_i));
         //error = NIintegrate(state_##p##_##n);
         //_eval_static_residual2($Pp,$Pn,v);
-        it0[$(node_prefix)$Pp]-= _i;
-	it0[$(node_prefix)$Pn]+= _i;
-        }
+		it0[$(node_prefix)$Pp]-= _i;
+		it0[$(node_prefix)$Pn]+= _i;
+	}
 
     </admst:when>
     <admst:otherwise>
-        { // former_eval_static_residual2  (recheck: same as dynamic?)
-        double v=%(X3e(rhs/tree)); 
-	it0[$node_prefix$Pp]-=v;
-        it0[$node_prefix$Pn]+=v;
-        }
+	{ // former_eval_static_residual2  (recheck: same as dynamic?)
+		double vx = %(X3e(rhs/tree)); 
+		assert(is_number(vx));
+		it0[$node_prefix$Pp] -= vx;
+		it0[$node_prefix$Pn] += vx;
+	}
 
     </admst:otherwise>
     </admst:choose>
@@ -6812,19 +6813,21 @@ void $(DEV_NAME)::tr_eval()
   <admst:variable name="Pp" select="%s"/>
   <admst:choose> 
     <admst:when test="[dynamic='yes']">
-      {  // former_eval_dynamic_residual2
+	{  // former_eval_dynamic_residual2
         // rhs/tree should contain a ddt...
-        double v = %(X3e(rhs/tree));
+		double va = %(X3e(rhs/tree));
+		assert(is_number(va));
         //_eval_static_residual1($Pp,v);
-        it0[$node_prefix$Pp]-=v; 
-        }
+		it0[$node_prefix$Pp] -= va; 
+	}
 
     </admst:when>
     <admst:otherwise>
-      { // former_eval_static_residual2  // same as dynamic?
-        double v = %(X3e(rhs/tree)); 
-        it0[$node_prefix$Pp] -= v;
-        }
+	{ // former_eval_static_residual2  // same as dynamic?
+		double vb = %(X3e(rhs/tree)); 
+		assert(is_number(vb));
+		it0[$node_prefix$Pp] -= vb;
+	}
 
     </admst:otherwise>
   </admst:choose>
@@ -7324,7 +7327,6 @@ void $(DEV_NAME)::tr_eval()
 <admst:variable name="ddt_cur" select="0"/>
     <admst:apply-templates select="analog/code" match="X3analog:evaluate"/>
     
-// vim:ts=8:sw=2:et:
 
   </admst:open>
 </admst:for-each-->
