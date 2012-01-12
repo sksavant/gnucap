@@ -1091,7 +1091,7 @@
       <admst:if test="[type='string']">char* %s;\n</admst:if>
       <admst:if test="[insource='yes']">
         <admst:if test="probe">
-          <admst:text format="#if defined(_DERIVATE)\n"/>
+			  <admst:text format="#if defined(_DERIVATE) // BAR\n"/>
           <admst:for-each select="probe">
             <admst:value-of select="branch/nnode/name"/>
             <admst:value-of select="branch/pnode/name"/>
@@ -1107,15 +1107,18 @@
     <admst:if test="[scope!='local']">
       <admst:if test="[insource='yes']">
         <admst:if test="probe">
-          <admst:text format="#if defined(_DERIVATE)\n"/>
-          <admst:for-each select="probe">
-            <admst:value-of select="branch/nnode/name"/>
-            <admst:value-of select="branch/pnode/name"/>
-            <admst:value-of select="nature/access"/>
-            <admst:value-of select="../name"/>
-            <admst:text format="double %s_%s%s_%s=0.0;\n"/>
-          </admst:for-each>
-          <admst:text format="#endif /*_DERIVATE*/\n"/>
+			  <!-- admst:text format="#if defined(_DERIVATE) // BLI\n"/ -->
+          <admst:if test="[$_DERIVATE='yes']"> 
+				 <admst:for-each select="probe">
+					<admst:value-of select="branch/nnode/name"/>
+					<admst:value-of select="branch/pnode/name"/>
+					<admst:value-of select="nature/access"/>
+					<admst:value-of select="../name"/>
+					<admst:text format="double %s_%s%s_%s=0.0;\n"/>
+				 </admst:for-each>
+				 <!--admst:text format="#endif /*_DERIVATE*/\n"/-->
+
+			  </admst:if>
         </admst:if>
       </admst:if>
     </admst:if>
@@ -3768,11 +3771,11 @@ void $(DEV_NAME)::store_values()
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_load()
 {
-  trace0("$(DEV_NAME)::tr_load");
-          /// BUG: only dynamic!
-  for(int i=0; i<%(count(node[grounded='no'])); i++){
-  trace3("tr_load", "i",     (it0[i]),  (it1[i]));
-    tr_load_source_point(_n[i], &(it0[i]), &(it1[i]));
+	trace0("$(DEV_NAME)::tr_load");
+	/// BUG: only dynamic!
+	for(int i=0; i<%(count(node[grounded='no'])); i++){
+	trace3("tr_load", "i",     (it0[i]),  (it1[i]));
+	tr_load_source_point(_n[i], &(it0[i]), &(it1[i]));
 
   trace3("tr_load done", "i",     (it0[i]),  (it1[i]));
   }
@@ -6409,7 +6412,7 @@ void $(DEV_NAME)::tr_eval()
         <admst:text format="#if defined(_DERIVATEFORDDX)\n"/>
       </admst:when>
       <admst:otherwise>
-        <admst:text format="#if defined(_DERIVATE)\n"/>
+			<admst:text format="#if defined(_DERIVATE) // BLA\n"/>
       </admst:otherwise>
     </admst:choose> FIXME -->
     <admst:if test="[($ddxinsidederivate='yes' and $_DERIVATEFORDDX='yes'  ) 
@@ -6649,7 +6652,7 @@ void $(DEV_NAME)::tr_eval()
       </admst:choose>
     </admst:otherwise>
   </admst:choose>
-  <admst:text format="#if defined(_DERIVATE)\n"/>
+  <admst:text format="#if defined(_DERIVATE) // FOO\n"/>
   <admst:for-each select="rhs/probe">
     <admst:variable name="probepnode" select="%(branch/pnode)"/>
     <admst:variable name="probennode" select="%(branch/nnode)"/>
