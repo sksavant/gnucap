@@ -31,7 +31,7 @@ myhicumdef Q1( nc nb 0 );
 spice
 
 
-.print dc i(Ib) v(nc) i(Vicq1) s1(Q1) conv(Q1)
+.print dc i(Ib) v(nc) i(Vicq1) s1(Q1) conv(Q1) iter(0)
 
 .dc Ib 15u 20u 5u Vce 1 2 0.2  basic 
 
