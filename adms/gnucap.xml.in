@@ -2607,7 +2607,6 @@
 #define MIN_NET_NODES 0
 #define MAX_NET_NODES %(count(node[grounded='no' and location='external']))
 #define INTERNAL_NODES %(count(node[grounded='no' and location='internal']))
-const int MATRIX_NODES = %(count(node[grounded='no']));
 
 #define NP(p) min(100.,max(-100., _N(p).v0()) )
 #define BP(p,n) (BP2( $node_prefix ## p, $node_prefix ## n ))
@@ -2725,7 +2724,7 @@ protected: // override virtual
 	std::string value_name()const {return VALUE_NAME;}
 	uint_t max_nodes()const {return MAX_NET_NODES;}
 	uint_t min_nodes()const {return MIN_NET_NODES;}
-	uint_t matrix_nodes()const {return MATRIX_NODES;}
+	uint_t matrix_nodes()const {return %(count(node[grounded='no']));}
 	uint_t net_nodes()const {return _net_nodes;}
 	uint_t int_nodes()const {return INTERNAL_NODES;}
 	CARD* clone()const {return new $(DEV_NAME)(*this);}
@@ -2840,20 +2839,21 @@ private: // analogfunctions of verilog-modul
 private: // nodes / matrix indexes
 
 	public:
-	<admst:text format="\tenum ENodes {"/>
 
-  
+	<admst:text format="\tenum ENodes {"/>
   	<admst:join select="node[grounded='no']" separator=",">  
     	<admst:value-of select="name"/>  
-    	<admst:text format=" $node_prefix%s=%(position(.)-1)"/>    
+    	<admst:text format=" $node_prefix%s=%(position(.)-1)"/>
+	<admst:text test="[position(.)=count(.)]" format=", num_total_nodes=%(count(.))"/>
+
   	</admst:join>
 	<admst:text format=" };"/>
-	private:
 
+	private:
 	double BP2(  ENodes p,  ENodes n  ) const;
-	double it0[%(count(node[grounded='no']))];
-        double it1[%(count(node[grounded='no']))];
-	double i_kept[%(count(node[grounded='no']))];
+	double it0[num_total_nodes];
+        double it1[num_total_nodes];
+	double i_kept[num_total_nodes];
 	
 	enum EMatrixEntries {
 	<admst:variable name="local_var" select="II"/>
@@ -3315,7 +3315,7 @@ void $(DEV_NAME)::expand()
 #endif
 
 
-  std::fill_n(it1, %(count(node[grounded='no'])), 0);
+  std::fill_n(it1, (int)num_total_nodes, 0);
 
 	// fix up internal nodes
 	if (_sim->is_first_expand()) 
@@ -3487,8 +3487,8 @@ void $(DEV_NAME)::tr_begin()
 		std::fill_n(_states_q1, ($_num_states), 0);
 
 	// like d_vs.
-	// <admst:text format="\n\tfor(int i=0; i<%(count(node[grounded='no'])); i++)"/>
-	for(int i=0; i<%(count(node[grounded='no'])); i++)
+	// <admst:text format="\n\tfor(int i=0; i<num_total_nodes; i++)"/>
+	for(int i=0; i<num_total_nodes; i++)
 		it0[i] = it1[i]=0;
 
         //     in storag:
@@ -3499,7 +3499,7 @@ void $(DEV_NAME)::tr_begin()
 	internal_precalc();
 
 	// load static ??
-        //<admst:text format="\n\tfor(int i=0; i<%(count(node[grounded='no'])); i++)"/>
+        //<admst:text format="\n\tfor(int i=0; i<num_total_nodes; i++)"/>
         //	tr_load_source_point(_n[i], &(it0[i]), &(it1[i]));
         //
 
@@ -3689,7 +3689,7 @@ bool $(DEV_NAME)::do_tr()
                 }	
 #endif
 	
-	for(int i=0; converged() && i<%(count(node[grounded='no'])); i++)
+	for(int i=0; converged() && i<num_total_nodes; i++)
 	{
   	assert(is_number(it0[i]));	
 		bool conv= conchk(it0[i], it1[i]);	
@@ -3710,7 +3710,7 @@ bool $(DEV_NAME)::do_tr()
 	}
 
 	bool needs_load = !converged();
-        <admst:text format="\n\tfor (int i = 0; !needs_load && i < %(count(node[grounded='no'])); i++)"/>
+        <admst:text format="\n\tfor (int i = 0; !needs_load && i < num_total_nodes; i++)"/>
         if (m_required[i]){
           needs_load = !conchk(it0[i], it1[i], 0, OPT::reltol*OPT::loadtol);
         }
@@ -3745,7 +3745,7 @@ void $(DEV_NAME)::keep_ic()
 
   // notstd::copy_n(m_entries, %(count(jacobian)) , m_entries_kept);
   // notstd::copy_n(_states_1 , %(count(jacobian)) , _states_kept); // FIXME
-  notstd::copy_n(it0,%(count(node[grounded='no'])) , i_kept);
+  notstd::copy_n(it0, (int)num_total_nodes , i_kept);
 
 }
 // -------------------------------------------------------------------------- //
@@ -3770,7 +3770,7 @@ void $(DEV_NAME)::tr_load()
 {
   trace0("$(DEV_NAME)::tr_load");
           /// BUG: only dynamic!
-  for(int i=0; i<%(count(node[grounded='no'])); i++){
+  for(int i=0; i<num_total_nodes; i++){
   trace3("tr_load", "i",     (it0[i]),  (it1[i]));
     tr_load_source_point(_n[i], &(it0[i]), &(it1[i]));
 
@@ -3850,6 +3850,7 @@ void $(DEV_NAME)::tr_accept()
 double $(DEV_NAME)::tr_probe_num(const std::string& x)const
 {
 	static std::string state_names[_num_states];
+	static std::string node_names_n[num_total_nodes];
 	
 	for(int i=0; i<_num_states; i++)
 	{
@@ -3858,16 +3859,24 @@ double $(DEV_NAME)::tr_probe_num(const std::string& x)const
 		state_names[i] = "s" + ss.str();
 	}
 
-  assert(_dt == NOT_VALID || conchk(_dt, _time[0] - _time[1]));
-  if (Umatch(x, "conv{erged} ")) {
-    return converged();
-  }
+	for(int i=0; i<num_total_nodes; i++)
+	{
+		std::stringstream ss;
+		ss << i;
+		node_names_n[i] = "i" + ss.str();
+	}
 
-  // all of the "states" in state array
-  int num_probe_states = _num_states;
-  for (int ii=0; ii<num_probe_states && state_names[ii]!=""; ++ii) 
-          if (Umatch(x, state_names[ii] + ' ')) 
-                  return _states[0][ii];
+	assert(_dt == NOT_VALID || conchk(_dt, _time[0] - _time[1]));
+
+	if (Umatch(x, "conv{erged} "))
+	    return converged();
+	
+	for (int ii=0; ii<_num_states; ++ii) 
+		if (Umatch(x, state_names[ii] + ' ')) 
+			return _states[0][ii];
+	for(int i=0; i<num_total_nodes; i++)
+		if( Umatch(x, node_names_n[i] + ' ') )
+			return it0[i];
   
   return ADMS_BASE::tr_probe_num(x);
 }
@@ -3884,8 +3893,8 @@ void $(DEV_NAME)::do_ac()
   assert(OPT::_keep_time_steps <= 8);  
   assert(_dt == NOT_VALID || conchk(_dt, _time[0] - _time[1]));
     
-  std::fill_n(it0, %(count(node[grounded='no'])), 0);
-  std::fill_n(it1, %(count(node[grounded='no'])), 0);
+  std::fill_n(it0, (int)num_total_nodes, 0);
+  std::fill_n(it1, (int)num_total_nodes, 0);
     
   std::fill_n(m_entries, %(count(jacobian)), 0);
   std::fill_n(m_entries_old, %(count(jacobian)), 0);
@@ -3901,7 +3910,7 @@ void $(DEV_NAME)::do_ac()
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::ac_load()
 {
-  for(int i=0; i<%(count(node[grounded='no'])); i++)
+  for(int i=0; i<num_total_nodes; i++)
     ac_load_source_point(_n[i], COMPLEX(it0[i], it1[i]));
 		
 	<admst:for-each select="jacobian">
@@ -4095,7 +4104,7 @@ bool $(DEV_NAME)::conv_check()const
       }	
 #endif
 
-  <admst:text format="\n\tfor(unsigned i=0; converged() && i<%(count(node[grounded='no'])); i++)"/>
+  <admst:text format="\n\tfor(unsigned i=0; converged() && i<num_total_nodes; i++)"/>
   { 
     bool conv= conchk(it0[i], it1[i]);	
     if (!conv) {
@@ -4119,7 +4128,7 @@ bool $(DEV_NAME)::conv_check()const
 void $(DEV_NAME)::ac_eval() 
 {
 <!--
-	std::fill_n(it0, %(count(node[grounded='no'])), 0);
+	std::fill_n(it0, (int)num_total_nodes, 0);
 	std::fill_n(m_entries, %(count(jacobian)), 0);
 
 	const COMMON_COMPONENT* c = asserted_cast<const COMMON_COMPONENT*>(common());
@@ -4146,11 +4155,11 @@ void $(DEV_NAME)::ac_eval()
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_eval() 
 {
-  std::fill_n(it0, %(count(node[grounded='no'])), 0);
+  std::fill_n(it0, (int)num_total_nodes, 0);
   std::fill_n(m_entries, %(count(jacobian)), 0);
   //int ChargeComputationNeeded = 1; // fixme!
   //int mode=MODETRAN; // FIXME
-  for(int i=0; i<%(count(node[grounded='no'])); i++)
+  for(int i=0; i<num_total_nodes; i++)
 	  it0[i] = 0;
 
 <admst:apply-templates select="analog/code[datatypename='block']/variable" match="generate_c:declare_variable"/>
