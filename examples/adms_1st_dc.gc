@@ -19,6 +19,7 @@ spice
 Vce nci 0 2
 Ib 0 nb 10e-6
 vicq1 nci nc 0
+R1 nb 0 100k
 
 
 .verilog
