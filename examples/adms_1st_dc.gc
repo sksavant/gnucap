@@ -19,7 +19,7 @@ spice
 Vce nci 0 2
 Ib 0 nb 10e-6
 vicq1 nci nc 0
-R1 nb 0 100k
+* R1 nb 0 100k
 
 
 .verilog
@@ -34,7 +34,7 @@ spice
 
 .print dc i(Ib) v(nc) i(Vicq1) s1(Q1) conv(Q1) iter(0)
 
-.dc Ib 15u 20u 5u Vce 1 2 0.2  basic 
+.dc Ib 15u 16u 1u Vce 1 1 0.2  basic 
 
 
 .end
