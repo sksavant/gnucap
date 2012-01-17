@@ -2675,7 +2675,7 @@ public:
           </admst:choose>
 	</admst:for-each>
 
-	// verilog - variables
+	// verilog - variables (all with scope 'global_model' eq. have 'ask' field)
         <admst:for-each select="variable[input='no' and scope='global_model']">
           <admst:choose>
             <admst:when test="[type='real']">
@@ -2824,7 +2824,7 @@ protected: // implementation
 	};
 	int load(int mode);
 
-private: // variables of verilog-module
+private: // verilog - variables (all with scope "global_instance" eq. have 'ask' field)
 	<admst:for-each select="variable[input='no' and scope='global_instance']">
 	<admst:choose>
           <admst:when test="[type='real']"><admst:text format="\n\tdouble $(var_prefix)%(.);"/></admst:when>
@@ -4156,7 +4156,7 @@ void $(DEV_NAME)::tr_eval()
 	std::fill_n(it0, (int)_num_total_nodes, 0);
 	std::fill_n(m_entries, %(count(jacobian)), 0);
 
-<admst:apply-templates select="analog/code[datatypename='block']/variable" match="generate_c:declare_variable"/>
+	<admst:apply-templates select="analog/code[datatypename='block']/variable" match="generate_c:declare_variable"/>
 
 	const COMMON_COMPONENT* c = asserted_cast<const COMMON_COMPONENT*>(common());
 	USE(c);

@@ -1,4 +1,6 @@
 spice
+
+.options numdgt=20
 *    o nc
 *    |
 *    |
@@ -30,11 +32,12 @@ endparamset
 	
 myhicumdef Q1( nc nb 0 );
 spice
+.nodelist
 
 
-.print dc i(Ib) v(nc) i(Vicq1) s1(Q1) conv(Q1) iter(0)
+.print dc i(Ib) v(nc) i(Vicq1) i1(Q1) conv(Q1) iter(0)
 
-.dc Ib 15u 16u 1u Vce 1 1 0.2  basic 
+.dc Ib 15m 16m 1m Vce 1 1 0.2  basic trace v
 
 
 .end

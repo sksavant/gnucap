@@ -457,6 +457,7 @@ module hicum0 (c,b,e,s,tnode);
 
 analog begin
 	@ initial_step begin
+		real t2;
 		test=5;
 	end
 
