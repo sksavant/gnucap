@@ -1534,7 +1534,7 @@
           <admst:if test="[$dependency!='constant']">
             <admst:text format="wnoise%(index($wnoise/item,.))="/>
           </admst:if>
-          <admst:text select="item" format=" // things 2...  \n"/>
+          <admst:text format=" // things 2...  \n"/>
           <admst:apply-templates select="rhs/tree/arguments[1]" match="X3%(adms/datatypename)"/>
           <admst:text format="$e;\n"/>
         </admst:if>
@@ -2901,7 +2901,7 @@ private: // nodes / matrix indexes
 
         <admst:variable name="numddt" select="0"/>
         <admst:for-each select="expression"> 
-          <admst:message format="counting ddt $numddt in %(.)\n"/>
+          <!--admst:message format="counting ddt $numddt in %(.)\n"/-->
                <admst:apply-templates select="tree" match="ddtcounter"/>
                <admst:for-each select="tree"> 
                </admst:for-each>
