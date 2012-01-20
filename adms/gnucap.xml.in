@@ -5,6 +5,7 @@
 <!-- version: not renamed, load: renamed fname -->
 
 <!-- **************************** global settings ******************************* -->
+
 <!-- output filename is 1st argument in -o flag in command line-->
 <admst:variable name="filename" select="%(/module/name)_common"/>
 <admst:variable name="filename_state" select="0"/>
@@ -56,6 +57,7 @@
 <!-- ****************************** ngspiseVersion.xml ************************* -->
 
 <admst:template match=":new:jacobian">
+  <admst:fatal format="admst-function assumed to be never used!\n"/>
   <admst:value-of select="module"/>
   <admst:new datatype="jacobian" arguments="%p,%p,%p">
     <admst:push into="module/jacobian" select="." onduplicate="ignore"/>
