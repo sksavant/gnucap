@@ -227,7 +227,8 @@ void CMD_DUMP::printv( OMSTREAM _out, const CARD_LIST* scope, unsigned what){
 
 			if(A && (what & nADP) ){
 				trace3("CMD_NODESET::do_it FIXME", prefix, i->second->short_label(), i->second->long_label());
-				_out << ".nodeset  a(" << prefix << i->second->short_label() << ")=";
+				_out << "* "<< i->second->long_label() << "\n";
+				_out << ".nodeset a(" << prefix << i->second->short_label() << ")=";
 				_out  << setw(8) <<  CKT_BASE::_sim->_vdc[A->m_()+_sim->_total_nodes +1];
 			}
 			_out <<"\n";
