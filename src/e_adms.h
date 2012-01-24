@@ -63,7 +63,7 @@ class ADMS_BASE : public BASE_SUBCKT {
 		//void   map_nodes();
 		void	   tr_iwant_matrix() = 0;
 		void	   ac_iwant_matrix() = 0;
-		double   tr_probe_num(const std::string&)const;
+		virtual double   tr_probe_num(const std::string&)const;
 		XPROBE   ac_probe_ext(const std::string&)const;
 
 	protected: // inline, below
@@ -609,4 +609,15 @@ inline void ADMS_BASE::ac_eval()
 #define flickernoise_jacobian2p(p,r,s)
 #define flickernoise_jacobian1(p)
 /*--------------------------------------------------------------------------*/
+
+
+// temp hacks
+#define _stop() assert(false)
+// Boltzmann's constant in joules/kelvin
+#define BOLTZMANN 1.3806503e-23
+// coulombs of an electron
+#define ELECTRON_CHARGE 1.602176462e-19
+
+
+
 #endif

@@ -378,6 +378,7 @@ void ADMS_BASE::tr_save_amps(int n){
 /*--------------------------------------------------------------------------*/
 double ADMS_BASE::tr_probe_num(const std::string& x)const
 {
+	/*
 	if (Umatch(x, "v{out} ")) {
 		return tr_outvolts();
 	}else if (Umatch(x, "amps_diff ")) {
@@ -449,8 +450,9 @@ double ADMS_BASE::tr_probe_num(const std::string& x)const
 }else if (Umatch(x, "zraw ")) {
 	return port_impedance(_n[OUT1], _n[OUT2], _sim->_lu, 0.);
 }else{
+	*/
 	return BASE_SUBCKT::tr_probe_num(x);
-}
+	//   }
 }
 /*--------------------------------------------------------------------------*/
 COMPLEX ADMS_BASE::ac_amps()const
