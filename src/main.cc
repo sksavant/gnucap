@@ -32,6 +32,10 @@
 #include "declare.h"	/* plclose */
 #include "startup.h"	
 // #define COMMENT_CHAR "*"
+ extern char *optarg;
+        extern int optind, opterr, optopt;
+           #include <getopt.h>
+
 /*--------------------------------------------------------------------------*/
 struct JMP_BUF{
   sigjmp_buf p;
@@ -111,10 +115,41 @@ static void finish(void)
   plclose();
   IO::mstdout.outreset();
 }
-/*--------------------------------------------------------------------------
- * FIXME: use getopt
- * ------------*/
-static void process_cmd_line(int argc, const char *argv[])
+/*--------------------------------------------------------------------------*/
+
+static void do_getopt(int argc,  char * const * argv)
+{
+  int flags, opt;
+  int nsecs, tfnd;
+
+  nsecs = 0;
+  tfnd = 0;
+  flags = 0;
+  while ((opt = getopt(argc, argv, "bqt:")) != -1) {
+    switch (opt) {
+      case 'q':
+        OPT::quiet = true;
+        break;
+      case 't':
+        nsecs = atoi(optarg);
+        tfnd = 1;
+        break;
+      case 'b':
+        break;
+      default: /* '?' */
+        fprintf(stderr, "Usage: %s [-q] name\n", argv[0]); }
+  }
+
+//  printf("flags=%d; tfnd=%d; optind=%d, argc=%i\n", flags, tfnd, optind, argc);
+
+  if (optind > argc) {
+    fprintf(stderr, "Expected argument after options\n");
+    exit(EXIT_FAILURE);
+  }
+
+}
+/*--------------------------------------------------------------------------*/
+static void process_cmd_line(int argc, char *const  *argv)
 {
   for (int ii = 1;  ii < argc;  /*inside*/) {
     try {
@@ -187,15 +222,17 @@ static void process_cmd_line(int argc, const char *argv[])
   }
 }
 /*--------------------------------------------------------------------------*/
-int main(int argc, const char *argv[])
+int main(int argc, char * const * argv)
 {
   ENV::error = 0;
+
+  do_getopt(argc,argv);
   // sigsetjmp unneeded here (isnt it?)
   //
   // FIXME:  parse -v and -q _now_
   //
   read_startup_files();
-//  sign_on(); this sucks, as -q is parsed afterwards :(
+  sign_on();
 
   {
     SET_RUN_MODE xx(rBATCH);

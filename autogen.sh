@@ -32,7 +32,7 @@ if [ -r config.status ]; then
 	echo "Running $CMD $@ ..."
 	$CMD
 else
-	echo run "./configure --enable-maintainer-mode"
+	echo run "./configure --enable-maintainer-mode --stuff"
 fi
 # echo "Running $CMD $@ ..."
 

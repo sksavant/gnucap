@@ -18,6 +18,7 @@ class TTT : public TRANSIENT {
       _trace(tNONE),
       _Tstart(0.), // ?? unused?
       _Tstop(0.),
+		_tt_cont(false),
       _Tstep(0.),
       _timesteps(0),
       _fdata_tt(NULL),
@@ -50,7 +51,8 @@ class TTT : public TRANSIENT {
     void	outdata_tt(double);
     void	outdata_b4(double);
     bool	review_tt();
-    void tt_begin();
+    void begin();
+    void cont();
     void	options(CS&);
     void	sweep();
 	 void do_initial_dc();
@@ -83,7 +85,8 @@ class TTT : public TRANSIENT {
     int print_tr_probe_number;
     double _Time1;
     int    steps_total_tt;
-    double behaviour_time();
+	 double behaviour_time();
+	 bool _tt_cont;	
     double time_by_voltages();
     double _time_by_adp;
     double _dT_by_adp;
