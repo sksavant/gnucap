@@ -156,6 +156,7 @@ static void process_cmd_line(int argc, const char *argv[])
 	  ++ii;
 	  if (ii < argc) {
             // dashier startet den OPT::language modus
+            trace0("-b...");
 	    CMD::command(std::string("< ") + argv[ii++], &CARD_LIST::card_list);
 	  }else{untested();
 	    CMD::command(std::string("< /dev/stdin"), &CARD_LIST::card_list);
