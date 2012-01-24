@@ -2909,7 +2909,7 @@ private: // nodes / matrix indexes
         <admst:variable name="_num_states" select="$numddt"/>
 
         <!--  <admst:apply-templates select="analog/code[datatypename='block']" match="find_ddt_states"/> -->
-          _num_states = $numddt // does not work yet. don't use\n
+          _num_states = $numddt // a bit hackish, but adms cannot add.
 
 			 };
 
