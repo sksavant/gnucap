@@ -18,16 +18,20 @@ spice
 *
 * I_{CE} = 100* I_{BE}
 
+.options abstol=1e-18
+.options reltol=1e-7
+.options nobypass 
+.options
+
 Vce nci 0 2
 Ib 0 nb 10e-6
 vicq1 nci nc 0
 * R1 nb 0 100k
 
-
 .verilog
 paramset myhicumdef hicum0;
-	.is = 1e-16
-	.rcx = 12.5
+	.is = 1e-16;
+	.rcx = 12.5;
 endparamset
 	
 myhicumdef Q1( nc nb 0 );
@@ -35,9 +39,9 @@ spice
 .nodelist
 
 
-.print dc i(Ib) v(nc) i(Vicq1) i1(Q1) conv(Q1) iter(0)
+.print dc i(Ib) v(nc) v(nb) i(Vicq1) s0(Q1) s1(Q1) s2(Q1) conv(Q1) i0(Q1) i1(Q1) iter(0)
 
-.dc Ib 15m 16m 1m Vce 1 1 0.2  basic trace v
+.dc Ib 15u 15u 1u Vce 1 1 0.2  basic trace=v
 
 
 .end
