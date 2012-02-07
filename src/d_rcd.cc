@@ -1126,7 +1126,7 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
       assert(false);
       return  ( _n[n_ic].v0() - _n[n_b].v0() );
     }else{
-      //  return _Ccgfill->get_tt();
+      //  return _Ccgfill->tt();
       //  depends on model!
       assert(is_number(  ( P() )));
       return  ( P() );
@@ -1134,7 +1134,7 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   }
   else if (Umatch(x, "net "   )) { return( (double ) m->use_net()); }
   else if (Umatch(x, "tr "    )) { return( _Ccgfill->tr_get() ); }
-  else if (Umatch(x, "tt "    )) { return( _Ccgfill->get_tt() ); }
+  else if (Umatch(x, "tt "    )) { return( _Ccgfill->tt() ); }
   else if (Umatch(x, "RE0 "    )) { return( c->_Re1 );}
   else if (Umatch(x, "RE1 "    )) { return( c->_Re0 );}
   else if (Umatch(x, "RC0 "    )) { return( c->_Rc1 );}
@@ -1313,7 +1313,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
 
   assert(_sim->_time0 == 0 || _sim->_mode==s_TRAN ); //?
 
-  trace4("DEV_BUILT_IN_RCD::stress_apply ",  _sim->_dT0, _Ccgfill->tt(), _sim->_Time0, _Ccgfill->tr() );
+  trace5("DEV_BUILT_IN_RCD::stress_apply ", long_label(), _sim->_dT0, _Ccgfill->tt(), _sim->_Time0, _Ccgfill->tr() );
   if(_sim->phase() == p_PD){
     untested();
     _Ccgfill->tr() = 0; // check: what is tr()?
@@ -1579,7 +1579,7 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
   } 
   assert( _c->tr_lo <= _c->tr_hi );
 
-  trace3("DEV_BUILT_IN_RCD::tr_stress_last s ", _Ccgfill->get_tt(),
+  trace3("DEV_BUILT_IN_RCD::tr_stress_last s ", _Ccgfill->tt(),
       _Ccgfill->get_tr(), _Ccgfill->get_total() );
   // fixme. move to common.
   assert(is_number(_tr_fill));
@@ -1650,6 +1650,7 @@ void DEV_BUILT_IN_RCD::tt_commit() { unreachable();
 // // probably nonsense. move to tt_advance/tt_begin
 void DEV_BUILT_IN_RCD::tt_prepare()
 {
+  assert(false);
   unreachable();
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
   assert(c);
@@ -1667,10 +1668,13 @@ void DEV_BUILT_IN_RCD::tt_prepare()
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::tt_begin()  {
   const COMMON_BUILT_IN_RCD* c = prechecked_cast<const COMMON_BUILT_IN_RCD*>(common());
-  trace1("DEV_BUILT_IN_RCD::tt_begin", c->_zero);
-  _tr_fill = c->_zero ;
 
-  _Ccgfill->set_tt(c->_zero);  // tt_load??
+  if (_sim->_tt_uic){
+  }else{
+    _Ccgfill->set_tt(c->_zero);
+  }
+
+  _tr_fill = _Ccgfill->tt();
   _Ccgfill->set_tr(-inf);
 
   _Ccgfill->tr_lo = inf;
@@ -1682,6 +1686,7 @@ void DEV_BUILT_IN_RCD::tt_begin()  {
   _lasts = -inf;
   q_eval();
 
+  trace4("DEV_BUILT_IN_RCD::tt_begin done", long_label(), c->_zero, _sim->_tt_uic, _Ccgfill->tt() );
 }
 ///*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::tr_begin(){

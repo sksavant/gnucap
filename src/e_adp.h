@@ -186,7 +186,7 @@ class ADP_NODE: public NODE_BASE {
 
     hp_float_t get_tt( int i ) const {assert(i==1);
       return( tt1() ); }
-    hp_float_t get_tt() const { return tt(); }
+//    hp_float_t get_tt() const { return tt(); }
 
     hp_float_t get_aft_1()const;
     hp_float_t tt_get_sum()const  {return _val_bef[0] + _delta[0]; }

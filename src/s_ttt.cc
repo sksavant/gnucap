@@ -198,6 +198,7 @@ void TTT::first()
 /*--------------------------------------------------------------------------*/
 // FIXME: directly run into loop
 void TTT::first_after_interruption(){
+	assert(_tt_cont);
 	trace3("TTT::first_after_interruption", _tt_cont, _sim->_tt[0], _sim->_tr[0]);
 	_Time1 = _sim->_last_Time;
 	_sim->_Time0 = _sim->_last_Time;
@@ -234,16 +235,16 @@ void TTT::first_after_interruption(){
 	_sim->force_tt_order(0);
 
 
-	CARD_LIST::card_list.stress_apply();
 
 	if(!_tt_cont){
-		begin();
+		tt_begin();
 		do_initial_dc();
 		outdata_b4(_sim->_Time0);
 	}else{
 		//do_initial_dc();
 		outdata_b4(_sim->_Time0);
 	}
+	CARD_LIST::card_list.stress_apply();
 
 	TTT::sweep();
 
@@ -258,7 +259,7 @@ void TTT::first_after_interruption(){
 	trace0("TTT::first_after_interruption done");
 }
 /*--------------------------------------------------------------*/
-void TTT::begin() {
+void TTT::tt_begin() {
 		_sim->_dT0 = 0;
 		_sim->_dT1 = 0;
 		_sim->_dT2 = 0;
@@ -268,14 +269,15 @@ void TTT::begin() {
 	CARD_LIST::card_list.do_forall( &CARD::tt_begin );
 }
 /*--------------------------------------------------------------*/
-void TTT::cont() {
+void TTT::tt_cont() {
 		_sim->_dT0 = 0;
 		_sim->_dT1 = 0;
 		_sim->_dT2 = 0;
-	trace0("TTT::tt_begin");
+	trace0("TTT::cont");
 	_sim->_stepno = 0;
 	_sim->_tt_uic = true;
 	CARD_LIST::card_list.do_forall( &CARD::tt_begin );
+	CARD_LIST::card_list.stress_apply(); 
 }
 /*--------------------------------------------------------------*/
 void TTT::do_initial_dc(){
@@ -397,7 +399,7 @@ void TTT::power_down(double until)
 /*--------------------------------------------------------------------------*/
 void TTT::sweep_tt()
 {
-	trace2("TTT::sweep_tt until", _Tstop, _cont );
+	trace3("TTT::sweep_tt", _Tstop, _cont, _tt_cont );
 	assert(_sim->tt_iteration_number() == 0);
 
 	//  sanitycheck();
@@ -407,10 +409,19 @@ void TTT::sweep_tt()
 	head_tt(_tstart, _tstop, "TTime");
 	assert( _sim->_mode  == s_TTT );
 	assert( _sim->_Time0 >= 0 );
+	assert(!_new | _tt_cont);
 
-	if (!_tt_cont){
+
+	if (!_tt_cont || _new){
 		trace0("TTT::sweep_tt tt_begin");
 		tt_begin();
+	} else {
+		tt_cont();
+	}
+	if(_new){
+		trace0("_new");
+		untested();
+		CARD_LIST::card_list.stress_apply(); 
 	}
 
 	if( _power_down ){
@@ -681,7 +692,6 @@ bool TTT::review_tt()
 // copied from ttf
 void TTT::do_it(CS& Cmd, CARD_LIST* Scope)
 {
-	trace0("TTT::do_it() ");
 	_scope = Scope;
 	_sim->set_command_tt();
 
@@ -700,8 +710,6 @@ void TTT::do_it(CS& Cmd, CARD_LIST* Scope)
 		_sim->_lu.set_min_pivot(OPT::pivtol);
 
 		setup(Cmd);
-		if(_trace>0 )
-			_out << "* done setup\n";
 	}catch (Exception& e) {itested();
 		error(bDANGER, "error: " + e.message() + '\n');
 		throw(Exception("error TTT::do_it"));

@@ -550,18 +550,18 @@ double MODEL_BUILT_IN_RCD_EXP::P( const COMPONENT* brh) const
   const DEV_BUILT_IN_RCD* d = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
   const COMMON_BUILT_IN_RCD* c = prechecked_cast<const COMMON_BUILT_IN_RCD*>(brh->common());
   if( _sim->analysis_is_tt() ){
-    if(positive && (d->_Ccgfill->get_tt() < c->_zero)){
-      error(bDANGER,"%s not positive %f %f\n", brh->long_label().c_str(),double(d->_Ccgfill->get_tt()), double(c->_zero));
+    if(positive && (d->_Ccgfill->tt() < c->_zero)){
+      error(bDANGER,"RCD_EXP: not positive %s. tt: %f zero: %f\n", brh->long_label().c_str(), double(d->_Ccgfill->tt()), double(c->_zero));
     }
     return double (d->_tr_fill - (long double) c->_zero) * c->_weight;
-    // return (d->_Ccgfill->get_tt() - c->_zero) * c->_weight;
+    // return (d->_Ccgfill->tt() - c->_zero) * c->_weight;
   }else{
-    assert(is_number( d->_Ccgfill->get_tt() * c->_weight));
-    // return c->_Ccgfill->get_tt() * c->_weight * c->_wcorr;
+    assert(is_number( d->_Ccgfill->tt() * c->_weight));
+    // return c->_Ccgfill->tt() * c->_weight * c->_wcorr;
     //
     //FIXME. _tr_fill must be part of an ADP_NODE
     trace2("MODEL_BUILT_IN_RCD_EXP::dvth",  d->_tr_fill,  c->_weight  );
-    assert( d->_Ccgfill->get_tt() <=1 );
+    assert( d->_Ccgfill->tt() <=1 );
     assert( d->_tr_fill <=1 );
     return double((d->_tr_fill - c->_zero) * c->_weight);
   }
