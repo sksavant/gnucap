@@ -76,10 +76,12 @@
   <admst:apply-templates select="tree" match="subexpression:differentiate"/>
   <admst:value-of select="/simulator/tmp"/>
 </admst:template>
+<!-- ****************************************************************** -->
 <admst:template match="subexpression:stringify:noprobe">
   <admst:apply-templates select="." match="subexpression:differentiate"/>
-  <admst:value-of select="/simulator/tmp"/>
+  <admst:value-of select="/simulator/tmp"/> <!-- put on stack -->
 </admst:template>
+<!-- ****************************************************************** -->
 <admst:template match="subexpression:differentiate">
   <admst:value-of select="./adms/datatypename"/>
   <admst:apply-templates select="." match="%s"/>
@@ -1824,25 +1826,7 @@
 
 <!-- variable:rhs -->
 <admst:template match="variable">
-  <admst:value-of select="name"/>
-  <admst:if test="[parametertype='analogfunction']">
-    <admst:value-to select="/simulator/tmp" value="%s"/>
-  </admst:if>
-  <admst:if test="[input='yes' and parametertype='model']">
-    <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
-  </admst:if>
-  <admst:if test="[input='yes' and parametertype='instance']">
-    <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
-  </admst:if>
-  <admst:if test="[input='no' and scope='global_model']">
-    <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
-  </admst:if>
-  <admst:if test="[input='no' and scope='global_instance']">
-    <admst:value-to select="/simulator/tmp" value="$(var_prefix)%s"/>
-  </admst:if>
-  <admst:if test="[parametertype!='analogfunction' and scope='local']">
-    <admst:value-to select="/simulator/tmp" value="%s"/>
-  </admst:if>
+	<apply-templates match="X3variabele" select="."/>
 </admst:template>
 <!-- variable:lhs -->
 <admst:template match="variable:lhs">
@@ -5194,19 +5178,28 @@ void $(DEV_NAME)::tr_eval()
 </admst:template>
 <!-- -------------------------------------------------- -->
 <admst:template match="X3variable">
-  <admst:choose>
+   <admst:value-of select="name"/>
+	<admst:choose>
     <admst:when test="[input='yes' and parametertype='model']">
-      <admst:variable name="e" select="m-&gt;%(name)"/>
+		 <admst:variable name="e" select="m-&gt;%(name)"/>
+		 <admst:value-to select="/simulator/tmp" value="%s"/>
     </admst:when>
     <admst:when test="[input='yes' and parametertype='instance']">
       <admst:variable name="e" select="m-&gt;%(name)"/>
+	   <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
     </admst:when>
     <admst:when test="[input='no' and scope='global_model']">
-      <admst:variable name="e" select="m-&gt;%(name)"/>
+		 <admst:variable name="e" select="m-&gt;%(name)"/>
+       <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
     </admst:when>
     <admst:when test="[input='no' and scope='global_instance']">
-      <admst:variable name="e" select="$(var_prefix)%(name)"/>
+		 <admst:variable name="e" select="$(var_prefix)%(name)"/>
+       <admst:value-to select="/simulator/tmp" value="$(var_prefix)%s"/>
     </admst:when>
+    <admst:when test="[parametertype!='analogfunction' and scope='local']">
+	    <admst:value-to select="/simulator/tmp" value="%s"/>
+       <admst:variable name="e" select="%(name)"/>
+	 </admst:when>
     <admst:otherwise>
       <admst:variable name="e" select="%(name)"/>
     </admst:otherwise>
