@@ -353,6 +353,19 @@ public:
 } p7;
 DISPATCHER<CMD>::INSTALL d7(&command_dispatcher, "ii", &p7);
 /*--------------------------------------------------------------------------*/
+class CMD_L : public CMD {
+public:
+  void do_it(CS& cmd, CARD_LIST* )
+  {
+    OMSTREAM _out = IO::mstdout;
+    _out.setfloatwidth(3);
+    _out.outset(cmd);
+    _out << OPT::language << "\n";
+    _out.outreset();
+  }
+} p8;
+DISPATCHER<CMD>::INSTALL d8(&command_dispatcher, "lang", &p8);
+/*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

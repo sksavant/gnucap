@@ -55,7 +55,6 @@ public:
     _dtmax(0.),
     _cold(false),
     _cont(false),
-    _tt_cont(false),
     _inside_tt(false),
     _trace(tNONE),
     _time_by_iteration_count(0.),
