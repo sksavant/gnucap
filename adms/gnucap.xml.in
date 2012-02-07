@@ -1826,7 +1826,7 @@
 
 <!-- variable:rhs -->
 <admst:template match="variable">
-	<apply-templates match="X3variabele" select="."/>
+	<admst:apply-templates match="X3variable" select="."/>
 </admst:template>
 <!-- variable:lhs -->
 <admst:template match="variable:lhs">
