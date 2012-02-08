@@ -55,25 +55,6 @@
 <admst:variable name="finddt" select="no"/>
 
 <!-- ****************************** ngspiseVersion.xml ************************* -->
-
-<admst:template match=":new:jacobian">
-  <admst:fatal format="admst-function assumed to be never used!\n"/>
-  <admst:value-of select="module"/>
-  <admst:new datatype="jacobian" arguments="%p,%p,%p">
-    <admst:push into="module/jacobian" select="." onduplicate="ignore"/>
-    <admst:value-of select="column"/>
-    <admst:if test="[row='%p']">
-      <admst:value-to select="diagonal" value="yes"/>
-    </admst:if>
-    <admst:if test="../../..[dynamic='yes']">
-      <admst:value-to select="dynamic" value="yes"/>
-    </admst:if>
-    <admst:if test="../../..[dynamic='no']">
-      <admst:value-to select="static" value="yes"/>
-    </admst:if>
-  </admst:new>
-</admst:template>
-
 <admst:template match="expression:stringify:noprobe">
   <admst:apply-templates select="tree" match="subexpression:differentiate"/>
   <admst:value-of select="/simulator/tmp"/>
@@ -1826,20 +1807,25 @@
 
 <!-- variable:rhs -->
 <admst:template match="variable">
+  <admst:variable name="e" select="%(name)"/>
   <admst:value-of select="name"/>
   <admst:if test="[parametertype='analogfunction']">
     <admst:value-to select="/simulator/tmp" value="%s"/>
   </admst:if>
   <admst:if test="[input='yes' and parametertype='model']">
+    <admst:variable name="e" select="m-&gt;%(name)"/>
     <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
   </admst:if>
   <admst:if test="[input='yes' and parametertype='instance']">
+    <admst:variable name="e" select="m-&gt;%(name)"/>
     <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
   </admst:if>
   <admst:if test="[input='no' and scope='global_model']">
+    <admst:variable name="e" select="m-&gt;%(name)"/>
     <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
   </admst:if>
   <admst:if test="[input='no' and scope='global_instance']">
+    <admst:variable name="e" select="$(var_prefix)%(name)"/>
     <admst:value-to select="/simulator/tmp" value="$(var_prefix)%s"/>
   </admst:if>
   <admst:if test="[parametertype!='analogfunction' and scope='local']">
@@ -5205,23 +5191,7 @@ void $(DEV_NAME)::tr_eval()
 </admst:template>
 <!-- -------------------------------------------------- -->
 <admst:template match="X3variable">
-  <admst:choose>
-    <admst:when test="[input='yes' and parametertype='model']">
-      <admst:variable name="e" select="m-&gt;%(name)"/>
-    </admst:when>
-    <admst:when test="[input='yes' and parametertype='instance']">
-      <admst:variable name="e" select="m-&gt;%(name)"/>
-    </admst:when>
-    <admst:when test="[input='no' and scope='global_model']">
-      <admst:variable name="e" select="m-&gt;%(name)"/>
-    </admst:when>
-    <admst:when test="[input='no' and scope='global_instance']">
-      <admst:variable name="e" select="$(var_prefix)%(name)"/>
-    </admst:when>
-    <admst:otherwise>
-      <admst:variable name="e" select="%(name)"/>
-    </admst:otherwise>
-  </admst:choose>
+  <admst:apply-templates select="." match="variable"/>
 
   <admst:variable name="ep" select="0.0"/>
   <admst:if test="[insource='yes']">
