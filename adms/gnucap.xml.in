@@ -54,6 +54,11 @@
 <admst:variable name="globalanalogfunction"/>
 <admst:variable name="finddt" select="no"/>
 
+<!-- result for tree parse (ngspiceVersion vs .hxx) -->
+<admst:variable name="str_res_version" select=""/>
+<admst:variable name="str_res_hxx_ac" select=""/>
+<admst:variable name="str_res_hxx_tr" select=""/>
+
 <!-- ****************************** ngspiseVersion.xml ************************* -->
 <admst:template match="expression:stringify:noprobe">
   <admst:apply-templates select="tree" match="subexpression:differentiate"/>
