@@ -30,6 +30,7 @@
 <admst:variable name="state_prefix" select="ddt_"/>
 <admst:variable name="ddt_type" select="x_"/>
 
+<!-- variables used by tree traverse -->
 <admst:variable name="_DYNAMIC" select="yes"/>
 <admst:variable name="_STATIC" select="yes"/>
 <admst:variable name="_DERIVATE" select="yes"/>
@@ -54,18 +55,290 @@
 <admst:variable name="globalanalogfunction"/>
 <admst:variable name="finddt" select="no"/>
 
-<!-- result for tree parse (ngspiceVersion vs .hxx) -->
+<!-- result for tree traverse (ngspiceVersion vs .hxx) -->
 <admst:variable name="str_res_version" select=""/>
 <admst:variable name="str_res_hxx_ac" select=""/>
 <admst:variable name="str_res_hxx_tr" select=""/>
 
-<!-- ****************************** ngspiseVersion.xml ************************* -->
+<!-- noise -->
+<admst:value-to select="/simulator/package_name" value="fucap"/>
+<admst:value-to select="/simulator/package_tarname" value="fucap"/>
+<admst:value-to select="/simulator/package_version" value="0.0.0.1"/>
+<admst:value-to select="/simulator/package_string" value="fucap 0.0.0.1"/>
+<admst:value-to select="/simulator/package_bugreport" value="felix@em.cs"/>
+<admst:for-each select="/module">
+	<admst:new datatype="list" arguments="fnoise"><admst:variable name="fnoise" select="%(.)"/></admst:new>
+	<admst:new datatype="list" arguments="tnoise"><admst:variable name="tnoise" select="%(.)"/></admst:new>
+	<admst:new datatype="list" arguments="wnoise"><admst:variable name="wnoise" select="%(.)"/></admst:new>
+	<admst:for-each select="contribution">
+		<admst:variable name="contribution" select="%(.)"/>
+		<admst:variable name="dependency" select="%(math/dependency)"/>
+		<admst:choose>
+		<admst:when test="rhs/tree/adms[datatypename='function']/..[name='flicker_noise']"><admst:push into="$fnoise/item" select="$contribution" onduplicate="ignore"/></admst:when>
+		<admst:when test="[$dependency='constant']/rhs/tree/adms[datatypename='function']/..[name='white_noise']"><admst:push into="$tnoise/item" select="$contribution" onduplicate="ignore"/></admst:when>
+		<admst:when test="[$dependency!='constant']/rhs/tree/adms[datatypename='function']/..[name='white_noise']"><admst:push into="$wnoise/item" select="$contribution" onduplicate="ignore"/></admst:when>
+		</admst:choose>
+	</admst:for-each>
+</admst:for-each>
+
+<!-- need to be deleted -->
+<admst:for-each select="/module">
+    <admst:choose>
+      <admst:when test="[name='r2_et_cmc' or name='r2_cmc']">
+      </admst:when>
+      <admst:when test="[name='mosvar']">
+        <admst:if test="[nilled(variable[name='c'])]">
+          <admst:value-of select="analog"/>
+          <admst:value-of select="."/>
+          <admst:new datatype="variable" arguments="%p,c,%p">
+            <admst:push into="module/variable" select="." onduplicate="ignore"/>
+            <admst:value-to select="sizetype" value="scalar"/>
+            <admst:value-to select="type" value="integer"/>
+            <admst:value-to select="input" value="yes"/>
+            <admst:value-to select="output" value="yes"/>
+            <admst:value-to select="parametertype" value="model"/>
+            <admst:value-to select="scope" value="global_model"/>
+            <admst:new datatype="number" arguments="1">
+              <admst:value-to select="scalingunit" value="1"/>
+              <admst:value-of select="."/>
+              <admst:value-of select="../module"/>
+              <admst:new datatype="expression" arguments="%p,%p">
+                <admst:value-of select="."/>
+                <admst:value-to select="../../default" value="%p"/>
+              </admst:new>
+            </admst:new>
+          </admst:new>
+        </admst:if>
+      </admst:when>
+      <admst:when test="[name='juncap2']">
+        <admst:if test="[nilled(variable[name='d'])]">
+          <admst:value-of select="analog"/>
+          <admst:value-of select="."/>
+          <admst:new datatype="variable" arguments="%p,d,%p">
+            <admst:push into="module/variable" select="." onduplicate="ignore"/>
+            <admst:value-to select="sizetype" value="scalar"/>
+            <admst:value-to select="type" value="integer"/>
+            <admst:value-to select="input" value="yes"/>
+            <admst:value-to select="output" value="yes"/>
+            <admst:value-to select="parametertype" value="model"/>
+            <admst:value-to select="scope" value="global_model"/>
+            <admst:new datatype="number" arguments="1">
+              <admst:value-to select="scalingunit" value="1"/>
+              <admst:value-of select="."/>
+              <admst:value-of select="../module"/>
+              <admst:new datatype="expression" arguments="%p,%p">
+                <admst:value-of select="."/>
+                <admst:value-to select="../../default" value="%p"/>
+              </admst:new>
+            </admst:new>
+          </admst:new>
+        </admst:if>
+      </admst:when>
+      <admst:when test="[name='vbic' or name='d_hicum0' or name='hic2_full' or name='bjt504_va']">
+        <admst:if test="[nilled(variable[name='npn'])]">
+          <admst:value-of select="analog"/>
+          <admst:value-of select="."/>
+          <admst:new datatype="variable" arguments="%p,npn,%p">
+            <admst:push into="module/variable" select="." onduplicate="ignore"/>
+            <admst:value-to select="sizetype" value="scalar"/>
+            <admst:value-to select="type" value="integer"/>
+            <admst:value-to select="input" value="yes"/>
+            <admst:value-to select="output" value="yes"/>
+            <admst:value-to select="parametertype" value="model"/>
+            <admst:value-to select="scope" value="global_model"/>
+            <admst:new datatype="number" arguments="1">
+              <admst:value-to select="scalingunit" value="1"/>
+              <admst:value-of select="."/>
+              <admst:value-of select="../module"/>
+              <admst:new datatype="expression" arguments="%p,%p">
+                <admst:value-of select="."/>
+                <admst:value-to select="../../default" value="%p"/>
+              </admst:new>
+            </admst:new>
+          </admst:new>
+        </admst:if>
+        <admst:if test="[nilled(variable[name='pnp'])]">
+          <admst:value-of select="analog"/>
+          <admst:value-of select="."/>
+          <admst:new datatype="variable" arguments="%p,pnp,%p">
+            <admst:push into="module/variable" select="." onduplicate="ignore"/>
+            <admst:value-to select="sizetype" value="scalar"/>
+            <admst:value-to select="type" value="integer"/>
+            <admst:value-to select="input" value="yes"/>
+            <admst:value-to select="output" value="yes"/>
+            <admst:value-to select="parametertype" value="model"/>
+            <admst:value-to select="scope" value="global_model"/>
+            <admst:new datatype="number" arguments="0">
+              <admst:value-to select="scalingunit" value="1"/>
+              <admst:value-of select="."/>
+              <admst:value-of select="../module"/>
+              <admst:new datatype="expression" arguments="%p,%p">
+                <admst:value-of select="."/>
+                <admst:value-to select="../../default" value="%p"/>
+              </admst:new>
+            </admst:new>
+          </admst:new>
+        </admst:if>
+      </admst:when>
+      <admst:when test="[name='psp102']">
+        <admst:if test="[nilled(variable[name='nmos'])]">
+          <admst:value-of select="analog"/>
+          <admst:value-of select="."/>
+          <admst:new datatype="variable" arguments="%p,nmos,%p">
+            <admst:push into="module/variable" select="." onduplicate="ignore"/>
+            <admst:value-to select="sizetype" value="scalar"/>
+            <admst:value-to select="type" value="integer"/>
+            <admst:value-to select="input" value="yes"/>
+            <admst:value-to select="output" value="yes"/>
+            <admst:value-to select="parametertype" value="model"/>
+            <admst:value-to select="scope" value="global_model"/>
+            <admst:new datatype="number" arguments="1">
+              <admst:value-to select="scalingunit" value="1"/>
+              <admst:value-of select="."/>
+              <admst:value-of select="../module"/>
+              <admst:new datatype="expression" arguments="%p,%p">
+                <admst:value-of select="."/>
+                <admst:value-to select="../../default" value="%p"/>
+              </admst:new>
+            </admst:new>
+          </admst:new>
+        </admst:if>
+        <admst:if test="[nilled(variable[name='pmos'])]">
+          <admst:value-of select="analog"/>
+          <admst:value-of select="."/>
+          <admst:new datatype="variable" arguments="%p,pmos,%p">
+            <admst:push into="module/variable" select="." onduplicate="ignore"/>
+            <admst:value-to select="sizetype" value="scalar"/>
+            <admst:value-to select="type" value="integer"/>
+            <admst:value-to select="input" value="yes"/>
+            <admst:value-to select="output" value="yes"/>
+            <admst:value-to select="parametertype" value="model"/>
+            <admst:value-to select="scope" value="global_model"/>
+            <admst:new datatype="number" arguments="1">
+              <admst:value-to select="scalingunit" value="1"/>
+              <admst:value-of select="."/>
+              <admst:value-of select="../module"/>
+              <admst:new datatype="expression" arguments="%p,%p">
+                <admst:value-of select="."/>
+                <admst:value-to select="../../default" value="%p"/>
+              </admst:new>
+            </admst:new>
+          </admst:new>
+        </admst:if>
+      </admst:when>
+      <admst:when test="[name='ekv']">
+        <admst:if test="[nilled(variable[name='nmos'])]">
+          <admst:value-of select="analog"/>
+          <admst:value-of select="."/>
+          <admst:new datatype="variable" arguments="%p,nmos,%p">
+            <admst:push into="module/variable" select="." onduplicate="ignore"/>
+            <admst:value-to select="sizetype" value="scalar"/>
+            <admst:value-to select="type" value="integer"/>
+            <admst:value-to select="input" value="yes"/>
+            <admst:value-to select="output" value="yes"/>
+            <admst:value-to select="parametertype" value="model"/>
+            <admst:value-to select="scope" value="global_model"/>
+            <admst:new datatype="number" arguments="1">
+              <admst:value-to select="scalingunit" value="1"/>
+              <admst:value-of select="."/>
+              <admst:value-of select="../module"/>
+              <admst:new datatype="expression" arguments="%p,%p">
+                <admst:value-of select="."/>
+                <admst:value-to select="../../default" value="%p"/>
+              </admst:new>
+            </admst:new>
+          </admst:new>
+        </admst:if>
+        <admst:if test="[nilled(variable[name='pmos'])]">
+          <admst:value-of select="analog"/>
+          <admst:value-of select="."/>
+          <admst:new datatype="variable" arguments="%p,pmos,%p">
+            <admst:push into="module/variable" select="." onduplicate="ignore"/>
+            <admst:value-to select="sizetype" value="scalar"/>
+            <admst:value-to select="type" value="integer"/>
+            <admst:value-to select="input" value="yes"/>
+            <admst:value-to select="output" value="yes"/>
+            <admst:value-to select="parametertype" value="model"/>
+            <admst:value-to select="scope" value="global_model"/>
+            <admst:new datatype="number" arguments="1">
+              <admst:value-to select="scalingunit" value="1"/>
+              <admst:value-of select="."/>
+              <admst:value-of select="../module"/>
+              <admst:new datatype="expression" arguments="%p,%p">
+                <admst:value-of select="."/>
+                <admst:value-to select="../../default" value="%p"/>
+              </admst:new>
+            </admst:new>
+          </admst:new>
+        </admst:if>
+      </admst:when>
+
+      <admst:when test="[name='rtest']">
+        <admst:if test="[nilled(variable[name='d'])]">
+          <admst:value-of select="analog"/>
+          <admst:value-of select="."/>
+          <admst:new datatype="variable" arguments="%p,d,%p">
+            <admst:push into="module/variable" select="." onduplicate="ignore"/>
+            <admst:value-to select="sizetype" value="scalar"/>
+            <admst:value-to select="type" value="integer"/>
+            <admst:value-to select="input" value="yes"/>
+            <admst:value-to select="output" value="yes"/>
+            <admst:value-to select="parametertype" value="model"/>
+            <admst:value-to select="scope" value="global_model"/>
+            <admst:new datatype="number" arguments="1">
+              <admst:value-to select="scalingunit" value="1"/>
+              <admst:value-of select="."/>
+              <admst:value-of select="../module"/>
+              <admst:new datatype="expression" arguments="%p,%p">
+                <admst:value-of select="."/>
+                <admst:value-to select="../../default" value="%p"/>
+              </admst:new>
+            </admst:new>
+          </admst:new>
+        </admst:if>
+      </admst:when>
+
+
+      <admst:when test="[name='rx2']">
+        <admst:if test="[nilled(variable[name='d'])]">
+          <admst:value-of select="analog"/>
+          <admst:value-of select="."/>
+          <admst:new datatype="variable" arguments="%p,d,%p">
+            <admst:push into="module/variable" select="." onduplicate="ignore"/>
+            <admst:value-to select="sizetype" value="scalar"/>
+            <admst:value-to select="type" value="integer"/>
+            <admst:value-to select="input" value="yes"/>
+            <admst:value-to select="output" value="yes"/>
+            <admst:value-to select="parametertype" value="model"/>
+            <admst:value-to select="scope" value="global_model"/>
+            <admst:new datatype="number" arguments="1">
+              <admst:value-to select="scalingunit" value="1"/>
+              <admst:value-of select="."/>
+              <admst:value-of select="../module"/>
+              <admst:new datatype="expression" arguments="%p,%p">
+                <admst:value-of select="."/>
+                <admst:value-to select="../../default" value="%p"/>
+              </admst:new>
+            </admst:new>
+          </admst:new>
+        </admst:if>
+      </admst:when>
+
+      <admst:otherwise>
+        <!--admst:value-of select="name"/>
+        <admst:fatal format="%s: device not handled by the adms ngspice interface\n"/-->
+      </admst:otherwise>
+    </admst:choose>
+</admst:for-each>
+
+
+<!-- ****************************** tree parse - guess ************************* -->
 <admst:template match="expression:stringify:noprobe">
   <admst:apply-templates select="." match="%(./adms/datatypename)"/>
   <admst:value-of select="/simulator/tmp"/>
 </admst:template>
 
-<!-- mapply_unary-->
+<!-- datatypename: mapply_unary-->
 <admst:template match="mapply_unary">
   <admst:choose>
     <admst:when test="[name='plus']">
@@ -162,7 +435,7 @@
   </admst:if>
 </admst:template>
 
-<!-- mapply_binary !-->
+<!-- datatypename: mapply_binary !-->
 <admst:template match="mapply_binary">
   <admst:warning format="mapply_binary X3??\n"/>
   <admst:choose>
@@ -551,7 +824,7 @@
 
 </admst:template>
 
-<!-- mapply_ternary-->
+<!-- datatypename: mapply_ternary-->
 <admst:template match="mapply_ternary">
   <admst:apply-templates select="arg3" match="expression:stringify:noprobe"/>
   <admst:value-of select="/simulator/ddx"/>
@@ -566,6 +839,9 @@
     <admst:value-to select="/simulator/ddx" value="($x?$dy:$dz)"/>
   </admst:if>
 </admst:template>
+
+
+<!-- ****************************** ngspiseVersion.xml ************************* -->
 
 <!-- functions-->
 <admst:template match="function:assert:noarg">
@@ -1804,324 +2080,6 @@
 <admst:template match="callfunction">
   <admst:message format="the function callfunction was deleted, see git: callfunction deleted"/>
 </admst:template>
-
-  <admst:value-to select="/simulator/package_name" value="fucap"/>
-  <admst:value-to select="/simulator/package_tarname" value="fucap"/>
-  <admst:value-to select="/simulator/package_version" value="0.0.0.1"/>
-  <admst:value-to select="/simulator/package_string" value="fucap 0.0.0.1"/>
-  <admst:value-to select="/simulator/package_bugreport" value="felix@em.cs"/>
-
-  <admst:for-each select="/module">
-    <admst:new datatype="list" arguments="fnoise">
-      <admst:variable name="fnoise" select="%(.)"/>
-    </admst:new>
-    <admst:new datatype="list" arguments="tnoise">
-      <admst:variable name="tnoise" select="%(.)"/>
-    </admst:new>
-    <admst:new datatype="list" arguments="wnoise">
-      <admst:variable name="wnoise" select="%(.)"/>
-    </admst:new>
-    <admst:for-each select="contribution">
-      <admst:variable name="contribution" select="%(.)"/>
-      <admst:variable name="dependency" select="%(math/dependency)"/>
-      <admst:choose>
-        <admst:when test="rhs/tree/adms[datatypename='function']/..[name='flicker_noise']">
-          <admst:push into="$fnoise/item" select="$contribution" onduplicate="ignore"/>
-        </admst:when>
-        <admst:when test="[$dependency='constant']/rhs/tree/adms[datatypename='function']/..[name='white_noise']">
-          <admst:push into="$tnoise/item" select="$contribution" onduplicate="ignore"/>
-        </admst:when>
-        <admst:when test="[$dependency!='constant']/rhs/tree/adms[datatypename='function']/..[name='white_noise']">
-          <admst:push into="$wnoise/item" select="$contribution" onduplicate="ignore"/>
-        </admst:when>
-      </admst:choose>
-    </admst:for-each>
-    <admst:choose>
-      <admst:when test="[name='d_hicum0']">
-        <admst:new datatype="attribute" arguments="ngspicename">
-          <admst:push into="../attribute" select="." onduplicate="abort"/>
-          <admst:value-to select="value" value="d_hicum0"/>
-        </admst:new>
-      </admst:when>
-      <admst:when test="[name='hic01_full']">
-        <admst:new datatype="attribute" arguments="ngspicename">
-          <admst:push into="../attribute" select="." onduplicate="abort"/>
-          <admst:value-to select="value" value="hicum01"/>
-        </admst:new>
-      </admst:when>
-      <admst:when test="[name='hic2_full']">
-        <admst:new datatype="attribute" arguments="ngspicename">
-          <admst:push into="../attribute" select="." onduplicate="abort"/>
-          <admst:value-to select="value" value="hicum2"/>
-        </admst:new>
-      </admst:when>
-      <admst:when test="[name='bjt504_va']">
-        <admst:new datatype="attribute" arguments="ngspicename">
-          <admst:push into="../attribute" select="." onduplicate="abort"/>
-          <admst:value-to select="value" value="mextram"/>
-        </admst:new>
-      </admst:when>
-      <admst:when test="[name='psp102']">
-        <admst:new datatype="attribute" arguments="ngspicename">
-          <admst:push into="../attribute" select="." onduplicate="abort"/>
-          <admst:value-to select="value" value="psp102"/>
-        </admst:new>
-      </admst:when>
-      <admst:otherwise>
-        <admst:new datatype="attribute" arguments="ngspicename">
-          <admst:push into="../attribute" select="." onduplicate="abort"/>
-          <admst:value-of select="../name"/>
-          <admst:value-to select="value" value="%s"/>
-        </admst:new>
-      </admst:otherwise>
-    </admst:choose>
-    <admst:choose>
-      <admst:when test="[name='r2_et_cmc' or name='r2_cmc']">
-      </admst:when>
-      <admst:when test="[name='mosvar']">
-        <admst:if test="[nilled(variable[name='c'])]">
-          <admst:value-of select="analog"/>
-          <admst:value-of select="."/>
-          <admst:new datatype="variable" arguments="%p,c,%p">
-            <admst:push into="module/variable" select="." onduplicate="ignore"/>
-            <admst:value-to select="sizetype" value="scalar"/>
-            <admst:value-to select="type" value="integer"/>
-            <admst:value-to select="input" value="yes"/>
-            <admst:value-to select="output" value="yes"/>
-            <admst:value-to select="parametertype" value="model"/>
-            <admst:value-to select="scope" value="global_model"/>
-            <admst:new datatype="number" arguments="1">
-              <admst:value-to select="scalingunit" value="1"/>
-              <admst:value-of select="."/>
-              <admst:value-of select="../module"/>
-              <admst:new datatype="expression" arguments="%p,%p">
-                <admst:value-of select="."/>
-                <admst:value-to select="../../default" value="%p"/>
-              </admst:new>
-            </admst:new>
-          </admst:new>
-        </admst:if>
-      </admst:when>
-      <admst:when test="[name='juncap2']">
-        <admst:if test="[nilled(variable[name='d'])]">
-          <admst:value-of select="analog"/>
-          <admst:value-of select="."/>
-          <admst:new datatype="variable" arguments="%p,d,%p">
-            <admst:push into="module/variable" select="." onduplicate="ignore"/>
-            <admst:value-to select="sizetype" value="scalar"/>
-            <admst:value-to select="type" value="integer"/>
-            <admst:value-to select="input" value="yes"/>
-            <admst:value-to select="output" value="yes"/>
-            <admst:value-to select="parametertype" value="model"/>
-            <admst:value-to select="scope" value="global_model"/>
-            <admst:new datatype="number" arguments="1">
-              <admst:value-to select="scalingunit" value="1"/>
-              <admst:value-of select="."/>
-              <admst:value-of select="../module"/>
-              <admst:new datatype="expression" arguments="%p,%p">
-                <admst:value-of select="."/>
-                <admst:value-to select="../../default" value="%p"/>
-              </admst:new>
-            </admst:new>
-          </admst:new>
-        </admst:if>
-      </admst:when>
-      <admst:when test="[name='vbic' or name='d_hicum0' or name='hic2_full' or name='bjt504_va']">
-        <admst:if test="[nilled(variable[name='npn'])]">
-          <admst:value-of select="analog"/>
-          <admst:value-of select="."/>
-          <admst:new datatype="variable" arguments="%p,npn,%p">
-            <admst:push into="module/variable" select="." onduplicate="ignore"/>
-            <admst:value-to select="sizetype" value="scalar"/>
-            <admst:value-to select="type" value="integer"/>
-            <admst:value-to select="input" value="yes"/>
-            <admst:value-to select="output" value="yes"/>
-            <admst:value-to select="parametertype" value="model"/>
-            <admst:value-to select="scope" value="global_model"/>
-            <admst:new datatype="number" arguments="1">
-              <admst:value-to select="scalingunit" value="1"/>
-              <admst:value-of select="."/>
-              <admst:value-of select="../module"/>
-              <admst:new datatype="expression" arguments="%p,%p">
-                <admst:value-of select="."/>
-                <admst:value-to select="../../default" value="%p"/>
-              </admst:new>
-            </admst:new>
-          </admst:new>
-        </admst:if>
-        <admst:if test="[nilled(variable[name='pnp'])]">
-          <admst:value-of select="analog"/>
-          <admst:value-of select="."/>
-          <admst:new datatype="variable" arguments="%p,pnp,%p">
-            <admst:push into="module/variable" select="." onduplicate="ignore"/>
-            <admst:value-to select="sizetype" value="scalar"/>
-            <admst:value-to select="type" value="integer"/>
-            <admst:value-to select="input" value="yes"/>
-            <admst:value-to select="output" value="yes"/>
-            <admst:value-to select="parametertype" value="model"/>
-            <admst:value-to select="scope" value="global_model"/>
-            <admst:new datatype="number" arguments="0">
-              <admst:value-to select="scalingunit" value="1"/>
-              <admst:value-of select="."/>
-              <admst:value-of select="../module"/>
-              <admst:new datatype="expression" arguments="%p,%p">
-                <admst:value-of select="."/>
-                <admst:value-to select="../../default" value="%p"/>
-              </admst:new>
-            </admst:new>
-          </admst:new>
-        </admst:if>
-      </admst:when>
-      <admst:when test="[name='psp102']">
-        <admst:if test="[nilled(variable[name='nmos'])]">
-          <admst:value-of select="analog"/>
-          <admst:value-of select="."/>
-          <admst:new datatype="variable" arguments="%p,nmos,%p">
-            <admst:push into="module/variable" select="." onduplicate="ignore"/>
-            <admst:value-to select="sizetype" value="scalar"/>
-            <admst:value-to select="type" value="integer"/>
-            <admst:value-to select="input" value="yes"/>
-            <admst:value-to select="output" value="yes"/>
-            <admst:value-to select="parametertype" value="model"/>
-            <admst:value-to select="scope" value="global_model"/>
-            <admst:new datatype="number" arguments="1">
-              <admst:value-to select="scalingunit" value="1"/>
-              <admst:value-of select="."/>
-              <admst:value-of select="../module"/>
-              <admst:new datatype="expression" arguments="%p,%p">
-                <admst:value-of select="."/>
-                <admst:value-to select="../../default" value="%p"/>
-              </admst:new>
-            </admst:new>
-          </admst:new>
-        </admst:if>
-        <admst:if test="[nilled(variable[name='pmos'])]">
-          <admst:value-of select="analog"/>
-          <admst:value-of select="."/>
-          <admst:new datatype="variable" arguments="%p,pmos,%p">
-            <admst:push into="module/variable" select="." onduplicate="ignore"/>
-            <admst:value-to select="sizetype" value="scalar"/>
-            <admst:value-to select="type" value="integer"/>
-            <admst:value-to select="input" value="yes"/>
-            <admst:value-to select="output" value="yes"/>
-            <admst:value-to select="parametertype" value="model"/>
-            <admst:value-to select="scope" value="global_model"/>
-            <admst:new datatype="number" arguments="1">
-              <admst:value-to select="scalingunit" value="1"/>
-              <admst:value-of select="."/>
-              <admst:value-of select="../module"/>
-              <admst:new datatype="expression" arguments="%p,%p">
-                <admst:value-of select="."/>
-                <admst:value-to select="../../default" value="%p"/>
-              </admst:new>
-            </admst:new>
-          </admst:new>
-        </admst:if>
-      </admst:when>
-      <admst:when test="[name='ekv']">
-        <admst:if test="[nilled(variable[name='nmos'])]">
-          <admst:value-of select="analog"/>
-          <admst:value-of select="."/>
-          <admst:new datatype="variable" arguments="%p,nmos,%p">
-            <admst:push into="module/variable" select="." onduplicate="ignore"/>
-            <admst:value-to select="sizetype" value="scalar"/>
-            <admst:value-to select="type" value="integer"/>
-            <admst:value-to select="input" value="yes"/>
-            <admst:value-to select="output" value="yes"/>
-            <admst:value-to select="parametertype" value="model"/>
-            <admst:value-to select="scope" value="global_model"/>
-            <admst:new datatype="number" arguments="1">
-              <admst:value-to select="scalingunit" value="1"/>
-              <admst:value-of select="."/>
-              <admst:value-of select="../module"/>
-              <admst:new datatype="expression" arguments="%p,%p">
-                <admst:value-of select="."/>
-                <admst:value-to select="../../default" value="%p"/>
-              </admst:new>
-            </admst:new>
-          </admst:new>
-        </admst:if>
-        <admst:if test="[nilled(variable[name='pmos'])]">
-          <admst:value-of select="analog"/>
-          <admst:value-of select="."/>
-          <admst:new datatype="variable" arguments="%p,pmos,%p">
-            <admst:push into="module/variable" select="." onduplicate="ignore"/>
-            <admst:value-to select="sizetype" value="scalar"/>
-            <admst:value-to select="type" value="integer"/>
-            <admst:value-to select="input" value="yes"/>
-            <admst:value-to select="output" value="yes"/>
-            <admst:value-to select="parametertype" value="model"/>
-            <admst:value-to select="scope" value="global_model"/>
-            <admst:new datatype="number" arguments="1">
-              <admst:value-to select="scalingunit" value="1"/>
-              <admst:value-of select="."/>
-              <admst:value-of select="../module"/>
-              <admst:new datatype="expression" arguments="%p,%p">
-                <admst:value-of select="."/>
-                <admst:value-to select="../../default" value="%p"/>
-              </admst:new>
-            </admst:new>
-          </admst:new>
-        </admst:if>
-      </admst:when>
-
-      <admst:when test="[name='rtest']">
-        <admst:if test="[nilled(variable[name='d'])]">
-          <admst:value-of select="analog"/>
-          <admst:value-of select="."/>
-          <admst:new datatype="variable" arguments="%p,d,%p">
-            <admst:push into="module/variable" select="." onduplicate="ignore"/>
-            <admst:value-to select="sizetype" value="scalar"/>
-            <admst:value-to select="type" value="integer"/>
-            <admst:value-to select="input" value="yes"/>
-            <admst:value-to select="output" value="yes"/>
-            <admst:value-to select="parametertype" value="model"/>
-            <admst:value-to select="scope" value="global_model"/>
-            <admst:new datatype="number" arguments="1">
-              <admst:value-to select="scalingunit" value="1"/>
-              <admst:value-of select="."/>
-              <admst:value-of select="../module"/>
-              <admst:new datatype="expression" arguments="%p,%p">
-                <admst:value-of select="."/>
-                <admst:value-to select="../../default" value="%p"/>
-              </admst:new>
-            </admst:new>
-          </admst:new>
-        </admst:if>
-      </admst:when>
-
-
-      <admst:when test="[name='rx2']">
-        <admst:if test="[nilled(variable[name='d'])]">
-          <admst:value-of select="analog"/>
-          <admst:value-of select="."/>
-          <admst:new datatype="variable" arguments="%p,d,%p">
-            <admst:push into="module/variable" select="." onduplicate="ignore"/>
-            <admst:value-to select="sizetype" value="scalar"/>
-            <admst:value-to select="type" value="integer"/>
-            <admst:value-to select="input" value="yes"/>
-            <admst:value-to select="output" value="yes"/>
-            <admst:value-to select="parametertype" value="model"/>
-            <admst:value-to select="scope" value="global_model"/>
-            <admst:new datatype="number" arguments="1">
-              <admst:value-to select="scalingunit" value="1"/>
-              <admst:value-of select="."/>
-              <admst:value-of select="../module"/>
-              <admst:new datatype="expression" arguments="%p,%p">
-                <admst:value-of select="."/>
-                <admst:value-to select="../../default" value="%p"/>
-              </admst:new>
-            </admst:new>
-          </admst:new>
-        </admst:if>
-      </admst:when>
-
-      <admst:otherwise>
-        <!--admst:value-of select="name"/>
-        <admst:fatal format="%s: device not handled by the adms ngspice interface\n"/-->
-      </admst:otherwise>
-    </admst:choose>
-  </admst:for-each>
 
 
 <!-- **************************** functions for old files **************************** -->
