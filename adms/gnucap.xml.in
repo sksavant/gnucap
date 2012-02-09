@@ -4,7 +4,9 @@
 <admst version="2.3.0" xmlns:admst="http://mot-adms.sourceforge.net/xml-files/admst">
 <!-- version: not renamed, load: renamed fname -->
 
-<!-- **************************** global settings ******************************* -->
+<!-- *********************************************************************************** -->
+<!-- ******************************** global settings ********************************** -->
+<!-- *********************************************************************************** -->
 
 <!-- output filename is 1st argument in -o flag in command line-->
 <admst:variable name="filename" select="%(/module/name)_common"/>
@@ -341,516 +343,7 @@
 </admst:for-each>
 
 
-<!-- ****************************** tree parse - guess ************************* -->
-<admst:template match="expression:stringify:noprobe">
-  <admst:apply-templates select="." match="%(./adms/datatypename)"/>
-  <admst:value-of select="/simulator/tmp"/>
-</admst:template>
 
-<!-- datatypename: mapply_unary-->
-<admst:template match="mapply_unary">
-  <admst:choose>
-    <admst:when test="[name='plus']">
-      <admst:choose>
-        <admst:when test="arg1/math[value=0.0]">
-          <admst:value-to select="/simulator/tmp" value="0.0"/>
-        </admst:when>
-        <admst:otherwise>
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-          <admst:value-to select="/simulator/tmp" value="(+%s)"/>
-        </admst:otherwise>
-      </admst:choose>
-    </admst:when>
-    <admst:when test="[name='minus']">
-      <admst:choose>
-        <admst:when test="arg1/math[value=0.0]">
-          <admst:value-to select="/simulator/tmp" value="0.0"/>
-        </admst:when>
-        <admst:otherwise>
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-          <admst:value-to select="/simulator/tmp" value="(-%s)"/>
-        </admst:otherwise>
-      </admst:choose>
-    </admst:when>
-    <admst:when test="[name='not']">
-      <admst:choose>
-        <admst:when test="arg1/math[value=0.0]">
-          <admst:value-to select="/simulator/tmp" value="0.0"/>
-        </admst:when>
-        <admst:otherwise>
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-          <admst:value-to select="/simulator/tmp" value="(!%s)"/>
-        </admst:otherwise>
-      </admst:choose>
-    </admst:when>
-    <admst:when test="[name='bw_not']">
-      <admst:choose>
-        <admst:when test="arg1/math[value=0.0]">
-          <admst:value-to select="/simulator/tmp" value="0.0"/>
-        </admst:when>
-        <admst:otherwise>
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-          <admst:value-to select="/simulator/tmp" value="(~%s)"/>
-        </admst:otherwise>
-      </admst:choose>
-    </admst:when>
-    <admst:otherwise>
-      <admst:value-of select="name"/>
-      <admst:error format="%s: function not handled\n"/>
-    </admst:otherwise>
-  </admst:choose>
-  <admst:if test="/simulator/probe">
-    <admst:choose>
-      <admst:when test="/simulator[tmp='0.0']">
-        <admst:value-to select="/simulator/ddx" value="0.0"/>
-      </admst:when>
-      <admst:otherwise>
-        <admst:choose>
-          <admst:when test="[name='plus']">
-            <admst:choose>
-              <admst:when test="/simulator[ddx!='0.0']">
-                <admst:value-of select="/simulator/ddx"/>
-                <admst:value-to select="/simulator/ddx" value="(+%s)"/>
-              </admst:when>
-            </admst:choose>
-          </admst:when>
-          <admst:when test="[name='minus']">
-            <admst:choose>
-              <admst:when test="/simulator[ddx!='0.0']">
-                <admst:value-of select="/simulator/ddx"/>
-                <admst:value-to select="/simulator/ddx" value="(-%s)"/>
-              </admst:when>
-            </admst:choose>
-          </admst:when>
-          <admst:when test="[name='not']">
-            <admst:choose>
-              <admst:when test="/simulator[ddx!='0.0']">
-                <admst:value-of select="/simulator/ddx"/>
-                <admst:value-to select="/simulator/ddx" value="(!%s)"/>
-              </admst:when>
-            </admst:choose>
-          </admst:when>
-          <admst:when test="[name='bw_not']">
-            <admst:choose>
-              <admst:when test="/simulator[ddx!='0.0']">
-                <admst:value-of select="/simulator/ddx"/>
-                <admst:value-to select="/simulator/ddx" value="(~%s)"/>
-              </admst:when>
-            </admst:choose>
-          </admst:when>
-        </admst:choose>
-      </admst:otherwise>
-    </admst:choose>
-  </admst:if>
-</admst:template>
-
-<!-- datatypename: mapply_binary !-->
-<admst:template match="mapply_binary">
-  <admst:warning format="mapply_binary X3??\n"/>
-  <admst:choose>
-    <admst:when test="[name='bw_equr']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-      <admst:value-to select="/simulator/tmp" value="(%s^~%s)"/>
-    </admst:when>
-    <admst:when test="[name='bw_equl']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-      <admst:value-to select="/simulator/tmp" value="(%s~^%s)"/>
-    </admst:when>
-    <admst:when test="[name='bw_xor']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-      <admst:value-to select="/simulator/tmp" value="(%s^%s)"/>
-    </admst:when>
-    <admst:when test="[name='bw_or']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-      <admst:value-to select="/simulator/tmp" value="(%s|%s)"/>
-    </admst:when>
-    <admst:when test="[name='bw_and']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-      <admst:value-to select="/simulator/tmp" value="(%s&amp;%s)"/>
-    </admst:when>
-    <admst:when test="[name='multmod']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-      <admst:value-to select="/simulator/tmp" value="(%s%%%s)"/>
-    </admst:when>
-    <admst:when test="[name='or']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-      <admst:value-to select="/simulator/tmp" value="(%s||%s)"/>
-    </admst:when>
-    <admst:when test="[name='and']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-      <admst:value-to select="/simulator/tmp" value="(%s&amp;&amp;%s)"/>
-    </admst:when>
-    <admst:when test="[name='equ']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-      <admst:value-to select="/simulator/tmp" value="(%s==%s)"/>
-    </admst:when>
-    <admst:when test="[name='notequ']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-      <admst:value-to select="/simulator/tmp" value="(%s!=%s)"/>
-    </admst:when>
-    <admst:when test="[name='lt']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-      <admst:value-to select="/simulator/tmp" value="(%s&lt;%s)"/>
-    </admst:when>
-    <admst:when test="[name='lt_equ']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-      <admst:value-to select="/simulator/tmp" value="(%s&lt;=%s)"/>
-    </admst:when>
-    <admst:when test="[name='gt']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-      <admst:value-to select="/simulator/tmp" value="(%s&gt;%s)"/>
-    </admst:when>
-    <admst:when test="[name='gt_equ']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-      <admst:value-to select="/simulator/tmp" value="(%s&gt;=%s)"/>
-    </admst:when>
-    <admst:when test="[name='shiftr']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-      <admst:value-to select="/simulator/tmp" value="(%s&gt;&gt;%s)"/>
-    </admst:when>
-    <admst:when test="[name='shiftl']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-      <admst:value-to select="/simulator/tmp" value="(%s&lt;&lt;%s)"/>
-    </admst:when>
-    <admst:when test="[name='addp']">
-      <admst:choose>
-        <admst:when test="[(arg1/math/value=0.0)and(arg2/math/value=0.0)]">
-          <admst:value-to select="/simulator/tmp" value="0.0"/>
-          <admst:if test="/simulator/probe">
-            <admst:variable name="dx" select="0.0"/>
-            <admst:variable name="dy" select="0.0"/>
-          </admst:if>
-        </admst:when>
-        <admst:when test="arg1/math[value=0.0]">
-          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-          <admst:value-to select="/simulator/tmp" value="(+%s)"/>
-          <admst:if test="/simulator/probe">
-            <admst:value-of select="/simulator/ddx"/>
-            <admst:variable name="dy" select="%s"/>
-            <admst:variable name="dx" select="0.0"/>
-          </admst:if>
-        </admst:when>
-        <admst:when test="arg2/math[value=0.0]">
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-          <admst:value-to select="/simulator/tmp" value="%s"/>
-          <admst:if test="/simulator/probe">
-            <admst:value-of select="/simulator/ddx"/>
-            <admst:variable name="dx" select="%s"/>
-            <admst:variable name="dy" select="0.0"/>
-          </admst:if>
-        </admst:when>
-        <admst:otherwise>
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-          <admst:variable name="x" select="%s"/>
-          <admst:if test="/simulator/probe">
-            <admst:value-of select="/simulator/ddx"/>
-            <admst:variable name="dx" select="%s"/>
-          </admst:if>
-          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-          <admst:variable name="y" select="%s"/>
-          <admst:if test="/simulator/probe">
-            <admst:value-of select="/simulator/ddx"/>
-            <admst:variable name="dy" select="%s"/>
-          </admst:if>
-          <admst:value-to select="/simulator/tmp" value="($x+$y)"/>
-        </admst:otherwise>
-      </admst:choose>
-    </admst:when>
-    <admst:when test="[name='addm']">
-      <admst:choose>
-        <admst:when test="[(arg1/math/value=0.0)and(arg2/math/value=0.0)]">
-          <admst:value-to select="/simulator/tmp" value="0.0"/>
-          <admst:if test="/simulator/probe">
-            <admst:variable name="dx" select="0.0"/>
-            <admst:variable name="dy" select="0.0"/>
-          </admst:if>
-        </admst:when>
-        <admst:when test="arg1/math[value=0.0]">
-          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-          <admst:value-to select="/simulator/tmp" value="(-%s)"/>
-          <admst:if test="/simulator/probe">
-            <admst:value-of select="/simulator/ddx"/>
-            <admst:variable name="dy" select="%s"/>
-            <admst:variable name="dx" select="0.0"/>
-          </admst:if>
-        </admst:when>
-        <admst:when test="arg2/math[value=0.0]">
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-          <admst:value-to select="/simulator/tmp" value="%s"/>
-          <admst:if test="/simulator/probe">
-            <admst:value-of select="/simulator/ddx"/>
-            <admst:variable name="dx" select="%s"/>
-            <admst:variable name="dy" select="0.0"/>
-          </admst:if>
-        </admst:when>
-        <admst:otherwise>
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-          <admst:variable name="x" select="%s"/>
-          <admst:if test="/simulator/probe">
-            <admst:value-of select="/simulator/ddx"/>
-            <admst:variable name="dx" select="%s"/>
-          </admst:if>
-          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-          <admst:variable name="y" select="%s"/>
-          <admst:if test="/simulator/probe">
-            <admst:value-of select="/simulator/ddx"/>
-            <admst:variable name="dy" select="%s"/>
-          </admst:if>
-          <admst:value-to select="/simulator/tmp" value="($x-$y)"/>
-        </admst:otherwise>
-      </admst:choose>
-    </admst:when>
-    <admst:when test="[name='multtime']">
-      <admst:variable name="x" select="0.0"/>
-      <admst:variable name="y" select="0.0"/>
-      <admst:choose>
-        <admst:when test="[(arg1/math/value=0.0)or(arg2/math/value=0.0)]">
-          <admst:value-to select="/simulator/tmp" value="0.0"/>
-          <admst:if test="/simulator/probe">
-            <admst:variable name="dx" select="0.0"/>
-            <admst:variable name="dy" select="0.0"/>
-          </admst:if>
-        </admst:when>
-        <admst:when test="[(arg1/math/value=1.0)and(arg2/math/value=1.0)]">
-          <admst:value-to select="/simulator/tmp" value="1.0"/>
-          <admst:if test="/simulator/probe">
-            <admst:variable name="dx" select="0.0"/>
-            <admst:variable name="dy" select="0.0"/>
-          </admst:if>
-        </admst:when>
-        <admst:otherwise>
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-          <admst:variable name="x" select="%s"/>
-          <admst:if test="/simulator/probe">
-            <admst:value-of select="/simulator/ddx"/>
-            <admst:variable name="dx" select="%s"/>
-          </admst:if>
-          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-          <admst:if test="/simulator/probe">
-            <admst:value-of select="/simulator/ddx"/>
-            <admst:variable name="dy" select="%s"/>
-          </admst:if>
-          <admst:variable name="y" select="%s"/>
-          <admst:value-to select="/simulator/tmp" value="($x*$y)"/>
-        </admst:otherwise>
-      </admst:choose>
-    </admst:when>
-    <admst:when test="[name='multdiv']">
-      <admst:variable name="x" select="0.0"/>
-      <admst:variable name="y" select="0.0"/>
-      <admst:choose>
-        <admst:when test="arg1/math[value=0.0]">
-          <admst:value-to select="/simulator/tmp" value="0.0"/>
-          <admst:if test="/simulator/probe">
-            <admst:variable name="dx" select="0.0"/>
-            <admst:variable name="dy" select="0.0"/>
-          </admst:if>
-        </admst:when>
-        <admst:when test="[(arg1/math/value=1.0)and(arg2/math/value=1.0)]">
-          <admst:value-to select="/simulator/tmp" value="1.0"/>
-          <admst:if test="/simulator/probe">
-            <admst:variable name="dx" select="0.0"/>
-            <admst:variable name="dy" select="0.0"/>
-          </admst:if>
-        </admst:when>
-        <admst:otherwise>
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-          <admst:variable name="x" select="%s"/>
-          <admst:if test="/simulator/probe">
-            <admst:value-of select="/simulator/ddx"/>
-            <admst:variable name="dx" select="%s"/>
-          </admst:if>
-          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-          <admst:variable name="y" select="%s"/>
-          <admst:if test="/simulator/probe">
-            <admst:value-of select="/simulator/ddx"/>
-            <admst:variable name="dy" select="%s"/>
-          </admst:if>
-          <admst:value-to select="/simulator/tmp" value="($x/$y)"/>
-        </admst:otherwise>
-      </admst:choose>
-    </admst:when>
-    <admst:otherwise>
-      <admst:value-of select="name"/>
-      <admst:error format="%s: function not handled\n"/>
-    </admst:otherwise>
-  </admst:choose>
-
-  <admst:if test="/simulator/probe">
-    <admst:choose>
-      <admst:when test="[name='addp']">
-        <admst:choose>
-          <admst:when test="[$dx='0.0' and $dy='0.0']">
-            <admst:value-to select="/simulator/ddx" value="0.0"/>
-          </admst:when>
-          <admst:when test="[$dx='0.0']">
-            <admst:value-to select="/simulator/ddx" value="(+$dy)"/>
-          </admst:when>
-          <admst:when test="[$dy='0.0']">
-            <admst:value-to select="/simulator/ddx" value="$dx"/>
-          </admst:when>
-          <admst:otherwise>
-            <admst:value-to select="/simulator/ddx" value="($dx+$dy)"/>
-          </admst:otherwise>
-        </admst:choose>
-      </admst:when>
-      <admst:when test="[name='addm']">
-        <admst:choose>
-          <admst:when test="[$dx='0.0' and $dy='0.0']">
-            <admst:value-to select="/simulator/ddx" value="0.0"/>
-          </admst:when>
-          <admst:when test="[$dx='0.0']">
-            <admst:value-to select="/simulator/ddx" value="(-$dy)"/>
-          </admst:when>
-          <admst:when test="[$dy='0.0']">
-            <admst:value-to select="/simulator/ddx" value="$dx"/>
-          </admst:when>
-          <admst:otherwise>
-            <admst:value-to select="/simulator/ddx" value="($dx-$dy)"/>
-          </admst:otherwise>
-        </admst:choose>
-      </admst:when>
-      <admst:when test="[name='multtime']">
-        <admst:choose>
-          <admst:when test="[$x='0.0' and $y='0.0']">
-            <admst:value-to select="/simulator/ddx" value="0.0"/>
-          </admst:when>
-          <admst:when test="[$dx='0.0' and $dy='0.0']">
-            <admst:value-to select="/simulator/ddx" value="0.0"/>
-          </admst:when>
-          <admst:when test="[$dx='0.0' and $dy='1.0']">
-            <admst:value-to select="/simulator/ddx" value="($x)"/>
-          </admst:when>
-          <admst:when test="[$dx='1.0' and $dy='0.0']">
-            <admst:value-to select="/simulator/ddx" value="($y)"/>
-          </admst:when>
-          <admst:when test="[$dx='0.0']">
-            <admst:value-to select="/simulator/ddx" value="($x*$dy)"/>
-          </admst:when>
-          <admst:when test="[$dy='0.0']">
-            <admst:value-to select="/simulator/ddx" value="$dx*$y"/>
-          </admst:when>
-          <admst:when test="[$dx='1.0' and $dy='1.0']">
-            <admst:value-to select="/simulator/ddx" value="($x+$y)"/>
-          </admst:when>
-          <admst:when test="[$dx='1.0']">
-            <admst:value-to select="/simulator/ddx" value="($y+($dy*$x))"/>
-          </admst:when>
-          <admst:when test="[$dy='1.0']">
-            <admst:value-to select="/simulator/ddx" value="($dx*$y)+$x"/>
-          </admst:when>
-          <admst:when test="[$x='1.0']">
-            <admst:value-to select="/simulator/ddx" value="$dy"/>
-          </admst:when>
-          <admst:when test="[$y='1.0']">
-            <admst:value-to select="/simulator/ddx" value="$dx"/>
-          </admst:when>
-          <admst:otherwise>
-            <admst:value-to select="/simulator/ddx" value="(($dx*$y)+($x*$dy))"/>
-          </admst:otherwise>
-        </admst:choose>
-      </admst:when>
-      <admst:when test="[name='multdiv']">
-        <admst:choose>
-          <admst:when test="[$x='0.0']">
-            <admst:value-to select="/simulator/ddx" value="0.0"/>
-          </admst:when>
-          <admst:when test="[$dx='0.0' and $dy='0.0']">
-            <admst:value-to select="/simulator/ddx" value="0.0"/>
-          </admst:when>
-          <admst:when test="[$x='1.0']">
-            <admst:choose>
-              <admst:when test="[$dy='1.0']">
-                <admst:value-to select="/simulator/ddx" value="(-1/($y*$y))"/>
-              </admst:when>
-              <admst:otherwise>
-                <admst:value-to select="/simulator/ddx" value="(-$dy/($y*$y))"/>
-              </admst:otherwise>
-            </admst:choose>
-          </admst:when>
-          <admst:when test="[$dx='0.0']">
-            <admst:choose>
-              <admst:when test="[$dy='1.0']">
-                <admst:value-to select="/simulator/ddx" value="(-$x/($y*$y))"/>
-              </admst:when>
-              <admst:otherwise>
-                <admst:value-to select="/simulator/ddx" value="(-($x*$dy)/($y*$y))"/>
-              </admst:otherwise>
-            </admst:choose>
-          </admst:when>
-          <admst:when test="[$dx='1.0']">
-            <admst:choose>
-              <admst:when test="[$dy='0.0']">
-                <admst:value-to select="/simulator/ddx" value="(1./$y)"/>
-              </admst:when>
-              <admst:when test="[$dy='1.0']">
-                <admst:value-to select="/simulator/ddx" value="(($y-$x)/($y*$y))"/>
-              </admst:when>
-              <admst:otherwise>
-                <admst:value-to select="/simulator/ddx" value="(($y-($x*$dy))/($y*$y))"/>
-              </admst:otherwise>
-            </admst:choose>
-          </admst:when>
-          <admst:otherwise>
-            <admst:choose>
-              <admst:when test="[$y='1.0']">
-                <admst:value-to select="/simulator/ddx" value="$dx"/>
-              </admst:when>
-              <admst:when test="[$dy='0.0']">
-                <admst:value-to select="/simulator/ddx" value="$dx/$y"/>
-              </admst:when>
-              <admst:when test="[$dy='1.0']">
-                <admst:value-to select="/simulator/ddx" value="(($dx*$y)-$x)/($y*$y)"/>
-              </admst:when>
-              <admst:otherwise>
-                <admst:value-to select="/simulator/ddx" value="($dx*$y-$x*$dy)/($y*$y)"/>
-              </admst:otherwise>
-            </admst:choose>
-          </admst:otherwise>
-        </admst:choose>
-      </admst:when>
-      <admst:otherwise>
-        <admst:value-to select="/simulator/ddx" value=""/>
-      </admst:otherwise>
-    </admst:choose>
-  </admst:if>
-
-</admst:template>
-
-<!-- datatypename: mapply_ternary-->
-<admst:template match="mapply_ternary">
-  <admst:apply-templates select="arg3" match="expression:stringify:noprobe"/>
-  <admst:value-of select="/simulator/ddx"/>
-  <admst:variable name="dz" select="%s"/>
-  <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-  <admst:value-of select="/simulator/ddx"/>
-  <admst:variable name="dy" select="%s"/>
-  <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
-  <admst:variable name="x" select="%s"/>
-  <admst:value-to select="/simulator/tmp" value="($x?%s:%s)"/>
-  <admst:if test="/simulator/probe">
-    <admst:value-to select="/simulator/ddx" value="($x?$dy:$dz)"/>
-  </admst:if>
-</admst:template>
-
-
-<!-- ****************************** ngspiseVersion.xml ************************* -->
 
 <!-- functions-->
 <admst:template match="function:assert:noarg">
@@ -1305,7 +798,6 @@
     </admst:otherwise>
   </admst:choose>
 </admst:template>
-<!-- ------------------------------------------FIXME. X3?!-------------- -->
 
 <admst:template match="variable:declaration">
   <admst:for-each select="module/evaluation/variable">
@@ -2090,8 +1582,9 @@
   <admst:message format="the function callfunction was deleted, see git: callfunction deleted"/>
 </admst:template>
 
-
-<!-- **************************** functions for old files **************************** -->
+<!-- *********************************************************************************** -->
+<!-- ******************************** functions for old files ************************** -->
+<!-- *********************************************************************************** -->
 
 <admst:template match="generate_c:declare_variable">
 	<admst:if test="[type='integer']">\tint %(name);</admst:if>
@@ -2101,7 +1594,9 @@
 
 </admst:template>
 
-<!-- ******************* functions for old files: DEV_xxx::load() ******************** -->
+<!-- *********************************************************************************** -->
+<!-- ********************** functions for old files: DEV_xxx::load() ******************* -->
+<!-- *********************************************************************************** -->
 
 <!-- analog/![initializeModel|initializeInstance|initial_model|initial_instance|initial_step|noise] -->
 
@@ -2140,7 +1635,9 @@
   </admst:if>
 </admst:template>
 
-<!-- ****************** functions for old files: DEV_xxx::guesstopology() *************** -->
+<!-- *********************************************************************************** -->
+<!-- **************** functions for old files: DEV_xxx::guesstopology() **************** -->
+<!-- *********************************************************************************** -->
 
 <!-- expression//function: mapping verilog-name == C-name of function -->
 <admst:template match="X1fname">
@@ -2373,12 +1870,8 @@
 
   <admst:text format="// done finddt $finddt\n"/>
 </admst:template>
-<!-- ------------------------------------------- --> 
-<admst:template match="X3:ddtfunction">
-  <admst:fatal format="???"/>
-</admst:template>
 
-<!-- -------------------------------------------------- -->
+
 <!-- -------------------------------------------------- -->
 <admst:template match="function:getCid">
   <admst:fatal format="???"/>
@@ -2443,7 +1936,10 @@
   </admst:for-each>
 </admst:template>
 <!-- ----------------------  residuals ------------------ -->
-<!-- ****************************** my utils ***************************************************** -->
+
+<!-- *********************************************************************************** -->
+<!-- *********************************** my utils ************************************** -->
+<!-- *********************************************************************************** -->
 
 <admst:variable  name="myF_par1" select=""/>
 <admst:variable  name="myF_par2" select=""/>
@@ -2471,7 +1967,9 @@
 </admst:template>
 
 
+<!-- *********************************************************************************** -->
 <!-- ************************************** Make File .h ******************************* -->
+<!-- *********************************************************************************** -->
 
 
 <admst:open file="$(filename).h">
@@ -2883,9 +2381,10 @@ inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  )
 
 </admst:open>
 
-<!-- ************************************************************************************* -->
-<!-- ********************************* Make d_*.cc *********************************** -->
-<!-- ************************************************************************************* -->
+
+<!-- *********************************************************************************** -->
+<!-- *********************************** Make d_*.cc *********************************** -->
+<!-- *********************************************************************************** -->
 
 <admst:template match="ddtcounter">
   <admst:if test="[(adms/datatypename)='function' and name='ddt']">
@@ -4087,17 +3586,525 @@ void $(DEV_NAME)::tr_eval()
 	set_converged(conv_check());
 	return; 
 }
-// -------------------------------------------------------------------------- //
-// -------------------------------------------------------------------------- //
-#if 0
-// what is this?
-#endif
-// -------------------------------------------------------------------------- //
 
   </admst:for-each>
 </admst:open>
 
-<!-- ****************************** ngspiceMODULE.hxx.xml ************************* -->
+<!-- *********************************************************************************** -->
+<!--**************** tree parse - guesstopology - datatypename ************************* -->
+<!-- *********************************************************************************** -->
+
+<admst:template match="expression:stringify:noprobe">
+  <admst:apply-templates select="." match="%(./adms/datatypename)"/>
+  <admst:value-of select="/simulator/tmp"/>
+</admst:template>
+
+<!-- datatypename: mapply_unary-->
+<admst:template match="mapply_unary">
+  <admst:choose>
+    <admst:when test="[name='plus']">
+      <admst:choose>
+        <admst:when test="arg1/math[value=0.0]">
+          <admst:value-to select="/simulator/tmp" value="0.0"/>
+        </admst:when>
+        <admst:otherwise>
+          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:value-to select="/simulator/tmp" value="(+%s)"/>
+        </admst:otherwise>
+      </admst:choose>
+    </admst:when>
+    <admst:when test="[name='minus']">
+      <admst:choose>
+        <admst:when test="arg1/math[value=0.0]">
+          <admst:value-to select="/simulator/tmp" value="0.0"/>
+        </admst:when>
+        <admst:otherwise>
+          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:value-to select="/simulator/tmp" value="(-%s)"/>
+        </admst:otherwise>
+      </admst:choose>
+    </admst:when>
+    <admst:when test="[name='not']">
+      <admst:choose>
+        <admst:when test="arg1/math[value=0.0]">
+          <admst:value-to select="/simulator/tmp" value="0.0"/>
+        </admst:when>
+        <admst:otherwise>
+          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:value-to select="/simulator/tmp" value="(!%s)"/>
+        </admst:otherwise>
+      </admst:choose>
+    </admst:when>
+    <admst:when test="[name='bw_not']">
+      <admst:choose>
+        <admst:when test="arg1/math[value=0.0]">
+          <admst:value-to select="/simulator/tmp" value="0.0"/>
+        </admst:when>
+        <admst:otherwise>
+          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:value-to select="/simulator/tmp" value="(~%s)"/>
+        </admst:otherwise>
+      </admst:choose>
+    </admst:when>
+    <admst:otherwise>
+      <admst:value-of select="name"/>
+      <admst:error format="%s: function not handled\n"/>
+    </admst:otherwise>
+  </admst:choose>
+  <admst:if test="/simulator/probe">
+    <admst:choose>
+      <admst:when test="/simulator[tmp='0.0']">
+        <admst:value-to select="/simulator/ddx" value="0.0"/>
+      </admst:when>
+      <admst:otherwise>
+        <admst:choose>
+          <admst:when test="[name='plus']">
+            <admst:choose>
+              <admst:when test="/simulator[ddx!='0.0']">
+                <admst:value-of select="/simulator/ddx"/>
+                <admst:value-to select="/simulator/ddx" value="(+%s)"/>
+              </admst:when>
+            </admst:choose>
+          </admst:when>
+          <admst:when test="[name='minus']">
+            <admst:choose>
+              <admst:when test="/simulator[ddx!='0.0']">
+                <admst:value-of select="/simulator/ddx"/>
+                <admst:value-to select="/simulator/ddx" value="(-%s)"/>
+              </admst:when>
+            </admst:choose>
+          </admst:when>
+          <admst:when test="[name='not']">
+            <admst:choose>
+              <admst:when test="/simulator[ddx!='0.0']">
+                <admst:value-of select="/simulator/ddx"/>
+                <admst:value-to select="/simulator/ddx" value="(!%s)"/>
+              </admst:when>
+            </admst:choose>
+          </admst:when>
+          <admst:when test="[name='bw_not']">
+            <admst:choose>
+              <admst:when test="/simulator[ddx!='0.0']">
+                <admst:value-of select="/simulator/ddx"/>
+                <admst:value-to select="/simulator/ddx" value="(~%s)"/>
+              </admst:when>
+            </admst:choose>
+          </admst:when>
+        </admst:choose>
+      </admst:otherwise>
+    </admst:choose>
+  </admst:if>
+</admst:template>
+
+<!-- datatypename: mapply_binary !-->
+<admst:template match="mapply_binary">
+  <admst:warning format="mapply_binary X3??\n"/>
+  <admst:choose>
+    <admst:when test="[name='bw_equr']">
+      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:value-to select="/simulator/tmp" value="(%s^~%s)"/>
+    </admst:when>
+    <admst:when test="[name='bw_equl']">
+      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:value-to select="/simulator/tmp" value="(%s~^%s)"/>
+    </admst:when>
+    <admst:when test="[name='bw_xor']">
+      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:value-to select="/simulator/tmp" value="(%s^%s)"/>
+    </admst:when>
+    <admst:when test="[name='bw_or']">
+      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:value-to select="/simulator/tmp" value="(%s|%s)"/>
+    </admst:when>
+    <admst:when test="[name='bw_and']">
+      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:value-to select="/simulator/tmp" value="(%s&amp;%s)"/>
+    </admst:when>
+    <admst:when test="[name='multmod']">
+      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:value-to select="/simulator/tmp" value="(%s%%%s)"/>
+    </admst:when>
+    <admst:when test="[name='or']">
+      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:value-to select="/simulator/tmp" value="(%s||%s)"/>
+    </admst:when>
+    <admst:when test="[name='and']">
+      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:value-to select="/simulator/tmp" value="(%s&amp;&amp;%s)"/>
+    </admst:when>
+    <admst:when test="[name='equ']">
+      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:value-to select="/simulator/tmp" value="(%s==%s)"/>
+    </admst:when>
+    <admst:when test="[name='notequ']">
+      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:value-to select="/simulator/tmp" value="(%s!=%s)"/>
+    </admst:when>
+    <admst:when test="[name='lt']">
+      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:value-to select="/simulator/tmp" value="(%s&lt;%s)"/>
+    </admst:when>
+    <admst:when test="[name='lt_equ']">
+      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:value-to select="/simulator/tmp" value="(%s&lt;=%s)"/>
+    </admst:when>
+    <admst:when test="[name='gt']">
+      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:value-to select="/simulator/tmp" value="(%s&gt;%s)"/>
+    </admst:when>
+    <admst:when test="[name='gt_equ']">
+      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:value-to select="/simulator/tmp" value="(%s&gt;=%s)"/>
+    </admst:when>
+    <admst:when test="[name='shiftr']">
+      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:value-to select="/simulator/tmp" value="(%s&gt;&gt;%s)"/>
+    </admst:when>
+    <admst:when test="[name='shiftl']">
+      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:value-to select="/simulator/tmp" value="(%s&lt;&lt;%s)"/>
+    </admst:when>
+    <admst:when test="[name='addp']">
+      <admst:choose>
+        <admst:when test="[(arg1/math/value=0.0)and(arg2/math/value=0.0)]">
+          <admst:value-to select="/simulator/tmp" value="0.0"/>
+          <admst:if test="/simulator/probe">
+            <admst:variable name="dx" select="0.0"/>
+            <admst:variable name="dy" select="0.0"/>
+          </admst:if>
+        </admst:when>
+        <admst:when test="arg1/math[value=0.0]">
+          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+          <admst:value-to select="/simulator/tmp" value="(+%s)"/>
+          <admst:if test="/simulator/probe">
+            <admst:value-of select="/simulator/ddx"/>
+            <admst:variable name="dy" select="%s"/>
+            <admst:variable name="dx" select="0.0"/>
+          </admst:if>
+        </admst:when>
+        <admst:when test="arg2/math[value=0.0]">
+          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:value-to select="/simulator/tmp" value="%s"/>
+          <admst:if test="/simulator/probe">
+            <admst:value-of select="/simulator/ddx"/>
+            <admst:variable name="dx" select="%s"/>
+            <admst:variable name="dy" select="0.0"/>
+          </admst:if>
+        </admst:when>
+        <admst:otherwise>
+          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:variable name="x" select="%s"/>
+          <admst:if test="/simulator/probe">
+            <admst:value-of select="/simulator/ddx"/>
+            <admst:variable name="dx" select="%s"/>
+          </admst:if>
+          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+          <admst:variable name="y" select="%s"/>
+          <admst:if test="/simulator/probe">
+            <admst:value-of select="/simulator/ddx"/>
+            <admst:variable name="dy" select="%s"/>
+          </admst:if>
+          <admst:value-to select="/simulator/tmp" value="($x+$y)"/>
+        </admst:otherwise>
+      </admst:choose>
+    </admst:when>
+    <admst:when test="[name='addm']">
+      <admst:choose>
+        <admst:when test="[(arg1/math/value=0.0)and(arg2/math/value=0.0)]">
+          <admst:value-to select="/simulator/tmp" value="0.0"/>
+          <admst:if test="/simulator/probe">
+            <admst:variable name="dx" select="0.0"/>
+            <admst:variable name="dy" select="0.0"/>
+          </admst:if>
+        </admst:when>
+        <admst:when test="arg1/math[value=0.0]">
+          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+          <admst:value-to select="/simulator/tmp" value="(-%s)"/>
+          <admst:if test="/simulator/probe">
+            <admst:value-of select="/simulator/ddx"/>
+            <admst:variable name="dy" select="%s"/>
+            <admst:variable name="dx" select="0.0"/>
+          </admst:if>
+        </admst:when>
+        <admst:when test="arg2/math[value=0.0]">
+          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:value-to select="/simulator/tmp" value="%s"/>
+          <admst:if test="/simulator/probe">
+            <admst:value-of select="/simulator/ddx"/>
+            <admst:variable name="dx" select="%s"/>
+            <admst:variable name="dy" select="0.0"/>
+          </admst:if>
+        </admst:when>
+        <admst:otherwise>
+          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:variable name="x" select="%s"/>
+          <admst:if test="/simulator/probe">
+            <admst:value-of select="/simulator/ddx"/>
+            <admst:variable name="dx" select="%s"/>
+          </admst:if>
+          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+          <admst:variable name="y" select="%s"/>
+          <admst:if test="/simulator/probe">
+            <admst:value-of select="/simulator/ddx"/>
+            <admst:variable name="dy" select="%s"/>
+          </admst:if>
+          <admst:value-to select="/simulator/tmp" value="($x-$y)"/>
+        </admst:otherwise>
+      </admst:choose>
+    </admst:when>
+    <admst:when test="[name='multtime']">
+      <admst:variable name="x" select="0.0"/>
+      <admst:variable name="y" select="0.0"/>
+      <admst:choose>
+        <admst:when test="[(arg1/math/value=0.0)or(arg2/math/value=0.0)]">
+          <admst:value-to select="/simulator/tmp" value="0.0"/>
+          <admst:if test="/simulator/probe">
+            <admst:variable name="dx" select="0.0"/>
+            <admst:variable name="dy" select="0.0"/>
+          </admst:if>
+        </admst:when>
+        <admst:when test="[(arg1/math/value=1.0)and(arg2/math/value=1.0)]">
+          <admst:value-to select="/simulator/tmp" value="1.0"/>
+          <admst:if test="/simulator/probe">
+            <admst:variable name="dx" select="0.0"/>
+            <admst:variable name="dy" select="0.0"/>
+          </admst:if>
+        </admst:when>
+        <admst:otherwise>
+          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:variable name="x" select="%s"/>
+          <admst:if test="/simulator/probe">
+            <admst:value-of select="/simulator/ddx"/>
+            <admst:variable name="dx" select="%s"/>
+          </admst:if>
+          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+          <admst:if test="/simulator/probe">
+            <admst:value-of select="/simulator/ddx"/>
+            <admst:variable name="dy" select="%s"/>
+          </admst:if>
+          <admst:variable name="y" select="%s"/>
+          <admst:value-to select="/simulator/tmp" value="($x*$y)"/>
+        </admst:otherwise>
+      </admst:choose>
+    </admst:when>
+    <admst:when test="[name='multdiv']">
+      <admst:variable name="x" select="0.0"/>
+      <admst:variable name="y" select="0.0"/>
+      <admst:choose>
+        <admst:when test="arg1/math[value=0.0]">
+          <admst:value-to select="/simulator/tmp" value="0.0"/>
+          <admst:if test="/simulator/probe">
+            <admst:variable name="dx" select="0.0"/>
+            <admst:variable name="dy" select="0.0"/>
+          </admst:if>
+        </admst:when>
+        <admst:when test="[(arg1/math/value=1.0)and(arg2/math/value=1.0)]">
+          <admst:value-to select="/simulator/tmp" value="1.0"/>
+          <admst:if test="/simulator/probe">
+            <admst:variable name="dx" select="0.0"/>
+            <admst:variable name="dy" select="0.0"/>
+          </admst:if>
+        </admst:when>
+        <admst:otherwise>
+          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:variable name="x" select="%s"/>
+          <admst:if test="/simulator/probe">
+            <admst:value-of select="/simulator/ddx"/>
+            <admst:variable name="dx" select="%s"/>
+          </admst:if>
+          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+          <admst:variable name="y" select="%s"/>
+          <admst:if test="/simulator/probe">
+            <admst:value-of select="/simulator/ddx"/>
+            <admst:variable name="dy" select="%s"/>
+          </admst:if>
+          <admst:value-to select="/simulator/tmp" value="($x/$y)"/>
+        </admst:otherwise>
+      </admst:choose>
+    </admst:when>
+    <admst:otherwise>
+      <admst:value-of select="name"/>
+      <admst:error format="%s: function not handled\n"/>
+    </admst:otherwise>
+  </admst:choose>
+
+  <admst:if test="/simulator/probe">
+    <admst:choose>
+      <admst:when test="[name='addp']">
+        <admst:choose>
+          <admst:when test="[$dx='0.0' and $dy='0.0']">
+            <admst:value-to select="/simulator/ddx" value="0.0"/>
+          </admst:when>
+          <admst:when test="[$dx='0.0']">
+            <admst:value-to select="/simulator/ddx" value="(+$dy)"/>
+          </admst:when>
+          <admst:when test="[$dy='0.0']">
+            <admst:value-to select="/simulator/ddx" value="$dx"/>
+          </admst:when>
+          <admst:otherwise>
+            <admst:value-to select="/simulator/ddx" value="($dx+$dy)"/>
+          </admst:otherwise>
+        </admst:choose>
+      </admst:when>
+      <admst:when test="[name='addm']">
+        <admst:choose>
+          <admst:when test="[$dx='0.0' and $dy='0.0']">
+            <admst:value-to select="/simulator/ddx" value="0.0"/>
+          </admst:when>
+          <admst:when test="[$dx='0.0']">
+            <admst:value-to select="/simulator/ddx" value="(-$dy)"/>
+          </admst:when>
+          <admst:when test="[$dy='0.0']">
+            <admst:value-to select="/simulator/ddx" value="$dx"/>
+          </admst:when>
+          <admst:otherwise>
+            <admst:value-to select="/simulator/ddx" value="($dx-$dy)"/>
+          </admst:otherwise>
+        </admst:choose>
+      </admst:when>
+      <admst:when test="[name='multtime']">
+        <admst:choose>
+          <admst:when test="[$x='0.0' and $y='0.0']">
+            <admst:value-to select="/simulator/ddx" value="0.0"/>
+          </admst:when>
+          <admst:when test="[$dx='0.0' and $dy='0.0']">
+            <admst:value-to select="/simulator/ddx" value="0.0"/>
+          </admst:when>
+          <admst:when test="[$dx='0.0' and $dy='1.0']">
+            <admst:value-to select="/simulator/ddx" value="($x)"/>
+          </admst:when>
+          <admst:when test="[$dx='1.0' and $dy='0.0']">
+            <admst:value-to select="/simulator/ddx" value="($y)"/>
+          </admst:when>
+          <admst:when test="[$dx='0.0']">
+            <admst:value-to select="/simulator/ddx" value="($x*$dy)"/>
+          </admst:when>
+          <admst:when test="[$dy='0.0']">
+            <admst:value-to select="/simulator/ddx" value="$dx*$y"/>
+          </admst:when>
+          <admst:when test="[$dx='1.0' and $dy='1.0']">
+            <admst:value-to select="/simulator/ddx" value="($x+$y)"/>
+          </admst:when>
+          <admst:when test="[$dx='1.0']">
+            <admst:value-to select="/simulator/ddx" value="($y+($dy*$x))"/>
+          </admst:when>
+          <admst:when test="[$dy='1.0']">
+            <admst:value-to select="/simulator/ddx" value="($dx*$y)+$x"/>
+          </admst:when>
+          <admst:when test="[$x='1.0']">
+            <admst:value-to select="/simulator/ddx" value="$dy"/>
+          </admst:when>
+          <admst:when test="[$y='1.0']">
+            <admst:value-to select="/simulator/ddx" value="$dx"/>
+          </admst:when>
+          <admst:otherwise>
+            <admst:value-to select="/simulator/ddx" value="(($dx*$y)+($x*$dy))"/>
+          </admst:otherwise>
+        </admst:choose>
+      </admst:when>
+      <admst:when test="[name='multdiv']">
+        <admst:choose>
+          <admst:when test="[$x='0.0']">
+            <admst:value-to select="/simulator/ddx" value="0.0"/>
+          </admst:when>
+          <admst:when test="[$dx='0.0' and $dy='0.0']">
+            <admst:value-to select="/simulator/ddx" value="0.0"/>
+          </admst:when>
+          <admst:when test="[$x='1.0']">
+            <admst:choose>
+              <admst:when test="[$dy='1.0']">
+                <admst:value-to select="/simulator/ddx" value="(-1/($y*$y))"/>
+              </admst:when>
+              <admst:otherwise>
+                <admst:value-to select="/simulator/ddx" value="(-$dy/($y*$y))"/>
+              </admst:otherwise>
+            </admst:choose>
+          </admst:when>
+          <admst:when test="[$dx='0.0']">
+            <admst:choose>
+              <admst:when test="[$dy='1.0']">
+                <admst:value-to select="/simulator/ddx" value="(-$x/($y*$y))"/>
+              </admst:when>
+              <admst:otherwise>
+                <admst:value-to select="/simulator/ddx" value="(-($x*$dy)/($y*$y))"/>
+              </admst:otherwise>
+            </admst:choose>
+          </admst:when>
+          <admst:when test="[$dx='1.0']">
+            <admst:choose>
+              <admst:when test="[$dy='0.0']">
+                <admst:value-to select="/simulator/ddx" value="(1./$y)"/>
+              </admst:when>
+              <admst:when test="[$dy='1.0']">
+                <admst:value-to select="/simulator/ddx" value="(($y-$x)/($y*$y))"/>
+              </admst:when>
+              <admst:otherwise>
+                <admst:value-to select="/simulator/ddx" value="(($y-($x*$dy))/($y*$y))"/>
+              </admst:otherwise>
+            </admst:choose>
+          </admst:when>
+          <admst:otherwise>
+            <admst:choose>
+              <admst:when test="[$y='1.0']">
+                <admst:value-to select="/simulator/ddx" value="$dx"/>
+              </admst:when>
+              <admst:when test="[$dy='0.0']">
+                <admst:value-to select="/simulator/ddx" value="$dx/$y"/>
+              </admst:when>
+              <admst:when test="[$dy='1.0']">
+                <admst:value-to select="/simulator/ddx" value="(($dx*$y)-$x)/($y*$y)"/>
+              </admst:when>
+              <admst:otherwise>
+                <admst:value-to select="/simulator/ddx" value="($dx*$y-$x*$dy)/($y*$y)"/>
+              </admst:otherwise>
+            </admst:choose>
+          </admst:otherwise>
+        </admst:choose>
+      </admst:when>
+      <admst:otherwise>
+        <admst:value-to select="/simulator/ddx" value=""/>
+      </admst:otherwise>
+    </admst:choose>
+  </admst:if>
+
+</admst:template>
+
+<!-- datatypename: mapply_ternary-->
+<admst:template match="mapply_ternary">
+  <admst:apply-templates select="arg3" match="expression:stringify:noprobe"/>
+  <admst:value-of select="/simulator/ddx"/>
+  <admst:variable name="dz" select="%s"/>
+  <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+  <admst:value-of select="/simulator/ddx"/>
+  <admst:variable name="dy" select="%s"/>
+  <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+  <admst:variable name="x" select="%s"/>
+  <admst:value-to select="/simulator/tmp" value="($x?%s:%s)"/>
+  <admst:if test="/simulator/probe">
+    <admst:value-to select="/simulator/ddx" value="($x?$dy:$dz)"/>
+  </admst:if>
+</admst:template>
+
+
+<!-- *********************************************************************************** -->
+<!-- *********************************** ngspiceMODULE.hxx.xml ************************* -->
+<!-- *********************************************************************************** -->
 
 <!-- compute node arguments of noise routines -->
 <admst:template match="X3noisebranch">
@@ -7161,7 +7168,10 @@ void $(DEV_NAME)::tr_eval()
   <admst:return name="minttype" value="%(type)"/>
 </admst:template>
 
-<!-- ******************************      .hxx        ********************************************* -->
+<!-- *********************************************************************************** -->
+<!-- **************************      .hxx        *************************************** -->
+<!-- *********************************************************************************** -->
+
 <!-- Do not create temp variables for functions inside while(), for()-->
 <!--admst:for-each select="/module">
   <admst:variable name="module" select="%(name)"/>
