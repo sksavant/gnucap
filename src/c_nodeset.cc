@@ -178,22 +178,17 @@ class CMD_DUMP : public CMD {
 			//      _out <<  CKT_BASE::_sim->_last_Time << "\n";
 			_out <<  "\n";
 
-
-			// OBSOLETE
 			for(ADP_NODE_LIST::const_iterator ii = ADP_NODE_LIST::adp_node_list.begin( );
 					ii != ADP_NODE_LIST::adp_node_list.end(); ++ii ) {
 				_out << "* " << (*ii)->short_label()<<"\n";
-				_out << dot << "nodeset a(" <<  (*ii)->long_label() << ")=" << _sim->_vdc[ (*ii)->m_() + _sim->_total_nodes +1 ]  <<"\n";
+				_out << dot << "nodeset a(" <<  (*ii)->long_label() << ")=";
+				_out << _sim->_vdc[ (*ii)->m_() + _sim->_total_nodes +1 ]  <<"\n";
 			}
-
-
 		}
-
 		if (_v||_a){
 			_out << "*node voltages"<< _v+2*_a<< "\n";
 			printv(_out, Scope, _v+2*_a);
 		}
-
 		_out.outreset();
 	}
 } p2;
