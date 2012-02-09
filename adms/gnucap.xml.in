@@ -1604,32 +1604,6 @@
 <!-- analog//callfunctions -->
 <admst:template match="callfunction">
 	<admst:fatal format="that this function is never called is a bug"/>
-  <admst:choose>
-    <admst:when test="function[name='\$strobe']">
-      <admst:text format="_strobe("/>
-    </admst:when>
-    <admst:when test="function[name='\$warning']">
-      <admst:text format="_warning("/>
-    </admst:when>
-    <admst:when test="function[name='\$error']">
-      <admst:text format="_error("/>
-    </admst:when>
-    <admst:when test="function[name='\$finish']">
-      <admst:text format="_finish("/>
-    </admst:when>
-    <admst:when test="function[name='\$stop']">
-      <admst:text format="_stop("/>
-    </admst:when>
-    <admst:otherwise>
-      <admst:value-of select="/simulator/tmp"/>
-      <admst:value-of select="function/name"/>
-      <admst:error format="function not supported: %s(%s)\n"/>
-    </admst:otherwise>
-  </admst:choose>
-  <admst:reset select="/simulator/tmp"/>
-  <admst:join select="function/arguments" separator=",">
-    <admst:apply-templates select="./tree" match="expression:stringify:noprobe"/>%s</admst:join>
-  <admst:text format=");\n"/>
 </admst:template>
 
 <!-- expression//probe -->
@@ -1828,26 +1802,7 @@
 
 <!-- handle analog//callfunctions -->
 <admst:template match="callfunction">
-	<admst:fatal format="check if funktion is called"/>
-  <admst:choose>
-    <admst:when test="function[name='\$strobe']">
-      <admst:text format="fprintf(stdout"/>
-    </admst:when>
-    <admst:otherwise>
-      <admst:value-of select="function/name"/>
-      <admst:text format="%s: not supported by this interface\n"/>
-    </admst:otherwise>
-  </admst:choose>
-  <admst:for-each select="function/arguments">
-    <admst:apply-templates select="./tree" match="expression:stringify:noprobe"/>
-    <admst:text format=",%s"/>
-  </admst:for-each>
-  <admst:text format=");\n"/>
-  <admst:choose>
-    <admst:when test="function[name='\$strobe']">
-      <admst:text format="fprintf(stdout,&quot;\\n&quot;);\n"/>
-    </admst:when>
-  </admst:choose>
+  <admst:message format="the function callfunction was deleted, see git: callfunction deleted"/>
 </admst:template>
 
   <admst:value-to select="/simulator/package_name" value="fucap"/>
@@ -7017,22 +6972,7 @@ void $(DEV_NAME)::tr_eval()
 
 <!-- analog//callfunctions -->
 <admst:template match="X3callfunction">
-	<admst:fatal format="check if function is called"/>
-  <admst:choose>
-    <admst:when test="function[name='\$strobe']">printf(</admst:when>
-    <admst:when test="function[name='\$warning']">_warning(</admst:when>
-    <admst:when test="function[name='\$error']">_error(</admst:when>
-    <admst:when test="function[name='\$finish']">_finish(</admst:when>
-    <admst:when test="function[name='\$stop']">_stop(</admst:when>
-    <admst:otherwise>
-      <admst:fatal format="function not supported: %(function/name)\n"/>
-    </admst:otherwise>
-  </admst:choose>
-  <admst:join select="function/arguments" separator=",">
-    %(X3e(tree))
-    <admst:if test="[position(.)=1]">&quot;\\n&quot;</admst:if>
-  </admst:join>
-  <admst:text format="); fflush(stdout);\n"/>
+	<admst:apply-templates select="." match="callfunction"/>
 </admst:template>
 
 <!-- analog/code -->
