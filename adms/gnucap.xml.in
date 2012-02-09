@@ -1644,6 +1644,7 @@
 
 <!-- analog//callfunctions -->
 <admst:template match="callfunction">
+	<admst:fatal format="that this function is never called is a bug"/>
   <admst:choose>
     <admst:when test="function[name='\$strobe']">
       <admst:text format="_strobe("/>
@@ -1831,7 +1832,32 @@
   <admst:if test="[parametertype!='analogfunction' and scope='local']">
     <admst:value-to select="/simulator/tmp" value="%s"/>
   </admst:if>
+  
+    <admst:variable name="ep" select="0.0"/>
+    <admst:if test="[insource='yes']">
+      <admst:if-inside select="$pprobe" list="%(probe)">
+        <admst:variable name="ep" select="%(name)_%($pprobe/nature/access)%($pprobe/branch/pnode/name)_%($pprobe/branch/nnode/name)"/>
+      </admst:if-inside>
+    </admst:if> 
+    
+    <admst:if test="$qprobe">
+  	  <admst:variable name="eq" select="0.0"/>
+  	  <admst:if test="[insource='yes']">
+  		<admst:if-inside select="$qprobe" list="%(probe)">
+  		  <admst:variable name="eq" select="%(name)_%($qprobe/nature/access)%($qprobe/branch/pnode/name)_%($qprobe/branch/nnode/name)"/>
+  		</admst:if-inside>
+  	  </admst:if>
+  	  <admst:variable name="epq" select="0.0"/>
+  	  <admst:if test="[insource='yes']">
+  		<admst:if-inside select="$pprobe" list="%(probe)">
+  		  <admst:if-inside select="$qprobe" list="%(probe)">
+  			<admst:variable name="epq" select="%(X3ddxname(.)/[name='ddxname']/value)"/>
+  		  </admst:if-inside>
+  		</admst:if-inside>
+  	  </admst:if>
+    </admst:if>
 </admst:template>
+
 <!-- variable:lhs -->
 <admst:template match="variable:lhs">
   <admst:text test="[input='yes' and parametertype='model']" format="_model-&gt;%(name)"/>
@@ -1840,8 +1866,10 @@
   <admst:text test="[input='no' and scope='global_instance']" format="$(var_prefix)%(name)"/>
   <admst:text test="[scope='local']" format="%(name)"/>
 </admst:template>
+
 <!-- handle analog//callfunctions -->
 <admst:template match="callfunction">
+	<admst:fatal format="check if funktion is called"/>
   <admst:choose>
     <admst:when test="function[name='\$strobe']">
       <admst:text format="fprintf(stdout"/>
@@ -5193,30 +5221,6 @@ void $(DEV_NAME)::tr_eval()
 <admst:template match="X3variable">
   <admst:apply-templates select="." match="variable"/>
 
-  <admst:variable name="ep" select="0.0"/>
-  <admst:if test="[insource='yes']">
-    <admst:if-inside select="$pprobe" list="%(probe)">
-      <admst:variable name="ep" select="%(name)_%($pprobe/nature/access)%($pprobe/branch/pnode/name)_%($pprobe/branch/nnode/name)"/>
-    </admst:if-inside>
-  </admst:if>
-  <admst:if test="$qprobe">
-
-  <admst:variable name="eq" select="0.0"/>
-  <admst:if test="[insource='yes']">
-    <admst:if-inside select="$qprobe" list="%(probe)">
-      <admst:variable name="eq" select="%(name)_%($qprobe/nature/access)%($qprobe/branch/pnode/name)_%($qprobe/branch/nnode/name)"/>
-    </admst:if-inside>
-  </admst:if>
-
-  <admst:variable name="epq" select="0.0"/>
-  <admst:if test="[insource='yes']">
-    <admst:if-inside select="$pprobe" list="%(probe)">
-      <admst:if-inside select="$qprobe" list="%(probe)">
-        <admst:variable name="epq" select="%(X3ddxname(.)/[name='ddxname']/value)"/>
-      </admst:if-inside>
-    </admst:if-inside>
-  </admst:if>
-  </admst:if>
 </admst:template>
 <!-- -------------------------------------------------- -->
 <admst:template match="X3probe">
@@ -7054,6 +7058,7 @@ void $(DEV_NAME)::tr_eval()
 
 <!-- analog//callfunctions -->
 <admst:template match="X3callfunction">
+	<admst:fatal format="check if function is called"/>
   <admst:choose>
     <admst:when test="function[name='\$strobe']">printf(</admst:when>
     <admst:when test="function[name='\$warning']">_warning(</admst:when>
