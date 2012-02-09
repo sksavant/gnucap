@@ -46,6 +46,7 @@ private:
   PARAMETER<double> _tau2;	// fall time constant
   PARAMETER<double> _period;	// repeat period
   PARAMETER<double> _end;	// marks the end of the list
+  static map<string, PARA_BASE EVAL_BM_EXP::*> param_dict;
   explicit	EVAL_BM_EXP(const EVAL_BM_EXP& p);
 public:
   explicit      EVAL_BM_EXP(int c=0);
@@ -61,6 +62,7 @@ private: // override vitrual
   std::string	name()const		{return "exp";}
   bool		ac_too()const		{return false;}
   bool		parse_numlist(CS&);
+  void      set_param_by_name(string N, string V);
   bool		parse_params_obsolete_callback(CS&);
 };
 /*--------------------------------------------------------------------------*/
@@ -107,6 +109,28 @@ bool EVAL_BM_EXP::operator==(const COMMON_COMPONENT& x)const
     untested();
   }
   return rv;
+}
+/*--------------------------------------------------------------------------*/
+map<string, PARA_BASE EVAL_BM_EXP::*> EVAL_BM_EXP::param_dict = 
+  boost::assign::map_list_of
+    ("iv",    (PARA_BASE EVAL_BM_EXP::*) &EVAL_BM_EXP::_iv)
+    ("pv",    (PARA_BASE EVAL_BM_EXP::*) &EVAL_BM_EXP::_pv)
+    ("td1",   (PARA_BASE EVAL_BM_EXP::*) &EVAL_BM_EXP::_td1)
+    ("tau1",  (PARA_BASE EVAL_BM_EXP::*) &EVAL_BM_EXP::_tau1)
+    ("td2",   (PARA_BASE EVAL_BM_EXP::*) &EVAL_BM_EXP::_td2)
+    ("tau2",  (PARA_BASE EVAL_BM_EXP::*) &EVAL_BM_EXP::_tau2)
+    ("period",(PARA_BASE EVAL_BM_EXP::*) &EVAL_BM_EXP::_period)
+    ("period",(PARA_BASE EVAL_BM_EXP::*) &EVAL_BM_EXP::_period);
+/*--------------------------------------------------------------------------*/
+void EVAL_BM_EXP::set_param_by_name(std::string Name, std::string Value)
+{
+  PARA_BASE EVAL_BM_EXP::* x = (param_dict[Name]);
+  if(x) {
+    PARA_BASE* p = &(this->*x);
+    *p = Value;
+  } else {
+    EVAL_BM_ACTION_BASE::set_param_by_name(Name, Value);
+  }
 }
 /*--------------------------------------------------------------------------*/
 void EVAL_BM_EXP::print_common_obsolete_callback(OMSTREAM& o, LANGUAGE* lang)const

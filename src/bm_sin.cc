@@ -49,6 +49,9 @@ private:
   PARAMETER<double> _samples;
   PARAMETER<bool>   _zero;
   PARAMETER<bool>   _peak;
+  static map<string, PARA_BASE EVAL_BM_SIN::*> param_dict;
+  void set_param_by_name(string Name, string Value);
+
   mutable double _actual_frequency;
   explicit	EVAL_BM_SIN(const EVAL_BM_SIN& p);
 public:
@@ -219,6 +222,36 @@ bool EVAL_BM_SIN::parse_params_obsolete_callback(CS& cmd)
     || Get(cmd, "pe{ak}", 	&_peak)
     || EVAL_BM_ACTION_BASE::parse_params_obsolete_callback(cmd)
     ;
+}
+/*--------------------------------------------------------------------------*/
+map<string, PARA_BASE EVAL_BM_SIN::*> EVAL_BM_SIN::param_dict = 
+  boost::assign::map_list_of
+    ("offset",   (PARA_BASE EVAL_BM_SIN::*) &EVAL_BM_SIN::_offset)
+    ("o",        (PARA_BASE EVAL_BM_SIN::*) &EVAL_BM_SIN::_offset)
+    ("amplitude",(PARA_BASE EVAL_BM_SIN::*) &EVAL_BM_SIN::_amplitude)
+    ("a",        (PARA_BASE EVAL_BM_SIN::*) &EVAL_BM_SIN::_amplitude)
+    ("frequency",(PARA_BASE EVAL_BM_SIN::*) &EVAL_BM_SIN::_frequency)
+    ("f",        (PARA_BASE EVAL_BM_SIN::*) &EVAL_BM_SIN::_frequency)
+    ("delay",    (PARA_BASE EVAL_BM_SIN::*) &EVAL_BM_SIN::_delay)
+    ("de",       (PARA_BASE EVAL_BM_SIN::*) &EVAL_BM_SIN::_delay)
+    ("damping",  (PARA_BASE EVAL_BM_SIN::*) &EVAL_BM_SIN::_damping)
+    ("da",       (PARA_BASE EVAL_BM_SIN::*) &EVAL_BM_SIN::_damping)
+    ("samples",  (PARA_BASE EVAL_BM_SIN::*) &EVAL_BM_SIN::_samples)
+    ("sa",       (PARA_BASE EVAL_BM_SIN::*) &EVAL_BM_SIN::_samples)
+    ("zero",     (PARA_BASE EVAL_BM_SIN::*) &EVAL_BM_SIN::_zero)
+    ("ze",       (PARA_BASE EVAL_BM_SIN::*) &EVAL_BM_SIN::_zero)
+    ("peak",     (PARA_BASE EVAL_BM_SIN::*) &EVAL_BM_SIN::_peak)
+    ("pe",       (PARA_BASE EVAL_BM_SIN::*) &EVAL_BM_SIN::_peak);
+/*--------------------------------------------------------------------------*/
+void EVAL_BM_SIN::set_param_by_name(std::string Name, std::string Value)
+{
+  PARA_BASE EVAL_BM_SIN::* x = (param_dict[Name]);
+  if(x) {
+    PARA_BASE* p = &(this->*x);
+    *p = Value;
+  } else {
+    EVAL_BM_ACTION_BASE::set_param_by_name(Name, Value);
+  }
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

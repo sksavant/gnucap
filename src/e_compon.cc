@@ -313,19 +313,7 @@ void COMMON_COMPONENT::set_param_by_name(std::string Name, std::string Value)
     }else{untested();
     }
   }else{
-    //BUG// ugly linear search
-    for (int i = param_count() - 1;  i >= 0;  --i) {
-      for (int j = 0;  param_name(i,j) != "";  ++j) {
-	if (Umatch(Name, param_name(i,j) + ' ')) {
-	  set_param_by_index(i, Value, 0/*offset*/);
-	  return; //success
-	}else{
-	  //keep looking
-	}
-      }
-    }
-    itested();
-    throw Exception_No_Match(Name);
+    untested();
   }
 }
 /*--------------------------------------------------------------------------*/
