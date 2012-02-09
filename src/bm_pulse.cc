@@ -25,6 +25,7 @@
 #include "e_elemnt.h"
 #include "u_lang.h"
 #include "bm.h"
+#include "io_trace.h"
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
@@ -35,6 +36,7 @@ const double _default_rise  (0);
 const double _default_fall  (0);
 const double _default_width (BIGBIG);
 const double _default_period(BIGBIG);
+const double _default_t2    (NOT_INPUT);
 /*--------------------------------------------------------------------------*/
 class EVAL_BM_PULSE : public EVAL_BM_ACTION_BASE {
 private:
@@ -46,6 +48,8 @@ private:
   PARAMETER<double> _width;
   PARAMETER<double> _period;
   PARAMETER<double> _end;
+  PARAMETER<double> _t2;
+
   explicit	EVAL_BM_PULSE(const EVAL_BM_PULSE& p);
 public:
   explicit      EVAL_BM_PULSE(int c=0);
@@ -62,6 +66,8 @@ private: // override vitrual
   bool		ac_too()const		{return false;}
   bool		parse_numlist(CS&);
   bool		parse_params_obsolete_callback(CS&);
+
+  void		set_param_by_name(std::string Name, std::string Value);
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -134,6 +140,7 @@ void EVAL_BM_PULSE::precalc_first(const CARD_LIST* Scope)
   _fall.e_val(_default_fall, Scope);
   _width.e_val(_default_width, Scope);
   _period.e_val(_default_period, Scope);
+  _t2.e_val(_default_t2, Scope);
 
   if (_width == 0.) {untested(); incomplete();
 	  // removed (what about sawtooth??)
@@ -144,6 +151,12 @@ void EVAL_BM_PULSE::precalc_first(const CARD_LIST* Scope)
     _period = _default_period;
   }else{
   }
+
+  if (_t2.has_good_value()){
+	incomplete();
+	_width = _t2 - _delay;
+  }
+
 }
 /*--------------------------------------------------------------------------*/
 void EVAL_BM_PULSE::tr_eval(ELEMENT* d)const
@@ -236,6 +249,23 @@ bool EVAL_BM_PULSE::parse_params_obsolete_callback(CS& cmd)
     || EVAL_BM_ACTION_BASE::parse_params_obsolete_callback(cmd)
     ;
 }
+
+void EVAL_BM_PULSE::set_param_by_name(std::string Name, std::string Value)
+{
+
+ trace2("EVAL_BM_PULSE::set_param_by_name",Name,Value);
+ if (Umatch (Name,"iv|U1")) { _iv = Value; }
+ else if (Umatch (Name,"pv|U2"))    { _pv     = atof(Value.c_str()); }
+ else if (Umatch (Name,"delay|T1")) { _delay  = atof(Value.c_str()); }
+ else if (Umatch (Name,"rise|Tr"))  { _rise   = atof(Value.c_str()); }
+ else if (Umatch (Name,"T2"))  { _t2 = atof(Value.c_str()); }
+ else if (Umatch (Name,"width")) { _width  = atof(Value.c_str()); }
+ else if (Umatch (Name,"fall|Tf"))  { _fall   = atof(Value.c_str()); }
+ else if (Umatch (Name,"period")){ _period = atof(Value.c_str()); }
+ else{ throw Exception_No_Match(Name); }
+
+}
+
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 EVAL_BM_PULSE p1(CC_STATIC);
