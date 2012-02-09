@@ -81,6 +81,15 @@
 	</admst:for-each>
 </admst:for-each>
 
+<!-- create attribute with module name -->
+<admst:for-each select="/module">
+	<admst:new datatype="attribute" arguments="ngspicename">
+	<admst:push into="../attribute" select="." onduplicate="abort"/>
+	<admst:value-of select="../name"/>
+	<admst:value-to select="value" value="%s"/>
+	</admst:new>
+</admst:for-each>
+
 <!-- need to be deleted -->
 <admst:for-each select="/module">
     <admst:choose>
