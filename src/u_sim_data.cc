@@ -135,6 +135,7 @@ void SIM_DATA::map__nodes()
     case oCOMP:    untested(); order_comp(); break;
   }
   ::status.order.stop();
+  trace0("map__nodes: done" );
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -290,8 +291,8 @@ void SIM_DATA::init()
     init_node_count(CARD_LIST::card_list.nodes()->how_many(), 0, 0);
     CARD_LIST::card_list.expand();
     CARD_LIST::card_list.precalc_last();
-    map__nodes();
-    CARD_LIST::card_list.map_nodes();
+    map__nodes(); // prepare _nm (does not depend on matrix)
+    CARD_LIST::card_list.map_nodes(); // prepare _n[ii].m_() (?)
     alloc_hold_vectors();
     _aa.reinit(_total_nodes);
     _lu.reinit(_total_nodes);
@@ -430,7 +431,7 @@ void SIM_DATA::uninit()
     _vdc = NULL;
     _tt = NULL;
     delete [] _nstat;
-    _nstat = NULL;
+    _nstat = NULL; // triggers first_expand.
     delete [] _nm;
     _nm = NULL;
   }else{
