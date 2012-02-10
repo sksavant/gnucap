@@ -107,7 +107,9 @@ std::string LANG_SPICE::getlines(FILE *fileptr)
     }else{
       trim(buffer);
       size_t count = strlen(buffer);
-      if (buffer[count-1] == '\\') {itested();
+      if(count==0){
+        untested();
+      }else if (buffer[count-1] == '\\') {itested();
         buffer[count-1] = '\0';
       }else{
         // look ahead at next line
