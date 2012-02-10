@@ -3547,12 +3547,6 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 </admst:template>
 
 <!-- ----------------------------------------------------------------- -->
-<!-- analog//callfunctions -->
-<admst:template match="callfunction">
-	<admst:fatal format="that this function is never called is a bug"/>
-</admst:template>
-
-<!-- ----------------------------------------------------------------- -->
 <!-- expression//probe -->
 <admst:template match="probe">
   <admst:choose>
@@ -3805,24 +3799,6 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
   </admst:if>
 </admst:template>
 
-<!-- ----------------------------------------------------------------- -->
-<!-- expression//function: mapping verilog-name == C-name of function -->
-<admst:template match="X1fname">
-  <admst:choose>
-    <admst:when test="[name='div']"><admst:return name="X1fname" value="_div1"/></admst:when>
-    <admst:when test="[name='abs']"><admst:return name="X1fname" value="fabs"/></admst:when>
-    <admst:when test="[name='\$shrinkl']"><admst:return name="X1fname" value="shrinkl"/></admst:when>
-    <admst:when test="[name='\$shrinka']"><admst:return name="X1fname" value="shrinka"/></admst:when>
-    <admst:when test="[name='log']"><admst:return name="X1fname" value="log10"/></admst:when>
-    <admst:when test="[name='ln']"><admst:return name="X1fname" value="log"/></admst:when>
-    <admst:when test="[name='limexp']"><admst:return name="X1fname" value="limexp"/></admst:when>
-    <admst:when test="[name='\$limexp']"><admst:return name="X1fname" value="limexp"/></admst:when>
-    <admst:when test="[name='\$model']"><admst:return name="X1fname" value="_modelname"/></admst:when>
-    <admst:when test="[name='\$instance']"><admst:return name="X1fname" value="_instancename"/></admst:when>
-    <admst:when test="[name='\$temperature']"><admst:return name="X1fname" value="_circuit_temp"/></admst:when>
-    <admst:otherwise><admst:return name="X1fname" value="%(name)"/></admst:otherwise>
-  </admst:choose>
-</admst:template>
 
 <!-- ----------------------------------------------------------------- -->
 <!-- ------------------find-ddt stuff ------------>
