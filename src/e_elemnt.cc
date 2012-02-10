@@ -225,7 +225,7 @@ void ELEMENT::tr_iwant_matrix_passive()
   assert(matrix_nodes() == 2);
   assert(is_device());
   //assert(!subckt()); ok for subckt to exist for logic
-  trace2(long_label().c_str(), _n[OUT1].m_(), _n[OUT2].m_());
+  trace3("ELEMENT::tr_iwant_matrix_passive", long_label().c_str(), _n[OUT1].m_(), _n[OUT2].m_());
 
   if (_n[OUT1].m_() == INVALID_NODE) {
     std::cerr << "ELEMENT::tr_iwant_matrix_passive " << long_label() << "\n";
