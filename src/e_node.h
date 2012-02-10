@@ -279,6 +279,7 @@ private:
     if (i == (uint_t) INVALID_NODE) {untested();
       itested();
     }else if ( i > NODE::_sim->_total_nodes) {
+      trace2("node_t::node_is_valid", i, NODE::_sim->_total_nodes  );
       unreachable();
     }else{
     }

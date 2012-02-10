@@ -266,10 +266,14 @@ void ELEMENT::tr_iwant_matrix_active()
 /*--------------------------------------------------------------------------*/
 void ELEMENT::tr_iwant_matrix_extended()
 {
+  trace4("ELEMENT::tr_iwant_matrix_extended", long_label(), dev_type(),  ext_nodes(), int_nodes());
   assert(is_device());
   assert(!subckt());
   assert(ext_nodes() + int_nodes() == matrix_nodes());
 
+  for (uint_t ii = 0;  ii < matrix_nodes();  ++ii) {
+      trace2("ELEMENT::tr_iwant_matrix_extended", ii, _n[ii].m_() );
+  }
   for (uint_t ii = 0;  ii < matrix_nodes();  ++ii) {
     if (_n[ii].m_()  != INVALID_NODE) {
       for (uint_t jj = 0;  jj < ii ;  ++jj) {

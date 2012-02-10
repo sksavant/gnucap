@@ -658,23 +658,24 @@ void COMPONENT::precalc_last()
 void COMPONENT::map_nodes()
 {
   assert(is_device());
-  trace3("COMPONENT::map_nodes", long_label(), net_nodes(), max_nodes());
+  trace5("COMPONENT::map_nodes", long_label(), net_nodes(), max_nodes(),matrix_nodes(), int_nodes());
   //assert(min_nodes() <= net_nodes());
-  if(net_nodes() > max_nodes()){
-    trace3("COMPONENT::map_nodes", long_label(), net_nodes(), max_nodes());
-  }
   assert(net_nodes() <= max_nodes());
   //assert(ext_nodes() + int_nodes() == matrix_nodes());
 
   for (uint_t ii = 0; ii < ext_nodes()+int_nodes(); ++ii) {
     unsigned oldm = _n[ii].m_();
+    trace5("COMPONENT::map_nodes", ii, oldm, _n[ii].t_(), _sim->_total_nodes, hp(_n[ii].n_()) );
+    assert(_n[ii].t_() <= NODE::_sim->_total_nodes || _n[ii].t_()==INVALID_NODE);
     _n[ii].map();
+    trace1("COMPONENT::map_nodes", _n[ii].m_() );
+    assert(_n[ii].m_() <= _sim->_total_nodes || _n[ii].m_() == INVALID_NODE );
     unsigned user_number = (_n[ii].n_())? _n[ii].n_()->user_number(): 0;
     unsigned matrix_number = (_n[ii].n_())? _n[ii].n_()->matrix_number(): 0;
     string node_label = (_n[ii].n_())? _n[ii].n_()->long_label(): "";
     // matrix_number not initialized yet.
     trace7("COMPONENT::map_nodes", long_label(), ii, oldm, _n[ii].m_(), user_number, matrix_number, node_label);
-    trace1("COMPONENT::map_nodes",  _n[ii].t_() );
+    trace1("COMPONENT::map_nodes done",  _n[ii].t_() );
     oldm = 0;
     user_number = matrix_number = 0;
     node_label="";

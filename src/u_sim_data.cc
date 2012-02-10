@@ -28,6 +28,7 @@
 #include "e_cardlist.h"
 #include "u_status.h"
 #include "e_subckt.h"
+#include "io_misc.h"
 /*--------------------------------------------------------------------------*/
 void SIM_DATA::set_limit()
 {
@@ -277,7 +278,8 @@ void SIM_DATA::order_tree( const CARD_LIST* scope, unsigned *c)
 /*--------------------------------------------------------------------------*/
 int SIM_DATA::init_node_count(int user, int sub, int mod) {
   trace3("SIM_DATA::init_node_count", user, sub, mod);
-  _user_nodes=user; _subckt_nodes=sub; _model_nodes=mod; return (_total_nodes=user+sub+mod);
+  _user_nodes=user; _subckt_nodes=sub; _model_nodes=mod;
+  return (_total_nodes = user+sub+mod);
 }
 /*--------------------------------------------------------------------------*/
 /* init: allocate, set up, etc ... for any type of simulation
@@ -286,10 +288,16 @@ int SIM_DATA::init_node_count(int user, int sub, int mod) {
 void SIM_DATA::init()
 {
   if (is_first_expand()) {
-    trace0("SIM_DATA::init first");
+    trace1("SIM_DATA::init first", *CARD_LIST::card_list.nodes());
     uninit();
-    init_node_count(CARD_LIST::card_list.nodes()->how_many(), 0, 0);
+
+    // fixme: this recursive.
+    // init_node_count(CARD_LIST::card_list.nodes()->how_many(), 0, 0);
+    init_node_count(CARD_LIST::card_list.total_nodes(), 0, 0);
+
+    trace1("SIM_DATA::init expanding...", _total_nodes);
     CARD_LIST::card_list.expand();
+    trace1("SIM_DATA::init expanded", _total_nodes);
     CARD_LIST::card_list.precalc_last();
     map__nodes(); // prepare _nm (does not depend on matrix)
     CARD_LIST::card_list.map_nodes(); // prepare _n[ii].m_() (?)

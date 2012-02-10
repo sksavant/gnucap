@@ -81,6 +81,7 @@ void do_probe(CS& cmd, PROBELIST *probes)
     }else if (cmd.umatch("clear ")) {untested();/* clear */
       probes[simtype].clear();
     }else{					/* add/remove */
+      trace0("CKT_BASE::_sim->init from print command");
       CKT_BASE::_sim->init();
       if (cmd.match1('-')) {itested();		/* setup cases like: */
 	action = aDELETE;			/* .probe ac + ....  */

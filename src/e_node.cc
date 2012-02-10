@@ -640,22 +640,20 @@ void node_t::new_node(const std::string& node_name, const CARD_LIST* scope)
  */
 void node_t::new_model_node(const std::string& s_in, CARD* d)
 {
-
+  string s = s_in;
   std::string::size_type dotplace = s_in.find_last_of(".");
-  string s=s_in;
   if(dotplace != std::string::npos){
     trace1("node_t::new_model_node too long (BUG).", s_in);
     s = s_in.substr(dotplace+1, std::string::npos);
-  }else{
-    trace1("node_t::new_model_node name ok.", s_in);
   }
 
   // new_node(node_name, d);
   assert (d->subckt());
   new_node(s, d->subckt());
-  _ttt = CKT_BASE::_sim->newnode_model();
+  _ttt = CKT_BASE::_sim->newnode_model(); // increase global counter.
   // _ttt = CKT_BASE::_sim->newnode_model(); // global user number
-  trace4("node_t::new_model_node", s, _ttt, _nnn->user_number(), CKT_BASE::_sim->_total_nodes);
+  trace5("node_t::new_model_node", d->long_label(), s, _ttt,
+      _nnn->user_number(), CKT_BASE::_sim->_total_nodes);
   _nnn->set_user_number(_ttt);
 
   // _nnn has its user number from the scope, which doesnt know about

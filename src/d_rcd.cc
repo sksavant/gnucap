@@ -789,7 +789,7 @@ void DEV_BUILT_IN_RCD::expand()
   }else{
   }
   if (_sim->is_first_expand()) {
-    trace1("DEV_BUILT_IN_RCD::expand", hp(this));
+    trace2("DEV_BUILT_IN_RCD::expand, first", long_label(), hp(this));
 //     assert (!_Ccgfill);
     _Ccgfill = subckt()->nodes()->new_adp_node("C", this ); // yields same node if called twice...
     trace1("DEV_BUILT_IN_RCD::expand have new adpnode", hp(_Ccgfill));
@@ -803,7 +803,10 @@ void DEV_BUILT_IN_RCD::expand()
  // _Udc = new ADP_NODE_UDC((const COMPONENT*) common()); //, _Ccgfill);
  // ADP_NODE_LIST::adp_node_list.push_back( _Udc );
 
-  expand_net();
+  if (m->use_net()) {
+    assert(false);
+    expand_net();
+  }
 
   //precalc();
   subckt()->expand();
@@ -853,7 +856,7 @@ void DEV_BUILT_IN_RCD::expand_sym() {
       if (false) {
         _n[n_ic] = _n[n_b];
       }else{
-        _n[n_ic].new_model_node("." + long_label() + ".ic", this);
+        _n[n_ic].new_model_node("ic", this);
       }
     }else{
       if (false) {
