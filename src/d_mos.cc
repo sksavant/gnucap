@@ -984,8 +984,8 @@ void DEV_BUILT_IN_MOS::expand()
 
 
   trace0(("DEV_BUILT_IN_MOS::expand, ADP things " + long_label()).c_str());
-  assert ( adp() == NULL );
-  attach_adp( m->new_adp( (COMPONENT*) this ) );
+  if (! adp())
+    attach_adp( m->new_adp( (COMPONENT*) this ) );
 //  adp()->q_accept();
 //  adp()->q_eval();
   trace0(("DEV_BUILT_IN_MOS::expanded, ADP things " + long_label()).c_str());
@@ -1712,8 +1712,10 @@ void      DEV_BUILT_IN_MOS::precalc_first() {
 }
 /*--------------------------------------------------------------------------*/
 void    DEV_BUILT_IN_MOS::map_nodes(){
+  trace0("DEV_BUILT_IN_MOS::map_nodes");
   BASE_SUBCKT::map_nodes();
 #ifndef BTI_IN_SUBCKT
+  trace0("DEV_BUILT_IN_MOS::map_nodes, handle BTI...");
   const COMMON_BUILT_IN_MOS* c = static_cast<const COMMON_BUILT_IN_MOS*>(common());
   assert(c);
   assert(c->model());

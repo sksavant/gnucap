@@ -771,7 +771,7 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p)
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::expand()
 {
-  trace0("DEV_BUILT_IN_RCD::expand");
+  trace1("DEV_BUILT_IN_RCD::expand", long_label());
   BASE_SUBCKT::expand(); // calls common->expand, attaches model
   assert(_n);
   assert(common());
@@ -789,8 +789,9 @@ void DEV_BUILT_IN_RCD::expand()
   }else{
   }
   if (_sim->is_first_expand()) {
-    assert (!_Ccgfill);
-    _Ccgfill = subckt()->nodes()->new_adp_node("C", this );
+    trace1("DEV_BUILT_IN_RCD::expand", hp(this));
+//     assert (!_Ccgfill);
+    _Ccgfill = subckt()->nodes()->new_adp_node("C", this ); // yields same node if called twice...
     trace1("DEV_BUILT_IN_RCD::expand have new adpnode", hp(_Ccgfill));
     assert(_Ccgfill);
     //_Ccgfill->set_owner(this);
