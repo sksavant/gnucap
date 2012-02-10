@@ -164,8 +164,6 @@ private: // override virtual
   void      tr_queue_eval()      {if(tr_needs_eval()){q_eval();}}
   bool      do_tr();
 
-  
-
   void    tr_load();           
   TIME_PAIR  tr_review();         
   void    tr_accept();         
