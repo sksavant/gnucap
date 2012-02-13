@@ -294,8 +294,13 @@ void ADP_BUILT_IN_MOS8::tt_begin()
 
 	if (m->use_hci()){
 		assert(hci_node);
+		trace1("ADP_BUILT_IN_MOS8::tt_begin",hp( hci_node));
 		hci_node->tt_set(0);
-		hci_node->set_tr(-inf);
+		if (_sim->_tt_uic){
+			hci_node->set_tr(0);
+		}else{
+			hci_node->set_tr(0); untested();
+		}
 		_hci_tr=0;
 		vthdelta_hci=0;
 		vthscale_hci=0;
@@ -368,8 +373,10 @@ void ADP_BUILT_IN_MOS8::stress_apply() {
 		}
 
 		// order>1?
-		if(hci_node->order()>0)
+		if(hci_node->order()>0){
+			assert(is_number(eff_last_timeframe));
 			hci_new += ex_time * (  eff_last_timeframe + eff_now ) / 2.0 ;
+		}
 		else
 			hci_new += ex_time * (  eff_now ) ;
 
@@ -391,8 +398,9 @@ void ADP_BUILT_IN_MOS8::stress_apply() {
 		vthdelta_hci = pow(hci_node->tt(),0.3);
 	}
 	if(m->use_bti()){
-		 bti_stress->set_tt(0); //unused node
-		 bti_stress->set_tr(0); //unused node
+		incomplete();
+		bti_stress->set_tt(0); //unused node
+		bti_stress->set_tr(0); //unused node
 	}
 	q_eval();
 }

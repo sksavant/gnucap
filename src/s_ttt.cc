@@ -409,7 +409,7 @@ void TTT::sweep_tt()
 	head_tt(_tstart, _tstop, "TTime");
 	assert( _sim->_mode  == s_TTT );
 	assert( _sim->_Time0 >= 0 );
-	assert(!_new | _tt_cont);
+	assert(_new || _tt_cont);
 
 
 	if (!_tt_cont || _new){

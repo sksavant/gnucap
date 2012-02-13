@@ -3144,6 +3144,9 @@ void MODEL_BUILT_IN_MOS8::tr_eval(COMPONENT* brh)const
       // assert(polarity*Vth>0);
 
       trace1("MOS8 delta", a->delta_vth);
+      assert(Vth<0 || a->delta_vth>=0);
+      assert(Vth>0 || a->delta_vth<=0);
+      assert(fabs(a->delta_vth)<10);
       Vth += a->delta_vth;
       d->von = Vth;
       
