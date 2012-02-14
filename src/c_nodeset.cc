@@ -144,6 +144,7 @@ class CMD_DUMP : public CMD {
 			case rPRESET:
 				/* do nothing */
 				return;
+			case rPIPE:			untested();
 			case rBATCH:		itested();
 			case rINTERACTIVE:	itested();
 			case rSCRIPT:
@@ -176,11 +177,11 @@ class CMD_DUMP : public CMD {
 			trace2( "save",  CKT_BASE::_sim->_total_nodes , CKT_BASE::_sim->_adp_nodes );
 
 			//      _out <<  CKT_BASE::_sim->_last_Time << "\n";
-			_out <<  "\n";
+			// _out <<  "\n";
 
 			for(ADP_NODE_LIST::const_iterator ii = ADP_NODE_LIST::adp_node_list.begin( );
 					ii != ADP_NODE_LIST::adp_node_list.end(); ++ii ) {
-				_out << "* " << (*ii)->short_label()<<"\n";
+				// _out << "* " << (*ii)->short_label()<<"\n";
 				_out << dot << "nodeset a(" <<  (*ii)->long_label() << ")=";
 				_out << _sim->_vdc[ (*ii)->m_() + _sim->_total_nodes +1 ]  <<"\n";
 			}
@@ -206,8 +207,8 @@ void CMD_DUMP::printv( OMSTREAM _out, const CARD_LIST* scope, unsigned what){
 			string prefix="";
 			
 			if(scope->owner()){
-			_out << "* " << scope->owner()->long_label() << " * " << i->second->short_label()<<" " << what<< "\n";
-			prefix=         scope->owner()->long_label() + ".";
+				// _out << "* " << scope->owner()->long_label() << " * " << i->second->short_label()<<" " << what<< "\n";
+				prefix=         scope->owner()->long_label() + ".";
 			}
 
 			CKT_NODE* N=dynamic_cast<CKT_NODE*>(i->second);
@@ -222,7 +223,7 @@ void CMD_DUMP::printv( OMSTREAM _out, const CARD_LIST* scope, unsigned what){
 
 			if(A && (what & nADP) ){
 				trace3("CMD_NODESET::do_it FIXME", prefix, i->second->short_label(), i->second->long_label());
-				_out << "* "<< i->second->long_label() << "\n";
+				// _out << "* "<< i->second->long_label() << "\n";
 				_out << ".nodeset a(" << prefix << i->second->short_label() << ")=";
 				_out  << setw(8) <<  CKT_BASE::_sim->_vdc[A->m_()+_sim->_total_nodes +1];
 			}
@@ -237,7 +238,7 @@ void CMD_DUMP::printv( OMSTREAM _out, const CARD_LIST* scope, unsigned what){
 		const COMPONENT* s = dynamic_cast<const COMPONENT*>(*i);
 		if ((*i)->is_device())
 			if (s->subckt()) {
-				_out << "* -" << s->long_label() <<"\n";
+				// _out << "* -" << s->long_label() <<"\n";
 				printv(_out,s->subckt(), what);
 			}
 	}
