@@ -1075,8 +1075,8 @@ double DEV_BUILT_IN_BTI::dvth()const{
   assert(c);
   const MODEL_BUILT_IN_BTI* m = prechecked_cast<const MODEL_BUILT_IN_BTI*>(c->model());
   assert(m);
-  const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(c->sdp());
-  assert(s);
+  //const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(c->sdp());
+  //assert(s);
   const ADP_BUILT_IN_BTI* a = prechecked_cast<const ADP_BUILT_IN_BTI*>(adp()); a=a;
   double buf = 0;
   int i = m->rcd_number;
@@ -1101,8 +1101,8 @@ double DEV_BUILT_IN_BTI::tr_probe_num(const std::string& x)const
   assert(c);
   const MODEL_BUILT_IN_BTI* m = prechecked_cast<const MODEL_BUILT_IN_BTI*>(c->model());
   assert(m);
-  const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(c->sdp());
-  assert(s);
+//  const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(c->sdp());
+//  assert(s);
   const ADP_BUILT_IN_BTI* a = prechecked_cast<const ADP_BUILT_IN_BTI*>(adp()); a=a;
 
   if (Umatch(x, "vc{v} |fill ")) { 
