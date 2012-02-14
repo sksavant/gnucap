@@ -87,7 +87,7 @@ public:
 class NODE_BASE : public CKT_BASE {
     const CARD_LIST* _scope;
   protected:
-    const CARD* _owner; //?? not necessary, is it?
+    const CARD* _owner; //?? temporary for adp...
     explicit NODE_BASE();
     explicit NODE_BASE(const NODE_BASE& p);
   protected:

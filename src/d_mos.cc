@@ -1019,8 +1019,8 @@ double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
   const DEV_BUILT_IN_BTI* B = dynamic_cast<const DEV_BUILT_IN_BTI*>(_BTI);
 
   if (Umatch(x, "bti |dvth_bti ")) {
-    if (a)
-      return  (a->delta_vth);
+//    if (a)
+ //     return  (a->delta_vth_bti);
     if (B)
       return  (B->dvth());
     else

@@ -1021,14 +1021,12 @@ void TTT::head_tt(double start, double stop, const std::string& col1)
 		sprintf(format, "%%c%%-%us", width);
 		_out.form(format, '*', col1.c_str());
 
-
 		for (PROBELIST::const_iterator
 				p=printlist().begin();  p!=printlist().end();  ++p) {
 			_out.form(format, ' ', (*p)->label().c_str());
 			if ( !(--print_tr_probe_number) ) break;
 		}
 		_out << '\n';
-
 	}else{
 	}
 	_sim->_mode=s_TRAN;
@@ -1294,8 +1292,8 @@ void TTT::print_results_tt(double x)
 
 	if ( printlist().size() == 0)
 	{
-		untested0( "no ttprint" );
-		return;
+		untested0( "no ttprint" ); 
+		//return; // FIXME: implement quiet switch or redirect to /dev/null
 	}
 
 	assert( _sim->_mode  == s_TTT );

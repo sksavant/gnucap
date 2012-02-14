@@ -54,7 +54,7 @@ ADP_NODE::ADP_NODE( const std::string n, const COMPONENT* c):
   tr_noise(0)
 {
   trace2("ADP_NODE::ADP_NODE ", n, c->long_label());
-  set_label( c->long_label() + "." + n );
+//  set_label( c->long_label() + "." + n );
   set_label( n );
   set_owner( c );
   tr_value = (0.);
@@ -149,7 +149,10 @@ void ADP_NODE::set_tr( hp_float_t x ){
 /*----------------------------------------------------------------------------*/
 void ADP_NODE::set_tt( hp_float_t x ){
   assert(is_number(x));
-  assert(x >=0 || !_positive);
+  if( x<0 && _positive){
+    error( bDANGER, "%s, expecting postive tt value, got %E\n", long_label().c_str(), x);
+  }
+  assert(x >=-1e-19 || !_positive);
   tt() = x;
 }
 /*----------------------------------------------------------------------------*/
@@ -323,7 +326,7 @@ void ADP_NODE::tt_accept()
   }
 
   trace2(("ADP_NODE::tt_accept" + short_label()).c_str(), tt_value, tr_value);
-  trace1(("ADP_NODE::tt_accept done " + short_label()).c_str(), get_tt());
+  trace1(("ADP_NODE::tt_accept done " + short_label()).c_str(), tt());
   assert(tt() >=0 || !_positive);
 
   if (( dT0() / tr_duration() ) < 1.000000001){

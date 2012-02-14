@@ -1584,7 +1584,7 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
   // fixme. move to common.
   assert(is_number(_tr_fill));
   try{
-    // calculate udc
+    // calculate udc (will be put into cap->tr() ? )
     m->do_tr_stress_last(_tr_fill,_Ccgfill, this);
   }catch( Exception &e) {
     error(bDANGER, "%s\n", long_label().c_str());
@@ -1612,6 +1612,7 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
    
   }else if ( cap->tr() > cap->tr_hi ) {
     untested();
+    trace2("DEV_BUILT_IN_RCD::tr_stress_last: aligning down", cap->tr(), cap->tr_hi );
     cap->set_order(0);
     cap->tr() = cap->tr_hi ;
   }
@@ -1783,8 +1784,6 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
   bool D=true;
   bool U=true;
 
-
-
   assert(uin>=-0.001 || !m->positive);
   Euin = m->__step( uin, E_old, h, c );
   if(!is_number(Euin)) {
@@ -1798,7 +1797,6 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
   if (!_sim->tt_iteration_number()){
     iterlimit=500;
   }
-
 
   trace2("COMMON_BUILT_IN_RCD::__uin_iter rel_tol", reltol, OPT::abstol);
   //while( ( A || ( B && C && D ) ) ) { // && fabs(Euin-E)>1e-40 )  }

@@ -121,8 +121,8 @@ CS::CS(CS::INC_FILE, const std::string& name)
     std::string includepath=OPT::includepath;
     boost::algorithm::split(pathlist, includepath, boost::is_any_of(":"));
     for(std::vector< std::string >::iterator i=pathlist.begin(); i!=pathlist.end() ; ++i) {
-      std::string fn=(*i + "/" + name);
-      trace0(("CS::CS(inc, trying " + fn).c_str());
+      std::string fn = (*i + "/" + name);
+      trace1("CS::CS inc, trying ", fn.c_str());
       if (( _file = fopen( fn.c_str(), "r" ) ) ) {
         break;
       }else{

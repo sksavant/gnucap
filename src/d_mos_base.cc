@@ -600,7 +600,12 @@ void MODEL_BUILT_IN_MOS_BASE::do_stress_apply( COMPONENT* c ) const
   if(use_bti()){
     DEV_BUILT_IN_BTI* B = dynamic_cast<DEV_BUILT_IN_BTI*>(d->_BTI);
     assert(B);
-    a->delta_vth += B->dvth();
+    double dvth_bti = B->dvth();
+    if (dvth_bti<0) {
+      dvth_bti = 0;
+      untested();
+    }
+    a->delta_vth += dvth_bti;
   }
   trace1("MODEL_BUILT_IN_MOS_BASE::do_stress_apply()", a->delta_vth);
 }

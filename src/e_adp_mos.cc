@@ -133,8 +133,7 @@ void ADP_BUILT_IN_MOS::init(const COMPONENT* c)
 
 	vthscale_bti = 1;
 	vthdelta_bti = 0;
-
-	delta_vth=0;
+	delta_vth = 0;
 
 	btistress_taken = 0;
 	bti_eff_voltage = 0;
@@ -352,19 +351,13 @@ void ADP_BUILT_IN_MOS8::stress_apply() {
 		double eff_last_timeframe = hci_node->tr( _sim->_last_Time  ); 
 
 		trace5("ADP_BUILT_IN_MOS8::stress_apply", eff_last_timeframe, eff_now, hci_node->tt1(), hci_node->order(), hci_node->tr1() );
-
 		double ex_time =  _sim->_dT0 - _sim->last_time(); // stress that long
-
 		if(fabs(ex_time)<=1e-18) ex_time=0;
-
 		if(_sim->phase() == p_PD){
 			ex_time = 0;
 		}
 
 		assert(ex_time>=0);
-
-		// stress is integral_{ex_time}  eff1
-
 		double hci_new =  hci_node->tt1(); // tt @ last_Time (?)
 
 		if (!is_number(hci_new)){

@@ -1083,8 +1083,14 @@ double DEV_BUILT_IN_BTI::dvth()const{
   //for(; i-->0;  buf += CARD::probe(_RCD[i],"P") );
   for(; i-->0; ){
     const DEV_BUILT_IN_RCD* R = asserted_cast< const DEV_BUILT_IN_RCD* > ( _RCD[i] );
-    buf += R->P();
+    double cont = R->P();
+    if(cont<0){
+      error(bWARNING, "Strange, %s contributes negative %E\n", _RCD[i]->long_label().c_str(), cont);
+      cont=0;
+    }
+    buf += cont;
   }
+  
   return buf * c->weight;
 }
 /*--------------------------------------------------------------------------*/

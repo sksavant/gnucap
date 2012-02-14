@@ -261,7 +261,7 @@ double LOGIC_NODE::tr_probe_num(const std::string& x)const
   }
 }
 /*--------------------------------------------------------------------------*/
-const std::string  NODE_BASE::long_label()const
+const std::string NODE_BASE::long_label()const
 {
   string ret(short_label());
   if (_scope){
@@ -270,9 +270,12 @@ const std::string  NODE_BASE::long_label()const
       return (_scope->owner()->long_label() + "." + ret);
     }
     return ("?"+ret);
+  } else if(_owner) {
+    if(dynamic_cast<const ADP_NODE*>(this)){
+      return (_owner->long_label() + "." + ret);
+    }
   } else {
     trace1("NODE_BASE::long_label, have no parent", short_label());
-
   }
   return ret;
 }
