@@ -123,6 +123,7 @@ bool	OPT::quitconvfail = false;
 bool	OPT::edit = true;
 int	OPT::history = 40;
 int	OPT::recursion = 20;
+// doesnt make sense to have no default lang (does it?!)
 LANGUAGE* OPT::language = NULL;
 bool	OPT::case_insensitive = false;
 UNITS	OPT::units = uSI;
