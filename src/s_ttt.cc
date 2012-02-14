@@ -198,7 +198,8 @@ void TTT::first()
 /*--------------------------------------------------------------------------*/
 // FIXME: directly run into loop
 void TTT::first_after_interruption(){
-	assert(_tt_cont);
+	assert(_cont_tt);
+	assert(_cont);
 	trace3("TTT::first_after_interruption", _tt_cont, _sim->_tt[0], _sim->_tr[0]);
 	_Time1 = _sim->_last_Time;
 	_sim->_Time0 = _sim->_last_Time;
@@ -234,16 +235,8 @@ void TTT::first_after_interruption(){
 	}
 	_sim->force_tt_order(0);
 
+	outdata_b4(_sim->_Time0);
 
-
-	if(!_tt_cont){
-		tt_begin();
-		do_initial_dc();
-		outdata_b4(_sim->_Time0);
-	}else{
-		//do_initial_dc();
-		outdata_b4(_sim->_Time0);
-	}
 	CARD_LIST::card_list.stress_apply();
 
 	TTT::sweep();
@@ -267,12 +260,15 @@ void TTT::tt_begin() {
 	_sim->_stepno = 0;
 	_sim->_tt_uic = false;
 	CARD_LIST::card_list.do_forall( &CARD::tt_begin );
+	CARD_LIST::card_list.stress_apply(); 
 }
 /*--------------------------------------------------------------*/
 void TTT::tt_cont() {
+	// continue from externally set adp_node values...
 		_sim->_dT0 = 0;
 		_sim->_dT1 = 0;
 		_sim->_dT2 = 0;
+		_sim->_time0 = 0;
 	trace0("TTT::cont");
 	_sim->_stepno = 0;
 	_sim->_tt_uic = true;
@@ -399,7 +395,7 @@ void TTT::power_down(double until)
 /*--------------------------------------------------------------------------*/
 void TTT::sweep_tt()
 {
-	trace3("TTT::sweep_tt", _Tstop, _cont, _tt_cont );
+	trace4("TTT::sweep_tt", _Tstop, _cont, _cont_tt, _new );
 	assert(_sim->tt_iteration_number() == 0);
 
 	//  sanitycheck();
@@ -409,10 +405,10 @@ void TTT::sweep_tt()
 	head_tt(_tstart, _tstop, "TTime");
 	assert( _sim->_mode  == s_TTT );
 	assert( _sim->_Time0 >= 0 );
-	assert(_new || _tt_cont);
 
+	assert(!_new || !_cont_tt);
 
-	if (!_tt_cont || _new){
+	if ( _new ){
 		trace0("TTT::sweep_tt tt_begin");
 		tt_begin();
 	} else {
@@ -439,7 +435,7 @@ void TTT::sweep_tt()
 		trace0("TTT::sweep_tt just printing");
 		outdata_b4(_sim->_Time0); // first output tt data
 		return;
-	}else if ( !_tt_cont ){
+	}else if ( !_cont_dc ){
 		trace0("TTT::sweep_tt from 0");
 		print_head_tr();
 		do_initial_dc();
@@ -452,7 +448,7 @@ void TTT::sweep_tt()
 
 		first();
 		trace0("TTT::sweep_tt first done");
-	}else if(_tstop==0. && _tstep==0. && (!_tt_cont) ){
+	}else if(_tstop==0. && _tstep==0. && (!_cont_tt) ){
 
 		print_head_tr();
 		do_initial_dc();
@@ -1336,9 +1332,8 @@ void TTT::store_results(double x)
 /*--------------------------------------------------------------------------*/
 void TTT::advance_Time(void)
 {
-	trace0("TTT::advance_Time() .. ");
+	trace3("TTT::advance_Time", _sim->_tr[0], _sim->_tt[0], _sim->_Time0);
 	::status.tt_advance.start();
-
 
 	static double last_iter_time;
 	_sim->_time0 = 0.;
@@ -1350,7 +1345,6 @@ void TTT::advance_Time(void)
 			_sim->_tt_rejects = 0;
 			_sim->update_tt_order();
 
-			trace3("TTT::advance_Time", _sim->_tr[0], _sim->_tt[0], _sim->_Time0);
 //			trace2("TTT::advance_Time", _sim->_tr1[0], _sim->_tt1[0]);
 
 			notstd::copy_n(_sim->_tr2, _sim->_adp_nodes, _sim->_tr3);

@@ -22,7 +22,7 @@ void TTT::options(CS& Cmd)
 			|| Get(Cmd, "p{owerdown}", &_power_down)
 			|| Get(Cmd, "pd",          &_power_down)
 			|| Get(Cmd, "n{ew}",       &_new)
-			|| Get(Cmd, "c{ont}",      &_continue) // force continuation (skip dcop)
+			|| Get(Cmd, "c{ont}",      &_continue) // continue from adp_node values.
 			|| Get(Cmd, "uic",         &_sim->_uic)
 			|| (Cmd.umatch("tr{ace} {=}") &&
 					(ONE_OF
@@ -48,13 +48,13 @@ void TTT::options(CS& Cmd)
 	TRANSIENT::options(Cmd); // parse options from tran. 
 
 	if (_new){
-		_tt_cont = false;
+		_cont_tt = false;
 		if(_continue) incomplete();
 		_continue = false;
 	}
 	if(_continue){
 		trace0("continuing with aging state...");
-		_tt_cont = true;
+		_cont_tt = true;
 	}
 
 	_dtmax_in.e_val(BIGBIG, _scope);
@@ -66,7 +66,7 @@ void TTT::options(CS& Cmd)
 /*--------------------------------------------------------------------------*/
 void TTT::setup(CS& Cmd)
 {
-	trace1("TTT::setup", _tt_cont);
+	trace1("TTT::setup", _cont_tt);
 	_tstart.e_val(NOT_INPUT, _scope);
 	_tstop.e_val(NOT_INPUT, _scope);
 	_tstep.e_val(NOT_INPUT, _scope);
@@ -78,7 +78,7 @@ void TTT::setup(CS& Cmd)
 	// TRANSIENT::setup( Cmd);
 
 	_cont = true;
-	 // _tt_cont = true;
+	_cont_tt = true;
 
 	if (Cmd.match1("'\"({") || Cmd.is_pfloat()) {
 		PARAMETER<double> arg1, arg2, arg3, arg4, arg5, arg6;
@@ -137,13 +137,12 @@ void TTT::setup(CS& Cmd)
 			if (!_tstop) untested();
 
 			if(double( _Tstart) == 0) 
-				_tt_cont=false;
+				_cont_tt = false;
 
 			trace4("TTT::setup ", _tstep, _tstop , _Tstep , _Tstop);
 
 		} else if (arg4.has_hard_value()) {	    // 4 args: TT TT tt tt
 			trace0("TTT::setup have 4");
-			_tt_cont=false;
 			assert(arg3.has_hard_value());
 			assert(arg2.has_hard_value());
 			assert(arg1.has_hard_value());
@@ -155,17 +154,22 @@ void TTT::setup(CS& Cmd)
 
 			_tstep  = arg1;
 			_tstop  = arg2;
+
+			if (_tstep>_tstop){
+				error(bWARNING, "_tstep > _tstop. really?\n");
+			}
 			_Tstep  = arg3;
 			_Tstop  = arg4;
 			_Tstart = 0; //HACK?
 			assert((double)_tstep!=0 || !_tstop);
 			if (!_tstop) untested();
 
+			_cont_tt = false;
 			trace4("TTT::setup ", _tstep, _tstop , _Tstep , _Tstop);
 
 		} else if (arg3.has_hard_value() ) {
 			trace0("TTT::setup have 3");
-			_tt_cont = false;
+			_cont_tt = false;
 			_Tstart = arg1;
 			_Tstep = arg2;
 			_Tstop = arg3;
@@ -195,9 +199,9 @@ void TTT::setup(CS& Cmd)
 				}
 			}
 
-
+			_cont_tt = true;
+			_cont = true; untested();
 			trace4("TTT::setup 2 args ", _tstep, _tstop , _Tstep , _Tstop);
-
 
 		} else if (arg1.has_hard_value() ) {
 			trace1("TTT::setup have 1", _sim->_last_Time);
@@ -215,6 +219,10 @@ void TTT::setup(CS& Cmd)
 			} else {
 				trace1("set Tstep ", _Tstep);
 			}
+			if(_Tstart!=0){
+				_cont_tt = true;
+				_cont = true; untested();
+			}
 
 		} else {
 			unreachable();
@@ -231,7 +239,7 @@ void TTT::setup(CS& Cmd)
 		_Tstop  = _sim->_last_Time + oldrange;
 
 		if(_sim->_last_Time==0){
-			trace1("TTT::setup no args at beginning", _tt_cont);
+			trace1("TTT::setup no args at beginning", _cont_tt);
 			_Tstop=0;
 			_tstep=0;
 			_tstop=0;
@@ -239,17 +247,11 @@ void TTT::setup(CS& Cmd)
 		}
 	}
 
-//	if (_sim->_last_Time <= 0 ) {
-//		_tt_cont = false;
-//	}
-
-//		if (Cmd.match1("'\"({") || Cmd.is_pfloat()) {
-//			Cmd >> _dtmax_in;
-//		}else{
-//		}
+	if (_tstep>_tstop){
+		error(bWARNING, "_tstep > _tstop. really?\n");
+	}
 
 	options(Cmd);
-
 
 	_tstart.e_val(0., _scope);
 	_tstop.e_val(NOT_INPUT, _scope);
@@ -292,11 +294,11 @@ void TTT::setup(CS& Cmd)
 
 	if  ( _Tstart < _sim->_last_Time  ||  _sim->_last_Time <= 0.) {
 		//    _out << "* last_Time " << _sim->_last_Time << "\n";
-		trace3("TTT::setup no cont ", _Tstart, _sim->_last_Time, _tt_cont );
-		//_tt_cont = false;
+		trace3("TTT::setup no cont ", _Tstart, _sim->_last_Time, _cont_tt );
+		//_cont_tt = false;
 		_Time1 = _sim->_Time0 = 0.;
 	}else{
-		_tt_cont = true;
+		_cont_tt = true;
 		_Time1 = _sim->_Time0 = _sim->_last_Time;
 	}
 
@@ -306,12 +308,14 @@ void TTT::setup(CS& Cmd)
 	_tstop.e_val(NOT_INPUT, _scope);
 	_tstep.e_val(NOT_INPUT, _scope);
 
-	if  (_tt_cont){
+	if  (_cont_tt){
+		_cont = false;
 
 	}else{
 		_cont = false;
-		time1 = _sim->_time0 = 0.;
 	}
+
+	time1 = _sim->_time0 = 0.;
 	//{}else{
 	//  untested();
 	// _cont = true;

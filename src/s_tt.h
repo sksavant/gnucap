@@ -20,8 +20,8 @@ class TTT : public TRANSIENT {
       _Tstop(0.),
       _Tstep(0.),
       _timesteps(0),
-		_tt_cont(false),
 		_new(false),
+		_cont_tt(false),
       _fdata_tt(NULL),
       _tt_store(0)
   { }
@@ -87,8 +87,8 @@ class TTT : public TRANSIENT {
     double _Time1;
     int    steps_total_tt;
 	 double behaviour_time();
-	 bool _tt_cont;	
-	 bool _new;	
+	 bool _new;	 // reset to fresh devices. (and do initial dc)
+	 bool _cont_tt; // continue with adps
     double time_by_voltages();
     double _time_by_adp;
     double _dT_by_adp;

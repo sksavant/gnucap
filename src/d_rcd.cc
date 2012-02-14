@@ -1025,6 +1025,8 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
     return  static_cast<double>(region());
   }else if (Umatch(x, "ulo |vlo ")) {
     return  ( _Ccgfill->tr_lo );
+  }else if (Umatch(x, "uin")) {
+    return involts();
   }else if (Umatch(x, "uhi |vhi ")) {
     return  ( _Ccgfill->tr_hi );
   }else if (Umatch(x, "tra ")) {
