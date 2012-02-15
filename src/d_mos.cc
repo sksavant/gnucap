@@ -679,6 +679,7 @@ DEV_BUILT_IN_MOS::DEV_BUILT_IN_MOS(const DEV_BUILT_IN_MOS& p)
    _Idb(0),
    _Isb(0)
 {
+
   _n = _nodes;
   for (uint_t ii = 0; ii < max_nodes() + int_nodes(); ++ii) {
     _n[ii] = p._n[ii];
@@ -996,6 +997,7 @@ void DEV_BUILT_IN_MOS::expand()
   trace0(("DEV_BUILT_IN_MOS::expand, ADP things " + long_label()).c_str());
   if (! adp())
     attach_adp( m->new_adp( (COMPONENT*) this ) );
+  assert(adp());
 
   // adp()->expand();
 //  adp()->q_accept();
@@ -1007,6 +1009,7 @@ double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
 {
   const DEV_BUILT_IN_MOS* d = this;
   assert(_n);
+  USE(d);
   const COMMON_BUILT_IN_MOS* c = prechecked_cast<const COMMON_BUILT_IN_MOS*>(common());
   assert(c);
   const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
@@ -1017,33 +1020,26 @@ double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
   assert(a);
 
   const DEV_BUILT_IN_BTI* B = dynamic_cast<const DEV_BUILT_IN_BTI*>(_BTI);
+  USE(B);
 
-  if (Umatch(x, "bti |dvth_bti ")) {
-//    if (a)
- //     return  (a->delta_vth_bti);
-    if (B)
-      return  (B->dvth());
-    else
-      return NA;
-  } else if (Umatch(x, "v ")) {
+  if (Umatch(x, "v ")) {
     return  _n[n_d].v0() - _n[n_s].v0();
-#ifdef BTI_HACK
-  }else if (Umatch(x, "ugbti ")) {
-    return  ( CARD::probe(_BTI,"vin"));
-#endif
   }else if (Umatch(x, "vds ")) {
     return  _n[n_d].v0() - _n[n_s].v0();
-  }else if (Umatch(x, "dvth ")) { // hci???
+  }else if (Umatch(x, "bti| dvth_bti ")) { 
+    assert(a);
+    return a->vthdelta_bti;
+  }else if (Umatch(x, "dvth ")) { 
     assert(a);
     return a->delta_vth;
-  }else if (Umatch(x, "dv_bti ")) { // hci???
-    if (d->_BTI) return  ((const DEV_BUILT_IN_BTI*)(d->_BTI))->dvth();
-    return(NA);
   }else if (Umatch(x, "bti_stress ")) { 
     return  a->bti_stress->tr_get();
-  }else if (Umatch(x, "hci{_raw} |bti ")) { 
+
+    // this is probably better...
+  }else if (Umatch(x, "hci{_raw} |bti | dvth| dvth_hci")) { 
     assert(a);
     return  a->tr_probe_num(x);
+
   }else if (Umatch(x, "vgs ")) {
     return  _n[n_g].v0() - _n[n_s].v0();
   }else if (Umatch(x, "vbs ")) {

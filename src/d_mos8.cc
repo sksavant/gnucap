@@ -5253,6 +5253,14 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply( COMPONENT* brh) const
 
 }
 /*--------------------------------------------------------------------------*/
+ADP_BUILT_IN_MOS8::ADP_BUILT_IN_MOS8(const ADP_BUILT_IN_MOS8& a):
+    ADP_BUILT_IN_MOS(a),
+    vthscale_hci(a.vthscale_hci),
+    vthdelta_hci(a.vthdelta_hci),
+    hci_node(0) {
+      cout <<" copying adp8\n";
+}
+/*--------------------------------------------------------------------------*/
 
   //void ADP_BUILT_IN_MOS8::init(const COMPONENT* c)
 //{
@@ -5272,3 +5280,4 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply( COMPONENT* brh) const
 /*------------------------------------------------------------------*/
 bool MODEL_BUILT_IN_MOS8::use_hci()const { return (((double)h0 != 0) && (h0!=NA)); }
 /*--------------------------------------------------------------------------*/
+// vim:ts=8:sw=2:et:

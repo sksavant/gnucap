@@ -105,7 +105,8 @@ double ADP_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
 /*--------------------------------------------------------------------------*/
 ADP_BUILT_IN_MOS::ADP_BUILT_IN_MOS( COMPONENT* c, const std::string n) :
 	ADP_BUILT_IN_DIODE(c,n),
-	bti_stress(0), _tr_last_acc(-inf)
+	bti_stress(0),
+  	_tr_last_acc(-inf)
 {init(c);}
 /*--------------------------------------------------------------------------*/
 //expand?

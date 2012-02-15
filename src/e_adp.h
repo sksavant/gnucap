@@ -293,15 +293,16 @@ class ADP_NODE_RCD : public ADP_NODE {
     double udc;
 };
 /*--------------------------------------------------------------------------*/
-class ADP_CARD : public COMPONENT { // FIXME: SUBCKT_BASE
+class ADP_CARD : public COMPONENT { // FIXME: is this a COMPONENT??
 // manages stress data and stores device parameters.
   private:
-    explicit ADP_CARD(const ADP_CARD&); 
     static int _tt_order;
     double _wdT;
+  protected:
+    ADP_CARD(const ADP_CARD&); 
   public:
-     virtual std::string port_name(uint_t)const { return "?"; }
-
+    virtual ADP_CARD* clone() const=0;
+    virtual std::string port_name(uint_t)const { return "?"; }
     explicit ADP_CARD( COMPONENT* c): _c(c) {
       set_owner(c);
     }
