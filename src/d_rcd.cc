@@ -826,10 +826,6 @@ void DEV_BUILT_IN_RCD::expand()
   // _tr_fill = _Ccgfill->get();
 }
 /*==================================*/
-ADP_NODE_RCD* MODEL_BUILT_IN_RCD::new_adp_node(const COMPONENT*) const{
-  unreachable();
-  return NULL;
-}
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::expand_sym() {
   assert(_n);
@@ -1063,10 +1059,6 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "uref ")) {
     return  ( c->Uref );
   }else if (Umatch(x, "P ")) {
-    return  ( P() );
-  }else if (Umatch(x, "dvth |vth ")) {
-    unreachable();
-    assert(is_number(  P() ));
     return  ( P() );
   }else if (Umatch(x, "vw{v} ")) {
     assert (c->_weight != .0);

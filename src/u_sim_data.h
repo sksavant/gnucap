@@ -142,7 +142,12 @@ public:
   void order_comp( const CARD_LIST* scope=&CARD_LIST::card_list, unsigned* c=0,
       bool* d=0);
 
-  int init_node_count(int user, int sub, int mod);
+  //int init_node_count( const CARD_LIST* l=&CARD_LIST::card_list); 
+  unsigned init_node_count(unsigned user, unsigned sub, unsigned mod, unsigned adp) {
+    _user_nodes=user; _subckt_nodes=sub; _model_nodes=mod; 
+    _adp_nodes=adp;
+    return (_total_nodes=user+sub+mod);
+  }
   int newnode_subckt() {++_subckt_nodes; return ++_total_nodes;}
   int newnode_model()  {++_model_nodes;  return ++_total_nodes;}
   int newnode_adp()  {return _adp_nodes++;}

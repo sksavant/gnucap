@@ -35,6 +35,8 @@ class CARD_LIST;
 class NODE_MAP {
 private:
   std::map<const std::string, NODE_BASE*> _node_map;
+  unsigned ckt;
+  unsigned adp;
 
   explicit  NODE_MAP(const NODE_MAP&);
 public:
@@ -51,6 +53,8 @@ public:
   const_iterator begin()const		{return _node_map.begin();}
   const_iterator end()const		{return _node_map.end();}
   int		 how_many()const	{return static_cast<int>(_node_map.size()-1);}
+  int		 how_many_ckt()const	{return ckt;}
+  int		 how_many_adp()const	{return adp;}
 
   string operator[](unsigned) const ; // ugly HACK
 };

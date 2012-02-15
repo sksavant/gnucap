@@ -54,7 +54,7 @@ class MODEL_BUILT_IN_RCD :public MODEL_CARD{
 //    virtual void     do_precalc_last(COMPONENT*, const );
     virtual void     do_precalc_last(COMMON_COMPONENT*, const CARD_LIST*)const;
     virtual void     do_tt_prepare(COMPONENT*)const;
-    virtual ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
+//    virtual ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
   public: // override virtual
     virtual bool v2() const{return false;}
     virtual double P(const COMPONENT*) const = 0;

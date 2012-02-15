@@ -40,7 +40,7 @@ void TTT::options(CS& Cmd)
 					)
 				)
 			;
-		if (!( Get(Cmd , "tra{n}",	   &tr) ) )
+		if (!( Get(Cmd , "tran",	   &tr) ) ) // tr means 'trace'
 			_out.outset(Cmd);
 	}while (Cmd.more() && !Cmd.stuck(&here) && !tr);
 

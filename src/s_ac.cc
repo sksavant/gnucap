@@ -85,6 +85,7 @@ void AC::do_it(CS& Cmd, CARD_LIST* Scope)
   ::status.set_up.stop();
   switch (ENV::run_mode) {
   case rPRE_MAIN:	unreachable();	break;
+  case rPIPE:		untested();
   case rBATCH:		itested();
   case rINTERACTIVE:	itested();
   case rSCRIPT:		sweep();	break;

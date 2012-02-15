@@ -1115,7 +1115,7 @@ double DEV_BUILT_IN_BTI::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "dvth |vth ")) {
     double buf = 0;
     int i=m->rcd_number;
-    while ( i-->0 )   buf += CARD::probe(_RCD[i],"dvth");
+    while ( i-->0 )   buf += CARD::probe(_RCD[i],"P");
     assert(is_number(buf));
     return buf * c->weight;
   }else if (Umatch(x, "vw ")) {
@@ -1153,7 +1153,7 @@ double DEV_BUILT_IN_BTI::tt_probe_num(const std::string& x)const
   }else if (Umatch(x, "dvth |vth ")) {
     double buf = 0;
     int i=m->rcd_number;
-    while ( i-->0 )   buf += CARD::probe(_RCD[i],"dvth");
+    while ( i-->0 )   buf += CARD::probe(_RCD[i],"P");
     return buf * c->weight;
   }else if (Umatch(x, "pol{arity} ")) {
     return  c->polarity;

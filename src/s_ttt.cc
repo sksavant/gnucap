@@ -198,9 +198,10 @@ void TTT::first()
 /*--------------------------------------------------------------------------*/
 // FIXME: directly run into loop
 void TTT::first_after_interruption(){
+	
 	assert(_cont_tt);
 	assert(_cont);
-	trace3("TTT::first_after_interruption", _tt_cont, _sim->_tt[0], _sim->_tr[0]);
+	trace3("TTT::first_after_interruption", _cont_tt, _sim->_tt[0], _sim->_tr[0]);
 	_Time1 = _sim->_last_Time;
 	_sim->_Time0 = _sim->_last_Time;
 	assert(tt_iteration_number() == 0);
@@ -395,6 +396,7 @@ void TTT::power_down(double until)
 /*--------------------------------------------------------------------------*/
 void TTT::sweep_tt()
 {
+	_out << "* sweep_tt cont=" << _cont << " cont_tt=" << _cont_tt << " new=" << _new << "\n";
 	trace4("TTT::sweep_tt", _Tstop, _cont, _cont_tt, _new );
 	assert(_sim->tt_iteration_number() == 0);
 
@@ -456,6 +458,7 @@ void TTT::sweep_tt()
 
 	} else { // strange way of doing first next loop
 		trace0("TTT::sweep_tt 1st next loop");
+		assert(false);
 		first_after_interruption();
 	}
 
@@ -1349,6 +1352,8 @@ void TTT::advance_Time(void)
 
 			notstd::copy_n(_sim->_tr2, _sim->_adp_nodes, _sim->_tr3);
 			notstd::copy_n(_sim->_tr1, _sim->_adp_nodes, _sim->_tr2);
+			assert(is_number(_sim->_tr[0]));
+
 			notstd::copy_n(_sim->_tr, _sim->_adp_nodes, _sim->_tr1);
 
 			notstd::copy_n(_sim->_tt, _sim->_adp_nodes, _sim->_tt1);

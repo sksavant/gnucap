@@ -30,7 +30,7 @@
 NODE ground_node("0",0);
 /*--------------------------------------------------------------------------*/
 NODE_MAP::NODE_MAP()
-  : _node_map()
+  : _node_map(), ckt(0), adp(0)
 {
   _node_map["0"] = &ground_node;
 }
@@ -136,6 +136,7 @@ CKT_NODE* NODE_MAP::new_node(std::string s_in, const CARD_LIST* p)
     node = new CKT_NODE(s, how_many(), p);
     //trace2("NODE_MAP::new_node", s, node->user_number());
     //                 ^^^^ is really the map number of the new node
+    ckt++;
     _node_map[s] = dynamic_cast<NODE_BASE*>( node);
   }
   assert(node);
@@ -157,9 +158,13 @@ ADP_NODE* NODE_MAP::new_adp_node(std::string s, const COMPONENT* p)
     anode = new ADP_NODE(s, p);
     node = prechecked_cast<NODE_BASE*>(anode);
     assert(node);
-    trace1("NODE_MAP::new_node", s);
-    //                 ^^^^ is really the map number of the new node
+    trace2("NODE_MAP::new_adp_node", anode->long_label(),
+                     anode->m_());
+    //                ^^^^ is really the map number of the new node
+    adp++;
     _node_map[s] = node;
+  } else {
+    trace1("NODE_MAP::new_adp_node already there.", anode->long_label());
   }
   assert(_node_map[s]);
   return anode;

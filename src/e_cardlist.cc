@@ -221,8 +221,8 @@ CARD_LIST& CARD_LIST::map_nodes()
   return *this;
 }
 /*--------------------------------------------------------------------------*/
-unsigned CARD_LIST::total_nodes()const{
-  unsigned ret = nodes()->how_many();
+unsigned CARD_LIST::adp_nodes()const{
+  unsigned ret = nodes()->how_many_adp();
   for (const_iterator ci=begin(); ci!=end(); ++ci) {
     if ((*ci)->is_device()) {
       if ((*ci)->subckt()){
@@ -233,6 +233,38 @@ unsigned CARD_LIST::total_nodes()const{
     }
   }
   return ret;
+}
+/*--------------------------------------------------------------------------*/
+// FIXME: store nodecound in static CARDLIST::nodecount
+// don't recalculate
+unsigned CARD_LIST::total_nodes()const{
+  unsigned ret = nodes()->how_many_ckt();
+  for (const_iterator ci=begin(); ci!=end(); ++ci) {
+    if ((*ci)->is_device()) {
+      if ((*ci)->subckt()){
+        ret+=(*ci)->subckt()->total_nodes();
+      }else{
+        untested();
+      }
+    }
+  }
+  return ret;
+}
+/*--------------------------------------------------------------------------*/
+void CARD_LIST::init_node_count( unsigned* user_nodes, unsigned* subckt_nodes,
+    unsigned* _model_nodes, unsigned* _adp_nodes) const{
+
+  unsigned ret = nodes()->how_many_ckt();
+  for (const_iterator ci=begin(); ci!=end(); ++ci) {
+    if ((*ci)->is_device()) {
+      if ((*ci)->subckt()){
+        ret+=(*ci)->subckt()->total_nodes();
+      }else{
+        untested();
+      }
+    }
+  }
+
 }
 /*--------------------------------------------------------------------------*/
 NODE_BASE* CARD_LIST::node(string s) const{
