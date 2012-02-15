@@ -37,7 +37,7 @@ class DEV_CPOLY_G : public ELEMENT {
 protected:
   hp_float_t*  _values;
   hp_float_t*  _old_values;
-  uint_t	   _n_ports;
+  uint_t       _n_ports;
   double   _time;
   const hp_float_t** _inputs;
 protected:
@@ -239,6 +239,7 @@ void DEV_CPOLY_G::set_parameters(const std::string& Label, CARD *Owner,
     _old_values = new hp_float_t[n_states];
 
     if (net_nodes() > NODES_PER_BRANCH) {
+      trace1("DEV_CPOLY_G::set_parameters", net_nodes());
       // allocate a bigger node list
       _n = new node_t[net_nodes()];
     }else{
@@ -256,7 +257,7 @@ void DEV_CPOLY_G::set_parameters(const std::string& Label, CARD *Owner,
   _values = states;
   std::fill_n(_values, n_states, 0.);
   std::fill_n(_old_values, n_states, 0.);
-  notstd::copy_n(nodes, net_nodes(), _n);
+  notstd::copy_n(nodes, net_nodes(), _n); // copy to _n
   assert(net_nodes() == _n_ports * 2);
 }
 /*--------------------------------------------------------------------------*/
@@ -266,3 +267,4 @@ DISPATCHER<CARD>::INSTALL d4(&device_dispatcher, "cpoly_g", &p4);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+// vim:ts=8:sw=2:et:

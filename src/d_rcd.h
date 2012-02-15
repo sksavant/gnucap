@@ -267,7 +267,7 @@ class DEV_BUILT_IN_RCD : public BASE_SUBCKT {
   friend class MODEL_BUILT_IN_RCD;
   private:
     explicit DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p);
-    double lasts;
+    double _lasts; // last time tr_stress was called
   public:
     explicit DEV_BUILT_IN_RCD();
     ~DEV_BUILT_IN_RCD() {

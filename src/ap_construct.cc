@@ -239,6 +239,7 @@ CS& CS::get_line(const std::string& prompt)
 {
   ++_line_number;
   if (is_file()) {
+    assert(OPT::language);
     _cmd = OPT::language->getlines(_file);
     _cnt = 0;
     _length = static_cast<unsigned>(_cmd.length());

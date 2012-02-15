@@ -716,7 +716,8 @@ void DEV_BUILT_IN_MOS::expand()
       if (!OPT::rstray || s->rd == 0.) {
         _n[n_id] = _n[n_d];
       }else{
-        _n[n_id].new_model_node("." + long_label() + ".id", this);
+        trace0("DEV_BUILT_IN_MOS::expand new_model_node id");
+        _n[n_id].new_model_node("id", this); // increase global counter.
       }
     }else{
       if (!OPT::rstray || s->rd == 0.) {
@@ -732,7 +733,7 @@ void DEV_BUILT_IN_MOS::expand()
       if (!OPT::rstray || s->rs == 0.) {
         _n[n_is] = _n[n_s];
       }else{
-        _n[n_is].new_model_node("." + long_label() + ".is", this);
+        _n[n_is].new_model_node("is", this);
       }
     }else{
       if (!OPT::rstray || s->rs == 0.) {
@@ -891,7 +892,16 @@ void DEV_BUILT_IN_MOS::expand()
     }
 
     trace2("DEV_BUILT_IN_MOS::expand bti expand", m->polarity, m->use_bti());
-    if( m->use_bti() ) {
+    if( !m->use_bti() ) {
+      if (_BTI) {
+#ifdef BTI_IN_SUBCKT
+        subckt()->erase(_BTI);
+        _BTI = NULL;
+#else
+        delete _BTI;
+#endif
+      }
+    }else{
       if (!_BTI) {
         const CARD* p = device_dispatcher["bti"];
         assert(p);
@@ -984,8 +994,10 @@ void DEV_BUILT_IN_MOS::expand()
 
 
   trace0(("DEV_BUILT_IN_MOS::expand, ADP things " + long_label()).c_str());
-  assert ( adp() == NULL );
-  attach_adp( m->new_adp( (COMPONENT*) this ) );
+  if (! adp())
+    attach_adp( m->new_adp( (COMPONENT*) this ) );
+
+  // adp()->expand();
 //  adp()->q_accept();
 //  adp()->q_eval();
   trace0(("DEV_BUILT_IN_MOS::expanded, ADP things " + long_label()).c_str());
@@ -1712,8 +1724,10 @@ void      DEV_BUILT_IN_MOS::precalc_first() {
 }
 /*--------------------------------------------------------------------------*/
 void    DEV_BUILT_IN_MOS::map_nodes(){
+  trace0("DEV_BUILT_IN_MOS::map_nodes");
   BASE_SUBCKT::map_nodes();
 #ifndef BTI_IN_SUBCKT
+  trace0("DEV_BUILT_IN_MOS::map_nodes, handle BTI...");
   const COMMON_BUILT_IN_MOS* c = static_cast<const COMMON_BUILT_IN_MOS*>(common());
   assert(c);
   assert(c->model());

@@ -421,14 +421,13 @@ void MODEL_BUILT_IN_BTI_SUM::attach_rcds(COMMON_BUILT_IN_RCD** _RCD) const
   for(size_t n=0; n<Nr; n++){
     dpvv P = dpvv(rcdparm);
     PARAMETER<dpv> Q = P[n];
-    trace3("MODEL_BUILT_IN_BTI_SUM::attach_rcds", n, Q, Q.size());
+    assert(Q.size()==5); // 5 parameters per rcd
 
     COMMON_BUILT_IN_RCD* RCD1 = new COMMON_BUILT_IN_RCD;
     RCD1->set_modelname( rcd_model_name ); // <= !
     RCD1->attach(this); // ?
 
     size_t Np = dpv(Q).size();
-    trace1("MODEL_BUILT_IN_BTI_SUM::attach_rcds", Np);
     for(uint_t m=0; m<Np ; m++ ){
       trace1("MODEL_BUILT_IN_BTI_SUM::attach_rcds ",  m ); 
       PARAMETER<double> pk = dpv(Q)[m];
@@ -939,7 +938,7 @@ bool DEV_BUILT_IN_BTI::do_tr() { // untested0(long_label().c_str());
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_BTI::expand()
 {
-  trace0("DEV_BUILT_IN_BTI::expand");
+  trace1("DEV_BUILT_IN_BTI::expand", long_label());
   BASE_SUBCKT::expand(); // calls common->expand, attaches model
   assert(_n);
   assert(common());
@@ -952,6 +951,10 @@ void DEV_BUILT_IN_BTI::expand()
   const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(c->sdp());
   assert(s);
 
+  if (!subckt()) {
+    new_subckt();
+  }else{
+  }
 
   if (!_RCD) {
     trace1("alloc COMP", m->rcd_number);
@@ -962,10 +965,6 @@ void DEV_BUILT_IN_BTI::expand()
     trace1("allocd", m->rcd_number);
   }
 
-  if (!subckt()) {
-    new_subckt();
-  }else{
-  }
 
   if (_sim->is_first_expand()) {
     trace0("DEV_BUILT_IN_BTI::expand, first");
@@ -979,7 +978,7 @@ void DEV_BUILT_IN_BTI::expand()
       if (false) {
         _n[n_iu] = _n[n_b];
       }else{
-        _n[n_iu].new_model_node("." + long_label() + ".iu", this);
+        _n[n_iu].new_model_node("iu", this);
       }
     }else{
       if (false) {
@@ -1050,6 +1049,7 @@ void DEV_BUILT_IN_BTI::expand()
   //}
   //assert(adp());
   assert(subckt()->size() == size_t (m->rcd_number +1));
+  trace0("DEV_BUILT_IN_BTI::expand");
 }
 /*--------------------------------------------------------------------------*/
 // resultung dvth.

@@ -214,8 +214,8 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
     uin_eff =  ( _c->tr_lo+_c->tr_hi)/2.0;
   }
 
-  trace3(("MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last " +
-        _c->label()).c_str(), E_old, tt_iteration_number(), uin_eff);
+  trace4(("MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last " +
+        _c->label()).c_str(), E_old, tt_iteration_number(), uin_eff, _sim->_time0);
 
   assert(E_old<E_max);
   assert(E<=E_max);
@@ -551,7 +551,7 @@ double MODEL_BUILT_IN_RCD_EXP::P( const COMPONENT* brh) const
   const COMMON_BUILT_IN_RCD* c = prechecked_cast<const COMMON_BUILT_IN_RCD*>(brh->common());
   if( _sim->analysis_is_tt() ){
     if(positive && (d->_Ccgfill->get_tt() < c->_zero)){
-      error(bDANGER,"not positive %f %f\n", double(d->_Ccgfill->get_tt()), double(c->_zero));
+      error(bDANGER,"%s not positive %f %f\n", brh->long_label().c_str(),double(d->_Ccgfill->get_tt()), double(c->_zero));
     }
     return double (d->_tr_fill - (long double) c->_zero) * c->_weight;
     // return (d->_Ccgfill->get_tt() - c->_zero) * c->_weight;

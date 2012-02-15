@@ -1,0 +1,18 @@
+spice
+* this is a spice style vs with branch node
+
+
+R1 nin 0 1k
+
+.verilog
+branchvs #(1) v1(nin,0);
+spice
+
+.print tran v(nodes) i(r1)
+
+.tran 0 1 .1
+
+.print ddc dv(nodes)
+.ddc
+
+.end

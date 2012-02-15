@@ -18,9 +18,9 @@ class TTT : public TRANSIENT {
       _trace(tNONE),
       _Tstart(0.), // ?? unused?
       _Tstop(0.),
-		_tt_cont(false),
       _Tstep(0.),
       _timesteps(0),
+      _tt_cont(false),
       _fdata_tt(NULL),
       _tt_store(0)
   { }

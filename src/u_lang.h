@@ -70,6 +70,7 @@ private: // called by print_item
   virtual void print_comment(OMSTREAM&, const DEV_COMMENT*) = 0;
   virtual void print_command(OMSTREAM&, const DEV_DOT*) = 0;
 };
+
 /*--------------------------------------------------------------------------*/
 template<class T>
 inline T& operator<<(T& o, LANGUAGE* x)

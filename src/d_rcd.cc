@@ -728,7 +728,7 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD()
   :BASE_SUBCKT(),
    // input parameters,
    // calculated parameters,
-   lasts(-inf),
+   _lasts(-inf),
    _region(UNKNOWN),
    // netlist,
    _Ccg(0),
@@ -750,7 +750,7 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p)
   :BASE_SUBCKT(p),
    // input parameters,
    // calculated parameters,
-   lasts(-inf),
+   _lasts(-inf),
    _region(p._region),
    // netlist,
    _Ccg(0),
@@ -771,7 +771,7 @@ DEV_BUILT_IN_RCD::DEV_BUILT_IN_RCD(const DEV_BUILT_IN_RCD& p)
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::expand()
 {
-  trace0("DEV_BUILT_IN_RCD::expand");
+  trace1("DEV_BUILT_IN_RCD::expand", long_label());
   BASE_SUBCKT::expand(); // calls common->expand, attaches model
   assert(_n);
   assert(common());
@@ -789,8 +789,9 @@ void DEV_BUILT_IN_RCD::expand()
   }else{
   }
   if (_sim->is_first_expand()) {
-    assert (!_Ccgfill);
-    _Ccgfill = subckt()->nodes()->new_adp_node("C", this );
+    trace2("DEV_BUILT_IN_RCD::expand, first", long_label(), hp(this));
+//     assert (!_Ccgfill);
+    _Ccgfill = subckt()->nodes()->new_adp_node("C", this ); // yields same node if called twice...
     trace1("DEV_BUILT_IN_RCD::expand have new adpnode", hp(_Ccgfill));
     assert(_Ccgfill);
     //_Ccgfill->set_owner(this);
@@ -802,7 +803,10 @@ void DEV_BUILT_IN_RCD::expand()
  // _Udc = new ADP_NODE_UDC((const COMPONENT*) common()); //, _Ccgfill);
  // ADP_NODE_LIST::adp_node_list.push_back( _Udc );
 
-  expand_net();
+  if (m->use_net()) {
+    assert(false);
+    expand_net();
+  }
 
   //precalc();
   subckt()->expand();
@@ -852,7 +856,7 @@ void DEV_BUILT_IN_RCD::expand_sym() {
       if (false) {
         _n[n_ic] = _n[n_b];
       }else{
-        _n[n_ic].new_model_node("." + long_label() + ".ic", this);
+        _n[n_ic].new_model_node("ic", this);
       }
     }else{
       if (false) {
@@ -1391,21 +1395,21 @@ void DEV_BUILT_IN_RCD::tr_stress()
   assert(c->sdp());
   assert(_Ccgfill);
 
-  trace3("DEV_BUILT_IN_RCD::tr_stress " + long_label(), _sim->_time0, lasts, hp(_Ccgfill) );
+  trace3("DEV_BUILT_IN_RCD::tr_stress " + long_label(), _sim->_time0, _lasts, hp(_Ccgfill) );
 
-  if( _sim->_time0 > lasts ){
-    lasts = _sim->_time0;
+  if( _sim->_time0 > _lasts ){
+    _lasts = _sim->_time0;
   }else {
     trace1("DEV_BUILT_IN_RCD::tr_stress again?? bug??", _sim->_time0 );
 
     error(bDANGER,"DEV_BUILT_IN_RCD::tr_stress unequal now: %E lasts: %E at %E in [%f %f]\n",
-          _sim->_time0, lasts, _sim->_Time0, _Ccgfill->tr_lo , _Ccgfill->tr_hi  );
+          _sim->_time0, _lasts, _sim->_Time0, _Ccgfill->tr_lo , _Ccgfill->tr_hi  );
 
-    if (! (_sim->_time0 == lasts) ){
+    if (! (_sim->_time0 == _lasts) ){
 
-      error(bDANGER,"DEV_BUILT_IN_RCD::tr_stress criticaly unequal now: %E lasts: %E at %E\n",
-          _sim->_time0, lasts, _sim->_Time0 );
-      throw(Exception("time mismatch in %s: time0: %f lasts: %f " , long_label().c_str(), _sim->_time0, lasts));
+      error(bDANGER,"DEV_BUILT_IN_RCD::tr_stress critically unequal now: %E lasts: %E at %E\n",
+          _sim->_time0, _lasts, _sim->_Time0 );
+      throw(Exception("time mismatch in %s: time0: %E lasts: %E " , long_label().c_str(), _sim->_time0, _lasts));
     }
     return;
   }
@@ -1658,7 +1662,7 @@ void DEV_BUILT_IN_RCD::tt_prepare()
 
   trace0(("DEV_BUILT_IN_RCD::tt_prepare " + short_label()).c_str());
 
-  lasts = -inf;
+  _lasts = -inf;
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::tt_begin()  {
@@ -1675,7 +1679,7 @@ void DEV_BUILT_IN_RCD::tt_begin()  {
   const MODEL_BUILT_IN_RCD* m = asserted_cast<const MODEL_BUILT_IN_RCD*>(c->model());
   m->do_tt_prepare(this);
 
-  lasts = -inf;
+  _lasts = -inf;
   q_eval();
 
 }
@@ -1684,6 +1688,9 @@ void DEV_BUILT_IN_RCD::tr_begin(){
   BASE_SUBCKT::tr_begin();
 
   // _tr_fill = _Ccgfill->tt();??
+  _lasts = -inf; // must be -inf, so time0==0 works out
+  _Ccgfill->tr_hi = -inf;
+  _Ccgfill->tr_lo = inf;
 
   q_accept();
 }
@@ -1949,7 +1956,9 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
 }
 /*-----------------*/
 void DEV_BUILT_IN_RCD::tt_advance(){
-  lasts = -inf;
+
+//  tr_begin();?
+  _lasts = -inf;
   _Ccgfill->tr_hi = -inf;
   _Ccgfill->tr_lo = inf;
   q_accept();

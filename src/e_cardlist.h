@@ -154,6 +154,7 @@ public:
 
   NODE_MAP*   nodes()const {assert(_nm); return _nm;}
   NODE_BASE*       node(std::string)const;
+  unsigned total_nodes()const; // recursively sum up total node number...
   PARAM_LIST* params();
   PARAM_LIST* params()const;
 

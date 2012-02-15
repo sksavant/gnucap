@@ -221,6 +221,20 @@ CARD_LIST& CARD_LIST::map_nodes()
   return *this;
 }
 /*--------------------------------------------------------------------------*/
+unsigned CARD_LIST::total_nodes()const{
+  unsigned ret = nodes()->how_many();
+  for (const_iterator ci=begin(); ci!=end(); ++ci) {
+    if ((*ci)->is_device()) {
+      if ((*ci)->subckt()){
+        ret+=(*ci)->subckt()->total_nodes();
+      }else{
+        untested();
+      }
+    }
+  }
+  return ret;
+}
+/*--------------------------------------------------------------------------*/
 NODE_BASE* CARD_LIST::node(string s) const{
   const COMPONENT* o = dynamic_cast<const COMPONENT*>(owner());
   const CARD_LIST* scope = _origin;

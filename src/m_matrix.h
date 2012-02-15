@@ -331,6 +331,7 @@ void BSMATRIX<T>::clone(const BSMATRIX<T> & aa)
 template <class T>
 void BSMATRIX<T>::iwant(unsigned node1, unsigned node2)
 {
+  trace2("BSMATRIX::iwant", node1, node2);
   assert(_lownode);
   assert(node1 <= size());
   assert(node2 <= size());
