@@ -244,28 +244,28 @@ unsigned CARD_LIST::total_nodes()const{
       if ((*ci)->subckt()){
         ret+=(*ci)->subckt()->total_nodes();
       }else{
-        untested();
+        // untested();
       }
     }
   }
   return ret;
 }
 /*--------------------------------------------------------------------------*/
-void CARD_LIST::init_node_count( unsigned* user_nodes, unsigned* subckt_nodes,
-    unsigned* _model_nodes, unsigned* _adp_nodes) const{
-
-  unsigned ret = nodes()->how_many_ckt();
-  for (const_iterator ci=begin(); ci!=end(); ++ci) {
-    if ((*ci)->is_device()) {
-      if ((*ci)->subckt()){
-        ret+=(*ci)->subckt()->total_nodes();
-      }else{
-        untested();
-      }
-    }
-  }
-
-}
+//void CARD_LIST::init_node_count( unsigned* user_nodes, unsigned* subckt_nodes,
+//    unsigned* _model_nodes, unsigned* _adp_nodes) const{
+//
+//  unsigned ret = nodes()->how_many_ckt();
+//  for (const_iterator ci=begin(); ci!=end(); ++ci) {
+//    if ((*ci)->is_device()) {
+//      if ((*ci)->subckt()){
+//        ret+=(*ci)->subckt()->total_nodes();
+//      }else{
+//        untested();
+//      }
+//    }
+//  }
+//
+//}
 /*--------------------------------------------------------------------------*/
 NODE_BASE* CARD_LIST::node(string s) const{
   const COMPONENT* o = dynamic_cast<const COMPONENT*>(owner());

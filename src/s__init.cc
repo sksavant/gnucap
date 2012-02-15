@@ -47,6 +47,7 @@ void SIM::command_base(CS& cmd)
     ::status.set_up.stop();
     switch (ENV::run_mode) {
     case rPRE_MAIN:	unreachable();	break;
+    case rPIPE:         untested();
     case rBATCH:	itested();
     case rINTERACTIVE:	itested();
     case rSCRIPT:	trace0("SIM::command_base calling sweep");	sweep(); break;
