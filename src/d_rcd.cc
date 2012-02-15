@@ -1107,13 +1107,7 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   //
   // FIXME 
 
-  if (Umatch(x, "vw{v} "))
-  { unreachable(); // deprecated
-    return  ( P() );
-  } else if (Umatch(x, "dvth "))  {
-    unreachable(); //dep
-    return  ( P() );
-  } else if (Umatch(x, "P "))  {
+  if (Umatch(x, "P "))  {
     return P();
   } else if (Umatch(x, "vc "))  {
     if( m->use_net()){
