@@ -429,7 +429,7 @@ private: // nodes / matrix indexes
           <admst:if test="[position(.)=count(.)]">
             <admst:text format=" };"/>
           </admst:if>	
-        </admst:for-each>
+    </admst:for-each>
 
               // what is this?
         bool m_required[%(count(jacobian))];
@@ -1359,6 +1359,18 @@ void $(DEV_NAME)::tr_load()
 
     }
   </admst:for-each>
+  
+  <admst:for-each select="jacobian">
+	  <admst:value-of select="column/name"/>
+	  <admst:value-of select="row/name"/>
+	  <admst:value-of select="column/name"/>
+	  <admst:value-of select="row/name"/>
+	  <admst:value-of select="column/name"/>
+	  <admst:value-of select="row/name"/>
+		if( !m_required[m_%s_%s] && (m_entries[m_%s_%s]!=0) ) printf("*** m_%s_%s\n");
+  
+  </admst:for-each>
+  
 }
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::tr_unload()
@@ -1588,6 +1600,15 @@ void $(DEV_NAME)::guesstopology ()
  for(int i=0; i<%(count(jacobian)); i++){
   trace1("guess m", m_required[i]);
  }
+ 
+	<admst:for-each select="jacobian">
+          <admst:value-of select="column/name"/>
+          <admst:value-of select="row/name"/>
+          <admst:value-of select="column/name"/>
+          <admst:value-of select="row/name"/>
+          if( m_required[m_%s_%s] ) printf("m_%s_%s\n");
+    </admst:for-each>
+
 }	
 // -------------------------------------------------------------------------- //
 #if 0
