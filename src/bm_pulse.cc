@@ -37,6 +37,9 @@ const double _default_fall  (0);
 const double _default_width (BIGBIG);
 const double _default_period(BIGBIG);
 const double _default_t2    (NOT_INPUT);
+const double _default_freq  (NOT_INPUT);
+const double _default_dc    (0.5); // duty cycle
+const double _default_phase (0);
 /*--------------------------------------------------------------------------*/
 class EVAL_BM_PULSE : public EVAL_BM_ACTION_BASE {
 private:
@@ -49,6 +52,9 @@ private:
   PARAMETER<double> _period;
   PARAMETER<double> _end;
   PARAMETER<double> _t2;
+  PARAMETER<double> _freq;
+  PARAMETER<double> _dc;
+  PARAMETER<double> _phase;
 
   explicit	EVAL_BM_PULSE(const EVAL_BM_PULSE& p);
 public:
@@ -80,7 +86,11 @@ EVAL_BM_PULSE::EVAL_BM_PULSE(int c)
    _fall(_default_fall),
    _width(_default_width),
    _period(_default_period),
-   _end(NOT_VALID)
+   _end(NOT_VALID),
+   _t2(_default_t2),
+   _freq(_default_freq),
+   _dc(_default_dc),
+   _phase(_default_phase)
 {
 }
 /*--------------------------------------------------------------------------*/
@@ -93,7 +103,11 @@ EVAL_BM_PULSE::EVAL_BM_PULSE(const EVAL_BM_PULSE& p)
    _fall(p._fall),
    _width(p._width),
    _period(p._period),
-   _end(NOT_VALID)
+   _end(NOT_VALID),
+   _t2(p._t2),
+   _freq(p._freq),
+   _dc(p._dc),
+   _phase(p._phase)
 {
 }
 /*--------------------------------------------------------------------------*/
@@ -108,6 +122,10 @@ bool EVAL_BM_PULSE::operator==(const COMMON_COMPONENT& x)const
     && _fall == p->_fall
     && _width == p->_width
     && _period == p->_period
+    && _t2 == p->_t2
+    && _freq == p->_freq
+    && _dc == p->_dc
+    && _phase == p->_phase
     && EVAL_BM_ACTION_BASE::operator==(x);
   if (rv) {
     untested();
@@ -126,6 +144,10 @@ void EVAL_BM_PULSE::print_common_obsolete_callback(OMSTREAM& o, LANGUAGE* lang)c
   print_pair(o, lang, "fall", _fall);
   print_pair(o, lang, "width", _width);
   print_pair(o, lang, "period", _period);
+  print_pair(o, lang, "t2", _t2);
+  print_pair(o, lang, "freq", _freq);
+  print_pair(o, lang, "dc", _dc);
+  print_pair(o, lang, "phase", _phase);
   EVAL_BM_ACTION_BASE::print_common_obsolete_callback(o, lang);
 }
 /*--------------------------------------------------------------------------*/
@@ -141,20 +163,43 @@ void EVAL_BM_PULSE::precalc_first(const CARD_LIST* Scope)
   _width.e_val(_default_width, Scope);
   _period.e_val(_default_period, Scope);
   _t2.e_val(_default_t2, Scope);
+  _dc.e_val(_default_dc, Scope);
+  _phase.e_val(_default_phase, Scope);
 
   if (_width == 0.) {untested(); incomplete();
 	  // removed (what about sawtooth??)
     // _width = _default_width;
   }else{
   }
+
+  if(_freq.has_good_value()){
+    _period=1./_freq;
+
+    if(_dc.has_good_value()){
+
+      _delay = -_rise/2.0 - _phase * _period / M_TWO_PI;
+        //(_period*(1-_dc)-_rise)/2.0;
+
+      if(_width.has_good_value()){
+        incomplete(); // probably worth an exception
+      }
+
+      _width = _dc*_period - (_rise+_fall)/2.0;
+
+
+    } else {
+      untested();
+    }
+  }
+
   if (_period == 0.) {untested();
     _period = _default_period;
   }else{
   }
 
   if (_t2.has_good_value()){
-	incomplete();
-	_width = _t2 - _delay;
+    incomplete();
+    _width = _t2 - _delay;
   }
 
 }
@@ -246,26 +291,33 @@ bool EVAL_BM_PULSE::parse_params_obsolete_callback(CS& cmd)
     || Get(cmd, "fall",   &_fall)
     || Get(cmd, "width",  &_width)
     || Get(cmd, "period", &_period)
+    || Get(cmd, "dc",     &_dc)
+    || Get(cmd, "duty",   &_dc)
+    || Get(cmd, "freq",   &_freq)
+    || Get(cmd, "frequency",   &_freq)
+    || Get(cmd, "phase",   &_phase)
     || EVAL_BM_ACTION_BASE::parse_params_obsolete_callback(cmd)
     ;
 }
-
+/*--------------------------------------------------------------------------*/
 void EVAL_BM_PULSE::set_param_by_name(std::string Name, std::string Value)
 {
 
- trace2("EVAL_BM_PULSE::set_param_by_name",Name,Value);
- if (Umatch (Name,"iv|U1")) { _iv = Value; }
- else if (Umatch (Name,"pv|U2"))    { _pv     = atof(Value.c_str()); }
- else if (Umatch (Name,"delay|T1")) { _delay  = atof(Value.c_str()); }
- else if (Umatch (Name,"rise|Tr"))  { _rise   = atof(Value.c_str()); }
- else if (Umatch (Name,"T2"))  { _t2 = atof(Value.c_str()); }
- else if (Umatch (Name,"width")) { _width  = atof(Value.c_str()); }
- else if (Umatch (Name,"fall|Tf"))  { _fall   = atof(Value.c_str()); }
- else if (Umatch (Name,"period")){ _period = atof(Value.c_str()); }
- else{ throw Exception_No_Match(Name); }
+  trace2("EVAL_BM_PULSE::set_param_by_name",Name,Value);
+  if (Umatch (Name,"iv|U1")) { _iv = Value; }
+  else if (Umatch (Name,"pv|U2"))    { _pv     = atof(Value.c_str()); }
+  else if (Umatch (Name,"delay|T1")) { _delay  = atof(Value.c_str()); }
+  else if (Umatch (Name,"rise|Tr"))  { _rise   = atof(Value.c_str()); }
+  else if (Umatch (Name,"T2"))       { _t2 = atof(Value.c_str()); }
+  else if (Umatch (Name,"width"))    { _width  = atof(Value.c_str()); }
+  else if (Umatch (Name,"fall|Tf"))  { _fall   = atof(Value.c_str()); }
+  else if (Umatch (Name,"period"))   { _period = atof(Value.c_str()); }
+  else if (Umatch (Name,"freq{ency}")){ _freq = atof(Value.c_str()); }
+  else if (Umatch (Name,"dc|duty"))  { _dc= atof(Value.c_str()); }
+  else if (Umatch (Name,"ph{ase}"))  { _phase= atof(Value.c_str()); }
+  else{ throw Exception_No_Match(Name); }
 
 }
-
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 EVAL_BM_PULSE p1(CC_STATIC);
@@ -273,3 +325,4 @@ DISPATCHER<COMMON_COMPONENT>::INSTALL d1(&bm_dispatcher, "pulse", &p1);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+// vim:ts=8:sw=2:et:
