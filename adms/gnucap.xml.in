@@ -230,27 +230,25 @@ public:
           </admst:choose>
 	</admst:for-each>
 
-	// verilog - variables (all with scope 'global_model' eq. have 'ask' field)
-        <admst:for-each select="variable[input='no' and scope='global_model']">
-          <admst:choose>
-            <admst:when test="[type='real']">
-              <admst:text format="\n\tmutable double %(.);"/>
-            </admst:when>
-            <admst:when test="[type='integer']">
-              <admst:text format="\n\tmutable int %(.);"/>
-            </admst:when>
-            <admst:otherwise>
-              <admst:text format="\n\tmutable std::string %(.);"/>
-            </admst:otherwise>
-          </admst:choose>
-        </admst:for-each>
+	// verilog - variables (all with scope 'global_model' i.e. have 'ask' field)
+	<admst:for-each select="variable[input='no' and scope='global_model']">
+	  <admst:choose>
+		<admst:when test="[type='real']">
+		  <admst:text format="\n\tdouble %(.);"/>
+		</admst:when>
+		<admst:when test="[type='integer']">
+		  <admst:text format="\n\tint %(.);"/>
+		</admst:when>
+		<admst:otherwise>
+		  <admst:text format="\n\tstd::string %(.);"/>
+		</admst:otherwise>
+	  </admst:choose>
+	</admst:for-each>
 
 public:
 	std::string _key;
 	std::string _level;
-        PARAM_LIST  _params;
-
-
+    PARAM_LIST  _params;
 };
 
 /* ========================================================= */
@@ -431,12 +429,12 @@ private: // nodes / matrix indexes
           </admst:if>	
     </admst:for-each>
 
-              // what is this?
-        bool m_required[%(count(jacobian))];
+	// what is this?
+	bool m_required[%(count(jacobian))];
 
-        double m_entries[%(count(jacobian))];
-        double m_entries_old[%(count(jacobian))];
-        double m_entries_kept[%(count(jacobian))]; // keep_ic, uic etc.
+	double m_entries[%(count(jacobian))];
+	double m_entries_old[%(count(jacobian))];
+	double m_entries_kept[%(count(jacobian))]; // keep_ic, uic etc.
 
 	// states FIXME
 
@@ -711,6 +709,9 @@ void $(MODEL_NAME)::precalc_first()
 			<admst:when test="[type='integer']"><admst:text format="\n\te_val(&amp;(this-&gt;%(name)), (int)%s, par_scope);"/></admst:when>
 		</admst:choose>
 	</admst:for-each>
+	
+	// @(initial_model) block
+	 <admst:apply-templates select="analog" match="analog:initial_model" required="yes"/>
 }
 // -------------------------------------------------------------------------- //
 void $(MODEL_NAME)::set_dev_type(const std::string& new_type)
@@ -1527,7 +1528,6 @@ void $(DEV_NAME)::temperature()
     USE(m);
     USE(c);
 
-  <admst:apply-templates select="analog" match="analog:initial_model" required="yes"/>
   <admst:apply-templates select="analog" match="analog:initial_instance" required="yes"/>
 }
 #undef _STATIC
@@ -2825,6 +2825,7 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
   <admst:text format="}\n"/>
 </admst:template>
 
+<!-- from here is not guesstopology, but model_initialize, at least next 2 functions  -->
 <!-- ----------------------------------------------------------------- -->
 <!-- analog/[initializeModel|initializeInstance|initial_model|initial_instance|initial_step|noise] -->
 <admst:template match="block:initial">

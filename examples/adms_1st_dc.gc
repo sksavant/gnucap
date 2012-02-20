@@ -94,15 +94,19 @@ spice
 
 
 .options numdgt=20
+*    o nci
+*    |
+*    |
+*    |
+*   ---  v=0, strom messen, vicq1
+*   ---
+*    |
 *    o nc
-*    |
-*    |
-*    |
 *    |
 *   C|
 *    \  
-*     \|  B  
-*   npn|------------o  nb
+*     \|  B         nb 
+*   npn|------------o--------     <--- Stromquelle Ib
 *     /|
 *    /   
 *   E|
