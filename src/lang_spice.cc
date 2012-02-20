@@ -638,7 +638,7 @@ void LANG_SPICE_BASE::parse_module_body(CS& cmd, MODEL_SUBCKT* x, CARD_LIST* Sco
       }else{
         trace2("LANG_SPICE_BASE::parse_module_body ", cmd.fullstring(), OPT::language);
 	skip_pre_stuff(cmd);
-	new__instance(cmd, x, Scope);
+        OPT::language->new__instance(cmd, x, Scope);
       }
     }
   }catch (Exception_End_Of_Input& e) {
