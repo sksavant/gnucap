@@ -1428,13 +1428,13 @@ double $(DEV_NAME)::tr_probe_num(const std::string& x)const
 	{
 		std::stringstream ss;
 		ss << i;
-		state_names[i] = "s" + ss.str();
+		state_names[i] = "state" + ss.str();
 	}
 	for(int i=0; i<_num_total_nodes; i++)
 	{
 		std::stringstream ss;
 		ss << i;
-		node_names_n[i] = "i" + ss.str();
+		node_names_n[i] = "cont" + ss.str();
 	}
 
 	assert(_dt == NOT_VALID || conchk(_dt, _time[0] - _time[1]));
