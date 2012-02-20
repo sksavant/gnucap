@@ -136,7 +136,7 @@ spice
 .print dc i(Ib) i(vicq1) Ibici(Q1) ijbc(Q1) Vbici(Q1) V(nb) 
 
 *.dc Ib 15u 15u 1u Vce 1 1 0.2  basic trace=v
-.dc Ib 15u 15u 5u Vce 1 1 0.2 basic
+.dc Ib 15u 15u 5u Vce 1 1 0.2 basic trace=v
 
 
 .end
