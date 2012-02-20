@@ -875,25 +875,21 @@ void $(DEV_NAME)::expand()
 
 	// fix up internal nodes
 	if (_sim->is_first_expand()) {
-
-	        <admst:text format="\t\tstd::string node_names[] = {"/>
+		std::string node_names[] = {
          	<admst:join select="node[grounded='no']" separator=", ">  
-            	        <admst:value-of select="name"/>  
-                    	<admst:text format="&quot;%s&quot;"/>    
+					<admst:value-of select="name"/>  
+					<admst:text format="&quot;%s&quot;"/>    
           	</admst:join>
-        	<admst:text format=" };"/>
-	  trace4("DEV_ADMS::expand nodes",  net_nodes() , max_nodes() , matrix_nodes(), int_nodes());
-            char fake_name[] = "a"; // FIXME: use real name
-                for(unsigned ii = net_nodes(); ii < matrix_nodes(); ++ii)
-                {
-                        if( !_n[ii].n_() )
-                       {       
-                                trace1("alloc internal node ", ii);
-                                
-                                //_n[ii].new_model_node('.' + long_label() + '.' + fake_name, this);
-                                _n[ii].new_model_node(node_names[ii], this);
+				};
+		trace4("DEV_ADMS::expand nodes",  net_nodes() , max_nodes() , matrix_nodes(), int_nodes());
+		//		char fake_name[] = "a"; // FIXME: use real name
+		for(unsigned ii = net_nodes(); ii < matrix_nodes(); ++ii) {
+			if( !_n[ii].n_() ) {       
+				trace1("alloc internal node ", ii);
+				//_n[ii].new_model_node('.' + long_label() + '.' + fake_name, this);
+				_n[ii].new_model_node(node_names[ii], this);
 			}
-			++(*fake_name);
+			//++(*fake_name);
 		}
 
 	   // int start_internal = 0;

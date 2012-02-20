@@ -452,7 +452,6 @@ COMPONENT::COMPONENT(const COMPONENT& p)
   }
   attach_common(p._common);
   assert(_common == p._common);
-  cout << "copied  "<<p.long_label()<< " " << hp(&p) <<  " to " << long_label() <<" " <<hp(this) <<  " " << hp(p.adp()) <<"\n";
 }
 /*--------------------------------------------------------------------------*/
 COMPONENT::~COMPONENT()
