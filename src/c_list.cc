@@ -42,6 +42,7 @@ void list_save(CS& cmd, OMSTREAM out, CARD_LIST* scope)
   case rPRESET:
     /* do nothing */
     return;
+  case rPIPE:		untested();
   case rBATCH:		itested();
   case rINTERACTIVE:	itested();
   case rSCRIPT:

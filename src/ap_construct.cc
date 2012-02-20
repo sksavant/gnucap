@@ -39,7 +39,7 @@
   #include <readline/history.h>
 #endif
 /*--------------------------------------------------------------------------*/
-static std::string getlines(FILE*);
+// static std::string getlines(FILE*);
 OMSTREAM mout; // > file bitmap //BUG//encapsulation
 OMSTREAM mlog; // log file bitmap
 /*--------------------------------------------------------------------------*/
