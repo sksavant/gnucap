@@ -355,7 +355,6 @@ private: // parameters
 
 protected: // implementation
 	void guesstopology();
-	void temperature();
 	void acLoad();
 	void pzLoad(COMPLEX s);
 	enum ELoadModes {
@@ -940,8 +939,14 @@ void $(DEV_NAME)::precalc_last()
 void $(DEV_NAME)::internal_precalc()
 {
   trace1(" $(DEV_NAME)::internal_precalc()", long_label());
-  temperature();
-  set_converged();
+  
+#define _STATIC
+#define _DYNAMIC
+  <admst:apply-templates select="analog" match="analog:initial_instance" required="yes"/>
+#undef _STATIC
+#undef _DYNAMIC
+
+  set_converged(); 
   assert(!is_constant());
 }
 // -------------------------------------------------------------------------- //
@@ -1514,29 +1519,9 @@ void $(DEV_NAME)::CKTterr(int qcap, double *time_step)
 
 	*time_step = std::min(tr_review_trunc_error(&q[0]), *time_step);
 }
-// -------------------------------------------------------------------------- //
-// -------------------------------------------------------------------------- 
-#define _STATIC
-#define _DYNAMIC
-// #define _DERIVATE
-void $(DEV_NAME)::temperature()
-{
-  trace1(" $(DEV_NAME)::temperature()", long_label());
-  const COMMON_COMPONENT* c = asserted_cast<const COMMON_COMPONENT*>(common());
-  const $(MODEL_NAME)* m = prechecked_cast<const $(MODEL_NAME)*>(model());
-    assert(m);
-    USE(m);
-    USE(c);
 
-  <admst:apply-templates select="analog" match="analog:initial_instance" required="yes"/>
-}
-#undef _STATIC
-#undef _DYNAMIC
-// undef _DERIVATE
 // -------------------------------------------------------------------------- //	
-	
 
-<!-- ----------------------------------------- -->
 <admst:template match="evaluate.localvariables">
   <admst:choose>
     <admst:when test="[datatypename='assignment']">
@@ -2165,7 +2150,6 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 
 <!-- ----------------------------------------------------------------- -->
 <admst:template match="mapply_binary">
-  <admst:warning format="mapply_binary X3??\n"/>
   <admst:choose>
     <admst:when test="[name='bw_equr']">
       <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
@@ -3468,28 +3452,31 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 <admst:template match="variable">
   <admst:variable name="e" select="%(name)"/>
   <admst:value-of select="name"/>
-  <admst:if test="[parametertype='analogfunction']">
+  
+  <admst:choose>
+  <admst:when test="[parametertype='analogfunction']">
     <admst:value-to select="/simulator/tmp" value="%s"/>
-  </admst:if>
-  <admst:if test="[input='yes' and parametertype='model']">
+  </admst:when>
+  <admst:when test="[input='yes' and parametertype='model']">
     <admst:variable name="e" select="m-&gt;%(name)"/>
     <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
-  </admst:if>
-  <admst:if test="[input='yes' and parametertype='instance']">
+  </admst:when>
+  <admst:when test="[input='yes' and parametertype='instance']">
     <admst:variable name="e" select="m-&gt;%(name)"/>
     <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
-  </admst:if>
-  <admst:if test="[input='no' and scope='global_model']">
+  </admst:when>
+  <admst:when test="[input='no' and scope='global_model']">
     <admst:variable name="e" select="m-&gt;%(name)"/>
     <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
-  </admst:if>
-  <admst:if test="[input='no' and scope='global_instance']">
+  </admst:when>
+  <admst:when test="[input='no' and scope='global_instance']">
     <admst:variable name="e" select="$(var_prefix)%(name)"/>
     <admst:value-to select="/simulator/tmp" value="$(var_prefix)%s"/>
-  </admst:if>
-  <admst:if test="[parametertype!='analogfunction' and scope='local']">
+  </admst:when>
+  <admst:when test="[parametertype!='analogfunction' and scope='local']">
     <admst:value-to select="/simulator/tmp" value="%s"/>
-  </admst:if>
+  </admst:when>
+  </admst:choose>
   
     <admst:variable name="ep" select="0.0"/>
     <admst:if test="[insource='yes']">
