@@ -179,14 +179,14 @@
 		end else begin\
 			le	= 1;\
 		end\
-  		le 	= le*limexp(DIOY);\
+		le 	= le*limexp(DIOY);\
 		Iz	= IST*(le-1.0);\
 		if(DIOY <= -14.0) begin\
 			Iz	= -IST;\
 		end\
 	end else begin\
 		Iz	= 0.0;\
-        end
+	end
         
 
 module hicum0 (c,b,e,s,tnode);                    
