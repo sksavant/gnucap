@@ -3632,7 +3632,7 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
       <admst:apply-templates select="." match="function:getCid"/>
       <admst:text format="double __%s_%s=0.0;\n"/>
     </admst:for-each>
-    <admst:apply-templates select="." match="X3ddx:function:computation"/>
+    <admst:apply-templates select="." match="ddx:function:computation"/>
   </admst:if>
   <admst:choose>
   </admst:choose>
@@ -6130,11 +6130,16 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
     </admst:choose>
     <admst:text format="{\n"/>
     <admst:for-each select="rhs/function">
+
       <admst:value-of select="position(.)-1"/>
-      <admst:apply-templates select="." match="X3function:getname"/>
+
+	<admst:apply-templates select="." match="X3function:getname">
+      	<admst:value-of select="returned('function:getname')/value"/>
+      </admst:apply-templates>
+      
       <admst:text format="double __%s_%s=0.0;\n"/>
     </admst:for-each>
-    <admst:apply-templates select="." match="X3ddx:function:computation"/>
+    <admst:apply-templates select="." match="ddx:function:computation"/>
   </admst:if>
   <admst:choose>
     <admst:when test="[dynamic='yes']">
