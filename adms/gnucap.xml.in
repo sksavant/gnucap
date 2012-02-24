@@ -1748,6 +1748,9 @@ void $(DEV_NAME)::tr_eval()
 		current_state=0;
 		<admst:variable name="eval_mode" select="tr"/>
 		current_state=0; // FIXME
+	
+		// #include "$(filename)_tr_eval.hxx"
+
 		<admst:apply-templates select="analog/code" match="X3analog:evaluate" required="yes"/>
 	}
 
