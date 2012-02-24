@@ -39,6 +39,7 @@ d_bjt.model d_diode.model d_diode2.model
 # device models hand coded in C++
 D_SRCS = \
 d_admit.cc d_cap.cc d_cccs.cc d_ccvs.cc d_coil.cc \
+d_meas.cc \
 d_cs.cc d_poly_g.cc d_poly_cap.cc d_res.cc d_switch.cc \
 d_trln.cc d_vcg.cc d_vcr.cc d_vcvs.cc d_vs.cc  \
 d_rcd.cc d_bti.cc  d_branchvs.cc
