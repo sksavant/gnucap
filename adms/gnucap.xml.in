@@ -1749,9 +1749,7 @@ void $(DEV_NAME)::tr_eval()
 		<admst:variable name="eval_mode" select="tr"/>
 		current_state=0; // FIXME
 	
-		// #include "$(filename)_tr_eval.hxx"
-
-		<admst:apply-templates select="analog/code" match="X3analog:evaluate" required="yes"/>
+		#include "$(filename)_tr_eval.hxx"
 	}
 
 	// this is what cap does.
@@ -4544,6 +4542,16 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 <!-- *********************************** ngspiceMODULE.hxx.xml ************************* -->
 <!-- *********************************************************************************** -->
 
+<admst:for-each select="/module">
+	<admst:value-of select="attribute[name='ngspicename']/value"/>
+	<admst:variable name="module" select="%s"/>
+	<admst:variable name="DEV_NAME" select="DEV_%(upper-case(name))"/>
+	<admst:variable name="MODEL_NAME" select="MODEL_%(upper-case(name))"/>
+
+	<admst:open file="$(filename)_tr_eval.hxx">
+		<admst:apply-templates select="analog/code" match="X3analog:evaluate" required="yes"/>
+	</admst:open>
+</admst:for-each>
 <!-- ----------------------------------------------------------------- -->
 <!-- -------------------- analog//contribution ----------------------- -->
 <admst:template match="X3contribution:ddt">
