@@ -533,69 +533,13 @@ inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  )
 	assert(is_number( _n[p].v0() - _n[n].v0() ));
 	return  min( 100. , max (  _n[p].v0() - _n[n].v0(), -100. ));
 }
-
 </admst:for-each>
 
+<admst:apply-templates select="." match="PrintHxxFunctions"/>
+
 #endif
-
-inline double _cos(double arg)             { return  cos(arg); }
-inline double _d0_cos(double arg)          { return (-sin(arg)); }
-inline double _sin(double arg)             { return  sin(arg); }
-inline double _d0_sin(double arg)          { return (cos(arg)); }
-inline double _tan(double arg)             { return  tan(arg); }
-inline double _d0_tan(double arg)          { return (1.0/cos(arg)/cos(arg)); }
-inline double _cosh(double arg)            { return  cosh(arg); }
-inline double _d0_cosh(double arg)         { return (sinh(arg)); }
-inline double _sinh(double arg)            { return  sinh(arg); }
-inline double _d0_sinh(double arg)         { return (cosh(arg)); }
-inline double _tanh(double arg)            { return  tanh(arg); }
-inline double _d0_tanh(double arg)         { return (1.0/cosh(arg)/cosh(arg)); }
-inline double _acos(double arg)            { return  acos(arg); }
-inline double _d0_acos(double arg)         { return (-1.0/sqrt(1-arg*arg)); }
-inline double _asin(double arg)            { return  asin(arg); }
-inline double _d0_asin(double arg)         { return (+1.0/sqrt(1-arg*arg)); }
-inline double _atan(double arg)            { return  atan(arg); }
-inline double _d0_atan(double arg)         { return (+1.0/(1+arg*arg)); }
-inline double _logE(double arg)            { return  log(arg); }
-inline double _d0_logE(double arg)         { return (1.0/arg); }
-inline double _log10(double arg)           { return  log10(arg); }
-inline double _d0_log10(double arg)        { return (1.0/arg/log(10)); }
-inline double _exp(double arg)             { return  exp(arg); }
-inline double _d0_exp(double arg)          { return exp(arg); } /* fixme */
-inline double _sqrt(double arg)            { return  sqrt(arg); }
-inline double _d0_sqrt(double arg)         { return (1.0/sqrt(arg)/2.0); } /* fixme */
-inline double _abs(double arg)             { return  fabs(arg); }
-inline double _d0_abs(double arg)          { return (((arg)>=0)?(+1.0):(-1.0)); }
-
-inline double _hypot(double x,double y)    { return sqrt((x)*(x)+(y)*(y)); }
-inline double _d0_hypot(double x,double y) { return (x)/sqrt((x)*(x)+(y)*(y)); } /* fixme */
-inline double _d1_hypot(double x,double y) { return (y)/sqrt((x)*(x)+(y)*(y)); } /* fixme */
-
-inline double _max(double x,double y)      { return ((x)>(y))?(x):(y); }
-inline double _d0_max(double x,double y)   { return ((x)>(y))?1.0:0.0; }
-inline double _d1_max(double x,double y)   { return ((x)>(y))?0.0:1.0; }
-
-inline double _min(double x,double y)      { return ((x)<(y))?(x):(y); }
-inline double _d0_min(double x,double y)   { return ((x)<(y))?1.0:0.0; }
-inline double _d1_min(double x,double y)   { return ((x)<(y))?0.0:1.0; }
-
-inline double _pow(double x,double y)      { return pow(x,y); }
-inline double _d0_pow(double x,double y)   { return (x==0.0)?0.0:((y/x)*pow(x,y)); } /* fixme */
-inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.0))*pow(x,y)); } /* fixme */
-
-inline double _limexp(double arg)  { return  ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); }
-inline double _d0_limexp(double arg) { return  ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); }
-
-<!--inline double $(module)_vt (double Tdev) {
-  return 1.3806503e-23*Tdev/1.602176462e-19;
-}
-inline double $(module)_d_vt (double Tdev, double d_Tdev) {
-  double vt_Tdev=1.3806503e-23/1.602176462e-19;
-  return vt_Tdev*d_Tdev;
-}
-< -->
-
 // vim should work with any ts=sw
+
 </admst:open>
 
 
@@ -1892,6 +1836,66 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 #define _fabs(val,arg)           val = fabs(arg);
 #define _d_fabs(val,dval,arg)    val = fabs(arg);    dval = (((val)>=0)?(+1.0):(-1.0));
 #define _abs(val)                ((val)<(0) ? (-(val)):(val))
+
+</admst:template>
+
+<admst:template match="PrintHxxFunctions">
+inline double _cos(double arg)             { return  cos(arg); }
+inline double _d0_cos(double arg)          { return (-sin(arg)); }
+inline double _sin(double arg)             { return  sin(arg); }
+inline double _d0_sin(double arg)          { return (cos(arg)); }
+inline double _tan(double arg)             { return  tan(arg); }
+inline double _d0_tan(double arg)          { return (1.0/cos(arg)/cos(arg)); }
+inline double _cosh(double arg)            { return  cosh(arg); }
+inline double _d0_cosh(double arg)         { return (sinh(arg)); }
+inline double _sinh(double arg)            { return  sinh(arg); }
+inline double _d0_sinh(double arg)         { return (cosh(arg)); }
+inline double _tanh(double arg)            { return  tanh(arg); }
+inline double _d0_tanh(double arg)         { return (1.0/cosh(arg)/cosh(arg)); }
+inline double _acos(double arg)            { return  acos(arg); }
+inline double _d0_acos(double arg)         { return (-1.0/sqrt(1-arg*arg)); }
+inline double _asin(double arg)            { return  asin(arg); }
+inline double _d0_asin(double arg)         { return (+1.0/sqrt(1-arg*arg)); }
+inline double _atan(double arg)            { return  atan(arg); }
+inline double _d0_atan(double arg)         { return (+1.0/(1+arg*arg)); }
+inline double _logE(double arg)            { return  log(arg); }
+inline double _d0_logE(double arg)         { return (1.0/arg); }
+inline double _log10(double arg)           { return  log10(arg); }
+inline double _d0_log10(double arg)        { return (1.0/arg/log(10)); }
+inline double _exp(double arg)             { return  exp(arg); }
+inline double _d0_exp(double arg)          { return exp(arg); } /* fixme */
+inline double _sqrt(double arg)            { return  sqrt(arg); }
+inline double _d0_sqrt(double arg)         { return (1.0/sqrt(arg)/2.0); } /* fixme */
+inline double _abs(double arg)             { return  fabs(arg); }
+inline double _d0_abs(double arg)          { return (((arg)>=0)?(+1.0):(-1.0)); }
+
+inline double _hypot(double x,double y)    { return sqrt((x)*(x)+(y)*(y)); }
+inline double _d0_hypot(double x,double y) { return (x)/sqrt((x)*(x)+(y)*(y)); } /* fixme */
+inline double _d1_hypot(double x,double y) { return (y)/sqrt((x)*(x)+(y)*(y)); } /* fixme */
+
+inline double _max(double x,double y)      { return ((x)>(y))?(x):(y); }
+inline double _d0_max(double x,double y)   { return ((x)>(y))?1.0:0.0; }
+inline double _d1_max(double x,double y)   { return ((x)>(y))?0.0:1.0; }
+
+inline double _min(double x,double y)      { return ((x)<(y))?(x):(y); }
+inline double _d0_min(double x,double y)   { return ((x)<(y))?1.0:0.0; }
+inline double _d1_min(double x,double y)   { return ((x)<(y))?0.0:1.0; }
+
+inline double _pow(double x,double y)      { return pow(x,y); }
+inline double _d0_pow(double x,double y)   { return (x==0.0)?0.0:((y/x)*pow(x,y)); } /* fixme */
+inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.0))*pow(x,y)); } /* fixme */
+
+inline double _limexp(double arg)  { return  ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); }
+inline double _d0_limexp(double arg) { return  ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); }
+
+<!--inline double $(module)_vt (double Tdev) {
+  return 1.3806503e-23*Tdev/1.602176462e-19;
+}
+inline double $(module)_d_vt (double Tdev, double d_Tdev) {
+  double vt_Tdev=1.3806503e-23/1.602176462e-19;
+  return vt_Tdev*d_Tdev;
+}
+< -->
 
 </admst:template>
 
