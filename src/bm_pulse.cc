@@ -173,6 +173,7 @@ void EVAL_BM_PULSE::precalc_first(const CARD_LIST* Scope)
   }
 
   if(_freq.has_good_value()){
+    _width=NOT_INPUT; //hack
     _period=1./_freq;
 
     if(_dc.has_good_value()){
