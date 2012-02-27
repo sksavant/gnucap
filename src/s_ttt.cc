@@ -254,22 +254,23 @@ void TTT::first_after_interruption(){
 }
 /*--------------------------------------------------------------*/
 void TTT::tt_begin() {
-		_sim->_dT0 = 0;
-		_sim->_dT1 = 0;
-		_sim->_dT2 = 0;
+	_sim->_dT0 = 0;
+	_sim->_dT1 = 0;
+	_sim->_dT2 = 0;
 	trace0("TTT::tt_begin");
 	_sim->_stepno = 0;
 	_sim->_tt_uic = false;
 	CARD_LIST::card_list.do_forall( &CARD::tt_begin );
+	// advance_time() // must be done, as tt1 is used in stress_apply...
 	CARD_LIST::card_list.stress_apply(); 
 }
 /*--------------------------------------------------------------*/
 void TTT::tt_cont() {
 	// continue from externally set adp_node values...
-		_sim->_dT0 = 0;
-		_sim->_dT1 = 0;
-		_sim->_dT2 = 0;
-		_sim->_time0 = 0;
+	_sim->_dT0 = 0;
+	_sim->_dT1 = 0;
+	_sim->_dT2 = 0;
+	_sim->_time0 = 0;
 	trace0("TTT::cont");
 	_sim->_stepno = 0;
 	_sim->_tt_uic = true;

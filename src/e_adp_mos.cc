@@ -300,10 +300,11 @@ void ADP_BUILT_IN_MOS8::tt_begin()
 			hci_node->set_tr(0);
 		}else{
 			hci_node->set_tr(0); untested();
+			hci_node->set_tt(0); untested();
 		}
-		_hci_tr=0;
-		vthdelta_hci=0;
-		vthscale_hci=0;
+		_hci_tr = 0;
+		vthdelta_hci = 0;
+		vthscale_hci = 0;
 	}
 	q_eval();
 }
@@ -359,7 +360,12 @@ void ADP_BUILT_IN_MOS8::stress_apply() {
 		}
 
 		assert(ex_time>=0);
-		double hci_new =  hci_node->tt1(); // tt @ last_Time (?)
+
+		double hci_new = hci_node->tt1(); // tt @ last_Time (?)
+		if (!hci_node->order()){
+			untested();
+			hci_new=hci_node->tt();
+		}
 
 		if (!is_number(hci_new)){
 			error(bDANGER, "ADP_BUILT_IN_MOS8::stress_apply hci hist bug Time0 %E last %E ordr %i \n", _sim->_Time0, _sim->_last_Time, hci_node->order() );
@@ -385,7 +391,6 @@ void ADP_BUILT_IN_MOS8::stress_apply() {
 			assert(is_number(hci_new));
 		}
 
-		hci_node->tt() = 0;
 		hci_node->tt() = (double) hci_new;
 		assert(!_hci_tr);
 
