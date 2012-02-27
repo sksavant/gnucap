@@ -3504,58 +3504,25 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 <!-- ----------------------------------------------------------------- -->
 <!-- variable:rhs -->
 <admst:template match="variable">
-<admst:message test="[/dbg_xml='yes']" format="*variable*\n"/>
-  <admst:variable name="e" select="%(name)"/>
   <admst:value-of select="name"/>
-  
-  <admst:choose>
-  <admst:when test="[parametertype='analogfunction']">
+  <admst:if test="[parametertype='analogfunction']">
     <admst:value-to select="/simulator/tmp" value="%s"/>
-  </admst:when>
-  <admst:when test="[input='yes' and parametertype='model']">
-    <admst:variable name="e" select="_model-&gt;%(name)"/>
+  </admst:if>
+  <admst:if test="[input='yes' and parametertype='model']">
     <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
-  </admst:when>
-  <admst:when test="[input='yes' and parametertype='instance']">
-    <admst:variable name="e" select="_model-&gt;%(name)"/>
+  </admst:if>
+  <admst:if test="[input='yes' and parametertype='instance']">
     <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
-  </admst:when>
-  <admst:when test="[input='no' and scope='global_model']">
-    <admst:variable name="e" select="_model-&gt;%(name)"/>
+  </admst:if>
+  <admst:if test="[input='no' and scope='global_model']">
     <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
-  </admst:when>
-  <admst:when test="[input='no' and scope='global_instance']">
-    <admst:variable name="e" select="$(var_prefix)%(name)"/>
+  </admst:if>
+  <admst:if test="[input='no' and scope='global_instance']">
     <admst:value-to select="/simulator/tmp" value="$(var_prefix)%s"/>
-  </admst:when>
-  <admst:when test="[parametertype!='analogfunction' and scope='local']">
+  </admst:if>
+  <admst:if test="[parametertype!='analogfunction' and scope='local']">
     <admst:value-to select="/simulator/tmp" value="%s"/>
-  </admst:when>
-  </admst:choose>
-  
-    <admst:variable name="ep" select="0.0"/>
-    <admst:if test="[insource='yes']">
-      <admst:if-inside select="$pprobe" list="%(probe)">
-        <admst:variable name="ep" select="%(name)_%($pprobe/nature/access)%($pprobe/branch/pnode/name)_%($pprobe/branch/nnode/name)"/>
-      </admst:if-inside>
-    </admst:if> 
-    
-    <admst:if test="$qprobe">
-  	  <admst:variable name="eq" select="0.0"/>
-  	  <admst:if test="[insource='yes']">
-  		<admst:if-inside select="$qprobe" list="%(probe)">
-  		  <admst:variable name="eq" select="%(name)_%($qprobe/nature/access)%($qprobe/branch/pnode/name)_%($qprobe/branch/nnode/name)"/>
-  		</admst:if-inside>
-  	  </admst:if>
-  	  <admst:variable name="epq" select="0.0"/>
-  	  <admst:if test="[insource='yes']">
-  		<admst:if-inside select="$pprobe" list="%(probe)">
-  		  <admst:if-inside select="$qprobe" list="%(probe)">
-  			<admst:variable name="epq" select="%(X3ddxname(.)/[name='ddxname']/value)"/>
-  		  </admst:if-inside>
-  		</admst:if-inside>
-  	  </admst:if>
-    </admst:if>
+  </admst:if>
 </admst:template>
 
 <!-- ----------------------------------------------------------------- -->
@@ -4534,7 +4501,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 </admst:template>
 
 
-<!-- /admst>
+<!--/admst>
 <admst version="2.3.0"-->
 
 
@@ -5658,10 +5625,50 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 </admst:template>
 <!-- -------------------------------------------------- -->
 <admst:template match="X3variable">
-<admst:message test="[/dbg_xml='yes']" format="*X3variable*\n"/>
-  <admst:apply-templates select="." match="variable"/>
+  <admst:choose>
+    <admst:when test="[input='yes' and parametertype='model']">
+      <admst:variable name="e" select="_model-&gt;%(name)"/>
+    </admst:when>
+    <admst:when test="[input='yes' and parametertype='instance']">
+      <admst:variable name="e" select="_model-&gt;%(name)"/>
+    </admst:when>
+    <admst:when test="[input='no' and scope='global_model']">
+      <admst:variable name="e" select="_model-&gt;%(name)"/>
+    </admst:when>
+    <admst:when test="[input='no' and scope='global_instance']">
+      <admst:variable name="e" select="$(var_prefix)%(name)"/>
+    </admst:when>
+    <admst:otherwise>
+      <admst:variable name="e" select="%(name)"/>
+    </admst:otherwise>
+  </admst:choose>
 
+  <admst:variable name="ep" select="0.0"/>
+  <admst:if test="[insource='yes']">
+    <admst:if-inside select="$pprobe" list="%(probe)">
+      <admst:variable name="ep" select="%(name)_%($pprobe/nature/access)%($pprobe/branch/pnode/name)_%($pprobe/branch/nnode/name)"/>
+    </admst:if-inside>
+  </admst:if>
+  <admst:if test="$qprobe">
+
+  <admst:variable name="eq" select="0.0"/>
+  <admst:if test="[insource='yes']">
+    <admst:if-inside select="$qprobe" list="%(probe)">
+      <admst:variable name="eq" select="%(name)_%($qprobe/nature/access)%($qprobe/branch/pnode/name)_%($qprobe/branch/nnode/name)"/>
+    </admst:if-inside>
+  </admst:if>
+
+  <admst:variable name="epq" select="0.0"/>
+  <admst:if test="[insource='yes']">
+    <admst:if-inside select="$pprobe" list="%(probe)">
+      <admst:if-inside select="$qprobe" list="%(probe)">
+        <admst:variable name="epq" select="%(X3ddxname(.)/[name='ddxname']/value)"/>
+      </admst:if-inside>
+    </admst:if-inside>
+  </admst:if>
+  </admst:if>
 </admst:template>
+
 <!-- -------------------------------------------------- -->
 <admst:template match="X3probe">
 <admst:message test="[/dbg_xml='yes']" format="*X3probe*\n"/>
