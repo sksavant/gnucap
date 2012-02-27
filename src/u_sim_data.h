@@ -113,7 +113,7 @@ public:
   std::deque<CARD*>* _evalq;   /* pointer to evalq to process */
   std::deque<CARD*>* _evalq_uc;/* pointer to evalq under construction */
   WAVE *_waves;		/* storage for waveforms "store" command*/
-  WAVE *_waves_tt;		/* storage for waveforms "store" command for tt. HACK*/
+  WAVE *_waves_tt;	// will be moved to _waves after TTT run HACK?
   SIM_DATA() {
     _evalq = &_evalq1;
     _evalq_uc = &_evalq2;

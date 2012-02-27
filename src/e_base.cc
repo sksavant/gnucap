@@ -135,7 +135,7 @@ double CKT_BASE::ac_probe_num(const std::string& what)const
 /*--------------------------------------------------------------------------*/
 /*static*/ WAVE* CKT_BASE::find_wave(const std::string& probe_name)
 {
-  trace0("CKT_BASE::find_wave( " + probe_name + " )");
+  trace2("CKT_BASE::find_wave", probe_name, _sim->_mode);
   int ii = 0;
   for (PROBELIST::const_iterator
        p  = PROBE_LISTS::store[_sim->_mode].begin();

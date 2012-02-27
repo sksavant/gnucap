@@ -212,9 +212,6 @@ void SIM_DATA::order_comp( const CARD_LIST* scope, unsigned *c, bool *d)
         assert(un<_total_nodes+1);
       }
     }
-
-
-
   }
 
   if (cleanup){

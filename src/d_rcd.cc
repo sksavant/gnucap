@@ -1402,7 +1402,6 @@ void DEV_BUILT_IN_RCD::tr_stress()
     return;
   }
 
-
   assert(is_number(involts()));
 
   if( _sim->_time0==0 ){

@@ -43,7 +43,6 @@ public:
       trace1("CMD_MEASURE::do_it 1", f->label());
       WAVE_FUNCTION* ff= dynamic_cast<WAVE_FUNCTION*>(f);
       USE(ff);
-//      assert(ff);
       
       trace3("CMD_MEASURE::do_it 2", f->label(), hp(ff), hp(f));
       fun_t value = f->eval(Cmd, Scope); // FIXME?

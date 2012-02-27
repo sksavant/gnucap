@@ -368,7 +368,7 @@ protected:
 private:
   ADP_CARD* _adp;
 public: // twotime interface.
-  virtual void tt_begin() { tt_next(); }
+  virtual void tt_begin() {  }
   virtual void tt_next() {  }
   virtual void stress_apply() { }
   virtual void  tr_stress()  {

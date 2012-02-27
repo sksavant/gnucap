@@ -61,7 +61,10 @@ class TTT : public TRANSIENT {
     double get_new_dT();
     void	accept_tt();
     void	print_head_tr();
+
+	 // FIXME: private could inhibit call from within TRANSIENT....
     void	head(double,double,const std::string&);
+
     void	head_tt(double,double,const std::string&);
     void	set_step_tt_cause(STEP_CAUSE);
     void	first();

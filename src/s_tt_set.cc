@@ -349,8 +349,7 @@ void TTT::setup(CS& Cmd)
 
 	steps_total_out_ = (int) (1 + ceil( ( (_tstop - _tstart ) / _tstep ) ));
 	steps_total_out_ = steps_total_out_ ;
-	trace6( "TTT::setup done ",  steps_total_out_ , _tstep , _tstop ,_tstart, _cont, _tt_cont );
-
+	trace6( "TTT::setup done ",  steps_total_out_ , _tstep , _tstop ,_tstart, _cont, _cont_tt );
 }
 	/*--------------------------------------------------------------------------*/
 }
