@@ -1298,7 +1298,7 @@ void $(DEV_NAME)::keep_ic()
 
   <!-- 
 
-  <admst:apply-templates select="analog/code" match="X3analog:evaluate" required="yes"/>
+  <admst:apply-templates select="analog/code" match="analog:evaluate" required="yes"/>
 
         -->
 
@@ -1717,7 +1717,7 @@ void $(DEV_NAME)::ac_eval()
 
 	 <admst:variable name="eval_mode" select="ac"/>
 	 current_state=0; // FIXME
-	 <admst:apply-templates select="analog/code" match="X3analog:evaluate" required="yes"/>
+	 <admst:apply-templates select="analog/code" match="analog:evaluate" required="yes"/>
 
 
 	} // analog:eval
@@ -1765,8 +1765,8 @@ void $(DEV_NAME)::tr_eval()
 <!-- *********************************************************************************** -->
 
 <!-- ----------------------------------------------------------------- -->
-<admst:template match="X3c:myfunc:math_h">
-<admst:message test="[/dbg_xml='yes']" format="*X3c:myfunc:math_h*\n"/>
+<admst:template match="c:myfunc:math_h">
+<admst:message test="[/dbg_xml='yes']" format="*c:myfunc:math_h*\n"/>
 inline double doh(double x)            {return  log(1+exp(x)); }
 inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 </admst:template>
@@ -3140,7 +3140,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 <admst:template match="assignment">
 <admst:message test="[/dbg_xml='yes']" format="*assignment*\n"/>
   <admst:warning format="template not in use: remved\n"/>
-  <admst:apply-templates select="." match="X3assignment"/>
+  <admst:apply-templates select="." match="assignment"/>
 </admst:template>
 
 <!-- ----------------------------------------------------------------- -->
@@ -3152,7 +3152,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 
 
   <admst:text format="// var decl\n"/>
-  <admst:apply-templates select="module/evaluation/variable" match="X3variable:declaration"/>
+  <admst:apply-templates select="module/evaluation/variable" match="variable:declaration"/>
   <admst:text format="// var decl done\n"/>
 
 
@@ -3162,7 +3162,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       <admst:when test="adms[datatypename!='block']">
         <admst:text format="// not a block\n"/>
         <admst:text format="// fetch states\n"/>
-        <admst:apply-templates select="." match="X3%(adms/datatypename)"/>
+        <admst:apply-templates select="." match="%(adms/datatypename)"/>
         <admst:text format="// fetched states\n"/>
         <admst:text format="// not a block done\n"/>
       </admst:when>
@@ -3170,12 +3170,12 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
         <admst:if test="[name!='initial_model' and name!='initial_instance']">
           <admst:text format="// not initial_\n"/>
 
-          <admst:text format="{ //X3block \n"/>
-          <admst:text select="item" format=" // X3%(adms/datatypename) \n"/>
-          <admst:apply-templates select="item" match="X3%(adms/datatypename)"/>
-          <admst:text format="} //X3blovk... \n"/>
+          <admst:text format="{ //block \n"/>
+          <admst:text select="item" format=" // %(adms/datatypename) \n"/>
+          <admst:apply-templates select="item" match="%(adms/datatypename)"/>
+          <admst:text format="} //blovk... \n"/>
 
-          <admst:text format="// done X3block\n"/>
+          <admst:text format="// done block\n"/>
         </admst:if>
       </admst:otherwise>
     </admst:choose>
@@ -3195,28 +3195,28 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:for-each>
 
   <admst:variable name="keep_ic" select="yes"/>
-  <admst:apply-templates select="module/evaluation/variable" match="X3variable:declaration"/>
+  <admst:apply-templates select="module/evaluation/variable" match="variable:declaration"/>
   <admst:reset select="module/evaluation/variable"/>
   <admst:for-each select="item">
     <admst:choose>
       <admst:when test="adms[datatypename!='block']">
         <admst:text format="// not a block\n"/>
         <admst:warning format="keep ic takes a block, not %(adms/datatypename) - %(.)\n"/>
-        <!-- <admst:apply-templates select="." match="X3%(adms/datatypename)"/> -->
+        <!-- <admst:apply-templates select="." match="%(adms/datatypename)"/> -->
         <admst:text format="// not a block done\n"/>
       </admst:when>
       <admst:otherwise>
         <admst:if test="[name!='initial_model' and name!='initial_instance']">
           <admst:text format="// not initial_\n"/>
-          <!-- <admst:apply-templates select="." match="X3block"/> -->
+          <!-- <admst:apply-templates select="." match="block"/> -->
 
-          <admst:text format="{ //X3block \n"/>
+          <admst:text format="{ //block \n"/>
 
 
-          <admst:apply-templates select="item" match="X3%(adms/datatypename)"/>
-          <admst:text format="} //X3blovk. \n"/>
+          <admst:apply-templates select="item" match="%(adms/datatypename)"/>
+          <admst:text format="} //blovk. \n"/>
 
-          <admst:text format="// done X3block\n"/>
+          <admst:text format="// done block\n"/>
         </admst:if>
       </admst:otherwise>
     </admst:choose>
@@ -3607,7 +3607,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:for-each> 
 
   <admst:for-each select="item[adms/datatypename='assignment']" >
-    <admst:apply-templates select="." match="X3%(adms/datatypename)"/>  
+    <admst:apply-templates select="." match="%(adms/datatypename)"/>  
   </admst:for-each> 
 
   <admst:variable name="ddt_type" select="c_"/>
@@ -3615,7 +3615,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   <admst:text format="//now contribs... \n"/>
   <admst:for-each select="item[adms/datatypename='contribution']" >
     <admst:text format="// %(.) \n"/>
-    <admst:apply-templates select="." match="X3%(adms/datatypename):ddt"/> 
+    <admst:apply-templates select="." match="%(adms/datatypename):ddt"/> 
   </admst:for-each> 
 
   <admst:text format="// done finddt $finddt\n"/>
@@ -4516,26 +4516,26 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 	<admst:variable name="MODEL_NAME" select="MODEL_%(upper-case(name))"/>
 
 	<admst:open file="$(filename)_tr_eval.hxx">
-		<admst:apply-templates select="analog/code" match="X3analog:evaluate" required="yes"/>
+		<admst:apply-templates select="analog/code" match="analog:evaluate" required="yes"/>
 	</admst:open>
 </admst:for-each>
 <!-- ----------------------------------------------------------------- -->
 <!-- -------------------- analog//contribution ----------------------- -->
-<admst:template match="X3contribution:ddt">
-<admst:message test="[/dbg_xml='yes']" format="*X3contribution:ddt*\n"/>
+<admst:template match="contribution:ddt">
+<admst:message test="[/dbg_xml='yes']" format="*contribution:ddt*\n"/>
   <admst:choose>
     <admst:when test="[whitenoise='yes' or flickernoise='yes']">
         <admst:warning format=" not implemented.\n"/>
     </admst:when>
     <admst:otherwise>
-      <admst:apply-templates select="." match="X3contribution:nonoise:ddt"/> <!-- ??? -->
+      <admst:apply-templates select="." match="contribution:nonoise:ddt"/> <!-- ??? -->
     </admst:otherwise>
   </admst:choose>
 </admst:template>
 
 <!-- ----------------------------------------------------------------- -->
-<admst:template match="X3contribution:nonoise:ddt">
-<admst:message test="[/dbg_xml='yes']" format="*X3contribution:nonoise:ddt*\n"/>
+<admst:template match="contribution:nonoise:ddt">
+<admst:message test="[/dbg_xml='yes']" format="*contribution:nonoise:ddt*\n"/>
   <admst:if test="rhs[not(nilled(function[class='builtin']))]">
     <admst:text format="{\n"/>
     <admst:for-each select="rhs/function">
@@ -4549,12 +4549,12 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:choose>
   <admst:choose>
     <admst:when test="lhs/branch/nnode[grounded='no']">
-      <admst:text format="//exec %X3e(rhs/tree))\n"/>
+      <admst:text format="//exec %e(rhs/tree))\n"/>
       <admst:text format=" $e\n"/>
     </admst:when>
     <admst:otherwise>
       <admst:value-of select="lhs/branch/pnode/name"/>
-      <admst:text format="// exec residual1(%s,%X3e(rhs/tree))\n"/>
+      <admst:text format="// exec residual1(%s,%e(rhs/tree))\n"/>
       <admst:text format="//founnde $e"/>
     </admst:otherwise>
   </admst:choose>
@@ -4566,7 +4566,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     <admst:variable name="probepnodename" select="%($probepnode/name)"/>
     <admst:variable name="probennodename" select="%($probennode/name)"/>
     <admst:variable name="pprobe" select="%(.)"/>
-    <admst:apply-templates select="../tree" match="X3%(adms/datatypename)"/>
+    <admst:apply-templates select="../tree" match="%(adms/datatypename)"/>
     <admst:choose>
     </admst:choose>
   </admst:for-each>
@@ -4574,8 +4574,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 
 <!-- ----------------------------------------------------------------- -->
 <!-- -------------------- analog//contribution ------------------------ -->
-<admst:template match="X3contribution">
-<admst:message test="[/dbg_xml='yes']" format="*X3contribution*\n"/>
+<admst:template match="contribution">
+<admst:message test="[/dbg_xml='yes']" format="*contribution*\n"/>
   <admst:choose>
     <admst:when test="[whitenoise='yes' or flickernoise='yes']">
       <admst:variable name="SkipFVariable" select="y"/>
@@ -4588,30 +4588,30 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
             <admst:text format="wnoise%(index($wnoise/item,.))="/>
           </admst:if>
           <admst:text format=" // things 2...  \n"/>
-          <admst:apply-templates select="rhs/tree/arguments[1]" match="X3%(adms/datatypename)"/>
+          <admst:apply-templates select="rhs/tree/arguments[1]" match="%(adms/datatypename)"/>
           <admst:text format="$e;\n"/>
         </admst:if>
         <admst:if test="[flickernoise='yes']">
           <admst:text format="fpnoise%(index($fnoise/item,.))="/>
-          <admst:apply-templates select="rhs/tree/arguments[1]" match="X3%(adms/datatypename)"/>
+          <admst:apply-templates select="rhs/tree/arguments[1]" match="%(adms/datatypename)"/>
           <admst:text format="$e;\n"/>
           <admst:text format="fenoise%(index($fnoise/item,.))="/>
-          <admst:apply-templates select="rhs/tree/arguments[2]" match="X3%(adms/datatypename)"/>
+          <admst:apply-templates select="rhs/tree/arguments[2]" match="%(adms/datatypename)"/>
           <admst:text format="$e;\n"/>
         </admst:if>
       <admst:variable name="SkipFVariable" select="n"/>
     </admst:when>
     <admst:otherwise>
 
-      <admst:text select="." format=" // X3contrib -&gt; nonoise \n"/>
-      <admst:apply-templates select="." match="X3contribution:nonoise"/>
+      <admst:text select="." format=" // contrib -&gt; nonoise \n"/>
+      <admst:apply-templates select="." match="contribution:nonoise"/>
     </admst:otherwise>
   </admst:choose>
 </admst:template>
 
 <!-- compute node arguments of noise routines -->
-<admst:template match="X3noisebranch">
-<admst:message test="[/dbg_xml='yes']" format="*X3noisebranch*\n"/>
+<admst:template match="noisebranch">
+<admst:message test="[/dbg_xml='yes']" format="*noisebranch*\n"/>
   <admst:variable name="n1" select=""/>
   <admst:choose>
     <admst:when test="lhs[grounded='yes']">
@@ -4624,11 +4624,11 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 </admst:template>
 
 <!-- compute range of variables -->
-<admst:template match="X3variable:range:foreach">
-<admst:message test="[/dbg_xml='yes']" format="*X3variable:range:foreach*\n"/>
+<admst:template match="variable:range:foreach">
+<admst:message test="[/dbg_xml='yes']" format="*variable:range:foreach*\n"/>
   <admst:choose>
     <admst:when test="infexpr[hasspecialnumber='NO']">
-      <admst:apply-templates select="infexpr/tree" match="X3%(adms/datatypename)"/>
+      <admst:apply-templates select="infexpr/tree" match="%(adms/datatypename)"/>
       <admst:variable name="lower" select="$e"/>
     </admst:when>
     <admst:otherwise>
@@ -4637,7 +4637,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:choose>
   <admst:choose>
     <admst:when test="supexpr[hasspecialnumber='NO']">
-      <admst:apply-templates select="supexpr/tree" match="X3%(adms/datatypename)"/>
+      <admst:apply-templates select="supexpr/tree" match="%(adms/datatypename)"/>
       <admst:variable name="upper" select="$e"/>
     </admst:when>
     <admst:otherwise>
@@ -4669,12 +4669,12 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:choose>
   <admst:text format="$rangetype $interval "/>
 </admst:template>
-<admst:template match="X3variable:range">
-<admst:message test="[/dbg_xml='yes']" format="*X3variable:range*\n"/>
+<admst:template match="variable:range">
+<admst:message test="[/dbg_xml='yes']" format="*variable:range*\n"/>
   <admst:choose>
     <admst:when test="range">
       <admst:text format="        &quot;"/>
-      <admst:apply-templates select="range" match="X3variable:range:foreach"/>
+      <admst:apply-templates select="range" match="variable:range:foreach"/>
       <admst:text format="&quot;"/>
     </admst:when>
     <admst:otherwise>
@@ -4684,8 +4684,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 </admst:template>
 
 <!-- -------- expression//function: mapping verilog-name == C-name of function ------- -->
-<admst:template match="X3function:getname">
-<admst:message test="[/dbg_xml='yes']" format="*X3function:getname*\n"/>
+<admst:template match="function:getname">
+<admst:message test="[/dbg_xml='yes']" format="*function:getname*\n"/>
   <admst:choose>
     <admst:when test="[name='abs']"><admst:return name="function:getname" value="abs"/></admst:when>
     <admst:when test="[name='\$shrinkl']"><admst:return name="function:getname" value="shrinkl"/></admst:when>
@@ -4710,11 +4710,11 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:choose>
 </admst:template>
 <!-- -------------------------------------------------------------- -->
-<admst:template match="X3af:print:expression">
-<admst:message test="[/dbg_xml='yes']" format="*X3af:print:expression*\n"/>
+<admst:template match="af:print:expression">
+<admst:message test="[/dbg_xml='yes']" format="*af:print:expression*\n"/>
   <admst:choose>
     <admst:when test="adms[datatypename='expression']">
-      <admst:apply-templates select="tree" match="X3af:print:expression">
+      <admst:apply-templates select="tree" match="af:print:expression">
         <admst:value-of select="returned('x')/value"/>
         <admst:variable name="expression" select="%s"/>
         <admst:for-each select="$globalanalogfunction/variable[input='yes']">
@@ -4767,7 +4767,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       <admst:if test="[name='bw_not']">
         <admst:variable name="op" select="~"/>
       </admst:if>
-      <admst:apply-templates select="arg1" match="X3af:print:expression">
+      <admst:apply-templates select="arg1" match="af:print:expression">
         <admst:value-of select="returned('x')/value"/><admst:variable name="arg1" select="%s"/>
       </admst:apply-templates>
       <admst:return name="x" value="($op$arg1)"/>
@@ -4777,7 +4777,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       </admst:for-each>
     </admst:when>
     <admst:when test="adms[datatypename='mapply_binary']">
-      <admst:apply-templates select="arg1" match="X3af:print:expression">
+      <admst:apply-templates select="arg1" match="af:print:expression">
         <admst:value-of select="returned('x')/value"/>
         <admst:variable name="x" select="%s"/>
         <admst:for-each select="$globalanalogfunction/variable[input='yes']">
@@ -4787,7 +4787,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           <admst:variable name="dx_%s" select="%s"/>
         </admst:for-each>
       </admst:apply-templates>
-      <admst:apply-templates select="arg2" match="X3af:print:expression">
+      <admst:apply-templates select="arg2" match="af:print:expression">
         <admst:value-of select="returned('x')/value"/>
         <admst:variable name="y" select="%s"/>
         <admst:for-each select="$globalanalogfunction/variable[input='yes']">
@@ -5118,15 +5118,15 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       </admst:choose>
     </admst:when>
     <admst:when test="adms[datatypename='mapply_ternary']">
-      <admst:apply-templates select="arg1" match="X3af:print:expression">
+      <admst:apply-templates select="arg1" match="af:print:expression">
         <admst:value-of select="returned('x')/value"/>
         <admst:variable name="x" select="%s"/>
       </admst:apply-templates>
-      <admst:apply-templates select="arg2" match="X3af:print:expression">
+      <admst:apply-templates select="arg2" match="af:print:expression">
         <admst:value-of select="returned('x')/value"/>
         <admst:variable name="y" select="%s"/>
       </admst:apply-templates>
-      <admst:apply-templates select="arg3" match="X3af:print:expression">
+      <admst:apply-templates select="arg3" match="af:print:expression">
         <admst:value-of select="returned('x')/value"/>
         <admst:variable name="z" select="%s"/>
       </admst:apply-templates>
@@ -5141,7 +5141,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       </admst:if>
     </admst:when>
     <admst:when test="adms[datatypename='function']">
-      <admst:apply-templates select="." match="X3function:getname">
+      <admst:apply-templates select="." match="function:getname">
         <admst:value-of select="returned('function:getname')/value"/>
         <admst:variable name="function" select="%s"/>
       </admst:apply-templates>
@@ -5150,7 +5150,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
         <admst:if test="[not($args='')]">
           <admst:variable name="args" select="$args,"/>
         </admst:if>
-        <admst:apply-templates select="." match="X3af:print:expression">
+        <admst:apply-templates select="." match="af:print:expression">
           <admst:value-of select="index(../arguments,.)"/>
           <admst:variable name="index" select="%s"/>
           <admst:value-of select="returned('x')/value"/>
@@ -5296,8 +5296,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:choose>
 </admst:template>
 <!-- ------------------------------------------------------ -->
-<admst:template match="X3af:print:derivate">
-<admst:message test="[/dbg_xml='yes']" format="*X3af:print:derivate*\n"/>
+<admst:template match="af:print:derivate">
+<admst:message test="[/dbg_xml='yes']" format="*af:print:derivate*\n"/>
   <admst:choose>
     <admst:when test="adms[datatypename='callfunction']">
       <admst:choose>
@@ -5307,7 +5307,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       </admst:choose>
       <admst:variable name="args" select=""/>
       <admst:for-each select="function/arguments">
-        <admst:apply-templates select="." match="X3af:print:expression">
+        <admst:apply-templates select="." match="af:print:expression">
           <admst:value-of select="index(../arguments,.)"/>
           <admst:variable name="index" select="%s"/>
           <admst:value-of select="returned('x')/value"/>
@@ -5317,27 +5317,27 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       <admst:return name="x" value="fprintf($outputfile$args); fprintf($outputfile,&quot;\n&quot;);\n"/>
     </admst:when>
     <admst:when test="adms[datatypename='whileloop']">
-      <admst:apply-templates select="whileblock" match="X3af:print:expression">
+      <admst:apply-templates select="whileblock" match="af:print:expression">
         <admst:value-of select="returned('x')/value"/>
         <admst:variable name="whileblock" select="%s"/>
       </admst:apply-templates>
-      <admst:apply-templates select="while" match="X3af:print:derivate">
+      <admst:apply-templates select="while" match="af:print:derivate">
         <admst:value-of select="returned('x')/value"/>
         <admst:variable name="while" select="%s"/>
       </admst:apply-templates>
       <admst:return name="x" value="while($whileblock)\n$while"/>
     </admst:when>
     <admst:when test="adms[datatypename='conditional']">
-      <admst:apply-templates select="if" match="X3af:print:expression">
+      <admst:apply-templates select="if" match="af:print:expression">
         <admst:value-of select="returned('x')/value"/>
         <admst:variable name="if" select="%s"/>
       </admst:apply-templates>
-      <admst:apply-templates select="then" match="X3af:print:derivate">
+      <admst:apply-templates select="then" match="af:print:derivate">
         <admst:value-of select="returned('x')/value"/>
         <admst:variable name="then" select="%s"/>
         </admst:apply-templates>
       <admst:if test="else">
-        <admst:apply-templates select="else" match="X3af:print:derivate">
+        <admst:apply-templates select="else" match="af:print:derivate">
           <admst:value-of select="returned('x')/value"/>
           <admst:variable name="then" select="$(then)else\n%s"/>
         </admst:apply-templates>
@@ -5345,7 +5345,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       <admst:return name="x" value="if($if)\n$then"/>
     </admst:when>
     <admst:when test="adms[datatypename='case']">
-      <admst:apply-templates select="case" match="X3af:print:expression">
+      <admst:apply-templates select="case" match="af:print:expression">
         <admst:value-of select="returned('x')/value"/>
         <admst:variable name="case" select="switch ((int)%s) {\n"/>
       </admst:apply-templates>
@@ -5360,7 +5360,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           <admst:variable name="case" select="$case default:"/>
         </admst:if>
         <admst:variable name="case" select="$case \n"/>
-        <admst:apply-templates select="code" match="X3af:print:derivate">
+        <admst:apply-templates select="code" match="af:print:derivate">
           <admst:value-of select="returned('x')/value"/>
           <admst:variable name="case" select="$case%s break;\n"/>
         </admst:apply-templates>
@@ -5373,7 +5373,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     <admst:when test="adms[datatypename='assignment']">
       <admst:value-of select="lhs/name"/>
       <admst:variable name="lhs" select="%s"/>
-      <admst:apply-templates select="rhs" match="X3af:print:expression">
+      <admst:apply-templates select="rhs" match="af:print:expression">
         <admst:variable name="rhs" select=""/>
         <admst:for-each select="$globalanalogfunction/variable[input='yes']">
           <admst:value-of select="name"/>
@@ -5392,7 +5392,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     <admst:when test="adms[datatypename='block']">
       <admst:variable name="block" select=""/>
       <admst:for-each select="item">
-        <admst:apply-templates select="." match="X3af:print:derivate">
+        <admst:apply-templates select="." match="af:print:derivate">
           <admst:value-of select="returned('x')/value"/>
           <admst:variable name="block" select="$block%s"/>
         </admst:apply-templates>
@@ -5404,8 +5404,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:choose>
 </admst:template>
 <!-- ------------------------------------------------------------ -->
-<admst:template match="X3af:print">
-<admst:message test="[/dbg_xml='yes']" format="*X3af:print*\n"/>
+<admst:template match="af:print">
+<admst:message test="[/dbg_xml='yes']" format="*af:print*\n"/>
   <admst:choose>
     <admst:when test="adms[datatypename='callfunction']">
       <admst:choose>
@@ -5415,7 +5415,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       </admst:choose>
       <admst:variable name="args" select=""/>
       <admst:for-each select="function/arguments">
-        <admst:apply-templates select="." match="X3af:print:expression">
+        <admst:apply-templates select="." match="af:print:expression">
           <admst:value-of select="index(../arguments,.)"/>
           <admst:variable name="index" select="%s"/>
           <admst:value-of select="returned('x')/value"/>
@@ -5425,27 +5425,27 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       <admst:return name="x" value="fprintf($outputfile$args); fprintf($outputfile,&quot;\n&quot;);\n"/>
     </admst:when>
     <admst:when test="adms[datatypename='whileloop']">
-      <admst:apply-templates select="whileblock" match="X3af:print:expression">
+      <admst:apply-templates select="whileblock" match="af:print:expression">
         <admst:value-of select="returned('x')/value"/>
         <admst:variable name="whileblock" select="%s"/>
       </admst:apply-templates>
-      <admst:apply-templates select="while" match="X3af:print">
+      <admst:apply-templates select="while" match="af:print">
         <admst:value-of select="returned('x')/value"/>
         <admst:variable name="while" select="%s"/>
       </admst:apply-templates>
       <admst:return name="x" value="while($whileblock)\n$while"/>
     </admst:when>
     <admst:when test="adms[datatypename='conditional']">
-      <admst:apply-templates select="if" match="X3af:print:expression">
+      <admst:apply-templates select="if" match="af:print:expression">
         <admst:value-of select="returned('x')/value"/>
         <admst:variable name="if" select="%s"/>
       </admst:apply-templates>
-      <admst:apply-templates select="then" match="X3af:print">
+      <admst:apply-templates select="then" match="af:print">
         <admst:value-of select="returned('x')/value"/>
         <admst:variable name="then" select="%s"/>
         </admst:apply-templates>
       <admst:if test="else">
-        <admst:apply-templates select="else" match="X3af:print">
+        <admst:apply-templates select="else" match="af:print">
           <admst:value-of select="returned('x')/value"/>
           <admst:variable name="then" select="$(then)else\n%s"/>
         </admst:apply-templates>
@@ -5453,7 +5453,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       <admst:return name="x" value="if($if)\n$then"/>
     </admst:when>
     <admst:when test="adms[datatypename='case']">
-      <admst:apply-templates select="case" match="X3af:print:expression">
+      <admst:apply-templates select="case" match="af:print:expression">
         <admst:value-of select="returned('x')/value"/>
         <admst:variable name="case" select="switch ((int)%s) {\n"/>
       </admst:apply-templates>
@@ -5468,7 +5468,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           <admst:variable name="case" select="$case default:"/>
         </admst:if>
         <admst:variable name="case" select="$case \n"/>
-        <admst:apply-templates select="code" match="X3af:print">
+        <admst:apply-templates select="code" match="af:print">
           <admst:value-of select="returned('x')/value"/>
           <admst:variable name="case" select="$case%s break;\n"/>
         </admst:apply-templates>
@@ -5479,7 +5479,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       <admst:fatal format="contribution not allowed inside analog functions\n"/>
     </admst:when>
     <admst:when test="adms[datatypename='assignment']">
-      <admst:apply-templates select="rhs" match="X3af:print:expression">
+      <admst:apply-templates select="rhs" match="af:print:expression">
         <admst:value-of select="returned('x')/value"/>
         <admst:value-of select="../lhs/name"/>
         <admst:return name="x" value="%s=%s;\n"/>
@@ -5491,7 +5491,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     <admst:when test="adms[datatypename='block']">
       <admst:variable name="block" select=""/>
       <admst:for-each select="item">
-        <admst:apply-templates select="." match="X3af:print">
+        <admst:apply-templates select="." match="af:print">
           <admst:value-of select="returned('x')/value"/>
           <admst:variable name="block" select="$block%s"/>
         </admst:apply-templates>
@@ -5508,8 +5508,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 * is either int, double, or char *. This template is
 * used to create the mint:instance and model data structures.
 -->
-<admst:template match="X3vtype">
-<admst:message test="[/dbg_xml='yes']" format="*X3vtype*\n"/>
+<admst:template match="vtype">
+<admst:message test="[/dbg_xml='yes']" format="*vtype*\n"/>
   <admst:choose>
     <admst:when test="[type='integer']">int</admst:when>
     <admst:when test="[type='real']">double</admst:when>
@@ -5520,8 +5520,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:choose>
 </admst:template>
 <!-- ----------------------------------------- -->
-<admst:template match="X3bname">
-<admst:message test="[/dbg_xml='yes']" format="*X3bname*\n"/>
+<admst:template match="bname">
+<admst:message test="[/dbg_xml='yes']" format="*bname*\n"/>
   <admst:choose>
     <admst:when test="[name='bw_equr']">
       <admst:return name="bname" value="^~"/>
@@ -5574,8 +5574,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:choose>
 </admst:template>
 <!-- expression//function: get function name -->
-<admst:template match="X3funcname">
-<admst:message test="[/dbg_xml='yes']" format="*X3funcname*\n"/>
+<admst:template match="funcname">
+<admst:message test="[/dbg_xml='yes']" format="*funcname*\n"/>
   <admst:choose>
     <admst:when test="[name='abs']"><admst:return name="fname" value="fabs"/></admst:when>
     <admst:when test="[name='\$shrinkl']"><admst:return name="fname" value="shrinkl"/></admst:when>
@@ -5588,8 +5588,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:choose>
 </admst:template>
 <!-- -------------------------------------------------- -->
-<admst:template match="X3fname">
-<admst:message test="[/dbg_xml='yes']" format="*X3fname*\n"/>
+<admst:template match="fname">
+<admst:message test="[/dbg_xml='yes']" format="*fname*\n"/>
   <admst:choose>
     <admst:when test="[name='abs']">fabs</admst:when>
     <admst:when test="[name='\$shrinkl']">shrinkl</admst:when>
@@ -5602,29 +5602,29 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:choose>
 </admst:template>
 <!-- -------------------------------------------------- -->
-<admst:template match="X3e">
-<admst:message test="[/dbg_xml='yes']" format="*X3e*\n"/>
-  <admst:apply-templates select="." match="X3%(adms/datatypename)">
+<admst:template match="e">
+<admst:message test="[/dbg_xml='yes']" format="*e*\n"/>
+  <admst:apply-templates select="." match="%(adms/datatypename)">
     <admst:if test="[$finddt='no']"> $e </admst:if>
   </admst:apply-templates>
 </admst:template>
 <!-- -------------------------------------------------- -->
-<admst:template match="X3ddx">
-<admst:message test="[/dbg_xml='yes']" format="*X3ddx*\n"/>
-  <admst:apply-templates select="." match="X3%(adms/datatypename)"/>
+<admst:template match="ddx">
+<admst:message test="[/dbg_xml='yes']" format="*ddx*\n"/>
+  <admst:apply-templates select="." match="%(adms/datatypename)"/>
 </admst:template>
 <!-- -------------------------------------------------- -->
-<admst:template match="X3ddxname">
-<admst:message test="[/dbg_xml='yes']" format="*X3ddxname*\n"/>
+<admst:template match="ddxname">
+<admst:message test="[/dbg_xml='yes']" format="*ddxname*\n"/>
   <admst:return name="ddxname" value="%(name)_%($pprobe/nature/access)%($pprobe/branch/pnode/name)_%($pprobe/branch/nnode/name)_%($qprobe/nature/access)%($qprobe/branch/pnode/name)_%($qprobe/branch/nnode/name)"/>
 </admst:template>
 <!-- -------------------------------------------------- -->
-<admst:template match="X3dxname">
-<admst:message test="[/dbg_xml='yes']" format="*X3dxname*\n"/>
+<admst:template match="dxname">
+<admst:message test="[/dbg_xml='yes']" format="*dxname*\n"/>
   <admst:return name="dxname" value="%(name)_%($pprobe/nature/access)%($pprobe/branch/pnode/name)_%($pprobe/branch/nnode/name)"/>
 </admst:template>
 <!-- -------------------------------------------------- -->
-<admst:template match="X3variable">
+<admst:template match="variable">
   <admst:choose>
     <admst:when test="[input='yes' and parametertype='model']">
       <admst:variable name="e" select="_model-&gt;%(name)"/>
@@ -5662,7 +5662,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   <admst:if test="[insource='yes']">
     <admst:if-inside select="$pprobe" list="%(probe)">
       <admst:if-inside select="$qprobe" list="%(probe)">
-        <admst:variable name="epq" select="%(X3ddxname(.)/[name='ddxname']/value)"/>
+        <admst:variable name="epq" select="%(ddxname(.)/[name='ddxname']/value)"/>
       </admst:if-inside>
     </admst:if-inside>
   </admst:if>
@@ -5670,8 +5670,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 </admst:template>
 
 <!-- -------------------------------------------------- -->
-<admst:template match="X3probe">
-<admst:message test="[/dbg_xml='yes']" format="*X3probe*\n"/>
+<admst:template match="probe">
+<admst:message test="[/dbg_xml='yes']" format="*probe*\n"/>
   <admst:choose>
     <admst:when test="branch/nnode[grounded='no']">
       <admst:variable name="e" select="(NP(%(branch/pnode/name))-NP(%(branch/nnode/name)))"/>
@@ -5705,8 +5705,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 
 </admst:template>
 <!-- -------------------------------------------------- -->
-<admst:template match="X3node">
-<admst:message test="[/dbg_xml='yes']" format="*X3node*\n"/>
+<admst:template match="node">
+<admst:message test="[/dbg_xml='yes']" format="*node*\n"/>
   <admst:fatal format="module node not expected here ... %(name)\n"/>
 
   <admst:fatal format="module node not expected here ... %(name)\n"/>
@@ -5716,8 +5716,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:if>
 </admst:template>
 <!-- -------------------------------------------------- -->
-<admst:template match="X3string">
-<admst:message test="[/dbg_xml='yes']" format="*X3string*\n"/>
+<admst:template match="string">
+<admst:message test="[/dbg_xml='yes']" format="*string*\n"/>
   <admst:variable name="e" select="&quot;%(value)&quot;"/>
 
   <admst:variable name="ep" select="0.0"/>
@@ -5729,8 +5729,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:if>
 </admst:template>
 <!-- -------------------------------------------------- -->
-<admst:template match="X3number">
-<admst:message test="[/dbg_xml='yes']" format="*X3number*\n"/>
+<admst:template match="number">
+<admst:message test="[/dbg_xml='yes']" format="*number*\n"/>
   <admst:choose>
     <admst:when test="[scalingunit='1']">
       <admst:variable name="e" select="%(value)"/>
@@ -5800,8 +5800,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:if>
 </admst:template>
 <!-- -------------------------------------------------- -->
-<admst:template match="X3mapply_unary">
-<admst:message test="[/dbg_xml='yes']" format="*X3mapply_unary*\n"/>
+<admst:template match="mapply_unary">
+<admst:message test="[/dbg_xml='yes']" format="*mapply_unary*\n"/>
   <admst:choose>
     <admst:when test="[name='plus']">
       <admst:choose>
@@ -5809,7 +5809,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           <admst:variable name="e" select="0.0"/>
         </admst:when>
         <admst:otherwise>
-          <admst:apply-templates select="arg1" match="X3ddx"/>
+          <admst:apply-templates select="arg1" match="ddx"/>
           <admst:variable name="e" select="(+$e)"/>
         </admst:otherwise>
       </admst:choose>
@@ -5820,7 +5820,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           <admst:variable name="e" select="0.0"/>
         </admst:when>
         <admst:otherwise>
-          <admst:apply-templates select="arg1" match="X3ddx"/>
+          <admst:apply-templates select="arg1" match="ddx"/>
           <admst:variable name="e" select="(-$e)"/>
         </admst:otherwise>
       </admst:choose>
@@ -5831,7 +5831,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           <admst:variable name="e" select="0.0"/>
         </admst:when>
         <admst:otherwise>
-          <admst:apply-templates select="arg1" match="X3ddx"/>
+          <admst:apply-templates select="arg1" match="ddx"/>
           <admst:variable name="e" select="(!$e)"/>
         </admst:otherwise>
       </admst:choose>
@@ -5842,7 +5842,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           <admst:variable name="e" select="0.0"/>
         </admst:when>
         <admst:otherwise>
-          <admst:apply-templates select="arg1" match="X3ddx"/>
+          <admst:apply-templates select="arg1" match="ddx"/>
           <admst:variable name="e" select="(~$e)"/>
         </admst:otherwise>
       </admst:choose>
@@ -5907,14 +5907,14 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:if>
 </admst:template>
 <!-- -------------------------------------------------- -->
-<admst:template match="X3mapply_binary">
-<admst:message test="[/dbg_xml='yes']" format="*X3mapply_binary*\n"/>
-  <admst:apply-templates select="arg1" match="X3ddx"/>
+<admst:template match="mapply_binary">
+<admst:message test="[/dbg_xml='yes']" format="*mapply_binary*\n"/>
+  <admst:apply-templates select="arg1" match="ddx"/>
   <admst:variable name="x" select="$e"/>
   <admst:variable name="xp" select="$ep"/>
   <admst:variable name="xq" select="$eq"/>
   <admst:variable name="xpq" select="$epq"/>
-  <admst:apply-templates select="arg2" match="X3ddx"/>
+  <admst:apply-templates select="arg2" match="ddx"/>
   <admst:variable name="y" select="$e"/>
   <admst:variable name="yp" select="$ep"/>
   <admst:variable name="yq" select="$eq"/>
@@ -6004,7 +6004,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       </admst:choose>
     </admst:when>
     <admst:otherwise>
-      <admst:variable name="e" select="($x%(X3bname(.)/[name='bname']/value)$y)"/>
+      <admst:variable name="e" select="($x%(bname(.)/[name='bname']/value)$y)"/>
     </admst:otherwise>
   </admst:choose>
 
@@ -6340,15 +6340,15 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:if>
 </admst:template>
 <!-- -------------------------------------------------- -->
-<admst:template match="X3mapply_ternary">
-<admst:message test="[/dbg_xml='yes']" format="*X3mapply_ternary*\n"/>
-  <admst:apply-templates select="arg1" match="X3ddx"/>
+<admst:template match="mapply_ternary">
+<admst:message test="[/dbg_xml='yes']" format="*mapply_ternary*\n"/>
+  <admst:apply-templates select="arg1" match="ddx"/>
   <admst:variable name="x" select="$e"/>
-  <admst:apply-templates select="arg2" match="X3ddx"/>
+  <admst:apply-templates select="arg2" match="ddx"/>
   <admst:variable name="y" select="$e"/>
   <admst:variable name="yp" select="$ep"/>
   <admst:variable name="yq" select="$eq"/>
-  <admst:apply-templates select="arg3" match="X3ddx"/>
+  <admst:apply-templates select="arg3" match="ddx"/>
   <admst:variable name="z" select="$e"/>
   <admst:variable name="zp" select="$ep"/>
   <admst:variable name="zq" select="$eq"/>
@@ -6377,12 +6377,12 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 
 </admst:template>
 <!-- -------------------------------------------------- -->
-<admst:template match="X3function">
-<admst:message test="[/dbg_xml='yes']" format="*X3function*\n"/>
+<admst:template match="function">
+<admst:message test="[/dbg_xml='yes']" format="*function*\n"/>
   <admst:variable name="finddthere" select="$finddt"/>
   <admst:choose>
     <admst:when test="[name='absdelay']">
-      <admst:apply-templates select="arguments[1]" match="X3ddx"/>
+      <admst:apply-templates select="arguments[1]" match="ddx"/>
       <admst:variable name="e" select="$e"/>
     </admst:when>
     <admst:when test="[name='ddt']">
@@ -6393,7 +6393,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       <admst:variable name="xp"/>
       <admst:apply-templates select="." match="DDT"/> ------ -->
 
-      <admst:apply-templates select="arguments[1]" match="X3ddx"/>
+      <admst:apply-templates select="arguments[1]" match="ddx"/>
       <admst:variable name="x" select="$e"/>
       <admst:variable name="xp" select="$ep"/>
       <admst:variable name="xq" select="$eq"/>
@@ -6441,7 +6441,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           <admst:variable name="e" select="(BOLTZMANN*(_circuit_tnom)/ELECTRON_CHARGE)"/>   
         </admst:when>
         <admst:when test="arguments[count(.)=1]">
-          <admst:apply-templates select="arguments[1]" match="X3ddx"/>
+          <admst:apply-templates select="arguments[1]" match="ddx"/>
           <admst:variable name="x" select="$e"/>
           <admst:variable name="xp" select="$ep"/>
           <admst:variable name="xq" select="$eq"/>
@@ -6461,27 +6461,27 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     <admst:when test="[name='ddx']">
       <admst:assert test="arguments[count(.)=2]" format="%(name): should have two arguments exactly\n"/>
       <admst:assert test="arguments[2]/adms[datatypename='probe']" format="%(name): second argument is not a probe\n"/>
-      <admst:apply-templates select="arguments[1]" match="X3ddx"/>
+      <admst:apply-templates select="arguments[1]" match="ddx"/>
       <admst:variable name="e" select="0.0 /*ddx should be top node of expression!*/"/>
     </admst:when>
     <admst:when test="[name='floor']">
       <admst:assert test="arguments[count(.)=1]" format="%(name): should have one argument exactly\n"/>
-      <admst:apply-templates select="arguments[1]" match="X3ddx"/>
+      <admst:apply-templates select="arguments[1]" match="ddx"/>
       <admst:variable name="e" select="floor($e)"/>
     </admst:when>
     <admst:when test="[name='ceil']">
       <admst:assert test="arguments[count(.)=1]" format="%(name): should have one argument exactly\n"/>
-      <admst:apply-templates select="arguments[1]" match="X3ddx"/>
+      <admst:apply-templates select="arguments[1]" match="ddx"/>
       <admst:variable name="e" select="ceil($e)"/>
     </admst:when>
     <admst:when test="[$SkipFVariable='y']">
-      <admst:variable name="fname" select="%(X3funcname(.)/[name='fname']/value)"/>
+      <admst:variable name="fname" select="%(funcname(.)/[name='fname']/value)"/>
       <admst:variable name="args" select=""/>
       <admst:for-each select="arguments">
         <admst:if test="[$args!='']">
           <admst:variable name="args" select="$args,"/>
         </admst:if>
-        <admst:apply-templates select="." match="X3ddx"/>
+        <admst:apply-templates select="." match="ddx"/>
         <admst:variable name="args" select="$args$e"/>
       </admst:for-each>
       <admst:variable name="e" select="$(fname)($args)"/>
@@ -6492,8 +6492,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
                     or name='sinh' or name='sqrt' or name='tan' or name='tanh']">
       <admst:assert test="arguments[count(.)=1]" format="%(name): should have one argument exactly\n"/>
       <admst:variable name="index" select="%(index(subexpression/expression/function,.))"/>
-      <admst:variable name="fname" select="%(X3funcname(.)/[name='fname']/value)"/>
-      <admst:apply-templates select="arguments[1]" match="X3ddx"/>
+      <admst:variable name="fname" select="%(funcname(.)/[name='fname']/value)"/>
+      <admst:apply-templates select="arguments[1]" match="ddx"/>
       <admst:variable name="x" select="$e"/>
       <admst:variable name="xp" select="$ep"/>
       <admst:variable name="xq" select="$eq"/>
@@ -6503,13 +6503,13 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     <admst:when test="[name='div' or name='pow' or name='hypot' or name='min' or name='max']">
       <admst:assert test="arguments[count(.)=2]" format="%(name): should have two argument exactly\n"/>
       <admst:variable name="index" select="%(index(./subexpression/expression/function,.))"/>
-      <admst:variable name="fname" select="%(X3funcname(.)/[name='fname']/value)"/>
-      <admst:apply-templates select="arguments[1]" match="X3ddx"/>
+      <admst:variable name="fname" select="%(funcname(.)/[name='fname']/value)"/>
+      <admst:apply-templates select="arguments[1]" match="ddx"/>
       <admst:variable name="x" select="$e"/>
       <admst:variable name="xp" select="$ep"/>
       <admst:variable name="xq" select="$eq"/>
       <admst:variable name="xpq" select="$epq"/>
-      <admst:apply-templates select="arguments[2]" match="X3ddx"/>
+      <admst:apply-templates select="arguments[2]" match="ddx"/>
       <admst:variable name="y" select="$e"/>
       <admst:variable name="yp" select="$ep"/>
       <admst:variable name="yq" select="$eq"/>
@@ -6517,13 +6517,13 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       <admst:variable name="e" select="d00_$(fname)$index"/>
     </admst:when>
     <admst:otherwise>
-      <admst:variable name="fname" select="%(X3funcname(.)/[name='fname']/value)"/>
+      <admst:variable name="fname" select="%(funcname(.)/[name='fname']/value)"/>
       <admst:variable name="args" select=""/>
       <admst:for-each select="arguments">
         <admst:if test="[$args!='']">
           <admst:variable name="args" select="$args,"/>
         </admst:if>
-        <admst:apply-templates select="." match="X3ddx"/>
+        <admst:apply-templates select="." match="ddx"/>
         <admst:variable name="args" select="$args$e"/>
       </admst:for-each>
       <admst:variable name="dargs" select=""/>
@@ -6531,7 +6531,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
         <admst:if test="[$dargs!='']">
           <admst:variable name="dargs" select="$dargs,"/>
         </admst:if>
-        <admst:apply-templates select="." match="X3ddx"/>
+        <admst:apply-templates select="." match="ddx"/>
         <admst:variable name="dargs" select="$dargs$ep"/>
       </admst:for-each>
       <admst:variable name="e" select="$(fname)($args)"/>
@@ -6688,7 +6688,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
                        or name='limexp' or name='ln' or name='log' or name='sin'
                        or name='sinh' or name='sqrt' or name='tan' or name='tanh']">
       <admst:variable name="index" select="%(index(./subexpression/expression/function,.))"/>
-      <admst:variable name="fname" select="%(X3funcname(.)/[name='fname']/value)"/>
+      <admst:variable name="fname" select="%(funcname(.)/[name='fname']/value)"/>
       <admst:choose>
         <admst:when test="[$x='0.0']">
           <admst:variable name="epq" select="0.0"/>
@@ -6715,17 +6715,17 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 </admst:template>
 
 <!-- ------------------ analog//block -------------------- -->
-<admst:template match="X3block">
-<admst:message test="[/dbg_xml='yes']" format="*X3block*\n"/>
-  <admst:text format="{ //X3block \n"/>
-  <admst:apply-templates select="item" match="X3%(adms/datatypename)"/>
-  <admst:text format="} //X3blovk \n"/>
+<admst:template match="block">
+<admst:message test="[/dbg_xml='yes']" format="*block*\n"/>
+  <admst:text format="{ //block \n"/>
+  <admst:apply-templates select="item" match="%(adms/datatypename)"/>
+  <admst:text format="} //blovk \n"/>
 </admst:template>
 <!-- --------------------- analog//blockvariable ------------ -->
-<admst:template match="X3blockvariable">
-<admst:message test="[/dbg_xml='yes']" format="*X3blockvariable*\n"/>
-  <admst:text format="// { //X3blockvariable \n"/>
-  <admst:text select="variable" format="%(X3vtype(.)) %(name);\n"/>
+<admst:template match="blockvariable">
+<admst:message test="[/dbg_xml='yes']" format="*blockvariable*\n"/>
+  <admst:text format="// { //blockvariable \n"/>
+  <admst:text select="variable" format="%(vtype(.)) %(name);\n"/>
   <admst:if test="variable[insource='yes']/probe">
 
     <admst:for-each select="variable">
@@ -6761,37 +6761,37 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
         <admst:variable name="pprobe" select="%(.)"/>
         <admst:for-each select="$myvariable/probe">
           <admst:variable name="qprobe" select="%(.)"/>
-          <admst:text format="  double %(X3ddxname($myvariable)/[name='ddxname']/value);\n"/>
+          <admst:text format="  double %(ddxname($myvariable)/[name='ddxname']/value);\n"/>
         </admst:for-each>
       </admst:for-each>
       <admst:text test="$ddxprobes/item" format="#endif\n"/>
     </admst:for-each>
  </admst:if>
 
- // } // X3lockvariable  FIXME \n
+ // } // lockvariable  FIXME \n
 
 </admst:template>
 
 <!-- ------ analog//function: ddx handling ---- -->
-<admst:template match="X3function:precomputationyes">
-<admst:message test="[/dbg_xml='yes']" format="*X3function:precomputationyes*\n"/>
+<admst:template match="function:precomputationyes">
+<admst:message test="[/dbg_xml='yes']" format="*function:precomputationyes*\n"/>
   <admst:text format="//precq\n"/>
   <admst:variable name="index" select="%(index(../function,.))"/>
-  <admst:variable name="fname" select="%(X3funcname(.)/[name='fname']/value)"/>
+  <admst:variable name="fname" select="%(funcname(.)/[name='fname']/value)"/>
   //precompyes
-  %(X3e(.))
+  %(e(.))
 </admst:template>
 
-<admst:template match="X3function:precomputationno">
-<admst:message test="[/dbg_xml='yes']" format="*X3function:precomputationno*\n"/>
-    <admst:apply-templates select="." match="X3function:precomputation"/>
+<admst:template match="function:precomputationno">
+<admst:message test="[/dbg_xml='yes']" format="*function:precomputationno*\n"/>
+    <admst:apply-templates select="." match="function:precomputation"/>
 </admst:template>
 
-<admst:template match="X3function:precomputation">
-<admst:message test="[/dbg_xml='yes']" format="*X3function:precomputation*\n"/>
+<admst:template match="function:precomputation">
+<admst:message test="[/dbg_xml='yes']" format="*function:precomputation*\n"/>
   <admst:text format="//prec $finddt\n"/>
   <admst:variable name="index" select="%(index(../function,.))"/>
-  <admst:variable name="fname" select="%(X3funcname(.)/[name='fname']/value)"/>
+  <admst:variable name="fname" select="%(funcname(.)/[name='fname']/value)"/>
   <admst:choose>
     <admst:when test="[name='add']">
       <admst:text format="m00_add(d00_add$index"/>
@@ -6806,18 +6806,18 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       <admst:text format="double m00_$(fname)(d00_$(fname)$index"/>
     </admst:otherwise>
   </admst:choose>
-  <admst:text select="arguments" format=",%(X3e(.))"/>
+  <admst:text select="arguments" format=",%(e(.))"/>
   <admst:text format=")\n"/>
 </admst:template>
 <!-- ------ analog//function: ddx handling ---- -->
-<admst:template match="X3function:derivate:precomputationyes">
-<admst:message test="[/dbg_xml='yes']" format="*X3function:derivate:precomputationyes*\n"/>
+<admst:template match="function:derivate:precomputationyes">
+<admst:message test="[/dbg_xml='yes']" format="*function:derivate:precomputationyes*\n"/>
   <admst:if test="[hasVoltageDependentFunction='yes']">
     <admst:if test="[($ddxinsidederivate='yes' and $_DERIVATEFORDDX='yes'  ) 
                   or ($ddxinsidederivate='no'  and $_DERIVATE='yes' )]">
       <admst:for-each select="function">
         <admst:variable name="index" select="%(index(../function,.))"/>
-        <admst:variable name="fname" select="%(X3funcname(.)/[name='fname']/value)"/>
+        <admst:variable name="fname" select="%(funcname(.)/[name='fname']/value)"/>
         <admst:choose>
           <admst:when test="[name='exp']">
           </admst:when>
@@ -6829,7 +6829,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
             <admst:for-each select="arguments">
               <admst:variable name="position" select="%(position(.)-1)"/>
               <admst:if test="math[dependency!='constant']">
-                <admst:text select="../arguments" format="%(X3e(.))"/>
+                <admst:text select="../arguments" format="%(e(.))"/>
               </admst:if>
             </admst:for-each>
           </admst:when>
@@ -6837,7 +6837,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
             <admst:for-each select="arguments">
               <admst:variable name="position" select="%(position(.)-1)"/>
               <admst:if test="math[dependency!='constant']">
-                <admst:text select="../arguments" format="%(X3e(.))"/>
+                <admst:text select="../arguments" format="%(e(.))"/>
               </admst:if>
             </admst:for-each>
           </admst:otherwise>
@@ -6847,13 +6847,13 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:if>
 </admst:template>
 <!-- ------------ -->
-<admst:template match="X3function:derivate:precomputationno">
-<admst:message test="[/dbg_xml='yes']" format="*X3function:derivate:precomputationno*\n"/>
-    <admst:apply-templates select="." match="X3function:derivate:precomputation"/>
+<admst:template match="function:derivate:precomputationno">
+<admst:message test="[/dbg_xml='yes']" format="*function:derivate:precomputationno*\n"/>
+    <admst:apply-templates select="." match="function:derivate:precomputation"/>
 </admst:template>
 <!-- ------------ -->
-<admst:template match="X3function:derivate:precomputation">
-<admst:message test="[/dbg_xml='yes']" format="*X3function:derivate:precomputation*\n"/>
+<admst:template match="function:derivate:precomputation">
+<admst:message test="[/dbg_xml='yes']" format="*function:derivate:precomputation*\n"/>
   <admst:if test="[hasVoltageDependentFunction='yes']">
     <!--  <admst:choose>
       <admst:when test="[$ddxinsidederivate='yes']">
@@ -6867,7 +6867,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
                   or ($ddxinsidederivate='no'  and $_DERIVATE='yes' )]">
       <admst:for-each select="function">
         <admst:variable name="index" select="%(index(../function,.))"/>
-        <admst:variable name="fname" select="%(X3funcname(.)/[name='fname']/value)"/>
+        <admst:variable name="fname" select="%(funcname(.)/[name='fname']/value)"/>
         <admst:choose>
           <admst:when test="[name='exp']">
             <admst:if test="arguments/math[dependency!='constant']">
@@ -6888,7 +6888,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
               <admst:if test="math[dependency!='constant']">
                 <admst:text 
                   format="m1$(position)_$(fname)(d1$(position)_$(fname)$index,d00_$(fname)$index,d10_$(fname)$index"/>
-                <admst:text select="../arguments" format=",%(X3e(.))"/>
+                <admst:text select="../arguments" format=",%(e(.))"/>
                 <admst:text format=")\n"/>
               </admst:if>
             </admst:for-each>
@@ -6898,7 +6898,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
               <admst:variable name="position" select="%(position(.)-1)"/>
               <admst:if test="math[dependency!='constant']">
                 <admst:text format="double m1%(position(.)-1)_$(fname)(d1%(position(.)-1)_$(fname)$index,d00_$(fname)$index"/>
-                <admst:text select="../arguments" format=",%(X3e(.))"/>
+                <admst:text select="../arguments" format=",%(e(.))"/>
                 <admst:text format=")\n"/>
               </admst:if>
             </admst:for-each>
@@ -6909,13 +6909,13 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:if>
 </admst:template>
 <!-- ------------------ analog//assignment:ddt ------------------------ -->
-<admst:template match="X3assignment:ddt">
-<admst:message test="[/dbg_xml='yes']" format="*X3assignment:ddt*\n"/>
+<admst:template match="assignment:ddt">
+<admst:message test="[/dbg_xml='yes']" format="*assignment:ddt*\n"/>
 
 </admst:template>
 <!-- ---------------------------------------------------------- -->
-<admst:template match="X3assignment">
-<admst:message test="[/dbg_xml='yes']" format="*X3assignment*\n"/>
+<admst:template match="assignment">
+<admst:message test="[/dbg_xml='yes']" format="*assignment*\n"/>
   <admst:variable name="assignment" select="%(.)"/>
   <admst:variable name="rhs" select="%(rhs)"/>
   <admst:variable name="lhs" select="%(lhs)"/>
@@ -6931,11 +6931,11 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       </admst:if>
     </admst:for-each>
     <admst:text format="// rhsf %(rhs/function) $finddt\n"/>
-    <admst:apply-templates select="rhs/function" match="X3function:precomputation$(finddt)"/>
+    <admst:apply-templates select="rhs/function" match="function:precomputation$(finddt)"/>
     <admst:text format="/// rhsf %(rhs/function)\n"/>
     <admst:if test="lhs[insource='yes']">
       <admst:text format="// fixme: dprec %(rhs[not(nilled(function))])\n"/>
-      <admst:apply-templates select="rhs[not(nilled(function))]" match="X3function:derivate:precomputation$(finddt)"/>
+      <admst:apply-templates select="rhs[not(nilled(function))]" match="function:derivate:precomputation$(finddt)"/>
     </admst:if>
     <admst:choose>
       <admst:when test="rhs/tree/adms[datatypename='function']/..[name='ddx']">
@@ -6951,18 +6951,18 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
                 <admst:variable name="pprobe" select="%(.)"/>
                 <admst:choose>
                   <admst:when test="$pprobe/branch/pnode[.=$ddxprobe/branch/pnode]">
-                    <admst:apply-templates select="$rhs/tree/arguments[1]" match="X3%(adms/datatypename)"/>
+                    <admst:apply-templates select="$rhs/tree/arguments[1]" match="%(adms/datatypename)"/>
                     <admst:variable name="allepq" select="$allepq+($epq)"/>
                   </admst:when>
                   <admst:when test="$pprobe/branch/nnode/[.=$ddxprobe/branch/pnode]">
-                    <admst:apply-templates select="$rhs/tree/arguments[1]" match="X3%(adms/datatypename)"/>
+                    <admst:apply-templates select="$rhs/tree/arguments[1]" match="%(adms/datatypename)"/>
                     <admst:variable name="allepq" select="$allepq-($epq)"/>
                   </admst:when>
                 </admst:choose>
               </admst:for-each>
               <admst:variable name="pprobe" select="%($qprobe)"/>
               <admst:if test="[$requiredderivateforddx='yes']">
-                <admst:text format="// rdddx\n%(X3dxname($lhs)/[name='dxname']/value)=$allepq;\n"/>
+                <admst:text format="// rdddx\n%(dxname($lhs)/[name='dxname']/value)=$allepq;\n"/>
               </admst:if>
             </admst:for-each>
           </admst:if>
@@ -6975,11 +6975,11 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           <admst:choose>
             <admst:when test="$pprobe/branch/pnode[.=$ddxprobe/branch/pnode]">
               <admst:text format="// rns? %(adms/datatypename)"/>
-              <admst:apply-templates select="$rhs/tree/arguments[1]" match="X3%(adms/datatypename)"/>
+              <admst:apply-templates select="$rhs/tree/arguments[1]" match="%(adms/datatypename)"/>
               <admst:variable name="allep" select="$allep+($ep)"/>
             </admst:when>
             <admst:when test="$pprobe/branch/nnode/[.=$ddxprobe/branch/pnode]">
-              <admst:apply-templates select="$rhs/tree/arguments[1]" match="X3%(adms/datatypename)"/>
+              <admst:apply-templates select="$rhs/tree/arguments[1]" match="%(adms/datatypename)"/>
               <admst:variable name="allep" select="$allep-($ep)"/>
             </admst:when>
           </admst:choose>
@@ -7020,11 +7020,11 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
               </admst:if>
               <admst:variable name="qprobe"/>
               <admst:variable name="ep" select="0.0"/>
-              <admst:apply-templates select="[$isinside='1']/$rhs/tree" match="X3%(adms/datatypename)"/>
+              <admst:apply-templates select="[$isinside='1']/$rhs/tree" match="%(adms/datatypename)"/>
               <!-- <admst:text test="[$ddxinsidederivate='yes' and $ddxinsidethisprobe='no']"
                    format="#if defined(_DERIVATE) // FIXME 8\n"/> -->
               <admst:if  test="[$ddxinsidederivate='no' and $ddxinsidethisprobe='yes' or $_DERIVATE='yes']" >
-                <admst:text test="[$finddt='no']" format="%(X3dxname($lhs)/[name='dxname']/value) = /*ep*/ $ep; // \n"/>
+                <admst:text test="[$finddt='no']" format="%(dxname($lhs)/[name='dxname']/value) = /*ep*/ $ep; // \n"/>
               </admst:if>
               <!-- <admst:text test="[$ddxinsidederivate='yes' and $ddxinsidethisprobe='no']" 
                    format="#endif //3\n"/>
@@ -7033,8 +7033,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
                 <admst:for-each select="$lhs[$ddxinsidethisprobe='yes']/probe">
                   <admst:variable name="epq" select="0.0"/>
                   <admst:variable name="qprobe" select="%(.)"/>
-                  <admst:apply-templates select="[$isinside='1']/$rhs/tree" match="X3%(adms/datatypename)"/>
-                  <admst:text test="[$finddt='no']" format="  %(X3ddxname($lhs)/[name='ddxname']/value) = $epq; // epq\n"/>
+                  <admst:apply-templates select="[$isinside='1']/$rhs/tree" match="%(adms/datatypename)"/>
+                  <admst:text test="[$finddt='no']" format="  %(ddxname($lhs)/[name='ddxname']/value) = $epq; // epq\n"/>
                 </admst:for-each>
                 <!-- <admst:text test="$lhs[$ddxinsidethisprobe='yes']" format="#endif // 5\n"/> -->
               </admst:if>
@@ -7044,19 +7044,19 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           <admst:variable name="ddxinsidederivate" select="no"/>
         </admst:if>
         <admst:variable name="qprobe"/>
-        <admst:apply-templates select="lhs" match="X3variable"/>
+        <admst:apply-templates select="lhs" match="variable"/>
 
 
         <admst:if test="[$finddt='no']">
           <admst:if test="[$eval_kept='yes']">
-            <admst:text format="$e = "/> %(X3e(rhs/tree)) <admst:text format=" /*tree, incomplete.*/ \n"/> 
+            <admst:text format="$e = "/> %(e(rhs/tree)) <admst:text format=" /*tree, incomplete.*/ \n"/> 
           </admst:if>
           <admst:if test="[$eval_kept='no']">
-            <admst:text format="$e = "/> %(X3e(rhs/tree)) ; <admst:text format=" /*tree $finddt*/ \n"/> 
+            <admst:text format="$e = "/> %(e(rhs/tree)) ; <admst:text format=" /*tree $finddt*/ \n"/> 
           </admst:if>
         </admst:if>
 
-        <admst:text test="[$finddt='yes']"  format="// ddt from ass \n %(X3e(rhs/tree))\n"/>
+        <admst:text test="[$finddt='yes']"  format="// ddt from ass \n %(e(rhs/tree))\n"/>
 
         <!--<admst:text format="EXIT_IF_ISNAN($e)\n"/>-->
       </admst:otherwise>
@@ -7069,12 +7069,12 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   <admst:text format="// FIXME done here\n"/>
 </admst:template>
 <!-- ---------------------------------------------------------- -->
-<admst:template match="X3contribution:nonoise:mint">
-<admst:message test="[/dbg_xml='yes']" format="*X3contribution:nonoise:mint*\n"/>
+<admst:template match="contribution:nonoise:mint">
+<admst:message test="[/dbg_xml='yes']" format="*contribution:nonoise:mint*\n"/>
   <admst:text test="[dynamic='yes']" format="#if defined(_DYNAMIC) // fixm4\n"/>
   <admst:text test="rhs/function" format="{\n"/>
-  <admst:apply-templates select="rhs/function" match="X3function:precomputation"/>
-  <admst:apply-templates select="rhs[not(nilled(function))]" match="X3function:derivate:precomputation"/>
+  <admst:apply-templates select="rhs/function" match="function:precomputation"/>
+  <admst:apply-templates select="rhs[not(nilled(function))]" match="function:derivate:precomputation"/>
   <admst:variable name="sourcepnode" select="%(lhs/branch/pnode)"/>
   <admst:variable name="sourcennode" select="%(lhs/branch/nnode)"/>
   <admst:variable name="sourcepnodename" select="%($sourcepnode/name)"/>
@@ -7084,10 +7084,10 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       <admst:variable name="jname" select="dQ_dV"/>
       <admst:choose>
         <admst:when test="$sourcennode[grounded='no']">
-          <admst:text format="charges_$(sourcepnodename)_$(sourcennodename) += %(X3e(rhs/tree));\n"/>
+          <admst:text format="charges_$(sourcepnodename)_$(sourcennodename) += %(e(rhs/tree));\n"/>
         </admst:when>
         <admst:otherwise>
-          <admst:text format="charges_$(sourcepnodename)_$(sourcepnodename) += %(X3e(rhs/tree));\n"/>
+          <admst:text format="charges_$(sourcepnodename)_$(sourcepnodename) += %(e(rhs/tree));\n"/>
         </admst:otherwise>
       </admst:choose>
     </admst:when>
@@ -7095,10 +7095,10 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       <admst:variable name="jname" select="dI_dV"/>
       <admst:choose>
         <admst:when test="$sourcennode[grounded='no']">
-          <admst:text format="currents[$sourcepnodename*TotalNodes+$sourcennodename] += %(X3e(rhs/tree));\n"/>
+          <admst:text format="currents[$sourcepnodename*TotalNodes+$sourcennodename] += %(e(rhs/tree));\n"/>
         </admst:when>
         <admst:otherwise>
-          <admst:text format="currents[$sourcepnodename*TotalNodes+$sourcepnodename] += %(X3e(rhs/tree));\n"/>
+          <admst:text format="currents[$sourcepnodename*TotalNodes+$sourcepnodename] += %(e(rhs/tree));\n"/>
         </admst:otherwise>
       </admst:choose>
     </admst:otherwise>
@@ -7110,7 +7110,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     <admst:variable name="probepnodename" select="%($probepnode/name)"/>
     <admst:variable name="probennodename" select="%($probennode/name)"/>
     <admst:variable name="pprobe" select="%(.)"/>
-    <admst:apply-templates select="../tree" match="X3%(adms/datatypename)"/>
+    <admst:apply-templates select="../tree" match="%(adms/datatypename)"/>
     <admst:choose>
       <admst:when test="$probennode[grounded='no']">
         <admst:if test="$sourcennode[grounded='no']">
@@ -7140,9 +7140,9 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   <admst:text select="[dynamic='yes']" format="#endif //98\n"/>
 </admst:template>
 <!-- ---------------------------------------------------------- -->
-<admst:template match="X3contribution:nonoise">
-<admst:message test="[/dbg_xml='yes']" format="*X3contribution:nonoise*\n"/>
-  <admst:text format="// X3contribution ... \n"/>
+<admst:template match="contribution:nonoise">
+<admst:message test="[/dbg_xml='yes']" format="*contribution:nonoise*\n"/>
+  <admst:text format="// contribution ... \n"/>
   <admst:if test="rhs[not(nilled(function[class='builtin']))]">
     <admst:choose>
       <admst:when test="[dynamic='yes']">
@@ -7154,7 +7154,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 
       <admst:value-of select="position(.)-1"/>
 
-	<admst:apply-templates select="." match="X3function:getname">
+	<admst:apply-templates select="." match="function:getname">
       	<admst:value-of select="returned('function:getname')/value"/>
       </admst:apply-templates>
       
@@ -7197,7 +7197,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     <admst:variable name="probepnodename" select="%($probepnode/name)"/>
     <admst:variable name="probennodename" select="%($probennode/name)"/>
     <admst:variable name="pprobe" select="%(.)"/>
-    <admst:apply-templates select="../tree" match="X3%(adms/datatypename)"/>
+    <admst:apply-templates select="../tree" match="%(adms/datatypename)"/>
     <admst:if test="branch/pnode[grounded='no']">
       <admst:if test="../../lhs/branch/pnode[grounded='no']">
         <admst:choose>
@@ -7251,7 +7251,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     <admst:when test="[dynamic='yes']">
 	{  // former_eval_dynamic_residual2
         // rhs/tree should contain a ddt...
-		double _i = %(X3e(rhs/tree));
+		double _i = %(e(rhs/tree));
 		assert(is_number(_i));
         //error = NIintegrate(state_##p##_##n);
         //_eval_static_residual2($Pp,$Pn,v);
@@ -7262,7 +7262,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     </admst:when>
     <admst:otherwise>
 	{ // former_eval_static_residual2  (recheck: same as dynamic?)
-		double vx = %(X3e(rhs/tree)); 
+		double vx = %(e(rhs/tree)); 
 		assert(is_number(vx));
 		it0[$node_prefix$Pp] -= vx;
 		it0[$node_prefix$Pn] += vx;
@@ -7283,7 +7283,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     <admst:when test="[dynamic='yes']">
 	{  // former_eval_dynamic_residual2
         // rhs/tree should contain a ddt...
-		double va = %(X3e(rhs/tree));
+		double va = %(e(rhs/tree));
 		assert(is_number(va));
         //_eval_static_residual1($Pp,v);
 		it0[$node_prefix$Pp] -= va; 
@@ -7292,7 +7292,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     </admst:when>
     <admst:otherwise>
 	{ // former_eval_static_residual2  // same as dynamic?
-		double vb = %(X3e(rhs/tree)); 
+		double vb = %(e(rhs/tree)); 
 		assert(is_number(vb));
 		it0[$node_prefix$Pp] -= vb;
 	}
@@ -7502,46 +7502,46 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:choose>
 </admst:template>
 <!-- analog//conditional -->
-<admst:template match="X3conditional">
-<admst:message test="[/dbg_xml='yes']" format="*X3conditional*\n"/>
+<admst:template match="conditional">
+<admst:message test="[/dbg_xml='yes']" format="*conditional*\n"/>
   <admst:text select="if[dynamic='yes']" format="#ifdef _DYNAMIC\n"/>
-  <admst:text test="if/function" format="{ // X3conditional\n"/>
-  <admst:apply-templates select="if/function" match="X3function:precomputation"/>
-  <admst:text format="if\n(%(X3e(if/tree))) //X3conditional \n"/>
+  <admst:text test="if/function" format="{ // conditional\n"/>
+  <admst:apply-templates select="if/function" match="function:precomputation"/>
+  <admst:text format="if\n(%(e(if/tree))) //conditional \n"/>
   <admst:text select="then/adms[datatypename!='block']" format="{\n"/>
-  <admst:apply-templates select="then" match="X3%(adms/datatypename)"/>
-  <admst:text select="then/adms[datatypename!='block']" format="}//X3conditional\n"/>
+  <admst:apply-templates select="then" match="%(adms/datatypename)"/>
+  <admst:text select="then/adms[datatypename!='block']" format="}//conditional\n"/>
   <admst:if test="else">
-    <admst:text format="else // X3conditional\n"/>
-    <admst:text test="else/adms[datatypename!='block']" format="{ // X3conditional.\n"/>
-    <admst:apply-templates select="else" match="X3%(adms/datatypename)"/>
-    <admst:text test="else/adms[datatypename!='block']" format="} // X3conditional.\n"/>
+    <admst:text format="else // conditional\n"/>
+    <admst:text test="else/adms[datatypename!='block']" format="{ // conditional.\n"/>
+    <admst:apply-templates select="else" match="%(adms/datatypename)"/>
+    <admst:text test="else/adms[datatypename!='block']" format="} // conditional.\n"/>
   </admst:if>
-  <admst:text test="if/function" format="} // X3conditional\n"/>
+  <admst:text test="if/function" format="} // conditional\n"/>
   <admst:text select="if[dynamic='yes']" format="#endif /* if(...) */\n"/>
 </admst:template>
 
 <!-- analog//nilled -->
-<admst:template match="X3nilled">
-<admst:message test="[/dbg_xml='yes']" format="*X3nilled*\n"/>
+<admst:template match="nilled">
+<admst:message test="[/dbg_xml='yes']" format="*nilled*\n"/>
 </admst:template>
 
 <!-- analog//whileloop -->
-<admst:template match="X3whileloop">
-<admst:message test="[/dbg_xml='yes']" format="*X3whileloop*\n"/>
+<admst:template match="whileloop">
+<admst:message test="[/dbg_xml='yes']" format="*whileloop*\n"/>
   <admst:text select="while[dynamic='yes']" format="#ifdef _DYNAMIC\n"/>
   <admst:variable name="SkipFVariable" select="y"/>
-  <admst:text format="while\n(%(X3e(while/tree)))\n"/>
+  <admst:text format="while\n(%(e(while/tree)))\n"/>
   <admst:variable name="SkipFVariable" select="n"/>
   <admst:text select="whileblock/adms[datatypename!='block']" format="{\n"/>
-  <admst:apply-templates select="whileblock" match="X3%(adms/datatypename)"/>
+  <admst:apply-templates select="whileblock" match="%(adms/datatypename)"/>
   <admst:text select="whileblock/adms[datatypename!='block']" format="}\n"/>
   <admst:text select="while[dynamic='yes']" format="#endif /*&lt;/dynamic_while&gt;*/\n"/>
 </admst:template>
 
 <!-- analog//callfunctions -->
-<admst:template match="X3callfunction">
-<admst:message test="[/dbg_xml='yes']" format="*X3callfunction*\n"/>
+<admst:template match="callfunction">
+<admst:message test="[/dbg_xml='yes']" format="*callfunction*\n"/>
 	<admst:apply-templates select="." match="callfunction"/>
 </admst:template>
 
@@ -7549,8 +7549,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 <!-- save all variables used for local declaration -->
 <admst:variable name="ddxinsidederivate" select="no"/>
 
-<admst:template match="X3variable:declaration">
-<admst:message test="[/dbg_xml='yes']" format="*X3variable:declaration*\n"/>
+<admst:template match="variable:declaration">
+<admst:message test="[/dbg_xml='yes']" format="*variable:declaration*\n"/>
   <admst:variable name="myvariable" select="%(.)"/>
   <admst:new datatype="list" arguments="list of ddx probes">
     <admst:variable name="ddxprobes" select="%(.)"/>
@@ -7565,7 +7565,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     <admst:text test="[static='no' and dynamic='yes']" format="// #if defined(_DYNAMIC) // fixme\n"/>
     <admst:if   test="[static='yes' or dynamic='no' or $_DYNAMIC='yes']">
 
-    <admst:text test="[scope='local']" format="%(X3vtype(.)) %(name);\n"/>
+    <admst:text test="[scope='local']" format="%(vtype(.)) %(name);\n"/>
     <admst:if test="[insource='yes']/probe">
       <admst:for-each select="probe">
         <admst:variable name="pprobe" select="%(.)"/>
@@ -7591,7 +7591,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
             <admst:variable name="pprobe" select="%(.)"/>
             <admst:for-each select="$myvariable/probe">
               <admst:variable name="qprobe" select="%(.)"/>
-              <admst:text format="  double %(X3ddxname($myvariable)/[name='ddxname']/value);\n"/>
+              <admst:text format="  double %(ddxname($myvariable)/[name='ddxname']/value);\n"/>
             </admst:for-each>
           </admst:for-each>
         </admst:if>
@@ -7604,21 +7604,21 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     <admst:text test="[static='no' and dynamic='yes']" format="// #endif _DYNAMIC\n"/>
   </admst:if>
 </admst:template>
-<admst:template match="X3block:local:declaration">
-<admst:message test="[/dbg_xml='yes']" format="*X3block:local:declaration*\n"/>
+<admst:template match="block:local:declaration">
+<admst:message test="[/dbg_xml='yes']" format="*block:local:declaration*\n"/>
   <admst:choose>
     <admst:when test="adms[datatypename='assignment']">
       <admst:push into="module/evaluation/variable" select="lhs" onduplicate="ignore"/>
     </admst:when>
     <admst:when test="adms[datatypename='block']">
-      <admst:apply-templates select="item" match="X3block:local:declaration"/>
+      <admst:apply-templates select="item" match="block:local:declaration"/>
     </admst:when>
     <admst:when test="adms[datatypename='conditional']">
-      <admst:apply-templates select="then" match="X3block:local:declaration"/>
-      <admst:apply-templates select="else" match="X3block:local:declaration"/>
+      <admst:apply-templates select="then" match="block:local:declaration"/>
+      <admst:apply-templates select="else" match="block:local:declaration"/>
     </admst:when>
     <admst:when test="adms[datatypename='whileloop']">
-      <admst:apply-templates select="whileblock" match="X3block:local:declaration"/>
+      <admst:apply-templates select="whileblock" match="block:local:declaration"/>
     </admst:when>
     <admst:when test="adms[datatypename='contribution']"/>
     <admst:when test="adms[datatypename='callfunction']"/>
@@ -7630,8 +7630,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:choose>
 </admst:template>
 <!-- -------------------------------------------------- -->
-<admst:template match="X3analog:evaluate">
-<admst:message test="[/dbg_xml='yes']" format="*X3analog:evaluate*\n"/>
+<admst:template match="analog:evaluate">
+<admst:message test="[/dbg_xml='yes']" format="*analog:evaluate*\n"/>
   <admst:text select="$fnoise/item" format="fpnoise%(index($fnoise/item,.))=0.0;
     fenoise%(index($fnoise/item,.))=0.0;\n"/>
   <admst:text select="$tnoise/item" format="tnoise%(index($tnoise/item,.))=0.0;\n"/>
@@ -7641,27 +7641,27 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   <admst:for-each select="item">
     <admst:if test="adms[datatypename='block']/..[name!='initial_model' and name!='initial_instance']">
       <admst:text format="// declaration1\n"/>
-      <admst:apply-templates select="." match="X3block:local:declaration"/>
+      <admst:apply-templates select="." match="block:local:declaration"/>
     </admst:if>
     <admst:if test="adms[datatypename!='block']">
       <admst:text format="// declaration2\n"/>
-      <admst:apply-templates select="." match="X3block:local:declaration"/>
+      <admst:apply-templates select="." match="block:local:declaration"/>
     </admst:if>
   </admst:for-each>
   <admst:text format="// declaration3\n"/>
-  <admst:apply-templates select="module/evaluation/variable" match="X3variable:declaration"/>
+  <admst:apply-templates select="module/evaluation/variable" match="variable:declaration"/>
   <!-- local variable declarations -->
 
   <admst:reset select="module/evaluation/variable"/>
   <admst:for-each select="item">
     <admst:choose>
       <admst:when test="adms[datatypename!='block']">
-        <admst:apply-templates select="." match="X3%(adms/datatypename)"/>
+        <admst:apply-templates select="." match="%(adms/datatypename)"/>
       </admst:when>
       <admst:otherwise>
         <admst:if test="[name!='initial_model' and name!='initial_instance']">
           <admst:text format="//bug -- parts of this has been done in tr_begin.\n"/>
-          <admst:apply-templates select="." match="X3block"/>
+          <admst:apply-templates select="." match="block"/>
           <admst:text format="// end bug?\n"/>
         </admst:if>
       </admst:otherwise>
@@ -7669,34 +7669,34 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:for-each>
 </admst:template>
 <!-- -------------------------------------------------------------------- -->
-<admst:template match="X3analog:initializeModel">
-<admst:message test="[/dbg_xml='yes']" format="*X3analog:initializeModel*\n"/>
+<admst:template match="analog:initializeModel">
+<admst:message test="[/dbg_xml='yes']" format="*analog:initializeModel*\n"/>
   <admst:for-each select="item">
     <admst:if test="adms[datatypename='block']/..[name='initial_model']">
-      <admst:apply-templates select="." match="X3block:local:declaration"/>
+      <admst:apply-templates select="." match="block:local:declaration"/>
     </admst:if>
   </admst:for-each>
-  <admst:apply-templates select="module/evaluation/variable" match="X3variable:declaration"/>
+  <admst:apply-templates select="module/evaluation/variable" match="variable:declaration"/>
   <admst:reset select="module/evaluation/variable"/>
   <admst:for-each select="item">
     <admst:if test="adms[datatypename='block']/..[name='initial_model']">
-      <admst:apply-templates select="." match="X3block"/>
+      <admst:apply-templates select="." match="block"/>
     </admst:if>
   </admst:for-each>
 </admst:template>
 <!-- -------------------------------------------------------------------- -->
-<admst:template match="X3analog:initializeInstance">
-<admst:message test="[/dbg_xml='yes']" format="*X3analog:initializeInstance*\n"/>
+<admst:template match="analog:initializeInstance">
+<admst:message test="[/dbg_xml='yes']" format="*analog:initializeInstance*\n"/>
   <admst:for-each select="item">
     <admst:if test="adms[datatypename='block']/..[name='initial_instance']">
-      <admst:apply-templates select="." match="X3block:local:declaration"/>
+      <admst:apply-templates select="." match="block:local:declaration"/>
     </admst:if>
   </admst:for-each>
-  <admst:apply-templates select="module/evaluation/variable" match="X3variable:declaration"/>
+  <admst:apply-templates select="module/evaluation/variable" match="variable:declaration"/>
   <admst:reset select="module/evaluation/variable"/>
   <admst:for-each select="item">
     <admst:if test="adms[datatypename='block']/..[name='initial_instance']">
-      <admst:apply-templates select="." match="X3block"/>
+      <admst:apply-templates select="." match="block"/>
     </admst:if>
   </admst:for-each>
 </admst:template>
@@ -7712,8 +7712,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 * it returns a NULL. The returned value is used in the 'description'
 * field of the mint_param_xxx file, where xxx is [integer|real|string]
 -->
-<admst:template match="X3variable:desc">
-<admst:message test="[/dbg_xml='yes']" format="*X3variable:desc*\n"/>
+<admst:template match="variable:desc">
+<admst:message test="[/dbg_xml='yes']" format="*variable:desc*\n"/>
   <admst:choose>
     <admst:when test="attribute[name='desc' or name='info']">
       <admst:return name="variable:desc" value="&quot;%(attribute[name='desc' or name='info']/value)&quot;"/>
@@ -7732,8 +7732,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 * it returns a NULL. The returned value is used in the 'unit'
 * field of the mint_param_xxx file, where xxx is [integer|real|string]
 -->
-<admst:template match="X3variable:unit">
-<admst:message test="[/dbg_xml='yes']" format="*X3variable:unit*\n"/>
+<admst:template match="variable:unit">
+<admst:message test="[/dbg_xml='yes']" format="*variable:unit*\n"/>
   <admst:choose>
     <admst:when test="attribute[name='unit']">
       <admst:return name="variable:unit" value="&quot;%(attribute[name='unit']/value)&quot;"/>
@@ -7752,27 +7752,27 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 * field of the mint_param_xxx file, where xxx is [integer|real|string]
 -->
 
-<admst:template match="X3variable:paramdef">
-<admst:message test="[/dbg_xml='yes']" format="*X3variable:paramdef*\n"/>
+<admst:template match="variable:paramdef">
+<admst:message test="[/dbg_xml='yes']" format="*variable:paramdef*\n"/>
   <admst:return name="name" value="%(name)"/>
-  <admst:apply-templates select="." match="X3variable:desc">
+  <admst:apply-templates select="." match="variable:desc">
     <admst:return name="desc" value="%(returned('variable:desc')/value)"/>
   </admst:apply-templates>
-  <admst:apply-templates select="." match="X3variable:unit">
+  <admst:apply-templates select="." match="variable:unit">
     <admst:return name="unit" value="%(returned('variable:unit')/value)"/>
   </admst:apply-templates>
   <admst:return name="minttype" value="%(type)"/>
 </admst:template>
 
 <!-- ------------------------------------ -->
-<admst:template match="X3c:math_h">
-<admst:message test="[/dbg_xml='yes']" format="*X3c:math_h*\n"/>
+<admst:template match="c:math_h">
+<admst:message test="[/dbg_xml='yes']" format="*c:math_h*\n"/>
 // *** arithmetics ***
 <admst:text format="\n\n"/>
 </admst:template>
 <!-- ------------------------------------------- -->
-<admst:template match="X3wrapper">
-<admst:message test="[/dbg_xml='yes']" format="*X3wrapper*\n"/>
+<admst:template match="wrapper">
+<admst:message test="[/dbg_xml='yes']" format="*wrapper*\n"/>
 // *** wrapper ***
 #define m _model
 
