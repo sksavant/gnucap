@@ -4501,8 +4501,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 </admst:template>
 
 
-<!--/admst>
-<admst version="2.3.0"-->
+</admst>
+<admst version="2.3.0">
 
 
 <!-- *********************************************************************************** -->
