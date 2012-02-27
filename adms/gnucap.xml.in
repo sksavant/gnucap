@@ -394,7 +394,7 @@ private: // nodes / matrix indexes
 	public:
 
 	<admst:text format="\tenum ENodes {"/>
-  	<admst:join select="node[grounded='no']" separator=",">  
+  	<admst:join select="node[grounded='no']" separator=",">
     	<admst:value-of select="name"/>  
     	<admst:text format=" $node_prefix%s=%(position(.)-1)"/>
 	<admst:text test="[position(.)=count(.)]" format=", _num_total_nodes=%(count(.))"/>
@@ -2051,7 +2051,9 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 
 <!-- ----------------------------------------------------------------- -->
 <admst:template match="expression:stringify:noprobe">
-<admst:message test="[/dbg_xml='yes']" format="*expression:stringify:noprobe*\n"/>
+<admst:message test="[/dbg_xml='yes']" format="*expression:stringify:noprobe: %(.)*\n"/>
+<!-- if u get error "template "expression" not found", add "/tree" to "select"-field in apply-templates -->
+<!-- look commit 2012-02-09 14:26:45 for expamples -->
   <admst:apply-templates select="." match="%(./adms/datatypename)"/>
   <admst:value-of select="/simulator/tmp"/>
 </admst:template>
@@ -3138,9 +3140,92 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 <!-- ----------------------------------------------------------------- -->
 <!-- analog//assignment -->
 <admst:template match="assignment">
-<admst:message test="[/dbg_xml='yes']" format="*assignment*\n"/>
-  <admst:warning format="template not in use: remved\n"/>
-  <admst:apply-templates select="." match="assignment"/>
+<admst:message test="[/dbg_xml='yes']" format="*assignment: %(.)*\n"/>
+  <admst:if test="rhs[not(nilled(function[class='builtin']))]">
+    <admst:choose>
+      <admst:when test="[dynamic='yes']">
+        <admst:text format="#if defined(_DYNAMIC)\n"/>
+      </admst:when>
+    </admst:choose>
+    <admst:text format="{\n"/>
+    <admst:for-each select="rhs/function">
+      <admst:value-of select="position(.)-1"/>
+      <admst:apply-templates select="." match="function:getname"/>
+      <admst:text format="double __%s_%s=0.0;\n"/>
+    </admst:for-each>
+    <admst:apply-templates select="." match="ddx:function:computation"/>
+  </admst:if>
+  <admst:if test="lhs[derivate='yes']">
+    <admst:text format="#if defined(_DERIVATE)\n"/>
+  </admst:if>
+  <admst:if test="lhs[insource='yes']">
+    <admst:if test="rhs/probe">
+      <admst:text format="#if defined(_DERIVATE)\n"/>
+      <admst:for-each select="rhs/probe">
+        <admst:value-of select="."/>
+        <admst:value-to select="/simulator/probe" value="%p"/>
+        <admst:apply-templates select="../tree" match="subexpression:differentiate"/>
+        <admst:value-of select="/simulator/ddx"/>
+        <admst:value-of select="branch/nnode/name"/>
+        <admst:value-of select="branch/pnode/name"/>
+        <admst:value-of select="nature/access"/>
+        <admst:value-of select="../../lhs/name"/>
+        <admst:text format="%s_%s%s_%s=%s;\n"/>
+        <admst:value-of select="branch/nnode/name"/>
+        <admst:value-of select="branch/pnode/name"/>
+        <admst:value-of select="nature/access"/>
+        <admst:value-of select="../../lhs/name"/>
+        <admst:text format="EXIT_IF_ISNAN(%s_%s%s_%s)\n"/>
+      </admst:for-each>
+      <admst:text format="#endif /*_DERIVATE*/\n"/>
+    </admst:if>
+  </admst:if>
+  <admst:choose>
+    <admst:when test="[dynamic='yes']">
+      <admst:text format="#if defined(_DYNAMIC)\n"/>
+    </admst:when>
+  </admst:choose>
+  <admst:apply-templates select="lhs" match="variable:lhs" required="yes"/>
+  <admst:apply-templates select="rhs" match="expression:stringify:noprobe"/>
+  <admst:text format="=%s;\n"/>
+  <admst:text format="EXIT_IF_ISNAN("/>
+  <admst:apply-templates select="lhs" match="variable:lhs" required="yes"/>
+  <admst:text format=")\n"/>
+  <admst:choose>
+    <admst:when test="[dynamic='yes']">
+      <admst:text format="#endif /*_DYNAMIC*/\n"/>
+    </admst:when>
+  </admst:choose>
+  <admst:if test="lhs[derivate='yes']">
+    <admst:text format="#endif /*_DERIVATE*/\n"/>
+  </admst:if>
+  <admst:if test="lhs[insource='yes']">
+    <admst:value-of select="rhs/probe"/>
+    <admst:if-inside select="lhs/probe" list="%p">
+      <admst:if test="lhs/probe">
+        <admst:text format="#if defined(_DERIVATE)\n"/>
+        <admst:for-each select="lhs/probe">
+          <admst:value-of select="../../rhs/probe"/>
+          <admst:if-not-inside select="." list="%p">
+            <admst:value-of select="branch/nnode/name"/>
+            <admst:value-of select="branch/pnode/name"/>
+            <admst:value-of select="nature/access"/>
+            <admst:value-of select="../name"/>
+            <admst:text format="%s_%s%s_%s=0.0;\n"/>
+          </admst:if-not-inside>
+        </admst:for-each>
+        <admst:text format="#endif /*_DERIVATE*/\n"/>
+      </admst:if>
+    </admst:if-inside>
+  </admst:if>
+  <admst:if test="rhs[not(nilled(function[class='builtin']))]">
+    <admst:text format="}\n"/>
+    <admst:choose>
+      <admst:when test="[dynamic='yes']">
+        <admst:text format="#endif /* _DYNAMIC */\n"/>
+      </admst:when>
+    </admst:choose>
+  </admst:if>
 </admst:template>
 
 <!-- ----------------------------------------------------------------- -->
@@ -3528,7 +3613,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 <!-- ----------------------------------------------------------------- -->
 <!-- variable:lhs -->
 <admst:template match="variable:lhs">
-<admst:message test="[/dbg_xml='yes']" format="*variable:lhs*\n"/>
+<admst:message test="[/dbg_xml='yes']" format="*variable:lhs: %(.)*\n"/>
   <admst:text test="[input='yes' and parametertype='model']" format="_model-&gt;%(name)"/>
   <admst:text test="[input='yes' and parametertype='instance']" format="_model-&gt;%(name)"/>
   <admst:text test="[input='no' and scope='global_model']" format="_model-&gt;%(name)"/>
@@ -6915,7 +7000,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 </admst:template>
 <!-- ---------------------------------------------------------- -->
 <admst:template match="assignment">
-<admst:message test="[/dbg_xml='yes']" format="*assignment*\n"/>
+<admst:message test="[/dbg_xml='yes']" format="*X3assignment: %(.)*\n"/>
   <admst:variable name="assignment" select="%(.)"/>
   <admst:variable name="rhs" select="%(rhs)"/>
   <admst:variable name="lhs" select="%(lhs)"/>
