@@ -91,7 +91,7 @@ public:
     }
   }
 } p4;
-DISPATCHER<FUNCTION_BASE>::INSTALL d4(&measure_dispatcher, "average|mean", &p4);
+DISPATCHER<FUNCTION_BASE>::INSTALL d4(&measure_dispatcher, "average|mean|avg", &p4);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/
