@@ -1561,41 +1561,9 @@ void $(DEV_NAME)::guesstopology ()
 	for(int i=0; i<%(count(jacobian)); i++)
         	m_required[i] = false;
 	
-
-  <!--admst:for-each select="analog/code[datatypename='block']/item">
-    <admst:if test="[(datatypename!='block') or (datatypename='block'
-      and name!='initial_model' and name!='initializeModel' and name!='initial_instance'
-      and name!='initializeInstance')]">
-      <admst:apply-templates select="." match="evaluate.localvariables"/>
-    </admst:if>
-  </admst:for-each>
-
-  <admst:for-each select="$localvariables">
-	<admst:apply-templates select="" match="generate_c:declare_variable"/>
-  </admst:for-each-->
-
-  <admst:apply-templates select="analog/code[datatypename='block']/variable" match="generate_c:declare_variable"/>
-  
-  <admst:for-each select="analog/code[datatypename='block']/item">
-    <admst:if test="[(datatypename!='block') or (datatypename='block'
-      and name!='initial_model' and name!='initializeModel' and name!='initial_instance' 
-      and name!='initializeInstance')]">
-      <admst:apply-templates select="." match="ngspiseMODULEguesstopology.cevaluatetopology"/>
-    </admst:if>
- </admst:for-each>
-
- for(int i=0; i<%(count(jacobian)); i++){
-  trace1("guess m", m_required[i]);
- }
+	#include "$(filename)_guesstopology.hxx"
  
-	<admst:for-each select="jacobian">
-          <admst:value-of select="column/name"/>
-          <admst:value-of select="row/name"/>
-          <admst:value-of select="column/name"/>
-          <admst:value-of select="row/name"/>
-          if( m_required[m_%s_%s] ) printf("m_%s_%s\n");
-    </admst:for-each>
-
+ 	for(int i=0; i<%(count(jacobian)); i++) trace1("guess m", m_required[i]);
 }	
 // -------------------------------------------------------------------------- //
 #if 0
@@ -4585,13 +4553,49 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 </admst:template>
 
 </admst>
+
 <admst version="2.3.0">
 
 <!-- *********************************************************************************** -->
 <!-- *********************** tree traverse - guesstopology ***************************** -->
 <!-- *********************************************************************************** -->
 
+<admst:for-each select="/module">
+	<admst:value-of select="attribute[name='ngspicename']/value"/>
+	<admst:variable name="module" select="%s"/>
+	<admst:variable name="DEV_NAME" select="DEV_%(upper-case(name))"/>
+	<admst:variable name="MODEL_NAME" select="MODEL_%(upper-case(name))"/>
+
+	<admst:open file="$(filename)_guesstopology.hxx">
+		<admst:apply-templates select="analog/code[datatypename='block']/variable" match="generate_c:declare_variable"/>
+		
+		<admst:for-each select="analog/code[datatypename='block']/item">
+		<admst:if test="[(datatypename!='block') or (datatypename='block'
+		and name!='initial_model' and name!='initializeModel' and name!='initial_instance' 
+		and name!='initializeInstance')]">
+		<admst:apply-templates select="." match="ngspiseMODULEguesstopology.cevaluatetopology"/>
+		</admst:if>
+		</admst:for-each>
+	</admst:open>
+</admst:for-each>
+
+<!--admst:for-each select="analog/code[datatypename='block']/item">
+<admst:if test="[(datatypename!='block') or (datatypename='block'
+and name!='initial_model' and name!='initializeModel' and name!='initial_instance'
+and name!='initializeInstance')]">
+<admst:apply-templates select="." match="evaluate.localvariables"/>
+</admst:if>
+</admst:for-each>
+<admst:for-each select="$localvariables">
+<admst:apply-templates select="" match="generate_c:declare_variable"/>
+</admst:for-each-->
+
+ 
+
+
+
 </admst>
+
 <admst version="2.3.0">
 
 <!-- *********************************************************************************** -->
