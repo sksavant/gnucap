@@ -1505,6 +1505,7 @@ void $(DEV_NAME)::ac_load()
 	if( m_required[m_%s_%s] ) ac_load_point(_N(%s), _N(%s), COMPLEX(m_entries[m_%s_%s], m_entries_old[m_%s_%s]));
 	</admst:for-each>
 }
+
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::CKTterr(int qcap, double *time_step)
 {
@@ -1521,41 +1522,7 @@ void $(DEV_NAME)::CKTterr(int qcap, double *time_step)
 	*time_step = std::min(tr_review_trunc_error(&q[0]), *time_step);
 }
 
-// -------------------------------------------------------------------------- //	
-
-<admst:template match="evaluate.localvariables">
-<admst:message test="[/dbg_xml='yes']" format="*evaluate.localvariables*\n"/>
-  <admst:choose>
-    <admst:when test="[datatypename='assignment']">
-      <admst:if test="[(lhs/insource='yes') and (lhs/OPdependent='no')]">
-        <admst:push select="lhs[scope='local']" into="$localvariables" onduplicate="ignore"/>
-      </admst:if>
-    </admst:when>
-    <admst:when test="[datatypename='block']">
-      <admst:apply-templates select="item" match="evaluate.localvariables"/>
-    </admst:when>
-    <admst:when test="[datatypename='conditional']">
-      <admst:push select="if/variable[scope='local' and OPdependent='no']"
-        into="$localvariables" onduplicate="ignore"/>
-      <admst:apply-templates select="then" match="evaluate.localvariables"/>
-      <admst:apply-templates select="else" match="evaluate.localvariables"/>
-    </admst:when>
-    <admst:when test="[datatypename='whileloop']">
-      <admst:apply-templates select="whileblock" match="evaluate.localvariables"/>
-    </admst:when>
-    <admst:when test="[datatypename='case']">
-      <admst:apply-templates select="caseitem/code" match="evaluate.localvariables"/>
-    </admst:when>
-    <admst:when test="[datatypename='contribution']"/>
-    <admst:when test="[datatypename='nilled']"/>
-    <admst:when test="[datatypename='callfunction']"/>
-    <admst:when test="[datatypename='blockvariable']"/>
-    <admst:otherwise>
-      <admst:error format="'%(datatypename): should not be reached\n"/>
-    </admst:otherwise>
-  </admst:choose>
-</admst:template>
-<!-- --------------------------------------------------------------- -->
+// -------------------------------------------------------------------------- //
 void $(DEV_NAME)::guesstopology ()
 {
 	for(int i=0; i<%(count(jacobian)); i++)
@@ -1565,6 +1532,7 @@ void $(DEV_NAME)::guesstopology ()
  
  	for(int i=0; i<%(count(jacobian)); i++) trace1("guess m", m_required[i]);
 }	
+
 // -------------------------------------------------------------------------- //
 #if 0
 void $(DEV_NAME)::acLoad()
@@ -1589,7 +1557,8 @@ void $(DEV_NAME)::acLoad()
   <admst:value-of select="row/name"/>
   <admst:text format="\n\tif(m_required[m_%s_%s]) m_entries_old[m_%s_%s] += _sim->_jomega.imag() * m_ac_dynamic[m_%s_%s]; // dynamic"/>
 </admst:for-each>
-}	
+}
+	
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::pzLoad(COMPLEX s)
 {
@@ -1627,7 +1596,6 @@ void $(DEV_NAME)::pzLoad(COMPLEX s)
 </admst:for-each>
 }
 #endif
-// -------------------------------------------------------------------------- //
 
 // -------------------------------------------------------------------------- //
 bool $(DEV_NAME)::conv_check()const
@@ -1661,8 +1629,8 @@ bool $(DEV_NAME)::conv_check()const
   return true;
 
 }
-// -------------------------------------------------------------------------- //
 
+// -------------------------------------------------------------------------- //
 // write G and C into
 // matrix and matrix_old
 void $(DEV_NAME)::ac_eval() 
@@ -1693,6 +1661,7 @@ void $(DEV_NAME)::ac_eval()
 	return; 
 }
 // -------------------------------------------------------------------------- //
+
 void $(DEV_NAME)::tr_eval() 
 {
 	std::fill_n(it0, (int)_num_total_nodes, 0);
@@ -2406,25 +2375,6 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 <!-- *********************************************************************************** -->
 <!-- ******************************* tree traverse ************************************* -->
 <!-- *********************************************************************************** -->
-
-<!-- ----------------------------------------------------------------- -->
-<admst:template match="fname">
-<admst:message test="[/dbg_xml='yes']" format="*fname*\n"/>
-  <admst:choose>
-    <admst:when test="[name='div']"><admst:return name="fname" value="_div1"/></admst:when>
-    <admst:when test="[name='abs']"><admst:return name="fname" value="fabs"/></admst:when>
-    <admst:when test="[name='\$shrinkl']"><admst:return name="fname" value="shrinkl"/></admst:when>
-    <admst:when test="[name='\$shrinka']"><admst:return name="fname" value="shrinka"/></admst:when>
-    <admst:when test="[name='log']"><admst:return name="fname" value="log10"/></admst:when>
-    <admst:when test="[name='ln']"><admst:return name="fname" value="log"/></admst:when>
-    <admst:when test="[name='limexp']"><admst:return name="fname" value="limexp"/></admst:when>
-    <admst:when test="[name='\$limexp']"><admst:return name="fname" value="limexp"/></admst:when>
-    <admst:when test="[name='\$model']"><admst:return name="fname" value="_modelname"/></admst:when>
-    <admst:when test="[name='\$instance']"><admst:return name="fname" value="_instancename"/></admst:when>
-    <admst:when test="[name='\$temperature']"><admst:return name="fname" value="_circuit_temp"/></admst:when>
-    <admst:otherwise><admst:return name="fname" value="%(name)"/></admst:otherwise>
-  </admst:choose>
-</admst:template>
 
 <!-- ----------------------------------------------------------------- -->
 <admst:template match="function:assert:noarg">
@@ -4371,6 +4321,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 <!-- *********************** tree traverse - guesstopology ***************************** -->
 <!-- *********************************************************************************** -->
 
+<admst:fatal format="***************** XXX ***************"/>
+
 <admst:for-each select="/module">
 	<admst:value-of select="attribute[name='ngspicename']/value"/>
 	<admst:variable name="module" select="%s"/>
@@ -4523,7 +4475,6 @@ and name!='initializeInstance')]">
 
 </admst:template>
 
-
 <!-- ----------------------------------------------------------------- -->
 <admst:template match="function">
 <admst:message test="[/dbg_xml='yes']" format="*function*\n"/>
@@ -4587,10 +4538,58 @@ and name!='initializeInstance')]">
   </admst:choose>
 </admst:template>
  
+<!-- ----------------------------------------------------------------- -->
+<admst:template match="evaluate.localvariables">
+<admst:message test="[/dbg_xml='yes']" format="*evaluate.localvariables*\n"/>
+  <admst:choose>
+    <admst:when test="[datatypename='assignment']">
+      <admst:if test="[(lhs/insource='yes') and (lhs/OPdependent='no')]">
+        <admst:push select="lhs[scope='local']" into="$localvariables" onduplicate="ignore"/>
+      </admst:if>
+    </admst:when>
+    <admst:when test="[datatypename='block']">
+      <admst:apply-templates select="item" match="evaluate.localvariables"/>
+    </admst:when>
+    <admst:when test="[datatypename='conditional']">
+      <admst:push select="if/variable[scope='local' and OPdependent='no']"
+        into="$localvariables" onduplicate="ignore"/>
+      <admst:apply-templates select="then" match="evaluate.localvariables"/>
+      <admst:apply-templates select="else" match="evaluate.localvariables"/>
+    </admst:when>
+    <admst:when test="[datatypename='whileloop']">
+      <admst:apply-templates select="whileblock" match="evaluate.localvariables"/>
+    </admst:when>
+    <admst:when test="[datatypename='case']">
+      <admst:apply-templates select="caseitem/code" match="evaluate.localvariables"/>
+    </admst:when>
+    <admst:when test="[datatypename='contribution']"/>
+    <admst:when test="[datatypename='nilled']"/>
+    <admst:when test="[datatypename='callfunction']"/>
+    <admst:when test="[datatypename='blockvariable']"/>
+    <admst:otherwise>
+      <admst:error format="'%(datatypename): should not be reached\n"/>
+    </admst:otherwise>
+  </admst:choose>
+</admst:template>
 
-
-
-
+<!-- ----------------------------------------------------------------- -->
+<admst:template match="fname">
+<admst:message test="[/dbg_xml='yes']" format="*fname*\n"/>
+  <admst:choose>
+    <admst:when test="[name='div']"><admst:return name="fname" value="_div1"/></admst:when>
+    <admst:when test="[name='abs']"><admst:return name="fname" value="fabs"/></admst:when>
+    <admst:when test="[name='\$shrinkl']"><admst:return name="fname" value="shrinkl"/></admst:when>
+    <admst:when test="[name='\$shrinka']"><admst:return name="fname" value="shrinka"/></admst:when>
+    <admst:when test="[name='log']"><admst:return name="fname" value="log10"/></admst:when>
+    <admst:when test="[name='ln']"><admst:return name="fname" value="log"/></admst:when>
+    <admst:when test="[name='limexp']"><admst:return name="fname" value="limexp"/></admst:when>
+    <admst:when test="[name='\$limexp']"><admst:return name="fname" value="limexp"/></admst:when>
+    <admst:when test="[name='\$model']"><admst:return name="fname" value="_modelname"/></admst:when>
+    <admst:when test="[name='\$instance']"><admst:return name="fname" value="_instancename"/></admst:when>
+    <admst:when test="[name='\$temperature']"><admst:return name="fname" value="_circuit_temp"/></admst:when>
+    <admst:otherwise><admst:return name="fname" value="%(name)"/></admst:otherwise>
+  </admst:choose>
+</admst:template>
 
 
 </admst>
