@@ -1887,134 +1887,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 </admst:template>
 
 <!-- *********************************************************************************** -->
-<!-- *********************************** guesstopology ********************************* -->
-<!-- *********************************************************************************** -->
-
-<!-- ----------------------------------------------------------------- -->
-<admst:template match="ngspiseMODULEguesstopology.cevaluatetopology">
-<admst:message test="[/dbg_xml='yes']" format="*ngspiseMODULEguesstopology.cevaluatetopology*\n"/>
-  
-  <admst:if test="[datatypename='block']">
-	{ // begin of adms-block
-
-	<admst:apply-templates select="variable" match="generate_c:declare_variable"/>
-  </admst:if>
-
-  <admst:choose>
-    <admst:when test="[datatypename='callfunction']"/>
-    <admst:when test="[datatypename='whileloop']">
-      <admst:apply-templates select="whileblock" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
-      <admst:apply-templates select="while" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
-    </admst:when>
-    <admst:when test="[datatypename='conditional']">
-      <admst:if test="if[nilled(variable[OPdependent='yes'])]">
-        <admst:apply-templates select="if" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
-        <admst:choose>
-          <admst:when test="if/math[dependency='constant']">
-            <admst:apply-templates select="if/tree" match="expression:stringify:noprobe"/>
-            <admst:text format="if\n(%s)\n"/>
-            <admst:text format="{\n"/>
-		<!--admst:apply-templates select="then/variable" match="generate_c:declare_variable"/-->
-            	<admst:apply-templates select="then" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
-            <admst:text format="}\n"/>
-            <admst:if test="[exists(else)]">
-              <admst:text format="else\n"/>
-              <admst:text format="{\n"/>
-              <admst:apply-templates select="else" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
-              <admst:text format="}\n"/>
-            </admst:if>
-          </admst:when>
-          <admst:otherwise>
-            <admst:apply-templates select="then" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
-            <admst:apply-templates select="else" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
-          </admst:otherwise>
-        </admst:choose>
-      </admst:if>
-    </admst:when>
-    <admst:when test="[datatypename='contribution']">
-      <admst:if test="lhs[discipline/potential=nature]">
-        <admst:choose>
-          <admst:when test="lhs/branch[grounded='no']">
-                                                            	
-            <admst:text test="lhs/branch/nnode[location='internal']"
-              format="_nodes[$node_prefix%(lhs/branch/nnode/name)] 
-                      = _nodes[$node_prefix%(lhs/branch/pnode/name)]; // nnode collapsed \n"/>
-			              
-			<admst:text test="lhs/branch/pnode[location='internal']"
-			              	format="_nodes[$node_prefix%(lhs/branch/pnode/name)] = _nodes[$node_prefix%(lhs/branch/nnode/name)]; // pnode collapsed \n"/>
-
-          </admst:when>
-          <admst:otherwise>
-            <admst:text format="$node_prefix%(lhs/branch/pnode/name) = 0; /* pnode collapsed to GND */ \n"/>
-          </admst:otherwise>
-        </admst:choose>
-      </admst:if>
-      <admst:variable name="contribution" select="%(.)"/>
-      <admst:variable name="psource" select="%(lhs/branch/pnode)"/>
-      <admst:variable name="nsource" select="%(lhs/branch/nnode)"/>
-      <admst:for-each select="rhs/probe">
-        <admst:variable name="pprobe" select="%(branch/pnode)"/>
-        <admst:variable name="nprobe" select="%(branch/nnode)"/>
-        <admst:choose>
-          <admst:when test="$contribution[static='yes']"> <admst:text format="  static_"/> </admst:when>
-          <admst:when test="$contribution[dynamic='yes']"> <admst:text format="  dynamic_"/> </admst:when>
-          <admst:when test="$contribution[whitenoise='yes']"> <admst:text format="  whitenoise_"/> </admst:when>
-          <admst:when test="$contribution[flickernoise='yes']"> <admst:text format="  flickernoise_"/> </admst:when>
-        </admst:choose>
-        <admst:choose>
-          <admst:when test="[($nprobe/grounded='no')and($nsource/grounded='no')]">
-            <admst:text format="jacobian4(%($psource/name),%($nsource/name),%($pprobe/name),%($nprobe/name))\n"/>
-          </admst:when>
-          <admst:when test="[($nprobe/grounded='no')and($nsource/grounded='yes')]">
-            <admst:text format="jacobian2p(%($psource/name),%($pprobe/name),%($nprobe/name))\n"/>
-          </admst:when>
-          <admst:when test="[$nsource/grounded='no']">
-            <admst:text format="jacobian2s(%($psource/name),%($nsource/name),%($pprobe/name))\n"/>
-          </admst:when>
-          <admst:when test="[$nsource/grounded='yes']">
-            <admst:text format="jacobian1(%($psource/name),%($pprobe/name))\n"/>
-          </admst:when>
-        </admst:choose>
-      </admst:for-each>
-    </admst:when>
-    <admst:when test="[datatypename='assignment']">
-      <!-- ****** TODO: "fixed" here ********** -->
-      <!--admst:if test="[(lhs/insource='yes') and (lhs/OPdependent='no')]">
-        <admst:apply-templates select="lhs" match="variable:lhs"/>
-        <admst:text format="="/>
-        <admst:apply-templates select="rhs/tree" match="expression:stringify:noprobe"/>
-        <admst:text format="%s;\n"/>
-      </admst:if-->
-    </admst:when>
-    <admst:when test="[datatypename='block']">
-      <admst:apply-templates select="item" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
-    </admst:when>
-    <admst:when test="[datatypename='expression']"/>
-    <admst:when test="[datatypename='probe']"/>
-    <admst:when test="[datatypename='variable']"/>
-    <admst:when test="[datatypename='mapply_unary']"/>
-    <admst:when test="[datatypename='mapply_binary']"/>
-    <admst:when test="[datatypename='mapply_ternary']"/>
-    <admst:when test="[datatypename='function']"/>
-    <admst:when test="[datatypename='number']"/>
-    <admst:when test="[datatypename='string']"/>
-    <admst:when test="[datatypename='nilled']"/>
-    <admst:when test="[datatypename='blockvariable']"/>
-    <admst:otherwise>
-      <admst:fatal format="%(datatypename): adms element not implemented\n"/>
-    </admst:otherwise>
-  </admst:choose>
-
-  <admst:if test="[datatypename='block']">
-	} // end of adms-block
-
-  </admst:if>
-
-</admst:template>
-
-
-<!-- *********************************************************************************** -->
-<!--**************** tree traverse - guesstopology - datatypename ********************** -->
+<!--******************************** tree traverse - datatypename ********************** -->
 <!-- *********************************************************************************** -->
 
 <!-- ----------------------------------------------------------------- -->
@@ -2025,70 +1898,6 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   <admst:apply-templates select="." match="%(./adms/datatypename)"/>
   <admst:value-of select="/simulator/tmp"/>
 </admst:template>
-
-<!-- ----------------------------------------------------------------- -->
-<admst:template match="function">
-<admst:message test="[/dbg_xml='yes']" format="*function*\n"/>
-  <admst:variable name="function" select="%(name)"/>
-  <admst:variable name="args" select=""/>
-  <admst:for-each select="arguments">
-    <admst:variable test="[$args='']" name="args" select="$args,"/>
-    <admst:apply-templates select="." match="expression:stringify:noprobe"/>
-    <admst:variable name="args" select="$args%s"/>
-  </admst:for-each>
-  <admst:choose>
-    <admst:when test="[name='\$simparam']">
-      <admst:apply-templates select="." match="function:simparam"/>
-    </admst:when>
-    <admst:when test="[name='analysis']">
-      <admst:apply-templates select="." match="function:analysis"/>
-    </admst:when>
-    <admst:when test="[name='\$given']">
-      <admst:for-each select="arguments[position(.)=1]">
-        <admst:if test="[datatypename!='variable']">
-          <admst:error format="$given: argument is not a variable\n"/>
-        </admst:if>
-        <admst:if test="[input='no']">
-          <admst:value-of select="name"/>
-          <admst:error format="$given(%s): argument is not a parameter\n"/>
-        </admst:if>
-        <admst:choose>
-          <admst:when test="[parametertype='model']">
-            <admst:value-of select="name"/>
-            <admst:value-to select="/simulator/tmp" value="_model->IsParamGiven(&quot;%s&quot;)"/>
-          </admst:when>
-          <admst:when test="[parametertype='instance']">
-            <admst:value-of select="name"/>
-            <admst:value-to select="/simulator/tmp" value="IsParamGiven(&quot;%s&quot;)"/>
-          </admst:when>
-          <admst:otherwise>
-            <admst:error format="$given(%s): should not be reached\n"/>
-          </admst:otherwise>
-        </admst:choose>
-      </admst:for-each>
-    </admst:when>
-    <admst:otherwise>
-      <admst:variable name="mycode" select=""/>
-      <admst:if test="[exists(arguments)]">
-        <admst:for-each select="arguments">
-          <admst:apply-templates select="." match="expression:stringify:noprobe"/>
-          <admst:choose>
-            <admst:when test="[$mycode='']">
-              <admst:variable name="mycode" select="%s"/>
-            </admst:when>
-            <admst:otherwise>
-              <admst:variable name="mycode" select="$mycode,%s"/>
-            </admst:otherwise>
-          </admst:choose>
-        </admst:for-each>
-        <admst:variable name="mycode" select="($mycode)"/>
-      </admst:if>
-      <admst:variable name="mycode" select="%(fname(.)/[name='fname']/value)$mycode"/>
-      <admst:value-to select="/simulator/tmp" value="$mycode"/>
-    </admst:otherwise>
-  </admst:choose>
-</admst:template>
-
 
 <!-- ----------------------------------------------------------------- -->
 <admst:template match="mapply_unary">
@@ -4552,6 +4361,8 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   </admst:choose>
 </admst:template>
 
+<admst:apply-templates select="." match="function"/>
+
 </admst>
 
 <admst version="2.3.0">
@@ -4590,7 +4401,195 @@ and name!='initializeInstance')]">
 <admst:apply-templates select="" match="generate_c:declare_variable"/>
 </admst:for-each-->
 
+<!-- ----------------------------------------------------------------- -->
+<admst:template match="ngspiseMODULEguesstopology.cevaluatetopology">
+<admst:message test="[/dbg_xml='yes']" format="*ngspiseMODULEguesstopology.cevaluatetopology*\n"/>
+  
+  <admst:if test="[datatypename='block']">
+	{ // begin of adms-block
+
+	<admst:apply-templates select="variable" match="generate_c:declare_variable"/>
+  </admst:if>
+
+  <admst:choose>
+    <admst:when test="[datatypename='callfunction']"/>
+    <admst:when test="[datatypename='whileloop']">
+      <admst:apply-templates select="whileblock" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
+      <admst:apply-templates select="while" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
+    </admst:when>
+    <admst:when test="[datatypename='conditional']">
+      <admst:if test="if[nilled(variable[OPdependent='yes'])]">
+        <admst:apply-templates select="if" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
+        <admst:choose>
+          <admst:when test="if/math[dependency='constant']">
+            <admst:apply-templates select="if/tree" match="expression:stringify:noprobe"/>
+            <admst:text format="if\n(%s)\n"/>
+            <admst:text format="{\n"/>
+		<!--admst:apply-templates select="then/variable" match="generate_c:declare_variable"/-->
+            	<admst:apply-templates select="then" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
+            <admst:text format="}\n"/>
+            <admst:if test="[exists(else)]">
+              <admst:text format="else\n"/>
+              <admst:text format="{\n"/>
+              <admst:apply-templates select="else" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
+              <admst:text format="}\n"/>
+            </admst:if>
+          </admst:when>
+          <admst:otherwise>
+            <admst:apply-templates select="then" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
+            <admst:apply-templates select="else" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
+          </admst:otherwise>
+        </admst:choose>
+      </admst:if>
+    </admst:when>
+    <admst:when test="[datatypename='contribution']">
+      <admst:if test="lhs[discipline/potential=nature]">
+        <admst:choose>
+          <admst:when test="lhs/branch[grounded='no']">
+                                                            	
+            <admst:text test="lhs/branch/nnode[location='internal']"
+              format="_nodes[$node_prefix%(lhs/branch/nnode/name)] 
+                      = _nodes[$node_prefix%(lhs/branch/pnode/name)]; // nnode collapsed \n"/>
+			              
+			<admst:text test="lhs/branch/pnode[location='internal']"
+			              	format="_nodes[$node_prefix%(lhs/branch/pnode/name)] = _nodes[$node_prefix%(lhs/branch/nnode/name)]; // pnode collapsed \n"/>
+
+          </admst:when>
+          <admst:otherwise>
+            <admst:text format="$node_prefix%(lhs/branch/pnode/name) = 0; /* pnode collapsed to GND */ \n"/>
+          </admst:otherwise>
+        </admst:choose>
+      </admst:if>
+      <admst:variable name="contribution" select="%(.)"/>
+      <admst:variable name="psource" select="%(lhs/branch/pnode)"/>
+      <admst:variable name="nsource" select="%(lhs/branch/nnode)"/>
+      <admst:for-each select="rhs/probe">
+        <admst:variable name="pprobe" select="%(branch/pnode)"/>
+        <admst:variable name="nprobe" select="%(branch/nnode)"/>
+        <admst:choose>
+          <admst:when test="$contribution[static='yes']"> <admst:text format="  static_"/> </admst:when>
+          <admst:when test="$contribution[dynamic='yes']"> <admst:text format="  dynamic_"/> </admst:when>
+          <admst:when test="$contribution[whitenoise='yes']"> <admst:text format="  whitenoise_"/> </admst:when>
+          <admst:when test="$contribution[flickernoise='yes']"> <admst:text format="  flickernoise_"/> </admst:when>
+        </admst:choose>
+        <admst:choose>
+          <admst:when test="[($nprobe/grounded='no')and($nsource/grounded='no')]">
+            <admst:text format="jacobian4(%($psource/name),%($nsource/name),%($pprobe/name),%($nprobe/name))\n"/>
+          </admst:when>
+          <admst:when test="[($nprobe/grounded='no')and($nsource/grounded='yes')]">
+            <admst:text format="jacobian2p(%($psource/name),%($pprobe/name),%($nprobe/name))\n"/>
+          </admst:when>
+          <admst:when test="[$nsource/grounded='no']">
+            <admst:text format="jacobian2s(%($psource/name),%($nsource/name),%($pprobe/name))\n"/>
+          </admst:when>
+          <admst:when test="[$nsource/grounded='yes']">
+            <admst:text format="jacobian1(%($psource/name),%($pprobe/name))\n"/>
+          </admst:when>
+        </admst:choose>
+      </admst:for-each>
+    </admst:when>
+    <admst:when test="[datatypename='assignment']">
+      <!-- ****** TODO: "fixed" here ********** -->
+      <!--admst:if test="[(lhs/insource='yes') and (lhs/OPdependent='no')]">
+        <admst:apply-templates select="lhs" match="variable:lhs"/>
+        <admst:text format="="/>
+        <admst:apply-templates select="rhs/tree" match="expression:stringify:noprobe"/>
+        <admst:text format="%s;\n"/>
+      </admst:if-->
+    </admst:when>
+    <admst:when test="[datatypename='block']">
+      <admst:apply-templates select="item" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
+    </admst:when>
+    <admst:when test="[datatypename='expression']"/>
+    <admst:when test="[datatypename='probe']"/>
+    <admst:when test="[datatypename='variable']"/>
+    <admst:when test="[datatypename='mapply_unary']"/>
+    <admst:when test="[datatypename='mapply_binary']"/>
+    <admst:when test="[datatypename='mapply_ternary']"/>
+    <admst:when test="[datatypename='function']"/>
+    <admst:when test="[datatypename='number']"/>
+    <admst:when test="[datatypename='string']"/>
+    <admst:when test="[datatypename='nilled']"/>
+    <admst:when test="[datatypename='blockvariable']"/>
+    <admst:otherwise>
+      <admst:fatal format="%(datatypename): adms element not implemented\n"/>
+    </admst:otherwise>
+  </admst:choose>
+
+  <admst:if test="[datatypename='block']">
+	} // end of adms-block
+
+  </admst:if>
+
+</admst:template>
+
+
+<!-- ----------------------------------------------------------------- -->
+<admst:template match="function">
+<admst:message test="[/dbg_xml='yes']" format="*function*\n"/>
+  <admst:variable name="function" select="%(name)"/>
+  <admst:variable name="args" select=""/>
+  <admst:for-each select="arguments">
+    <admst:variable test="[$args='']" name="args" select="$args,"/>
+    <admst:apply-templates select="." match="expression:stringify:noprobe"/>
+    <admst:variable name="args" select="$args%s"/>
+  </admst:for-each>
+  <admst:choose>
+    <admst:when test="[name='\$simparam']">
+      <admst:apply-templates select="." match="function:simparam"/>
+    </admst:when>
+    <admst:when test="[name='analysis']">
+      <admst:apply-templates select="." match="function:analysis"/>
+    </admst:when>
+    <admst:when test="[name='\$given']">
+      <admst:for-each select="arguments[position(.)=1]">
+        <admst:if test="[datatypename!='variable']">
+          <admst:error format="$given: argument is not a variable\n"/>
+        </admst:if>
+        <admst:if test="[input='no']">
+          <admst:value-of select="name"/>
+          <admst:error format="$given(%s): argument is not a parameter\n"/>
+        </admst:if>
+        <admst:choose>
+          <admst:when test="[parametertype='model']">
+            <admst:value-of select="name"/>
+            <admst:value-to select="/simulator/tmp" value="_model->IsParamGiven(&quot;%s&quot;)"/>
+          </admst:when>
+          <admst:when test="[parametertype='instance']">
+            <admst:value-of select="name"/>
+            <admst:value-to select="/simulator/tmp" value="IsParamGiven(&quot;%s&quot;)"/>
+          </admst:when>
+          <admst:otherwise>
+            <admst:error format="$given(%s): should not be reached\n"/>
+          </admst:otherwise>
+        </admst:choose>
+      </admst:for-each>
+    </admst:when>
+    <admst:otherwise>
+      <admst:variable name="mycode" select=""/>
+      <admst:if test="[exists(arguments)]">
+        <admst:for-each select="arguments">
+          <admst:apply-templates select="." match="expression:stringify:noprobe"/>
+          <admst:choose>
+            <admst:when test="[$mycode='']">
+              <admst:variable name="mycode" select="%s"/>
+            </admst:when>
+            <admst:otherwise>
+              <admst:variable name="mycode" select="$mycode,%s"/>
+            </admst:otherwise>
+          </admst:choose>
+        </admst:for-each>
+        <admst:variable name="mycode" select="($mycode)"/>
+      </admst:if>
+      <admst:variable name="mycode" select="%(fname(.)/[name='fname']/value)$mycode"/>
+      <admst:value-to select="/simulator/tmp" value="$mycode"/>
+    </admst:otherwise>
+  </admst:choose>
+</admst:template>
  
+
+
+
 
 
 
