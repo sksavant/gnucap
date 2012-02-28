@@ -2051,7 +2051,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 
 <!-- ----------------------------------------------------------------- -->
 <admst:template match="expression:stringify:noprobe">
-<admst:message test="[/dbg_xml='yes']" format="*expression:stringify:noprobe: %(.)*\n"/>
+<admst:message test="[/dbg_xml='yes']" format="*expression:stringify:noprobe*\n"/>
 <!-- if u get error "template "expression" not found", add "/tree" to "select"-field in apply-templates -->
 <!-- look commit 2012-02-09 14:26:45 for expamples -->
   <admst:apply-templates select="." match="%(./adms/datatypename)"/>
@@ -3185,7 +3185,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     </admst:when>
   </admst:choose>
   <admst:apply-templates select="lhs" match="variable:lhs" required="yes"/>
-  <admst:apply-templates select="rhs" match="expression:stringify:noprobe"/>
+  <admst:apply-templates select="rhs/tree" match="expression:stringify:noprobe"/>
   <admst:text format="=%s;\n"/>
   <admst:text format="EXIT_IF_ISNAN("/>
   <admst:apply-templates select="lhs" match="variable:lhs" required="yes"/>
@@ -3612,7 +3612,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 <!-- ----------------------------------------------------------------- -->
 <!-- variable:lhs -->
 <admst:template match="variable:lhs">
-<admst:message test="[/dbg_xml='yes']" format="*variable:lhs: %(.)*\n"/>
+<admst:message test="[/dbg_xml='yes']" format="*variable:lhs*\n"/>
   <admst:text test="[input='yes' and parametertype='model']" format="_model-&gt;%(name)"/>
   <admst:text test="[input='yes' and parametertype='instance']" format="_model-&gt;%(name)"/>
   <admst:text test="[input='no' and scope='global_model']" format="_model-&gt;%(name)"/>
@@ -7004,7 +7004,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 </admst:template>
 <!-- ---------------------------------------------------------- -->
 <admst:template match="assignment">
-<admst:message test="[/dbg_xml='yes']" format="*X3assignment: %(.)*\n"/>
+<admst:message test="[/dbg_xml='yes']" format="*X3assignment*\n"/>
   <admst:variable name="assignment" select="%(.)"/>
   <admst:variable name="rhs" select="%(rhs)"/>
   <admst:variable name="lhs" select="%(lhs)"/>
