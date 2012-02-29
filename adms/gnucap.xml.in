@@ -5062,20 +5062,20 @@ and name!='initializeInstance')]">
 
 <!-- ----------------------------------------------------------------- -->
 <!-- -------------------- analog//contribution ----------------------- -->
-<admst:template match="contribution:ddt">
+<!-- never called ?? admst:template match="contribution:ddt">
 <admst:message test="[/dbg_xml='yes']" format="*contribution:ddt*\n"/>
   <admst:choose>
     <admst:when test="[whitenoise='yes' or flickernoise='yes']">
         <admst:warning format=" not implemented.\n"/>
     </admst:when>
     <admst:otherwise>
-      <admst:apply-templates select="." match="contribution:nonoise:ddt"/> <!-- ??? -->
+      <admst:apply-templates select="." match="contribution:nonoise:ddt"/>
     </admst:otherwise>
   </admst:choose>
-</admst:template>
+</admst:template-->
 
 <!-- ----------------------------------------------------------------- -->
-<admst:template match="contribution:nonoise:ddt">
+<!-- never called? admst:template match="contribution:nonoise:ddt">
 <admst:message test="[/dbg_xml='yes']" format="*contribution:nonoise:ddt*\n"/>
   <admst:if test="rhs[not(nilled(function[class='builtin']))]">
     <admst:text format="{\n"/>
@@ -5111,7 +5111,7 @@ and name!='initializeInstance')]">
     <admst:choose>
     </admst:choose>
   </admst:for-each>
-</admst:template>
+</admst:template-->
 
 <!-- ----------------------------------------------------------------- -->
 <!-- -------------------- analog//contribution ------------------------ -->
