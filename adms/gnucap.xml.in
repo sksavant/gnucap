@@ -1868,6 +1868,36 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
   <admst:value-of select="/simulator/tmp"/>
 </admst:template>
 
+<!-- analog//callfunctions -->
+<admst:template match="callfunction">
+  <admst:choose>
+    <admst:when test="function[name='\$strobe']">
+      <admst:text format="_strobe("/>
+    </admst:when>
+    <admst:when test="function[name='\$warning']">
+      <admst:text format="_warning("/>
+    </admst:when>
+    <admst:when test="function[name='\$error']">
+      <admst:text format="_error("/>
+    </admst:when>
+    <admst:when test="function[name='\$finish']">
+      <admst:text format="_finish("/>
+    </admst:when>
+    <admst:when test="function[name='\$stop']">
+      <admst:text format="_stop("/>
+    </admst:when>
+    <admst:otherwise>
+      <admst:value-of select="/simulator/tmp"/>
+      <admst:value-of select="function/name"/>
+      <admst:error format="function not supported: %s(%s)\n"/>
+    </admst:otherwise>
+  </admst:choose>
+  <admst:reset select="/simulator/tmp"/>
+  <admst:join select="function/arguments" separator=",">
+    <admst:apply-templates select="./tree" match="stringify_expression"/>%s</admst:join>
+  <admst:text format=");\n"/>
+</admst:template>
+
 <!-- ----------------------------------------------------------------- -->
 <admst:template match="mapply_unary">
 <admst:message test="[/dbg_xml='yes']" format="*mapply_unary*\n"/>
@@ -2704,6 +2734,98 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       </admst:choose>
     </admst:otherwise>
   </admst:choose>
+</admst:template>
+
+<!-- ----------------------------------------------------------------- -->
+<admst:template match="contribution:nonoise">
+  <admst:if test="rhs[not(nilled(function[class='builtin']))]">
+    <admst:choose>
+      <admst:when test="[dynamic='yes']">
+        <admst:text format="#if defined(_DYNAMIC)\n"/>
+      </admst:when>
+    </admst:choose>
+    <admst:text format="{\n"/>
+    <admst:for-each select="rhs/function">
+      <admst:value-of select="position(.)-1"/>
+      <admst:apply-templates select="." match="function:getname"/>
+      <admst:text format="double __%s_%s=0.0;\n"/>
+    </admst:for-each>
+    <admst:apply-templates select="." match="ddx:function:computation"/>
+  </admst:if>
+  <admst:apply-templates select="rhs/tree" match="stringify_expression"/>
+  <admst:choose>
+    <admst:when test="[dynamic='yes']">
+      <admst:text format="  _load_dynamic_"/>
+    </admst:when>
+    <admst:otherwise>
+      <admst:text format="  _load_static_"/>
+    </admst:otherwise>
+  </admst:choose>
+  <admst:choose>
+    <admst:when test="lhs/branch/nnode[grounded='no']">
+      <admst:value-of select="lhs/branch/nnode/name"/>
+      <admst:value-of select="lhs/branch/pnode/name"/>
+      <admst:text format="residual2(%s,%s,%s)\n"/>
+    </admst:when>
+    <admst:otherwise>
+      <admst:value-of select="lhs/branch/pnode/name"/>
+      <admst:text format="residual1(%s,%s)\n"/>
+    </admst:otherwise>
+  </admst:choose>
+  <admst:for-each select="rhs/probe">
+    <admst:value-of select="."/>
+    <admst:value-to select="/simulator/probe" value="%p"/>
+    <admst:apply-templates select="../tree" match="subexpression:differentiate"/>
+    <admst:value-of select="/simulator/ddx"/>
+    <admst:choose>
+      <admst:when test="..[dynamic='yes']">
+        <admst:text format="  _load_dynamic_"/>
+      </admst:when>
+      <admst:otherwise>
+        <admst:text format="  _load_static_"/>
+      </admst:otherwise>
+    </admst:choose>
+    <admst:if test="branch/pnode[grounded='no']">
+      <admst:if test="../../lhs/branch/pnode[grounded='no']">
+        <admst:choose>
+          <admst:when test="branch/nnode[grounded='no']">
+            <admst:if test="../../lhs/branch/nnode[grounded='no']">
+              <admst:value-of select="branch/nnode/name"/>
+              <admst:value-of select="branch/pnode/name"/>
+              <admst:value-of select="../../lhs/branch/nnode/name"/>
+              <admst:value-of select="../../lhs/branch/pnode/name"/>
+              <admst:text format="jacobian4(%s,%s,%s,%s,%s)\n"/>
+            </admst:if>
+            <admst:if test="../../lhs/branch/nnode[grounded='yes']">
+              <admst:value-of select="branch/nnode/name"/>
+              <admst:value-of select="branch/pnode/name"/>
+              <admst:value-of select="../../lhs/branch/pnode/name"/>
+              <admst:text format="jacobian2p(%s,%s,%s,%s)\n"/>
+            </admst:if>
+          </admst:when>
+          <admst:otherwise>
+            <admst:if test="../../lhs/branch/nnode[grounded='no']">
+              <admst:value-of select="branch/pnode/name"/>
+              <admst:value-of select="../../lhs/branch/nnode/name"/>
+              <admst:value-of select="../../lhs/branch/pnode/name"/>
+              <admst:text format="jacobian2s(%s,%s,%s,%s)\n"/>
+            </admst:if>
+            <admst:if test="../../lhs/branch/nnode[grounded='yes']">
+              <admst:value-of select="branch/pnode/name"/>
+              <admst:value-of select="../../lhs/branch/pnode/name"/>
+              <admst:text format="jacobian1(%s,%s,%s)\n"/>
+            </admst:if>
+          </admst:otherwise>
+        </admst:choose>
+      </admst:if>
+    </admst:if>
+  </admst:for-each>
+  <admst:if test="rhs[not(nilled(function[class='builtin']))]">
+    <admst:text format="}\n"/>
+    <admst:if test="[dynamic='yes']">
+      <admst:text format="#endif /* _DYNAMIC */\n"/>
+    </admst:if>
+  </admst:if>
 </admst:template>
 
 <!-- ----------------------------------------------------------------- -->
