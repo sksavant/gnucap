@@ -189,9 +189,12 @@ static void process_cmd_line(int argc, char *const  *argv)
       }else if (strcasecmp(argv[ii], "-b") == 0) {
 	try {
 	  ++ii;
+          // set languacge to spice (since we have defined acs as default.
+          // this is a hack and might be a bug as well.
+          CMD::command("options lang=spice", &CARD_LIST::card_list);
 	  if (ii < argc) {
             // dashier startet den OPT::language modus
-            trace0("-b...");
+            trace1("-b...", OPT::language);
 	    CMD::command(std::string("< ") + argv[ii++], &CARD_LIST::card_list);
 	  }else{untested();
 	    CMD::command(std::string("< /dev/stdin"), &CARD_LIST::card_list);
