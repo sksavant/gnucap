@@ -416,7 +416,7 @@ inline T MODEL_BUILT_IN_RCD::__E_end(T s, const COMMON_COMPONENT* c ) const
 #define T long double
 inline T MODEL_BUILT_IN_RCD::__E_end_0( const COMMON_COMPONENT* cc)const {
   return __E_end(0.l,cc);
-  T n = 0;
+  double n = 0;
   cerr.precision(30);
   T ret = ((T) (1.) /  
       ((T)(1.) + 
