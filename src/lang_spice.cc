@@ -224,6 +224,9 @@ static int count_ports(CS& cmd, int maxnodes, int minnodes, int leave_tail, int 
   //cmd.warn(bDANGER, "past-nodes?");
   //BUG// assert fails on current controlled sources with (node node dev) syntax
   // it's ok with (node node) dev syntax or node node dev syntax
+  if(num_nodes > maxnodes){
+    error(bDANGER, "Something wrong with nodecount %i %i, while parsing %s\n",num_nodes, maxnodes, string(cmd).c_str() );
+  }
   assert(num_nodes <= maxnodes);
   trace2("count_ports", num_nodes, cmd.tail());
   return num_nodes;
