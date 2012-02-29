@@ -600,7 +600,7 @@ $(MODEL_NAME)::$(MODEL_NAME)(const $(DEV_NAME)* p)
 	:MODEL_CARD(p),
 	<!-- output='yes' - no matter, parametertype=instance or module - no matter also -->
 	<admst:for-each select="variable[input='yes']">
-	<admst:apply-templates select="default/tree" match="expression:stringify:noprobe"/>
+	<admst:apply-templates select="default/tree" match="stringify_expression"/>
 	%(name)(%s),
 	</admst:for-each>
 	_key("dev_$(module)"),
@@ -702,7 +702,7 @@ void $(MODEL_NAME)::precalc_first()
 	assert(par_scope);
 	MODEL_CARD::precalc_first();
 	<admst:for-each select="variable[input='yes']">
-		<admst:apply-templates select="default/tree" match="expression:stringify:noprobe"/>
+		<admst:apply-templates select="default/tree" match="stringify_expression"/>
 		<admst:choose>
 			<admst:when test="[type='real']"><admst:text format="\n\te_val(&amp;(this-&gt;%(name)), (double)%s, par_scope);"/></admst:when>
 			<admst:when test="[type='integer']"><admst:text format="\n\te_val(&amp;(this-&gt;%(name)), (int)%s, par_scope);"/></admst:when>
@@ -1860,10 +1860,10 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 <!-- *********************************************************************************** -->
 
 <!-- ----------------------------------------------------------------- -->
-<admst:template match="expression:stringify:noprobe">
-<admst:message test="[/dbg_xml='yes']" format="*expression:stringify:noprobe*\n"/>
-<!-- if u get error "template "expression" not found", add "/tree" to "select"-field in apply-templates -->
-<!-- look commit 2012-02-09 14:26:45 for expamples -->
+<admst:template match="stringify_expression">
+<admst:message test="[/dbg_xml='yes']" format="*stringify_expression*\n"/>
+  <!-- expression:stringify:noprobe =====> select="blablabla/tree" match="stringify_expression" -->
+  <!-- subexpression:stringify:noprobe =====> select="blablabla" match="stringify_expression"   -->
   <admst:apply-templates select="." match="%(./adms/datatypename)"/>
   <admst:value-of select="/simulator/tmp"/>
 </admst:template>
@@ -1878,7 +1878,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           <admst:value-to select="/simulator/tmp" value="0.0"/>
         </admst:when>
         <admst:otherwise>
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="arg1" match="stringify_expression"/>
           <admst:value-to select="/simulator/tmp" value="(+%s)"/>
         </admst:otherwise>
       </admst:choose>
@@ -1889,7 +1889,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           <admst:value-to select="/simulator/tmp" value="0.0"/>
         </admst:when>
         <admst:otherwise>
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="arg1" match="stringify_expression"/>
           <admst:value-to select="/simulator/tmp" value="(-%s)"/>
         </admst:otherwise>
       </admst:choose>
@@ -1900,7 +1900,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           <admst:value-to select="/simulator/tmp" value="0.0"/>
         </admst:when>
         <admst:otherwise>
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="arg1" match="stringify_expression"/>
           <admst:value-to select="/simulator/tmp" value="(!%s)"/>
         </admst:otherwise>
       </admst:choose>
@@ -1911,7 +1911,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           <admst:value-to select="/simulator/tmp" value="0.0"/>
         </admst:when>
         <admst:otherwise>
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="arg1" match="stringify_expression"/>
           <admst:value-to select="/simulator/tmp" value="(~%s)"/>
         </admst:otherwise>
       </admst:choose>
@@ -1971,83 +1971,83 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 <admst:message test="[/dbg_xml='yes']" format="*mapply_binary*\n"/>
   <admst:choose>
     <admst:when test="[name='bw_equr']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg2" match="stringify_expression"/>
+      <admst:apply-templates select="arg1" match="stringify_expression"/>
       <admst:value-to select="/simulator/tmp" value="(%s^~%s)"/>
     </admst:when>
     <admst:when test="[name='bw_equl']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg2" match="stringify_expression"/>
+      <admst:apply-templates select="arg1" match="stringify_expression"/>
       <admst:value-to select="/simulator/tmp" value="(%s~^%s)"/>
     </admst:when>
     <admst:when test="[name='bw_xor']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg2" match="stringify_expression"/>
+      <admst:apply-templates select="arg1" match="stringify_expression"/>
       <admst:value-to select="/simulator/tmp" value="(%s^%s)"/>
     </admst:when>
     <admst:when test="[name='bw_or']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg2" match="stringify_expression"/>
+      <admst:apply-templates select="arg1" match="stringify_expression"/>
       <admst:value-to select="/simulator/tmp" value="(%s|%s)"/>
     </admst:when>
     <admst:when test="[name='bw_and']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg2" match="stringify_expression"/>
+      <admst:apply-templates select="arg1" match="stringify_expression"/>
       <admst:value-to select="/simulator/tmp" value="(%s&amp;%s)"/>
     </admst:when>
     <admst:when test="[name='multmod']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg2" match="stringify_expression"/>
+      <admst:apply-templates select="arg1" match="stringify_expression"/>
       <admst:value-to select="/simulator/tmp" value="(%s%%%s)"/>
     </admst:when>
     <admst:when test="[name='or']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg2" match="stringify_expression"/>
+      <admst:apply-templates select="arg1" match="stringify_expression"/>
       <admst:value-to select="/simulator/tmp" value="(%s||%s)"/>
     </admst:when>
     <admst:when test="[name='and']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg2" match="stringify_expression"/>
+      <admst:apply-templates select="arg1" match="stringify_expression"/>
       <admst:value-to select="/simulator/tmp" value="(%s&amp;&amp;%s)"/>
     </admst:when>
     <admst:when test="[name='equ']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg2" match="stringify_expression"/>
+      <admst:apply-templates select="arg1" match="stringify_expression"/>
       <admst:value-to select="/simulator/tmp" value="(%s==%s)"/>
     </admst:when>
     <admst:when test="[name='notequ']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg2" match="stringify_expression"/>
+      <admst:apply-templates select="arg1" match="stringify_expression"/>
       <admst:value-to select="/simulator/tmp" value="(%s!=%s)"/>
     </admst:when>
     <admst:when test="[name='lt']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg2" match="stringify_expression"/>
+      <admst:apply-templates select="arg1" match="stringify_expression"/>
       <admst:value-to select="/simulator/tmp" value="(%s&lt;%s)"/>
     </admst:when>
     <admst:when test="[name='lt_equ']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg2" match="stringify_expression"/>
+      <admst:apply-templates select="arg1" match="stringify_expression"/>
       <admst:value-to select="/simulator/tmp" value="(%s&lt;=%s)"/>
     </admst:when>
     <admst:when test="[name='gt']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg2" match="stringify_expression"/>
+      <admst:apply-templates select="arg1" match="stringify_expression"/>
       <admst:value-to select="/simulator/tmp" value="(%s&gt;%s)"/>
     </admst:when>
     <admst:when test="[name='gt_equ']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg2" match="stringify_expression"/>
+      <admst:apply-templates select="arg1" match="stringify_expression"/>
       <admst:value-to select="/simulator/tmp" value="(%s&gt;=%s)"/>
     </admst:when>
     <admst:when test="[name='shiftr']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg2" match="stringify_expression"/>
+      <admst:apply-templates select="arg1" match="stringify_expression"/>
       <admst:value-to select="/simulator/tmp" value="(%s&gt;&gt;%s)"/>
     </admst:when>
     <admst:when test="[name='shiftl']">
-      <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
-      <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+      <admst:apply-templates select="arg2" match="stringify_expression"/>
+      <admst:apply-templates select="arg1" match="stringify_expression"/>
       <admst:value-to select="/simulator/tmp" value="(%s&lt;&lt;%s)"/>
     </admst:when>
     <admst:when test="[name='addp']">
@@ -2060,7 +2060,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           </admst:if>
         </admst:when>
         <admst:when test="arg1/math[value=0.0]">
-          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="arg2" match="stringify_expression"/>
           <admst:value-to select="/simulator/tmp" value="(+%s)"/>
           <admst:if test="/simulator/probe">
             <admst:value-of select="/simulator/ddx"/>
@@ -2069,7 +2069,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           </admst:if>
         </admst:when>
         <admst:when test="arg2/math[value=0.0]">
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="arg1" match="stringify_expression"/>
           <admst:value-to select="/simulator/tmp" value="%s"/>
           <admst:if test="/simulator/probe">
             <admst:value-of select="/simulator/ddx"/>
@@ -2078,13 +2078,13 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           </admst:if>
         </admst:when>
         <admst:otherwise>
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="arg1" match="stringify_expression"/>
           <admst:variable name="x" select="%s"/>
           <admst:if test="/simulator/probe">
             <admst:value-of select="/simulator/ddx"/>
             <admst:variable name="dx" select="%s"/>
           </admst:if>
-          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="arg2" match="stringify_expression"/>
           <admst:variable name="y" select="%s"/>
           <admst:if test="/simulator/probe">
             <admst:value-of select="/simulator/ddx"/>
@@ -2104,7 +2104,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           </admst:if>
         </admst:when>
         <admst:when test="arg1/math[value=0.0]">
-          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="arg2" match="stringify_expression"/>
           <admst:value-to select="/simulator/tmp" value="(-%s)"/>
           <admst:if test="/simulator/probe">
             <admst:value-of select="/simulator/ddx"/>
@@ -2113,7 +2113,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           </admst:if>
         </admst:when>
         <admst:when test="arg2/math[value=0.0]">
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="arg1" match="stringify_expression"/>
           <admst:value-to select="/simulator/tmp" value="%s"/>
           <admst:if test="/simulator/probe">
             <admst:value-of select="/simulator/ddx"/>
@@ -2122,13 +2122,13 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           </admst:if>
         </admst:when>
         <admst:otherwise>
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="arg1" match="stringify_expression"/>
           <admst:variable name="x" select="%s"/>
           <admst:if test="/simulator/probe">
             <admst:value-of select="/simulator/ddx"/>
             <admst:variable name="dx" select="%s"/>
           </admst:if>
-          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="arg2" match="stringify_expression"/>
           <admst:variable name="y" select="%s"/>
           <admst:if test="/simulator/probe">
             <admst:value-of select="/simulator/ddx"/>
@@ -2157,13 +2157,13 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           </admst:if>
         </admst:when>
         <admst:otherwise>
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="arg1" match="stringify_expression"/>
           <admst:variable name="x" select="%s"/>
           <admst:if test="/simulator/probe">
             <admst:value-of select="/simulator/ddx"/>
             <admst:variable name="dx" select="%s"/>
           </admst:if>
-          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="arg2" match="stringify_expression"/>
           <admst:if test="/simulator/probe">
             <admst:value-of select="/simulator/ddx"/>
             <admst:variable name="dy" select="%s"/>
@@ -2192,13 +2192,13 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           </admst:if>
         </admst:when>
         <admst:otherwise>
-          <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="arg1" match="stringify_expression"/>
           <admst:variable name="x" select="%s"/>
           <admst:if test="/simulator/probe">
             <admst:value-of select="/simulator/ddx"/>
             <admst:variable name="dx" select="%s"/>
           </admst:if>
-          <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="arg2" match="stringify_expression"/>
           <admst:variable name="y" select="%s"/>
           <admst:if test="/simulator/probe">
             <admst:value-of select="/simulator/ddx"/>
@@ -2358,13 +2358,13 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 <!-- ----------------------------------------------------------------- -->
 <admst:template match="mapply_ternary">
 <admst:message test="[/dbg_xml='yes']" format="*mapply_ternary*\n"/>
-  <admst:apply-templates select="arg3" match="expression:stringify:noprobe"/>
+  <admst:apply-templates select="arg3" match="stringify_expression"/>
   <admst:value-of select="/simulator/ddx"/>
   <admst:variable name="dz" select="%s"/>
-  <admst:apply-templates select="arg2" match="expression:stringify:noprobe"/>
+  <admst:apply-templates select="arg2" match="stringify_expression"/>
   <admst:value-of select="/simulator/ddx"/>
   <admst:variable name="dy" select="%s"/>
-  <admst:apply-templates select="arg1" match="expression:stringify:noprobe"/>
+  <admst:apply-templates select="arg1" match="stringify_expression"/>
   <admst:variable name="x" select="%s"/>
   <admst:value-to select="/simulator/tmp" value="($x?%s:%s)"/>
   <admst:if test="/simulator/probe">
@@ -2421,7 +2421,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     <admst:if test="[not($args='')]">
       <admst:variable name="args" select="$args,"/>
     </admst:if>
-    <admst:apply-templates select="." match="expression:stringify:noprobe"/>
+    <admst:apply-templates select="." match="stringify_expression"/>
     <admst:variable name="arg$index" select="%s"/>
     <admst:variable name="args" select="$args$(arg$index)"/>
   </admst:for-each>
@@ -2448,7 +2448,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     <admst:if test="[not($args='')]">
       <admst:variable name="args" select="$args,"/>
     </admst:if>
-    <admst:apply-templates select="." match="expression:stringify:noprobe"/>
+    <admst:apply-templates select="." match="stringify_expression"/>
     <admst:variable name="arg$index" select="%s"/>
     <admst:variable name="args" select="$args$(arg$index)"/>
   </admst:for-each>
@@ -2698,7 +2698,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
         <admst:apply-templates select="." match="function:getname"/>
         <admst:text format="_%s(__%s_%s,"/>
         <admst:join select="arguments" separator=",">
-          <admst:apply-templates select="." match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="." match="stringify_expression"/>
           <admst:text format="(%s)"/>
         </admst:join>
         <admst:text format=")\n"/>
@@ -2714,7 +2714,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
         <admst:text test="[name='div']" format="0"/>
         <admst:text format="(__%s_%s,"/>
         <admst:join select="arguments" separator=",">
-          <admst:apply-templates select="." match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="." match="stringify_expression"/>
           <admst:text format="%s"/>
         </admst:join>
         <admst:text format=")\n"/>
@@ -2771,7 +2771,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
       <admst:for-each select="rhs/function">
         <admst:if test="arguments[count(.)=1]">
           <admst:for-each select="arguments[position(.)=1]">
-            <admst:apply-templates select="." match="expression:stringify:noprobe"/>
+            <admst:apply-templates select="." match="stringify_expression"/>
             <admst:choose>
               <admst:when test="math[dependency!='constant']">
                 <admst:value-of select="../position(.)-1"/>
@@ -2803,7 +2803,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
           <admst:text format="_%s(__%s_%s,"/>
           <admst:text test="[name='div']" format="__dFx_%(name)_%(position(.)-1),"/>
           <admst:join select="arguments" separator=",">
-            <admst:apply-templates select="." match="expression:stringify:noprobe"/>
+            <admst:apply-templates select="." match="stringify_expression"/>
             <admst:text format="%s"/>
           </admst:join>
           <admst:text format=")\n"/>
@@ -2817,7 +2817,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
                 <admst:apply-templates select=".." match="function:getname"/>
                 <admst:text format="_dx_%s(__dFx_%s_%s,__%s_%s,"/>
                 <admst:join select="../arguments" separator=",">
-                  <admst:apply-templates select="." match="expression:stringify:noprobe"/>
+                  <admst:apply-templates select="." match="stringify_expression"/>
                   <admst:text format="%s"/>
                 </admst:join>
                 <admst:text format=")\n"/>
@@ -2837,7 +2837,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
                 <admst:text test="[../name='div']" format="__dFx_%(../name)_%(../position(.)-1),"/>
                 <admst:text format="__%s_%s,"/>
                 <admst:join select="../arguments" separator=",">
-                  <admst:apply-templates select="." match="expression:stringify:noprobe"/>
+                  <admst:apply-templates select="." match="stringify_expression"/>
                   <admst:text format="%s"/>
                 </admst:join>
                 <admst:text format=")\n"/>
@@ -2912,7 +2912,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     </admst:when>
   </admst:choose>
   <admst:apply-templates select="lhs" match="variable:lhs" required="yes"/>
-  <admst:apply-templates select="rhs/tree" match="expression:stringify:noprobe"/>
+  <admst:apply-templates select="rhs/tree" match="stringify_expression"/>
   <admst:text format="=%s;\n"/>
   <admst:text format="EXIT_IF_ISNAN("/>
   <admst:apply-templates select="lhs" match="variable:lhs" required="yes"/>
@@ -3080,7 +3080,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     </admst:for-each>
     <admst:apply-templates select="if" match="function:assignment"/>
   </admst:if>
-  <admst:apply-templates select="if/tree" match="expression:stringify:noprobe"/>
+  <admst:apply-templates select="if/tree" match="stringify_expression"/>
   <admst:text format="if\n(%s)\n"/>
   <admst:if test="then/adms[datatypename!='block']">
     <admst:text format="{\n"/>
@@ -3151,7 +3151,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
     </admst:for-each>
     <admst:apply-templates select="while" match="function:assignment"/>
   </admst:if>
-  <admst:apply-templates select="while/tree" match="expression:stringify:noprobe"/>
+  <admst:apply-templates select="while/tree" match="stringify_expression"/>
   <admst:text format="while\n(%s)\n"/>
   <admst:if test="whileblock/adms[datatypename!='block']">
     <admst:text format="{\n"/>
@@ -4321,8 +4321,6 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 <!-- *********************** tree traverse - guesstopology ***************************** -->
 <!-- *********************************************************************************** -->
 
-<admst:fatal format="***************** XXX ***************"/>
-
 <admst:for-each select="/module">
 	<admst:value-of select="attribute[name='ngspicename']/value"/>
 	<admst:variable name="module" select="%s"/>
@@ -4374,7 +4372,7 @@ and name!='initializeInstance')]">
         <admst:apply-templates select="if" match="ngspiseMODULEguesstopology.cevaluatetopology"/>
         <admst:choose>
           <admst:when test="if/math[dependency='constant']">
-            <admst:apply-templates select="if/tree" match="expression:stringify:noprobe"/>
+            <admst:apply-templates select="if/tree" match="stringify_expression"/>
             <admst:text format="if\n(%s)\n"/>
             <admst:text format="{\n"/>
 		<!--admst:apply-templates select="then/variable" match="generate_c:declare_variable"/-->
@@ -4445,7 +4443,7 @@ and name!='initializeInstance')]">
       <!--admst:if test="[(lhs/insource='yes') and (lhs/OPdependent='no')]">
         <admst:apply-templates select="lhs" match="variable:lhs"/>
         <admst:text format="="/>
-        <admst:apply-templates select="rhs/tree" match="expression:stringify:noprobe"/>
+        <admst:apply-templates select="rhs/tree" match="stringify_expression"/>
         <admst:text format="%s;\n"/>
       </admst:if-->
     </admst:when>
@@ -4482,7 +4480,7 @@ and name!='initializeInstance')]">
   <admst:variable name="args" select=""/>
   <admst:for-each select="arguments">
     <admst:variable test="[$args='']" name="args" select="$args,"/>
-    <admst:apply-templates select="." match="expression:stringify:noprobe"/>
+    <admst:apply-templates select="." match="stringify_expression"/>
     <admst:variable name="args" select="$args%s"/>
   </admst:for-each>
   <admst:choose>
@@ -4520,7 +4518,7 @@ and name!='initializeInstance')]">
       <admst:variable name="mycode" select=""/>
       <admst:if test="[exists(arguments)]">
         <admst:for-each select="arguments">
-          <admst:apply-templates select="." match="expression:stringify:noprobe"/>
+          <admst:apply-templates select="." match="stringify_expression"/>
           <admst:choose>
             <admst:when test="[$mycode='']">
               <admst:variable name="mycode" select="%s"/>
