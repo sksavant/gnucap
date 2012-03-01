@@ -70,7 +70,7 @@ COMMON_COMPONENT::~COMMON_COMPONENT()
 /*--------------------------------------------------------------------------*/
 void COMMON_COMPONENT::attach_common(COMMON_COMPONENT*c, COMMON_COMPONENT**to)
 {
-  trace2("COMMON_COMPONENT::attach_common", hp(c), hp(*to));
+  trace2("COMMON_COMPONENT::attach_common()", hp(c), hp(*to));
   //bad idea. modelname segfaults.
   //trace0("COMMON_COMPONENT::attach_common" + c->modelname());
   assert(to);
@@ -97,7 +97,7 @@ void COMMON_COMPONENT::attach_common(COMMON_COMPONENT*c, COMMON_COMPONENT**to)
     // The new and old are identical.
     // Use the old one.
     // The new one is not used anywhere, so throw it away.
-    trace1("COMMON_COMPONENT::attach_common, deleting", hp(c));
+    trace1("COMMON_COMPONENT::attach_common, equal and c unused, deleting", hp(c));
     delete c;
   }else{
     trace0("COMMON_COMPONENT::attach_common same twice");
@@ -503,7 +503,7 @@ inline void trace_nodenames(const CARD_LIST* scope){
   trace0("CARD_LIST tracing nodenames");
   NODE_MAP* nm = scope->nodes();
   for (NODE_MAP::const_iterator ni = nm->begin(); ni != nm->end(); ++ni) {
-    NODE_BASE* n = (*ni).second;
+    //NODE_BASE* n = (*ni).second;
     string label = (*ni).first;
     //trace2("CARD_LIST:... nodename ", label, n->user_number() );
   }
@@ -587,19 +587,17 @@ void COMPONENT::expand()
   CARD::expand();
   trace1("COMPONENT::expand, CARD done", hp(common()));
   if (has_common()) {
-    assert(common());
     COMMON_COMPONENT* new_common = common()->clone();
     new_common->expand(this);
-
     COMMON_COMPONENT* deflated_common = new_common->deflate();
-    trace2("COMMON_COMPONENT more commons", hp(deflated_common), hp(new_common));
+    trace2("COMPONENT::expand more commons", hp(deflated_common), hp(new_common));
 
     if ( deflated_common != common()) {
-      trace0("COMMON_COMPONENT unequal deflated common");
+      trace3("COMPONENT::expand unequal deflated common", long_label(), hp(deflated_common), hp(common()));
       attach_common(deflated_common);
     }else if ( deflated_common != new_common )  {
       untested();
-      trace1("COMPONENT::expand: deleting new unused common", hp(new_common));
+      trace1("COMPONENT::expand untested, deleting new unused common", hp(new_common));
       delete new_common;
     }else{
       untested();

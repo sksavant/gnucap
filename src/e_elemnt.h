@@ -332,7 +332,7 @@ inline void ELEMENT::tr_load_passive()
 {
   // untested0( long_label().c_str() );
   if( _m0.c1 != _m0.c1 ){
-    exit(30);
+    trace0("ELEMENT::tr_load_passive not numbers");
   }
   double d = dampdiff(&_m0.c1, _m1.c1);
   if (d != 0.) {
