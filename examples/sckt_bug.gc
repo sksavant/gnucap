@@ -1,0 +1,18 @@
+spice
+
+.subckt pch d g s b
+.parameter l=0
+
+Mpch (d g s b) pch l=l
+
+.model pch pmos()
+.ends pch
+
+
+X1 1 2 3 4 pch
+
+*.print tran v(nodes)
+.tran 0 1 .1
+
+.end
+
