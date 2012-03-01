@@ -121,9 +121,14 @@ void Expression::factor(CS& File)
     }else{
     }
   }else{
-    leaf(File);
+    try{
+      leaf(File);
+    } catch(Exception_CS e){
+      trace1("Expression::factor exception from leaf()", File.fullstring());
+      throw e;
+    }
   }
-   factortail(File); // taken from gnucap-a.
+  factortail(File); // taken from gnucap-a.
 
   if (t) {
     push_back(t);

@@ -12,3 +12,4 @@
 - lang_verilog does not allow whitespace before comment (bug?)
 - cannot switch back from spectre parser
 - adms: if statement does not necessarily mark variables dynamic (but should!)
+- expression parser error messages sometimes uninformative ("- 10")
