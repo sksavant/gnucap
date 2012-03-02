@@ -256,6 +256,8 @@ void TTT::setup(CS& Cmd)
 	_tstart.e_val(0., _scope);
 	_tstop.e_val(NOT_INPUT, _scope);
 	_tstep.e_val(NOT_INPUT, _scope);
+	_Tstop.e_val(NOT_INPUT, _scope);
+	_Tstep.e_val(NOT_INPUT, _scope);
 
 	//Time1 = 
 	_sim->_Time0 = _Tstart;
@@ -349,7 +351,8 @@ void TTT::setup(CS& Cmd)
 
 	steps_total_out_ = (int) (1 + ceil( ( (_tstop - _tstart ) / _tstep ) ));
 	steps_total_out_ = steps_total_out_ ;
-	trace6( "TTT::setup done ",  steps_total_out_ , _tstep , _tstop ,_tstart, _cont, _cont_tt );
+	trace7( "TTT::setup done ",  steps_total_out_ , _tstep , _tstop ,_tstart, _cont, _cont_tt, _Tstop );
+	trace7( "TTT::setup done ",  steps_total_out_ , (double)_tstep , _tstop ,_tstart, _cont, _cont_tt, (double)_Tstop );
 }
 	/*--------------------------------------------------------------------------*/
 }
