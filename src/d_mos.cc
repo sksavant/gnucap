@@ -1553,16 +1553,9 @@ void DEV_BUILT_IN_MOS::tt_begin() // NOT const
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_stress_last( )
 {
-
   BASE_SUBCKT::tr_stress_last();
   // FIXME (put adp into sckt, or do not call sckt)
   if(adp()) adp()->tr_stress_last();
-
-  const COMMON_COMPONENT* cc = common();
-  const MODEL_BUILT_IN_MOS_BASE* m = asserted_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
-
-  // obsolete. aging model in adp?
-  m->do_tr_stress_last( this );
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_stress( )
@@ -1575,7 +1568,6 @@ void DEV_BUILT_IN_MOS::tt_advance()
   if (adp())
     adp()->tt_advance();
 
-
   // tt_advance also resets time[] in elements.
   BASE_SUBCKT::tt_advance();
 }
@@ -1585,7 +1577,6 @@ void DEV_BUILT_IN_MOS::tt_next( )
   unreachable(); // obsolete.
   if (adp())
     adp()->tt_next();
-
 
   // FIXME (put adp into sckt, or something)
   BASE_SUBCKT::tt_next();

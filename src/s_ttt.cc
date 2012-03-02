@@ -101,14 +101,14 @@ void TTT::set_step_tt_cause(STEP_CAUSE C)
 		case scAMBEVENT:
 		case scEVENTQ:
 		case scUSER:
-					  ::status.control = C;
-					  break;
+			::status.control = C;
+			break;
 		case scNO_ADVANCE:untested();
 		case scZERO:untested();
 		case scSMALL:itested();
 		case scREJECT:
-						 ::status.control += C;
-						 break;
+			::status.control += C;
+			break;
 	}
 }
 /*--------------------------------------------------------------------------*/
@@ -398,7 +398,7 @@ void TTT::power_down(double until)
 void TTT::sweep_tt()
 {
 	_out << "* sweep_tt cont=" << _cont << " cont_tt=" << _cont_tt << " new=" << _new << "\n";
-	trace4("TTT::sweep_tt", _Tstop, _cont, _cont_tt, _new );
+	trace5("TTT::sweep_tt", _Tstop, _cont, _cont_tt, _new, _Tstop );
 	assert(_sim->tt_iteration_number() == 0);
 
 	//  sanitycheck();
@@ -937,8 +937,6 @@ bool TTT::next()
 					|| new_dT +  _sim->_last_Time > _Tstop )
 				&& (double)_Tstop - _sim->_last_Time >    _tstop   ) {
 			trace4("TTT::next last step", _Tstop, _sim->_last_Time, _tstop,_Tstart);
-//			if ( _trace > 0 ) 
-//				_out << "* last step handler..." <<  _sim->_last_Time << "\n";
 
 			untested();
 			new_dT = _Tstop - _sim->_Time0 - _tstop ;
@@ -1100,9 +1098,8 @@ void TTT::print_head_tr()
 
 	if( printlist().size() == 0 )
 	{
-		itested();
+		incomplete(); // bug: print_head_tr should not have been called.
 		_sim->_mode=oldmode;
-		TRANSIENT::_out << "* no trprint\n";
 		return;
 	}
 	TRANSIENT::_out << "* TTime";

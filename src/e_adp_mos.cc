@@ -75,7 +75,7 @@ void ADP_BUILT_IN_MOS::tr_accept(){
 	}
 
 	if(_sim->_time0 <= _tr_last_acc) {
-			error(bWARNING, "tr ADP accepting twice %s\n", d->long_label().c_str());
+			error(bWARNING, "tr ADP accepting twice %s time0 %f\n", d->long_label().c_str(), _sim->_time0);
 	}
 
 	_tr_last_acc = _sim->_time0;
@@ -85,8 +85,6 @@ void ADP_BUILT_IN_MOS::tt_commit()
 {
 	assert(false);
 	unreachable();
-
-
 }
 /*--------------------------------------------------------------------------*/
 double ADP_BUILT_IN_MOS::tr_probe_num(const std::string& x)const

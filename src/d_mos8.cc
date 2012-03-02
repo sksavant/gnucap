@@ -5201,13 +5201,13 @@ double DEV_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 
 }
 /*--------------------------------------------------------------------------*/
+// FIXME: put all this stuff into adp
 void MODEL_BUILT_IN_MOS8::do_stress_apply( COMPONENT* brh) const
 {
   // BUG: put into adp.
   trace2("MODEL_BUILT_IN_MOS8::do_stress_apply", brh->long_label(), _sim->_Time0);
-  deprecated();
 
-  // obsolete? maybe not.
+  // does the bti stuff, which is implemented for lower levels.
   MODEL_BUILT_IN_MOS_BASE::do_stress_apply(brh);
 
   DEV_BUILT_IN_MOS* d = asserted_cast<DEV_BUILT_IN_MOS*>(brh);
