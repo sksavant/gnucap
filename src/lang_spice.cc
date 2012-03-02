@@ -952,6 +952,18 @@ static void getmerge(CS& cmd, Skip_Header skip_header, CARD_LIST* Scope)
 
   std::string file_name, section_name;
   cmd >> file_name;
+
+  if (file_name.c_str()[0]){
+    if (file_name.c_str()[0] == '$'){
+      trace1("have dollar", file_name);
+      PARAMETER<string> a(file_name.c_str()+1);
+      a.e_val("", Scope);
+      if(!(a=="")) file_name=a;
+    }
+  }else{
+    trace1("no dollar", file_name);
+  }
+
   
   bool  echoon = false;		/* echo on/off flag (echo as read from file) */
   bool  liston = false;		/* list on/off flag (list actual values) */

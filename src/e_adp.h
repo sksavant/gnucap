@@ -43,7 +43,10 @@ class ADP_NODE: public NODE_BASE {
     std::string label() const  {return long_label();}
     uint_t order() const; 
 
-    uint_t m_()const {assert( _number < _sim->_adp_nodes); return _number;}
+    uint_t m_()const {
+      if( _number >= _sim->_adp_nodes){trace2("error in m_", _number, _sim->_adp_nodes);}
+      assert(_number < _sim->_adp_nodes);
+      return _number;}
 
     hp_float_t tr(double time)const;
     hp_float_t tr_rel(double time)const;

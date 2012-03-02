@@ -51,6 +51,7 @@ using namespace std;
 /*--------------------------------------------------------------------------*/
 void PARAM_LIST::parse(CS& cmd)
 {
+  trace1("PARAM_LIST::parse", cmd);
   (cmd >> "real |integer "); // ignore type
   unsigned here = cmd.cursor();
   for (;;) {
@@ -70,6 +71,7 @@ void PARAM_LIST::parse(CS& cmd)
     }else{
     }
     _pl[Name] = Value;
+    trace2("PARAM_LIST::parse, stashed", Name, Value);
   }
   cmd.check(bDANGER, "syntax error");
 }
@@ -207,9 +209,9 @@ bool Get(CS& cmd, const std::string& key, PARAMETER<int>* val)
   }
 }
 /*--------------------------------------------------------------------------*/
-std::string PARAMETER<std::string>::e_val(const std::string& def, const CARD_LIST* scope)const
+string PARAMETER<string>::e_val(const std::string& def, const CARD_LIST* scope)const
 {
-  trace0("PARAMETER<std::string>::e_val " + _s + " default: " + def + " val " + _v);
+  trace1("PARAMETER<string>::e_val " + _s + " default: >" + def + "<",_v);
   assert(scope);
 
   static int recursion=0;
@@ -225,20 +227,27 @@ std::string PARAMETER<std::string>::e_val(const std::string& def, const CARD_LIS
   }
   ++recursion;
   if (_s == "") {
+    trace0("PARAMETER<string> _s empty");
     // blank string means to use default value
     _v = def;
     if (recursion > 1) {
       error(bWARNING, " string parameter " + *first_name + " has no value\n");
     }else{
     }
-  }else if (_s == "{") {
-    trace0("lookup");
+  }else if (_s != "#") { untested();
+    trace0("PARAMETER<string>::e_val, lookup");
     // anything else means look up the value
     if (recursion <= OPT::recursion) {
       _v = lookup_solve(def, scope);
       if (_v == "") {untested();itested();
 	error(bDANGER, " string parameter " + *first_name + " has no value\n");
-      }else{
+      }else if (_v.c_str()[0]){
+        if(_v.c_str()[0]=='"'){
+          size_t f = _v.find("\"",1);
+          if (f!=string::npos){
+            _v=_v.substr(1,f-1);
+          }
+        }
       }
     }else{untested();
       _v = def;
@@ -249,7 +258,7 @@ std::string PARAMETER<std::string>::e_val(const std::string& def, const CARD_LIS
     _v=_s;
   }
   --recursion;
-  trace0("PARAMETER<T>::e_val "+ _v);
+  trace1("PARAMETER<string>::e_val done:", _v);
   return _v;
 }
 
@@ -262,7 +271,7 @@ string PARAMETER<string>::value()const {
 }
 /*--------------------------------------------------------------------------*/
 string PARAMETER<string>::string()const {
-  trace0(("PARAMETER::std::string " + _s + " -> " + _v ).c_str());
+  trace0(("PARAMETER<string>::string " + _s + " -> " + _v ).c_str());
   return to_string(_s);
 }
 /*--------------------------------------------------------------------------*/

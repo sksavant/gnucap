@@ -184,7 +184,7 @@ inline std::list<double> PARAMETER< std::list<double> >::_NOT_INPUT() const {
 
 // ugly hack, probably
 template <>
-class PARAMETER<std::string> : PARA_BASE {
+class PARAMETER<string> : PARA_BASE {
 private:
   mutable std::string _v; //value
   std::string my_infty() const;
@@ -369,6 +369,7 @@ void e_val(T* p, const T& def, const CARD_LIST*)
 /*--------------------------------------------------------------------------*/
 class INTERFACE PARAM_LIST {
 private:
+  // BUG. why <double>?
   mutable std::map<const std::string, PARAMETER<double> > _pl;
 public:
   PARAM_LIST* _try_again; // if you don't find it, also look here
