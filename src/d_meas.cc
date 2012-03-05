@@ -63,14 +63,17 @@ class DEV_MEAS : public ELEMENT {
 			trace0("DEV_MEAS::tt_advance()");
 			_m = _v1 = 0; q_accept(); 
 		}
+	private:
+		double _last;
 
 	public:// overrides
+		bool tr_needs_eval()const{return true;}
 		double tr_probe_num(const std::string& )const;
 //		void tr_begin(){q_eval();}
 		void tr_begin(){q_accept(); _m = _v1 = 0; }
 		bool do_tr(){ 
 			q_accept();
-			return ELEMENT::do_tr();
+			return ELEMENT::do_tr(); // true.
 		}
 		void tr_accept(){
 			ELEMENT::tr_accept();
@@ -79,10 +82,14 @@ class DEV_MEAS : public ELEMENT {
 		void tr_stress(){
 			if(_sim->is_initial_step()){
 				_m = 0;
-			} else {
+				_v1 = tr_involts();
+			} else if( _last<_sim->_time0){
 				_m += _sim->_dt0 * ( tr_involts() + _v1 ) ;
+				_v1 = tr_involts();
+			}else{
+				// untested();
 			}
-			_v1 = tr_involts();
+			_last= _sim->_time0;
 
 			q_eval();
 		}
@@ -90,8 +97,18 @@ class DEV_MEAS : public ELEMENT {
 
 };
 /*--------------------------------------------------------------------------*/
-double DEV_MEAS::tr_probe_num(const std::string&) const{
-	return _sim->is_initial_step();
+double DEV_MEAS::tr_probe_num(const std::string&x) const{
+  if (Umatch(x, "v ")) {
+    return  tr_involts();
+  }else if (Umatch(x, "last ")) {
+    return  _last;
+  }else if (Umatch(x, "avg ")) { 
+	  return _m/(_sim->_time0*2.0);
+  }else if (Umatch(x, "m ")) { 
+	  return _m;
+
+  }
+  return ELEMENT::tr_probe_num(x);
 }
 /*--------------------------------------------------------------------------*/
 double DEV_MEAS::tt_probe_num(const std::string&) const{
