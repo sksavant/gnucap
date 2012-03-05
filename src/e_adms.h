@@ -591,69 +591,7 @@ inline void ADMS_BASE::ac_eval()
 #define m20_sqrt(v00)         (-0.25/(v00)/sqrt(v00))
 #define m20_fabs(v00)         0.0
 
-
-inline double _cos(double arg)             { return  cos(arg); }
-inline double _d0_cos(double arg)          { return (-sin(arg)); }
-inline double _sin(double arg)             { return  sin(arg); }
-inline double _d0_sin(double arg)          { return (cos(arg)); }
-inline double _tan(double arg)             { return  tan(arg); }
-inline double _d0_tan(double arg)          { return (1.0/cos(arg)/cos(arg)); }
-inline double _cosh(double arg)            { return  cosh(arg); }
-inline double _d0_cosh(double arg)         { return (sinh(arg)); }
-inline double _sinh(double arg)            { return  sinh(arg); }
-inline double _d0_sinh(double arg)         { return (cosh(arg)); }
-inline double _tanh(double arg)            { return  tanh(arg); }
-inline double _d0_tanh(double arg)         { return (1.0/cosh(arg)/cosh(arg)); }
-inline double _acos(double arg)            { return  acos(arg); }
-inline double _d0_acos(double arg)         { return (-1.0/sqrt(1-arg*arg)); }
-inline double _asin(double arg)            { return  asin(arg); }
-inline double _d0_asin(double arg)         { return (+1.0/sqrt(1-arg*arg)); }
-inline double _atan(double arg)            { return  atan(arg); }
-inline double _d0_atan(double arg)         { return (+1.0/(1+arg*arg)); }
-inline double _logE(double arg)            { return  log(arg); }
-inline double _d0_logE(double arg)         { return (1.0/arg); }
-inline double _log10(double arg)           { return  log10(arg); }
-inline double _d0_log10(double arg)        { return (1.0/arg/log(10)); }
-inline double _exp(double arg)             { return  exp(arg); }
-inline double _d0_exp(double arg)          { return exp(arg); } /* fixme */
-inline double _sqrt(double arg)            { return  sqrt(arg); }
-inline double _d0_sqrt(double arg)         { return (1.0/sqrt(arg)/2.0); } /* fixme */
-inline double _abs(double arg)             { return  fabs(arg); }
-inline double _d0_abs(double arg)          { return (((arg)>=0)?(+1.0):(-1.0)); }
-
-inline double _hypot(double x,double y)    { return sqrt((x)*(x)+(y)*(y)); }
-inline double _d0_hypot(double x,double y) { return (x)/sqrt((x)*(x)+(y)*(y)); } /* fixme */
-inline double _d1_hypot(double x,double y) { return (y)/sqrt((x)*(x)+(y)*(y)); } /* fixme */
-
-inline double _max(double x,double y)      { return ((x)>(y))?(x):(y); }
-inline double _d0_max(double x,double y)   { return ((x)>(y))?1.0:0.0; }
-inline double _d1_max(double x,double y)   { return ((x)>(y))?0.0:1.0; }
-
-inline double _min(double x,double y)      { return ((x)<(y))?(x):(y); }
-inline double _d0_min(double x,double y)   { return ((x)<(y))?1.0:0.0; }
-inline double _d1_min(double x,double y)   { return ((x)<(y))?0.0:1.0; }
-
-inline double _pow(double x,double y)      { return pow(x,y); }
-inline double _d0_pow(double x,double y)   { return (x==0.0)?0.0:((y/x)*pow(x,y)); } /* fixme */
-inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.0))*pow(x,y)); } /* fixme */
-
-inline double _limexp(double arg)  { return  ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); }
-inline double _d0_limexp(double arg) { return  ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); }
-
-/*
-inline double $(module)_vt (double Tdev) {
-  return 1.3806503e-23*Tdev/1.602176462e-19;
-}
-inline double $(module)_d_vt (double Tdev, double d_Tdev) {
-  double vt_Tdev=1.3806503e-23/1.602176462e-19;
-  return vt_Tdev*d_Tdev;
-}
-*/
-
-
-
-
-
+/*--------------------------------------------------------------------------*/
 #define _cos(val,arg)            val = cos(arg);
 #define _d_cos(val,dval,arg)     val = cos(arg);     dval = (-sin(arg));
 #define _sin(val,arg)            val = sin(arg);
@@ -699,12 +637,19 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 #define _dx_div(dx,xy,x,y)
 #define _dy_div(dy,dx,xy,x,y)    dy = -xy*dx;
 
-#define _(val,arg)         val = ((arg)&lt;<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90)));
-#define _d_limexp(val,dval,arg)  val = ((arg)&lt;(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); dval = val;
+#define _limexp(val,arg)         val = ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90)));
+#define _d_limexp(val,dval,arg)  val = ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); dval = val;
 #define _fabs(val,arg)           val = fabs(arg);
 #define _d_fabs(val,dval,arg)    val = fabs(arg);    dval = (((val)>=0)?(+1.0):(-1.0));
 #define _abs(val)                ((val)<(0) ? (-(val)):(val))
 
+/*
+#define _(val,arg)         val = ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90)));
+#define _d_limexp(val,dval,arg)  val = ((arg)<90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); dval = val;
+#define _fabs(val,arg)           val = fabs(arg);
+#define _d_fabs(val,dval,arg)    val = fabs(arg);    dval = (((val)>=0)?(+1.0):(-1.0));
+#define _abs(val)                ((val)<(0) ? (-(val)):(val))
+*/
 
 /*--------------------------------------------------------------------------*/
 #define jacobian(a,b) m_required[m_##a##_##b]=true;	

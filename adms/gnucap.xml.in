@@ -535,7 +535,7 @@ inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  )
 }
 </admst:for-each>
 
-<!--admst:apply-templates select="." match="PrintHxxFunctions"/>
+<!--admst:apply-templates select="." match="PrintAfFunctions"/>
 <admst:apply-templates select="." match="PrintHxxDefines"/-->
 
 #endif
@@ -1776,9 +1776,10 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 #define _d_fabs(val,dval,arg)    val = fabs(arg);    dval = (((val)>=0)?(+1.0):(-1.0));
 #define _abs(val)                ((val)<(0) ? (-(val)):(val))
 
-</admst:template>
+</admst:template-->
 
-<admst:template match="PrintHxxFunctions">
+<!-- this block from original mot-adms, but was never used to generate code -->
+<!--admst:template match="PrintAfFunctions">
 inline double _cos(double arg)             { return  cos(arg); }
 inline double _d0_cos(double arg)          { return (-sin(arg)); }
 inline double _sin(double arg)             { return  sin(arg); }
@@ -1824,19 +1825,13 @@ inline double _pow(double x,double y)      { return pow(x,y); }
 inline double _d0_pow(double x,double y)   { return (x==0.0)?0.0:((y/x)*pow(x,y)); } /* fixme */
 inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.0))*pow(x,y)); } /* fixme */
 
-inline double _limexp(double arg)  { return  ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); }
-inline double _d0_limexp(double arg) { return  ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); }
+#define _limexp(arg)    _exp(val,arg)
+#define _d_limexp(arg)  _d_exp(val,dval,arg)
 
-<!--inline double $(module)_vt (double Tdev) {
-  return 1.3806503e-23*Tdev/1.602176462e-19;
-}
-inline double $(module)_d_vt (double Tdev, double d_Tdev) {
-  double vt_Tdev=1.3806503e-23/1.602176462e-19;
-  return vt_Tdev*d_Tdev;
-}
-< -->
+// inline double _limexp(double arg)  { return  ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); }
+// inline double _d0_limexp(double arg) { return  ((arg)<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); }
 
-<!--/admst:template-->
+</admst:template-->
 
 <!-- ----------------------------------------------------------------- -->
 <admst:template match="Printhxxwrapperdefines">
