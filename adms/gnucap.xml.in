@@ -535,6 +535,7 @@ inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  )
 }
 </admst:for-each>
 
+<admst:apply-templates select="." match="PrintHxxDefines"/>
 <admst:apply-templates select="." match="PrintHxxFunctions"/>
 
 #endif
@@ -1709,7 +1710,7 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 </admst:template>
 
 <!-- ----------------------------------------------------------------- -->
-<admst:template match="Printhxxdefines">
+<admst:template match="PrintHxxDefines">
 <admst:message test="[/dbg_xml='yes']" format="*Printhxxdefines*\n"/>
 //  *** ngspice \$simparam variables ***
 //	gdev                (1/Ohms): Additional conductance to be added to nonlinear branches for conductance homotopy convergence algorithm.
