@@ -438,7 +438,9 @@ module hicum0 (c,b,e,s,tnode);
   	real	IS,IST,UM1,U,Iz,DIOY;
   	
   	// branch voltages
-  	real   Vbci,Vbici,Vbiei,Vciei,Vsci,Veie,Vbbi,Vcic,Vbe,Vrth;
+  	real Vbci;
+	real Vbici `P(ask="yes");
+	real Vbiei,Vciei,Vsci,Veie,Vbbi,Vcic,Vbe,Vrth;
 	
 	//Output to be seen
 	real	ijbc `P(ask="yes" info="Base-collector diode current" unit="A");
