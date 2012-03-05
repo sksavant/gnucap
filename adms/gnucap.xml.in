@@ -535,8 +535,8 @@ inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  )
 }
 </admst:for-each>
 
-<admst:apply-templates select="." match="PrintHxxDefines"/>
-<admst:apply-templates select="." match="PrintHxxFunctions"/>
+<!--admst:apply-templates select="." match="PrintHxxFunctions"/>
+<admst:apply-templates select="." match="PrintHxxDefines"/-->
 
 #endif
 // vim should work with any ts=sw
@@ -1710,7 +1710,7 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 </admst:template>
 
 <!-- ----------------------------------------------------------------- -->
-<admst:template match="PrintHxxDefines">
+<!--admst:template match="PrintHxxDefines">
 <admst:message test="[/dbg_xml='yes']" format="*Printhxxdefines*\n"/>
 //  *** ngspice \$simparam variables ***
 //	gdev                (1/Ohms): Additional conductance to be added to nonlinear branches for conductance homotopy convergence algorithm.
@@ -1770,7 +1770,7 @@ inline double d_doh(double x)          {return  exp(x)/(exp(x) + 1); }
 #define _dx_div(dx,xy,x,y)
 #define _dy_div(dy,dx,xy,x,y)    dy = -xy*dx;
 
-#define _limexp(val,arg)         val = ((arg)&lt;<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90)));
+#define _(val,arg)         val = ((arg)&lt;<(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90)));
 #define _d_limexp(val,dval,arg)  val = ((arg)&lt;(90)) ? (exp(arg)) : (exp(90)*(1.0+(arg-90))); dval = val;
 #define _fabs(val,arg)           val = fabs(arg);
 #define _d_fabs(val,dval,arg)    val = fabs(arg);    dval = (((val)>=0)?(+1.0):(-1.0));
@@ -1836,7 +1836,7 @@ inline double $(module)_d_vt (double Tdev, double d_Tdev) {
 }
 < -->
 
-</admst:template>
+<!--/admst:template-->
 
 <!-- ----------------------------------------------------------------- -->
 <admst:template match="Printhxxwrapperdefines">
