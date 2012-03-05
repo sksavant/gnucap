@@ -75,7 +75,11 @@ void ADP_BUILT_IN_MOS::tr_accept(){
 	}
 
 	if(_sim->_time0 <= _tr_last_acc) {
-			error(bWARNING, "tr ADP accepting twice %s time0 %f\n", d->long_label().c_str(), _sim->_time0);
+		if(_sim->_time0){
+			error(bWARNING, "tr ADP accepting twice %s time0 %E\n", d->long_label().c_str(), _sim->_time0);
+		}else{
+//			FIXME!!
+		}
 	}
 
 	_tr_last_acc = _sim->_time0;
