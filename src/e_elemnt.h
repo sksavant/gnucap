@@ -66,9 +66,7 @@ public: // override virtual
   }
 #endif
   TIME_PAIR tr_review();
-  virtual void  tr_stress() {
-    trace0( ("ELEMENT device " + short_label() + ": no stress").c_str() );
-  } // calcul
+  virtual void  tr_stress() { } // calculate stress. called by tr_accept...
   virtual void  tr_stress_at_once() const    {}
 
   //void   map_nodes();

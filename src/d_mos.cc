@@ -1532,7 +1532,7 @@ bool DEV_BUILT_IN_MOS::do_tr()
 //  q_accept();
 //
 // necessary? adp should care for itself.
-  adp()->q_accept();
+//  adp()->q_accept();
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tt_begin() // NOT const
@@ -1818,8 +1818,8 @@ void DEV_BUILT_IN_MOS::stress_apply( )
   m->do_stress_apply(this);
 }
 /*-------------------------------------------------------*/
-void DEV_BUILT_IN_MOS::tr_accept(){
-  // remember calling q_accept
+void DEV_BUILT_IN_MOS::tr_accept()
+{
   BASE_SUBCKT::tr_accept();
 
   const COMMON_COMPONENT* cc = common();
@@ -1834,7 +1834,7 @@ void DEV_BUILT_IN_MOS::tr_accept(){
   if (m->use_hci()) assert(adp());
 
   // hack. let adp queue itself if needed.
-  if(adp()) adp()->tr_accept();
+//  if(adp()) adp()->tr_accept();
 
 
 

@@ -321,7 +321,7 @@ class ADP_CARD : public COMPONENT { // FIXME: is this a COMPONENT??
 
   public:
     virtual void tt_begin(){ };
-    bool do_tr(){ q_accept(); return true; };
+    bool do_tr(){ return true; };
 
     virtual double tr_probe_num(const std::string& )const { unreachable(); return 888; }
     virtual double tt_probe_num(const std::string& )const { unreachable(); return 888; }

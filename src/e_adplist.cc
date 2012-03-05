@@ -109,6 +109,18 @@ ADP_NODE_LIST& ADP_NODE_LIST::do_forall( void (ADP_NODE::*thing)( )  )
   return *this;
 }
 /*--------------------------------------------------------------------------*/
+/* tr_accept: final acceptance of a time step, before moving on
+ * (ab) used to collect stress...
+ */
+ADP_LIST& ADP_LIST::tr_accept()
+{
+  for (iterator ci=begin(); ci!=end(); ++ci) {
+    // trace_func_comp();
+    (**ci).tr_accept();
+  }
+  return *this;
+}
+/*--------------------------------------------------------------------------*/
 TIME_PAIR ADP_NODE_LIST::tt_review()
 {
 

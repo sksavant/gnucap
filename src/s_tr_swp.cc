@@ -30,6 +30,7 @@
 #include "e_card.h" // debugging...
 #include "declare.h"	/* gen */
 #include "s_tr.h"
+#include "e_adp.h" // hack. see below
 //#define ALT_CQ // alternatively clear queue (experimental)
 /*--------------------------------------------------------------------------*/
 //	void	TRANSIENT::sweep(void);
@@ -666,7 +667,7 @@ void TRANSIENT::accept()
   _sim->_dt0 = _sim->_time0 - time1;
   if(_sim->_dt0 <=0) assert (_sim->_stepno == 0);
   _sim->set_limit();
-  if (OPT::traceload) {
+  if (OPT::traceload) { // traceload == "use queue"
     while (!_sim->_acceptq.empty()) {
       trace1("TRANSIENT::accept", _sim->_acceptq.back()->long_label());
       _sim->_acceptq.back()->tr_accept();
@@ -676,11 +677,13 @@ void TRANSIENT::accept()
     _sim->_acceptq.clear();
     CARD_LIST::card_list.tr_accept();
   }
+//  tmp hack don't know yet how to fix (always_q_for_accept?)
+  ADP_LIST::adp_list.tr_accept();
+  
   ++steps_accepted_;
   if( _sim->analysis_is_tt() || OPT::trage ) {
     trace0( "TRANSIENT::accept: done stressing cardlist");
     if ( OPT::trage ) {
-      // untested();
       incomplete();
       CARD_LIST::card_list.do_forall( &CARD::stress_apply );
     }
