@@ -298,9 +298,7 @@ void SIM_DATA::init()
     init_node_count(CARD_LIST::card_list.total_nodes(),
                     0, 0,
                     // this is a temporary hack/workaround
-                    0);
-                    // should be
-                    //CARD_LIST::card_list.adp_nodes() );
+                    CARD_LIST::card_list.adp_nodes() );
 
     trace1("SIM_DATA::init expanding...", _total_nodes);
     CARD_LIST::card_list.expand();

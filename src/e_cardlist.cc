@@ -226,9 +226,9 @@ unsigned CARD_LIST::adp_nodes()const{
   for (const_iterator ci=begin(); ci!=end(); ++ci) {
     if ((*ci)->is_device()) {
       if ((*ci)->subckt()){
-        ret+=(*ci)->subckt()->total_nodes();
+        ret+=(*ci)->subckt()->adp_nodes();
       }else{
-        untested();
+        // untested();
       }
     }
   }
