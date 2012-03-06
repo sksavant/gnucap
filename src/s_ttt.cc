@@ -1049,6 +1049,7 @@ void TTT::head_tt(double start, double stop, const std::string& col1)
 		for (PROBELIST::const_iterator
 				p=printlist().begin();  p!=printlist().end();  ++p) {
 			_out.form(format, ' ', (*p)->label().c_str());
+			//trace1("TTT::head_tt", (*p)->label() );
 			if ( !(--print_tr_probe_number) ) break;
 		}
 		_out << '\n';
@@ -1328,8 +1329,17 @@ void TTT::print_results_tt(double x)
 		_out << x;
 		for (PROBELIST::const_iterator
 				p=printlist().begin();  p!=printlist().end();  ++p) {
+
+			if (!(*p)) continue;
+			trace0("TTT::print_results_tt 1"); 
 			trace1("TTT::print_results_tt", (*p)->label());
-			_out <<  (*p)->value();
+
+			try{
+				_out <<  (*p)->value();
+			} catch( Exception_No_Match ) {
+				_out << "XXXX";
+			}
+			trace0("TTT::print_results_tt done");
 		}
 		_out << '\n';
 	}else{
