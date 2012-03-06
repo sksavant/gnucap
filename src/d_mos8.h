@@ -48,7 +48,7 @@ class ADP_BUILT_IN_MOS8 :public ADP_BUILT_IN_MOS{
   ADP_BUILT_IN_MOS8( const ADP_BUILT_IN_MOS8& a);
 public:
   explicit ADP_BUILT_IN_MOS8( COMPONENT* c, const std::string n):
-    ADP_BUILT_IN_MOS(c,n), hci_node(0)
+    ADP_BUILT_IN_MOS(c,n), _raw_hci_node(0)
     {init(c);}
 
   virtual ADP_CARD* clone()const{ cout << "adp8 clone \n"; return new ADP_BUILT_IN_MOS8(*this); }
@@ -61,7 +61,7 @@ public:
 
 //  void tt_stress_apply( );?
 
-  ADP_NODE* hci_node;
+  ADP_NODE* _raw_hci_node;
 
   virtual double tt_probe_num(const std::string& x)const;
   virtual double tr_probe_num(const std::string& x)const;

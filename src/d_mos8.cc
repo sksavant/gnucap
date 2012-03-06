@@ -5223,22 +5223,22 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply( COMPONENT* brh) const
  // double H = .0001;
 
   if(use_hci()){
-    assert(a->hci_node);
-    if(!is_number( a->hci_node->tt() )){
+    assert(a->_raw_hci_node);
+    if(!is_number( a->_raw_hci_node->tt() )){
 
-      error(bDANGER, "!is_number tt, %E %E %i %i %i\n", _sim->_time0, _sim->_Time0, _sim->tt_iteration_number(),  a->hci_node->m_(),(int) hp(_sim->_tt) );
-      assert(is_number( a->hci_node->tt() ));
+      error(bDANGER, "!is_number tt, %E %E %i %i %i\n", _sim->_time0, _sim->_Time0, _sim->tt_iteration_number(),  a->_raw_hci_node->m_(),(int) hp(_sim->_tt) );
+      assert(is_number( a->_raw_hci_node->tt() ));
     }
     assert(is_number(a->delta_vth));
-    a->vthscale_hci = 1; //  exp ( 10000. * a->hci_node->get() / c->w_in );
-    a->vthdelta_hci = polarity * pow( a->hci_node->tt() , 0.3 );
+    a->vthscale_hci = 1; //  exp ( 10000. * a->_raw_hci_node->get() / c->w_in );
+    a->vthdelta_hci = polarity * pow( a->_raw_hci_node->tt() , 0.3 );
 
     if( -10 <  a->vthdelta_hci &&  a->vthdelta_hci <  10 ){
 
     }else{
       error(bDANGER, "wrong scope for a->vthdelta_hci, %f. "
-          " a->hci_node->tt()= %f \n",
-          a->vthdelta_hci, a->hci_node->tt() );
+          " a->_raw_hci_node->tt()= %f \n",
+          a->vthdelta_hci, a->_raw_hci_node->tt() );
     }
 
 //    a->delta_vth += a->vthdelta_hci;
@@ -5257,7 +5257,7 @@ ADP_BUILT_IN_MOS8::ADP_BUILT_IN_MOS8(const ADP_BUILT_IN_MOS8& a):
     ADP_BUILT_IN_MOS(a),
     vthscale_hci(a.vthscale_hci),
     vthdelta_hci(a.vthdelta_hci),
-    hci_node(0) {
+    _raw_hci_node(0) {
       cout <<" copying adp8\n";
 }
 /*--------------------------------------------------------------------------*/
