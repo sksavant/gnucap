@@ -65,9 +65,9 @@ module dtest(b,e);
 //output to be seen
 	real	ijbe `P(ask="yes" info="Base-emitter diode current" unit="A");
 
-
 analog begin
 
+	VT      = `P_K*293.15/`P_Q;
 // BE diode
 	Vbe = V(br_b_e);
 	`HICDIO(1e-6,1e-6,1.0,Vbe,ijbe)
