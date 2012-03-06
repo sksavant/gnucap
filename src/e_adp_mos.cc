@@ -100,6 +100,7 @@ double ADP_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
 	} else if( Umatch("dvth_bti ", x) ) {
 		return vthdelta_bti;
 	}else{
+		untested();
 		return 888;   //    return ADP_BUILT_IN_MOS::tr_probe_num(x); diode?
 	}
 
@@ -172,7 +173,9 @@ void ADP_BUILT_IN_MOS::tr_stress_last() {
 /*--------------------------------------------------------------------------*/
 double ADP_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 {
-	if( Umatch("hci ", x) ){
+	trace1("ADP_BUILT_IN_MOS8::tt_probe_num", x);
+	if( Umatch("hci|dvth_hci ", x) ){
+		assert(fabs(vthdelta_hci)<10);
 		return vthdelta_hci;
 	} else if( Umatch("hci_raw ", x) ) {
 		if(hci_node) return hci_node->tt();
@@ -260,13 +263,20 @@ void ADP_BUILT_IN_MOS8::tr_accept(){
 /*--------------------------------------------------------------------------*/
 double ADP_BUILT_IN_MOS8::tr_probe_num(const std::string& x)const
 {
+	trace1("ADP_BUILT_IN_MOS8::tr_probe_num", x);
 	double ret=771;
-	if( Umatch("hci_raw ", x) ){
+	if( Umatch(x, "hci_raw ") ){
 		if(hci_node) ret= _hci_tr;
-	}else	if( Umatch("hci ", x) ){
-		if(!hci_node) return -1;
-		ret= hci_node->tr();
+	}else	if( Umatch(x, "hci_tt ") ){
+		if(hci_node) ret= hci_node->tt();
+	}else	if( Umatch(x, "hci ") ){
+		assert(fabs(vthdelta_hci)<10);
+		trace1("ADP_BUILT_IN_MOS8::tr_probe_num",vthdelta_hci); 
+		return vthdelta_hci;
+		//if(!hci_node) return -1;
+		//ret= hci_node->tr();
 	} else {
+		trace0("ADP_BUILT_IN_MOS8::tr_probe_num, fallback");
 		ret= ADP_BUILT_IN_MOS::tr_probe_num(x);
 	}
 
@@ -367,7 +377,7 @@ void ADP_BUILT_IN_MOS8::stress_apply() {
 		double hci_new = hci_node->tt1(); // tt @ last_Time (?)
 		if (!hci_node->order()){
 			untested();
-			hci_new=hci_node->tt();
+			hci_new = hci_node->tt();
 		}
 
 		if (!is_number(hci_new)){

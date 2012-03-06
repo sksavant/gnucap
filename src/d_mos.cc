@@ -1036,10 +1036,12 @@ double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
     return  a->bti_stress->tr_get();
 
     // this is probably better...
-  }else if (Umatch(x, "hci{_raw} |bti | dvth| dvth_hci")) { 
+  }else if (Umatch(x, "hci{_raw} |bti |hci_tt | dvth| dvth_hci")) { 
     assert(a);
-    return  a->tr_probe_num(x);
-
+    double r = a->tr_probe_num(x);
+    if(fabs(r)>10) cerr << x << "\n";
+    assert(fabs(r)<10);
+    return r;
   }else if (Umatch(x, "vgs ")) {
     return  _n[n_g].v0() - _n[n_s].v0();
   }else if (Umatch(x, "vbs ")) {
