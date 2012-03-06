@@ -3,6 +3,7 @@
 <!DOCTYPE admst SYSTEM "admst.dtd">
 <admst version="2.3.0" xmlns:admst="http://mot-adms.sourceforge.net/xml-files/admst">
 <!-- version: not renamed, load: renamed fname -->
+<admst:message test="[/dbg_xml='yes']" format="**enter scope1**\n"/>
 
 <!-- *********************************************************************************** -->
 <!-- ******************************** global settings ********************************** -->
@@ -1532,6 +1533,15 @@ void $(DEV_NAME)::guesstopology ()
 	#include "$(filename)_guesstopology.hxx"
  
  	for(int i=0; i<%(count(jacobian)); i++) trace1("guess m", m_required[i]);
+	<admst:for-each select="jacobian">
+		<admst:value-of select="column/name"/>
+		<admst:value-of select="row/name"/>
+		<admst:value-of select="column/name"/>
+		<admst:value-of select="row/name"/>
+		if( m_required[m_%s_%s] ) printf("m_%s_%s\\n");
+
+	</admst:for-each>
+
 }	
 
 // -------------------------------------------------------------------------- //
@@ -4771,6 +4781,7 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
 </admst>
 
 <admst version="2.3.0">
+<admst:message test="[/dbg_xml='yes']" format="**enter scope2 (guess)**\n"/>
 
 <!-- *********************************************************************************** -->
 <!-- *********************** tree traverse - guesstopology ***************************** -->
@@ -5047,6 +5058,7 @@ and name!='initializeInstance')]">
 </admst>
 
 <admst version="2.3.0">
+<admst:message test="[/dbg_xml='yes']" format="**enter scope3 (tr_eval)**\n"/>
 
 <!-- *********************************************************************************** -->
 <!-- *********************************** ngspiceMODULE.hxx.xml ************************* -->

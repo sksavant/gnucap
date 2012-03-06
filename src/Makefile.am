@@ -278,16 +278,24 @@ endif
 #%.cc : %.model %.h ${MODELGEN}${EXEEXT}
 #	${MODELGEN} -cc $<
 
-# if adms ...
-ADMS_GC_XML=../adms/gnucap.xml
-ADMS_HTM_XML=../adms/admst_htm.xml
+# #############################################
+# ############### if adms ... #################
+ADMS_GC_XML=../adms/gnucap_0.xml
+i=0 1 2
+ADMS_ES=$(i:%=-e ../adms/gnucap_%.xml)
+#ADMS_HTM_XML=../adms/admst_htm.xml
+#ES=$(ADMS_HTM_XML:%=-e %)
+
+# version before split:
+#%.cc : %.va $(ADMS_GC_XML)
+#	admsXml $< -e ../adms/gnucap.xml -o $*
 
 %.cc : %.va $(ADMS_GC_XML)
-	admsXml $< -e $(ADMS_GC_XML) -o $*
+	admsXml $< $(ADMS_ES) -o $*
 
 #move to ../doc?
-%.htm : %.va $(ADMS_HTM_XML)
-	admsXml $< -e $(ADMS_HTM_XML) -o $@
+#%.htm : %.va $(ADMS_HTM_XML)
+#	admsXml $< -e $(ADMS_HTM_XML) -o $@
 
 #%.h : %.model ${MODELGEN}${EXEEXT}
 #	${MODELGEN} -h $<

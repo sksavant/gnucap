@@ -26,6 +26,7 @@ endif
 EXTRA_DIST=	autogen.sh Makefile.template configure.old
 
 
+Z=0 1 2 
 
 define GC
 #!/bin/bash
@@ -38,7 +39,7 @@ case $$1 in
 	echo -L$(prefix)/lib -lgnucap
 	;;
 	"--adms")
-	echo admsXml -e $(datarootdir)/gnucap.xml
+	echo admsXml $(Z:%=-e $(datarootdir)/gnucap_%.xml)
 	;;
 esac
 
