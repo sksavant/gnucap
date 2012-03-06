@@ -352,7 +352,7 @@ module hicum0 (c,b,e,s,tnode);
 	parameter real dt		= 0.0				`P(spice:name="dt" type="instance" info="Temperature change for particular transistor" unit="K");                   
 
 
-// Declaration of the variables: begin
+// Declaration of the variables
 
         real _circuit_gmin;
 
@@ -440,7 +440,8 @@ module hicum0 (c,b,e,s,tnode);
   	// branch voltages
   	real Vbci;
 	real Vbici `P(ask="yes");
-	real Vbiei,Vciei,Vsci,Veie,Vbbi,Vcic,Vbe,Vrth;
+	real Vbiei `P(ask="yes");
+	real Vciei,Vsci,Veie,Vbbi,Vcic,Vbe,Vrth;
 	
 	//Output to be seen
 	real	ijbc `P(ask="yes" info="Base-collector diode current" unit="A");
@@ -477,7 +478,7 @@ analog begin
 	     HICUMtype	=  `PNP;
 	  else
 	     HICUMtype	=  `NPN;
-    end
+    	end
 
 	Vbci  = HICUMtype*V(br_bci);
 	Vbici = HICUMtype*V(br_bici);

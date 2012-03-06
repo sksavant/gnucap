@@ -1533,14 +1533,13 @@ void $(DEV_NAME)::guesstopology ()
 	#include "$(filename)_guesstopology.hxx"
  
  	for(int i=0; i<%(count(jacobian)); i++) trace1("guess m", m_required[i]);
-	<admst:for-each select="jacobian">
+	<!--admst:for-each select="jacobian">
 		<admst:value-of select="column/name"/>
 		<admst:value-of select="row/name"/>
 		<admst:value-of select="column/name"/>
 		<admst:value-of select="row/name"/>
-		if( m_required[m_%s_%s] ) printf("m_%s_%s\\n");
-
-	</admst:for-each>
+		printf("m_%s_%s: %%s\n", m_required[m_%s_%s] ? "+":"-");
+	</admst:for-each-->
 
 }	
 

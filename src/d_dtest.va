@@ -1,0 +1,77 @@
+//Default simulator: Spectre
+`ifdef insideADMS
+ `define P(p) (*p*)
+ `define PGIVEN(p)		$given(p)
+ `define INITIAL_MODEL		@(initial_model)
+`else
+ `define P(p)
+ `define PGIVEN(p)		p
+ `define INITIAL_MODEL		@(initial_step)
+`endif
+
+`include "constants.h"
+`include "discipline.h"
+
+// IDEAL DIODE (WITHOUT CAPACITANCE): 
+// conductance not calculated
+// INPUT:
+//  IS, IST	: saturation currents (model parameter related)
+//  UM1		: ideality factor
+//  U		: branch voltage
+// IMPLICIT INPUT:
+//  VT		: thermal voltage
+// OUTPUT:
+//  Iz		: diode current
+`define HICDIO(IS,IST,UM1,U,Iz)\
+	DIOY	= U/(UM1*VT);\
+	if (IS > 0.0) begin\
+		if (DIOY > 80) begin\
+			le 	= (1 + ((DIOY) - 80));\
+			DIOY	= 80;\
+		end else begin\
+			le	= 1;\
+		end\
+  		le 	= le*limexp(DIOY);\
+		Iz	= IST*(le-1.0);\
+		if(DIOY <= -14.0) begin\
+			Iz	= -IST;\
+		end\
+	end else begin\
+		Iz	= 0.0;\
+        end
+
+module dtest(b,e);
+                                                                  
+//Node definitions   
+	inout		b,e;
+	electrical 	b     `P(info="external base node");
+	electrical 	e     `P(info="external emitter node");
+
+//Branch definitions
+	branch 		(b,e) 		br_b_e;
+
+// temperature and drift
+	real VT;
+
+//HICDIO
+	real	IS,IST,UM1,U,Iz,DIOY;
+
+// LIN_EXP
+  	real	le;
+
+//branch voltages
+	real Vbe `P(ask="yes");
+
+//output to be seen
+	real	ijbe `P(ask="yes" info="Base-emitter diode current" unit="A");
+
+
+analog begin
+
+// BE diode
+	Vbe = V(br_b_e);
+	`HICDIO(1e-6,1e-6,1.0,Vbe,ijbe)
+	I(br_b_e) <+ ijbe;
+
+end  // analog
+endmodule // end of hic0_full
