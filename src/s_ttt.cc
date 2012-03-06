@@ -421,6 +421,7 @@ void TTT::sweep_tt()
 		trace0("_new");
 		untested();
 		CARD_LIST::card_list.stress_apply(); 
+		outdata_tt( _sim->_Time0);
 	}
 
 	if( _power_down ){
@@ -453,11 +454,10 @@ void TTT::sweep_tt()
 		first();
 		trace0("TTT::sweep_tt first done");
 	}else if(_tstop==0. && _tstep==0. && (!_cont_tt) ){
-
 		print_head_tr();
+		untested();
 		do_initial_dc();
 		return;
-
 	} else { // strange way of doing first next loop
 		trace0("TTT::sweep_tt 1st next loop");
 		assert(false);
@@ -530,7 +530,7 @@ void TTT::sweep_tt()
 		// 
 		//
 		if (_trace >= tGUESS) print_stored_results_tt(_sim->_Time0);
-		outdata_tt(_sim->_Time0 ); // first output tt data
+		outdata_tt(_sim->_Time0 );
 		_sim->_last_Time = _sim->_Time0+_tstop;
 		trace2("TTT::sweep_tt end loop", _sim->_last_Time, _sim->_Time0 );
 		assert( _sim->_mode  == s_TTT );
@@ -1187,7 +1187,7 @@ void TTT::outdata_tt(double now)
 {
 	trace1("TTT::outdata_tt()", now);
 	assert(_sim->_mode==s_TTT);
-	if ( _sim->_dT0 &&  !is_almost (_sim->_dT0 + _sim->_last_Time , now )){
+	if ( _sim->_dT0 && !is_almost (_sim->_dT0 + _sim->_last_Time - _tstop, now )){
 		error(bWARNING, "EOF: %.9f, last_Time: %.9f, dT0: %f, now: %f\n", _sim->_Time0+_tstop, _sim->_last_Time, _sim->_dT0,now );
 	}
 	::status.output.start();
@@ -1196,7 +1196,7 @@ void TTT::outdata_tt(double now)
 	assert(_sim->_mode==s_TTT);
 	if (!tt_iteration_number()){
 		untested();
-		TTT::store_results( now ); // results are stored after TRAN
+		TTT::store_results( now ); // store extra results.
 	}
 	TTT::store_results( now + _tstop ); // results are stored after TRAN
 	assert(_sim->_mode==s_TTT);
