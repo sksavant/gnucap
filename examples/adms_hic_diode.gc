@@ -1,0 +1,44 @@
+spice
+
+.verilog
+paramset veri_diode dtest;
+
+endparamset
+spice
+
+
+.options numdgt=20
+
+*                       nb 
+*    +----|<------------o--------     <--- Stromquelle Ib
+*    |
+*    |   
+*   E|
+*    |
+*    V
+*
+
+.options abstol=1e-18
+.options reltol=1e-7
+.options nobypass 
+.options
+
+Ib 0 nb 10e-6
+
+.verilog	
+
+veri_diode Q1( nb 0 );
+
+spice
+
+.list
+
+
+*.print dc i(Ib) v(nc) v(nb) i(Vicq1) s0(Q1) s1(Q1) s2(Q1) conv(Q1) i0(Q1) i1(Q1) iter(0)
+.print dc i(Ib) V(nb) 
+
+*.dc Ib 15u 15u 1u Vce 1 1 0.2  basic trace=v
+.dc Ib 15u 15u 5u Vce 1 1 0.2 basic trace=v
+
+
+.end
