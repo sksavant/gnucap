@@ -196,6 +196,9 @@ void ADP_BUILT_IN_MOS8::tr_accept(){
 	trace4("ADP_BUILT_IN_MOS8::tr_accept ", m->polarity, _sim->_time0, d->long_label(), m->use_hci() );
 	ADP_BUILT_IN_MOS::tr_accept();
 
+	/// =---------------------------
+	//tr_stress(){
+
 	//  const COMMON_BUILT_IN_MOS* cprime = prechecked_cast<const COMMON_BUILT_IN_MOS*>(d->common());
 	const SDP_BUILT_IN_MOS8* s = prechecked_cast<const SDP_BUILT_IN_MOS8*>(c->sdp());
 
@@ -251,7 +254,7 @@ void ADP_BUILT_IN_MOS8::tr_accept(){
 
 		}
 
-		_hci_tr += hcis *  _sim->_dt0  ;
+		_hci_tr += hcis * _sim->_dt0  ;
 
 		//    a->_raw_hci_node->add_tr( hcis );
 
