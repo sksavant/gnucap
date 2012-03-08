@@ -518,7 +518,15 @@ private: // nodes / matrix indexes
 		else
 			untested();
 
-		return i[0].f0;
+	double _DDT(double q, unsigned stateno){
+		_states[0][stateno*2]=q;
+		if (_sim->analysis_is_static()) {
+			return 0;
+		}else{
+			untested();
+		}
+
+		return NIintegrate(stateno*2);\
 	}
 
 	void CKTterr(int qcap, double *time_step);	
@@ -7529,7 +7537,7 @@ and name!='initializeInstance')]">
           <admst:variable name="pprobe" select="%(.)"/>
           <admst:choose>
             <admst:when test="$pprobe/branch/pnode[.=$ddxprobe/branch/pnode]">
-              <admst:text format="// rns? %(adms/datatypename)"/>
+              <admst:text format="// rns? %(adms/datatypename)\n"/>
               <admst:apply-templates select="$rhs/tree/arguments[1]" match="%(adms/datatypename)"/>
               <admst:variable name="allep" select="$allep+($ep)"/>
             </admst:when>
@@ -7806,13 +7814,10 @@ and name!='initializeInstance')]">
   <admst:choose> 
     <admst:when test="[dynamic='yes']">
 	{  // former_eval_dynamic_residual2
-        // rhs/tree should contain a ddt...
 		double _i = %(e(rhs/tree));
 		assert(is_number(_i));
-        //error = NIintegrate(state_##p##_##n);
-        //_eval_static_residual2($Pp,$Pn,v);
-		it0[$(node_prefix)$Pp]-= _i;
-		it0[$(node_prefix)$Pn]+= _i;
+		it0[$(node_prefix)$(Pp)]-= _i;
+		it0[$(node_prefix)$(Pn)]+= _i;
 	}
 
     </admst:when>
@@ -7820,8 +7825,8 @@ and name!='initializeInstance')]">
 	{ // former_eval_static_residual2  (recheck: same as dynamic?)
 		double vx = %(e(rhs/tree)); 
 		assert(is_number(vx));
-		it0[$node_prefix$Pp] -= vx;
-		it0[$node_prefix$Pn] += vx;
+		it0[$(node_prefix)$(Pp)] -= vx;
+		it0[$(node_prefix)$(Pn)] += vx;
 	}
 
     </admst:otherwise>
