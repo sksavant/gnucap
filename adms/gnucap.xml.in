@@ -518,15 +518,7 @@ private: // nodes / matrix indexes
 		else
 			untested();
 
-	double _DDT(double q, unsigned stateno){
-		_states[0][stateno*2]=q;
-		if (_sim->analysis_is_static()) {
-			return 0;
-		}else{
-			untested();
-		}
-
-		return NIintegrate(stateno*2);\
+		return i[0].f0;
 	}
 
 	void CKTterr(int qcap, double *time_step);	
