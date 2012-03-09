@@ -194,10 +194,9 @@ void TRANSIENT::sweep()
       assert(time1 < _time_by_user_request);
     }
     {
-      bool printnow =
-	(_trace >= tREJECTED)
-	|| (_accepted && ((_trace >= tALLTIME) 
-			  || (step_cause() == scUSER && _sim->_time0+_sim->_dtmin > _tstart)));
+      bool printnow = (_trace >= tREJECTED)
+             || (_accepted && ((_trace >= tALLTIME) 
+             || (step_cause() == scUSER && _sim->_time0+_sim->_dtmin > _tstart)));
       if (printnow) {
         _sim->keep_voltages();
         trace2("TRANSIENT::sweep" ,_sim->last_time(), (double)_tstop);
