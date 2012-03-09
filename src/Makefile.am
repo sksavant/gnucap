@@ -275,8 +275,8 @@ $(D_IVL_DEV): %.cc : %.v
 
 endif
 
-%.cc : %.model %.h ${MODELGEN}${EXEEXT}
-	${MODELGEN} -cc $<
+#%.cc : %.model %.h ${MODELGEN}${EXEEXT}
+#	${MODELGEN} -cc $<
 
 # if adms ...
 ADMS_GC_XML=../adms/gnucap.xml
@@ -289,8 +289,8 @@ ADMS_HTM_XML=../adms/admst_htm.xml
 %.htm : %.va $(ADMS_HTM_XML)
 	admsXml $< -e $(ADMS_HTM_XML) -o $@
 
-%.h : %.model ${MODELGEN}${EXEEXT}
-	${MODELGEN} -h $<
+#%.h : %.model ${MODELGEN}${EXEEXT}
+#	${MODELGEN} -h $<
 
 if ADMS
 $(ADMS_SRCS): $(ADMS_GC_XML)
