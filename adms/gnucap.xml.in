@@ -885,21 +885,17 @@ void $(DEV_NAME)::expand()
           	</admst:join>
         	<admst:text format=" };"/>
 		trace4("DEV_ADMS::expand nodes",  net_nodes() , max_nodes() , matrix_nodes(), int_nodes());
-		char fake_name[] = "a"; // FIXME: use real name
 		for(unsigned ii = net_nodes(); ii < matrix_nodes(); ++ii) {
-			if( !_n[ii].n_() ) {       
-				trace1("alloc internal node ", ii);
-				//_n[ii].new_model_node('.' + long_label() + '.' + fake_name, this);
-				_n[ii].new_model_node(node_names[ii], this);
+			if( !_n[ii].n_() ) {
+				if( ii < max_nodes() ) {
+					trace1("node between _net_nodes and max_node(): set to ground: ", ii);
+					_n[ii].set_to_ground(this);
+				}
+				else {
+					trace1("node between max_nodes() and matrix_nodes(): alloc new: ", ii);
+					_n[ii].new_model_node(node_names[ii], this);
+				}
 			}
-				++(*fake_name);
-		}
-
-		// int start_internal = 0;
-		// set unconnected nodes to ground.
-		for (unsigned ii = net_nodes(); ii < max_nodes(); ++ii){
-			trace1("DEV_ADMS::expand grounding", ii);
-			_n[ii].set_to_ground(this);
 		}
 		
 		assert(max_nodes() != 0);		
