@@ -883,19 +883,20 @@ void $(DEV_NAME)::expand()
 					<admst:value-of select="name"/>  
 					<admst:text format="&quot;%s&quot;"/>    
           	</admst:join>
-				};
+        	<admst:text format=" };"/>
 		trace4("DEV_ADMS::expand nodes",  net_nodes() , max_nodes() , matrix_nodes(), int_nodes());
-		//		char fake_name[] = "a"; // FIXME: use real name
+		char fake_name[] = "a"; // FIXME: use real name
 		for(unsigned ii = net_nodes(); ii < matrix_nodes(); ++ii) {
 			if( !_n[ii].n_() ) {       
 				trace1("alloc internal node ", ii);
 				//_n[ii].new_model_node('.' + long_label() + '.' + fake_name, this);
 				_n[ii].new_model_node(node_names[ii], this);
 			}
-			//++(*fake_name);
+				++(*fake_name);
 		}
 
-	   // int start_internal = 0;
+		// int start_internal = 0;
+		// set unconnected nodes to ground.
 		for (unsigned ii = net_nodes(); ii < max_nodes(); ++ii){
 			trace1("DEV_ADMS::expand grounding", ii);
 			_n[ii].set_to_ground(this);
