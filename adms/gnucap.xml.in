@@ -161,14 +161,16 @@
 #define SPICE_LETTER "\0"
 #define DEVICE_TYPE "dev_$(module)"
 #define MODEL_TYPE "$(module)"
-#define _N(n) _n[$(node_prefix) ## n]
 
 #define MIN_NET_NODES 0
 #define MAX_NET_NODES %(count(node[grounded='no' and location='external']))
 #define INTERNAL_NODES %(count(node[grounded='no' and location='internal']))
 
+#define _N(n) _n[$(node_prefix) ## n]
+
 #define NP(p) min(100.,max(-100., _N(p).v0()) )
-#define BP(p,n) (BP2( $node_prefix ## p, $node_prefix ## n ))
+//#define BP(p,n) (BP2( $(node_prefix) ## p, $(node_prefix) ## n ))
+#define BP(p,n) (volts_limited(_N(p),_N(n)))
 
 <admst:text format="static std::string port_names[] = {"/>
 <admst:join select="node[grounded='no' and location='external']" separator=", ">
@@ -404,7 +406,7 @@ private: // nodes / matrix indexes
 	<admst:text format=" };"/>
 
 	private:
-	double BP2(  ENodes p,  ENodes n  ) const;
+	//double BP2(  ENodes p,  ENodes n  ) const;
 	double it0[_num_total_nodes];
 	double it1[_num_total_nodes];
 	double i_kept[_num_total_nodes];
@@ -530,10 +532,10 @@ private: // nodes / matrix indexes
 
 };
 
-inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  ) const{
-	assert(is_number( _n[p].v0() - _n[n].v0() ));
-	return  min( 100. , max (  _n[p].v0() - _n[n].v0(), -100. ));
-}
+//inline double $(DEV_NAME)::BP2( $(DEV_NAME)::ENodes p,  $(DEV_NAME)::ENodes n  ) const{
+//	assert(is_number( _n[p].v0() - _n[n].v0() ));
+//	return  min( 100. , max (  _n[p].v0() - _n[n].v0(), -100. ));
+//}
 </admst:for-each>
 
 <!--admst:apply-templates select="." match="PrintAfFunctions"/>
@@ -6226,7 +6228,7 @@ and name!='initializeInstance')]">
 <admst:message test="[/dbg_xml='yes']" format="*(tr_eval)probe*\n"/>
   <admst:choose>
     <admst:when test="branch/nnode[grounded='no']">
-      <admst:variable name="e" select="(NP(%(branch/pnode/name))-NP(%(branch/nnode/name)))"/>
+      <admst:variable name="e" select="(BP(%(branch/pnode/name), %(branch/nnode/name)))"/>
     </admst:when>
     <admst:otherwise>
       <admst:variable name="e" select="NP(%(branch/pnode/name))"/>
