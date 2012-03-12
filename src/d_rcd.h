@@ -228,8 +228,8 @@ class COMMON_BUILT_IN_RCD :public COMMON_COMPONENT{
 //    virtual double __Rc(double s)const;
     double __tau ( double s) const; 
     double __tau_up ( double ueff ) const;
-  //  long double __step(long double uin, long double cur,  double deltat ) const;
     long double __uin_iter(long double& uin, double, double, double bhi, double blo,COMPONENT*)const;
+    long double __uin_iter_bisect(long double& uin, double, double, double bhi, double blo,COMPONENT*)const;
 
   public: // attached commons
 };

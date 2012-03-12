@@ -1718,16 +1718,68 @@ void DEV_BUILT_IN_RCD::precalc_last()  {
 }
 /*--------------------------------------------------------------------------*/
 /* Newton iterator. finding effective DC value */
-// should be part of MODEL?
+// should be part of MODEL? no
 long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, double E_in, double bound_lo, double bound_hi, COMPONENT* dd ) const
 {
   const MODEL_BUILT_IN_RCD* m = dynamic_cast<const MODEL_BUILT_IN_RCD*>(model());
-  return m->__uin_iter(uin,E_old, E_in,  bound_lo, bound_hi, dd );
+
+  long double res;
+
+  try{
+    res = m->__uin_iter( uin, E_old, E_in,  bound_lo, bound_hi, dd );
+
+  } catch( Exception e ){
+    untested();
+
+    assert(uin<=bound_hi);
+    assert(uin>=bound_lo);
+
+    return __uin_iter_bisect(uin, E_old, E_in, bound_lo, bound_hi, dd);
+
+  }
+
+  return res;
+}
+/*--------------------------------------------------------------------------*/
+long double COMMON_BUILT_IN_RCD::__uin_iter_bisect(long double& uin, double
+    E_old, double E_in, double bound_lo, double bound_hi, COMPONENT* ) const
+{
+  const MODEL_BUILT_IN_RCD* m = asserted_cast<const MODEL_BUILT_IN_RCD*>(model());
+  bool converged = false;
+
+  USE(uin);
+
+  double hi = bound_hi;
+  double lo = bound_lo;
+  long double Euin;
+
+  double h = BASE_SUBCKT::_sim->last_time();
+  double middle;
+
+  while(!converged){
+    assert(hi>-lo);
+    middle = (hi + lo)/2;
+    if ( hi-lo < 1e-10) break;
+
+    Euin = m->__step( middle, E_old, h, this );
+    if (Euin > E_in){
+      hi = middle;
+      continue;
+    }
+    if (Euin < E_in){
+      lo = middle;
+      continue;
+    }
+
+  }
+
+  return middle;
+
 }
 /*--------------------------------------------------------------------------*/
 long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, double E_in, double bound_lo, double bound_hi, COMPONENT* dd ) const
 {
-  long double E=(long double) E_in;
+  long double E = (long double) E_in;
   const COMMON_BUILT_IN_RCD* c = asserted_cast<const COMMON_BUILT_IN_RCD*>(dd->common());
   const MODEL_BUILT_IN_RCD* m = dynamic_cast<const MODEL_BUILT_IN_RCD*>(c->model());
   DEV_BUILT_IN_RCD* d = asserted_cast<DEV_BUILT_IN_RCD*>(dd);
@@ -1792,12 +1844,13 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
     edge = false;
     trace7("COMMON_BUILT_IN _RCD::__uin_iter loop", (double)uin, (double)res, (double)deltaE, Edu, E, i,Euin);
     trace3(" ",dx_res,Q,df_fres);
-    if( i> iterlimit){
-      untested();
+    if( i >= iterlimit ){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge uin="
           "%LE, E=%LE, res=%LE, lres=%Lg, Q=%Lg\n", uin, E, res, log(fabs(res)), Q);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge bounds %E, %E\n",
           bound_lo, bound_hi);
+      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge damp %E\n",
+          (double)damp);
 
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter LQ=%Lf>%Lf. h%i deltaE=%LE\n", 
           log(Q), logl(reltol), hhack, deltaE);
@@ -1806,8 +1859,7 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
           Edu, Euin, E, fu, delta_u);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter s=%i%i%i%i%i putres=%i\n",
           A, B, C, D, U, putres);
-      throw(Exception("does not converge in [%f,%f]: %s in tt %i\n", dd->long_label().c_str(), bound_lo, bound_hi,_sim->tt_iteration_number()  ));
-      break;
+      throw(Exception("does not converge after %u in [%f,%f]: %s in tt %i", i, dd->long_label().c_str(), bound_lo, bound_hi,_sim->tt_iteration_number() ));
     }
     if(!is_number(uin)){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter uin wrong %E diff "
@@ -1899,6 +1951,7 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
     if(deltaE * deltaE_alt < 0){
       damp *= 0.8;
     }
+    damp=max(damp,0.01L);
 
 
     if( !is_number( Euin ) ){
