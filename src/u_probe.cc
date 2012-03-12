@@ -201,6 +201,8 @@ double PROBE::probe_node(void)const
     return _sim->_time0;
   }else if (Umatch(_what, "event ")) {
     return ((_sim->_eq.empty())? -1.: _sim->_eq.top());
+  }else if (Umatch(_what, "limiting ")) {
+    return _sim->_limiting;
   }else{
     return NOT_VALID;
   }
