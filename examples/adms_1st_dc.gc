@@ -93,7 +93,7 @@ endparamset
 spice
 
 
-.options numdgt=20
+.options numdgt=6
 *    o nci
 *    |
 *    |
@@ -115,10 +115,7 @@ spice
 *
 * I_{CE} = 100* I_{BE}
 
-.options abstol=1e-18
-.options reltol=1e-7
-.options nobypass 
-.options
+.options noincmode
 
 Vce nci 0 2
 Ib 0 nb 10e-6
@@ -135,10 +132,10 @@ spice
 
 
 *.print dc i(Ib) v(nc) v(nb) i(Vicq1) s0(Q1) s1(Q1) s2(Q1) conv(Q1) i0(Q1) i1(Q1) iter(0)
-.print dc i(Ib) i(vicq1) Ibici(Q1) ijbc(Q1) Vbici(Q1) V(nb) 
+.print dc i(Ib) i(vicq1)
 
 *.dc Ib 15u 15u 1u Vce 1 1 0.2  basic trace=v
-.dc Ib 15u 15u 5u Vce 1 1 0.2 basic trace=v
+.dc Ib 15u 20u 5u Vce 1 1.2 0.2 basic
 
 
 .end
