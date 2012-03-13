@@ -580,10 +580,10 @@ void TTT::sweep() // tr sweep wrapper.
 
 	}catch (Exception& e) {
 		untested();
+		error(bDANGER, "Sweep exception \"%s\" at %E, dT0 %E, step %i\n",
+				e.message().c_str(), _sim->_Time0, _sim->_dT0, tt_iteration_number());
 		assert(_sim->_dT0 > _sim->last_time()); // = means zero step
 		                                       // if this fails, something is wrong.
-		error(bDANGER, "Sweep exception %s at %E, dT0 %E, step %i\n",
-				e.message().c_str(), _sim->_Time0, _sim->_dT0, tt_iteration_number());
 		_out << "* tt sweep failed: "<< e.message() <<"\n";
 		_accepted=_accepted_tt=false;
 		::status.review.stop();

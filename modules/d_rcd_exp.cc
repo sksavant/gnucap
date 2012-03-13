@@ -244,10 +244,12 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
 
   assert (E_low>=0);
 
-  if(((double)E_high < (double)E_low - 1e-18)){
+  if((double(E_high-E_low) < - 1e-18)){
     error(bDANGER,"MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last uin_high=%LE uin_low=%LE deltaE= %LE; %LE>%LE\n",
         uin_high, uin_low, E_high - E_low, E_high, E_low );
-    throw(Exception("order mismatch in exp"));
+
+    // this is very bad...
+    throw(Exception("monotony violation in __step"));
   }
 
   bool linear_inversion=false;
@@ -344,7 +346,7 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
   if( ( E_old < E_high ) && ( E_low <= E_old ))
     _c->set_order(0);
 
-  if ((double)E_high<(double)E_low - 1.5e-19){
+  if (double(E_high-E_low) < - 1.5e-19){
     error( bDANGER, "MODEL_BUILT_IN_RCD_EXP:: sanitycheck (delta %LE ) in %s\n",
         E_high - E_low, dd->long_label().c_str());
     error( bDANGER, "MODEL_BUILT_IN_RCD_EXP:: sanitycheck (abs %LE ) in %s\n",
