@@ -3853,8 +3853,27 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
 <!-- ----------------------------------------------------------------- -->
 <!-- handle analog//callfunctions -->
 <admst:template match="callfunction">
-<admst:message test="[/dbg_xml='yes']" format="*(ngspvers)callfunction*\n"/>
-  <admst:message format="the function callfunction was deleted, see git: callfunction deleted"/>
+	<admst:message format="callfunction: untested\n"/>
+	<admst:choose>
+		<admst:when test="function[name='\$strobe']">
+			<admst:text format="fprintf(stdout"/>
+		</admst:when>
+		<admst:otherwise>
+			<admst:value-of select="function/name"/>
+#warning "%s not supported by this interface"
+// FIXME(
+		</admst:otherwise>
+	</admst:choose>
+	<admst:for-each select="function/arguments">
+		<admst:apply-templates select="./tree" match="expression:stringify:noprobe"/>
+		<admst:text format=",%s"/>
+	</admst:for-each>
+	<admst:text format=");\n"/>
+	<admst:choose>
+		<admst:when test="function[name='\$strobe']">
+			<admst:text format="fprintf(stdout,&quot;\\n&quot;);\n"/>
+		</admst:when>
+	</admst:choose>
 </admst:template>
 
 <!-- ----------------------------------------------------------------- -->
