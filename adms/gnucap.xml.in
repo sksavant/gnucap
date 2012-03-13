@@ -8116,7 +8116,21 @@ and name!='initializeInstance')]">
 <!-- analog//callfunctions -->
 <admst:template match="callfunction">
 <admst:message test="[/dbg_xml='yes']" format="*(tr_eval)callfunction*\n"/>
-	<admst:apply-templates select="." match="callfunction"/>
+  <admst:choose>
+    <admst:when test="function[name='\$strobe']">printf(</admst:when>
+    <admst:when test="function[name='\$warning']">_warning(</admst:when>
+    <admst:when test="function[name='\$error']">_error(</admst:when>
+    <admst:when test="function[name='\$finish']">_finish(</admst:when>
+    <admst:when test="function[name='\$stop']">_stop(</admst:when>
+    <admst:otherwise>
+      <admst:fatal format="function not supported: %(function/name)\n"/>
+    </admst:otherwise>
+  </admst:choose>
+  <admst:join select="function/arguments" separator=",">
+    %(e(tree))
+    <admst:if test="[position(.)=1]">&quot;\\n&quot;</admst:if>
+  </admst:join>
+  <admst:text format="); fflush(stdout);\n"/>
 </admst:template>
 
 <!-- analog/code -->
