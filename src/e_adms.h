@@ -651,6 +651,9 @@ inline void ADMS_BASE::ac_eval()
 #define _abs(val)                ((val)<(0) ? (-(val)):(val))
 */
 
+// FIXME: need more of these.
+#define _strobe(x) std::cout << x;
+
 /*--------------------------------------------------------------------------*/
 #define jacobian(a,b) m_required[m_##a##_##b]=true;	
 #define static_jacobian4(p,q,r,s)  jacobian(p,r) jacobian(p,s) jacobian(q,r) jacobian(q,s)

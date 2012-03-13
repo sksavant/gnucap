@@ -8117,7 +8117,7 @@ and name!='initializeInstance')]">
 <admst:template match="callfunction">
 <admst:message test="[/dbg_xml='yes']" format="*(tr_eval)callfunction*\n"/>
   <admst:choose>
-    <admst:when test="function[name='\$strobe']">printf(</admst:when>
+    <admst:when test="function[name='\$strobe']">_strobe(</admst:when>
     <admst:when test="function[name='\$warning']">_warning(</admst:when>
     <admst:when test="function[name='\$error']">_error(</admst:when>
     <admst:when test="function[name='\$finish']">_finish(</admst:when>
@@ -8130,7 +8130,7 @@ and name!='initializeInstance')]">
     %(e(tree))
     <admst:if test="[position(.)=1]">&quot;\\n&quot;</admst:if>
   </admst:join>
-  <admst:text format="); fflush(stdout);\n"/>
+  <admst:text format=");"/>
 </admst:template>
 
 <!-- analog/code -->
