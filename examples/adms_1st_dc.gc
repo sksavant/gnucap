@@ -128,8 +128,6 @@ ngsp_hicum Q1( nc nb 0 );
 
 spice
 
-.list
-
 
 *.print dc i(Ib) v(nc) v(nb) i(Vicq1) s0(Q1) s1(Q1) s2(Q1) conv(Q1) i0(Q1) i1(Q1) iter(0)
 .print dc i(Ib) i(vicq1)
