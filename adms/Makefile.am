@@ -1,3 +1,5 @@
+data_DATA=gnucap_0.xml gnucap_1.xml gnucap_2.xml
+
 all: gnucap_0.xml
 
 gnucap_0.xml: gnucap.xml
