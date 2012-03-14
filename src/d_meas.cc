@@ -225,19 +225,22 @@ class DEV_FMEAS : public ELEMENT {
 						}else{
 							_p = BOTTOM;
 							_c++;
+							if (_hi-in > 2*_trig) _c = 1;
 							_trig = _hi - in;
 						}
 						break;
 					case BOTTOM:
-						if( in < 0.2*_lo+0.8*_hi  ){
-							if( in < _hi-2*_trig){
+						if( in < 0.2*_lo + 0.8*_hi  ){
+							// still bottom
+							if( in < _hi - 2*_trig){
 								_c = 1;
 								_trig = _hi - in;
 							}
 						}else{
 							_p = TOP;
 							_c++;
-							_trig = in-_lo;
+							if (in-_lo > 2*_trig) _c = 1;
+							_trig = in - _lo;
 						}
 				}
 				// _m += _sim->_dt0 * ( tr_involts() + _v1 ) ;
