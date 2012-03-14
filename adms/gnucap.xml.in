@@ -258,16 +258,10 @@ public:
 
 class $(DEV_NAME) : public ADMS_BASE 
 {
-  private:	
+private:
     std::string _modelname;
     const $(MODEL_NAME)* _model;
     node_t _nodes[ %(count(node[grounded='no'])) ];
-
-  private:
-    unsigned current_state;
-    unsigned _next_state(){  current_state++;  assert (current_state<=_num_states); 
-                return current_state-1; } 
-
 
 private:
 	explicit $(DEV_NAME)(const $(DEV_NAME)& p);
@@ -1643,37 +1637,24 @@ bool $(DEV_NAME)::conv_check()const
 }
 
 // -------------------------------------------------------------------------- //
-// write G and C into
-// matrix and matrix_old
+// write G and C into matrix and matrix_old
 void $(DEV_NAME)::ac_eval() 
 {
-<!--
 	std::fill_n(it0, (int)_num_total_nodes, 0);
 	std::fill_n(m_entries, %(count(jacobian)), 0);
+	std::fill_n(m_entries_old, %(count(jacobian)), 0);
 
 	const COMMON_COMPONENT* c = asserted_cast<const COMMON_COMPONENT*>(common());
 	USE(c);
 	const $(MODEL_NAME)* m = asserted_cast<const $(MODEL_NAME)*>(model());
 	USE(m);
-	double CKTag0=0;
 
-
-	<admst:text format="\n\tstd::fill_n(m_entries, %(count(jacobian)), 0);"/>
-	<admst:text format="\n\tstd::fill_n(m_entries_old, %(count(jacobian)), 0);"/>
-									
-	{ // analog:eval
-
-	 <admst:variable name="eval_mode" select="ac"/>
-	 current_state=0; // FIXME
-	 <admst:apply-templates select="analog/code" match="analog:evaluate" required="yes"/>
-
+	double CKTag0=0;		
+	{
 		#include "$(filename)_ac.hxx"
-
-
-	} // analog:eval
--->
-	return; 
+	}
 }
+
 // -------------------------------------------------------------------------- //
 
 void $(DEV_NAME)::tr_eval() 
@@ -1692,22 +1673,15 @@ void $(DEV_NAME)::tr_eval()
 	assert( _dt != 0 ); // untested, tag0 = 0.0
 	if (_time[1] != 0 && _method_a == mTRAP) CKTag0 = 2 / _dt; // mTRAP
 	else CKTag0 = 1 / _dt; // mEULER
-
 	trace2("$(DEV_NAME)::tr_eval()", long_label(), CKTag0);
 
 	{
-		current_state=0;
-		<admst:variable name="eval_mode" select="tr"/>
-		current_state=0; // FIXME
-	
 		#include "$(filename)_tr.hxx"
 	}
 
 	// this is what cap does.
 	set_converged(conv_check());
-	return; 
 }
-
   </admst:for-each>
 </admst:open>
 
@@ -5086,6 +5060,9 @@ and name!='initializeInstance')]">
 <!-- *********************************** ngspiceMODULE.hxx.xml ************************* -->
 <!-- *********************************************************************************** -->
 
+<!-- ----------------------------------------------------------------- -->
+<!-- ------------------ create hxx for tr ---------------------------- -->
+<admst:variable name="eval_mode" select="tr"/>
 <admst:for-each select="/module">
 	<admst:value-of select="attribute[name='ngspicename']/value"/>
 	<admst:variable name="module" select="%s"/>
@@ -5093,6 +5070,20 @@ and name!='initializeInstance')]">
 	<admst:variable name="MODEL_NAME" select="MODEL_%(upper-case(name))"/>
 
 	<admst:open file="$(filename)_tr.hxx">
+		<admst:apply-templates select="analog/code" match="analog:evaluate" required="yes"/>
+	</admst:open>
+</admst:for-each>
+
+<!-- ----------------------------------------------------------------- -->
+<!-- ------------------ create hxx for ac ---------------------------- -->
+<admst:variable name="eval_mode" select="ac"/>
+<admst:for-each select="/module">
+	<admst:value-of select="attribute[name='ngspicename']/value"/>
+	<admst:variable name="module" select="%s"/>
+	<admst:variable name="DEV_NAME" select="DEV_%(upper-case(name))"/>
+	<admst:variable name="MODEL_NAME" select="MODEL_%(upper-case(name))"/>
+
+	<admst:open file="$(filename)_ac.hxx">
 		<admst:apply-templates select="analog/code" match="analog:evaluate" required="yes"/>
 	</admst:open>
 </admst:for-each>
