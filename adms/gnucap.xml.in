@@ -1532,7 +1532,7 @@ void $(DEV_NAME)::guesstopology ()
 	for(int i=0; i<%(count(jacobian)); i++)
         	m_required[i] = false;
 	
-	#include "$(filename)_guesstopology.hxx"
+	#include "$(filename)_top.hxx"
  
  	for(int i=0; i<%(count(jacobian)); i++) trace1("guess m", m_required[i]);
 	<!--admst:for-each select="jacobian">
@@ -1667,6 +1667,8 @@ void $(DEV_NAME)::ac_eval()
 	 current_state=0; // FIXME
 	 <admst:apply-templates select="analog/code" match="analog:evaluate" required="yes"/>
 
+		#include "$(filename)_ac.hxx"
+
 
 	} // analog:eval
 -->
@@ -1698,7 +1700,7 @@ void $(DEV_NAME)::tr_eval()
 		<admst:variable name="eval_mode" select="tr"/>
 		current_state=0; // FIXME
 	
-		#include "$(filename)_tr_eval.hxx"
+		#include "$(filename)_tr.hxx"
 	}
 
 	// this is what cap does.
@@ -4813,7 +4815,7 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
 	<admst:variable name="DEV_NAME" select="DEV_%(upper-case(name))"/>
 	<admst:variable name="MODEL_NAME" select="MODEL_%(upper-case(name))"/>
 
-	<admst:open file="$(filename)_guesstopology.hxx">
+	<admst:open file="$(filename)_top.hxx">
 		<admst:apply-templates select="analog/code[datatypename='block']/variable" match="generate_c:declare_variable"/>
 		
 		<admst:for-each select="analog/code[datatypename='block']/item">
@@ -5090,7 +5092,7 @@ and name!='initializeInstance')]">
 	<admst:variable name="DEV_NAME" select="DEV_%(upper-case(name))"/>
 	<admst:variable name="MODEL_NAME" select="MODEL_%(upper-case(name))"/>
 
-	<admst:open file="$(filename)_tr_eval.hxx">
+	<admst:open file="$(filename)_tr.hxx">
 		<admst:apply-templates select="analog/code" match="analog:evaluate" required="yes"/>
 	</admst:open>
 </admst:for-each>
