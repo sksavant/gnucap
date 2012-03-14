@@ -138,6 +138,7 @@
 // Dependent on junction punch-through voltage
 // Important for collector related junctions
 `define HICJQ(vj,cj0,vd,z,vpt,qjf)\
+    qjf=0; \
     if(vpt < `VPT_thresh) begin\
         `QJMOD(vj,cj0,vd,z,vpt,2.4,qjf)\
     end else begin\
@@ -745,6 +746,7 @@ analog begin
 	`HICJQ(Vsci,cjs0_t,vds_t,zs,vpts,qjs)
 
 // Self heating
+	pterm=0;
 
 	if (flsh == 1 && rth >= `MIN_R) begin
 		pterm	= it*Vciei+iavl*(vdci_t-Vbici); 
