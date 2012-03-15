@@ -425,24 +425,22 @@ private: // nodes / matrix indexes
           </admst:if>	
     </admst:for-each>
 
-	// what is this?
-	bool m_required[%(count(jacobian))];
+	bool m_required[%(count(jacobian))];	// true if matrix entry is not constant zero for current set of parameters (s. guesstop)
+	// todo: distinguish between static and dynamic (tr-) matrix entries, the static ones must be loaded only once
 
-	double m_entries[%(count(jacobian))];
-	double m_entries_old[%(count(jacobian))];
+	double m_entries[%(count(jacobian))];		// also used for static-entries in ac-analysis
+	double m_entries_old[%(count(jacobian))];	// also used for dynamic-entries in ac-analyis
 	double m_entries_kept[%(count(jacobian))]; // keep_ic, uic etc.
 
 	// states FIXME
 
-		enum EStates_branch_old {
+	enum EStates_branch_old {
         <admst:join select="source[dynamic='yes']" separator=", ">
                 <admst:value-of select="branch/nnode/name"/>
                 <admst:value-of select="branch/pnode/name"/>
                 <admst:text format="state_%s_%s=%((position(.)-1)*2)"/>
         </admst:join>
         <admst:text format=" };\n"/>
-
-
 
         // we could use plain numbers as identifiers, but what would reduce
         // future flexibility/readability.
@@ -1489,7 +1487,7 @@ void $(DEV_NAME)::do_ac()
 void $(DEV_NAME)::ac_load()
 {
 	for(int i=0; i<_num_total_nodes; i++)
-	ac_load_source_point(_n[i], COMPLEX(it0[i], it1[i]));
+		ac_load_source_point(_n[i], COMPLEX(it0[i], it1[i]));
 		
 	<admst:for-each select="jacobian">
 	<admst:value-of select="column/name"/>
@@ -1500,7 +1498,7 @@ void $(DEV_NAME)::ac_load()
 	<admst:value-of select="row/name"/>
 	<admst:value-of select="column/name"/>
 	<admst:value-of select="row/name"/>
-	if( m_required[m_%s_%s] ) ac_load_point(_N(%s), _N(%s), COMPLEX(m_entries[m_%s_%s], m_entries_old[m_%s_%s]));
+	if( m_required[m_%s_%s] ) ac_load_point(_N(%s), _N(%s), COMPLEX(m_entries[m_%s_%s], m_entries_old[m_%s_%s] * _sim->_jomega.imag()));
 	</admst:for-each>
 }
 
@@ -1540,6 +1538,7 @@ void $(DEV_NAME)::guesstopology ()
 }	
 
 // -------------------------------------------------------------------------- //
+<!--
 #if 0
 void $(DEV_NAME)::acLoad()
 { 
@@ -1578,7 +1577,6 @@ void $(DEV_NAME)::pzLoad(COMPLEX s)
 	<admst:text format="\n\tif(m_required[m_%s_%s]) m_entries[m_%s_%s] += m_ac_static[m_%s_%s] * s.real(); // static"/>
 </admst:for-each>
 	
-<!-- why two selects?? -->
 <admst:text format="\n"/>
 <admst:for-each select="jacobian[dynamic='yes']">
 	<admst:value-of select="column/name"/>
@@ -1602,6 +1600,7 @@ void $(DEV_NAME)::pzLoad(COMPLEX s)
 </admst:for-each>
 }
 #endif
+<-->
 
 // -------------------------------------------------------------------------- //
 bool $(DEV_NAME)::conv_check()const
