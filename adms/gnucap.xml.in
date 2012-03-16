@@ -3345,26 +3345,20 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
 <!-- analog//assignment -->
 <admst:template match="assignment">
 <admst:message test="[/dbg_xml='yes']" format="*(ngspvers)assignmenz*\n"/>
-  <admst:if test="rhs[not(nilled(function[class='builtin']))]">
-    <admst:choose>
-      <admst:when test="[dynamic='yes']">
-        <admst:text format="#if defined(_DYNAMIC)\n"/>
-      </admst:when>
-    </admst:choose>
-    <admst:text format="{\n"/>
-    <admst:for-each select="rhs/function">
-      <admst:value-of select="position(.)-1"/>
-      <admst:apply-templates select="." match="function:getname_push"/>
-      <admst:text format="double __%s_%s=0.0;\n"/>
-    </admst:for-each>
-    <admst:apply-templates select="." match="ddx:function:computation"/>
-  </admst:if>
-  <admst:if test="lhs[derivate='yes']">
-    <admst:text format="#if defined(_DERIVATE)\n"/>
-  </admst:if>
+
+  <admst:text test="rhs[not(nilled(function[class='builtin']))]" format="{\n"/>
+
+  <admst:for-each select="rhs/function">
+    <admst:value-of select="position(.)-1"/>
+    <admst:apply-templates select="." match="function:getname_push"/>
+    <admst:text format="double __%s_%s=0.0;\n"/>
+  </admst:for-each>
+
+  <admst:apply-templates select="." match="ddx:function:computation"/>
+
   <admst:if test="lhs[insource='yes']">
     <admst:if test="rhs/probe">
-      <admst:text format="#if defined(_DERIVATE)\n"/>
+
       <admst:for-each select="rhs/probe">
         <admst:value-of select="."/>
         <admst:value-to select="/simulator/probe" value="%p"/>
@@ -3381,33 +3375,22 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
         <admst:value-of select="../../lhs/name"/>
         <admst:text format="EXIT_IF_ISNAN(%s_%s%s_%s)\n"/>
       </admst:for-each>
-      <admst:text format="#endif /*_DERIVATE*/\n"/>
+
     </admst:if>
   </admst:if>
-  <admst:choose>
-    <admst:when test="[dynamic='yes']">
-      <admst:text format="#if defined(_DYNAMIC)\n"/>
-    </admst:when>
-  </admst:choose>
+
   <admst:apply-templates select="lhs" match="variable:lhs" required="yes"/>
   <admst:apply-templates select="rhs/tree" match="stringify_expression"/>
   <admst:text format="=%s;\n"/>
   <admst:text format="EXIT_IF_ISNAN("/>
   <admst:apply-templates select="lhs" match="variable:lhs" required="yes"/>
   <admst:text format=")\n"/>
-  <admst:choose>
-    <admst:when test="[dynamic='yes']">
-      <admst:text format="#endif /*_DYNAMIC*/\n"/>
-    </admst:when>
-  </admst:choose>
-  <admst:if test="lhs[derivate='yes']">
-    <admst:text format="#endif /*_DERIVATE*/\n"/>
-  </admst:if>
+
   <admst:if test="lhs[insource='yes']">
     <admst:value-of select="rhs/probe"/>
     <admst:if-inside select="lhs/probe" list="%p">
       <admst:if test="lhs/probe">
-        <admst:text format="#if defined(_DERIVATE)\n"/>
+
         <admst:for-each select="lhs/probe">
           <admst:value-of select="../../rhs/probe"/>
           <admst:if-not-inside select="." list="%p">
@@ -3418,18 +3401,13 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
             <admst:text format="%s_%s%s_%s=0.0;\n"/>
           </admst:if-not-inside>
         </admst:for-each>
-        <admst:text format="#endif /*_DERIVATE*/\n"/>
+
       </admst:if>
     </admst:if-inside>
   </admst:if>
-  <admst:if test="rhs[not(nilled(function[class='builtin']))]">
-    <admst:text format="}\n"/>
-    <admst:choose>
-      <admst:when test="[dynamic='yes']">
-        <admst:text format="#endif /* _DYNAMIC */\n"/>
-      </admst:when>
-    </admst:choose>
-  </admst:if>
+
+  <admst:text test="rhs[not(nilled(function[class='builtin']))]" format="}\n"/>
+
 <admst:message test="[/dbg_xml='yes']" format="*(ngspvers)assignment<-*\n"/>
 </admst:template>
 
