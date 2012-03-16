@@ -7688,220 +7688,130 @@ and name!='initializeInstance')]">
 <!-- ---------------------------------------------------------- -->
 <admst:template match="contribution:nonoise">
 <admst:message test="[/dbg_xml='yes']" format="*(tr_eval)contribution:nonoise*\n"/>
+  <admst:text format="\n// contribution: %(.)"/>
+
   <admst:if test="rhs[not(nilled(function[class='builtin']))]">
-    <admst:choose>
-      <admst:when test="[dynamic='yes']">
-        <admst:text format="#if defined(_DYNAMIC)//fixme5\n"/>
-      </admst:when>
-    </admst:choose>
     <admst:text format="{\n"/>
+
     <admst:for-each select="rhs/function">
-
       <admst:value-of select="position(.)-1"/>
-
-	<admst:apply-templates select="." match="function:getname">
-      	<admst:value-of select="returned('function:getname')/value"/>
+      <admst:apply-templates select="." match="function:getname">
+      <admst:value-of select="returned('function:getname')/value"/>
       </admst:apply-templates>
-      
       <admst:text format="double __%s_%s=0.0;\n"/>
     </admst:for-each>
+
     <admst:apply-templates select="." match="ddx:function:computation"/>
   </admst:if>
-  <admst:choose>
-    <admst:when test="[dynamic='yes']">
-      <admst:choose>
-        <admst:when test="[$keep_ic='yes']">
-          <admst:message format="keepic\n"/>
-          <admst:text format="  _keep_dynamic_"/>
-        </admst:when>
-        <admst:when test="[$eval_kept='yes']">
-          <admst:message format="keepic\n"/>
-          <admst:text format="  _eval_kept_dynamic_"/>
-        </admst:when>
-        <admst:otherwise>
-        </admst:otherwise>
-      </admst:choose>
-    </admst:when>
-    <admst:otherwise>
-    </admst:otherwise>
-  </admst:choose>
+
   <admst:choose>
     <admst:when test="lhs/branch/nnode[grounded='no']">
       <admst:apply-templates select="." match="residual2"/>
     </admst:when>
     <admst:otherwise>
-      <admst:value-of select="lhs/branch/pnode/name"/>
-      <admst:text format="//fixme residual1(%s,%((rhs/tree)))\n"/>
       <admst:apply-templates select="." match="residual1"/>
     </admst:otherwise>
   </admst:choose>
+
   <admst:for-each select="rhs/probe">
-    <admst:text format="//Rhsp %(.)\n"/>
+    <admst:text format="\t// Rhs/probe: %(.)"/>
     <admst:variable name="probepnode" select="%(branch/pnode)"/>
     <admst:variable name="probennode" select="%(branch/nnode)"/>
     <admst:variable name="probepnodename" select="%($probepnode/name)"/>
     <admst:variable name="probennodename" select="%($probennode/name)"/>
     <admst:variable name="pprobe" select="%(.)"/>
+
     <admst:apply-templates select="../tree" match="%(adms/datatypename)"/>
+
     <admst:if test="branch/pnode[grounded='no']">
       <admst:if test="../../lhs/branch/pnode[grounded='no']">
-        <admst:choose>
-          <admst:when test="branch/nnode[grounded='no']">
-            <admst:if test="../../lhs/branch/nnode[grounded='no']">
-              <admst:apply-templates select="." match="jacobian4"/>
-            </admst:if>
-            <admst:if test="../../lhs/branch/nnode[grounded='yes']">
-              <admst:apply-templates select="." match="jacobian2p"/>
-            </admst:if>
-          </admst:when>
-          <admst:otherwise>
-            <admst:if test="../../lhs/branch/nnode[grounded='no']">
-              <admst:apply-templates select="." match="jacobian2s"/>
-            </admst:if>
-            <admst:if test="../../lhs/branch/nnode[grounded='yes']">
-              <!-- move up -->
-              <admst:value-of select="branch/nnode/name"/>
-              <admst:value-of select="branch/pnode/name"/>
-              <admst:value-of select="../../lhs/branch/nnode/name"/>
-              <admst:value-of select="../../lhs/branch/pnode/name"/>
-              <admst:variable name="Sp" select="%s"/>
-              <admst:variable name="Sn" select="%s"/>
-              <admst:variable name="Pp" select="%s"/>
-              <admst:variable name="Pn" select="%s"/>
-              <admst:apply-templates select="." match="jacobian1"/>
-            </admst:if>
-          </admst:otherwise>
-        </admst:choose>
+          <admst:if test="branch/nnode[grounded='no']">
+              <admst:apply-templates test="../../lhs/branch/nnode[grounded='no']"  select="." match="jacobian4"/>
+              <admst:apply-templates test="../../lhs/branch/nnode[grounded='yes']" select="." match="jacobian2p"/>
+          </admst:if>
+          <admst:if test="branch/nnode[grounded='yes']">
+              <admst:apply-templates test="../../lhs/branch/nnode[grounded='no']" select="." match="jacobian2s"/>
+              <admst:apply-templates test="../../lhs/branch/nnode[grounded='yes']" select="." match="jacobian1"/>
+          </admst:if>
       </admst:if>
     </admst:if>
   </admst:for-each>
-  <admst:if test="rhs[not(nilled(function[class='builtin']))]">
-    <admst:text format="} // // \n"/>
-    <admst:text test="[dynamic='yes']" format="#endif /* _DYNAMIC */\n"/>
-  </admst:if>
+
+  <admst:text test="rhs[not(nilled(function[class='builtin']))]" format="}\n"/>
+
 <admst:message test="[/dbg_xml='yes']" format="*(tr_eval)contribution:nonoise<-*\n"/>
 </admst:template>
 
 <!-- ----------------------  residuals ------------------ -->
 <admst:template match="residual2">
 <admst:message test="[/dbg_xml='yes']" format="*(tr_eval)residual2*\n"/>
-  <admst:value-of select="lhs/branch/nnode/name"/>
-  <admst:value-of select="lhs/branch/pnode/name"/>
-  <admst:text format="// residual2(%s,%s,%(rhs/tree))//rhs/tree\n"/>
-  <admst:value-of select="lhs/branch/nnode/name"/>
-  <admst:value-of select="lhs/branch/pnode/name"/>
-
-  <admst:variable name="Pp" select="%s"/>
-  <admst:variable name="Pn" select="%s"/>
-  <admst:choose> 
-    <admst:when test="[dynamic='yes']">
-	{  // former_eval_dynamic_residual2
-		double _i = %(e(rhs/tree));
-		assert(is_number(_i));
-		it0[$(node_prefix)$(Pp)]-= _i;
-		it0[$(node_prefix)$(Pn)]+= _i;
-	}
-
-    </admst:when>
-    <admst:otherwise>
-	{ // former_eval_static_residual2  (recheck: same as dynamic?)
+  <admst:variable name="Pp" select="%(lhs/branch/pnode/name)"/>
+  <admst:variable name="Pn" select="%(lhs/branch/nnode/name)"/>
+	// residual2($(Pp),$(Pn),%(rhs/tree))
+	{	
+		// recheck: static is same as dynamic?
 		double vx = %(e(rhs/tree)); 
 		assert(is_number(vx));
 		it0[$(node_prefix)$(Pp)] -= vx;
 		it0[$(node_prefix)$(Pn)] += vx;
 	}
 
-    </admst:otherwise>
-    </admst:choose>
 </admst:template>
+
 <admst:template match="residual1">
 <admst:message test="[/dbg_xml='yes']" format="*(tr_eval)residual1*\n"/>
-  <!-- <admst:value-of select="lhs/branch/pnode[grounded=yes]"/> -->
-  <admst:value-of select="lhs/branch/pnode/name"/>
-  <admst:text format="//fixme residual1(%s,%((rhs/tree)))\n"/>
-
-  <admst:value-of select="lhs/branch/pnode/name"/>
-  <admst:variable name="Pp" select="%s"/>
-  <admst:choose> 
-    <admst:when test="[dynamic='yes']">
-	{  // former_eval_dynamic_residual2
-        // rhs/tree should contain a ddt...
+  <admst:variable name="Pp" select="%(lhs/branch/pnode/name)"/>
+	// residual1($(Pp),%(rhs/tree))
+	{
+		// recheck: static is same as dynamic?
 		double va = %(e(rhs/tree));
 		assert(is_number(va));
-        //_eval_static_residual1($Pp,v);
-		it0[$node_prefix$Pp] -= va; 
+		it0[$node_prefix$Pp] -= va;
 	}
-
-    </admst:when>
-    <admst:otherwise>
-	{ // former_eval_static_residual2  // same as dynamic?
-		double vb = %(e(rhs/tree)); 
-		assert(is_number(vb));
-		it0[$node_prefix$Pp] -= vb;
-	}
-
-    </admst:otherwise>
-  </admst:choose>
 
 </admst:template>
+
 <!-- ----------------------  jacobians ------------------ -->
 <admst:template match="jacobian1">
 <admst:message test="[/dbg_xml='yes']" format="*(tr_eval)jacobian1*\n"/>
-  <!-- why??? -->
-              <admst:value-of select="branch/nnode/name"/>
-              <admst:value-of select="branch/pnode/name"/>
-              <admst:value-of select="../../lhs/branch/nnode/name"/>
-              <admst:value-of select="../../lhs/branch/pnode/name"/>
-              <admst:variable name="Sp" select="%s"/>
-              <admst:variable name="Sn" select="%s"/>
-              <admst:variable name="Pp" select="%s"/>
-              <admst:variable name="Pn" select="%s"/>
+  <admst:variable name="Sp" select="%(../../lhs/branch/pnode/name)"/>
+  <admst:variable name="Pp" select="%(branch/pnode/name)"/>
+ 
   <admst:choose> 
     <admst:when test="..[dynamic='yes']">
+	// jacobian1($(Sp), $(Pp), $(ep)) - dynamic
+	{
+	        double ep=$ep; 
+	        double geq=(ep)*(CKTag0);
+	        double ceq=geq*NP($Pp);
+	        it0[n_$Sp]-=ceq;
 
-      { // former_eval_dynamic_jacobian1 
-        double ep=$ep; 
-        double geq=(ep)*(CKTag0);
-        double ceq=geq*NP($Pp);
-        // _eval_static_residual1($Sp, -ceq)
-        it0[n_$Sp]-=ceq; 
-
-        <admst:if test="[$eval_mode='tr']">
-          _write_ptr($Sp, $Pp, geq);
-        </admst:if>
-        <admst:if test="[$eval_mode='ac']">
-          _write_JS($Sp, $Pp, ep);
-        </admst:if>
-
-        }
+		<admst:text test="[$eval_mode='tr']" format="\t\t_write_ptr($Sp, $Pp, geq);\n"/>
+		<admst:text test="[$eval_mode='ac']" format="\t\t_write_JS($Sp, $Pp, ep);\n"/>
+	}
 
     </admst:when>
+
     <admst:otherwise>
-       { // former_eval_stat_jacobian1 \n
-        double ep=$ep; 
-        // _eval_static_residual1($Sp,-ep*NP(Pp));
-	it0[n_$Sp]-=ep*NP($Pp); \
-      <admst:if test="[$eval_mode='tr']">
-        _write_ptr($Sp, $Pp, ep);
-      </admst:if>
-      <admst:if test="[$eval_mode='ac']">
-        _write_JS($Sp, $Pp, ep);
-      </admst:if>
-      }
+	// jacobian1($(Sp), $(Pp), $(ep)) - static
+	{
+		double ep=$ep;
+		it0[n_$Sp]-=ep*NP($Pp);
+
+		<admst:text test="[$eval_mode='tr']" format="\t\t_write_ptr($Sp, $Pp, ep);\n"/>
+		<admst:text test="[$eval_mode='ac']" format="\t\t_write_JS($Sp, $Pp, ep);\n"/>
+	}
     </admst:otherwise>
+
   </admst:choose>
 </admst:template>
 <!-- ----------------------  jacobians ------------------ -->
 <admst:template match="jacobian4">
 <admst:message test="[/dbg_xml='yes']" format="*(tr_eval)jacobian4*\n"/>
-  <admst:value-of select="branch/nnode/name"/>
-  <admst:value-of select="branch/pnode/name"/>
-  <admst:value-of select="../../lhs/branch/nnode/name"/>
-  <admst:value-of select="../../lhs/branch/pnode/name"/>
-  <admst:variable name="Sp" select="%s"/>
-  <admst:variable name="Sn" select="%s"/>
-  <admst:variable name="Pp" select="%s"/>
-  <admst:variable name="Pn" select="%s"/>
+  <admst:variable name="Sp" select="%(../../lhs/branch/pnode/name)"/>
+  <admst:variable name="Sn" select="%(../../lhs/branch/nnode/name)"/>
+  <admst:variable name="Pp" select="%(branch/pnode/name)"/>
+  <admst:variable name="Pn" select="%(branch/nnode/name)"/>
   <admst:choose> 
     <admst:when test="..[dynamic='yes']">
 	{  // former_eval_dynamic_jac4
@@ -7953,12 +7863,9 @@ and name!='initializeInstance')]">
 </admst:template>
 <admst:template match="jacobian2p">
 <admst:message test="[/dbg_xml='yes']" format="*(tr_eval)jacobian2p*\n"/>
-  <admst:value-of select="branch/nnode/name"/>
-  <admst:value-of select="branch/pnode/name"/>
-  <admst:value-of select="../../lhs/branch/pnode/name"/>
-  <admst:variable name="Sp" select="%s"/>
-  <admst:variable name="Pp" select="%s"/>
-  <admst:variable name="Pn" select="%s"/>
+  <admst:variable name="Sp" select="%(../../lhs/branch/pnode/name)"/>
+  <admst:variable name="Pp" select="%(branch/pnode/name)"/>
+  <admst:variable name="Pn" select="%(branch/nnode/name)"/>
 
   <admst:choose> 
     <admst:when test="..[dynamic='yes']">
@@ -7999,12 +7906,9 @@ and name!='initializeInstance')]">
 <!-- ------------------------------------------------ -->
 <admst:template match="jacobian2s">
 <admst:message test="[/dbg_xml='yes']" format="*(tr_eval)jacobian2s*\n"/>
-  <admst:value-of select="branch/pnode/name"/>
-  <admst:value-of select="../../lhs/branch/nnode/name"/>
-  <admst:value-of select="../../lhs/branch/pnode/name"/>
-  <admst:variable name="Sp" select="%s"/>
-  <admst:variable name="Sn" select="%s"/>
-  <admst:variable name="Pp" select="%s"/>
+  <admst:variable name="Sp" select="%(../../lhs/branch/pnode/name)"/>
+  <admst:variable name="Sn" select="%(../../lhs/branch/nnode/name)"/>
+  <admst:variable name="Pp" select="%(branch/pnode/name)"/>
   <admst:choose> 
     <admst:when test="..[dynamic='yes']">
 	{ // former_eval_dynamic_jacobian2s  
