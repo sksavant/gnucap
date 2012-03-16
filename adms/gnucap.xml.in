@@ -7784,7 +7784,7 @@ and name!='initializeInstance')]">
 	        double ep=$ep; 
 	        double geq=(ep)*(CKTag0);
 	        double ceq=geq*NP($Pp);
-	        it0[n_$Sp]-=ceq;
+	        it0[n_$Sp] += ceq; // recheck, if it really (-) * (-)
 
 		<admst:text test="[$eval_mode='tr']" format="\t\t_write_ptr($Sp, $Pp, geq);\n"/>
 		<admst:text test="[$eval_mode='ac']" format="\t\t_write_JS($Sp, $Pp, ep);\n"/>
@@ -7796,7 +7796,7 @@ and name!='initializeInstance')]">
 	// jacobian1($(Sp), $(Pp), $(ep)) - static
 	{
 		double ep=$ep;
-		it0[n_$Sp]-=ep*NP($Pp);
+		it0[n_$Sp] += ep*NP($Pp); // recheck, if it really (-) * (-)
 
 		<admst:text test="[$eval_mode='tr']" format="\t\t_write_ptr($Sp, $Pp, ep);\n"/>
 		<admst:text test="[$eval_mode='ac']" format="\t\t_write_JS($Sp, $Pp, ep);\n"/>
@@ -7812,55 +7812,49 @@ and name!='initializeInstance')]">
   <admst:variable name="Sn" select="%(../../lhs/branch/nnode/name)"/>
   <admst:variable name="Pp" select="%(branch/pnode/name)"/>
   <admst:variable name="Pn" select="%(branch/nnode/name)"/>
+
   <admst:choose> 
+
     <admst:when test="..[dynamic='yes']">
-	{  // former_eval_dynamic_jac4
+	// jacobian4($(Sp), $(Sn), $(Pp), $(Pn), $(ep)) - dynamic
+	{
 		double ep=$ep; 
 		double geq=(ep)*(CKTag0);
-		double ceq=geq*BP($Pp,$Pn);
-		// _eval_static_residual2($Sn, $Sp, ceq)
+		double ceq=geq*BP($Pp,$Pn);		
 		it0[$(node_prefix)$Sp]+=ceq;
 		it0[$(node_prefix)$Sn]-=ceq;
-      <admst:if test="[$eval_mode='tr']">
-        _write_ptr($Sp, $Pp, geq);
-        _write_ptr($Sn, $Pn, geq);
-        _write_ptr($Sp, $Pn, -geq);
-        _write_ptr($Sn, $Pp, -geq);
-      </admst:if>
-      <admst:if test="[$eval_mode='ac']">
-        _write_JD($Sp, $Pp, ep);
-        _write_JD($Sn, $Pn, ep);
-        _write_JD($Sp, $Pn, -ep);
-        _write_JD($Sn, $Pp, -ep);
-      </admst:if>
-      }
-
+		
+		<admst:text test="[$eval_mode='tr']" format="\t\t_write_ptr($Sp, $Pp, geq);\n"/>
+		<admst:text test="[$eval_mode='tr']" format="\t\t_write_ptr($Sn, $Pn, geq);\n"/>
+		<admst:text test="[$eval_mode='tr']" format="\t\t_write_ptr($Sp, $Pn, -geq);\n"/>
+		<admst:text test="[$eval_mode='tr']" format="\t\t_write_ptr($Sn, $Pp, -geq);\n"/>
+		<admst:text test="[$eval_mode='ac']" format="\t\t_write_JD($Sp, $Pp, ep);\n"/>
+		<admst:text test="[$eval_mode='ac']" format="\t\t_write_JD($Sn, $Pn, ep);\n"/>
+		<admst:text test="[$eval_mode='ac']" format="\t\t_write_JD($Sp, $Pn, -ep);\n"/>
+		<admst:text test="[$eval_mode='ac']" format="\t\t_write_JD($Sn, $Pp, -ep);\n"/>
+	}
     </admst:when>
+
     <admst:otherwise>
-	{ // former_eval_stat_j4 
+	// jacobian4($(Sp), $(Sn), $(Pp), $(Pn), $(ep)) - static
+	{
 		double ep=$ep; 
-      // _eval_static_residual2($Sp,$Sn,-ep*BP($Pp,$Pn));
 		it0[$(node_prefix)$Sp]+= ep*BP($Pp,$Pn);
 		it0[$(node_prefix)$Sn]-= ep*BP($Pp,$Pn);
-
-      <admst:if test="[$eval_mode='tr']">
-        _write_ptr($Sp, $Pp, ep);
-        _write_ptr($Sn, $Pn, ep);
-        _write_ptr($Sp, $Pn, -ep);
-        _write_ptr($Sn, $Pp, -ep);
-      </admst:if>
-
-      <admst:if test="[$eval_mode='ac']">
-          _write_JS($Sp, $Pp, ep);
-          _write_JS($Sn, $Pn, ep);
-          _write_JS($Sp, $Pn, -ep);
-          _write_JS($Sn, $Pp, -ep);
-        </admst:if>
-        }
-
+		<admst:text test="[$eval_mode='tr']" format="\t\t_write_ptr($Sp, $Pp, ep);\n"/>
+		<admst:text test="[$eval_mode='tr']" format="\t\t_write_ptr($Sn, $Pn, ep);\n"/>
+		<admst:text test="[$eval_mode='tr']" format="\t\t_write_ptr($Sp, $Pn, -ep);\n"/>
+		<admst:text test="[$eval_mode='tr']" format="\t\t_write_ptr($Sn, $Pp, -ep);\n"/>
+		<admst:text test="[$eval_mode='ac']" format="\t\t_write_JD($Sp, $Pp, ep);\n"/>
+		<admst:text test="[$eval_mode='ac']" format="\t\t_write_JD($Sn, $Pn, ep);\n"/>
+		<admst:text test="[$eval_mode='ac']" format="\t\t_write_JD($Sp, $Pn, -ep);\n"/>
+		<admst:text test="[$eval_mode='ac']" format="\t\t_write_JD($Sn, $Pp, -ep);\n"/>
+	}
     </admst:otherwise>
+
   </admst:choose>
 </admst:template>
+
 <admst:template match="jacobian2p">
 <admst:message test="[/dbg_xml='yes']" format="*(tr_eval)jacobian2p*\n"/>
   <admst:variable name="Sp" select="%(../../lhs/branch/pnode/name)"/>
