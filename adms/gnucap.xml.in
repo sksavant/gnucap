@@ -2759,7 +2759,8 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
 </admst:template>
 
 <!-- ----------------------------------------------------------------- -->
-<admst:template match="contribution:nonoise">
+<!-- not in use / old version -->
+<!--admst:template match="contribution:nonoise">
 <admst:message test="[/dbg_xml='yes']" format="*(ngspvers)contribution:nonoise*\n"/>
   <admst:if test="rhs[not(nilled(function[class='builtin']))]">
     <admst:choose>
@@ -2849,7 +2850,7 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
       <admst:text format="#endif /* _DYNAMIC */\n"/>
     </admst:if>
   </admst:if>
-</admst:template>
+</admst:template-->
 
 <!-- ----------------------------------------------------------------- -->
 <admst:template match="function:assert:noarg">
@@ -5171,7 +5172,6 @@ and name!='initializeInstance')]">
     </admst:when>
     <admst:otherwise>
 
-      <admst:text select="." format=" // contrib -&gt; nonoise \n"/>
       <admst:apply-templates select="." match="contribution:nonoise"/>
     </admst:otherwise>
   </admst:choose>
@@ -7710,7 +7710,6 @@ and name!='initializeInstance')]">
 <!-- ---------------------------------------------------------- -->
 <admst:template match="contribution:nonoise">
 <admst:message test="[/dbg_xml='yes']" format="*(tr_eval)contribution:nonoise*\n"/>
-  <admst:text format="// contribution ... \n"/>
   <admst:if test="rhs[not(nilled(function[class='builtin']))]">
     <admst:choose>
       <admst:when test="[dynamic='yes']">
