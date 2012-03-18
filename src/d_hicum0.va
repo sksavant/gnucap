@@ -456,7 +456,6 @@ module hicum0 (c,b,e,s,tnode);
 
   	real	Qbci,Qbe,Qbici,Qbiei;
 //Declaration of the variables: end
-	real test;
 
   
 //
@@ -465,7 +464,6 @@ module hicum0 (c,b,e,s,tnode);
 
 analog begin
 	@ initial_step begin
-		test=5;
 	end
 
 // assign voltages with regard to transistor type
