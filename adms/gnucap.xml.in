@@ -214,7 +214,7 @@ public: // parameters
 	std::string param_name(int i, int j)const;
 	std::string param_value(int i) const; 
 	void set_param_by_index(int, std::string&, int);	
-	void Set_param_by_name(std::string Name, std::string Value);
+	void set_param_by_name(std::string Name, std::string Value);
 	bool IsParamGiven(const char *name) const;
 
 public:	
@@ -280,7 +280,7 @@ protected: // override virtual
 	uint_t int_nodes()const {return INTERNAL_NODES;}
 	CARD* clone()const {return new $(DEV_NAME)(*this);}
 	
-	void precalc_first();
+	//void precalc_first();
 	void expand();
 	void precalc_last();
 	void internal_precalc();
@@ -346,8 +346,6 @@ public:	// type
 	
 private: // parameters
 	void set_param_by_name(std::string Name, std::string Value);
-	void Set_param_by_name(std::string Name, std::string Value);
-	void Set_param_by_index(int, std::string&, int);
 	int param_count_dont_print()const {return common()->COMMON_COMPONENT::param_count();}
 
 protected: // implementation
@@ -677,10 +675,10 @@ void $(MODEL_NAME)::set_param_by_index(int i, std::string& value, int offset)
 	}
 }
 // -------------------------------------------------------------------------- //
-void $(MODEL_NAME)::Set_param_by_name(std::string name, std::string value)
+void $(MODEL_NAME)::set_param_by_name(std::string name, std::string value)
 {
 	<admst:for-each select="variable[input='yes']">
-	if( name == "%(name)" ) {%(name)=value;return;}
+	if( Umatch(name,"%(name)") ) {%(name)=value;return;}
 	</admst:for-each>
 	throw Exception_No_Match((std::string)__FILE__ + ": set_param_by_name: there is no parameter in $(MODEL_NAME) with such name:" + name);
 }
@@ -809,15 +807,7 @@ void $(DEV_NAME)::set_dev_type(const std::string& new_type)
 	_modelname = new_type;
 }
 // -------------------------------------------------------------------------- //
-void $(DEV_NAME)::Set_param_by_name(std::string /*Name*/, std::string /*new_value*/)
-{
-}
-// -------------------------------------------------------------------------- //
 void $(DEV_NAME)::set_param_by_name(std::string /*Name*/, std::string /*Value*/)
-{
-}
-// -------------------------------------------------------------------------- //
-void $(DEV_NAME)::Set_param_by_index(int /*i*/, std::string& /*new_value*/, int /*offset*/)
 {
 }
 // -------------------------------------------------------------------------- //
@@ -905,26 +895,13 @@ void $(DEV_NAME)::expand()
 	else
 	untested();
 }
+<!--
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::precalc_first()
 {
 	ADMS_BASE::precalc_first();
-
-        // push down parameters into spice data
-        // BUG BUG BUG, dont use mutable_common here!!!1
-	COMMON_SUBCKT* c = asserted_cast<COMMON_SUBCKT*>(mutable_common());
-	assert(c);
-	for (PARAM_LIST::iterator i = c->_params.begin(); i != c->_params.end(); ++i) 	
-		if (i->second.has_hard_value()) 
-			try 
-			{
-				Set_param_by_name(i->first, to_string(i->second.e_val(1,scope())));			
-			}
-			catch (Exception_No_Match&) 
-			{
-				error(bTRACE, long_label() + ": bad parameter: " + i->first + ", ignoring\n");
-			}
 }
+-->
 // -------------------------------------------------------------------------- //
 void $(DEV_NAME)::precalc_last()
 {
