@@ -55,7 +55,8 @@ public: // override virtuals
 		{itested(); assert(_component_proto); return _component_proto->clone();}
   void	precalc_first();
   void expand_last(){_frozen=true; untested();}
-  void	set_param_by_index(int, std::string&, int);
+  void set_param_by_index(int, string&, int);
+  void set_param_by_name(string Name, string Value);
   bool  param_is_printable(int)const;
   std::string value_name()const {return "";}
   std::string param_name(int)const;

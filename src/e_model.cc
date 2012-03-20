@@ -75,6 +75,12 @@ std::string MODEL_CARD::param_name(int i)const
   }
 }
 /*--------------------------------------------------------------------------*/
+void MODEL_CARD::set_param_by_name(std::string Name, std::string Value)
+{
+  if (Umatch (Name,"tnom")) { _tnom_c = Value; }
+  else{ CARD::set_param_by_name(Name,Value);}
+}
+/*--------------------------------------------------------------------------*/
 std::string MODEL_CARD::param_name(int i, int j)const
 {
   if (j == 0) {
