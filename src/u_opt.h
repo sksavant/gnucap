@@ -161,6 +161,8 @@ public:
   static double dtratio;    // ratio of max / min dt in transient analysis
   static bool rstray;	    // include stray resistors in models
   static bool cstray;	    // include stray capacitors in models
+  static bool trnoise;	    // tr noise
+  static bool filtercomp;   // compress filter history.
   static int harmonics;	    // number of harmonics in fourier analysis
   static double ttstepgrow; // limit of step size growth in transient analysis
   static double trstepgrow; // limit of step size growth in transient analysis
@@ -192,6 +194,7 @@ public:
 			    // 6=source stepping iteration limit
 			    // 7=worst case iteration limit
 			    // 8=trace nonconvergence start iteration
+  static int rndseed; // random seed.
   static int err;
 };
 /*--------------------------------------------------------------------------*/

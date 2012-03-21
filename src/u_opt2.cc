@@ -148,7 +148,8 @@ bool OPT::set_values(CS& cmd)
       || Get(cmd, "lub{ypass}",    &lubypass)
       || Get(cmd, "fbb{ypass}",	   &fbbypass)
       || Get(cmd, "tracel{oad}",   &traceload)
-      || Get(cmd, "tracewdtt",   &tracewdtt)
+      || Get(cmd, "tracewdtt",     &tracewdtt)
+      || Get(cmd, "filtercomp",    &filtercomp)
       || Get(cmd, "itermin",	   &itermin)
       || Get(cmd, "adporder",	   &adporder)
       || Get(cmd, "threads",	   &threads)
@@ -171,7 +172,7 @@ bool OPT::set_values(CS& cmd)
       || Get(cmd, "trstepcoef2",   &trstepcoef[2])
       || Get(cmd, "trstepcoef3",   &trstepcoef[3])
       || Get(cmd, "showall",	   &showall)
-      || Get(cmd, "foooo",	   &foooo)
+      || Get(cmd, "rndseed",	   &rndseed)
       || Get(cmd, "diode{flags}",  &diodeflags,  mOCTAL)
       || Get(cmd, "mos{flags}",    &mosflags,	mOCTAL)
       || Get(cmd, "quitconv{fail}",&quitconvfail)
@@ -279,6 +280,7 @@ void OPT::print(OMSTREAM& o)
   o << "  mode="   << mode;
   o << "  transits=" << transits;
   o << ((quitconvfail)?"  quitconvfail":"  noquitconvfail");
+  o << ((filtercomp)?"  filtercomp":"  nofiltercomp");
   o << "\n\n";
 
   o << "* iteration limiting and heuristics\n";

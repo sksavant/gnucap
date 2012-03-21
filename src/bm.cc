@@ -74,9 +74,11 @@ double EVAL_BM_ACTION_BASE::temp_adjust()const
 void EVAL_BM_ACTION_BASE::tr_final_adjust(FPOLY1* y, bool f_is_value)const
 {
   if (f_is_value) {
-    y->f1 = y->f0;
+    y->f1 = y->f0; // used by vs as value(now)...
     y->f0 = 0.;
   }else{
+	 // f0==offset
+	 // f1==linear coefficient
   }
   *y *= temp_adjust();
   y->f0 += _ooffset;

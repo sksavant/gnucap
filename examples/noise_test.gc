@@ -1,0 +1,23 @@
+spice
+
+.options filtercomp=yes
+
+V0   n0   0 noise r=1 amp=0.1 step=0.1m alpha=0
+V0.5 n0.5 1 noise r=1 amp=0.1 step=0.1m alpha=0.5
+V1   n1   2 noise r=1 amp=0.1 step=0.1m alpha=1
+V1.5 n1.5 3 noise r=1 amp=0.1 step=0.1m alpha=1.5
+V2   n2   4 noise r=1 amp=0.1 step=0.1m alpha=2
+V2.5 n2.5 5 noise r=1 amp=0.1 step=0.1m alpha=2.5
+
+.list
+
+V1 1 0 0.5
+V2 2 1 0.5
+V2 3 2 0.5
+V2 4 3 0.5
+V2 5 4 0.5
+
+.print tran v(n*) iter(0)
+
+.tr 0 50m 0.001m basic
+.end

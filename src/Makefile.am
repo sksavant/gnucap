@@ -92,7 +92,8 @@ endif
 BM_SRCS = \
 bm_complex.cc bm_cond.cc bm_exp.cc bm_fit.cc bm_generator.cc \
 bm_model.cc bm_poly.cc bm_posy.cc bm_pulse.cc bm_pwl.cc bm_sffm.cc \
-bm_sin.cc bm_tanh.cc bmm_table.cc bmm_semi.cc
+bm_sin.cc bm_tanh.cc bmm_table.cc bmm_semi.cc bm_noise.cc \
+bmm_filter.cc
 
 # utility commands, usually one file per command
 # some have multiple commands in a file
@@ -136,7 +137,7 @@ s__init.cc s__out.cc s__solve.cc \
 d_subckt.cc d_logic.cc d_logicmod.cc \
 e_base.cc e_card.cc e_node.cc e_model.cc e_compon.cc \
 e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc e_adplist.cc\
-bm_value.cc bm.cc \
+e_filter.cc bm_value.cc bm.cc \
 c__cmd.cc c_attach.cc c_file.cc c_genrat.cc c_debug.cc \
 c_nodeset.cc \
 findbr.cc plot.cc globals.cc e_adp.cc e_adp_mos.cc \
@@ -321,3 +322,5 @@ $(D_IVL_O): CPPFLAGS+= IVL_CPPFLAGS
 #
 # %.o: .deps/%.
 
+#tags:
+#	ctags -R --sort=yes --c++-kinds=+p --fields=+iaS --extra=+q --language-force=C++ -f tags .

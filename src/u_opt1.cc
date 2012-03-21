@@ -106,6 +106,8 @@ double	OPT::dtddc = 1e-8;
 double	OPT::dtratio = 1e9;
 bool	OPT::rstray = true;
 bool	OPT::cstray = true;
+bool	OPT::trnoise = true;
+bool	OPT::filtercomp = true;
 int	OPT::harmonics = 9;
 double	OPT::ttstepgrow = 1.1;
 double	OPT::trstepgrow = 1e99;
@@ -129,6 +131,8 @@ bool	OPT::case_insensitive = false;
 UNITS	OPT::units = uSI;
 double	OPT::lowlim = 1. - OPT::reltol;
 double	OPT::uplim = 1. + OPT::reltol;
+
+int OPT::rndseed = 0;
 
 int	OPT::itl[OPT::ITL_COUNT] = { 
 		100,	/* 0=dummy */
