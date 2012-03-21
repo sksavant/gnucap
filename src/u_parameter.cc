@@ -33,6 +33,13 @@
 using namespace std;
 // #include "d_rcd.h" // hack
 /*--------------------------------------------------------------------------*/
+PARA_BASE::PARA_BASE(const PARA_BASE& p ): _s(p._s){}
+/*--------------------------------------------------------------------------*/
+// fixme: back to header
+template <>
+PARAMETER<double>::PARAMETER(const PARAMETER<double>& p) : PARA_BASE(p), _v(p._v) 
+{  }
+/*--------------------------------------------------------------------------*/
 
 //template <>
 //MODEL_BUILT_IN_BTI PARAMETER<MODEL_BUILT_IN_BTI>::_NOT_INPUT(){ return MODEL_BUILT_IN_BTI() ;}

@@ -50,7 +50,8 @@ class PARA_BASE {
 
   public:
     PARA_BASE( ): _s(){}
-    PARA_BASE(const PARA_BASE& p ): _s(p._s){}
+    PARA_BASE(const PARA_BASE& p );
+
     PARA_BASE( const string s ): _s(s){}
     virtual ~PARA_BASE(){}
 
@@ -71,7 +72,7 @@ public:
   T _NOT_INPUT() const;
 
   explicit PARAMETER() : PARA_BASE(), _v(_NOT_INPUT()) {}
-  PARAMETER(const PARAMETER<double>& p) : PARA_BASE(p), _v(p._v) {}
+  PARAMETER(const PARAMETER<double>& p);
   // PARAMETER(const T&);
   explicit PARAMETER(T v) : PARA_BASE(), _v(v) {}
   //explicit PARAMETER(T v, const std::string& s) :_v(v), _s(s) {untested();}
@@ -124,7 +125,8 @@ private:
 };
 /*=========================*/
 /*=========================*/
-//template <class T>
+template <>
+PARAMETER<double>::PARAMETER(const PARAMETER<double>& p);
 //inline std::string PARAMETER<T>::string()const {
 //  if (_s == "#") {
 //    return to_string(_v);
