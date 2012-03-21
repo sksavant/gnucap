@@ -1,6 +1,4 @@
-/*$Id: d_vcvs.cc,v 1.7 2010-07-09 12:14:22 felix Exp $ -*- C++ -*-
- * vim:ts=8:sw=2:et:
- * Copyright (C) 2001 Albert Davis
+/* Copyright (C) 2001 Albert Davis
  * Author: Albert Davis <aldavis@gnu.org>
  *
  * This file is part of "Gnucap", the Gnu Circuit Analysis Package
@@ -132,3 +130,4 @@ DISPATCHER<CARD>::INSTALL d1(&device_dispatcher, "E|vcvs", &p1);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+// vim:ts=8:sw=2:et:
