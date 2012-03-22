@@ -135,7 +135,7 @@ void COMMON_COMPONENT::detach_common(COMMON_COMPONENT** from)
 void COMMON_COMPONENT::attach_model(const COMPONENT* d)const
 {
   assert(d);
-  trace0(("COMMON_COMPONENT::attach_model to " + d->short_label()).c_str() );
+  trace1("COMMON_COMPONENT::attach_model to ", d->short_label() );
 
   _model = d->find_model(modelname());
   assert(_model);
