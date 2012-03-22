@@ -8,6 +8,8 @@ gnucap_0.xml: gnucap.xml
 %.xml: %.xml.in 
 	convert_symb/convert $< -o $@ -addxml
 
+gnucap.xml: convert_symb/convert
+
 convert_symb/convert:
 	cd convert_symb/ && make
 
