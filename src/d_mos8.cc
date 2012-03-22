@@ -3144,6 +3144,11 @@ void MODEL_BUILT_IN_MOS8::tr_eval(COMPONENT* brh)const
       // assert(polarity*Vth>0);
 
       trace1("MOS8 delta", a->delta_vth);
+      if ( !(Vth<0 || a->delta_vth>=-1e-20)
+         ||!(Vth>0 || a->delta_vth<= 1e-20) ){
+        error(bDANGER,"mos8: dvth went wrong %E, %E\n", Vth, a->delta_vth);
+      }
+      assert(fabs(a->delta_vth)<10);
       Vth += a->delta_vth;
       d->von = Vth;
       
@@ -5196,13 +5201,13 @@ double DEV_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 
 }
 /*--------------------------------------------------------------------------*/
+// FIXME: put all this stuff into adp
 void MODEL_BUILT_IN_MOS8::do_stress_apply( COMPONENT* brh) const
 {
   // BUG: put into adp.
   trace2("MODEL_BUILT_IN_MOS8::do_stress_apply", brh->long_label(), _sim->_Time0);
-  deprecated();
 
-  // obsolete? maybe not.
+  // does the bti stuff, which is implemented for lower levels.
   MODEL_BUILT_IN_MOS_BASE::do_stress_apply(brh);
 
   DEV_BUILT_IN_MOS* d = asserted_cast<DEV_BUILT_IN_MOS*>(brh);
@@ -5218,22 +5223,22 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply( COMPONENT* brh) const
  // double H = .0001;
 
   if(use_hci()){
-    assert(a->hci_node);
-    if(!is_number( a->hci_node->tt() )){
+    assert(a->_raw_hci_node);
+    if(!is_number( a->_raw_hci_node->tt() )){
 
-      error(bDANGER, "!is_number tt, %E %E %i %i %i\n", _sim->_time0, _sim->_Time0, _sim->tt_iteration_number(),  a->hci_node->m_(),(int) hp(_sim->_tt) );
-      assert(is_number( a->hci_node->tt() ));
+      error(bDANGER, "!is_number tt, %E %E %i %i %i\n", _sim->_time0, _sim->_Time0, _sim->tt_iteration_number(),  a->_raw_hci_node->m_(),(int) hp(_sim->_tt) );
+      assert(is_number( a->_raw_hci_node->tt() ));
     }
     assert(is_number(a->delta_vth));
-    a->vthscale_hci = 1; //  exp ( 10000. * a->hci_node->get() / c->w_in );
-    a->vthdelta_hci = polarity * pow( a->hci_node->tt() , 0.3 );
+    a->vthscale_hci = 1; //  exp ( 10000. * a->_raw_hci_node->get() / c->w_in );
+    a->vthdelta_hci = polarity * pow( a->_raw_hci_node->tt() , 0.3 );
 
     if( -10 <  a->vthdelta_hci &&  a->vthdelta_hci <  10 ){
 
     }else{
       error(bDANGER, "wrong scope for a->vthdelta_hci, %f. "
-          " a->hci_node->tt()= %f \n",
-          a->vthdelta_hci, a->hci_node->tt() );
+          " a->_raw_hci_node->tt()= %f \n",
+          a->vthdelta_hci, a->_raw_hci_node->tt() );
     }
 
 //    a->delta_vth += a->vthdelta_hci;
@@ -5246,6 +5251,14 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply( COMPONENT* brh) const
 
   }
 
+}
+/*--------------------------------------------------------------------------*/
+ADP_BUILT_IN_MOS8::ADP_BUILT_IN_MOS8(const ADP_BUILT_IN_MOS8& a):
+    ADP_BUILT_IN_MOS(a),
+    vthscale_hci(a.vthscale_hci),
+    vthdelta_hci(a.vthdelta_hci),
+    _raw_hci_node(0) {
+      cout <<" copying adp8\n";
 }
 /*--------------------------------------------------------------------------*/
 
@@ -5267,3 +5280,4 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply( COMPONENT* brh) const
 /*------------------------------------------------------------------*/
 bool MODEL_BUILT_IN_MOS8::use_hci()const { return (((double)h0 != 0) && (h0!=NA)); }
 /*--------------------------------------------------------------------------*/
+// vim:ts=8:sw=2:et:

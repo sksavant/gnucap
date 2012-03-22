@@ -320,6 +320,9 @@ if test "$enable_debug" = "yes" ; then
 else
 	CPPFLAGS="$CPPFLAGS -DNDEBUG"
 fi
+
+dnl cleanup flags
+
 # if we have gcc and we've asked for debugging then add lots of -W
 if test "x$GCC" = "xyes" -a "$enable_debug" = "yes"; then
 	for flag in -DTRACE_UNTESTED -Wall -W -Wno-sign-compare \

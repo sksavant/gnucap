@@ -91,6 +91,7 @@ public:
 
 
   TIME_PAIR tt_review() const;
+  ADP_LIST& tr_accept();
 
   TIME_PAIR tt_preview();
 

@@ -212,9 +212,6 @@ void SIM_DATA::order_comp( const CARD_LIST* scope, unsigned *c, bool *d)
         assert(un<_total_nodes+1);
       }
     }
-
-
-
   }
 
   if (cleanup){
@@ -275,13 +272,20 @@ void SIM_DATA::order_tree( const CARD_LIST* scope, unsigned *c)
         delete c;
   }
 }
-/*--------------------------------------------------------------------------*/
-int SIM_DATA::init_node_count(int user, int sub, int mod) {
+/*--------------------------------------------------------------------------
+int SIM_DATA::init_node_count( const CARD_LIST* l ) { //int user, int sub, int mod) {
   trace3("SIM_DATA::init_node_count", user, sub, mod);
-  _user_nodes=user; _subckt_nodes=sub; _model_nodes=mod;
-  return (_total_nodes = user+sub+mod);
+
+  _user_nodes=_subckt_nodes=_model_nodes=_adp_nodes=0;
+
+  l->init_node_count( &_user_nodes, &_subckt_nodes, &_model_nodes, &_adp_nodes);
+
+  assert(_subckt_nodes==0);
+  assert(_model_nodes==0);
+
+  return (_total_nodes = _user_nodes);
 }
-/*--------------------------------------------------------------------------*/
+--------------------------------------------------------------------------*/
 /* init: allocate, set up, etc ... for any type of simulation
  * also called by status and probe for access to internals and subckts
  */
@@ -291,9 +295,10 @@ void SIM_DATA::init()
     trace1("SIM_DATA::init first", *CARD_LIST::card_list.nodes());
     uninit();
 
-    // fixme: this recursive.
-    // init_node_count(CARD_LIST::card_list.nodes()->how_many(), 0, 0);
-    init_node_count(CARD_LIST::card_list.total_nodes(), 0, 0);
+    init_node_count(CARD_LIST::card_list.total_nodes(),
+                    0, 0,
+                    // this is a temporary hack/workaround
+                    CARD_LIST::card_list.adp_nodes() );
 
     trace1("SIM_DATA::init expanding...", _total_nodes);
     CARD_LIST::card_list.expand();

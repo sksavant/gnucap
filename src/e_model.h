@@ -42,6 +42,7 @@ public:
 };
 /*--------------------------------------------------------------------------*/
 class INTERFACE MODEL_CARD : public CARD{
+  bool _frozen; // indicate no change since last _sim->init
 protected:
   explicit	MODEL_CARD(const MODEL_CARD& p);
 public:
@@ -53,6 +54,7 @@ public: // override virtuals
   CARD*	clone_instance()const   
 		{itested(); assert(_component_proto); return _component_proto->clone();}
   void	precalc_first();
+  void expand_last(){_frozen=true; untested();}
   void	set_param_by_index(int, std::string&, int);
   bool  param_is_printable(int)const;
   std::string value_name()const {return "";}
@@ -61,6 +63,7 @@ public: // override virtuals
   std::string param_value(int)const;
   int param_count()const {return (1 + CARD::param_count());}
 public:
+  bool frozen()const{return _frozen;}
   virtual void	tr_eval(COMPONENT*)const{unreachable();}
   virtual void	ac_eval(COMPONENT*)const{unreachable();}
   virtual COMMON_COMPONENT* new_common()const {return 0;}

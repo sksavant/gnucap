@@ -244,10 +244,12 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
 
   assert (E_low>=0);
 
-  if(((double)E_high < (double)E_low - 1e-18)){
+  if((double(E_high-E_low) < - 1e-18)){
     error(bDANGER,"MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last uin_high=%LE uin_low=%LE deltaE= %LE; %LE>%LE\n",
         uin_high, uin_low, E_high - E_low, E_high, E_low );
-    throw(Exception("order mismatch in exp"));
+
+    // this is very bad...
+    throw(Exception("monotony violation in __step"));
   }
 
   bool linear_inversion=false;
@@ -344,7 +346,7 @@ void MODEL_BUILT_IN_RCD_EXP::do_tr_stress_last( long double E, ADP_NODE* _c,
   if( ( E_old < E_high ) && ( E_low <= E_old ))
     _c->set_order(0);
 
-  if ((double)E_high<(double)E_low - 1.5e-19){
+  if (double(E_high-E_low) < - 1.5e-19){
     error( bDANGER, "MODEL_BUILT_IN_RCD_EXP:: sanitycheck (delta %LE ) in %s\n",
         E_high - E_low, dd->long_label().c_str());
     error( bDANGER, "MODEL_BUILT_IN_RCD_EXP:: sanitycheck (abs %LE ) in %s\n",
@@ -550,18 +552,18 @@ double MODEL_BUILT_IN_RCD_EXP::P( const COMPONENT* brh) const
   const DEV_BUILT_IN_RCD* d = prechecked_cast<const DEV_BUILT_IN_RCD*>(brh);
   const COMMON_BUILT_IN_RCD* c = prechecked_cast<const COMMON_BUILT_IN_RCD*>(brh->common());
   if( _sim->analysis_is_tt() ){
-    if(positive && (d->_Ccgfill->get_tt() < c->_zero)){
-      error(bDANGER,"%s not positive %f %f\n", brh->long_label().c_str(),double(d->_Ccgfill->get_tt()), double(c->_zero));
+    if(positive && (d->_Ccgfill->tt() < c->_zero)){
+      error(bDANGER,"RCD_EXP: not positive %s. tt: %f zero: %f\n", brh->long_label().c_str(), double(d->_Ccgfill->tt()), double(c->_zero));
     }
     return double (d->_tr_fill - (long double) c->_zero) * c->_weight;
-    // return (d->_Ccgfill->get_tt() - c->_zero) * c->_weight;
+    // return (d->_Ccgfill->tt() - c->_zero) * c->_weight;
   }else{
-    assert(is_number( d->_Ccgfill->get_tt() * c->_weight));
-    // return c->_Ccgfill->get_tt() * c->_weight * c->_wcorr;
+    assert(is_number( d->_Ccgfill->tt() * c->_weight));
+    // return c->_Ccgfill->tt() * c->_weight * c->_wcorr;
     //
     //FIXME. _tr_fill must be part of an ADP_NODE
     trace2("MODEL_BUILT_IN_RCD_EXP::dvth",  d->_tr_fill,  c->_weight  );
-    assert( d->_Ccgfill->get_tt() <=1 );
+    assert( d->_Ccgfill->tt() <=1 );
     assert( d->_tr_fill <=1 );
     return double((d->_tr_fill - c->_zero) * c->_weight);
   }

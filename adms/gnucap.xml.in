@@ -479,8 +479,11 @@ private: // nodes / matrix indexes
         //even states: _y
         // odd states: _i
 	
-	double NIintegrate(int qcap) { 
-		trace1("$(DEV_NAME)::NIintegrate", qcap);
+	double _DDT(double qq, unsigned stateno){
+		_states[0][stateno*2]=qq;
+		int qcap = stateno*2;
+
+		trace1("$(DEV_NAME)::_DDT, qcap=", qcap);
 		assert(_dt != 0.0);
 		METHOD method;
 		if( (_time[1]!=0) && (_method_a==mTRAP) ) method = mTRAP;
@@ -493,9 +496,9 @@ private: // nodes / matrix indexes
 		// stupid copy. fixme.
 		// gnucap stores things more usable.
 
-		for (unsigned ii = 0; ii < k; ii++) 
+		for (unsigned ii = 0; ii < k; ii++)
 		{
-			trace5("$(DEV_NAME)::NIintegrate", ii, _states[ii][qcap], _states[ii][qcap+1], _time[0], _time[1] );
+			trace5("$(DEV_NAME)::_DDT", ii, _states[ii][qcap], _states[ii][qcap+1], _time[0], _time[1] );
 			assert( _states[ii][qcap] == _states[ii][qcap] );
 			assert( _states[ii][qcap+1] == _states[ii][qcap+1] );
 			q[ii] = FPOLY1(NOT_VALID, _states[ii][qcap], 0.0);
@@ -509,14 +512,16 @@ private: // nodes / matrix indexes
 
 		_states[0][qcap+1] = i[0].f0;
 
+		if( _sim->analysis_is_static() )
+		{
+			assert(i[0].f0 == 0.0);
+			return(0);
+		}
+		else
+			untested();
+
 		return i[0].f0;
 	}
-
-	double _DDT(double q, unsigned stateno){
-		_states[0][stateno*2]=q;
-		return NIintegrate(stateno*2);\
-	}
-
 
 	void CKTterr(int qcap, double *time_step);	
 	
@@ -870,25 +875,21 @@ void $(DEV_NAME)::expand()
 
 	// fix up internal nodes
 	if (_sim->is_first_expand()) {
-
-	        <admst:text format="\t\tstd::string node_names[] = {"/>
+		std::string node_names[] = {
          	<admst:join select="node[grounded='no']" separator=", ">  
-            	        <admst:value-of select="name"/>  
-                    	<admst:text format="&quot;%s&quot;"/>    
+					<admst:value-of select="name"/>  
+					<admst:text format="&quot;%s&quot;"/>    
           	</admst:join>
-        	<admst:text format=" };"/>
-	  trace4("DEV_ADMS::expand nodes",  net_nodes() , max_nodes() , matrix_nodes(), int_nodes());
-            char fake_name[] = "a"; // FIXME: use real name
-                for(unsigned ii = net_nodes(); ii < matrix_nodes(); ++ii)
-                {
-                        if( !_n[ii].n_() )
-                       {       
-                                trace1("alloc internal node ", ii);
-                                
-                                //_n[ii].new_model_node('.' + long_label() + '.' + fake_name, this);
-                                _n[ii].new_model_node(node_names[ii], this);
+				};
+		trace4("DEV_ADMS::expand nodes",  net_nodes() , max_nodes() , matrix_nodes(), int_nodes());
+		//		char fake_name[] = "a"; // FIXME: use real name
+		for(unsigned ii = net_nodes(); ii < matrix_nodes(); ++ii) {
+			if( !_n[ii].n_() ) {       
+				trace1("alloc internal node ", ii);
+				//_n[ii].new_model_node('.' + long_label() + '.' + fake_name, this);
+				_n[ii].new_model_node(node_names[ii], this);
 			}
-			++(*fake_name);
+			//++(*fake_name);
 		}
 
 	   // int start_internal = 0;

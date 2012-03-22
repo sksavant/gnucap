@@ -574,8 +574,9 @@ void MODEL_BUILT_IN_MOS_BASE::do_tr_stress( const COMPONENT* c ) const
 void MODEL_BUILT_IN_MOS_BASE::do_tt_prepare( COMPONENT* c) const
 {
   trace0 ( "MODEL_BUILT_IN_MOS_BASE::tt_prepare" );
-  if ( c->adp() == NULL ) {
+  if ( !c->adp() ) {
     c->attach_adp( new_adp( c ) );
+    assert(false);
     std::cerr << "MODEL_BUILT_IN_MOS_BASE::tt_prepare: error. not already adp (?)\n";
   } else{
   }
@@ -583,16 +584,17 @@ void MODEL_BUILT_IN_MOS_BASE::do_tt_prepare( COMPONENT* c) const
   // _adp->tt_prepare( );
 }
 /*--------------------------------------------------------------------------*/
+// apply stress from nodes to adp
 void MODEL_BUILT_IN_MOS_BASE::do_stress_apply( COMPONENT* c ) const
 {
   const COMMON_COMPONENT* cc = c->common();
   cc=cc;
   ADP_BUILT_IN_MOS* a = (ADP_BUILT_IN_MOS*) c->adp();
   const DEV_BUILT_IN_MOS* d = (DEV_BUILT_IN_MOS*)(c);
+  assert(a);
 
   a->delta_vth= 0;
   assert(d);
-  assert(a);
 
   a->vthscale_bti = 1; //  exp ( 10000. * a->hci_stress->get() / c->w_in );
   a->vthdelta_bti = 0;
@@ -600,7 +602,12 @@ void MODEL_BUILT_IN_MOS_BASE::do_stress_apply( COMPONENT* c ) const
   if(use_bti()){
     DEV_BUILT_IN_BTI* B = dynamic_cast<DEV_BUILT_IN_BTI*>(d->_BTI);
     assert(B);
-    a->delta_vth += B->dvth();
+    double dvth_bti = B->dvth();
+    if (dvth_bti<0) {
+      dvth_bti = 0;
+      untested();
+    }
+    a->delta_vth += dvth_bti;
   }
   trace1("MODEL_BUILT_IN_MOS_BASE::do_stress_apply()", a->delta_vth);
 }

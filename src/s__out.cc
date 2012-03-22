@@ -243,6 +243,7 @@ bool SIM::verify(void)
  */
 void SIM::store_results(double x)
 {
+  assert(_sim->_mode!=s_TTT); 
   int ii = 0;
   for (PROBELIST::const_iterator
 	 p=storelist().begin();  p!=storelist().end();  ++p) {

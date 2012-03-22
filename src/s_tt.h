@@ -20,7 +20,8 @@ class TTT : public TRANSIENT {
       _Tstop(0.),
       _Tstep(0.),
       _timesteps(0),
-      _tt_cont(false),
+		_new(false),
+		_cont_tt(false),
       _fdata_tt(NULL),
       _tt_store(0)
   { }
@@ -51,8 +52,8 @@ class TTT : public TRANSIENT {
     void	outdata_tt(double);
     void	outdata_b4(double);
     bool	review_tt();
-    void begin();
-    void cont();
+    void tt_begin(); // from BASE
+    void tt_cont();
     void	options(CS&);
     void	sweep();
 	 void do_initial_dc();
@@ -60,7 +61,10 @@ class TTT : public TRANSIENT {
     double get_new_dT();
     void	accept_tt();
     void	print_head_tr();
+
+	 // FIXME: private could inhibit call from within TRANSIENT....
     void	head(double,double,const std::string&);
+
     void	head_tt(double,double,const std::string&);
     void	set_step_tt_cause(STEP_CAUSE);
     void	first();
@@ -86,7 +90,8 @@ class TTT : public TRANSIENT {
     double _Time1;
     int    steps_total_tt;
 	 double behaviour_time();
-	 bool _tt_cont;	
+	 bool _new;	 // reset to fresh devices. (and do initial dc)
+	 bool _cont_tt; // continue with adps
     double time_by_voltages();
     double _time_by_adp;
     double _dT_by_adp;

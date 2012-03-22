@@ -75,7 +75,12 @@ void ADP_BUILT_IN_MOS::tr_accept(){
 	}
 
 	if(_sim->_time0 <= _tr_last_acc) {
-			error(bWARNING, "tr ADP accepting twice %s\n", d->long_label().c_str());
+		if(_sim->_time0){
+			error(bWARNING, "tr ADP accepting twice %s time0 %E\n", d->long_label().c_str(), _sim->_time0);
+			// assert(false);
+		}else{
+//			FIXME!!
+		}
 	}
 
 	_tr_last_acc = _sim->_time0;
@@ -85,8 +90,6 @@ void ADP_BUILT_IN_MOS::tt_commit()
 {
 	assert(false);
 	unreachable();
-
-
 }
 /*--------------------------------------------------------------------------*/
 double ADP_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
@@ -97,6 +100,7 @@ double ADP_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
 	} else if( Umatch("dvth_bti ", x) ) {
 		return vthdelta_bti;
 	}else{
+		untested();
 		return 888;   //    return ADP_BUILT_IN_MOS::tr_probe_num(x); diode?
 	}
 
@@ -105,7 +109,8 @@ double ADP_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
 /*--------------------------------------------------------------------------*/
 ADP_BUILT_IN_MOS::ADP_BUILT_IN_MOS( COMPONENT* c, const std::string n) :
 	ADP_BUILT_IN_DIODE(c,n),
-	bti_stress(0), _tr_last_acc(-inf)
+	bti_stress(0),
+  	_tr_last_acc(-inf)
 {init(c);}
 /*--------------------------------------------------------------------------*/
 //expand?
@@ -133,8 +138,7 @@ void ADP_BUILT_IN_MOS::init(const COMPONENT* c)
 
 	vthscale_bti = 1;
 	vthdelta_bti = 0;
-
-	delta_vth=0;
+	delta_vth = 0;
 
 	btistress_taken = 0;
 	bti_eff_voltage = 0;
@@ -169,10 +173,12 @@ void ADP_BUILT_IN_MOS::tr_stress_last() {
 /*--------------------------------------------------------------------------*/
 double ADP_BUILT_IN_MOS8::tt_probe_num(const std::string& x)const
 {
-	if( Umatch("hci ", x) ){
+	trace1("ADP_BUILT_IN_MOS8::tt_probe_num", x);
+	if( Umatch("hci|dvth_hci ", x) ){
+		assert(fabs(vthdelta_hci)<10);
 		return vthdelta_hci;
 	} else if( Umatch("hci_raw ", x) ) {
-		if(hci_node) return hci_node->tt();
+		if(_raw_hci_node) return _raw_hci_node->tt();
 	} else if( Umatch("dvth_hci ", x) ) {
 		return vthdelta_hci;
 	}else{
@@ -189,6 +195,9 @@ void ADP_BUILT_IN_MOS8::tr_accept(){
 	//ADP_BUILT_IN_MOS8* a = (ADP_BUILT_IN_MOS8*) this;
 	trace4("ADP_BUILT_IN_MOS8::tr_accept ", m->polarity, _sim->_time0, d->long_label(), m->use_hci() );
 	ADP_BUILT_IN_MOS::tr_accept();
+
+	/// =---------------------------
+	//tr_stress(){
 
 	//  const COMMON_BUILT_IN_MOS* cprime = prechecked_cast<const COMMON_BUILT_IN_MOS*>(d->common());
 	const SDP_BUILT_IN_MOS8* s = prechecked_cast<const SDP_BUILT_IN_MOS8*>(c->sdp());
@@ -245,9 +254,9 @@ void ADP_BUILT_IN_MOS8::tr_accept(){
 
 		}
 
-		_hci_tr += hcis *  _sim->_dt0  ;
+		_hci_tr += hcis * _sim->_dt0  ;
 
-		//    a->hci_node->add_tr( hcis );
+		//    a->_raw_hci_node->add_tr( hcis );
 
 	} // end hci
 
@@ -257,13 +266,20 @@ void ADP_BUILT_IN_MOS8::tr_accept(){
 /*--------------------------------------------------------------------------*/
 double ADP_BUILT_IN_MOS8::tr_probe_num(const std::string& x)const
 {
+	trace1("ADP_BUILT_IN_MOS8::tr_probe_num", x);
 	double ret=771;
-	if( Umatch("hci_raw ", x) ){
-		if(hci_node) ret= _hci_tr;
-	}else	if( Umatch("hci ", x) ){
-		if(!hci_node) return -1;
-		ret= hci_node->tr();
+	if( Umatch(x, "hci_raw ") ){
+		if(_raw_hci_node) ret= _hci_tr;
+	}else	if( Umatch(x, "hci_tt ") ){
+		if(_raw_hci_node) ret= _raw_hci_node->tt();
+	}else	if( Umatch(x, "hci ") ){
+		assert(fabs(vthdelta_hci)<10);
+		trace1("ADP_BUILT_IN_MOS8::tr_probe_num",vthdelta_hci); 
+		return vthdelta_hci;
+		//if(!_raw_hci_node) return -1;
+		//ret= _raw_hci_node->tr();
 	} else {
+		trace0("ADP_BUILT_IN_MOS8::tr_probe_num, fallback");
 		ret= ADP_BUILT_IN_MOS::tr_probe_num(x);
 	}
 
@@ -279,9 +295,9 @@ void ADP_BUILT_IN_MOS8::tt_advance() {
 	const COMMON_BUILT_IN_MOS* c = asserted_cast<const COMMON_BUILT_IN_MOS*>(d->common());
 	const MODEL_BUILT_IN_MOS8* m = asserted_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
 	if (m->use_hci()){
-		assert(hci_node);
+		assert(_raw_hci_node);
 		_hci_tr=0;
-		hci_node->set_tr( 0 );
+		_raw_hci_node->set_tr( 0 );
 	}
 }
 /*--------------------------------------------------------------------------*/
@@ -293,12 +309,18 @@ void ADP_BUILT_IN_MOS8::tt_begin()
 	trace3("ADP_BUILT_IN_MOS8::tt_begin", long_label(), m->use_hci(), _sim->tt_iteration_number());
 
 	if (m->use_hci()){
-		assert(hci_node);
-		hci_node->tt_set(0);
-		hci_node->set_tr(-inf);
-		_hci_tr=0;
-		vthdelta_hci=0;
-		vthscale_hci=0;
+		assert(_raw_hci_node);
+		trace1("ADP_BUILT_IN_MOS8::tt_begin",hp( _raw_hci_node));
+		_raw_hci_node->tt_set(0);
+		if (_sim->_tt_uic){
+			_raw_hci_node->set_tr(0);
+		}else{
+			_raw_hci_node->set_tr(0); untested();
+			_raw_hci_node->set_tt(0); untested();
+		}
+		_hci_tr = 0;
+		vthdelta_hci = 0;
+		vthscale_hci = 0;
 	}
 	q_eval();
 }
@@ -314,19 +336,19 @@ void ADP_BUILT_IN_MOS8::tr_stress_last() {
 	if(m->use_hci()){
 		trace2("ADP_BUILT_IN_MOS8::tr_stress_last hci", _sim->last_time(), _hci_tr/_sim->last_time() );
 
-		hci_node->tt() += _hci_tr; // tt at last_Time.
-		hci_node->set_tr(double(_hci_tr/_sim->last_time()));  // tr= d(tt)/dt
+		_raw_hci_node->tt() += _hci_tr; // tt at last_Time.
+		_raw_hci_node->set_tr(double(_hci_tr/_sim->last_time()));  // tr= d(tt)/dt
 
 		if(!_sim->last_time()){
 			assert(_sim->phase() == p_PD);
-			hci_node->set_tr(0);
+			_raw_hci_node->set_tr(0);
 		}
 
-		assert(is_number(hci_node->tr()));
-		hci_node->set_tr_noise(0 );
-		trace2("ADP_BUILT_IN_MOS8::tr_stress_last", hci_node->tt(), hci_node->tr());
+		assert(is_number(_raw_hci_node->tr()));
+		_raw_hci_node->set_tr_noise(0 );
+		trace2("ADP_BUILT_IN_MOS8::tr_stress_last", _raw_hci_node->tt(), _raw_hci_node->tr());
 		_hci_tr = 0;
-		vthdelta_hci = pow(hci_node->tt(),0.3);
+		vthdelta_hci = pow(_raw_hci_node->tt(),0.3);
 	}
 	else{
 		trace1("ADP_BUILT_IN_MOS8::tr_stress_last no hci", _hci_tr);
@@ -343,56 +365,57 @@ void ADP_BUILT_IN_MOS8::stress_apply() {
 	if (m->use_hci()){
 		// FIXME: use adp_node for extrapolation... ??
 
-		double eff_now = hci_node->tr( _sim->_Time0 ); // fixme: faster?
-		double eff_last_timeframe = hci_node->tr( _sim->_last_Time  ); 
+		double eff_now = _raw_hci_node->tr( _sim->_Time0 ); // fixme: faster?
+		double eff_last_timeframe = _raw_hci_node->tr( _sim->_last_Time  ); 
 
-		trace5("ADP_BUILT_IN_MOS8::stress_apply", eff_last_timeframe, eff_now, hci_node->tt1(), hci_node->order(), hci_node->tr1() );
-
+		trace5("ADP_BUILT_IN_MOS8::stress_apply", eff_last_timeframe, eff_now, _raw_hci_node->tt1(), _raw_hci_node->order(), _raw_hci_node->tr1() );
 		double ex_time =  _sim->_dT0 - _sim->last_time(); // stress that long
-
 		if(fabs(ex_time)<=1e-18) ex_time=0;
-
 		if(_sim->phase() == p_PD){
 			ex_time = 0;
 		}
 
 		assert(ex_time>=0);
 
-		// stress is integral_{ex_time}  eff1
-
-		double hci_new =  hci_node->tt1(); // tt @ last_Time (?)
+		double hci_new = _raw_hci_node->tt1(); // tt @ last_Time (?)
+		if (!_raw_hci_node->order()){
+			untested();
+			hci_new = _raw_hci_node->tt();
+		}
 
 		if (!is_number(hci_new)){
-			error(bDANGER, "ADP_BUILT_IN_MOS8::stress_apply hci hist bug Time0 %E last %E ordr %i \n", _sim->_Time0, _sim->_last_Time, hci_node->order() );
+			error(bDANGER, "ADP_BUILT_IN_MOS8::stress_apply hci hist bug Time0 %E last %E ordr %i \n", _sim->_Time0, _sim->_last_Time, _raw_hci_node->order() );
 			assert(is_number(hci_new));
 		}
 
 		// order>1?
-		if(hci_node->order()>0)
+		if(_raw_hci_node->order()>0){
+			assert(is_number(eff_last_timeframe));
 			hci_new += ex_time * (  eff_last_timeframe + eff_now ) / 2.0 ;
+		}
 		else
 			hci_new += ex_time * (  eff_now ) ;
 
 
 		if(_sim->phase() == p_PD) {
 			//hack ?
-			 hci_new =  hci_node->tt1();
+			 hci_new =  _raw_hci_node->tt1();
 		} 
 
 		if (!is_number(hci_new)){
-			error(bDANGER, "mos8 stress_apply Time0 %E last %E ordr %i, %f, ex_time %f eff_now %f \n", _sim->_Time0, _sim->_last_Time, hci_node->order(), hci_node->tt1(), ex_time, eff_now  );
+			error(bDANGER, "mos8 stress_apply Time0 %E last %E ordr %i, %f, ex_time %f eff_now %f \n", _sim->_Time0, _sim->_last_Time, _raw_hci_node->order(), _raw_hci_node->tt1(), ex_time, eff_now  );
 			assert(is_number(hci_new));
 		}
 
-		hci_node->tt() = 0;
-		hci_node->tt() = (double) hci_new;
+		_raw_hci_node->tt() = (double) hci_new;
 		assert(!_hci_tr);
 
-		vthdelta_hci = pow(hci_node->tt(),0.3);
+		vthdelta_hci = pow(_raw_hci_node->tt(),0.3);
 	}
 	if(m->use_bti()){
-		 bti_stress->set_tt(0); //unused node
-		 bti_stress->set_tr(0); //unused node
+		incomplete();
+		bti_stress->set_tt(0); //unused node
+		bti_stress->set_tr(0); //unused node
 	}
 	q_eval();
 }
@@ -409,18 +432,18 @@ void ADP_BUILT_IN_MOS8::init(const COMPONENT* d)
   // ADP_BUILT_IN_MOS::init(d);
 
   if ( m->use_hci()){
-    assert(!hci_node);
-    hci_node = scope()->nodes()->new_adp_node( "hci", d );
+    assert(!_raw_hci_node);
+    _raw_hci_node = scope()->nodes()->new_adp_node( "raw_hci", d );
 
     // done in init
-    // ADP_NODE_LIST::adp_node_list.push_back( hci_node );
+    // ADP_NODE_LIST::adp_node_list.push_back( _raw_hci_node );
 
     vthdelta_hci = 0;
     vthscale_hci = 1;
 
   }else{
     vthdelta_hci = vthscale_hci = NAN;
-    hci_node = NULL;
+    _raw_hci_node = NULL;
   }
 	//  vto=m->vto;
 	//

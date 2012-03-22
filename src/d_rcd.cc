@@ -826,10 +826,6 @@ void DEV_BUILT_IN_RCD::expand()
   // _tr_fill = _Ccgfill->get();
 }
 /*==================================*/
-ADP_NODE_RCD* MODEL_BUILT_IN_RCD::new_adp_node(const COMPONENT*) const{
-  unreachable();
-  return NULL;
-}
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::expand_sym() {
   assert(_n);
@@ -1025,6 +1021,8 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
     return  static_cast<double>(region());
   }else if (Umatch(x, "ulo |vlo ")) {
     return  ( _Ccgfill->tr_lo );
+  }else if (Umatch(x, "uin")) {
+    return involts();
   }else if (Umatch(x, "uhi |vhi ")) {
     return  ( _Ccgfill->tr_hi );
   }else if (Umatch(x, "tra ")) {
@@ -1061,10 +1059,6 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "uref ")) {
     return  ( c->Uref );
   }else if (Umatch(x, "P ")) {
-    return  ( P() );
-  }else if (Umatch(x, "dvth |vth ")) {
-    unreachable();
-    assert(is_number(  P() ));
     return  ( P() );
   }else if (Umatch(x, "vw{v} ")) {
     assert (c->_weight != .0);
@@ -1113,20 +1107,14 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   //
   // FIXME 
 
-  if (Umatch(x, "vw{v} "))
-  { unreachable(); // deprecated
-    return  ( P() );
-  } else if (Umatch(x, "dvth "))  {
-    unreachable(); //dep
-    return  ( P() );
-  } else if (Umatch(x, "P "))  {
+  if (Umatch(x, "P "))  {
     return P();
   } else if (Umatch(x, "vc "))  {
     if( m->use_net()){
       assert(false);
       return  ( _n[n_ic].v0() - _n[n_b].v0() );
     }else{
-      //  return _Ccgfill->get_tt();
+      //  return _Ccgfill->tt();
       //  depends on model!
       assert(is_number(  ( P() )));
       return  ( P() );
@@ -1134,7 +1122,7 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   }
   else if (Umatch(x, "net "   )) { return( (double ) m->use_net()); }
   else if (Umatch(x, "tr "    )) { return( _Ccgfill->tr_get() ); }
-  else if (Umatch(x, "tt "    )) { return( _Ccgfill->get_tt() ); }
+  else if (Umatch(x, "tt "    )) { return( _Ccgfill->tt() ); }
   else if (Umatch(x, "RE0 "    )) { return( c->_Re1 );}
   else if (Umatch(x, "RE1 "    )) { return( c->_Re0 );}
   else if (Umatch(x, "RC0 "    )) { return( c->_Rc1 );}
@@ -1313,7 +1301,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
 
   assert(_sim->_time0 == 0 || _sim->_mode==s_TRAN ); //?
 
-  trace4("DEV_BUILT_IN_RCD::stress_apply ",  _sim->_dT0, _Ccgfill->tt(), _sim->_Time0, _Ccgfill->tr() );
+  trace5("DEV_BUILT_IN_RCD::stress_apply ", long_label(), _sim->_dT0, _Ccgfill->tt(), _sim->_Time0, _Ccgfill->tr() );
   if(_sim->phase() == p_PD){
     untested();
     _Ccgfill->tr() = 0; // check: what is tr()?
@@ -1413,7 +1401,6 @@ void DEV_BUILT_IN_RCD::tr_stress()
     }
     return;
   }
-
 
   assert(is_number(involts()));
 
@@ -1579,12 +1566,12 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
   } 
   assert( _c->tr_lo <= _c->tr_hi );
 
-  trace3("DEV_BUILT_IN_RCD::tr_stress_last s ", _Ccgfill->get_tt(),
+  trace3("DEV_BUILT_IN_RCD::tr_stress_last s ", _Ccgfill->tt(),
       _Ccgfill->get_tr(), _Ccgfill->get_total() );
   // fixme. move to common.
   assert(is_number(_tr_fill));
   try{
-    // calculate udc
+    // calculate udc (will be put into cap->tr() ? )
     m->do_tr_stress_last(_tr_fill,_Ccgfill, this);
   }catch( Exception &e) {
     error(bDANGER, "%s\n", long_label().c_str());
@@ -1612,6 +1599,7 @@ void DEV_BUILT_IN_RCD::tr_stress_last()
    
   }else if ( cap->tr() > cap->tr_hi ) {
     untested();
+    trace2("DEV_BUILT_IN_RCD::tr_stress_last: aligning down", cap->tr(), cap->tr_hi );
     cap->set_order(0);
     cap->tr() = cap->tr_hi ;
   }
@@ -1650,6 +1638,7 @@ void DEV_BUILT_IN_RCD::tt_commit() { unreachable();
 // // probably nonsense. move to tt_advance/tt_begin
 void DEV_BUILT_IN_RCD::tt_prepare()
 {
+  assert(false);
   unreachable();
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
   assert(c);
@@ -1667,10 +1656,13 @@ void DEV_BUILT_IN_RCD::tt_prepare()
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::tt_begin()  {
   const COMMON_BUILT_IN_RCD* c = prechecked_cast<const COMMON_BUILT_IN_RCD*>(common());
-  trace1("DEV_BUILT_IN_RCD::tt_begin", c->_zero);
-  _tr_fill = c->_zero ;
 
-  _Ccgfill->set_tt(c->_zero);  // tt_load??
+  if (_sim->_tt_uic){
+  }else{
+    _Ccgfill->set_tt(c->_zero);
+  }
+
+  _tr_fill = _Ccgfill->tt();
   _Ccgfill->set_tr(-inf);
 
   _Ccgfill->tr_lo = inf;
@@ -1682,6 +1674,7 @@ void DEV_BUILT_IN_RCD::tt_begin()  {
   _lasts = -inf;
   q_eval();
 
+  trace4("DEV_BUILT_IN_RCD::tt_begin done", long_label(), c->_zero, _sim->_tt_uic, _Ccgfill->tt() );
 }
 ///*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_RCD::tr_begin(){
@@ -1725,16 +1718,68 @@ void DEV_BUILT_IN_RCD::precalc_last()  {
 }
 /*--------------------------------------------------------------------------*/
 /* Newton iterator. finding effective DC value */
-// should be part of MODEL?
+// should be part of MODEL? no
 long double COMMON_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, double E_in, double bound_lo, double bound_hi, COMPONENT* dd ) const
 {
   const MODEL_BUILT_IN_RCD* m = dynamic_cast<const MODEL_BUILT_IN_RCD*>(model());
-  return m->__uin_iter(uin,E_old, E_in,  bound_lo, bound_hi, dd );
+
+  long double res;
+
+  try{
+    res = m->__uin_iter( uin, E_old, E_in,  bound_lo, bound_hi, dd );
+
+  } catch( Exception e ){
+    untested();
+
+    assert(uin<=bound_hi);
+    assert(uin>=bound_lo);
+
+    return __uin_iter_bisect(uin, E_old, E_in, bound_lo, bound_hi, dd);
+
+  }
+
+  return res;
+}
+/*--------------------------------------------------------------------------*/
+long double COMMON_BUILT_IN_RCD::__uin_iter_bisect(long double& uin, double
+    E_old, double E_in, double bound_lo, double bound_hi, COMPONENT* ) const
+{
+  const MODEL_BUILT_IN_RCD* m = asserted_cast<const MODEL_BUILT_IN_RCD*>(model());
+  bool converged = false;
+
+  USE(uin);
+
+  double hi = bound_hi;
+  double lo = bound_lo;
+  long double Euin;
+
+  double h = BASE_SUBCKT::_sim->last_time();
+  double middle;
+
+  while(!converged){
+    assert(hi>-lo);
+    middle = (hi + lo)/2;
+    if ( hi-lo < 1e-10) break;
+
+    Euin = m->__step( middle, E_old, h, this );
+    if (Euin > E_in){
+      hi = middle;
+      continue;
+    }
+    if (Euin < E_in){
+      lo = middle;
+      continue;
+    }
+
+  }
+
+  return middle;
+
 }
 /*--------------------------------------------------------------------------*/
 long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, double E_in, double bound_lo, double bound_hi, COMPONENT* dd ) const
 {
-  long double E=(long double) E_in;
+  long double E = (long double) E_in;
   const COMMON_BUILT_IN_RCD* c = asserted_cast<const COMMON_BUILT_IN_RCD*>(dd->common());
   const MODEL_BUILT_IN_RCD* m = dynamic_cast<const MODEL_BUILT_IN_RCD*>(c->model());
   DEV_BUILT_IN_RCD* d = asserted_cast<DEV_BUILT_IN_RCD*>(dd);
@@ -1778,8 +1823,6 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
   bool D=true;
   bool U=true;
 
-
-
   assert(uin>=-0.001 || !m->positive);
   Euin = m->__step( uin, E_old, h, c );
   if(!is_number(Euin)) {
@@ -1794,7 +1837,6 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
     iterlimit=500;
   }
 
-
   trace2("COMMON_BUILT_IN_RCD::__uin_iter rel_tol", reltol, OPT::abstol);
   //while( ( A || ( B && C && D ) ) ) { // && fabs(Euin-E)>1e-40 )  }
   while( U || (( A && C ) || ( B && C && D ) ) ) { // && fabs(Euin-E)>1e-40 ) 
@@ -1802,12 +1844,13 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
     edge = false;
     trace7("COMMON_BUILT_IN _RCD::__uin_iter loop", (double)uin, (double)res, (double)deltaE, Edu, E, i,Euin);
     trace3(" ",dx_res,Q,df_fres);
-    if( i> iterlimit){
-      untested();
+    if( i >= iterlimit ){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge uin="
           "%LE, E=%LE, res=%LE, lres=%Lg, Q=%Lg\n", uin, E, res, log(fabs(res)), Q);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge bounds %E, %E\n",
           bound_lo, bound_hi);
+      error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter no converge damp %E\n",
+          (double)damp);
 
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter LQ=%Lf>%Lf. h%i deltaE=%LE\n", 
           log(Q), logl(reltol), hhack, deltaE);
@@ -1816,8 +1859,7 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
           Edu, Euin, E, fu, delta_u);
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter s=%i%i%i%i%i putres=%i\n",
           A, B, C, D, U, putres);
-      throw(Exception("does not converge in [%f,%f]: %s in tt %i\n", dd->long_label().c_str(), bound_lo, bound_hi,_sim->tt_iteration_number()  ));
-      break;
+      throw(Exception("does not converge after %u in [%f,%f]: %s in tt %i", i, dd->long_label().c_str(), bound_lo, bound_hi,_sim->tt_iteration_number() ));
     }
     if(!is_number(uin)){
       error( bDANGER, "COMMON_BUILT_IN_RCD::__uin_iter uin wrong %E diff "
@@ -1909,6 +1951,7 @@ long double MODEL_BUILT_IN_RCD::__uin_iter(long double& uin, double E_old, doubl
     if(deltaE * deltaE_alt < 0){
       damp *= 0.8;
     }
+    damp=max(damp,0.01L);
 
 
     if( !is_number( Euin ) ){

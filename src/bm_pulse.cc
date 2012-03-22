@@ -173,6 +173,7 @@ void EVAL_BM_PULSE::precalc_first(const CARD_LIST* Scope)
   }
 
   if(_freq.has_good_value()){
+    _width=NOT_INPUT; //hack
     _period=1./_freq;
 
     if(_dc.has_good_value()){
@@ -305,16 +306,16 @@ void EVAL_BM_PULSE::set_param_by_name(std::string Name, std::string Value)
 
   trace2("EVAL_BM_PULSE::set_param_by_name",Name,Value);
   if (Umatch (Name,"iv|U1")) { _iv = Value; }
-  else if (Umatch (Name,"pv|U2"))    { _pv     = atof(Value.c_str()); }
-  else if (Umatch (Name,"delay|T1")) { _delay  = atof(Value.c_str()); }
-  else if (Umatch (Name,"rise|Tr"))  { _rise   = atof(Value.c_str()); }
-  else if (Umatch (Name,"T2"))       { _t2 = atof(Value.c_str()); }
-  else if (Umatch (Name,"width"))    { _width  = atof(Value.c_str()); }
-  else if (Umatch (Name,"fall|Tf"))  { _fall   = atof(Value.c_str()); }
-  else if (Umatch (Name,"period"))   { _period = atof(Value.c_str()); }
-  else if (Umatch (Name,"freq{ency}")){ _freq = atof(Value.c_str()); }
-  else if (Umatch (Name,"dc|duty"))  { _dc= atof(Value.c_str()); }
-  else if (Umatch (Name,"ph{ase}"))  { _phase= atof(Value.c_str()); }
+  else if (Umatch (Name,"pv|U2"))    { _pv     = Value; }
+  else if (Umatch (Name,"delay|T1")) { _delay  = Value; }
+  else if (Umatch (Name,"rise|Tr"))  { _rise   = Value; }
+  else if (Umatch (Name,"T2"))       { _t2     = Value; }
+  else if (Umatch (Name,"width"))    { _width  = Value; }
+  else if (Umatch (Name,"fall|Tf"))  { _fall   = Value; }
+  else if (Umatch (Name,"period"))   { _period = Value; }
+  else if (Umatch (Name,"freq{ency}")){_freq   = Value; }
+  else if (Umatch (Name,"dc|duty"))  { _dc     = Value; }
+  else if (Umatch (Name,"ph{ase}"))  { _phase  = Value; }
   else{ throw Exception_No_Match(Name); }
 
 }

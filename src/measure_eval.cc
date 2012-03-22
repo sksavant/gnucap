@@ -34,12 +34,13 @@ public:
   string label()const {return "eval";}
   fun_t eval(CS& Cmd, const CARD_LIST* Scope)const
   {
+    USE(Cmd);
     trace1("EVAL::eval", (string)Cmd);
     arg.e_val(BIGBIG, Scope);
      // std::cout << to_string(double(arg));
     return to_fun_t(double(arg));
   }
-  void expand(CS& Cmd, const CARD_LIST* Scope){
+  void expand(CS& Cmd, const CARD_LIST*){
     Cmd >> arg;
     trace2("EVAL::expand", (string)Cmd, arg);
 

@@ -43,23 +43,25 @@
 #include "e_subckt.h"
 #include "e_model.h"
 /*--------------------------------------------------------------------------*/
-class ADP_BUILT_IN_MOS8
-  :public ADP_BUILT_IN_MOS{
-	 double _hci_tr;
+class ADP_BUILT_IN_MOS8 :public ADP_BUILT_IN_MOS{
+  double _hci_tr; //?
+  ADP_BUILT_IN_MOS8( const ADP_BUILT_IN_MOS8& a);
 public:
   explicit ADP_BUILT_IN_MOS8( COMPONENT* c, const std::string n):
-    ADP_BUILT_IN_MOS(c,n), hci_node(0)
+    ADP_BUILT_IN_MOS(c,n), _raw_hci_node(0)
     {init(c);}
+
+  virtual ADP_CARD* clone()const{ cout << "adp8 clone \n"; return new ADP_BUILT_IN_MOS8(*this); }
 protected:
   void init(const COMPONENT*);
 public:
   hp_float_t vthscale_hci;
   hp_float_t vthdelta_hci;
-//  hp_float_t vthdelta;
+//  hp_float_t vthdelta; (ADP_BUILT_IN_MOS)
 
 //  void tt_stress_apply( );?
 
-  ADP_NODE* hci_node;
+  ADP_NODE* _raw_hci_node;
 
   virtual double tt_probe_num(const std::string& x)const;
   virtual double tr_probe_num(const std::string& x)const;

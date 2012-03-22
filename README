@@ -99,3 +99,17 @@ live on the edge, use the stable version.
 If you are making binary packages for distribution, please try this
 version and let me know how it works, but continue to distribute 0.35.
 
+=== Two time analysis ===
+.tt [ [ tstep tend ] Tstep ] Tend <cont> <new>
+cont: continue with aged node values
+new: start with fresh deviced
+
+EXAMPLES
+.tt 1m 10m 1 10     # simulate 10 seconds of aging
+.nodedump adp > A   # dump node state to A
+.tt 20              # continue until 20s
+
+.include A          # set node values
+.tt 0 cont          # do 0s of simulation starting from these values
+                    # (resets Time to 0)
+

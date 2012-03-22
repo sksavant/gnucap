@@ -118,7 +118,7 @@ void COMMON_SUBCKT::precalc_last(const CARD_LIST* Scope)
 }
 /*--------------------------------------------------------------------------*/
 MODEL_SUBCKT::MODEL_SUBCKT()
-  :COMPONENT()
+  :COMPONENT(), _frozen(0)
 {
   _n = _nodes;
   new_subckt();
@@ -126,7 +126,7 @@ MODEL_SUBCKT::MODEL_SUBCKT()
 }
 /*--------------------------------------------------------------------------*/
 MODEL_SUBCKT::MODEL_SUBCKT(const MODEL_SUBCKT& p)
-  :COMPONENT(p)
+  :COMPONENT(p), _frozen(0)
 {
   for (uint_t ii = 0;  ii < max_nodes();  ++ii) {
     _nodes[ii] = p._nodes[ii];

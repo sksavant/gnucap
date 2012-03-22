@@ -36,11 +36,18 @@ aclocal.m4
 config.h
 config.log
 config.status
+config.guess
+missing
+libtool
+ltmain.sh
 
 modelgen/.deps
 src/.deps
 
 stamp-h1
+
+# automatic files
+gnucap-conf
 
 # adms stuff
 adms/gnucap.xml
@@ -51,9 +58,17 @@ src/d_opamp.h
 src/d_opamp.cc
 src/d_rtest.h
 src/d_rtest.cc
+src/d_ctest.h
+src/d_ctest.cc
+src/d_dtest.h
+src/d_dtest.cc
 #FIXME
 src/*.hxx
 src/.d*adms
+src/.index.va.adms
+src/*.xml
+src/*.htm
+
 
 
 #verilog stuff

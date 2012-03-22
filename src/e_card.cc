@@ -26,6 +26,8 @@
 #include "e_cardlist.h"
 #include "e_node.h"
 #include "e_card.h"
+#include "e_model.h"
+#include "d_subckt.h"
 /*--------------------------------------------------------------------------*/
 const int POOLSIZE = 4;
 /*--------------------------------------------------------------------------*/
@@ -75,7 +77,6 @@ CARD::~CARD()
 /*--------------------------------------------------------------------------*/
 const std::string CARD::long_label()const
 {
-  trace0("CARD::long_label");
   std::string buffer(short_label());
   for (const CARD* brh = owner(); exists(brh); brh = brh->owner()) {
     buffer = brh->short_label() + '.' + buffer;
@@ -224,13 +225,28 @@ void CARD::new_subckt(const CARD* Model, CARD* Owner,
 		      const CARD_LIST* Scope, PARAM_LIST* Params)
 {
   delete _subckt;
+  assert(Scope==scope()); // why should
+  assert(Owner==this);    // we want something different?
   _subckt = new CARD_LIST(Model, Owner, Scope, Params);
 }
 /*--------------------------------------------------------------------------*/
 void CARD::renew_subckt(const CARD* Model, CARD* Owner,
 		      const CARD_LIST* Scope, PARAM_LIST* Params)
 {
-  if (_sim->is_first_expand()) {
+  // trying to fix: is_first_expand is true too often!
+  bool frozen = 0;
+  const MODEL_CARD* m = dynamic_cast<const MODEL_CARD*>(Model);
+  if(m){
+    // not tested yet.
+    // frozen = m->frozen();
+  }
+  const MODEL_SUBCKT* s = dynamic_cast<const MODEL_SUBCKT*>(Model);
+  if(s){
+    frozen = s->frozen();
+  }
+
+  if (_sim->is_first_expand() && !frozen ) {
+    cerr << "reexpanding \n";
     new_subckt(Model, Owner, Scope, Params);
   }else{untested();
     assert(subckt());

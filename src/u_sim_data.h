@@ -62,11 +62,6 @@ public:
   double _last_Time;	/* end of last accepted timeframe */
   bool _freezetime;	/* flag: don't advance stored time */
   int _iter[iCOUNT];
-  int _tt_iter;
-  int _tt_done;
-  int _tt_accepted;
-  int _tt_rejects;
-  int _tt_rejects_total;
   uint_t _user_nodes;
   uint_t _subckt_nodes;
   uint_t _model_nodes;
@@ -113,7 +108,7 @@ public:
   std::deque<CARD*>* _evalq;   /* pointer to evalq to process */
   std::deque<CARD*>* _evalq_uc;/* pointer to evalq under construction */
   WAVE *_waves;		/* storage for waveforms "store" command*/
-  WAVE *_waves_tt;		/* storage for waveforms "store" command for tt. HACK*/
+  WAVE *_waves_tt;	// will be moved to _waves after TTT run HACK?
   SIM_DATA() {
     _evalq = &_evalq1;
     _evalq_uc = &_evalq2;
@@ -142,7 +137,12 @@ public:
   void order_comp( const CARD_LIST* scope=&CARD_LIST::card_list, unsigned* c=0,
       bool* d=0);
 
-  int init_node_count(int user, int sub, int mod);
+  //int init_node_count( const CARD_LIST* l=&CARD_LIST::card_list); 
+  unsigned init_node_count(unsigned user, unsigned sub, unsigned mod, unsigned adp) {
+    _user_nodes=user; _subckt_nodes=sub; _model_nodes=mod; 
+    _adp_nodes=adp;
+    return (_total_nodes=user+sub+mod);
+  }
   int newnode_subckt() {++_subckt_nodes; return ++_total_nodes;}
   int newnode_model()  {++_model_nodes;  return ++_total_nodes;}
   int newnode_adp()  {return _adp_nodes++;}
@@ -197,8 +197,6 @@ public:
   void count_iterations(int i)	{assert(up_order(0,i,iCOUNT-1)); ++_iter[i];}
   int iteration_tag()const      {return _iter[iTOTAL];}
   int iteration_number()const   {return _iter[iSTEP];}
-  uint_t tt_iteration_number()const   {return _tt_iter;} // accepted steps
-  uint_t tt_iteration_tries()const   {return _tt_done;} // accepted steps
   bool is_initial_step()	{return (_iter[_mode] <= 1  && analysis_is_static());}
   bool is_advance_iteration()const   {return (_iter[iSTEP] == 0);}
   bool is_advance_or_first_iteration()const {assert(_iter[iSTEP]>=0); return (_iter[iSTEP]<=1);}
@@ -209,10 +207,22 @@ public:
   bool uic_now() const {return _uic && analysis_is_static() && _time0==0.;}
   bool more_uic_now()const  {return _more_uic && analysis_is_static() && _time0==0.;}
 
+
   private:
   uint_t _tt_order;
   uint_t last_order_tt;
   CS* _expect_file;
+
+  public: // tt hacks/extensions partly lacking clean implementation
+  unsigned _tt_iter;
+  unsigned _tt_done;
+  unsigned _tt_accepted;
+  unsigned _tt_rejects;
+  unsigned _tt_rejects_total;
+
+  unsigned tt_iteration_number()const {return _tt_iter;} // accepted steps
+  unsigned tt_iteration_tries()const {return _tt_done;} // accepted steps
+  bool is_initial_step_tt()const {return (_tt_iter < 1 );}
 
   public:
   int _stepno; // number of transient steps accepted.

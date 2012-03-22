@@ -86,6 +86,7 @@ void volts_save(CS&, OMSTREAM out, CARD_LIST*)
   case rPRESET:
     /* do nothing */
     return;
+  case rPIPE:           untested();
   case rBATCH:		itested();
   case rINTERACTIVE:	itested();
   case rSCRIPT:

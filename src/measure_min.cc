@@ -77,6 +77,7 @@ public:
 
   double wave_eval()const
   {
+    trace1("MIN::wave_eval", probe_name);
     if (w) {
 
       double time = (last) ? -BIGBIG : BIGBIG;
@@ -85,8 +86,10 @@ public:
       WAVE::const_iterator end   = upper_bound(w->begin(), w->end(), DPAIR(before, BIGBIG));
       for (WAVE::const_iterator i = begin; i < end; ++i) {
 	double val = i->second;
+	double at = i->first;
+        trace3("MIN::wave_eval", probe_name, at, val);
 	if (val < m || (last && (val == m))) {
-	  time = i->first;
+	  time = at;
 	  m = val;
 	}else{
 	}

@@ -679,6 +679,7 @@ DEV_BUILT_IN_MOS::DEV_BUILT_IN_MOS(const DEV_BUILT_IN_MOS& p)
    _Idb(0),
    _Isb(0)
 {
+
   _n = _nodes;
   for (uint_t ii = 0; ii < max_nodes() + int_nodes(); ++ii) {
     _n[ii] = p._n[ii];
@@ -996,6 +997,7 @@ void DEV_BUILT_IN_MOS::expand()
   trace0(("DEV_BUILT_IN_MOS::expand, ADP things " + long_label()).c_str());
   if (! adp())
     attach_adp( m->new_adp( (COMPONENT*) this ) );
+  assert(adp());
 
   // adp()->expand();
 //  adp()->q_accept();
@@ -1007,6 +1009,7 @@ double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
 {
   const DEV_BUILT_IN_MOS* d = this;
   assert(_n);
+  USE(d);
   const COMMON_BUILT_IN_MOS* c = prechecked_cast<const COMMON_BUILT_IN_MOS*>(common());
   assert(c);
   const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
@@ -1017,31 +1020,28 @@ double DEV_BUILT_IN_MOS::tr_probe_num(const std::string& x)const
   assert(a);
 
   const DEV_BUILT_IN_BTI* B = dynamic_cast<const DEV_BUILT_IN_BTI*>(_BTI);
+  USE(B);
 
-  if (Umatch(x, "bti |dvth_bti ")) {
-    if (B)
-      return  (B->dvth());
-    else
-      return NA;
-  } else if (Umatch(x, "v ")) {
+  if (Umatch(x, "v ")) {
     return  _n[n_d].v0() - _n[n_s].v0();
-#ifdef BTI_HACK
-  }else if (Umatch(x, "ugbti ")) {
-    return  ( CARD::probe(_BTI,"vin"));
-#endif
   }else if (Umatch(x, "vds ")) {
     return  _n[n_d].v0() - _n[n_s].v0();
-  }else if (Umatch(x, "dvth ")) { // hci???
+  }else if (Umatch(x, "bti| dvth_bti ")) { 
+    assert(a);
+    return a->vthdelta_bti;
+  }else if (Umatch(x, "dvth ")) { 
     assert(a);
     return a->delta_vth;
-  }else if (Umatch(x, "dv_bti ")) { // hci???
-    if (d->_BTI) return  ((const DEV_BUILT_IN_BTI*)(d->_BTI))->dvth();
-    return(NA);
   }else if (Umatch(x, "bti_stress ")) { 
     return  a->bti_stress->tr_get();
-  }else if (Umatch(x, "hci{_raw} |bti ")) { 
+
+    // this is probably better...
+  }else if (Umatch(x, "hci{_raw} |bti |hci_tt | dvth| dvth_hci")) { 
     assert(a);
-    return  a->tr_probe_num(x);
+    double r = a->tr_probe_num(x);
+    if(fabs(r)>10) cerr << x << "\n";
+    assert(fabs(r)<10);
+    return r;
   }else if (Umatch(x, "vgs ")) {
     return  _n[n_g].v0() - _n[n_s].v0();
   }else if (Umatch(x, "vbs ")) {
@@ -1384,7 +1384,9 @@ bool DEV_BUILT_IN_MOS::tr_needs_eval()const
     polarity_t polarity = m->polarity;
     node_t& eff_s((reversed) ? _n[n_id] : _n[n_is]);
     node_t& eff_d((reversed) ? _n[n_is] : _n[n_id]);
-    if( m->use_bti() ) if ( _BTI->tr_needs_eval()) return true;
+    if( m->use_bti() ) {
+      if ( _BTI->tr_needs_eval()) return true;
+    }
     return !(conchk(vds,polarity*(eff_d.v0()-eff_s.v0()),OPT::vntol)
 	     && conchk(vgs, polarity*(_n[n_g].v0()-eff_s.v0()),
 		       OPT::vntol)
@@ -1532,7 +1534,7 @@ bool DEV_BUILT_IN_MOS::do_tr()
 //  q_accept();
 //
 // necessary? adp should care for itself.
-  adp()->q_accept();
+//  adp()->q_accept();
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tt_begin() // NOT const
@@ -1553,16 +1555,9 @@ void DEV_BUILT_IN_MOS::tt_begin() // NOT const
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_stress_last( )
 {
-
   BASE_SUBCKT::tr_stress_last();
   // FIXME (put adp into sckt, or do not call sckt)
   if(adp()) adp()->tr_stress_last();
-
-  const COMMON_COMPONENT* cc = common();
-  const MODEL_BUILT_IN_MOS_BASE* m = asserted_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
-
-  // obsolete. aging model in adp?
-  m->do_tr_stress_last( this );
 }
 /*--------------------------------------------------------------------------*/
 void DEV_BUILT_IN_MOS::tr_stress( )
@@ -1575,7 +1570,6 @@ void DEV_BUILT_IN_MOS::tt_advance()
   if (adp())
     adp()->tt_advance();
 
-
   // tt_advance also resets time[] in elements.
   BASE_SUBCKT::tt_advance();
 }
@@ -1585,7 +1579,6 @@ void DEV_BUILT_IN_MOS::tt_next( )
   unreachable(); // obsolete.
   if (adp())
     adp()->tt_next();
-
 
   // FIXME (put adp into sckt, or something)
   BASE_SUBCKT::tt_next();
@@ -1827,8 +1820,8 @@ void DEV_BUILT_IN_MOS::stress_apply( )
   m->do_stress_apply(this);
 }
 /*-------------------------------------------------------*/
-void DEV_BUILT_IN_MOS::tr_accept(){
-  // remember calling q_accept
+void DEV_BUILT_IN_MOS::tr_accept()
+{
   BASE_SUBCKT::tr_accept();
 
   const COMMON_COMPONENT* cc = common();
@@ -1843,7 +1836,7 @@ void DEV_BUILT_IN_MOS::tr_accept(){
   if (m->use_hci()) assert(adp());
 
   // hack. let adp queue itself if needed.
-  if(adp()) adp()->tr_accept();
+//  if(adp()) adp()->tr_accept();
 
 
 

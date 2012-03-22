@@ -54,7 +54,7 @@ class MODEL_BUILT_IN_RCD :public MODEL_CARD{
 //    virtual void     do_precalc_last(COMPONENT*, const );
     virtual void     do_precalc_last(COMMON_COMPONENT*, const CARD_LIST*)const;
     virtual void     do_tt_prepare(COMPONENT*)const;
-    virtual ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
+//    virtual ADP_NODE_RCD* new_adp_node(const COMPONENT*) const;
   public: // override virtual
     virtual bool v2() const{return false;}
     virtual double P(const COMPONENT*) const = 0;
@@ -228,8 +228,8 @@ class COMMON_BUILT_IN_RCD :public COMMON_COMPONENT{
 //    virtual double __Rc(double s)const;
     double __tau ( double s) const; 
     double __tau_up ( double ueff ) const;
-  //  long double __step(long double uin, long double cur,  double deltat ) const;
     long double __uin_iter(long double& uin, double, double, double bhi, double blo,COMPONENT*)const;
+    long double __uin_iter_bisect(long double& uin, double, double, double bhi, double blo,COMPONENT*)const;
 
   public: // attached commons
 };

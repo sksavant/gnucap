@@ -27,6 +27,7 @@
 /*--------------------------------------------------------------------------*/
 MODEL_CARD::MODEL_CARD(const COMPONENT* p)
   :CARD(),
+	_frozen(0),
    _component_proto(p),
    _tnom_c(NOT_INPUT)
 {
@@ -36,6 +37,7 @@ MODEL_CARD::MODEL_CARD(const COMPONENT* p)
 /*--------------------------------------------------------------------------*/
 MODEL_CARD::MODEL_CARD(const MODEL_CARD& p)
   :CARD(p),
+	_frozen(0),
    _component_proto(p._component_proto),
    _tnom_c(p._tnom_c)
 {

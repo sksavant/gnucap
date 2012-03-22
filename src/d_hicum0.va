@@ -64,6 +64,7 @@
 //`define Gmin 		1.0e-12
 
 `define QCMODF(vj,cj0,vd,z,aj,cjf)\
+	cjf = 0.0;\
   if(cj0 > 0.0) begin\
       vf	= vd*(1.0-exp(-ln(aj)/z));\
       xvf	= (vf-vj)/VT;\
@@ -78,6 +79,7 @@
 // DEPLETION CHARGE CALCULATION
 // Hyperbolic smoothing used; no punch-through
 `define QJMODF(vj,cj0,vd,z,aj,qjf)\
+	qjf = 0.0;\
   if(cj0 > 0.0) begin\
       vf	= vd*(1.0-exp(-ln(aj)/z));\
       xvf	= (vf-vj)/VT;\
@@ -93,6 +95,7 @@
 
 // Depletion Charge : with punch through
 `define QJMOD(vj,cj0,vd,z,vpt,aj,qjf)\
+	qjf = 0.0;\
   if(cj0 > 0.0) begin\
 	zr	= z/4.0;\
 	vp	= vpt-vd;\
@@ -152,6 +155,7 @@
 
 //Limiting exponential
 `define LIN_EXP(le, arg)\
+	le = 0.0;\
   if(arg > 80) begin\
 	le = (1 + ((arg) - 80));\
         arg = 80;\

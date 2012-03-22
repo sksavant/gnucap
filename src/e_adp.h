@@ -43,7 +43,10 @@ class ADP_NODE: public NODE_BASE {
     std::string label() const  {return long_label();}
     uint_t order() const; 
 
-    uint_t m_()const {assert( _number < _sim->_adp_nodes); return _number;}
+    uint_t m_()const {
+      if( _number >= _sim->_adp_nodes){trace2("error in m_", _number, _sim->_adp_nodes);}
+      assert(_number < _sim->_adp_nodes);
+      return _number;}
 
     hp_float_t tr(double time)const;
     hp_float_t tr_rel(double time)const;
@@ -186,7 +189,7 @@ class ADP_NODE: public NODE_BASE {
 
     hp_float_t get_tt( int i ) const {assert(i==1);
       return( tt1() ); }
-    hp_float_t get_tt() const { return tt(); }
+//    hp_float_t get_tt() const { return tt(); }
 
     hp_float_t get_aft_1()const;
     hp_float_t tt_get_sum()const  {return _val_bef[0] + _delta[0]; }
@@ -293,15 +296,16 @@ class ADP_NODE_RCD : public ADP_NODE {
     double udc;
 };
 /*--------------------------------------------------------------------------*/
-class ADP_CARD : public COMPONENT { // FIXME: SUBCKT_BASE
+class ADP_CARD : public COMPONENT { // FIXME: is this a COMPONENT??
 // manages stress data and stores device parameters.
   private:
-    explicit ADP_CARD(const ADP_CARD&); 
     static int _tt_order;
     double _wdT;
+  protected:
+    ADP_CARD(const ADP_CARD&); 
   public:
-     virtual std::string port_name(uint_t)const { return "?"; }
-
+    virtual ADP_CARD* clone() const=0;
+    virtual std::string port_name(uint_t)const { return "?"; }
     explicit ADP_CARD( COMPONENT* c): _c(c) {
       set_owner(c);
     }
@@ -317,7 +321,7 @@ class ADP_CARD : public COMPONENT { // FIXME: SUBCKT_BASE
 
   public:
     virtual void tt_begin(){ };
-    bool do_tr(){ q_accept(); return true; };
+    bool do_tr(){ return true; };
 
     virtual double tr_probe_num(const std::string& )const { unreachable(); return 888; }
     virtual double tt_probe_num(const std::string& )const { unreachable(); return 888; }

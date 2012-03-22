@@ -1075,16 +1075,22 @@ double DEV_BUILT_IN_BTI::dvth()const{
   assert(c);
   const MODEL_BUILT_IN_BTI* m = prechecked_cast<const MODEL_BUILT_IN_BTI*>(c->model());
   assert(m);
-  const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(c->sdp());
-  assert(s);
+  //const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(c->sdp());
+  //assert(s);
   const ADP_BUILT_IN_BTI* a = prechecked_cast<const ADP_BUILT_IN_BTI*>(adp()); a=a;
   double buf = 0;
   int i = m->rcd_number;
   //for(; i-->0;  buf += CARD::probe(_RCD[i],"P") );
   for(; i-->0; ){
     const DEV_BUILT_IN_RCD* R = asserted_cast< const DEV_BUILT_IN_RCD* > ( _RCD[i] );
-    buf += R->P();
+    double cont = R->P();
+    if(cont<0){
+      error(bWARNING, "Strange, %s contributes negative %E\n", _RCD[i]->long_label().c_str(), cont);
+      cont=0;
+    }
+    buf += cont;
   }
+  
   return buf * c->weight;
 }
 /*--------------------------------------------------------------------------*/
@@ -1095,8 +1101,8 @@ double DEV_BUILT_IN_BTI::tr_probe_num(const std::string& x)const
   assert(c);
   const MODEL_BUILT_IN_BTI* m = prechecked_cast<const MODEL_BUILT_IN_BTI*>(c->model());
   assert(m);
-  const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(c->sdp());
-  assert(s);
+//  const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(c->sdp());
+//  assert(s);
   const ADP_BUILT_IN_BTI* a = prechecked_cast<const ADP_BUILT_IN_BTI*>(adp()); a=a;
 
   if (Umatch(x, "vc{v} |fill ")) { 
@@ -1109,7 +1115,7 @@ double DEV_BUILT_IN_BTI::tr_probe_num(const std::string& x)const
   }else if (Umatch(x, "dvth |vth ")) {
     double buf = 0;
     int i=m->rcd_number;
-    while ( i-->0 )   buf += CARD::probe(_RCD[i],"dvth");
+    while ( i-->0 )   buf += CARD::probe(_RCD[i],"P");
     assert(is_number(buf));
     return buf * c->weight;
   }else if (Umatch(x, "vw ")) {
@@ -1147,7 +1153,7 @@ double DEV_BUILT_IN_BTI::tt_probe_num(const std::string& x)const
   }else if (Umatch(x, "dvth |vth ")) {
     double buf = 0;
     int i=m->rcd_number;
-    while ( i-->0 )   buf += CARD::probe(_RCD[i],"dvth");
+    while ( i-->0 )   buf += CARD::probe(_RCD[i],"P");
     return buf * c->weight;
   }else if (Umatch(x, "pol{arity} ")) {
     return  c->polarity;

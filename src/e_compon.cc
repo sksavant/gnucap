@@ -447,6 +447,9 @@ COMPONENT::COMPONENT(const COMPONENT& p)
 {
   _sim->uninit();
   trace0("attaching common");
+  if(p._adp){
+    attach_adp(p._adp->clone());
+  }
   attach_common(p._common);
   assert(_common == p._common);
 }
@@ -1166,6 +1169,7 @@ void COMPONENT::tt_accept()
 void COMPONENT::attach_adp(ADP_CARD* a){
   if (!a){
     std::cerr << "not attaching adpcard " << a << " to component " << this->short_label() << "\n";
+    assert(a);
     return;
   }
 

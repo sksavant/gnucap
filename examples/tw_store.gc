@@ -1,0 +1,39 @@
+spice
+
+R1 1 0 1
+V1 1 0 pulse iv=0 pv=1 freq=2 
++rise=0.2 fall=0.2
+*+phase=-1
+
+.verilog
+meas1 m1 (1 0);
+fmeas1 m2 (1 0);
+spice
+
+.store tran v(1)
+.print tw +meas({area(probe="v(1)")})
+.print tw +meas({min(probe="v(1)")}) 
+
+*.store tw meas({max(probe="v(1)")}) 
+.store tw +avg(m1) +f(m2)
+.print tw +avg(m1) +f(m2)
+
+.print tran v(nodes) v(m1) iter(0) c(m2) t(m2) s(m2) p(m2) last(m2)
+
+*.tran 0 1 0.1
+
+.tw 0.1 1 5 5 
+
+.echo done tw
+
+.measure int = integral(probe="avg(m1)")
+.measure max = max(probe="avg(m1)")
+.measure min = min(probe="avg(m1)")
+.measure avg = avg(probe="avg(m1)")
+
+.measure fint = integral(probe="f(m2)")
+.measure fmax = max(probe="f(m2)")
+.measure fmin = min(probe="f(m2)")
+.measure favg = avg(probe="f(m2)")
+
+.end

@@ -34,6 +34,7 @@
 // why is this not derived from MODEL_CARD??
 class INTERFACE MODEL_SUBCKT : public COMPONENT {
 private:
+  bool _frozen;
   explicit	MODEL_SUBCKT(const MODEL_SUBCKT&p);
 public:
   explicit	MODEL_SUBCKT();
@@ -52,6 +53,7 @@ public: // override virtual
   bool		is_device()const	{return false;}
   void		precalc_first()		{}
   void		expand()		{}
+  void		expand_last()		{ _frozen=1;}
   void		precalc_last()		{}
   bool		makes_own_scope()const  {return true;}
   void		map_nodes()		{}
@@ -63,6 +65,7 @@ public: // override virtual
   }
 public:
   static int	count()			{return _count;}
+  bool frozen() const {return _frozen;}
 
 private:
   node_t	_nodes[PORTS_PER_SUBCKT]; // hack??

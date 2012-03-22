@@ -29,6 +29,7 @@
 #include "u_lang.h"
 #include "c_comand.h"
 #include "globals.h"
+#include "u_parameter.h"
 /*--------------------------------------------------------------------------*/
 extern OMSTREAM mout;		/* > file bitmap		*/
 extern OMSTREAM mlog;		/* log file bitmap		*/
@@ -44,6 +45,17 @@ public:
     try {
       std::string file_name;
       cmd >> file_name;
+      if (file_name.c_str()[0]){
+        if (file_name.c_str()[0] == '$'){
+          trace1("have dollar", file_name);
+          PARAMETER<string> a(file_name.c_str()+1);
+          a.e_val("", Scope);
+          if(!(a=="")) file_name=a;
+        }
+      }else{
+        trace1("no dollar", file_name);
+      }
+
       CS file(CS::_INC_FILE, file_name);
       for (;;) {
         trace1( (" CMD_INCLUDE::do_it > " +file_name).c_str() , (OPT::language) );

@@ -154,7 +154,8 @@ public:
 
   NODE_MAP*   nodes()const {assert(_nm); return _nm;}
   NODE_BASE*       node(std::string)const;
-  unsigned total_nodes()const; // recursively sum up total node number...
+  unsigned total_nodes()const; // recursively (for now) sum up ckt node number...
+  unsigned adp_nodes()const; // recursively (for now) sum up total adp number...
   PARAM_LIST* params();
   PARAM_LIST* params()const;
 
@@ -164,6 +165,8 @@ public:
   void map_subckt_nodes(const CARD* model, const CARD* owner);
 
 
+  void init_node_count( unsigned* user_nodes, unsigned* subckt_nodes, unsigned*
+      _model_nodes, unsigned* _adp_nodes) const;
  // ADP_NODE* new_adp_node(const CARD* c, string name);
 
   explicit CARD_LIST(const CARD* owner=0);

@@ -31,10 +31,8 @@
 /* This file is not automatically generated. */
 
 // grober plan:
-// _adpcard ist ein dev im sckt von d_mos.
+// _adpcard ist so eine art sdp. oder common...
 // dadrin sind die adpnodes registriert und
-// andere effekte in weiteren subdevices.
-// das model muss dann nur noch ein adpcard attachen.
 
 
 #ifndef D_MOS_H_INCLUDED
@@ -294,14 +292,23 @@ public:
   void tr_stress_last( );
 };
 /*--------------------------------------------------------------------------*/
-class ADP_BUILT_IN_MOS
-  :public ADP_BUILT_IN_DIODE{
+class ADP_BUILT_IN_MOS :public ADP_BUILT_IN_DIODE{
 public:
   explicit ADP_BUILT_IN_MOS( COMPONENT* c, const std::string n);
+  virtual ADP_CARD* clone()const{ return new ADP_BUILT_IN_MOS(*this); }
 protected:
+  ADP_BUILT_IN_MOS(const ADP_BUILT_IN_MOS& a): ADP_BUILT_IN_DIODE(a),
+	btistress_taken(a.btistress_taken),
+	bti_eff_voltage(a.bti_eff_voltage),
+	_tr_last_acc(-inf),
+	vthscale_bti(a.vthscale_bti),
+	vthdelta_bti(a.vthdelta_bti),
+	delta_vth(a.delta_vth)
+	{};
+
   void init(const COMPONENT*);
 public:
-  ADP_NODE* ids_stress;
+  ADP_NODE* ids_stress; // obsolete?
   ADP_NODE* igd_stress;
 public:
 
@@ -310,9 +317,9 @@ public:
   double tt_probe_num(const std::string& x)const;
 
 private:
-  double btistress_taken;
-  double bti_eff_voltage;
-  double _tr_last_acc;
+  double btistress_taken; // unused?
+  double bti_eff_voltage; // unused?
+  double _tr_last_acc; // unused?
 
 public:
   virtual void tt_accept();
