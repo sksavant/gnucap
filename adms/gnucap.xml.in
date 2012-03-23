@@ -237,13 +237,13 @@ public:
 	<admst:for-each select="variable[input='no' and scope='global_model']">
 	  <admst:choose>
 		<admst:when test="[type='real']">
-		  <admst:text format="\n\tdouble %(.);"/>
+		  <admst:text format="\n\tdouble $(var_prefix)%(.);"/>
 		</admst:when>
 		<admst:when test="[type='integer']">
-		  <admst:text format="\n\tint %(.);"/>
+		  <admst:text format="\n\tint $(var_prefix)%(.);"/>
 		</admst:when>
 		<admst:otherwise>
-		  <admst:text format="\n\tstd::string %(.);"/>
+		  <admst:text format="\n\tstd::string $(var_prefix)%(.);"/>
 		</admst:otherwise>
 	  </admst:choose>
 	</admst:for-each>
@@ -1423,11 +1423,12 @@ double $(DEV_NAME)::tr_probe_num(const std::string& x)const
 		if( Umatch(x, node_names_n[i] + ' ') )
 			return it0[i];
 	
-	// verilog-variables ('global_instance' eq. with 'ask' field)
+	// verilog-variables ('global_...' eq. with 'ask' field)
 	<admst:for-each select="variable[input='no' and scope='global_instance']">
-	if( Umatch(x, "%(.) ") )
-		return $(var_prefix)%(.);
-
+	if( Umatch(x, "%(.) ") ) return $(var_prefix)%(.);
+	</admst:for-each>
+	<admst:for-each select="variable[input='no' and scope='global_model']">
+	if( Umatch(x, "%(.) ") ) return _model->$(var_prefix)%(.);
 	</admst:for-each>
 
   return ADMS_BASE::tr_probe_num(x);
@@ -3759,7 +3760,7 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
     <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
   </admst:if>
   <admst:if test="[input='no' and scope='global_model']">
-    <admst:value-to select="/simulator/tmp" value="_model-&gt;%s"/>
+    <admst:value-to select="/simulator/tmp" value="_model-&gt;$(var_prefix)%s"/>
   </admst:if>
   <admst:if test="[input='no' and scope='global_instance']">
     <admst:value-to select="/simulator/tmp" value="$(var_prefix)%s"/>
@@ -3775,7 +3776,7 @@ inline double _d1_pow(double x,double y)   { return (x==0.0)?0.0:((log(x)/exp(0.
 <admst:message test="[/dbg_xml='yes']" format="*(ngspvers)variable:lhs*\n"/>
   <admst:text test="[input='yes' and parametertype='model']" format="_model-&gt;%(name)"/>
   <admst:text test="[input='yes' and parametertype='instance']" format="_model-&gt;%(name)"/>
-  <admst:text test="[input='no' and scope='global_model']" format="_model-&gt;%(name)"/>
+  <admst:text test="[input='no' and scope='global_model']" format="_model-&gt;$(var_prefix)%(name)"/>
   <admst:text test="[input='no' and scope='global_instance']" format="$(var_prefix)%(name)"/>
   <admst:text test="[scope='local']" format="%(name)"/>
 </admst:template>
@@ -6155,7 +6156,7 @@ and name!='initializeInstance')]">
       <admst:variable name="e" select="_model-&gt;%(name)"/>
     </admst:when>
     <admst:when test="[input='no' and scope='global_model']">
-      <admst:variable name="e" select="_model-&gt;%(name)"/>
+      <admst:variable name="e" select="_model-&gt;$(var_prefix)%(name)"/>
     </admst:when>
     <admst:when test="[input='no' and scope='global_instance']">
       <admst:variable name="e" select="$(var_prefix)%(name)"/>
