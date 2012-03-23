@@ -14,14 +14,16 @@
 
 using namespace std;
 
+typedef vector<PARAMETER<double> > dpv;
+typedef vector<PARAMETER<dpv> > dpvv;
+
 template <class T>
 class PARAMETER<vector<PARAMETER<T> > > : public PARA_BASE{
 	private:
 		mutable vector<PARAMETER<T> > _v;
 		vector<PARAMETER<T> > _NOT_INPUT() const;
 	public:
-		operator vector<PARAMETER<T> >()const {return _v;}
-  //typedef std::vector< PARAMETER<T> > t;
+		operator vector<PARAMETER<T> >()const { return _v;}
 		explicit PARAMETER(T v) : PARA_BASE("#"), _v(v) {}
 		PARAMETER() : PARA_BASE(), _v(vector<PARAMETER<T> >()) {}
 		PARAMETER(const PARAMETER<vector<PARAMETER<T> > >& p) :
@@ -76,11 +78,11 @@ inline vector<PARAMETER<T> > PARAMETER<vector<PARAMETER<T> > >::_NOT_INPUT() con
 /*--------------------------------------------------------------------------*/
 template<class T>
 void PARAMETER<vector<PARAMETER<T> > >::operator=(const std::string& s){
-  trace1("PARAMETER dvv =" , s);
+  trace1("PARAMETER dv::operator=" , s);
 
-  CS cmd(CS::_STRING,s);
+  CS cmd(CS::_STRING, s);
   _v.clear();
-  std::string vect;
+  std::string compon;
 
   cmd.skipbl();
 
@@ -90,22 +92,19 @@ void PARAMETER<vector<PARAMETER<T> > >::operator=(const std::string& s){
 	 //   break;
 	 //}
 	 if(!cmd.more()) break;
+    compon = cmd.ctos(",","({",")}",""); // More sorts of braces?
 
-  //  cmd >> vect;
-    trace1("PARAMETER matrix loop", cmd.tail());
-    vect = cmd.ctos(",","({",")}",""); // More sorts of braces?
-    trace1("PARAMETER matrix ctosd", vect);
+    PARAMETER<T> d;
 
-    PARAMETER<T > d;
-    //d =  '(' + vect + ')'; 
-     d = vect;
+    //d =  '(' + compon + ')'; 
+	 d = compon;
     _v.push_back( d );
 
     cmd.skip1b(')');
-    trace1("PARAMETER matrix loop pushed back ", d);
+    trace1("PARAMETER vector loop pushed back ", d);
   }
   _s = "#";
-  trace2("PARAMETER done matrix loop", cmd.tail(), *this);
+  trace2("PARAMETER done vector loop", cmd.tail(), *this);
 }
 // FIXME: templatify
 // template<class T>
@@ -113,8 +112,6 @@ void PARAMETER<vector<PARAMETER<T> > >::operator=(const std::string& s){
 //string to_string(vector< PARAMETER< vector< PARAMETER<double> > > > n);
 /*--------------------------------------------------------------------------*/
 
-typedef vector<PARAMETER<double> > dpv;
-typedef vector<PARAMETER<dpv> > dpvv;
 
 //#include "u_parameter.h"
 template<>
@@ -165,26 +162,43 @@ inline string to_string(vector<PARAMETER<T> > n)
 //  return *this;
 //}
 /*-----------------------------------*/
+using namespace std;
 template <class T>
 inline vector<PARAMETER<T> >
 PARAMETER<vector<PARAMETER<T> > >::e_val(const vector<PARAMETER<T> >& def, const CARD_LIST* scope)const
 {
-  trace2("PARAMETER dvv::e_val", _s, _v.size());
-  trace1("PARAMETER dvv::e_val", (std::string)(*this));
-  trace1("PARAMETER dvv::e_val", def.size() );
+  trace2("PARAMETER dv::e_val", _s, _v.size());
+  trace1("PARAMETER dv::e_val", (std::string)(*this));
+  trace1("PARAMETER dv::e_val", def.size() );
 
   //  CS c(CS::_STRING,_s);
   // FIXME: accept strings and parse...
   for(unsigned  i=0; i<_v.size()  ; i++){
-    PARAMETER<T>  D;
+    PARAMETER<T> D;
 	 if (i < def.size()){
 		 D = def[i];
 	 }
-	 trace2("PARAMETER vector eval", i,_v[i]);
+	 trace3("PARAMETER vector eval", i, _v[i], D);
     _v[i].e_val(D, scope);
+	 trace2("PARAMETER vector eval", i, _v[i]);
   }
-  trace0("PARAMETER vector eval done");
+  trace2("PARAMETER vector eval done", _v, _s);
   return _v;
 }
-/*===============================*/
+/*--------------------------------------------------------------------------*/
+template <class S>
+inline S& operator<<( S& o, const vector<PARAMETER<double> >  &m)
+{
+	o << "(";
+
+	for ( vector<PARAMETER<double> >::const_iterator ci=m.begin();
+		  	ci!=m.end();) 
+	{
+		o << string(*ci) << " " << *(ci) << " ";
+		++ci;
+	}
+	o << ")";
+	return o;
+}
+/*-----------------------------------*/
 #endif
