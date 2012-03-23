@@ -1,0 +1,80 @@
+// Andreas Froese, 2012
+// based on example from Vlach/Singhal: "Computer Methods for Circuit Analysis and Design"
+
+`include "discipline.h"
+`include "constants.h"
+
+`define PI	3.1415926535
+
+module shared_opamp(out, vref, inp, inn, vddp, vddn);
+	inout  out, vref, inp, inn, vddp, vddn;
+	electrical out, vref, inp, inn, vddp, vddn;
+
+	// parameter
+	parameter real A0 = 2e5;
+	parameter real Rin = 2e6;
+	parameter real Rinp = 2000e6;
+	parameter real Rinn = 2000e6;
+	parameter real Rout = 75;
+	parameter real Sr = 5e5;
+	parameter real f0dB = 1e6;
+
+	// internal
+	parameter R1 = 100e6;
+	parameter Rf = 10;
+
+	// precalculated
+	real C1; (*ask="yes"*)
+	real gm1; (*ask="yes"*)
+	real gm2; (*ask="yes"*)
+	real Im; (*ask="yes"*)
+	real Vk; (*ask="yes"*)
+	real w0; (*ask="yes"*)
+	real w1; (*ask="yes"*)
+
+	// variables
+	real i_unlim; (*ask="yes"*)
+
+	electrical v1;
+ 
+ 	analog begin
+
+	@ initial_model begin
+		w0 = 2 * `PI * f0dB;
+		w1 = w0 / A0;
+		C1 = 1 / (w1*R1);	// w1 = 1/(C1*R1)
+		gm2 = 1 / Rout;
+		gm1 = A0 / R1;		// A0 = gm1 * R1 * gm2 * Rout
+		Im = C1 * Sr;		// |dV/dt| = 1/C * |i| <= Im / C
+		Vk = Im / gm1;
+	end
+	
+	// input stage
+	I(inp, vref) <+ V(inp, vref) / Rinp;
+	I(inn, vref) <+ V(inn, vref) / Rinn;
+	I(inp, inn) <+ V(inp, inn) / Rin;
+
+	// w1
+	I(v1, vref) <+ C1 * ddt(V(v1, vref));
+	I(v1, vref) <+ V(v1, vref) / R1;
+
+	// slew rate
+	i_unlim = gm1 * V(inp, inn);
+	if( i_unlim > Im ) i_unlim = Im;
+	if( i_unlim < -Im ) i_unlim = -Im; 
+	I(vref, v1) <+ i_unlim;
+
+	// output stage
+	I(vref, out) <+ gm2 * V(v1, vref);
+	I(vref, out) <+ V(vref, out) / Rout;
+
+	// finite output swing
+	if( V(v1) > V(vddp) ) I(v1, vref) <+ V(v1, vddp) / Rf;
+	if( V(v1) < V(vddn) ) I(v1, vref) <+ V(v1, vddn) / Rf;
+	end
+endmodule
+
+
+
+
+
