@@ -1,0 +1,29 @@
+spice
+
+.load d_opamp.so
+
+V1 ndd 0 10
+V2 nin_p 0  0.00001 AC 1 PULSE iv=0 pv=10 delay=0.000001
+V3 nin_n 0  0.00000
+
+.verilog
+paramset myop shared_opamp;
+	.f0dB = 1e6
+	.Rf = 1
+endparamset
+myop OP (nout, 0, nin_p, nin_n, ndd, 0);
+spice
+
+R1 nout 0 1000k
+
+.print dc V(nodes)
+.dc V2 -0.00002 0.00009 0.00001
+
+.print ac v(nodes)
+.ac DEC 2 1 1000000
+
+*.print tran v(nin_p) v(nout) V(OP.v1) i_unlim(OP) Im(OP)
+.print tran v(nin_p) v(nout)
+.tran 0.000030 0.000001
+
+.end
