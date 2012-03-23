@@ -163,7 +163,7 @@ c_comand.h globals.h extlib.h d_cap.h
 
 if ADMS
 ADMS_SRCS = e_adms.cc d_hicum0.cc d_ota_simpl.cc d_ctest.cc \
-				d_rtest.cc d_dtest.cc
+				d_rtest.cc d_dtest.cc d_opamp.cc
 #not yet d_opamp.cc
 RAW_SRCS += $(ADMS_SRCS)
 endif

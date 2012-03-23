@@ -1,7 +1,5 @@
 spice
 
-.load d_opamp.so
-
 V1 ndd 0 10
 V2 nin_p 0  0.00001 AC 1 PULSE iv=0 pv=10 delay=0.000001
 V3 nin_n 0  0.00000
