@@ -33,7 +33,7 @@ MODELS = \
 d_mos1.model d_mos2.model d_mos3.model \
 d_mos4.model d_mos5.model d_mos6.model d_mos7.model d_mos8.model \
 d_mos123.model d_mos_base.model d_mos.model \
-d_bjt.model d_diode.model d_diode2.model
+d_bjt.model d_diode.model 
 #d_rcd.model d_bti.model 
 
 # device models hand coded in C++
