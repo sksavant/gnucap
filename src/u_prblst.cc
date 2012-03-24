@@ -392,7 +392,7 @@ PROBE* PROBELIST::add_expr(const std::string& ,
                              CS& cmd, PROBELIST& )
 {
   untested();
-  assert(scope);
+  assert(scope); USE(scope); // ?
   trace2( "PROBELIST::add_expr ", cmd.cursor(), cmd.tail() );
   //trace0(( std::string("PROBELIST::add_expr ") + cmd.fullstring()).c_str() );
   //trace0(( std::string("PROBELIST::add_expr arg0 ") + cmd.cursor()).c_str() );
@@ -401,7 +401,7 @@ PROBE* PROBELIST::add_expr(const std::string& ,
   trace2( "PROBELIST::add_expr added", typetochar(type), arg0->label()  );
 
   int komma = cmd.skip1b(',');		/* device, node, etc. */
-  assert (komma);
+  assert (komma); USE(komma); incomplete(); // throw exception
 
   PROBE* arg1 = PROBE_LISTS::expr[CKT_BASE::_sim->_mode].add_list(cmd);
   trace2( "PROBELIST::add_expr added1", typetochar(type), arg1->label()  );

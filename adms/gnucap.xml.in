@@ -666,6 +666,7 @@ std::string $(MODEL_NAME)::param_value(int i) const
 // -------------------------------------------------------------------------- //
 void $(MODEL_NAME)::set_param_by_index(int i, std::string& value, int offset)
 {
+	USE(value);
 	switch(i)
 	{
 		<admst:for-each select="variable[input='yes']">
@@ -677,6 +678,7 @@ void $(MODEL_NAME)::set_param_by_index(int i, std::string& value, int offset)
 // -------------------------------------------------------------------------- //
 void $(MODEL_NAME)::set_param_by_name(std::string name, std::string value)
 {
+	USE(value);
 	<admst:for-each select="variable[input='yes']">
 	if( Umatch(name,"%(name)") ) {%(name)=value;return;}
 	</admst:for-each>
@@ -704,7 +706,7 @@ void $(MODEL_NAME)::precalc_first()
 	</admst:for-each>
 	
 	// @(initial_model) block
-	$(MODEL_NAME) *_model = this;
+	$(MODEL_NAME) *_model = this; USE(_model);
 	 <admst:apply-templates select="analog" match="analog:initial_model" required="yes"/>
 }
 // -------------------------------------------------------------------------- //

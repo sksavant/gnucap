@@ -1319,7 +1319,7 @@ double DEV_BUILT_IN_MOS::tt_probe_num(const std::string& x)const
   const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
   assert(m);
   const SDP_BUILT_IN_MOS_BASE* s = prechecked_cast<const SDP_BUILT_IN_MOS_BASE*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
   const ADP_BUILT_IN_MOS* a = prechecked_cast<const ADP_BUILT_IN_MOS*>(adp());
   const DEV_BUILT_IN_BTI* B = dynamic_cast<const DEV_BUILT_IN_BTI*>(_BTI);
 
@@ -1597,7 +1597,7 @@ void DEV_BUILT_IN_MOS::tr_save_amps(int trstep)
   trace1(("DEV_BUILT_IN_MOS::tr_save_amps()" + long_label()).c_str(),trstep);
   const COMMON_COMPONENT* cc = common();
   const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
-  assert(m);
+  assert(m); USE(m);
   int j = 3;
   int k = j;
 

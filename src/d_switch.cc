@@ -502,7 +502,7 @@ void SWITCH_BASE::tr_regress()
   const COMMON_SWITCH* c = prechecked_cast<const COMMON_SWITCH*>(common());
   assert(c);
   const MODEL_SWITCH* m = prechecked_cast<const MODEL_SWITCH*>(c->model());
-  assert(m);
+  assert(m); USE(m);
 
   assert(_y[0].f1 == ((_state[0] == _ON) ? m->ron : m->roff));
   assert(_y[0].f0 == LINEAR);

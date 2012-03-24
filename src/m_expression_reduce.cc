@@ -278,7 +278,7 @@ void Token_UNARY::stack_op(Expression* E)const
 void Token_CONSTANT::stack_op(Expression* E)const
 {
   unreachable();
-  assert(E);
+  assert(E); USE(E);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

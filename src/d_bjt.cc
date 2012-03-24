@@ -69,11 +69,11 @@ TDP_BUILT_IN_BJT::TDP_BUILT_IN_BJT(const DEV_BUILT_IN_BJT* d)
   const COMMON_BUILT_IN_BJT* c = prechecked_cast<const COMMON_BUILT_IN_BJT*>(d->common());
   assert(c);
   const SDP_BUILT_IN_BJT* s = prechecked_cast<const SDP_BUILT_IN_BJT*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
   const MODEL_BUILT_IN_BJT* m = prechecked_cast<const MODEL_BUILT_IN_BJT*>(c->model());
   assert(m);
   const CARD_LIST* par_scope = d->scope();
-  assert(par_scope);
+  assert(par_scope); USE(par_scope);
     // final adjust: code_pre
 
       const double reftemp = 300.15;
@@ -747,7 +747,7 @@ void MODEL_BUILT_IN_BJT::tr_eval(COMPONENT* brh)const
   const COMMON_BUILT_IN_BJT* c = prechecked_cast<const COMMON_BUILT_IN_BJT*>(d->common());
   assert(c);
   const SDP_BUILT_IN_BJT* s = prechecked_cast<const SDP_BUILT_IN_BJT*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
   const MODEL_BUILT_IN_BJT* m = this;
   const TDP_BUILT_IN_BJT T(d);
   const TDP_BUILT_IN_BJT* t = &T;
@@ -1123,7 +1123,7 @@ void COMMON_BUILT_IN_BJT::expand(const COMPONENT* d)
 {
   COMMON_COMPONENT::expand(d);
   attach_model(d);
-  COMMON_BUILT_IN_BJT* c = this;
+  COMMON_BUILT_IN_BJT* c = this; USE(c);
   const MODEL_BUILT_IN_BJT* m = dynamic_cast<const MODEL_BUILT_IN_BJT*>(model());
   if (!m) {
     throw Exception_Model_Type_Mismatch(d->long_label(), modelname(), "bjt");
@@ -1134,7 +1134,7 @@ void COMMON_BUILT_IN_BJT::expand(const COMPONENT* d)
   _sdp = m->new_sdp(this);
   assert(_sdp);
   const SDP_BUILT_IN_BJT* s = prechecked_cast<const SDP_BUILT_IN_BJT*>(_sdp);
-  assert(s);
+  assert(s); USE(s);
 
   // subcircuit commons, recursive
   assert(c == this);
@@ -1177,7 +1177,7 @@ void COMMON_BUILT_IN_BJT::precalc_last(const CARD_LIST* par_scope)
   _sdp = m->new_sdp(this);
   assert(_sdp);
   const SDP_BUILT_IN_BJT* s = prechecked_cast<const SDP_BUILT_IN_BJT*>(_sdp);
-  assert(s);
+  assert(s); USE(s);
 
   // subcircuit commons, recursive
   assert(c == this);
@@ -1314,7 +1314,7 @@ void DEV_BUILT_IN_BJT::expand()
   assert(m);
   assert(c->sdp());
   const SDP_BUILT_IN_BJT* s = prechecked_cast<const SDP_BUILT_IN_BJT*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
   if (!subckt()) {
     new_subckt();
   }else{
@@ -1614,9 +1614,9 @@ double DEV_BUILT_IN_BJT::tr_probe_num(const std::string& x)const
   const COMMON_BUILT_IN_BJT* c = prechecked_cast<const COMMON_BUILT_IN_BJT*>(common());
   assert(c);
   const MODEL_BUILT_IN_BJT* m = prechecked_cast<const MODEL_BUILT_IN_BJT*>(c->model());
-  assert(m);
+  assert(m); USE(m);
   const SDP_BUILT_IN_BJT* s = prechecked_cast<const SDP_BUILT_IN_BJT*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
 
   if (Umatch(x, "v ")) {
     return  _n[n_c].v0() - _n[n_e].v0();

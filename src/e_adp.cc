@@ -968,6 +968,7 @@ hp_float_t ADP_NODE::tr( double time ) const{
         (tr2() - tr3())/dT2())*hp_float_t((now_rel) + dT1() + dT2()) + tr3();
     default:
       assert(false);
+      return 0;
   }
 }
 /*---------------------------------*/

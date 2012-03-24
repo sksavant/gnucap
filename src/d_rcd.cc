@@ -508,7 +508,7 @@ void COMMON_BUILT_IN_RCD::expand(const COMPONENT* d)
 {
   COMMON_COMPONENT::expand(d);
   attach_model(d);
-  COMMON_BUILT_IN_RCD* c = this;
+  COMMON_BUILT_IN_RCD* c = this; USE(c);
   const MODEL_BUILT_IN_RCD* m = dynamic_cast<const MODEL_BUILT_IN_RCD*>(model());
   if (!m) {
     throw Exception_Model_Type_Mismatch(d->long_label(), modelname(), "rcd");
@@ -525,7 +525,7 @@ void COMMON_BUILT_IN_RCD::expand(const COMPONENT* d)
   _sdp = m->new_sdp(this);
   assert(_sdp);
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(_sdp);
-  assert(s);
+  assert(s); USE(s);
 
   // subcircuit commons, recursive
   assert(c == this);
@@ -599,7 +599,7 @@ void COMMON_BUILT_IN_RCD::precalc_last(const CARD_LIST* par_scope)
   _sdp = m->new_sdp(this);
   assert(_sdp);
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(_sdp);
-  assert(s);
+  assert(s); USE(s);
 
   // subcircuit commons, recursive
   c->_wcorr=0;
@@ -669,9 +669,9 @@ void EVAL_BUILT_IN_RCD_GRc::tr_eval(ELEMENT* d)const
   assert(p);
   const COMMON_BUILT_IN_RCD* cc = prechecked_cast<const COMMON_BUILT_IN_RCD*>(p->common());
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(cc->sdp());
-  assert(s);
+  assert(s); USE(s);
   const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(cc->model());
-  assert(m);
+  assert(m); USE(m);
 
   // FIXME: merge with __Rc somehow
   double _c[3] = { cc->_Rc0, cc->_Rc1 * cc->_lambda, 0 };
@@ -700,9 +700,9 @@ void EVAL_BUILT_IN_RCD_Ye::tr_eval(ELEMENT* d)const
   const COMMON_BUILT_IN_RCD* c = prechecked_cast<const COMMON_BUILT_IN_RCD*>(p->common());
   assert(c);
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
   const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
-  assert(m);
+  assert(m); USE(m);
 
   trace0("eval Ye");
   region_t oldregion = p->_region;
@@ -779,10 +779,10 @@ void DEV_BUILT_IN_RCD::expand()
   assert(c);
   assert(c->model());
   const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
-  assert(m);
+  assert(m); USE(m);
   assert(c->sdp());
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
 
   if (!subckt()) {
     new_subckt();
@@ -834,10 +834,10 @@ void DEV_BUILT_IN_RCD::expand_sym() {
   assert(cc);
   assert(cc->model());
   const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(cc->model());
-  assert(m);
+  assert(m); USE(m);
   assert(cc->sdp());
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(cc->sdp());
-  assert(s);
+  assert(s); USE(s);
   if (_sim->is_first_expand()) {
     precalc_first();
     precalc_last();
@@ -882,7 +882,7 @@ void DEV_BUILT_IN_RCD::expand_net() {
   assert(m);
   assert(c->sdp());
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
   if (_sim->is_first_expand()) {
     precalc_first();
     precalc_last();
@@ -1014,7 +1014,7 @@ double DEV_BUILT_IN_RCD::tr_probe_num(const std::string& x)const
   const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
   assert(m);
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
   assert(_Ccgfill);
 
   if (Umatch(x, "region ")) {
@@ -1102,7 +1102,7 @@ double DEV_BUILT_IN_RCD::tt_probe_num(const std::string& x)const
   const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(cc->model());
   assert(m);
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(cc->sdp());
-  assert(s);
+  assert(s); USE(s);
   // const ADP_BUILT_IN_RCD* a = prechecked_cast<const ADP_BUILT_IN_RCD*>(adp());
   //
   // FIXME 
@@ -1235,6 +1235,7 @@ long double MODEL_BUILT_IN_RCD::__step(long double uin, long double cur,  double
 
   assert(is_number(cur));
   const MODEL_BUILT_IN_RCD* m = this; //prechecked_cast<const MODEL_BUILT_IN_RCD*>(cc->model());
+  USE(m);
   const COMMON_BUILT_IN_RCD* cc = asserted_cast<const COMMON_BUILT_IN_RCD*>(c);
 
   assert (uin >= 0 || !m->positive);
@@ -1297,7 +1298,7 @@ void DEV_BUILT_IN_RCD::stress_apply()
   assert(m);
   assert(c->sdp());
   const SDP_BUILT_IN_RCD* s = prechecked_cast<const SDP_BUILT_IN_RCD*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
 
   assert(_sim->_time0 == 0 || _sim->_mode==s_TRAN ); //?
 
@@ -1438,7 +1439,7 @@ void DEV_BUILT_IN_RCD::tr_stress()
 
   ADP_NODE* _c=_Ccgfill;
   if(_sim->phase()==p_PD){
-        assert(!_c->tr_lo);
+        assert(!_c->tr_lo); USE(_c);
         assert(!_c->tr_hi);
 
   }
@@ -1641,7 +1642,7 @@ void DEV_BUILT_IN_RCD::tt_prepare()
   assert(false);
   unreachable();
   const COMMON_BUILT_IN_RCD* c = static_cast<const COMMON_BUILT_IN_RCD*>(common());
-  assert(c);
+  assert(c); USE(c);
   assert(c->model());
   //const MODEL_BUILT_IN_RCD* m = prechecked_cast<const MODEL_BUILT_IN_RCD*>(c->model());
 

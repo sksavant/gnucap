@@ -451,7 +451,7 @@ template <class T>
 T& BSMATRIX<T>::d(unsigned r, unsigned c)
 {
   assert(_diaptr);
-  assert(r == c);
+  assert(r == c); USE(c);
   //assert(0 <= r);
   assert(r <= _size);
 

@@ -188,6 +188,7 @@ class ADP_NODE: public NODE_BASE {
 
 
     hp_float_t get_tt( int i ) const {assert(i==1);
+      USE(i);
       return( tt1() ); }
 //    hp_float_t get_tt() const { return tt(); }
 
@@ -213,6 +214,7 @@ class ADP_NODE: public NODE_BASE {
     double tr_get_old(){ return get_tr(1);}
     hp_float_t get1()const { return tt1(); }
     hp_float_t get_tr( int i ) const {assert(i==1); 
+      USE(i);
       return( tr1() ); }
     hp_float_t get_tr( ) const { return tr();}
 

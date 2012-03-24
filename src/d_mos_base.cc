@@ -46,7 +46,7 @@ void SDP_BUILT_IN_MOS_BASE::init(const COMMON_COMPONENT* cc)
   const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(c->model());
   assert(m);
   const CARD_LIST* par_scope = m->scope();
-  assert(par_scope);
+  assert(par_scope); USE(par_scope);
   // adjust: override
   // adjust: raw
   // adjust: calculated
@@ -560,7 +560,7 @@ void MODEL_BUILT_IN_MOS_BASE::do_tr_stress( const COMPONENT* c ) const
   const DEV_BUILT_IN_MOS* d = (const DEV_BUILT_IN_MOS*)c;
   const COMMON_COMPONENT* cc = c->common();
   const MODEL_BUILT_IN_MOS_BASE* m = prechecked_cast<const MODEL_BUILT_IN_MOS_BASE*>(cc->model());
-  assert(m);
+  assert(m); USE(m);
   untested();
   // ADP_BUILT_IN_MOS* a = (ADP_BUILT_IN_MOS*) c->adp();
   // double dt=  ( _sim->_dt0 );

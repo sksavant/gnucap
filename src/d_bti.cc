@@ -642,7 +642,7 @@ bool MODEL_BUILT_IN_BTI_SINGLE::param_is_printable(int i)const
 void MODEL_BUILT_IN_BTI_SINGLE::precalc_first()
 {
     const CARD_LIST* par_scope = scope();
-    assert(par_scope);
+    assert(par_scope); USE(par_scope);
     MODEL_BUILT_IN_BTI::precalc_first();
 }
 /*--------------------------------------------------------------------------*/
@@ -785,7 +785,7 @@ void COMMON_BUILT_IN_BTI::expand(const COMPONENT* d)
   COMMON_COMPONENT::expand(d);
   trace0(("COMMON_BUILT_IN_BTI::expand attaching " + modelname() ).c_str());
   attach_model(d);
-  COMMON_BUILT_IN_BTI* c = this;
+  COMMON_BUILT_IN_BTI* c = this; USE(c);
   const MODEL_BUILT_IN_BTI* m = dynamic_cast<const MODEL_BUILT_IN_BTI*>(model());
   if (!m) {
     throw Exception_Model_Type_Mismatch(d->long_label(), modelname(), "bti");
@@ -806,7 +806,7 @@ void COMMON_BUILT_IN_BTI::expand(const COMPONENT* d)
   _sdp = m->new_sdp(this);
   assert(_sdp);
   const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(_sdp);
-  assert(s);
+  assert(s); USE(s);
 
 
 
@@ -825,7 +825,7 @@ void COMMON_BUILT_IN_BTI::precalc_last(const CARD_LIST* par_scope)
 {
   assert(par_scope);
   COMMON_COMPONENT::precalc_last(par_scope);
-  COMMON_BUILT_IN_BTI* c = this;
+  COMMON_BUILT_IN_BTI* c = this; USE(c);
   const MODEL_BUILT_IN_BTI* m = prechecked_cast<const MODEL_BUILT_IN_BTI*>(model());
   assert(m);
   e_val(&(this->lambda), 1.0, par_scope);
@@ -834,7 +834,7 @@ void COMMON_BUILT_IN_BTI::precalc_last(const CARD_LIST* par_scope)
   _sdp = m->new_sdp(this);
   assert(_sdp);
   const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(_sdp);
-  assert(s);
+  assert(s); USE(s);
 
   //
   m->attach_rcds( (COMMON_BUILT_IN_RCD**) _RCD);
@@ -949,7 +949,7 @@ void DEV_BUILT_IN_BTI::expand()
   assert(m);
   assert(c->sdp());
   const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
 
   if (!subckt()) {
     new_subckt();
@@ -1060,7 +1060,7 @@ double DEV_BUILT_IN_BTI::vw()const{
   const MODEL_BUILT_IN_BTI* m = prechecked_cast<const MODEL_BUILT_IN_BTI*>(c->model());
   assert(m);
   const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
   const ADP_BUILT_IN_BTI* a = prechecked_cast<const ADP_BUILT_IN_BTI*>(adp()); a=a;
   double buf = 0;
   int i = m->rcd_number;
@@ -1141,7 +1141,7 @@ double DEV_BUILT_IN_BTI::tt_probe_num(const std::string& x)const
   const MODEL_BUILT_IN_BTI* m = prechecked_cast<const MODEL_BUILT_IN_BTI*>(c->model());
   assert(m);
   const SDP_BUILT_IN_BTI* s = prechecked_cast<const SDP_BUILT_IN_BTI*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
 //  const ADP_BUILT_IN_BTI* a = prechecked_cast<const ADP_BUILT_IN_BTI*>(adp());
 //  if(!a)untested0(("no a"+long_label()).c_str());
 

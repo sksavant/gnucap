@@ -52,7 +52,7 @@ void SDP_BUILT_IN_MOS2::init(const COMMON_COMPONENT* cc)
   const MODEL_BUILT_IN_MOS2* m = prechecked_cast<const MODEL_BUILT_IN_MOS2*>(c->model());
   assert(m);
   const CARD_LIST* par_scope = m->scope();
-  assert(par_scope);
+  assert(par_scope); USE(par_scope);
   // adjust: override
   // adjust: raw
   // adjust: calculated
@@ -78,7 +78,7 @@ TDP_BUILT_IN_MOS2::TDP_BUILT_IN_MOS2(const DEV_BUILT_IN_MOS* d)
   const MODEL_BUILT_IN_MOS2* m = prechecked_cast<const MODEL_BUILT_IN_MOS2*>(c->model());
   assert(m);
   const CARD_LIST* par_scope = d->scope();
-  assert(par_scope);
+  assert(par_scope); USE(par_scope);
     // final adjust: code_pre
 
       double temp = d->_sim->_temp_c + P_CELSIUS0;

@@ -52,7 +52,7 @@ void SDP_BUILT_IN_MOS123::init(const COMMON_COMPONENT* cc)
   const MODEL_BUILT_IN_MOS123* m = prechecked_cast<const MODEL_BUILT_IN_MOS123*>(c->model());
   assert(m);
   const CARD_LIST* par_scope = m->scope();
-  assert(par_scope);
+  assert(par_scope); USE(par_scope);
   // adjust: override
     this->cgate = m->cox * w_eff * l_eff;
     this->phi = m->phi;
@@ -213,7 +213,7 @@ ADP_BUILT_IN_MOS123::ADP_BUILT_IN_MOS123( COMPONENT* c, const std::string name_i
   const MODEL_BUILT_IN_MOS123* m = prechecked_cast<const MODEL_BUILT_IN_MOS123*>(cc->model());
   assert(m);
   const CARD_LIST* par_scope = m->scope();
-  assert(par_scope);
+  assert(par_scope); USE(par_scope);
   // adjust: override
   // adjust: raw
   // adjust: calculated
@@ -228,6 +228,7 @@ ADP_CARD* MODEL_BUILT_IN_MOS123::new_adp( COMPONENT* c)const
   assert(c);
   const MODEL_BUILT_IN_MOS123* m = this;
   const COMMON_COMPONENT* cc = prechecked_cast<const COMMON_COMPONENT*>(c->common());
+  USE(cc);
   std::cerr << "MODEL_BUILT_IN_MOS123::new_adp for " << c->long_label() << "\n";
 
   assert(c->common() != NULL);
@@ -411,7 +412,7 @@ void MODEL_BUILT_IN_MOS123::do_tr_stress( const COMPONENT* c ) const
   const COMMON_COMPONENT* cc = c->common();
   const MODEL_BUILT_IN_MOS123* m = prechecked_cast<const MODEL_BUILT_IN_MOS123*>(cc->model());
   //const DEV_BUILT_IN_MOS* d = (const DEV_BUILT_IN_MOS*)c;
-  assert(m == this);
+  assert(m == this); USE(m);
   //ADP_BUILT_IN_MOS123* a = (ADP_BUILT_IN_MOS123*) c->adp();
   // cout << "stress\n";
 

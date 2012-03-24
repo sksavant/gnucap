@@ -41,6 +41,8 @@ inline void fixzero(double *z, double r)
 /* fixzero: force numbers near zero to zero - returns value */
 inline long double  fixzero(long double z, long double r)
 {
+  unreachable();
+  USE(r);
   assert(z == z);
   assert(r == r);
   return  z;
@@ -73,4 +75,5 @@ inline double dn_sum(double a, double b)
 #endif
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+// vim:ts=8:sw=2:et:
 #endif

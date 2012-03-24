@@ -669,7 +669,7 @@ void node_t::new_sckt_node(const std::string& node_name, const CARD_LIST* scope)
 {
 
   std::string::size_type dotplace = node_name.find_last_of(".");
-  assert(dotplace == std::string::npos) ;
+  assert(dotplace == std::string::npos); USE(dotplace);
 
   assert(scope);
   new_node(node_name, scope);

@@ -77,7 +77,7 @@ TDP_BUILT_IN_MOS3::TDP_BUILT_IN_MOS3(const DEV_BUILT_IN_MOS* d)
   const MODEL_BUILT_IN_MOS3* m = prechecked_cast<const MODEL_BUILT_IN_MOS3*>(c->model());
   assert(m);
   const CARD_LIST* par_scope = d->scope();
-  assert(par_scope);
+  assert(par_scope); USE(par_scope);
     // final adjust: code_pre
 
       double temp = d->_sim->_temp_c + P_CELSIUS0;
@@ -432,7 +432,7 @@ void MODEL_BUILT_IN_MOS3::do_stress_apply(COMPONENT* brh) const
   const COMMON_BUILT_IN_MOS* c = (const COMMON_BUILT_IN_MOS*)(d->common());
   assert(c);
   const SDP_BUILT_IN_MOS3* s = (const SDP_BUILT_IN_MOS3*)(c->sdp());
-  assert(s);
+  assert(s); USE(s);
   ADP_BUILT_IN_MOS3* a = (ADP_BUILT_IN_MOS3*)(d->adp());
   assert(a);
 

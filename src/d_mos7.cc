@@ -234,7 +234,7 @@ TDP_BUILT_IN_MOS7::TDP_BUILT_IN_MOS7(const DEV_BUILT_IN_MOS* d)
   const MODEL_BUILT_IN_MOS7* m = prechecked_cast<const MODEL_BUILT_IN_MOS7*>(c->model());
   assert(m);
   const CARD_LIST* par_scope = d->scope();
-  assert(par_scope);
+  assert(par_scope); USE(par_scope);
     // final adjust: code_pre
 
       temp = d->_sim->_temp_c + P_CELSIUS0;

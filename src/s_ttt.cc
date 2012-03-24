@@ -283,7 +283,7 @@ void TTT::do_initial_dc(){
 	CARD_LIST::card_list.do_forall( &CARD::tr_begin );
 	_sim->_phase = p_INIT_DC;
 	bool _converged = solve_with_homotopy(OPT::DCBIAS,TRANSIENT::_trace);
-	assert(_converged);
+	assert(_converged); USE(_converged); incomplete();
 
 //	 review();
 	_accepted = true;
@@ -1302,7 +1302,7 @@ void TTT::store_results_tt(double x)
 	int i=0;
 	assert( _sim->_mode  == s_TTT );
 	if (!IO::plotout.any()) {
-		assert(x != NOT_VALID);
+		assert(x != NOT_VALID); USE(x);
 		for (PROBELIST::const_iterator
 				p=printlist().begin();  p!=printlist().end();  ++p) {
 			_tt_store[i++] =  (*p)->value();

@@ -537,7 +537,7 @@ void COMMON_BUILT_IN_DIODE::expand(const COMPONENT* d)
 {
   COMMON_COMPONENT::expand(d);
   attach_model(d);
-  COMMON_BUILT_IN_DIODE* c = this;
+  COMMON_BUILT_IN_DIODE* c = this; USE(c);
   const MODEL_BUILT_IN_DIODE* m = dynamic_cast<const MODEL_BUILT_IN_DIODE*>(model());
   if (!m) {
     throw Exception_Model_Type_Mismatch(d->long_label(), modelname(), "diode");
@@ -548,7 +548,7 @@ void COMMON_BUILT_IN_DIODE::expand(const COMPONENT* d)
   _sdp = m->new_sdp(this);
   assert(_sdp);
   const SDP_BUILT_IN_DIODE* s = prechecked_cast<const SDP_BUILT_IN_DIODE*>(_sdp);
-  assert(s);
+  assert(s); USE(s);
 
   // subcircuit commons, recursive
   assert(c == this);
@@ -605,7 +605,7 @@ void COMMON_BUILT_IN_DIODE::precalc_last(const CARD_LIST* par_scope)
   _sdp = m->new_sdp(this);
   assert(_sdp);
   const SDP_BUILT_IN_DIODE* s = prechecked_cast<const SDP_BUILT_IN_DIODE*>(_sdp);
-  assert(s);
+  assert(s); USE(s);
 
   // subcircuit commons, recursive
   assert(c == this);
@@ -627,7 +627,7 @@ void EVAL_BUILT_IN_DIODE_Cj::tr_eval(ELEMENT* d)const
   const COMMON_BUILT_IN_DIODE* c = prechecked_cast<const COMMON_BUILT_IN_DIODE*>(p->common());
   assert(c);
   const SDP_BUILT_IN_DIODE* s = prechecked_cast<const SDP_BUILT_IN_DIODE*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
   const MODEL_BUILT_IN_DIODE* m = prechecked_cast<const MODEL_BUILT_IN_DIODE*>(c->model());
   assert(m);
 
@@ -691,7 +691,7 @@ void EVAL_BUILT_IN_DIODE_Yj::tr_eval(ELEMENT* d)const
   const COMMON_BUILT_IN_DIODE* c = prechecked_cast<const COMMON_BUILT_IN_DIODE*>(p->common());
   assert(c);
   const SDP_BUILT_IN_DIODE* s = prechecked_cast<const SDP_BUILT_IN_DIODE*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
   const MODEL_BUILT_IN_DIODE* m = prechecked_cast<const MODEL_BUILT_IN_DIODE*>(c->model());
   assert(m);
 
@@ -920,7 +920,7 @@ void DEV_BUILT_IN_DIODE::expand()
   assert(m);
   assert(c->sdp());
   const SDP_BUILT_IN_DIODE* s = prechecked_cast<const SDP_BUILT_IN_DIODE*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
   if (!subckt()) {
     new_subckt();
   }else{
@@ -1028,9 +1028,9 @@ double DEV_BUILT_IN_DIODE::tr_probe_num(const std::string& x)const
   const COMMON_BUILT_IN_DIODE* c = prechecked_cast<const COMMON_BUILT_IN_DIODE*>(common());
   assert(c);
   const MODEL_BUILT_IN_DIODE* m = prechecked_cast<const MODEL_BUILT_IN_DIODE*>(c->model());
-  assert(m);
+  assert(m); USE(m);
   const SDP_BUILT_IN_DIODE* s = prechecked_cast<const SDP_BUILT_IN_DIODE*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
   const ADP_BUILT_IN_DIODE* a = prechecked_cast<const ADP_BUILT_IN_DIODE*>(adp()); a=a;
 
   if (Umatch(x, "v{d} ")) {
@@ -1096,9 +1096,9 @@ double DEV_BUILT_IN_DIODE::tt_probe_num(const std::string& x)const
   const COMMON_BUILT_IN_DIODE* c = prechecked_cast<const COMMON_BUILT_IN_DIODE*>(common());
   assert(c);
   const MODEL_BUILT_IN_DIODE* m = prechecked_cast<const MODEL_BUILT_IN_DIODE*>(c->model());
-  assert(m);
+  assert(m); USE(m);
   const SDP_BUILT_IN_DIODE* s = prechecked_cast<const SDP_BUILT_IN_DIODE*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
   // const ADP_BUILT_IN_DIODE* a = prechecked_cast<const ADP_BUILT_IN_DIODE*>(adp());
   //  if(!a)untested0("no a");
 
@@ -1115,7 +1115,7 @@ double DEV_BUILT_IN_DIODE::tt_probe_num(const std::string& x)const
 void ADP_BUILT_IN_DIODE::init(const COMPONENT* cc)
 {
   trace0(( "ADP_BUILT_IN_DIODE::init " + cc->short_label() ).c_str() );
-  assert(cc);
+  assert(cc); USE(cc);
 }
 
 /*--------------------------------------------------------------------------*/

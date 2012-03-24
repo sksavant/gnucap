@@ -266,11 +266,11 @@ TDP_BUILT_IN_MOS8::TDP_BUILT_IN_MOS8(const DEV_BUILT_IN_MOS* d)
   const SDP_BUILT_IN_MOS8* s = prechecked_cast<const SDP_BUILT_IN_MOS8*>(c->sdp());
   assert(s);
   const ADP_BUILT_IN_MOS8* a = (const ADP_BUILT_IN_MOS8*)(d->adp());
-  assert(a);
+  assert(a); USE(a);
   const MODEL_BUILT_IN_MOS8* m = prechecked_cast<const MODEL_BUILT_IN_MOS8*>(c->model());
   assert(m);
   const CARD_LIST* par_scope = d->scope();
-  assert(par_scope);
+  assert(par_scope); USE(par_scope);
     // final adjust: code_pre
 
       temp = d->_sim->_temp_c + P_CELSIUS0;
@@ -5214,7 +5214,7 @@ void MODEL_BUILT_IN_MOS8::do_stress_apply( COMPONENT* brh) const
   const COMMON_BUILT_IN_MOS* c = (const COMMON_BUILT_IN_MOS*)(d->common());
   assert(c);
   const SDP_BUILT_IN_MOS8* s = (const SDP_BUILT_IN_MOS8*)(c->sdp());
-  assert(s);
+  assert(s); USE(s);
   ADP_BUILT_IN_MOS8* a = (ADP_BUILT_IN_MOS8*)(d->adp());
   assert(a);
 

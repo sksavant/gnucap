@@ -690,7 +690,7 @@ void CARD_LIST::map_subckt_nodes(const CARD* model, const CARD* owner)
         assert(this);
         unsigned k = CKT_BASE::_sim->_total_nodes;
         owner->n_(i-1).new_sckt_node( label, this); // this correct??
-        assert (k+1 ==  CKT_BASE::_sim->_total_nodes);
+        assert (k+1 ==  CKT_BASE::_sim->_total_nodes); USE(k);
 	//map[i] = CKT_BASE::_sim->newnode_subckt();
         trace2("int map", i, owner->n_(i-1).t_() );
 	map[i] = owner->n_(i-1).t_();

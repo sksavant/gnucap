@@ -61,6 +61,7 @@ TDP_BUILT_IN_MOS1::TDP_BUILT_IN_MOS1(const DEV_BUILT_IN_MOS* d)
   assert(m);
   const CARD_LIST* par_scope = d->scope();
   assert(par_scope);
+  USE(par_scope);
     // final adjust: code_pre
 
       double temp = d->_sim->_temp_c + P_CELSIUS0;
@@ -325,7 +326,7 @@ void MODEL_BUILT_IN_MOS1::tr_eval(COMPONENT* brh)const
   const ADP_BUILT_IN_MOS* a = prechecked_cast<const ADP_BUILT_IN_MOS*>(d->adp());
   assert(a);
   const SDP_BUILT_IN_MOS1* s = prechecked_cast<const SDP_BUILT_IN_MOS1*>(c->sdp());
-  assert(s);
+  assert(s); USE(s);
   const MODEL_BUILT_IN_MOS1* m = this;
   const TDP_BUILT_IN_MOS1 T(d);
   const TDP_BUILT_IN_MOS1* t = &T;
