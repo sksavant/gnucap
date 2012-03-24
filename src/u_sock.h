@@ -209,7 +209,9 @@ class ServerSocket : public Socket {
     virtual ~ServerSocket();
 
     SocketStream listen();
-    operator SocketStream(){ assert(false);} // not implemented.
+    operator SocketStream(){ assert(false);
+      return SocketStream();
+    } // not implemented.
 };
 /**
  * @brief ClientSocket does the obvious, it can connect to any socket
