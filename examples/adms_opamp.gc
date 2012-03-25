@@ -5,7 +5,7 @@ V2 nin_p 0  0.00001 AC 1 PULSE iv=0 pv=10 delay=0.000001
 V3 nin_n 0  0.00000
 
 .verilog
-paramset myop shared_opamp;
+paramset myop opamp;
 	.f0dB = 1e6
 	.Rf = 1
 endparamset

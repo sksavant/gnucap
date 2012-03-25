@@ -6,7 +6,7 @@
 
 `define PI	3.1415926535
 
-module shared_opamp(out, vref, inp, inn, vddp, vddn);
+module opamp(out, vref, inp, inn, vddp, vddn);
 	inout  out, vref, inp, inn, vddp, vddn;
 	electrical out, vref, inp, inn, vddp, vddn;
 
