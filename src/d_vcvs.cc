@@ -117,6 +117,7 @@ void DEV_VCVS::do_ac()
 {
   if (using_ac_eval()) {
     ac_eval();
+    trace2("DEV_VCVS::do_ac", _loss0, _ev);
     _acg = -_loss0 * _ev;
   }else{
     assert(_ev == _y[0].f1);

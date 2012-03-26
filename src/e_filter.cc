@@ -158,7 +158,14 @@ void EVAL_BM_IR::precalc_last(const CARD_LIST*Scope)
 	m->timestep( _time_step );
 	_last = -inf;
 	_v1 = _v0 = 0;
-	assert(!_hist); // hmm
+
+	if(_hist) untested();
+}
+/*-------------------------------------------------------------*/
+double EVAL_BM_IR::freq_step()const
+{
+	const MODEL_IR* m = dynamic_cast<const MODEL_IR*>(model());
+	return 1./ _time_step / double(m->size()/2+1);
 }
 /*-------------------------------------------------------------*/
 namespace FILTER_DISPATCHER { 

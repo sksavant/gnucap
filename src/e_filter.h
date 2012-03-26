@@ -24,7 +24,7 @@
 
 #include "e_model.h"
 #include "bm.h"
-
+#include "m_fft.h"
 // impulse response filter
 class EVAL_BM_IR : public EVAL_BM_ACTION_BASE {
 	private:
@@ -43,6 +43,7 @@ class EVAL_BM_IR : public EVAL_BM_ACTION_BASE {
 		~EVAL_BM_IR() {}
 		bool		operator==(const COMMON_COMPONENT&)const;
 		double time_step()const{return _time_step;}
+		double freq_step()const ; // {return 1./_time_step * size();}
 		virtual bool parse_params_obsolete_callback(CS&);
 		//virtual?
 		TIME_PAIR tr_review(COMPONENT*);
@@ -65,7 +66,7 @@ class EVAL_BM_IR : public EVAL_BM_ACTION_BASE {
 		mutable double _last;
 		mutable double _v0;
 		mutable double _v1;
-		mutable double* _coef;
+		//mutable double* _coef;
 	protected: // filter evaluators
 		double infinite(double) const;
 		//template<size_t O>
@@ -90,6 +91,7 @@ class MODEL_IR : public MODEL_CARD {
 		CARD* clone()const {return new MODEL_IR(*this);}
 	private:
 		mutable double _time_step; // timestep for coeff generator.
+		spec_container* _spec;
 	public:// tr analysis
 		virtual bool do_tr();
 		virtual void tr_begin();
@@ -220,5 +222,6 @@ inline void ALPHA_COEF::set_param_by_name(std::string Name, std::string Value)
   if (Umatch (Name,"alpha")) { _alpha = Value; }
   else{ MODEL_IR::set_param_by_name(Name,Value);}
 }
+/*-------------------------------------------------------------------------------*/
 
 #endif

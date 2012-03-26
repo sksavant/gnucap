@@ -39,8 +39,10 @@ class EVAL_BM_FIR : public EVAL_BM_IR {
 		void		print_common_obsolete_callback(OMSTREAM&, LANGUAGE*)const;
 		void  	expand(const COMPONENT*);
 //		void		tr_eval(ELEMENT*)const; //use _IR
+		void		ac_eval(ELEMENT*)const; 
+		bool has_ac_eval()const{return true;} // true anyway
 		std::string	name()const	{untested();return modelname().c_str();}
-		bool		ac_too()const		{untested();return false;} // how to do this?
+		bool		ac_too()const		{untested();return true;} // how to do this?
 	private:
 //		mutable double _last;
 	//	double _time_step;
@@ -51,18 +53,20 @@ class EVAL_BM_FIR : public EVAL_BM_IR {
 class MODEL_FIR : public MODEL_IR {
 	public:
 		PARAMETER< dpv > _coeff;
-		SPLINE* _spline;
 	private:
-		void new_coef(){} // hmmm not necessary?
+#ifdef HAVE_FFTW_H
+		mutable spec_container* _spec;
+#endif
+		// void new_coef(){} // hmmm not necessary?
+
 		explicit MODEL_FIR(const MODEL_FIR& p): MODEL_IR(p),
-		_coeff(p._coeff) {
-			trace2("cloned MODEL_FIR", _coeff, dpv(_coeff));
-		}
+		_coeff(p._coeff), _spec(0) {}
 	public:
 		explicit MODEL_FIR();
 		virtual ~MODEL_FIR();
 		void set_param_by_name(std::string Name, std::string Value);
 		//void tr_begin();
+		COMPLEX ac_spec( const EVAL_BM_IR*, double)const;
 	private: // override virtual
 		std::string dev_type()const		{return "fir";}
 		void  precalc_first();
@@ -76,6 +80,7 @@ class MODEL_FIR : public MODEL_IR {
 		// bool parse_params_obsolete_callback(CS&);
 
 		// void tr_eval(COMPONENT*)const;
+		void ac_fft()const;
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -117,6 +122,58 @@ void EVAL_BM_FIR::expand(const COMPONENT*d)
     throw Exception_Model_Type_Mismatch(d->long_label(), modelname(), "fir");
   }else{
   }
+}
+/*--------------------------------------------------------------------------*/
+COMPLEX MODEL_FIR::ac_spec( const EVAL_BM_IR* c, double f )const
+{
+#ifdef HAVE_FFTW_H
+	if(!_spec)
+		ac_fft();
+	assert(_spec);
+	assert(c->time_step());
+	COMPLEX z = _spec->interpolate( c->freq_step() * f);
+	return z; // COMPLEX(1)/z;
+#else
+	return COMPLEX(0,0);
+#endif
+}
+/*--------------------------------------------------------------------------*/
+void EVAL_BM_FIR::ac_eval(ELEMENT*d)const
+{
+	const MODEL_FIR* m = dynamic_cast<const MODEL_FIR*>(model());
+	d->_ev = m->ac_spec(this, d->_sim->_freq);
+	trace2("ac_spec", d->_sim->_freq, d->_ev);
+}
+/*--------------------------------------------------------------------------*/
+void MODEL_FIR::ac_fft()const
+{
+	const MODEL_FIR* m = this;
+#ifdef HAVE_FFTW_H
+	// fixme move to m_fft.h
+	assert(!_spec);
+	//----
+	size_t N = m->size();
+	fftw_real in[N];
+
+	unsigned l = 0;
+	for (list<double>::const_iterator i = _coef.begin(); 
+			i != _coef.end(); i++) {
+		trace1("MODEL_FIR::ac_fft collecting", *i);
+		in[l++] = double(*i);
+	}
+	
+  	fftw_real* out = new fftw_real[N];
+	rfftw_plan p;
+	p = rfftw_create_plan((int)N, FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE);
+	rfftw_one(p, in, out);
+	rfftw_destroy_plan(p);
+
+	for(unsigned j=0; j<N; j++){
+		trace2("MODEL_FIR::ac_fft spec", out[j], N);
+	}
+
+	_spec = new spec_container(out,(int)N);
+#endif
 }
 /*--------------------------------------------------------------------------*/
 void EVAL_BM_IR::tr_eval(ELEMENT*d)const
@@ -165,7 +222,7 @@ void EVAL_BM_IR::tr_eval(ELEMENT*d)const
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 MODEL_FIR::MODEL_FIR() : MODEL_IR(NULL),
-  _coeff( PARAMETER< dpv>() ) {}
+  _coeff( PARAMETER< dpv>() ), _spec(0) {}
 /*--------------------------------------------------------------------------*/
 MODEL_FIR::~MODEL_FIR(){}
 /*--------------------------------------------------------------------------*/

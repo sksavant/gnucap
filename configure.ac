@@ -246,6 +246,15 @@ AC_CHECK_LIB([gsl], [gsl_blas_dgemm])
 AC_CHECK_LIB([gsl], [gsl_fit_linear])
 AC_CHECK_FUNCS([sqrt])
 
+
+dnl ----------------------------------------------------
+AC_CHECK_HEADERS([fftw.h], [AC_DEFINE([HAVE_FFTW_H], [1],
+                           [Define to 1 if you have fftw])] )
+
+AC_CHECK_LIB([fftw], [fftw_create_plan], LIBS="$LIBS -lfftw")
+# fixme...
+AC_CHECK_LIB([fftw], [fftw_create_plan], LIBS="$LIBS -lrfftw")
+
 dnl ----------------------------------------------------
 # some more checks. some should depend on switches. but the switches arent
 # there yet

@@ -67,3 +67,4 @@
 - ir filtering kit
    - fir filter bm
    - iir based noise generator
+   - ac analysis for FIR filters
