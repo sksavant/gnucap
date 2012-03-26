@@ -17,8 +17,8 @@ R1 nout 0 1000k
 .print dc V(nodes)
 .dc V2 -0.00002 0.00009 0.00001
 
-.print ac v(nodes)
-.ac DEC 2 1 1000000
+.print ac v(nodes) vp(nout)
+.ac DEC 2 1 10000000
 
 *.print tran v(nin_p) v(nout) V(OP.v1) i_unlim(OP) Im(OP)
 .print tran v(nin_p) v(nout)
