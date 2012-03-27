@@ -91,7 +91,9 @@ class MODEL_IR : public MODEL_CARD {
 		CARD* clone()const {return new MODEL_IR(*this);}
 	private:
 		mutable double _time_step; // timestep for coeff generator.
+#ifdef HAVE_FFTW_H
 		spec_container* _spec;
+#endif
 	public:// tr analysis
 		virtual bool do_tr();
 		virtual void tr_begin();

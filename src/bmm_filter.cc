@@ -60,7 +60,11 @@ class MODEL_FIR : public MODEL_IR {
 		// void new_coef(){} // hmmm not necessary?
 
 		explicit MODEL_FIR(const MODEL_FIR& p): MODEL_IR(p),
-		_coeff(p._coeff), _spec(0) {}
+		_coeff(p._coeff)
+#ifdef HAVE_FFTW_H
+				 , _spec(0)
+#endif
+  	{}
 	public:
 		explicit MODEL_FIR();
 		virtual ~MODEL_FIR();
@@ -126,6 +130,7 @@ void EVAL_BM_FIR::expand(const COMPONENT*d)
 /*--------------------------------------------------------------------------*/
 COMPLEX MODEL_FIR::ac_spec( const EVAL_BM_IR* c, double f )const
 {
+	USE(c); USE(f);
 #ifdef HAVE_FFTW_H
 	if(!_spec)
 		ac_fft();
@@ -145,10 +150,10 @@ void EVAL_BM_FIR::ac_eval(ELEMENT*d)const
 	trace2("ac_spec", d->_sim->_freq, d->_ev);
 }
 /*--------------------------------------------------------------------------*/
+#ifdef HAVE_FFTW_H
 void MODEL_FIR::ac_fft()const
 {
 	const MODEL_FIR* m = this;
-#ifdef HAVE_FFTW_H
 	// fixme move to m_fft.h
 	assert(!_spec);
 	//----
@@ -173,8 +178,8 @@ void MODEL_FIR::ac_fft()const
 	}
 
 	_spec = new spec_container(out,(int)N);
-#endif
 }
+#endif
 /*--------------------------------------------------------------------------*/
 void EVAL_BM_IR::tr_eval(ELEMENT*d)const
 {
@@ -222,7 +227,11 @@ void EVAL_BM_IR::tr_eval(ELEMENT*d)const
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 MODEL_FIR::MODEL_FIR() : MODEL_IR(NULL),
-  _coeff( PARAMETER< dpv>() ), _spec(0) {}
+  _coeff( PARAMETER< dpv>() )
+#ifdef HAVE_FFTW_H
+								 , _spec(0)
+#endif
+{}
 /*--------------------------------------------------------------------------*/
 MODEL_FIR::~MODEL_FIR(){}
 /*--------------------------------------------------------------------------*/
