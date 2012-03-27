@@ -51,6 +51,7 @@ gnucap-conf
 
 # adms stuff
 adms/gnucap.xml
+adms/gnucap_*.xml
 src/discipline.h
 src/d_hicum0.h
 src/d_hicum0.cc
@@ -66,10 +67,10 @@ src/d_dtest.cc
 src/*.hxx
 src/.d*adms
 src/.index.va.adms
+
+# are there any?
 src/*.xml
 src/*.htm
-
-
 
 #verilog stuff
 d_invert.cc
@@ -81,4 +82,5 @@ d_latch.h
 d_clock.cc
 d_clock.h
 
-
+TAGS
+tags
