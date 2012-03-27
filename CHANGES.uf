@@ -68,3 +68,4 @@
    - fir filter bm
    - iir based noise generator
    - ac analysis for FIR filters
+- added opamp adms model

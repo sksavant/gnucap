@@ -12,9 +12,17 @@
 
 
 #### ADMS ####
-if admsXml is in $PATH, some adms-va devices will be compiled.
+if admsXml is in $PATH during during configuration, some adms-va devices will
+be compiled. these include
+- d_hicum0.va	hicum0
+- d_opamp.va	opamp
+In any case --enable-adms and --disable-adms override this.
 
-in any case --enable-adms and --disable-adms override this.
+gnucap-adms is a helper script that can be used to generate c code.
+the invocation "gnucap-adms dev.va" generates dev.cc together with some hxx
+files. gnucap-conf takes care of the include paths, just type
+$ gcc -fPIC $(gnucap-conf --cppflags) --shared dev.cc -o dev.so
+to get a share object, which can be loaded from gnucap.
 
 ##############
 
