@@ -137,6 +137,8 @@ const std::string PROBE::label(void)const
   }
 }
 /*--------------------------------------------------------------------------*/
+// to have string probes, one would need a formatted value...
+// string PROBE::format(string); or something.
 double PROBE::value(void)const
 {
   trace0(("PROBE::value()"+_what).c_str());

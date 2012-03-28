@@ -3,7 +3,7 @@
 - (more) tests
 - OPT:: doesnt read from params
 - Inf-Inf repair (nan)
-- make adms work
 - rcm node ordering
 - fix/reenable modelgen (or replace)
 - adms: just stamp dynamic entries during do_tr
+- probe(0) that reports which device causes small step
