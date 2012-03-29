@@ -132,7 +132,7 @@ bool OPT::set_values(CS& cmd)
 	   || Set(cmd, "f{orward}", &order,	oFORWARD)
 	   || Set(cmd, "a{uto}",    &order,	oAUTO)
 	   || Set(cmd, "t{ree}",    &order,	oTREE)
-	   || Set(cmd, "c{comp}",    &order,	oCOMP)
+	   || Set(cmd, "c{omp}",    &order,	oCOMP)
 	   || cmd.warn(bWARNING, "need reverse, forward, auto, tree, comp")))
       || (cmd.umatch("mode {=}") &&
 	  (ONE_OF
