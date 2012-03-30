@@ -13,3 +13,4 @@
 - cannot switch back from spectre parser
 - adms: if statement does not necessarily mark variables dynamic (but should!)
 - expression parser error messages sometimes uninformative ("- 10")
+- touch src/*.va; make -j5 => strange adms stack corruption
