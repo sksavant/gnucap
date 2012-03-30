@@ -125,7 +125,7 @@ static void do_getopt(int argc,  char * const * argv)
   nsecs = 0;
   tfnd = 0;
   flags = 0;
-  while ((opt = getopt(argc, argv, "bqt:")) != -1) {
+  while ((opt = getopt(argc, argv, "c:b:qt:")) != -1) {
     switch (opt) {
       case 'q':
         OPT::quiet = true;
@@ -134,6 +134,7 @@ static void do_getopt(int argc,  char * const * argv)
         nsecs = atoi(optarg);
         tfnd = 1;
         break;
+      case 'c':
       case 'b':
         break;
       default: /* '?' */
@@ -191,7 +192,6 @@ static void process_cmd_line(int argc, char *const  *argv)
 	  ++ii;
           // set languacge to spice (since we have defined acs as default.
           // this is a hack and might be a bug as well.
-          CMD::command("options lang=spice", &CARD_LIST::card_list);
 	  if (ii < argc) {
             // dashier startet den OPT::language modus
             trace1("-b...", OPT::language);
