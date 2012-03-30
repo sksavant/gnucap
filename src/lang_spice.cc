@@ -732,7 +732,7 @@ std::string LANG_SPICE_BASE::find_type_in_string(CS& cmd)
     break;
   }
   cmd.reset(here);
-  trace0(("returning " + s).c_str());
+  trace1("LANG_SPICE_BASE::find_type_in_string returning", s);
   return s;
 }
 /*--------------------------------------------------------------------------*/
