@@ -1146,7 +1146,7 @@ void SOCK::cap_prepare(void){
       trace1("SOCK::cap_prepare, attaching common", _caplist[ii]->long_label());
       //      _sweepval[ii] = _zap[ii]->set__value();	// point to value to patch
       COMMON_COMPONENT* c = bm_dispatcher.clone("eval_bm_value");
-      c->set_value( _caplist[ii]->value() );
+      c->set_value( (double)_caplist[ii]->value() );
       COMMON_COMPONENT* dc = c->deflate();
       assert(dc);
       //
