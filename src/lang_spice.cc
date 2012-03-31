@@ -1078,7 +1078,7 @@ class CMD_RUN : public CMD {
 public:
   void do_it(CS& cmd, CARD_LIST* Scope)
   {
-    trace1(("CMD_RUN::do_iT " + std::string(cmd)).c_str(), (long int) ENV::run_mode);
+    trace2("CMD_RUN::do_it <", cmd.fullstring(), ENV::run_mode);
     while (cmd.match1('<')) {untested();
       command("clear", Scope);
       cmd.skip();
