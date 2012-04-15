@@ -164,6 +164,7 @@ static void parse_ports(CS& cmd, COMPONENT* x)
   assert(x);
 
   if (cmd >> '(') {
+    cmd.eat_lines();
     if (cmd.is_alnum()) {
       // by order
       int index = 0;
@@ -176,8 +177,10 @@ static void parse_ports(CS& cmd, COMPONENT* x)
 	}catch (Exception_Too_Many& e) {untested();
 	  cmd.warn(bDANGER, here, e.message());
 	}
+        cmd.eat_lines();
       }
     }else{
+      cmd.eat_lines();
       // by name
       while (cmd >> '.') {
 	unsigned here = cmd.cursor();
@@ -188,6 +191,7 @@ static void parse_ports(CS& cmd, COMPONENT* x)
 	}catch (Exception_No_Match&) {untested();
 	  cmd.warn(bDANGER, here, "mismatch, ignored");
 	}
+        cmd.eat_lines();
       }
     }
     cmd >> ')';

@@ -1,0 +1,14 @@
+verilog
+
+resistor r1( a, b);
+resistor r2(
+       a,
+       b
+);
+resistor r3( .n(a), .p(b));
+resistor r4( .n(a),
+             .p(b)
+);
+
+list
+end
