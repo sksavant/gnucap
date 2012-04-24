@@ -248,12 +248,12 @@ AC_CHECK_FUNCS([sqrt])
 
 
 dnl ----------------------------------------------------
-AC_CHECK_HEADERS([fftw.h], [AC_DEFINE([HAVE_FFTW_H], [1],
+AC_CHECK_HEADERS([rfftw.h], [AC_DEFINE([HAVE_FFTW_H], [1],
                            [Define to 1 if you have fftw])] )
 
+# fixme: complain if HAVE_FFTW
 AC_CHECK_LIB([fftw], [fftw_create_plan], LIBS="$LIBS -lfftw")
-# fixme...
-AC_CHECK_LIB([fftw], [fftw_create_plan], LIBS="$LIBS -lrfftw")
+AC_CHECK_LIB([rfftw], [rfftw_create_plan], LIBS="-lrfftw $LIBS")
 
 dnl ----------------------------------------------------
 # some more checks. some should depend on switches. but the switches arent
