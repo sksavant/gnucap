@@ -31,17 +31,35 @@
 #include "u_opt.h"
 #include "e_cardlist.h"
 /*--------------------------------------------------------------------------*/
+using namespace std;
+/*--------------------------------------------------------------------------*/
 class LANGUAGE;
 /*--------------------------------------------------------------------------*/
+class PARA_BASE {
+  protected:
+    std::string _s;
+
+  public:
+    PARA_BASE( ): _s(){}
+    PARA_BASE(const PARA_BASE& p );
+
+    PARA_BASE( const string s ): _s(s){}
+    virtual ~PARA_BASE(){}
+
+    bool has_hard_value()const {return (_s != "");}
+
+    virtual void operator=(const std::string& s) = 0;
+
+};
+/*--------------------------------------------------------------------------*/
 template <class T>
-class PARAMETER {
+class PARAMETER : PARA_BASE {
 private:
   mutable T _v;
-  std::string _s;
 public:
-  explicit PARAMETER() :_v(NOT_INPUT), _s() {}
-  PARAMETER(const PARAMETER<double>& p) :_v(p._v), _s(p._s) {}
-  explicit PARAMETER(T v) :_v(v), _s() {}
+  explicit PARAMETER() : PARA_BASE(), _v(NOT_INPUT) {}
+  PARAMETER(const PARAMETER<double>& p): PARA_BASE(p), _v(p._v) {}
+  explicit PARAMETER(T v) :PARA_BASE(), _v(v) {}
   //explicit PARAMETER(T v, const std::string& s) :_v(v), _s(s) {untested();}
   ~PARAMETER() {}
   
