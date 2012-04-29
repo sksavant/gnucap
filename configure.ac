@@ -97,6 +97,9 @@ AC_CHECK_LIB([dl], [dlopen])
 # Checks for header files.
 #AC_CHECK_HEADERS([fcntl.h unistd.h])
 
+AC_CHECK_HEADERS([boost/assign.hpp], [],
+                 [AC_MSG_ERROR(You need the Boost libraries.)])
+
 # Checks for typedefs, structures, and compiler characteristics.
 
 # Checks for library functions.
