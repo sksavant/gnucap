@@ -285,6 +285,14 @@ COMPONENT* LANG_VERILOG::parse_instance(CS& cmd, COMPONENT* x)
   return x;
 }
 /*--------------------------------------------------------------------------*/
+inline string try_harder(string type){
+  if(bm_dispatcher[type.substr(1)]){
+    untested();
+    return(type.substr(0,1)+"source");
+  }
+  return type;
+}
+/*--------------------------------------------------------------------------*/
 std::string LANG_VERILOG::find_type_in_string(CS& cmd)
 {
   unsigned here = cmd.cursor();
@@ -294,6 +302,11 @@ std::string LANG_VERILOG::find_type_in_string(CS& cmd)
     type = "dev_comment";
   }else{
     cmd >> type;
+    if (type[0]=='v' || type[0]=='i'){
+      if(!device_dispatcher[type]){
+        type=try_harder(type);
+      }
+    }
   }
   cmd.reset(here);
   return type;
