@@ -1,0 +1,16 @@
+Makefile
+Makefile.in
+*.cache
+config.log
+config.status
+configure
+gesym-config
+system-gafrc
+aclocal.m4
+install-sh
+missing
+mkinstalldirs
+config.guess
+config.sub
+*~
+ChangeLog
