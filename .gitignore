@@ -9,8 +9,24 @@ gnucap/src/d_dio*.h
 gnucap/src/d_bjt.cc
 gnucap/src/d_bjt.h
 
+src/d_mos*.cc
+src/d_mos*.h
+src/d_dio*.cc
+src/d_dio*.h
+src/d_bjt.cc
+src/d_bjt.h
+
+*~
+*.swp
+*.swo
+
+geda-sym/*
+list
+resistor
 gnucap/src/gnucap
+/src/gnucap
 gnucap/modelgen/gnucap-modelgen
+modelgen/gnucap-modelgen
 
 gnucap/Makefile
 gnucap/doc/Makefile
@@ -18,15 +34,29 @@ gnucap/modelgen/Makefile
 gnucap/src/Makefile
 gnucap/examples/Makefile
 
+Makefile
+/doc/Makefile
+/modelgen/Makefile
+/src/Makefile
+/examples/Makefile
+
 gnucap/config.h
 gnucap/config.log
 gnucap/config.status
 
+config.h
+config.log
+config.status
+
 gnucap/modelgen/.deps
 gnucap/src/.deps
+modelgen/.deps/
+src/.deps
+
 
 gnucap/stamp-h1
-
+stamp-h1
+/src/verilog_und.cc
 
 #automatic files which are checked in anyway
 Makefile.in
