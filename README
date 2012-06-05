@@ -1,3 +1,11 @@
+README modified by 'Savant Krishna' "savant.2020@gmail.com"
+This  branch 'lang_gschem' is off the 2009.12.07 dev snapshot.
+Aims to add the functionality of parsing a schematic into a verilog netlist
+and building a schematic given a netlist in verilog.
+
+###############################################
+Original README file
+###############################################
 Readme for development snapshot 2007-02-21
 
 This is a development snapshot.  As such, there may be problems due to
