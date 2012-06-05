@@ -20,7 +20,8 @@ src/d_bjt.h
 *.swp
 *.swo
 
-geda-sym/*
+geda-sym/symbols/documentation/
+geda-sym/building/
 list
 resistor
 gnucap/src/gnucap
