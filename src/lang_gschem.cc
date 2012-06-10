@@ -1,8 +1,7 @@
 /* This file is the plugin for the gEDa/gschem plugin
- * The documentation of how this should work is at bit.ly/gnucapwiki which go to
- * http://gnucap.org/dokuwiki/doku.php?id=gnucap:user:language_plugin_for_gschem
- *
- * This file is part of "Gnucap", the Gnu Circuit Analysis Package
+ * The documentation of how this should work is at bit.ly(slash)gnucapwiki
+ * 
+ * This file is part of "Gnucap", the Gnu Circuit Analysis Package.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,3 +19,41 @@
  * 02110-1301, USA.
  *
  */
+#include "c_comand.h"
+#include "d_dot.h"
+#include "d_coment.h"
+#include "d_subckt.h"
+#include "e_model.h"
+#include "u_lang.h"
+/*--------------------------------------------------------------------------*/
+namespace {
+/*--------------------------------------------------------------------------*/
+class LANG_GSCHEM : public LANGUAGE {
+
+  public:
+//functions to be declared
+  private:
+
+
+}lang_gschem;
+
+DISPATCHER<LANGUAGE>::INSTALL d(&language_dispatcher, lang_gschem.name(),&lang_gschem)
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+//functions to be defined
+
+
+
+class CMD_GSCHEM : public CMD {
+public:
+    void do_it(CS&, CARD_LIST* Scope)
+    {
+    command("options lang=gschem", Scope);
+    }
+} p8;
+DISPATCHER<CMD>::INSTALL d8(&command_dispatcher, "gschem", &p8);
+/*----------------------------------------------------------------------*/
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+
