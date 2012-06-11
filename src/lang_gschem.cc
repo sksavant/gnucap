@@ -30,14 +30,50 @@ namespace {
 /*--------------------------------------------------------------------------*/
 class LANG_GSCHEM : public LANGUAGE {
 
-  public:
-//functions to be declared
-  private:
+public:
+    //
+    enum MODE {mDEFAULT, mPARAMSET} _mode;
+    mutable int arg_count;
+    enum {INACTIVE = -1};
+    //
+    std::string name()const {return "gschem";}
+    bool case_insensitive()const {return false;}
+    UNITS units()const {return uSI;}
 
+public: //functions to be declared
+    std::string arg_front()const {
+        return " "; //arbitrary
+    }
+    std::string arg_mid()const {
+        return "="; //arbitrary
+    }
+    std::string arg_back()const {
+        return "";  //arbitrary
+    }
 
+public:
+    void		  parse_top_item(CS&, CARD_LIST*);
+    DEV_COMMENT*  parse_comment(CS&, DEV_COMMENT*);
+    DEV_DOT*	  parse_command(CS&, DEV_DOT*);
+    MODEL_CARD*	  parse_paramset(CS&, MODEL_CARD*);
+    MODEL_SUBCKT* parse_module(CS&, MODEL_SUBCKT*);
+    COMPONENT*	  parse_instance(CS&, COMPONENT*);
+    std::string	  find_type_in_string(CS&);    
+
+private:
+    void print_paramset(OMSTREAM&, const MODEL_CARD*);
+    void print_module(OMSTREAM&, const MODEL_SUBCKT*);
+    void print_instance(OMSTREAM&, const COMPONENT*);
+    void print_comment(OMSTREAM&, const DEV_COMMENT*);
+    void print_command(OMSTREAM& o, const DEV_DOT* c);
+
+private:
+    void print_args(OMSTREAM&, const MODEL_CARD*);
+    void print_args(OMSTREAM&, const COMPONENT*);
 }lang_gschem;
 
-DISPATCHER<LANGUAGE>::INSTALL d(&language_dispatcher, lang_gschem.name(),&lang_gschem)
+DISPATCHER<LANGUAGE>::INSTALL 
+    d(&language_dispatcher, lang_gschem.name(), &lang_gschem);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 //functions to be defined
