@@ -19,7 +19,9 @@ src/d_bjt.h
 *~
 *.swp
 *.swo
-
+doxygen/
+Doxyfile
+gh-pages/
 geda-sym/symbols/documentation/
 geda-sym/building/
 list
