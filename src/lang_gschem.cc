@@ -78,7 +78,12 @@ DISPATCHER<LANGUAGE>::INSTALL
 /*----------------------------------------------------------------------*/
 //functions to be defined
 
-
+//parse_top_item 
+void LANG_GSCHEM::parse_top_item(CS& cmd, CARD_LIST* Scope)
+{
+  cmd.get_line("gnucap-gschem>");
+  new__instance(cmd, NULL, Scope);
+}
 
 class CMD_GSCHEM : public CMD {
 public:
@@ -87,7 +92,8 @@ public:
     command("options lang=gschem", Scope);
     }
 } p8;
-DISPATCHER<CMD>::INSTALL d8(&command_dispatcher, "gschem", &p8);
+DISPATCHER<CMD>::INSTALL 
+    d8(&command_dispatcher, "gschem", &p8);
 /*----------------------------------------------------------------------*/
 }
 /*----------------------------------------------------------------------*/
