@@ -86,7 +86,7 @@ DISPATCHER<LANGUAGE>::INSTALL
  * The following don't mean anything to the electrical part of the circuit and
  * they are of type graphical
  *  version  v    * circle   V
- *  line     l    * arc      A
+ *  line     L    * arc      A
  *  picture  G    * path     H
  *  box      B    * text     T (not attributes)
  * The following have electrical meaning and are of type
@@ -110,6 +110,14 @@ DISPATCHER<LANGUAGE>::INSTALL
      *}
      *else{ cmd>>type;}
      */
+    graphical=["v","L","G","B","V","A","H","T"]
+    if (cmd >> "v" || cmd >> "L" || cmd >> "G" || cmd >> "B" || cmd >>"V" ||
+        cmd >> "A" || cmd >> "H" || cmd >> "T"){ type="dev_comment"}
+    else if (cmd >> "N"){ type="net";}
+    else if (cmd >> "U"){ type="bus";}
+    else if (cmd >> "P"){ type="pin";}
+    else if (cmd >> "C"){ type="component";}
+    else { } //Not matched with the type. What now?
     cmd.reset(here);//Reset cursor back to the position that 
                     //has been started with at beginning
     return type;    // returns the type of the string
