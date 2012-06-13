@@ -78,7 +78,73 @@ DISPATCHER<LANGUAGE>::INSTALL
 /*----------------------------------------------------------------------*/
 //functions to be defined
 
-//parse_top_item 
+
+
+/* find_type_in_string : specific to each language which gives the type of the
+ * cmd Eg: verilog : comment ,resistor etc
+ * In Gschem the broad high level types are
+ * The following don't mean anything to the electrical part of the circuit and
+ * they are of type graphical
+ *  version  v    * circle   V
+ *  line     l    * arc      A
+ *  picture  G    * path     H
+ *  box      B    * text     T (not attributes)
+ * The following have electrical meaning and are of type
+ *  net          N 
+ *  bus          U 
+ *  pin          P
+ *  component    C
+ *  attributes   T (enclosed in {})  // don't include in find_type_in_string
+ * Will check for type graphical (type=dev_comment) else type will be
+ * net or bus or pin or component\
+ */
+ std::string LANG_GSCHEM::find_type_in_string(CS& cmd)
+ {
+    unsigned here = cmd.cursor(); //store cursor position to reset back later
+    std::string type;   //stores type : should check device attribute.. 
+    // (**)to find how to check the type.. (**)
+    /*
+     *if((cmd>>"//")){
+     *   assert(here==0);
+     *   type="dev_comment";
+     *}
+     *else{ cmd>>type;}
+     */
+    cmd.reset(here);//Reset cursor back to the position that 
+                    //has been started with at beginning
+    return type;    // returns the type of the string
+    
+ }
+
+
+
+/*parse_top_item : To know:
+ *What does CS& refer to
+ *  CS stands for command string which is defined in ap.h and various functions   
+ *  on it are defined in ap*.cc
+ *what does get_line method on CS& do ?
+ *  get_line will ‘getlines’ from the file ptr, else if no file, get from 
+ *  keyboard (stdin) using getcmd (which will get a command, also log, echo etc)
+ *what is the class CARD_LIST* ?
+ *	
+ *what does new__instance of cmd mean?
+ *	It is defined in u_lang.cc. It does the following :
+ *	/11/find_type_in_string : specific to each language which gives the type of the  *cmd
+		Eg: verilog : comment ,resistor etc
+ * Then find_proto for the given type.
+ * Clone the instance : new_instance=proto->clone_instance()
+ * set the owner of the instance : new_instance->set_owner(owner)
+ * Then we parse the command using new_instance : x=parse_item(cmd,new_instance)
+ *		for und. parse_item : // See Stroustrup 15.4.5
+ *	 	if MODEL_SUBCKT, return parse_module()
+ *		elsif COMPONENT, return parse_instance()
+ * 		elsif MODEL_CARD, return parse_paramset()
+ *		elsif DEV_COMMENT, return parse_comment()
+ *		elsif DEV_DOT, return parse_command()
+ *		else return NULL
+ *	Now Scope->push_back(x) which will add this to the list “Scope._cl”.
+ */	
+	
 void LANG_GSCHEM::parse_top_item(CS& cmd, CARD_LIST* Scope)
 {
   cmd.get_line("gnucap-gschem>");
