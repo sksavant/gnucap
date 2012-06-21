@@ -78,8 +78,42 @@ DISPATCHER<LANGUAGE>::INSTALL
 /*----------------------------------------------------------------------*/
 //functions to be defined
 
-
-
+/*----------------------------------------------------------------------*/
+// A net is in form N x0 y0 x1 y1 c
+// Need to get x0 y0 ; x1 y1 ;
+// Need to go through all the nets. Anyway? 
+// Need to save them in other forms? How to go through all cards?
+// Need to specify a name for a card?
+static void parse_net(CS& cmd,CARD* x)
+{
+    assert(x);
+    int index=0
+    if(cmd>>"N"){
+        std::string name,value;
+        while(cmd>>" " and index<4) {
+            unsigned here=cmd.cursor();
+            name=((index%2==0) ? "x" : "y") + (index/2==0) ? "0" : "1");
+                        // the nets are saved as x0,y0 x1,y1;
+            cmd>>value; // same as cmd.ctos() : To find what ctos does
+            x->set_param_by_name(name,value);
+            index++;
+        }
+        if (index==4) {
+            name="color";
+            cmd>>value; //use variant of cmd.ctos...
+            x->set_param_by_name(name,value);
+            index++;
+        }
+        else if (index<4) {
+            // not correct syntax of net
+        }
+        else{
+            // over.. got all of the net.
+        }
+    }
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /* find_type_in_string : specific to each language which gives the type of the
  * cmd Eg: verilog : comment ,resistor etc
  * In Gschem the broad high level types are
@@ -124,8 +158,7 @@ DISPATCHER<LANGUAGE>::INSTALL
     
  }
 
-
-
+/*----------------------------------------------------------------------*/
 /*parse_top_item : To know:
  *What does CS& refer to
  *  CS stands for command string which is defined in ap.h and various functions   
@@ -151,14 +184,13 @@ DISPATCHER<LANGUAGE>::INSTALL
  *		elsif DEV_DOT, return parse_command()
  *		else return NULL
  *	Now Scope->push_back(x) which will add this to the list “Scope._cl”.
- */	
-	
+ */		
 void LANG_GSCHEM::parse_top_item(CS& cmd, CARD_LIST* Scope)
 {
   cmd.get_line("gnucap-gschem>");
   new__instance(cmd, NULL, Scope);
 }
-
+/*----------------------------------------------------------------------*/
 class CMD_GSCHEM : public CMD {
 public:
     void do_it(CS&, CARD_LIST* Scope)
