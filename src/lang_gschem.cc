@@ -79,6 +79,18 @@ DISPATCHER<LANGUAGE>::INSTALL
 //functions to be defined
 
 /*----------------------------------------------------------------------*/
+  //Finds type from find_type_in_string
+  //If component, then assign type as device=.. ?
+static void parse_type(CS& cmd, CARD* x)
+{
+  assert(x);
+  std::string new_type;
+  new_type=lang_gschem.find_type_in_string(cmd); 
+  if (new_type=="net") {
+    x->set_dev_type(new_type);
+  }
+}
+/*--------------------------------------------------------------------------*/
 // A net is in form N x0 y0 x1 y1 c
 // Need to get x0 y0 ; x1 y1 ;
 // Need to go through all the nets. Anyway? 
@@ -87,30 +99,39 @@ DISPATCHER<LANGUAGE>::INSTALL
 static void parse_net(CS& cmd,CARD* x)
 {
     assert(x);
-    int index=0
-    if(cmd>>"N"){
-        std::string name,value;
-        while(cmd>>" " and index<4) {
-            unsigned here=cmd.cursor();
-            name=((index%2==0) ? "x" : "y") + (index/2==0) ? "0" : "1");
-                        // the nets are saved as x0,y0 x1,y1;
-            cmd>>value; // same as cmd.ctos() : To find what ctos does
-            x->set_param_by_name(name,value);
-            index++;
-        }
-        if (index==4) {
-            name="color";
-            cmd>>value; //use variant of cmd.ctos...
-            x->set_param_by_name(name,value);
-            index++;
-        }
-        else if (index<4) {
-            // not correct syntax of net
-        }
-        else{
-            // over.. got all of the net.
-        }
+    cmd>>"N";     //Got N
+    std::string x0,y0,x1,y1,color;
+    unsigned here=cmd.cursor();
+    cmd>>x0>>" ">>y0>>" ">>x1>>" ">>y1>>" ">>color;
+    std::cout<<x0<<" "<<y0<<" "<<x1<<" "<<y1<<std::endl;
+    int i=1;
+        x->set_param_by_name("n",x0);
+    std::cout<<i++<<std::endl;
+    try{
+       x->set_param_by_name("y0",y0);
+    }catch (Exception_No_Match&) {untested();
+	  cmd.warn(bDANGER, here, x->long_label() + ": bad parameter " + x1 + " ignored");
     }
+    std::cout<<i++<<std::endl;
+    x->set_param_by_name("x1",x1);
+    std::cout<<i++<<std::endl;
+    x->set_param_by_name("y1",y1);
+    std::cout<<i++<<std::endl;
+    x->set_param_by_name("color",color);
+    std::cout<<i++<<std::endl;
+    }
+}
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
+{
+  cmd.reset();
+  parse_type(cmd, x); //parse type will parse the component type and set_dev_type
+  if (x->dev_type()=="net") {
+    parse_net(cmd,x);
+  }
+  cmd.check(bWARNING, "what's ins this?");
+  return x;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
