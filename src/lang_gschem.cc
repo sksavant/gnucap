@@ -105,7 +105,7 @@ static void parse_net(CS& cmd,CARD* x)
     cmd>>x0>>" ">>y0>>" ">>x1>>" ">>y1>>" ">>color;
     std::cout<<x0<<" "<<y0<<" "<<x1<<" "<<y1<<std::endl;
     int i=1;
-        x->set_param_by_name("n",x0);
+    x->set_param_by_name("n",x0);
     std::cout<<i++<<std::endl;
     try{
        x->set_param_by_name("y0",y0);
@@ -119,7 +119,6 @@ static void parse_net(CS& cmd,CARD* x)
     std::cout<<i++<<std::endl;
     x->set_param_by_name("color",color);
     std::cout<<i++<<std::endl;
-    }
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -165,9 +164,9 @@ COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
      *}
      *else{ cmd>>type;}
      */
-    graphical=["v","L","G","B","V","A","H","T"]
+    //graphical=["v","L","G","B","V","A","H","T"]
     if (cmd >> "v" || cmd >> "L" || cmd >> "G" || cmd >> "B" || cmd >>"V" ||
-        cmd >> "A" || cmd >> "H" || cmd >> "T"){ type="dev_comment"}
+        cmd >> "A" || cmd >> "H" || cmd >> "T"){ type="dev_comment";}
     else if (cmd >> "N"){ type="net";}
     else if (cmd >> "U"){ type="bus";}
     else if (cmd >> "P"){ type="pin";}
@@ -209,12 +208,13 @@ COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
 void LANG_GSCHEM::parse_top_item(CS& cmd, CARD_LIST* Scope)
 {
   cmd.get_line("gnucap-gschem>");
+  std::cout<<"Got the line\n";
   new__instance(cmd, NULL, Scope);
 }
 /*----------------------------------------------------------------------*/
 class CMD_GSCHEM : public CMD {
 public:
-    void do_it(CS&, CARD_LIST* Scope)
+    void do_it(CS& cmd, CARD_LIST* Scope)
     {
     command("options lang=gschem", Scope);
     }
