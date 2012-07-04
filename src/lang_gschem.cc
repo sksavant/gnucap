@@ -102,23 +102,21 @@ static void parse_net(CS& cmd,CARD* x)
     cmd>>"N";     //Got N
     std::string x0,y0,x1,y1,color;
     unsigned here=cmd.cursor();
-    cmd>>x0>>" ">>y0>>" ">>x1>>" ">>y1>>" ">>color;
-    std::cout<<x0<<" "<<y0<<" "<<x1<<" "<<y1<<std::endl;
-    int i=1;
-    x->set_param_by_name("n",x0);
-    std::cout<<i++<<std::endl;
-    try{
-       x->set_param_by_name("y0",y0);
-    }catch (Exception_No_Match&) {untested();
-	  cmd.warn(bDANGER, here, x->long_label() + ": bad parameter " + x1 + " ignored");
+    std::string paramnames[5]={"x0","x1","y0","y1","color"};
+    std::string paramvalue[5];
+    int i=0;
+    while (i<5) {
+        cmd>>" ">>paramvalue[i];
+        try{
+            x->set_param_by_name(paramnames[i],paramvalue[i]);
+        }catch (Exception_No_Match&) {untested();
+          cmd.warn(bDANGER, here, x->long_label() + ": bad parameter "+ paramvalue[i] + "ignored");
+        }
+        ++i;
     }
-    std::cout<<i++<<std::endl;
-    x->set_param_by_name("x1",x1);
-    std::cout<<i++<<std::endl;
-    x->set_param_by_name("y1",y1);
-    std::cout<<i++<<std::endl;
-    x->set_param_by_name("color",color);
-    std::cout<<i++<<std::endl;
+    for (i=0;i<5;++i) {
+        std::cout<<x->param_value(i)<<std::endl;
+    }
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
