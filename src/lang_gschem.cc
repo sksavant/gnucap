@@ -92,6 +92,51 @@ static void parse_type(CS& cmd, CARD* x)
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+MODEL_SUBCKT* LANG_GSCHEM::parse_module(CS& cmd, MODEL_SUBCKT* x)
+{
+  assert(x);
+  cmd.reset();
+  std::string type = find_type_in_string(cmd);
+  assert(type=="subckt");
+  int component_x, component_y, mirror, angle;
+  std::string dump,basename;
+  bool isgraphical=true;
+  cmd>>"C";
+  std::vector<std::string> paramname;
+  std::vector<std::string> paramvalue;
+  cmd>>component_x>>" ">>component_y>>" ">>dump>>" ">>angle>>" ">>mirror>>" ">>basename;
+  cmd.get_line("gnucap-gschem-"+basename+">");
+  cmd>>"{";
+  for (;;) {
+    cmd.get_line("gnucap-gschem-"+basename+">");
+    if (cmd >> "}") {
+      break;
+    }else{
+        if(cmd>>"T"){
+            cmd>>dump;
+        }
+        else {
+            std::string _paramname=cmd.ctos("=","",""),_paramvalue;
+            cmd>>"=">>_paramvalue;
+            paramname.push_back (_paramname);
+            paramvalue.push_back(_paramvalue);
+            std::cout<<_paramname<<" "<<_paramvalue<<std::endl;
+            if(_paramname=="device"){
+                isgraphical=false;
+            }
+        }
+    }
+  }
+  if (isgraphical==true) {
+    return NULL;
+  }
+  else{
+
+  }
+  return x;
+}
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 // A net is in form N x0 y0 x1 y1 c
 // Need to get x0 y0 ; x1 y1 ;
 // Need to go through all the nets. Anyway?
@@ -177,7 +222,7 @@ COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
     else if (cmd >> "N"){ type="net";}
     else if (cmd >> "U"){ type="bus";}
     else if (cmd >> "P"){ type="pin";}
-    else if (cmd >> "C"){ type="component";}
+    else if (cmd >> "C"){ type="subckt";}
     else { } //Not matched with the type. What now?
     cmd.reset(here);//Reset cursor back to the position that 
                     //has been started with at beginning
@@ -228,6 +273,23 @@ public:
 } p8;
 DISPATCHER<CMD>::INSTALL 
     d8(&command_dispatcher, "gschem", &p8);
+
+class CMD_COMPONENT : public CMD {
+    void do_it(CS& cmd, CARD_LIST* Scope)
+    {
+      std::cout<<"Command Dispatched\n";
+      MODEL_SUBCKT* new_compon = new MODEL_SUBCKT;
+      assert(new_compon);
+      assert(!new_compon->owner());
+      assert(new_compon->subckt());
+      assert(new_compon->subckt()->is_empty());
+      lang_gschem.parse_module(cmd, new_compon);
+      Scope->push_back(new_compon);
+    }
+} p2;
+DISPATCHER<CMD>::INSTALL
+    d2(&command_dispatcher, "C", &p2);
+
 /*----------------------------------------------------------------------*/
 }
 /*----------------------------------------------------------------------*/
