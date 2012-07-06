@@ -59,6 +59,7 @@ public:
     MODEL_SUBCKT* parse_module(CS&, MODEL_SUBCKT*);
     COMPONENT*	  parse_instance(CS&, COMPONENT*);
     std::string	  find_type_in_string(CS&);    
+    std::vector<CARD*> nets;
 
 private:
     void print_paramset(OMSTREAM&, const MODEL_CARD*);
@@ -78,7 +79,6 @@ DISPATCHER<LANGUAGE>::INSTALL
 /*----------------------------------------------------------------------*/
 //functions to be defined
 
-/*----------------------------------------------------------------------*/
   //Finds type from find_type_in_string
   //If component, then assign type as device=.. ?
 static void parse_type(CS& cmd, CARD* x)
@@ -91,31 +91,40 @@ static void parse_type(CS& cmd, CARD* x)
   }
 }
 /*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 // A net is in form N x0 y0 x1 y1 c
 // Need to get x0 y0 ; x1 y1 ;
-// Need to go through all the nets. Anyway? 
+// Need to go through all the nets. Anyway?
 // Need to save them in other forms? How to go through all cards?
 // Need to specify a name for a card?
 static void parse_net(CS& cmd,CARD* x)
 {
     assert(x);
+    assert(lang_gschem.find_type_in_string(cmd)=="net");
     cmd>>"N";     //Got N
     std::string x0,y0,x1,y1,color;
     unsigned here=cmd.cursor();
     std::string paramnames[5]={"x0","x1","y0","y1","color"};
     std::string paramvalue[5];
     int i=0;
+    bool gotthenet=true;
     while (i<5) {
-        cmd>>" ">>paramvalue[i];
-        try{
-            x->set_param_by_name(paramnames[i],paramvalue[i]);
-        }catch (Exception_No_Match&) {untested();
-          cmd.warn(bDANGER, here, x->long_label() + ": bad parameter "+ paramvalue[i] + "ignored");
+        if (cmd.is_alnum()){
+            cmd>>" ">>paramvalue[i];
+            try{
+                x->set_param_by_name(paramnames[i],paramvalue[i]);
+            }catch (Exception_No_Match&) {untested();
+                cmd.warn(bDANGER, here, x->long_label() + ": bad parameter "+ paramvalue[i] + "ignored");
+            }
+        }else{
+            gotthenet=false;
+            cmd.warn(bDANGER, here, x->long_label() +": Not correct format for net");
+            break;
         }
         ++i;
     }
-    for (i=0;i<5;++i) {
-        std::cout<<x->param_value(i)<<std::endl;
+    if (gotthenet){
+        lang_gschem.nets.push_back(x);
     }
 }
 /*--------------------------------------------------------------------------*/
