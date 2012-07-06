@@ -1,6 +1,7 @@
-/* This file is the plugin for the gEDa/gschem plugin
+/*$Id: lang_gschem.cc,v xx.xxx xxxx/xx/xx xx:xx:xx al Exp $ -*- C++ -*-
+ * This file is the plugin for the gEDA-gschem plugin
  * The documentation of how this should work is at bit.ly(slash)gnucapwiki
- * 
+ *
  * This file is part of "Gnucap", the Gnu Circuit Analysis Package.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,6 +26,7 @@
 #include "d_subckt.h"
 #include "e_model.h"
 #include "u_lang.h"
+
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
@@ -58,7 +60,7 @@ public:
     MODEL_CARD*	  parse_paramset(CS&, MODEL_CARD*);
     MODEL_SUBCKT* parse_module(CS&, MODEL_SUBCKT*);
     COMPONENT*	  parse_instance(CS&, COMPONENT*);
-    std::string	  find_type_in_string(CS&);    
+    std::string	  find_type_in_string(CS&);
     std::vector<CARD*> nets;
 
 private:
@@ -73,7 +75,7 @@ private:
     void print_args(OMSTREAM&, const COMPONENT*);
 }lang_gschem;
 
-DISPATCHER<LANGUAGE>::INSTALL 
+DISPATCHER<LANGUAGE>::INSTALL
     d(&language_dispatcher, lang_gschem.name(), &lang_gschem);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -85,13 +87,163 @@ static void parse_type(CS& cmd, CARD* x)
 {
   assert(x);
   std::string new_type;
-  new_type=lang_gschem.find_type_in_string(cmd); 
+  new_type=lang_gschem.find_type_in_string(cmd);
   if (new_type=="net") {
     x->set_dev_type(new_type);
   }
+  else{
+    return;
+  }
 }
 /*--------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+static void parse_args_paramset(CS& cmd, MODEL_CARD* x)
+{
+  assert(x);
+
+  while (cmd >> '.') {
+    unsigned here = cmd.cursor();
+    std::string name, value;
+    try{
+      cmd >> name >> '=' >> value >> ';';
+      x->set_param_by_name(name, value);
+    }catch (Exception_No_Match&) {untested();
+      cmd.warn(bDANGER, here, x->long_label() + ": bad parameter " + name + " ignored");
+    }
+  }
+}
 /*--------------------------------------------------------------------------*/
+static void parse_args_instance(CS& cmd, CARD* x)
+{
+  assert(x);
+
+  if (cmd >> "#(") {
+    if (cmd.match1('.')) {
+      // by name
+      while (cmd >> '.') {
+	unsigned here = cmd.cursor();
+	std::string name  = cmd.ctos("(", "", "");
+	std::string value = cmd.ctos(",)", "(", ")");
+	cmd >> ',';
+	try{
+	  x->set_param_by_name(name, value);
+	}catch (Exception_No_Match&) {untested();
+	  cmd.warn(bDANGER, here, x->long_label() + ": bad parameter " + name + " ignored");
+	}
+      }
+    }else{
+      // by order
+      int index = 1;
+      while (cmd.is_alnum()) {
+	unsigned here = cmd.cursor();
+	try{
+	  std::string value = cmd.ctos(",)", "", "");
+	  x->set_param_by_index(x->param_count() - index++, value, 0/*offset*/);
+	}catch (Exception_Too_Many& e) {untested();
+	  cmd.warn(bDANGER, here, e.message());
+	}
+      }
+    }
+    cmd >> ')';
+  }else{
+    // no args
+  }
+}
+/*--------------------------------------------------------------------------*/
+static void parse_label(CS& cmd, CARD* x)
+{
+  assert(x);
+  std::string my_name;
+  cmd >> my_name;
+  x->set_label(my_name);
+}
+/*--------------------------------------------------------------------------*/
+static void parse_ports(CS& cmd, COMPONENT* x)
+{
+  assert(x);
+
+  if (cmd >> '(') {
+    if (cmd.is_alnum()) {
+      // by order
+      int index = 0;
+      while (cmd.is_alnum()) {
+	unsigned here = cmd.cursor();
+	try{
+	  std::string value;
+	  cmd >> value;
+	  x->set_port_by_index(index++, value);
+	}catch (Exception_Too_Many& e) {untested();
+	  cmd.warn(bDANGER, here, e.message());
+	}
+      }
+    }else{
+      // by name
+      while (cmd >> '.') {
+	unsigned here = cmd.cursor();
+	try{
+	  std::string name, value;
+	  cmd >> name >> '(' >> value >> ')' >> ',';
+	  x->set_port_by_name(name, value);
+	}catch (Exception_No_Match&) {untested();
+	  cmd.warn(bDANGER, here, "mismatch, ignored");
+	}
+      }
+    }
+    cmd >> ')';
+  }else{untested();
+    cmd.warn(bDANGER, "'(' required");
+  }
+}
+
+/*--------------------------------------------------------------------------*/
+DEV_COMMENT* LANG_GSCHEM::parse_comment(CS& cmd, DEV_COMMENT* x)
+{
+  assert(x);
+  x->set(cmd.fullstring());
+  return x;
+}
+/*--------------------------------------------------------------------------*/
+DEV_DOT* LANG_GSCHEM::parse_command(CS& cmd, DEV_DOT* x)
+{
+  assert(x);
+  x->set(cmd.fullstring());
+  CARD_LIST* scope = (x->owner()) ? x->owner()->subckt() : &CARD_LIST::card_list;
+
+  cmd.reset();
+  CMD::cmdproc(cmd, scope);
+  delete x;
+  return NULL;
+}
+/*--------------------------------------------------------------------------*/
+/* "paramset" <my_name> <base_name> ";"
+ *    <paramset_item_declaration>*
+ *    <paramset_statement>*
+ *  "endparamset"
+ */
+//BUG// no paramset_item_declaration, falls back to spice mode
+//BUG// must be on single line
+
+MODEL_CARD* LANG_GSCHEM::parse_paramset(CS& cmd, MODEL_CARD* x)
+{
+  assert(x);
+  cmd.reset();
+  cmd >> "paramset ";
+  parse_label(cmd, x);
+  parse_type(cmd, x);
+  cmd >> ';';
+  parse_args_paramset(cmd, x);
+  cmd >> "endparamset ";
+  cmd.check(bWARNING, "what's param this?");
+  return x;
+}
+/*--------------------------------------------------------------------------*/
+/* "module" <name> "(" <ports> ")" ";"
+ *    <declarations>
+ *    <netlist>
+ * "endmodule"
+ */
+//BUG// strictly one device per line
+
 MODEL_SUBCKT* LANG_GSCHEM::parse_module(CS& cmd, MODEL_SUBCKT* x)
 {
   assert(x);
@@ -169,7 +321,7 @@ static void parse_net(CS& cmd,CARD* x)
         ++i;
     }
     if (gotthenet){
-        lang_gschem.nets.push_back(x);
+        //lang_gschem.nets.push_back(x);
     }
 }
 /*--------------------------------------------------------------------------*/
@@ -177,7 +329,7 @@ static void parse_net(CS& cmd,CARD* x)
 COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
 {
   cmd.reset();
-  parse_type(cmd, x); //parse type will parse the component type and set_dev_type
+  //parse_type(cmd, x); //parse type will parse the component type and set_dev_type
   if (x->dev_type()=="net") {
     parse_net(cmd,x);
   }
@@ -196,8 +348,8 @@ COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
  *  picture  G    * path     H
  *  box      B    * text     T (not attributes)
  * The following have electrical meaning and are of type
- *  net          N 
- *  bus          U 
+ *  net          N
+ *  bus          U
  *  pin          P
  *  component    C
  *  attributes   T (enclosed in {})  // don't include in find_type_in_string
@@ -207,7 +359,7 @@ COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
  std::string LANG_GSCHEM::find_type_in_string(CS& cmd)
  {
     unsigned here = cmd.cursor(); //store cursor position to reset back later
-    std::string type;   //stores type : should check device attribute.. 
+    std::string type;   //stores type : should check device attribute..
     // (**)to find how to check the type.. (**)
     /*
      *if((cmd>>"//")){
@@ -224,22 +376,22 @@ COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
     else if (cmd >> "P"){ type="pin";}
     else if (cmd >> "C"){ type="subckt";}
     else { } //Not matched with the type. What now?
-    cmd.reset(here);//Reset cursor back to the position that 
+    cmd.reset(here);//Reset cursor back to the position that
                     //has been started with at beginning
     return type;    // returns the type of the string
-    
+
  }
 
 /*----------------------------------------------------------------------*/
 /*parse_top_item : To know:
  *What does CS& refer to
- *  CS stands for command string which is defined in ap.h and various functions   
+ *  CS stands for command string which is defined in ap.h and various functions
  *  on it are defined in ap*.cc
  *what does get_line method on CS& do ?
- *  get_line will ‘getlines’ from the file ptr, else if no file, get from 
+ *  get_line will ‘getlines’ from the file ptr, else if no file, get from
  *  keyboard (stdin) using getcmd (which will get a command, also log, echo etc)
  *what is the class CARD_LIST* ?
- *	
+ *
  *what does new__instance of cmd mean?
  *	It is defined in u_lang.cc. It does the following :
  *	/11/find_type_in_string : specific to each language which gives the type of the  *cmd
@@ -256,22 +408,167 @@ COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
  *		elsif DEV_DOT, return parse_command()
  *		else return NULL
  *	Now Scope->push_back(x) which will add this to the list “Scope._cl”.
- */		
+ */
 void LANG_GSCHEM::parse_top_item(CS& cmd, CARD_LIST* Scope)
 {
   cmd.get_line("gnucap-gschem>");
   std::cout<<"Got the line\n";
   new__instance(cmd, NULL, Scope);
+  for(CARD_LIST::const_iterator ci=Scope->begin();ci!= Scope->end();++ci) {
+    std::cout<<(*ci)->dev_type()<<" "<<(*ci)->param_value(4)<<std::endl;
+  }
 }
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LANG_GSCHEM::print_args(OMSTREAM& o, const MODEL_CARD* x)
+{
+  assert(x);
+  if (x->use_obsolete_callback_print()) {
+    x->print_args_obsolete_callback(o, this);  //BUG//callback//
+  }else{
+    for (int ii = x->param_count() - 1;  ii >= 0;  --ii) {
+      if (x->param_is_printable(ii)) {
+	std::string arg = " ." + x->param_name(ii) + "=" + x->param_value(ii) + ";";
+	o << arg;
+      }else{
+      }
+    }
+  }
+}
+/*--------------------------------------------------------------------------*/
+void LANG_GSCHEM::print_args(OMSTREAM& o, const COMPONENT* x)
+{
+  assert(x);
+  o << " #(";
+  if (x->use_obsolete_callback_print()) {
+    arg_count = 0;
+    x->print_args_obsolete_callback(o, this);  //BUG//callback//
+    arg_count = INACTIVE;
+  }else{
+    std::string sep = ".";
+    for (int ii = x->param_count() - 1;  ii >= 0;  --ii) {
+      if (x->param_is_printable(ii)) {
+	o << sep << x->param_name(ii) << "(" << x->param_value(ii) << ")";
+	sep = ",.";
+      }else{
+      }
+    }
+  }
+  o << ") ";
+}
+/*--------------------------------------------------------------------------*/
+static void print_type(OMSTREAM& o, const COMPONENT* x)
+{
+  assert(x);
+  o << x->dev_type();
+}
+/*--------------------------------------------------------------------------*/
+static void print_label(OMSTREAM& o, const COMPONENT* x)
+{
+  assert(x);
+  o << x->short_label();
+}
+/*--------------------------------------------------------------------------*/
+static void print_ports_long(OMSTREAM& o, const COMPONENT* x)
+{
+  // print in long form ...    .name(value)
+  assert(x);
+
+  o << " (";
+  std::string sep = ".";
+  for (int ii = 0;  x->port_exists(ii);  ++ii) {
+    o << sep << x->port_name(ii) << '(' << x->port_value(ii) << ')';
+    sep = ",.";
+  }
+  for (int ii = 0;  x->current_port_exists(ii);  ++ii) {
+    o << sep << x->current_port_name(ii) << '(' << x->current_port_value(ii) << ')';
+    sep = ",.";
+  }
+  o << ")";
+}
+/*--------------------------------------------------------------------------*/
+static void print_ports_short(OMSTREAM& o, const COMPONENT* x)
+{
+  // print in short form ...   value only
+  assert(x);
+
+  o << " (";
+  std::string sep = "";
+  for (int ii = 0;  x->port_exists(ii);  ++ii) {
+    o << sep << x->port_value(ii);
+    sep = ",";
+  }
+  for (int ii = 0;  x->current_port_exists(ii);  ++ii) {
+    o << sep << x->current_port_value(ii);
+    sep = ",";
+  }
+  o << ")";
+}
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+void LANG_GSCHEM::print_paramset(OMSTREAM& o, const MODEL_CARD* x)
+{
+  assert(x);
+  _mode = mPARAMSET;
+  o << "paramset " << x->short_label() << ' ' << x->dev_type() << ";\\\n";
+  print_args(o, x);
+  o << "\\\n"
+    "endparmset\n\n";
+  _mode = mDEFAULT;
+}
+/*--------------------------------------------------------------------------*/
+void LANG_GSCHEM::print_module(OMSTREAM& o, const MODEL_SUBCKT* x)
+{
+  assert(x);
+  assert(x->subckt());
+
+  o << "module " <<  x->short_label();
+  print_ports_short(o, x);
+  o << ";\n";
+
+  for (CARD_LIST::const_iterator
+	 ci = x->subckt()->begin(); ci != x->subckt()->end(); ++ci) {
+    print_item(o, *ci);
+  }
+
+  o << "endmodule // " << x->short_label() << "\n\n";
+}
+/*--------------------------------------------------------------------------*/
+void LANG_GSCHEM::print_instance(OMSTREAM& o, const COMPONENT* x)
+{
+  print_type(o, x);
+  print_args(o, x);
+  print_label(o, x);
+  print_ports_long(o, x);
+  o << ";\n";
+}
+/*--------------------------------------------------------------------------*/
+void LANG_GSCHEM::print_comment(OMSTREAM& o, const DEV_COMMENT* x)
+{
+  assert(x);
+  o << x->comment() << '\n';
+}
+/*--------------------------------------------------------------------------*/
+void LANG_GSCHEM::print_command(OMSTREAM& o, const DEV_DOT* x)
+{
+  assert(x);
+  o << x->s() << '\n';
+}
+
+
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+
 class CMD_GSCHEM : public CMD {
 public:
     void do_it(CS& cmd, CARD_LIST* Scope)
     {
-    command("options lang=gschem", Scope);
+      command("options lang=gschem", Scope);
     }
 } p8;
-DISPATCHER<CMD>::INSTALL 
+DISPATCHER<CMD>::INSTALL
     d8(&command_dispatcher, "gschem", &p8);
 
 class CMD_COMPONENT : public CMD {
