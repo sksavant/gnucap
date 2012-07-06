@@ -26,6 +26,7 @@
 #include "d_subckt.h"
 #include "e_model.h"
 #include "u_lang.h"
+#include "d_component.cc"
 
 /*--------------------------------------------------------------------------*/
 namespace {
@@ -250,13 +251,20 @@ MODEL_SUBCKT* LANG_GSCHEM::parse_module(CS& cmd, MODEL_SUBCKT* x)
   cmd.reset();
   std::string type = find_type_in_string(cmd);
   assert(type=="subckt");
-  int component_x, component_y, mirror, angle;
-  std::string dump,basename;
+  std::string component_x, component_y, mirror, angle, dump,basename;
   bool isgraphical=true;
   cmd>>"C";
   std::vector<std::string> paramname;
   std::vector<std::string> paramvalue;
   cmd>>component_x>>" ">>component_y>>" ">>dump>>" ">>angle>>" ">>mirror>>" ">>basename;
+  /*
+  x->set_param_by_name("x",component_x);
+  x->set_param_by_name("y",component_y);
+  x->set_param_by_name("angle",angle);
+  x->set_param_by_name("mirror",mirror);
+  x->set_param_by_name("basename",basename);
+  */
+  std::cout<<"Got into parse_module\n";
   cmd.get_line("gnucap-gschem-"+basename+">");
   cmd>>"{";
   for (;;) {
@@ -275,7 +283,11 @@ MODEL_SUBCKT* LANG_GSCHEM::parse_module(CS& cmd, MODEL_SUBCKT* x)
             std::cout<<_paramname<<" "<<_paramvalue<<std::endl;
             if(_paramname=="device"){
                 isgraphical=false;
+                x->set_dev_type(_paramvalue);
+            }else{
+                x->set_param_by_name(_paramname,_paramvalue);
             }
+
         }
     }
   }
@@ -374,7 +386,7 @@ COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
     else if (cmd >> "N"){ type="net";}
     else if (cmd >> "U"){ type="bus";}
     else if (cmd >> "P"){ type="pin";}
-    else if (cmd >> "C"){ type="subckt";}
+    else if (cmd >> "C"){ type="component";}
     else { } //Not matched with the type. What now?
     cmd.reset(here);//Reset cursor back to the position that
                     //has been started with at beginning
