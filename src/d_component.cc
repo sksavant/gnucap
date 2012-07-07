@@ -28,8 +28,9 @@ class DEV_COMPONENT : public COMPONENT {
 private:
     explicit DEV_COMPONENT(const DEV_COMPONENT &p) :COMPONENT(p){}
 public:
-    explicit DEV_COMPONENT();
-        ~DEV_COMPONENT();
+    explicit DEV_COMPONENT(); COMPONENT(){}
+protected:
+    PARAM_LIST _params;
 public:
   char      id_letter()const    {untested(); return '\0';}
   CARD*     clone_instance()const;
@@ -59,24 +60,9 @@ public:
 private:
   node_t    _nodes[PORTS_PER_DEVICE];
   static int    _count;
-public:
-  PARAM_LIST    _params;
 };
 
 DEV_COMPONENT p1;
 DISPATCHER<CARD>::INSTALL d1(&device_dispatcher, "component", &p1);
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif
