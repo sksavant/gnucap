@@ -20,17 +20,16 @@
  */
 #ifndef D_COMPONENT
 #define D_COMPONENT
-#include "e_node.h"
 #include "d_subckt.h"
 /*--------------------------------------------------------------------------*/
 #define PORTS_PER_DEVICE 100
 /*--------------------------------------------------------------------------*/
-class INTERFACE MODEL_COMPONENT : public MODEL_SUBCKT {
+class DEV_COMPONENT : public COMPONENT {
 private:
-    explicit MODEL_COMPONENT(const MODEL_COMPONENT &p){} ;
+    explicit DEV_COMPONENT(const DEV_COMPONENT &p) :COMPONENT(p){}
 public:
-    explicit MODEL_COMPONENT();
-            ~MODEL_COMPONENT();
+    explicit DEV_COMPONENT();
+        ~DEV_COMPONENT();
 public:
   char      id_letter()const    {untested(); return '\0';}
   CARD*     clone_instance()const;
@@ -41,7 +40,7 @@ public:
   int       min_nodes()const    {return 0;}
   int       matrix_nodes()const {untested();return 0;}
   int       net_nodes()const    {return _net_nodes;}
-  CARD*     clone()const        {return new MODEL_COMPONENT(*this);}
+  CARD*     clone()const        {return new DEV_COMPONENT(*this);}
   bool      is_device()const    {return false;}
   void      precalc_first()     {}
   void      expand()            {}
@@ -60,9 +59,11 @@ public:
 private:
   node_t    _nodes[PORTS_PER_DEVICE];
   static int    _count;
+public:
+  PARAM_LIST    _params;
 };
 
-MODEL_COMPONENT p1;
+DEV_COMPONENT p1;
 DISPATCHER<CARD>::INSTALL d1(&device_dispatcher, "component", &p1);
 
 
