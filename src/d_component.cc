@@ -25,12 +25,13 @@
 /*--------------------------------------------------------------------------*/
 #define PORTS_PER_DEVICE 100
 /*--------------------------------------------------------------------------*/
-class INTERFACE MODEL_COMPONENT : public MODEL_SUBCKT {
+class INTERFACE MODEL_COMPONENT : public COMPONENT {
 private:
-    explicit MODEL_COMPONENT(const MODEL_COMPONENT &p){} ;
+    explicit MODEL_COMPONENT(const MODEL_COMPONENT &p) :COMPONENT(p){}
 public:
-    explicit MODEL_COMPONENT();
-            ~MODEL_COMPONENT();
+    explicit MODEL_COMPONENT(): COMPONENT(){}
+protected:
+    PARAM_LIST _params;
 public:
   char      id_letter()const    {untested(); return '\0';}
   CARD*     clone_instance()const;
