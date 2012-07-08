@@ -30,7 +30,14 @@ private:
 public:
     explicit DEV_COMPONENT(); COMPONENT(){}
 protected:
-    PARAM_LIST _params;
+    PARAM_LIST* _params;
+private:
+    std::string param_name(int) const;
+    std::string param_name(int, int) const;
+    void	set_param_by_name(std::string, std::string);
+    void	set_param_by_index(int, std::string, int);
+    bool 	param_is_printable(int);
+    std::string	param_value(int) const;
 public:
   char      id_letter()const    {untested(); return '\0';}
   CARD*     clone_instance()const;
@@ -50,6 +57,7 @@ public:
   void      map_nodes() {}
   CARD_LIST*       scope()      {return subckt();}
   const CARD_LIST* scope()const {return subckt();}
+  int 	param_count()const 	{ return (static_cast<int>(_params->size())) }
 
   std::string port_name(int)const {
     return "";
@@ -61,8 +69,42 @@ private:
   node_t    _nodes[PORTS_PER_DEVICE];
   static int    _count;
 };
-
+/*--------------------------------------------------------------------------*/
+void DEV_COMPONENT::set_param_by_name(std::string Name, std::string Value) const
+{
+	_params->set(Name,Value);
+}
+/*--------------------------------------------------------------------------*/
+std::string DEV_COMPONENT::param_name(int i) 
+{
+	assert(i<DEV_COMPONENT::param_count());
+	return _params->name(DEV_COMPONENT::param_count() - 1 - i); 
+}
+/*--------------------------------------------------------------------------*/
+std::string DEV_COMPONENT::param_value(int i, int j) 
+{
+	assert(i<DEV_COMPONENT::param_count());
+	if (j == 0) {
+       		return param_name(i);
+	}else {
+		return	"";
+	}
+}
+/*--------------------------------------------------------------------------*/
+std::string DEV_COMPONENT::param_value(int i)const 
+{
+	assert(i<DEV_COMPONENT::param_count());
+	return _params->value(DEV_COMPONENT::param_count() - 1 - i);
+}
+/*--------------------------------------------------------------------------*/
+void DEV_COMPONENT::param_is_printable(int i)const
+{
+	assert(i<DEV_COMPONENT::param_count());
+	return _params->is_printable(DEV_COMPONENT::param_count() -1 -i);
+}
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 DEV_COMPONENT p1;
 DISPATCHER<CARD>::INSTALL d1(&device_dispatcher, "component", &p1);
-
+/*--------------------------------------------------------------------------*/
 #endif
