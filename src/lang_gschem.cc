@@ -585,7 +585,7 @@ public:
 DISPATCHER<CMD>::INSTALL
     d8(&command_dispatcher, "gschem", &p8);
 
-class CMD_COMPONENT : public CMD {
+class CMD_C : public CMD {
     void do_it(CS& cmd, CARD_LIST* Scope)
     {
       std::cout<<"Command Dispatched\n";
@@ -595,7 +595,14 @@ class CMD_COMPONENT : public CMD {
       assert(new_compon->subckt());
       assert(new_compon->subckt()->is_empty());
       lang_gschem.parse_module(cmd, new_compon);
-      Scope->push_back(new_compon);
+      if(new_compon){
+        Scope->push_back(new_compon);
+        std::string s=new_compon->short_label()+" "+cmd.tail();
+        std::cout<<"s :"<<s<<std::endl;
+        CS cmd(CS::_STRING,s);
+        std::cout<<"cmd :"<<cmd.fullstring()<<std::endl;
+        lang_gschem.new__instance(cmd,NULL,Scope);
+      }
     }
 } p2;
 DISPATCHER<CMD>::INSTALL
