@@ -243,52 +243,20 @@ MODEL_SUBCKT* LANG_GSCHEM::parse_module(CS& cmd, MODEL_SUBCKT* x)
   assert(x);
   cmd.reset();
   std::string type = find_type_in_string(cmd);
-  assert(type=="subckt");
+  assert(type=="C");
   std::string component_x, component_y, mirror, angle, dump,basename;
-  bool isgraphical=true;
+  bool isgraphical=false;
   cmd>>"C";
-  std::vector<std::string> paramname;
-  std::vector<std::string> paramvalue;
+  unsigned here=cmd.cursor();
   cmd>>component_x>>" ">>component_y>>" ">>dump>>" ">>angle>>" ">>mirror>>" ">>basename;
-  /*
-  x->set_param_by_name("x",component_x);
-  x->set_param_by_name("y",component_y);
-  x->set_param_by_name("angle",angle);
-  x->set_param_by_name("mirror",mirror);
-  x->set_param_by_name("basename",basename);
-  */
-  std::cout<<"Got into parse_module\n";
-  cmd.get_line("gnucap-gschem-"+basename+">");
-  cmd>>"{";
-  for (;;) {
-    cmd.get_line("gnucap-gschem-"+basename+">");
-    if (cmd >> "}") {
-      break;
-    }else{
-        if(cmd>>"T"){
-            cmd>>dump;
-        }
-        else {
-            std::string _paramname=cmd.ctos("=","",""),_paramvalue;
-            cmd>>"=">>_paramvalue;
-            paramname.push_back (_paramname);
-            paramvalue.push_back(_paramvalue);
-            std::cout<<_paramname<<" "<<_paramvalue<<std::endl;
-            if(_paramname=="device"){
-                isgraphical=false;
-                x->set_dev_type(_paramvalue);
-            }else{
-                x->set_param_by_name(_paramname,_paramvalue);
-            }
-
-        }
-    }
-  }
+  //open the basename to get the ports and their placements
+  //parse_ports(newcmd,x);
+  x->set_label(basename);
   if (isgraphical==true) {
     return NULL;
   }
   else{
-
+    cmd.reset(here);
   }
   return x;
 }
