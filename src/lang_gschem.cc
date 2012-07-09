@@ -298,6 +298,47 @@ static void parse_net(CS& cmd,CARD* x)
     }
 }
 /*--------------------------------------------------------------------------*/
+static void parse_component(CS& cmd,CARD* x){
+    assert(x);
+    std::string component_x, component_y, mirror, angle, dump,basename;
+    std::string type=lang_gschem.find_type_in_string(cmd);
+    cmd>>type;
+    std::vector<std::string> paramname;
+    std::vector<std::string> paramvalue;
+    cmd>>component_x>>" ">>component_y>>" ">>dump>>" ">>angle>>" ">>mirror>>" ">>basename;
+    //To get port names and values from symbol?
+    //Then set params below
+    x->set_param_by_name("x",component_x);
+    x->set_param_by_name("y",component_y);
+    x->set_param_by_name("angle",angle);
+    x->set_param_by_name("mirror",mirror);
+    x->set_param_by_name("basename",basename);
+    CS new_cmd(CS::_STDIN);
+    new_cmd.get_line("gnucap-gschem- "+basename+">");
+    new_cmd>>"{";
+    for (;;) {
+        new_cmd.get_line("gnucap-gschem- "+basename+">");
+        if (new_cmd >> "}") {
+            break;
+        }else{
+            if(new_cmd>>"T"){
+                new_cmd>>dump;
+            }
+            else {
+                std::string _paramname=new_cmd.ctos("=","",""),_paramvalue;
+                new_cmd>>"=">>_paramvalue;
+                paramname.push_back (_paramname);
+                paramvalue.push_back(_paramvalue);
+                if(_paramname=="device"){
+                    x->set_dev_type(_paramvalue);
+                }else{
+                    x->set_param_by_name(_paramname,_paramvalue);
+                }
+            }
+        }
+    }
+}
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
 {
