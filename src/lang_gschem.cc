@@ -343,7 +343,7 @@ static void parse_component(CS& cmd,CARD* x){
 COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
 {
   cmd.reset();
-  //parse_type(cmd, x); //parse type will parse the component type and set_dev_type
+  parse_type(cmd, x); //parse type will parse the component type and set_dev_type
   if (x->dev_type()=="net") {
     parse_net(cmd,x);
   }
