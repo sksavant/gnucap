@@ -1,6 +1,6 @@
-/* This file is the plugin for the gEDa/gschem plugin
+/* This file is the plugin for the gEDA-gschem plugin
  * The documentation of how this should work is at bit.ly(slash)gnucapwiki
- * 
+ *
  * This file is part of "Gnucap", the Gnu Circuit Analysis Package.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -58,7 +58,7 @@ public:
     MODEL_CARD*	  parse_paramset(CS&, MODEL_CARD*);
     MODEL_SUBCKT* parse_module(CS&, MODEL_SUBCKT*);
     COMPONENT*	  parse_instance(CS&, COMPONENT*);
-    std::string	  find_type_in_string(CS&);    
+    std::string	  find_type_in_string(CS&);
     std::vector<CARD*> nets;
 
 private:
@@ -73,7 +73,7 @@ private:
     void print_args(OMSTREAM&, const COMPONENT*);
 }lang_gschem;
 
-DISPATCHER<LANGUAGE>::INSTALL 
+DISPATCHER<LANGUAGE>::INSTALL
     d(&language_dispatcher, lang_gschem.name(), &lang_gschem);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -85,53 +85,64 @@ static void parse_type(CS& cmd, CARD* x)
 {
   assert(x);
   std::string new_type;
-  new_type=lang_gschem.find_type_in_string(cmd); 
-  if (new_type=="net") {
-    x->set_dev_type(new_type);
-  }
+  new_type=lang_gschem.find_type_in_string(cmd);
+  x->set_dev_type(new_type);
+}
+/*--------------------------------------------------------------------------*/
+static void parse_label(CS& cmd, CARD* x)
+{
+  assert(x);
+  std::string my_name;
+  cmd >> my_name;
+  x->set_label(my_name);
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+DEV_COMMENT* LANG_GSCHEM::parse_comment(CS& cmd, DEV_COMMENT* x)
+{
+  assert(x);
+  x->set(cmd.fullstring());
+  return x;
+}
+/*--------------------------------------------------------------------------*/
+DEV_DOT* LANG_GSCHEM::parse_command(CS& cmd, DEV_DOT* x)
+{
+  assert(x);
+  x->set(cmd.fullstring());
+  CARD_LIST* scope = (x->owner()) ? x->owner()->subckt() : &CARD_LIST::card_list;
+
+  cmd.reset();
+  CMD::cmdproc(cmd, scope);
+  delete x;
+  return NULL;
+}
+/*--------------------------------------------------------------------------*/
+/* C x y selectable angle mirror basename
+ * {
+ *  <params>
+ * }
+ * parse_module will parse only the first line and set_label to basename
+ * It will also parse ports (TODO)
+ */
 MODEL_SUBCKT* LANG_GSCHEM::parse_module(CS& cmd, MODEL_SUBCKT* x)
 {
   assert(x);
   cmd.reset();
   std::string type = find_type_in_string(cmd);
-  assert(type=="subckt");
-  int component_x, component_y, mirror, angle;
-  std::string dump,basename;
-  bool isgraphical=true;
+  assert(type=="C");
+  std::string component_x, component_y, mirror, angle, dump,basename;
+  bool isgraphical=false;
   cmd>>"C";
-  std::vector<std::string> paramname;
-  std::vector<std::string> paramvalue;
+  unsigned here=cmd.cursor();
   cmd>>component_x>>" ">>component_y>>" ">>dump>>" ">>angle>>" ">>mirror>>" ">>basename;
-  cmd.get_line("gnucap-gschem-"+basename+">");
-  cmd>>"{";
-  for (;;) {
-    cmd.get_line("gnucap-gschem-"+basename+">");
-    if (cmd >> "}") {
-      break;
-    }else{
-        if(cmd>>"T"){
-            cmd>>dump;
-        }
-        else {
-            std::string _paramname=cmd.ctos("=","",""),_paramvalue;
-            cmd>>"=">>_paramvalue;
-            paramname.push_back (_paramname);
-            paramvalue.push_back(_paramvalue);
-            std::cout<<_paramname<<" "<<_paramvalue<<std::endl;
-            if(_paramname=="device"){
-                isgraphical=false;
-            }
-        }
-    }
-  }
+  //open the basename to get the ports and their placements
+  //parse_ports(newcmd,x);
+  x->set_label(basename);
   if (isgraphical==true) {
     return NULL;
   }
   else{
-
+    cmd.reset(here);
   }
   return x;
 }
@@ -168,11 +179,54 @@ static void parse_net(CS& cmd,CARD* x)
         }
         ++i;
     }
-    if (gotthenet){
-        lang_gschem.nets.push_back(x);
-    }
 }
 /*--------------------------------------------------------------------------*/
+/* C x y selectable angle mirror basename{
+ *  <params>
+ * }
+ * parse_component will set the params for the component
+ * and the ports with their position?
+ */
+static void parse_component(CS& cmd,CARD* x){
+    assert(x);
+    std::string component_x, component_y, mirror, angle, dump,basename;
+    std::string type=lang_gschem.find_type_in_string(cmd);
+    cmd>>type;
+    std::vector<std::string> paramname;
+    std::vector<std::string> paramvalue;
+    cmd>>component_x>>" ">>component_y>>" ">>dump>>" ">>angle>>" ">>mirror>>" ">>basename;
+    //To get port names and values from symbol?
+    //Then set params below
+    x->set_param_by_name("x",component_x);
+    x->set_param_by_name("y",component_y);
+    x->set_param_by_name("angle",angle);
+    x->set_param_by_name("mirror",mirror);
+    x->set_param_by_name("basename",basename);
+    CS new_cmd(CS::_STDIN);
+    new_cmd.get_line("gnucap-gschem- "+basename+">");
+    new_cmd>>"{";
+    for (;;) {
+        new_cmd.get_line("gnucap-gschem- "+basename+">");
+        if (new_cmd >> "}") {
+            break;
+        }else{
+            if(new_cmd>>"T"){
+                new_cmd>>dump;
+            }
+            else {
+                std::string _paramname=new_cmd.ctos("=","",""),_paramvalue;
+                new_cmd>>"=">>_paramvalue;
+                paramname.push_back (_paramname);
+                paramvalue.push_back(_paramvalue);
+                if(_paramname=="device"){
+                    x->set_dev_type(_paramvalue);
+                }else{
+                    x->set_param_by_name(_paramname,_paramvalue);
+                }
+            }
+        }
+    }
+}
 /*--------------------------------------------------------------------------*/
 COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
 {
@@ -196,50 +250,40 @@ COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
  *  picture  G    * path     H
  *  box      B    * text     T (not attributes)
  * The following have electrical meaning and are of type
- *  net          N 
- *  bus          U 
+ *  net          N
+ *  bus          U
  *  pin          P
  *  component    C
  *  attributes   T (enclosed in {})  // don't include in find_type_in_string
  * Will check for type graphical (type=dev_comment) else type will be
  * net or bus or pin or component\
  */
- std::string LANG_GSCHEM::find_type_in_string(CS& cmd)
- {
+std::string LANG_GSCHEM::find_type_in_string(CS& cmd)
+{
     unsigned here = cmd.cursor(); //store cursor position to reset back later
-    std::string type;   //stores type : should check device attribute.. 
-    // (**)to find how to check the type.. (**)
-    /*
-     *if((cmd>>"//")){
-     *   assert(here==0);
-     *   type="dev_comment";
-     *}
-     *else{ cmd>>type;}
-     */
-    //graphical=["v","L","G","B","V","A","H","T"]
+    std::string type;   //stores type : should check device attribute..
     if (cmd >> "v" || cmd >> "L" || cmd >> "G" || cmd >> "B" || cmd >>"V" ||
         cmd >> "A" || cmd >> "H" || cmd >> "T"){ type="dev_comment";}
     else if (cmd >> "N"){ type="net";}
     else if (cmd >> "U"){ type="bus";}
     else if (cmd >> "P"){ type="pin";}
-    else if (cmd >> "C"){ type="subckt";}
-    else { } //Not matched with the type. What now?
-    cmd.reset(here);//Reset cursor back to the position that 
+    else if (cmd >> "C"){ type="C";}
+    else {  cmd >> type; } //Not matched with the type. What now?
+    cmd.reset(here);//Reset cursor back to the position that
                     //has been started with at beginning
     return type;    // returns the type of the string
-    
- }
+}
 
 /*----------------------------------------------------------------------*/
 /*parse_top_item : To know:
  *What does CS& refer to
- *  CS stands for command string which is defined in ap.h and various functions   
+ *  CS stands for command string which is defined in ap.h and various functions
  *  on it are defined in ap*.cc
  *what does get_line method on CS& do ?
- *  get_line will ‘getlines’ from the file ptr, else if no file, get from 
+ *  get_line will ‘getlines’ from the file ptr, else if no file, get from
  *  keyboard (stdin) using getcmd (which will get a command, also log, echo etc)
  *what is the class CARD_LIST* ?
- *	
+ *
  *what does new__instance of cmd mean?
  *	It is defined in u_lang.cc. It does the following :
  *	/11/find_type_in_string : specific to each language which gives the type of the  *cmd
@@ -256,35 +300,47 @@ COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
  *		elsif DEV_DOT, return parse_command()
  *		else return NULL
  *	Now Scope->push_back(x) which will add this to the list “Scope._cl”.
- */		
+ */
 void LANG_GSCHEM::parse_top_item(CS& cmd, CARD_LIST* Scope)
 {
   cmd.get_line("gnucap-gschem>");
-  std::cout<<"Got the line\n";
   new__instance(cmd, NULL, Scope);
+  //for(CARD_LIST::const_iterator ci=Scope->begin();ci!= Scope->end();++ci) {
+  //  std::cout<<(*ci)->dev_type()<<" "<<(*ci)->param_value(4)<<std::endl;
+  //}
 }
+/*----------------------------------------------------------------------*/
+
+//Printing stuff : TO ADD
+
+/*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 class CMD_GSCHEM : public CMD {
 public:
     void do_it(CS& cmd, CARD_LIST* Scope)
     {
-    command("options lang=gschem", Scope);
+      command("options lang=gschem", Scope);
     }
 } p8;
-DISPATCHER<CMD>::INSTALL 
+DISPATCHER<CMD>::INSTALL
     d8(&command_dispatcher, "gschem", &p8);
-
-class CMD_COMPONENT : public CMD {
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+class CMD_C : public CMD {
     void do_it(CS& cmd, CARD_LIST* Scope)
     {
-      std::cout<<"Command Dispatched\n";
       MODEL_SUBCKT* new_compon = new MODEL_SUBCKT;
       assert(new_compon);
       assert(!new_compon->owner());
       assert(new_compon->subckt());
       assert(new_compon->subckt()->is_empty());
       lang_gschem.parse_module(cmd, new_compon);
-      Scope->push_back(new_compon);
+      if(new_compon){
+        Scope->push_back(new_compon);
+        std::string s=new_compon->short_label()+" "+cmd.tail();
+        CS cmd(CS::_STRING,s);
+        lang_gschem.new__instance(cmd,NULL,Scope);
+      }
     }
 } p2;
 DISPATCHER<CMD>::INSTALL
