@@ -199,11 +199,23 @@ DEV_COMMENT* LANG_GSCHEM::parse_comment(CS& cmd, DEV_COMMENT* x)
 /*--------------------------------------------------------------------------*/
 DEV_DOT* LANG_GSCHEM::parse_command(CS& cmd, DEV_DOT* x)
 {
+  std::cout<<"Command parsed\n";
   assert(x);
   x->set(cmd.fullstring());
   CARD_LIST* scope = (x->owner()) ? x->owner()->subckt() : &CARD_LIST::card_list;
 
   cmd.reset();
+  /*
+  if (cmd>>"C"){
+    unsigned here=cmd.cursor();
+    std::string comp_params;
+    cmd>>comp_params;
+    cmd.reset(here);
+    std::string s="component "+cmd.tail();
+    CS aug_cmd(CS::_STRING, s);
+    CMD::cmdproc(aug_cmd,scope);
+  }*/
+
   CMD::cmdproc(cmd, scope);
   delete x;
   return NULL;
@@ -240,6 +252,7 @@ MODEL_CARD* LANG_GSCHEM::parse_paramset(CS& cmd, MODEL_CARD* x)
 
 MODEL_SUBCKT* LANG_GSCHEM::parse_module(CS& cmd, MODEL_SUBCKT* x)
 {
+  std::cout<<"Got into parse_module\n";
   assert(x);
   cmd.reset();
   std::string type = find_type_in_string(cmd);
@@ -258,6 +271,7 @@ MODEL_SUBCKT* LANG_GSCHEM::parse_module(CS& cmd, MODEL_SUBCKT* x)
   else{
     cmd.reset(here);
   }
+  std::cout<<"Going out of parse_module\n";
   return x;
 }
 /*--------------------------------------------------------------------------*/
@@ -299,25 +313,33 @@ static void parse_net(CS& cmd,CARD* x)
 }
 /*--------------------------------------------------------------------------*/
 static void parse_component(CS& cmd,CARD* x){
+    std::cout<<"Got into parse_componet-1\n";
     assert(x);
     std::string component_x, component_y, mirror, angle, dump,basename;
     std::string type=lang_gschem.find_type_in_string(cmd);
+    std::cout<<type;
     cmd>>type;
     std::vector<std::string> paramname;
     std::vector<std::string> paramvalue;
+    std::cout<<"Got into parse_componet0\n";
     cmd>>component_x>>" ">>component_y>>" ">>dump>>" ">>angle>>" ">>mirror>>" ">>basename;
+    std::cout<<component_x<<" "<<component_y<<" "<<dump<<" "<<angle<<" "<<mirror<<" "<<basename;
     //To get port names and values from symbol?
     //Then set params below
+    std::cout<<"Got into parse_componet1\n";
     x->set_param_by_name("x",component_x);
     x->set_param_by_name("y",component_y);
     x->set_param_by_name("angle",angle);
     x->set_param_by_name("mirror",mirror);
     x->set_param_by_name("basename",basename);
+    std::cout<<"Got into parse_componet2\n";
+    std::cout<<x->param_count()<<std::endl;
     CS new_cmd(CS::_STDIN);
     new_cmd.get_line("gnucap-gschem- "+basename+">");
     new_cmd>>"{";
     for (;;) {
         new_cmd.get_line("gnucap-gschem- "+basename+">");
+        std::cout<<"Got into parse_componet3\n";
         if (new_cmd >> "}") {
             break;
         }else{
@@ -325,10 +347,14 @@ static void parse_component(CS& cmd,CARD* x){
                 new_cmd>>dump;
             }
             else {
+                std::cout<<new_cmd.fullstring()<<std::endl;
                 std::string _paramname=new_cmd.ctos("=","",""),_paramvalue;
                 new_cmd>>"=">>_paramvalue;
                 paramname.push_back (_paramname);
+                std::cout<<"fine0\n";
                 paramvalue.push_back(_paramvalue);
+                std::cout<<"fine1\n";
+                std::cout<<_paramname<<" "<<_paramvalue<<std::endl;
                 if(_paramname=="device"){
                     x->set_dev_type(_paramvalue);
                 }else{
@@ -337,6 +363,7 @@ static void parse_component(CS& cmd,CARD* x){
             }
         }
     }
+    std::cout<<"Going out of parse_component"<<std::endl;
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -346,9 +373,12 @@ COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
   parse_type(cmd, x); //parse type will parse the component type and set_dev_type
   if (x->dev_type()=="net") {
     parse_net(cmd,x);
+  }else {
+    parse_component(cmd,x);
   }
   cmd.check(bWARNING, "what's ins this?");
   return x;
+
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -428,9 +458,9 @@ void LANG_GSCHEM::parse_top_item(CS& cmd, CARD_LIST* Scope)
   cmd.get_line("gnucap-gschem>");
   std::cout<<"Got the line\n";
   new__instance(cmd, NULL, Scope);
-  for(CARD_LIST::const_iterator ci=Scope->begin();ci!= Scope->end();++ci) {
+  /*for(CARD_LIST::const_iterator ci=Scope->begin();ci!= Scope->end();++ci) {
     std::cout<<(*ci)->dev_type()<<" "<<(*ci)->param_value(4)<<std::endl;
-  }
+  }*/
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
