@@ -87,12 +87,7 @@ static void parse_type(CS& cmd, CARD* x)
   assert(x);
   std::string new_type;
   new_type=lang_gschem.find_type_in_string(cmd);
-  if (new_type=="net") {
-    x->set_dev_type(new_type);
-  }
-  else{
-    return;
-  }
+  x->set_dev_type(new_type);
 }
 /*--------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -384,8 +379,8 @@ COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
     else if (cmd >> "N"){ type="net";}
     else if (cmd >> "U"){ type="bus";}
     else if (cmd >> "P"){ type="pin";}
-    else if (cmd >> "C"){ type="component";}
-    else { } //Not matched with the type. What now?
+    else if (cmd >> "C"){ type="C";}
+    else {  cmd >> type; } //Not matched with the type. What now?
     cmd.reset(here);//Reset cursor back to the position that
                     //has been started with at beginning
     return type;    // returns the type of the string
