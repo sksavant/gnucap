@@ -1,6 +1,7 @@
 var searchData=
 [
   ['needslinfix',['needslinfix',['../d6/d02/namespaceanonymous__namespace_02s__ac_8cc_03.html#addc5578c2969c5e5907e074afb867f46',1,'anonymous_namespace{s_ac.cc}']]],
+  ['nets',['nets',['../d3/d07/classanonymous__namespace_02lang__gschem_8cc_03_1_1_l_a_n_g___g_s_c_h_e_m.html#a6513f42f8ae2e87e115560e0020cff57',1,'anonymous_namespace{lang_gschem.cc}::LANG_GSCHEM']]],
   ['never',['NEVER',['../dd/d17/constant_8h.html#ab4878a59db1ba93c064aae818b9e51ae',1,'constant.h']]],
   ['newly_5fstable',['newly_stable',['../d6/d60/e__node_8cc.html#adb6110f54b3f50e5abb7f30a4faea195',1,'e_node.cc']]],
   ['nl',['nl',['../dd/d37/classanonymous__namespace_02d__trln_8cc_03_1_1_c_o_m_m_o_n___t_r_a_n_s_l_i_n_e.html#a0495298df93155ff597cb3de2a20ce32',1,'anonymous_namespace{d_trln.cc}::COMMON_TRANSLINE']]],
