@@ -1,0 +1,9 @@
+load /home/savant/gnucap/src/lang_gschem.so
+gschem
+C 1 2 3 4 5 res-sym
+{
+value=10k
+device=RESISTOR
+}
+N 1 2 3 4 5
+exit

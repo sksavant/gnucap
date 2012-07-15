@@ -1,0 +1,29 @@
+Gnucap 2009.12.07 RCS 26.136
+The Gnu Circuit Analysis Package
+Never trust any version less than 1.0
+Copyright 1982-2009, Albert Davis
+Gnucap comes with ABSOLUTELY NO WARRANTY
+This is free software, and you are welcome
+to redistribute it under the terms of 
+the GNU General Public License, version 3 or later.
+See the file "COPYING" for details.
+Got the line
+Command parsed
+Command Dispatched
+Got into parse_module
+Going out of parse_module
+s :res-sym 1 2 3 4 5 res-sym 
+cmd :res-sym 1 2 3 4 5 res-sym 
+Got into parse_componet-1
+res-symGot into parse_componet0
+1 2 3 4 5 res-symGot into parse_componet1
+Got into parse_componet2
+8
+Got into parse_componet3
+value=RESS 
+fine0
+fine1
+value RESS
+Got into parse_componet3
+Going out of parse_component
+
