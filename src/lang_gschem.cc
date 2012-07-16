@@ -276,6 +276,19 @@ MODEL_SUBCKT* LANG_GSCHEM::parse_module(CS& cmd, MODEL_SUBCKT* x)
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+static int port_name_with_placement(CARD* x, std::string xc, std::string yc)
+{
+    for(CARD_LIST::const_iterator ci=x->scope()->begin();ci!= x->scope()->end();++ci) {
+        //std::cout<<(*ci)->dev_type()<<" "<<(*ci)->param_value(4)<<std::endl;
+        for (int ii=0; ii<(*ci)->net_nodes(); ++ii){
+            if ([xc,yc]==(*ci)->get_port_placement_by_index(ii)){
+                return (*ci)->port_value(ii);
+            }
+        }
+        return "node"+to_string(_nodeindex++);
+    }
+}
+/*--------------------------------------------------------------------------*/
 // A net is in form N x0 y0 x1 y1 c
 // Need to get x0 y0 ; x1 y1 ;
 // Need to go through all the nets. Anyway?
@@ -309,6 +322,11 @@ static void parse_net(CS& cmd,CARD* x)
     }
     if (gotthenet){
         //lang_gschem.nets.push_back(x);
+        //To check if any of the previous nodes have same placement.
+        x->set_port_by_name("p",port_name_with_placement(param_value(4),param_value(3)) )//_nodeindex++));
+        x->set_port_placement_by_name("p",x->param_value(4),x->param_value(3));
+        x->set_port_by_name("n",port_name_with_placement(param_value(2),param_value(1)) )//_nodeindex++));
+        x->set_port_placement_by_name("n",x->param_value(2),x->param_value(1));
     }
 }
 /*--------------------------------------------------------------------------*/
