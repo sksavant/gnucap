@@ -55,6 +55,11 @@ private:
   CARD*     clone()const     {return new DEV_NET(*this);}
   bool      print_type_in_spice()const {return false;}
   int       param_count()const  {return 5;}
+  std::string _port_placement[2][2];
+  void      set_port_placement_by_index(int, std::string, std::string );
+  void      set_port_placement_by_name(std::string, std::string, std::string);
+  std::string* get_port_placement_by_index(int);
+  std::string* get_port_placement_by_name(std::string);
   std::string port_name(int i)const{
     assert(i>=0);
     assert(i<2);
@@ -63,6 +68,39 @@ private:
   }
 };
 /*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+void DEV_NET::set_port_placement_by_index(int index,std::string x, std::string y)
+{
+    _port_placement[index][0]=x;
+    _port_placement[index][1]=y;
+}
+/*--------------------------------------------------------------------------*/
+void DEV_NET::set_port_placement_by_name(std::string name,std::string x,std::string y)
+{
+    for(int i=0; i<max_nodes(); ++i){
+        if(name==port_name(i)) {
+            set_port_placement_by_index(i,x,y);
+            return;
+        }
+    }
+    throw Exception_No_Match(name);
+}
+/*--------------------------------------------------------------------------*/
+std::string* DEV_NET::get_port_placement_by_index(int index)
+{
+    assert(_port_placement[index]);
+    return _port_placement[index];
+}
+/*--------------------------------------------------------------------------*/
+std::string* DEV_NET::get_port_placement_by_name(std::string name)
+{
+    for(int i=0; i<max_nodes(); ++i){
+        if(name==port_name(i)) {
+            return get_port_placement_by_index(i);
+        }
+    }
+    throw Exception_No_Match(name);
+}
 /*--------------------------------------------------------------------------*/
 std::string DEV_NET::param_name(int i) const
 {
