@@ -61,7 +61,9 @@ s_tr.cc s_tr_set.cc s_tr_swp.cc
 
 # netlist languages
 LANG_SRCS = \
-lang_spice.cc lang_spectre.cc lang_verilog.cc
+lang_spice.cc lang_spectre.cc lang_verilog.cc lang_gschem.cc
+
+lang_gschem.o: CPPFLAGS+=@GEDA_CFLAGS@
 
 # parameter functions
 FUNC_SRCS = \

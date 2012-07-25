@@ -27,6 +27,14 @@
 #include "e_model.h"
 #include "u_lang.h"
 #include <fts.h>
+#ifdef HAVE_GEDA
+#include <gmpxx.h> // to workaround bug in gmp header about __cplusplus
+#define COMPLEX NOCOMPLEX // COMPLEX already came from md.h
+extern "C"{
+# include <libgeda/libgeda.h>
+}
+#undef COMPLEX
+#endif
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
@@ -164,7 +172,14 @@ static void parse_pin(CS& cmd, COMPONENT* x, int index)
 /*--------------------------------------------------------------------------*/
 static std::string find_file_given_name(std::string basename)
 {
-    char *p[]={"../geda-sym/symbols",NULL};
+#ifdef HAVE_GEDA
+    const char* geda = s_path_sys_data();
+#else
+    const char* geda = GEDA_DATA;
+#endif
+	 char* gedasym;
+	 sprintf(gedasym, "%s/sym", geda);
+    char *p[] = {gedasym,NULL};
     FTS* dir=fts_open(p,FTS_NOCHDIR, NULL);
     if(!dir){
         std::cout<<"Not opened\n";
