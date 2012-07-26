@@ -177,8 +177,8 @@ static std::string find_file_given_name(std::string basename)
 #else
     const char* geda = GEDA_DATA;
 #endif
-	 char* gedasym;
-	 sprintf(gedasym, "%s/sym", geda);
+    char gedasym[5+strlen(geda)];
+    sprintf(gedasym, "%s/sym", geda);
     char *p[] = {gedasym,NULL};
     FTS* dir=fts_open(p,FTS_NOCHDIR, NULL);
     if(!dir){
