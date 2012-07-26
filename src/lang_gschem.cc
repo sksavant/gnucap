@@ -245,7 +245,7 @@ MODEL_SUBCKT* LANG_GSCHEM::parse_module(CS& cmd, MODEL_SUBCKT* x)
 // Need to go through all the nets. Anyway?
 // Need to save them in other forms? How to go through all cards?
 // Need to specify a name for a card?
-static void parse_net(CS& cmd,COMPONENT* x)
+static void parse_net(CS& cmd, COMPONENT* x)
 {
     assert(x);
     assert(lang_gschem.find_type_in_string(cmd)=="net");
@@ -256,10 +256,6 @@ static void parse_net(CS& cmd,COMPONENT* x)
     std::string paramvalue[5];
     int i=0;
     bool gotthenet=true;
-    std::string _node1="node"+to_string(rand());
-    std::string _node2="node"+to_string(rand());
-    x->set_port_by_index(0,_node1);
-    x->set_port_by_index(1,_node2);
     while (i<5) {
         if (cmd.is_alnum()){
             cmd>>" ">>paramvalue[i];
@@ -280,6 +276,18 @@ static void parse_net(CS& cmd,COMPONENT* x)
         //To check if any of the previous nodes have same placement.
     }
     x->set_label("net"+to_string(rand()%10000)); //BUG : names may coincide!. Doesn't matter? Or try some initialisation method. (latch like digital)
+    std::string _node1="node"+to_string(rand()%10000);
+    std::string _node2="node"+to_string(rand()%10000);
+    std::cout<<_node1<<" "<<_node2<<std::endl;
+    std::string nodename1="p";
+    std::string nodename2="n";
+    std::string node1="whaer1\0";
+    std::string node2="whaer2\0";
+    int indexp=0;
+    x->set_port_by_name(nodename1,node1);
+    std::cout<<"got out here too";
+    x->set_port_by_name(nodename2,node2);
+    std::cout<<"got out";
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -384,12 +392,12 @@ std::string LANG_GSCHEM::find_type_in_string(CS& cmd)
     unsigned here = cmd.cursor(); //store cursor position to reset back later
     std::string type;   //stores type : should check device attribute..
     //graphical=["v","L","G","B","V","A","H","T"]
-    if (cmd >> "v" || cmd >> "L" || cmd >> "G" || cmd >> "B" || cmd >>"V" ||
-        cmd >> "A" || cmd >> "H" || cmd >> "T"){ type="dev_comment";}
-    else if (cmd >> "N"){ type="net";}
-    else if (cmd >> "U"){ type="bus";}
-    else if (cmd >> "P"){ type="pin";}
-    else if (cmd >> "C"){ type="C";}
+    if (cmd >> "v " || cmd >> "L " || cmd >> "G " || cmd >> "B " || cmd >>"V " ||
+        cmd >> "A " || cmd >> "H " || cmd >> "T "){ type="dev_comment";}
+    else if (cmd >> "N "){ type="net";}
+    else if (cmd >> "U "){ type="bus";}
+    else if (cmd >> "P "){ type="pin";}
+    else if (cmd >> "C "){ type="C";}
     else {  cmd >> type; } //Not matched with the type. What now?
     cmd.reset(here);//Reset cursor back to the position that
                     //has been started with at beginning
