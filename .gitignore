@@ -1,6 +1,7 @@
 ./tmp/*
 ./*.old
 *.o
+*.out
 *.so
 gnucap/src/d_mos*.cc
 gnucap/src/d_mos*.h
