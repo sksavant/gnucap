@@ -21,17 +21,23 @@
  * This is the device 'net' : a connection between components.
  */
 #include "e_compon.h"
+#include "e_node.h"
 /*--------------------------------------------------------------------------*/
-namespace {
+//namespace {
 /*--------------------------------------------------------------------------*/
 class DEV_NET : public COMPONENT {
 
-private:
-  explicit DEV_NET(const DEV_NET& p) :COMPONENT(p){}
 public:
-  explicit DEV_NET() :COMPONENT(){}
+  explicit DEV_NET() :COMPONENT()
+    {
+        _n=_nodes;
+    }
+  explicit DEV_NET(const DEV_NET& p) :COMPONENT(p){
+    _n=_nodes;
+  }
+  ~DEV_NET(){}
 protected:
-  PARAMETER<double> _xco0;
+  PARAMETER<double> _xco0;//Not needed?
   PARAMETER<double> _yco0;
   PARAMETER<double> _xco1;
   PARAMETER<double> _yco1;
@@ -55,52 +61,16 @@ private:
   CARD*     clone()const     {return new DEV_NET(*this);}
   bool      print_type_in_spice()const {return false;}
   int       param_count()const  {return 5;}
-  std::string _port_placement[2][2];
-  void      set_port_placement_by_index(int, std::string, std::string );
-  void      set_port_placement_by_name(std::string, std::string, std::string);
-  std::string* get_port_placement_by_index(int);
-  std::string* get_port_placement_by_name(std::string);
   std::string port_name(int i)const{
     assert(i>=0);
     assert(i<2);
     static std::string names[]={"p","n"};
     return names[i];
   }
+public:
+  node_t    _nodes[NODES_PER_BRANCH];
 };
 /*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-void DEV_NET::set_port_placement_by_index(int index,std::string x, std::string y)
-{
-    _port_placement[index][0]=x;
-    _port_placement[index][1]=y;
-}
-/*--------------------------------------------------------------------------*/
-void DEV_NET::set_port_placement_by_name(std::string name,std::string x,std::string y)
-{
-    for(int i=0; i<max_nodes(); ++i){
-        if(name==port_name(i)) {
-            set_port_placement_by_index(i,x,y);
-            return;
-        }
-    }
-    throw Exception_No_Match(name);
-}
-/*--------------------------------------------------------------------------*/
-std::string* DEV_NET::get_port_placement_by_index(int index)
-{
-    assert(_port_placement[index]);
-    return _port_placement[index];
-}
-/*--------------------------------------------------------------------------*/
-std::string* DEV_NET::get_port_placement_by_name(std::string name)
-{
-    for(int i=0; i<max_nodes(); ++i){
-        if(name==port_name(i)) {
-            return get_port_placement_by_index(i);
-        }
-    }
-    throw Exception_No_Match(name);
-}
 /*--------------------------------------------------------------------------*/
 std::string DEV_NET::param_name(int i) const
 {
@@ -122,7 +92,7 @@ std::string DEV_NET::param_name(int i,int j) const{
     }
 }
 /*--------------------------------------------------------------------------*/
-void DEV_NET::set_param_by_name(std::string Name,std::string Value) 
+void DEV_NET::set_param_by_name(std::string Name,std::string Value)
 {
     for (int i=DEV_NET::param_count()-1; i>=0; --i) {
         for (int j=0; DEV_NET::param_name(i,j)!=""; ++j) {
@@ -171,10 +141,11 @@ std::string DEV_NET::param_value(int i)const
     default: return "";
     }
 }
+
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 DEV_NET p1;
 DISPATCHER<CARD>::INSTALL d1(&device_dispatcher,"N|net",&p1);
 /*--------------------------------------------------------------------------*/
-}
+//}
 /*--------------------------------------------------------------------------*/
