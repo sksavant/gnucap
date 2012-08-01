@@ -61,7 +61,7 @@ public:
     MODEL_SUBCKT* parse_module(CS&, MODEL_SUBCKT*);
     COMPONENT*	  parse_instance(CS&, COMPONENT*);
     std::string	  find_type_in_string(CS&);
-    std::vector<CARD*> nets;
+    MODEL_SUBCKT* parse_componmod(CS&, MODEL_SUBCKT*);
 
 private:
     void print_paramset(OMSTREAM&, const MODEL_CARD*);
@@ -205,18 +205,26 @@ static void parse_symbol_file(COMPONENT* x, std::string basename)
         }
         std::string linetype=OPT::language->find_type_in_string(sym_cmd);
         if (linetype=="pin"){
-            parse_pin(sym_cmd,x,index++);
+            coord.push_back(parse_pin(sym_cmd,x,index++));
             std::cout<<"Pin number "+to_string(index)<<std::endl;
         }else{
             sym_cmd>>dump;
         }
     }
+    return coord;
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 MODEL_SUBCKT* LANG_GSCHEM::parse_module(CS& cmd, MODEL_SUBCKT* x)
 {
   std::cout<<"Got into parse_module\n";
+  //To parse heirarchical schematics
+  return NULL;
+}
+
+MODEL_SUBCKT* LANG_GSCHEM::parse_componmod(CS& cmd, MODEL_SUBCKT* x)
+{
+  std::cout<<"Going into parse_componmod ";
   assert(x);
   cmd.reset();
   std::string type = find_type_in_string(cmd);
@@ -229,15 +237,21 @@ MODEL_SUBCKT* LANG_GSCHEM::parse_module(CS& cmd, MODEL_SUBCKT* x)
   //open the basename to get the ports and their placements
   //parse_ports(newcmd,x);
       parse_symbol_file(x,basename);
-  x->set_label(basename);
+  x->set_label("!_"+basename);
+
   if (isgraphical==true) {
     return NULL;
   }
   else{
     cmd.reset(here);
   }
-  std::cout<<"Going out of parse_module\n";
+  std::cout<<"Going out of parse_componmod\n";
+  /*type = "graphical";
+  x->set_dev_type(type);
+  std::cout<<x->dev_type()<<" is the dev type\n";
+  */
   return x;
+
 }
 /*--------------------------------------------------------------------------*/
 // A net is in form N x0 y0 x1 y1 c
@@ -347,7 +361,7 @@ static void parse_component(CS& cmd,COMPONENT* x){
             }
         }
     }
-    if(x->short_label()!=""){
+    if(x->short_label()==""){
         x->set_label(type+to_string(rand()));
     }
     std::cout<<"Going out of parse_component"<<std::endl;
@@ -520,8 +534,12 @@ void LANG_GSCHEM::print_paramset(OMSTREAM& o, const MODEL_CARD* x)
 void LANG_GSCHEM::print_module(OMSTREAM& o, const MODEL_SUBCKT* x)
 {
   assert(x);
+  //o<<x->short_label();
+  //o<<"\n";
   assert(x->subckt());
-
+  if(x->short_label().find("!_")!=std::string::npos){
+    return;
+  }
   o << "module " <<  x->short_label();
   print_ports_short(o, x);
   o << ";\n";
@@ -580,7 +598,7 @@ class CMD_C : public CMD {
       assert(!new_compon->owner());
       assert(new_compon->subckt());
       assert(new_compon->subckt()->is_empty());
-      lang_gschem.parse_module(cmd, new_compon);
+      lang_gschem.parse_componmod(cmd, new_compon);
       if(new_compon){
         Scope->push_back(new_compon);
         std::string s=new_compon->short_label()+" "+cmd.tail();
