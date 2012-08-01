@@ -379,7 +379,13 @@ static void parse_component(CS& cmd,COMPONENT* x){
     std::cout<<x->param_count()<<std::endl;
     CS new_cmd(CS::_STDIN);
     new_cmd.get_line("gnucap-gschem- "+basename+">");
-    new_cmd>>"{";
+    std::string temp=new_cmd.fullstring();
+    std::cout<<temp<<std::endl;
+    if(temp!="{"){
+        std::cout<<"No params\n";
+        return;
+    }
+    cmd>>"{";
     for (;;) {
         new_cmd.get_line("gnucap-gschem- "+basename+">");
         std::cout<<"Got into parse_componet3\n";
