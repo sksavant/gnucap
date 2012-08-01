@@ -118,23 +118,23 @@ MODEL_CARD* LANG_GSCHEM::parse_paramset(CS& cmd, MODEL_CARD* x)
   return NULL;
 }
 /*--------------------------------------------------------------------------*/
-static void parse_pin(CS& cmd, COMPONENT* x, int index)
+static std::string* parse_pin(CS& cmd, COMPONENT* x, int index)
 {
     assert(x);
     std::string type=OPT::language->find_type_in_string(cmd),dump;
     assert(type=="pin");
     cmd>>"P";
-    std::string xpin,ypin;
+    std::string coord[2];
     std::string pinattributes[7];
     for(int i=0;i<7;i++){
         cmd>>" ">>pinattributes[i];
     }
     if (pinattributes[6]=="1"){
-        xpin=pinattributes[2];
-        ypin=pinattributes[3];
+        coord[0]=pinattributes[2];
+        coord[1]=pinattributes[3];
     }else if (pinattributes[6]=="0"){
-        xpin=pinattributes[0];
-        ypin=pinattributes[1];
+        coord[0]=pinattributes[0];
+        coord[1]=pinattributes[1];
     }
     std::string    _portvalue="_";
     cmd.get_line("");
@@ -156,10 +156,10 @@ static void parse_pin(CS& cmd, COMPONENT* x, int index)
                     _portvalue=_portvalue+_pvalue;
                 }
             }
-
         }
     }
     x->set_port_by_index(index,_portvalue);
+    return coord;
 }
 /*--------------------------------------------------------------------------*/
 static std::string find_file_given_name(std::string basename)
@@ -185,12 +185,13 @@ static std::string find_file_given_name(std::string basename)
     return dirname;
 }
 /*--------------------------------------------------------------------------*/
-static void parse_symbol_file(COMPONENT* x, std::string basename)
+static std::vector<std::string*> parse_symbol_file(COMPONENT* x, std::string basename)
 {
     std::string filename=find_file_given_name(basename),dump;
     CS sym_cmd(CS::_INC_FILE, filename);
     //Now parse the sym_cmd which will get lines
     int index=0;
+    std::vector<std::string*> coord;
     while(true){
         try{
             sym_cmd.get_line("");
@@ -320,8 +321,54 @@ static void parse_component(CS& cmd,COMPONENT* x){
     //To get port names and values from symbol?
     //Then set params below
     //Search for the file name
-    parse_symbol_file(x,basename);
-
+    std::vector<std::string*> coordinates=parse_symbol_file(x,basename);
+    std::string    newx,newy;
+    for (std::vector<std::string*>::const_iterator i=coordinates.begin();i<coordinates.end();++i){
+        newx="";
+        newy=""; //to do integer casting, addition and then reconverting to string
+        if(mirror=="0"){
+            switch(atoi(angle.c_str())){
+            case "0":
+                newx=component_x+(**i)[0];
+                newy=component_y+(*i)[1];
+                break;
+            case "90":
+                newx=component_x-(*i)[1];
+                newy=component_y+(*i)[0];
+                break;
+            case "180":
+                newx=component_x-(*i)[0];
+                newy=component_y-(*i)[1];
+                break;
+            case "270":
+                newx=component_x+(*i)[1];
+                newy=component_y-(*i)[0];
+                break;
+            }
+        }else if(mirror=="1"){
+            switch(atoi(angle.c_str)){
+            case "0":
+                newx=component_y-(*i)[0];
+                newy=component_y+(*i)[1];
+                break;
+            case "90":
+                newx=component_x-(*i)[1];
+                newy=component_y-(*i)[0];
+                break;
+            case "180":
+                newx=component_x+(*i)[0];
+                newy=component_y-(*i)[1];
+                break;
+            case "270":
+                newx=coordinates+(*i)[1];
+                newy=component_y+(*i)[0];
+                break;
+            }
+        }else{
+        //not correct mirror!
+        }
+    //setting new place devices for each node searching for .
+    }
     std::cout<<"Got into parse_componet1\n";
     x->set_param_by_name("x",component_x);
     x->set_param_by_name("y",component_y);
@@ -412,6 +459,7 @@ std::string LANG_GSCHEM::find_type_in_string(CS& cmd)
     else if (cmd >> "U "){ type="bus";}
     else if (cmd >> "P "){ type="pin";}
     else if (cmd >> "C "){ type="C";}
+    else if (cmd >> "place"){ type="place";}
     else {  cmd >> type; } //Not matched with the type. What now?
     cmd.reset(here);//Reset cursor back to the position that
                     //has been started with at beginning
