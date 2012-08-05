@@ -305,6 +305,38 @@ static std::string findplacewithsameposition(COMPONENT* x,std::string xco,std::s
     return "";
 }
 /*--------------------------------------------------------------------------*/
+static std::string* findnodeonthisnet(CARD *x, std::string x0, std::string y0, std::string x1, std::string y1)
+{
+    for(CARD_LIST::const_iterator ci = x->scope()->begin(); ci != x->scope()->end(); ++ci) {
+        if((*ci)->dev_type()=="place"){
+            std::string _x=(*ci)->param_value(1),_y=(*ci)->param_value(0);
+            if (y0==y1){
+                if((atoi(x1.c_str())<=atoi(_x.c_str())<=atoi(x0.c_str()) or atoi(x0.c_str())<=atoi(_x.c_str())<=atoi(x1.c_str())) and _y==y0){
+                    std::string* coord=new std::string[2];
+                    coord[0]=_x;
+                    coord[1]=_y;
+                    return coord;
+                }
+                else{
+                    return NULL;
+                }
+            }else if (x0==x1){
+                if((atoi(y1.c_str())<=atoi(_y.c_str())<=atoi(y0.c_str()) or atoi(y0.c_str())<=atoi(_y.c_str())<=atoi(y1.c_str())) and _x==x0){
+                    std::string* coord=new std::string[2];
+                    coord[0]=_x;
+                    coord[1]=_y;
+                    return coord;
+                }else{
+                    return NULL;
+                }
+            }
+            else{
+                return NULL;
+            }
+        }
+    }
+}
+/*--------------------------------------------------------------------------*/
 // A net is in form N x0 y0 x1 y1 c
 // Need to get x0 y0 ; x1 y1 ;
 // Need to go through all the nets. Anyway?
@@ -348,6 +380,18 @@ static void parse_net(CS& cmd, COMPONENT* x)
             create_place("place "+_portvalue+" "+parsedvalue[2]+" "+parsedvalue[3],x);
         }
         x->set_port_by_index(1,_portvalue);
+
+        if (!findnodeonthisnet(x,parsedvalue[0],parsedvalue[1],parsedvalue[2],parsedvalue[3])){
+            //create new net from nodeonthisnet to one of edges of net.
+            std::cout<<"Got here! yay\n";
+            std::string* nodeonthisnet=findnodeonthisnet(x,parsedvalue[0],parsedvalue[1],parsedvalue[2],parsedvalue[3]);
+            std::cout<<"OK 0\n";
+            std::cout<<nodeonthisnet[0]<<" "<<nodeonthisnet[1]<<std::endl;
+            std::string netcmdstr="N "+parsedvalue[0]+" "+parsedvalue[1]+" ";//+nodeonthisnet[0]+" "+nodeonthisnet[1]+" "+"5";
+            std::cout<<"OK 1\n";
+            CS net_cmd(CS::_STRING,netcmdstr);
+            OPT::language->new__instance(net_cmd,NULL,x->scope());
+        }
     }
 }
 /*--------------------------------------------------------------------------*/
