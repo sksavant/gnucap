@@ -120,6 +120,7 @@ MODEL_CARD* LANG_GSCHEM::parse_paramset(CS& cmd, MODEL_CARD* x)
 /*--------------------------------------------------------------------------*/
 static std::string* parse_pin(CS& cmd, COMPONENT* x, int index)
 {
+    std::cout<<"Got into parse_pin";
     assert(x);
     std::string type=OPT::language->find_type_in_string(cmd),dump;
     assert(type=="pin");
@@ -237,7 +238,7 @@ MODEL_SUBCKT* LANG_GSCHEM::parse_componmod(CS& cmd, MODEL_SUBCKT* x)
   cmd>>component_x>>" ">>component_y>>" ">>dump>>" ">>angle>>" ">>mirror>>" ">>basename;
   //open the basename to get the ports and their placements
   //parse_ports(newcmd,x);
-      parse_symbol_file(x,basename);
+  parse_symbol_file(x,basename);
   x->set_label("!_"+basename);
 
   if (isgraphical==true) {
