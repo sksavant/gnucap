@@ -89,6 +89,7 @@ static void parse_type(CS& cmd, CARD* x)
   std::string new_type;
   new_type=lang_gschem.find_type_in_string(cmd);
   x->set_dev_type(new_type);
+  std::cout<<"type is "<<new_type;
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -458,10 +459,13 @@ static void parse_component(CS& cmd,COMPONENT* x){
 COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
 {
   cmd.reset();
+  std::cout<<"Got into parse_instance";
   parse_type(cmd, x); //parse type will parse the component type and set_dev_type
+  std::cout<<x->dev_type()<<std::endl;
   if (x->dev_type()=="net") {
     parse_net(cmd,x);
   }else if(x->dev_type()=="place"){
+    std::cout<<"here?";
     parse_place(cmd,x);
   }else {
     parse_component(cmd,x);
