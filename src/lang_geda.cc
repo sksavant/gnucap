@@ -171,9 +171,6 @@ static std::string* parse_pin(CS& cmd, COMPONENT* x, int index, bool ismodel)
         std::cout<<"Is a model, returning NULL \n";
         return NULL;
     }else{
-        std::string _portvalue="node_"+to_string(rand()%10000);
-        x->set_port_by_index(index,_portvalue);
-        coord[2]=_portvalue;
         return coord;
     }
 }
@@ -296,6 +293,18 @@ static void create_place(std::string cmdstr,COMPONENT* x)
     OPT::language->new__instance(place_cmd,NULL,x->scope());
 }
 /*--------------------------------------------------------------------------*/
+static std::string findplacewithsameposition(COMPONENT* x,std::string xco,std::string yco)
+{
+    for (CARD_LIST::const_iterator ci = x->scope()->begin(); ci != x->scope()->end(); ++ci) {
+        if((*ci)->dev_type()=="place"){
+            if(xco==(*ci)->param_value(1) && yco==(*ci)->param_value(0)){
+                return static_cast<COMPONENT*>(*ci)->port_value(0);
+            }
+        }
+    }
+    return "";
+}
+/*--------------------------------------------------------------------------*/
 // A net is in form N x0 y0 x1 y1 c
 // Need to get x0 y0 ; x1 y1 ;
 // Need to go through all the nets. Anyway?
@@ -325,20 +334,22 @@ static void parse_net(CS& cmd, COMPONENT* x)
         //lang_gschem.nets.push_back(x);
         //To check if any of the previous nodes have same placement.
         x->set_label("net"+to_string(rand()%10000)); //BUG : names may coincide!. Doesn't matter? Or try some initialisation method. (latch like digital)
-        std::string _node1="node"+to_string(rand()%10000);
-        std::string _node2="node"+to_string(rand()%10000);
-        std::cout<<_node1<<" "<<_node2<<std::endl;
-        std::string nodename1="p";
-        std::string nodename2="n";
-        x->set_port_by_name(nodename1,_node1);
-        std::cout<<"got out here too";
-        x->set_port_by_name(nodename2,_node2);
-        std::cout<<"got out";
-        create_place("place "+_node1+" "+parsedvalue[0]+" "+parsedvalue[1],x);
-        create_place("place "+_node2+" "+parsedvalue[2]+" "+parsedvalue[3],x);
+
+        std::string _portvalue=findplacewithsameposition(x,parsedvalue[0],parsedvalue[1]);
+        if(_portvalue==""){
+            _portvalue="node"+to_string(rand()%10000);
+            create_place("place "+_portvalue+" "+parsedvalue[0]+" "+parsedvalue[1],x);
+        }
+        x->set_port_by_index(0,_portvalue);
+
+        _portvalue=findplacewithsameposition(x,parsedvalue[2],parsedvalue[3]);
+        if(_portvalue==""){
+            _portvalue="node"+to_string(rand()%10000);
+            create_place("place "+_portvalue+" "+parsedvalue[2]+" "+parsedvalue[3],x);
+        }
+        x->set_port_by_index(1,_portvalue);
     }
 }
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 static void parse_component(CS& cmd,COMPONENT* x){
     std::cout<<"Got into parse_componet-1\n";
@@ -358,6 +369,7 @@ static void parse_component(CS& cmd,COMPONENT* x){
     std::vector<std::string*> coordinates=parse_symbol_file(x,basename);
     char    newx[10],newy[10];
     std::cout<<"Going to iterate on the coordinates\n";
+    int index=0;
     for (std::vector<std::string*>::const_iterator i=coordinates.begin();i<coordinates.end();++i){
         //to do integer casting, addition and then reconverting to string
         if(mirror=="0"){
@@ -405,7 +417,13 @@ static void parse_component(CS& cmd,COMPONENT* x){
         std::cout<<"newx, newy = "<<newx<<" "<<newy<<std::endl;
         //setting new place devices for each node searching for .
         //new__instance(cmd,NULL,Scope); //cmd : can create. Scope? how to get Scope? Yes!
-        create_place("place "+(*i)[2]+" "+newx+" "+newy,x);
+        std::string _portvalue=findplacewithsameposition(x,newx,newy);
+        if (_portvalue==""){
+            _portvalue="node_"+to_string(rand()%10000);
+            create_place("place "+_portvalue+" "+newx+" "+newy,x);
+        }
+        x->set_port_by_index(index,_portvalue);
+        ++index;
     }
     std::cout<<"Got into parse_componet1\n";
     x->set_param_by_name("basename",basename);
