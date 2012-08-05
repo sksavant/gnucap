@@ -322,58 +322,56 @@ static void parse_component(CS& cmd,COMPONENT* x){
     //Then set params below
     //Search for the file name
     std::vector<std::string*> coordinates=parse_symbol_file(x,basename);
-    std::string    newx,newy;
+    char    newx[10],newy[10];
+    std::cout<<"Going to iterate on the coordinates\n";
     for (std::vector<std::string*>::const_iterator i=coordinates.begin();i<coordinates.end();++i){
-        newx="";
-        newy=""; //to do integer casting, addition and then reconverting to string
+        //to do integer casting, addition and then reconverting to string
         if(mirror=="0"){
             switch(atoi(angle.c_str())){
             case 0:
-                newx=component_x+(**i)[0];
-                newy=component_y+(**i)[1];
+                sprintf(newx,"%d",atoi(component_x.c_str())+atoi((*i)[0].c_str()));
+                sprintf(newy,"%d",atoi(component_y.c_str())+atoi((*i)[1].c_str()));
                 break;
             case 90:
-                newx=atoi(component_x.c_str())-atoi((*i)[1].c_str());
-                newy=component_y+(*i)[0];
+                sprintf(newx,"%d",atoi(component_x.c_str())-atoi((*i)[1].c_str()));
+                sprintf(newy,"%d",atoi(component_y.c_str())+atoi((*i)[0].c_str()));
                 break;
             case 180:
-                newx=component_x-(i)[0];
-                newy=component_y-(*i)[1];
+                sprintf(newx,"%d",atoi(component_x.c_str())-atoi((*i)[0].c_str()));
+                sprintf(newy,"%d",atoi(component_y.c_str())-atoi((*i)[1].c_str()));
                 break;
             case 270:
-                newx=component_x+(*i)[1];
-                newy=component_y-(*i)[0];
+                sprintf(newx,"%d",atoi(component_x.c_str())+atoi((*i)[1].c_str()));
+                sprintf(newy,"%d",atoi(component_y.c_str())-atoi((*i)[0].c_str()));
                 break;
             }
         }else if(mirror=="1"){
-            switch(atoi(angle.c_str)){
+            switch(atoi(angle.c_str())){
             case 0:
-                newx=component_y-(*i)[0];
-                newy=component_y+(*i)[1];
+                sprintf(newx,"%d",atoi(component_y.c_str())-atoi((*i)[0].c_str()));
+                sprintf(newy,"%d",atoi(component_y.c_str())+atoi((*i)[1].c_str()));
                 break;
             case 90:
-                newx=component_x-(*i)[1];
-                newy=component_y-(*i)[0];
+                sprintf(newx,"%d",atoi(component_x.c_str())-atoi((*i)[1].c_str()));
+                sprintf(newy,"%d",atoi(component_y.c_str())-atoi((*i)[0].c_str()));
                 break;
             case 180:
-                newx=component_x+(*i)[0];
-                newy=component_y-(*i)[1];
+                sprintf(newx,"%d",atoi(component_x.c_str())+atoi((*i)[0].c_str()));
+                sprintf(newy,"%d",atoi(component_y.c_str())-atoi((*i)[1].c_str()));
                 break;
             case 270:
-                newx=coordinates+(*i)[1];
-                newy=component_y+(*i)[0];
+                sprintf(newx,"%d",atoi(component_x.c_str())+atoi((*i)[1].c_str()));
+                sprintf(newy,"%d",atoi(component_x.c_str())+atoi((*i)[0].c_str()));
                 break;
             }
         }else{
         //not correct mirror!
         }
+    //delete (*i);
+    std::cout<<"newx, newy = "<<newx<<" "<<newy<<std::endl;
     //setting new place devices for each node searching for .
     }
     std::cout<<"Got into parse_componet1\n";
-    x->set_param_by_name("x",component_x);
-    x->set_param_by_name("y",component_y);
-    x->set_param_by_name("angle",angle);
-    x->set_param_by_name("mirror",mirror);
     x->set_param_by_name("basename",basename);
     std::cout<<"Got into parse_componet2\n";
     std::cout<<x->param_count()<<std::endl;
