@@ -290,6 +290,12 @@ static void parse_place(CS& cmd, COMPONENT* x)
     x->set_port_by_index(0,_portname);
 }
 /*--------------------------------------------------------------------------*/
+static void create_place(std::string cmdstr,COMPONENT* x)
+{
+    CS place_cmd(CS::_STRING,cmdstr);
+    OPT::language->new__instance(place_cmd,NULL,x->scope());
+}
+/*--------------------------------------------------------------------------*/
 // A net is in form N x0 y0 x1 y1 c
 // Need to get x0 y0 ; x1 y1 ;
 // Need to go through all the nets. Anyway?
@@ -328,12 +334,8 @@ static void parse_net(CS& cmd, COMPONENT* x)
         std::cout<<"got out here too";
         x->set_port_by_name(nodename2,_node2);
         std::cout<<"got out";
-        std::string placecmdstr="place "+_node1+" "+parsedvalue[0]+" "+parsedvalue[1];
-        CS place_cmd(CS::_STRING,placecmdstr);
-        OPT::language->new__instance(place_cmd,NULL,x->scope());
-        placecmdstr="place "+_node2+" "+parsedvalue[2]+" "+parsedvalue[3];
-        CS place2_cmd(CS::_STRING,placecmdstr);
-        OPT::language->new__instance(place2_cmd,NULL,x->scope());
+        create_place("place "+_node1+" "+parsedvalue[0]+" "+parsedvalue[1],x);
+        create_place("place "+_node2+" "+parsedvalue[2]+" "+parsedvalue[3],x);
     }
 }
 /*--------------------------------------------------------------------------*/
@@ -399,14 +401,11 @@ static void parse_component(CS& cmd,COMPONENT* x){
         }else{
         //not correct mirror!
         }
-    //delete (*i);
-    std::cout<<"newx, newy = "<<newx<<" "<<newy<<std::endl;
-    //setting new place devices for each node searching for .
-    //new__instance(cmd,NULL,Scope); //cmd : can create. Scope? how to get Scope? Yes!
-    std::string placecmdstr="place "+(*i)[2]+" "+newx+" "+newy;
-    std::cout<<placecmdstr<<std::endl;
-    CS place_cmd(CS::_STRING, placecmdstr);
-    OPT::language->new__instance(place_cmd,NULL,x->scope());
+        //delete (*i);
+        std::cout<<"newx, newy = "<<newx<<" "<<newy<<std::endl;
+        //setting new place devices for each node searching for .
+        //new__instance(cmd,NULL,Scope); //cmd : can create. Scope? how to get Scope? Yes!
+        create_place("place "+(*i)[2]+" "+newx+" "+newy,x);
     }
     std::cout<<"Got into parse_componet1\n";
     x->set_param_by_name("basename",basename);
