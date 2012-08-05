@@ -124,7 +124,7 @@ static std::string* parse_pin(CS& cmd, COMPONENT* x, int index)
     std::string type=OPT::language->find_type_in_string(cmd),dump;
     assert(type=="pin");
     cmd>>"P";
-    std::string coord[2];
+    std::string* coord = new std::string[2];
     std::string pinattributes[7];
     for(int i=0;i<7;i++){
         cmd>>" ">>pinattributes[i];
@@ -328,38 +328,38 @@ static void parse_component(CS& cmd,COMPONENT* x){
         newy=""; //to do integer casting, addition and then reconverting to string
         if(mirror=="0"){
             switch(atoi(angle.c_str())){
-            case "0":
+            case 0:
                 newx=component_x+(**i)[0];
-                newy=component_y+(*i)[1];
+                newy=component_y+(**i)[1];
                 break;
-            case "90":
-                newx=component_x-(*i)[1];
+            case 90:
+                newx=atoi(component_x.c_str())-atoi((*i)[1].c_str());
                 newy=component_y+(*i)[0];
                 break;
-            case "180":
-                newx=component_x-(*i)[0];
+            case 180:
+                newx=component_x-(i)[0];
                 newy=component_y-(*i)[1];
                 break;
-            case "270":
+            case 270:
                 newx=component_x+(*i)[1];
                 newy=component_y-(*i)[0];
                 break;
             }
         }else if(mirror=="1"){
             switch(atoi(angle.c_str)){
-            case "0":
+            case 0:
                 newx=component_y-(*i)[0];
                 newy=component_y+(*i)[1];
                 break;
-            case "90":
+            case 90:
                 newx=component_x-(*i)[1];
                 newy=component_y-(*i)[0];
                 break;
-            case "180":
+            case 180:
                 newx=component_x+(*i)[0];
                 newy=component_y-(*i)[1];
                 break;
-            case "270":
+            case 270:
                 newx=coordinates+(*i)[1];
                 newy=component_y+(*i)[0];
                 break;
