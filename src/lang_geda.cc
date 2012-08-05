@@ -118,7 +118,7 @@ MODEL_CARD* LANG_GSCHEM::parse_paramset(CS& cmd, MODEL_CARD* x)
   return NULL;
 }
 /*--------------------------------------------------------------------------*/
-static std::string* parse_pin(CS& cmd, COMPONENT* x, int index)
+static std::string* parse_pin(CS& cmd, COMPONENT* x, int index, bool ismodel)
 {
     std::cout<<"Got into parse_pin";
     assert(x);
@@ -126,16 +126,22 @@ static std::string* parse_pin(CS& cmd, COMPONENT* x, int index)
     assert(type=="pin");
     cmd>>"P";
     std::string* coord = new std::string[2];
-    std::string pinattributes[7];
-    for(int i=0;i<7;i++){
-        cmd>>" ">>pinattributes[i];
+    if (!ismodel){
+        std::cout<<"Is NOT a model\n";
+        std::string pinattributes[7];
+        for(int i=0;i<7;i++){
+            cmd>>" ">>pinattributes[i];
+        }
+        if (pinattributes[6]=="1"){
+            coord[0]=pinattributes[2];
+            coord[1]=pinattributes[3];
+        }else if (pinattributes[6]=="0"){
+            coord[0]=pinattributes[0];
+            coord[1]=pinattributes[1];
+        }
     }
-    if (pinattributes[6]=="1"){
-        coord[0]=pinattributes[2];
-        coord[1]=pinattributes[3];
-    }else if (pinattributes[6]=="0"){
-        coord[0]=pinattributes[0];
-        coord[1]=pinattributes[1];
+    else{
+        cmd>>dump;
     }
     std::string    _portvalue="_";
     cmd.get_line("");
@@ -159,8 +165,15 @@ static std::string* parse_pin(CS& cmd, COMPONENT* x, int index)
             }
         }
     }
-    x->set_port_by_index(index,_portvalue);
-    return coord;
+    if(ismodel){
+        x->set_port_by_index(index,_portvalue);
+        std::cout<<"Is a model, returning NULL \n";
+        return NULL;
+    }else{
+        std::string _portvalue="node_"+to_string(rand()%10000);
+        x->set_port_by_index(index,_portvalue);
+        return coord;
+    }
 }
 /*--------------------------------------------------------------------------*/
 static std::string find_file_given_name(std::string basename)
@@ -206,8 +219,12 @@ static std::vector<std::string*> parse_symbol_file(COMPONENT* x, std::string bas
             std::cout<<sym_cmd.fullstring()<<"Came here"<<std::endl;
         }
         std::string linetype=OPT::language->find_type_in_string(sym_cmd);
+        bool ismodel=false;
+        if(x->short_label()=="!_"+basename){
+            ismodel=true;
+        }
         if (linetype=="pin"){
-            coord.push_back(parse_pin(sym_cmd,x,index++));
+            coord.push_back(parse_pin(sym_cmd,x,index++,ismodel));
             std::cout<<"Pin number "+to_string(index)<<std::endl;
         }else{
             sym_cmd>>dump;
@@ -238,8 +255,8 @@ MODEL_SUBCKT* LANG_GSCHEM::parse_componmod(CS& cmd, MODEL_SUBCKT* x)
   cmd>>component_x>>" ">>component_y>>" ">>dump>>" ">>angle>>" ">>mirror>>" ">>basename;
   //open the basename to get the ports and their placements
   //parse_ports(newcmd,x);
-  parse_symbol_file(x,basename);
   x->set_label("!_"+basename);
+  parse_symbol_file(x,basename);
 
   if (isgraphical==true) {
     return NULL;
