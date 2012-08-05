@@ -2,6 +2,8 @@
 
 #include "e_compon.h"
 #include "e_node.h"
+
+namespace{
 class DEV_PLACE : public COMPONENT {
     public:
         explicit DEV_PLACE() :COMPONENT()
@@ -25,7 +27,7 @@ class DEV_PLACE : public COMPONENT {
         std::string param_value(int) const;
     private:
         char        id_letter()const {return 'P';}
-        std::string value_name()const {return "place";}
+        std::string value_name()const {return "";}
         std::string dev_type()const {untested(); return "place";}
         int         max_nodes() const {return 1;}
         int         min_nodes()const {return 1;}
@@ -106,3 +108,4 @@ std::string DEV_PLACE::param_value(int i)const
 DEV_PLACE p1;
 DISPATCHER<CARD>::INSTALL d1(&device_dispatcher,"place",&p1);
 /*--------------------------------------------------------------------------*/
+}
