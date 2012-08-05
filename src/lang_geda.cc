@@ -299,20 +299,14 @@ static void parse_net(CS& cmd, COMPONENT* x)
     assert(x);
     assert(lang_gschem.find_type_in_string(cmd)=="net");
     cmd>>"N";     //Got N
-    std::string x0,y0,x1,y1,color;
     unsigned here=cmd.cursor();
-    std::string paramnames[5]={"x0","x1","y0","y1","color"};
-    std::string paramvalue[5];
+    // x0 y0 x1 y1 color
+    std::string parsedvalue[5];
     int i=0;
     bool gotthenet=true;
     while (i<5) {
         if (cmd.is_alnum()){
-            cmd>>" ">>paramvalue[i];
-            try{
-                x->set_param_by_name(paramnames[i],paramvalue[i]);
-            }catch (Exception_No_Match&) {untested();
-                cmd.warn(bDANGER, here, x->long_label() + ": bad parameter "+ paramvalue[i] + "ignored");
-            }
+            cmd>>" ">>parsedvalue[i];
         }else{
             gotthenet=false;
             cmd.warn(bDANGER, here, x->long_label() +": Not correct format for net");
@@ -323,20 +317,23 @@ static void parse_net(CS& cmd, COMPONENT* x)
     if (gotthenet){
         //lang_gschem.nets.push_back(x);
         //To check if any of the previous nodes have same placement.
+        x->set_label("net"+to_string(rand()%10000)); //BUG : names may coincide!. Doesn't matter? Or try some initialisation method. (latch like digital)
+        std::string _node1="node"+to_string(rand()%10000);
+        std::string _node2="node"+to_string(rand()%10000);
+        std::cout<<_node1<<" "<<_node2<<std::endl;
+        std::string nodename1="p";
+        std::string nodename2="n";
+        x->set_port_by_name(nodename1,_node1);
+        std::cout<<"got out here too";
+        x->set_port_by_name(nodename2,_node2);
+        std::cout<<"got out";
+        std::string placecmdstr="place "+_node1+" "+parsedvalue[0]+" "+parsedvalue[1];
+        CS place_cmd(CS::_STRING,placecmdstr);
+        OPT::language->new__instance(place_cmd,NULL,x->scope());
+        placecmdstr="place "+_node2+" "+parsedvalue[2]+" "+parsedvalue[3];
+        CS place2_cmd(CS::_STRING,placecmdstr);
+        OPT::language->new__instance(place2_cmd,NULL,x->scope());
     }
-    x->set_label("net"+to_string(rand()%10000)); //BUG : names may coincide!. Doesn't matter? Or try some initialisation method. (latch like digital)
-    std::string _node1="node"+to_string(rand()%10000);
-    std::string _node2="node"+to_string(rand()%10000);
-    std::cout<<_node1<<" "<<_node2<<std::endl;
-    std::string nodename1="p";
-    std::string nodename2="n";
-    std::string node1="whaer1\0";
-    std::string node2="whaer2\0";
-    int indexp=0;
-    x->set_port_by_name(nodename1,node1);
-    std::cout<<"got out here too";
-    x->set_port_by_name(nodename2,node2);
-    std::cout<<"got out";
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -504,7 +501,7 @@ std::string LANG_GSCHEM::find_type_in_string(CS& cmd)
     else if (cmd >> "U "){ type="bus";}
     else if (cmd >> "P "){ type="pin";}
     else if (cmd >> "C "){ type="C";}
-    else if (cmd >> "place"){ type="place";}
+    else if (cmd >> "place "){ type="place";}
     else {  cmd >> type; } //Not matched with the type. What now?
     cmd.reset(here);//Reset cursor back to the position that
                     //has been started with at beginning
