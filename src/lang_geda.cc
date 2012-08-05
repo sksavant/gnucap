@@ -125,7 +125,7 @@ static std::string* parse_pin(CS& cmd, COMPONENT* x, int index, bool ismodel)
     std::string type=OPT::language->find_type_in_string(cmd),dump;
     assert(type=="pin");
     cmd>>"P";
-    std::string* coord = new std::string[2];
+    std::string* coord = new std::string[3];
     if (!ismodel){
         std::cout<<"Is NOT a model\n";
         std::string pinattributes[7];
@@ -172,6 +172,7 @@ static std::string* parse_pin(CS& cmd, COMPONENT* x, int index, bool ismodel)
     }else{
         std::string _portvalue="node_"+to_string(rand()%10000);
         x->set_port_by_index(index,_portvalue);
+        coord[2]=_portvalue;
         return coord;
     }
 }
@@ -271,6 +272,21 @@ MODEL_SUBCKT* LANG_GSCHEM::parse_componmod(CS& cmd, MODEL_SUBCKT* x)
   */
   return x;
 
+}
+/*--------------------------------------------------------------------------*/
+//place <nodename> x y
+static void parse_place(CS& cmd, COMPONENT* x)
+{
+    std::cout<<"Got into parse_place";
+    assert(x);
+    assert(OPT::language->find_type_in_string(cmd)=="place");
+    cmd>>"place";
+    std::string _portname,_x,_y;
+    cmd>>" ">>_portname>>" ">>_x>>" ">>_y;
+    std::cout<<"got name,x and y"<<_portname<<" "<<_x<<" "<<_y;
+    x->set_param_by_name("x",_x);
+    x->set_param_by_name("y",_y);
+    x->set_port_by_index(0,_portname);
 }
 /*--------------------------------------------------------------------------*/
 // A net is in form N x0 y0 x1 y1 c
@@ -388,6 +404,11 @@ static void parse_component(CS& cmd,COMPONENT* x){
     //delete (*i);
     std::cout<<"newx, newy = "<<newx<<" "<<newy<<std::endl;
     //setting new place devices for each node searching for .
+    //new__instance(cmd,NULL,Scope); //cmd : can create. Scope? how to get Scope? Yes!
+    std::string placecmdstr="place "+(*i)[2]+" "+newx+" "+newy;
+    std::cout<<placecmdstr<<std::endl;
+    CS place_cmd(CS::_STRING, placecmdstr);
+    OPT::language->new__instance(place_cmd,NULL,x->scope());
     }
     std::cout<<"Got into parse_componet1\n";
     x->set_param_by_name("basename",basename);
@@ -443,6 +464,8 @@ COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
   parse_type(cmd, x); //parse type will parse the component type and set_dev_type
   if (x->dev_type()=="net") {
     parse_net(cmd,x);
+  }else if(x->dev_type()=="place"){
+    parse_place(cmd,x);
   }else {
     parse_component(cmd,x);
   }

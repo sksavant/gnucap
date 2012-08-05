@@ -26,6 +26,7 @@ class DEV_PLACE : public COMPONENT {
     private:
         char        id_letter()const {return 'P';}
         std::string value_name()const {return "place";}
+        std::string dev_type()const {untested(); return "place";}
         int         max_nodes() const {return 1;}
         int         min_nodes()const {return 1;}
         int         matrix_nodes()const {return 1;}
@@ -36,7 +37,7 @@ class DEV_PLACE : public COMPONENT {
         CARD*       clone()const    {return new DEV_PLACE(*this);}
         int         param_count()const {return 2;}
         std::string port_name(int i)const{
-            assert(i==1);
+            assert(i==0);
             return "port";
         }
     public:
