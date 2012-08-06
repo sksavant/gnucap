@@ -469,6 +469,14 @@ static void parse_component(CS& cmd,COMPONENT* x){
         if (_portvalue==""){
             _portvalue="node_"+to_string(rand()%10000);
             create_place("place "+_portvalue+" "+newx+" "+newy,x);
+            //find this node in the nets in x->scope()
+            std::string* othernode=findnetswithnode(x,newx,newy);
+            if(!othernode){
+                std::cout<<"got null, no nets with this node\n";
+            }else{
+                CS net_cmd(CS::_STRING,"N "+newx+" "+newy+" "+othernode[0]+" "+othernode[1]+" 5");
+                OPT::language->new__instance(net_cmd,NULL,x->scope());
+            }
         }
         x->set_port_by_index(index,_portvalue);
         ++index;
