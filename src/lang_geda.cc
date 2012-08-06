@@ -162,14 +162,13 @@ static std::string find_file_given_name(std::string basename)
     FTS* dir=fts_open(p,FTS_NOCHDIR, NULL);
     if(!dir){
         std::cout<<"Not opened\n";
+        return "";
     }
     assert(dir);
     FTSENT* node;
     std::string dirname="";
     while(node=fts_read(dir)){
         if(node->fts_info & FTS_F && basename==node->fts_name){
-            std::cout<<node->fts_name<<std::endl;
-            std::cout<<"Got it"<<" "<<node->fts_path<<std::endl;
             dirname=node->fts_path;
         }
     }
