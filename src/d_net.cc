@@ -21,17 +21,23 @@
  * This is the device 'net' : a connection between components.
  */
 #include "e_compon.h"
+#include "e_node.h"
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
 class DEV_NET : public COMPONENT {
 
-private:
-  explicit DEV_NET(const DEV_NET& p) :COMPONENT(p){}
 public:
-  explicit DEV_NET() :COMPONENT(){}
+  explicit DEV_NET() :COMPONENT()
+    {
+        _n=_nodes;
+    }
+  explicit DEV_NET(const DEV_NET& p) :COMPONENT(p){
+    _n=_nodes;
+  }
+  ~DEV_NET(){}
 protected:
-  PARAMETER<double> _xco0;
+  PARAMETER<double> _xco0;//Not needed?
   PARAMETER<double> _yco0;
   PARAMETER<double> _xco1;
   PARAMETER<double> _yco1;
@@ -61,6 +67,8 @@ private:
     static std::string names[]={"p","n"};
     return names[i];
   }
+public:
+  node_t    _nodes[NODES_PER_BRANCH];
 };
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -84,7 +92,7 @@ std::string DEV_NET::param_name(int i,int j) const{
     }
 }
 /*--------------------------------------------------------------------------*/
-void DEV_NET::set_param_by_name(std::string Name,std::string Value) 
+void DEV_NET::set_param_by_name(std::string Name,std::string Value)
 {
     for (int i=DEV_NET::param_count()-1; i>=0; --i) {
         for (int j=0; DEV_NET::param_name(i,j)!=""; ++j) {
@@ -133,10 +141,11 @@ std::string DEV_NET::param_value(int i)const
     default: return "";
     }
 }
+
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 DEV_NET p1;
-DISPATCHER<CARD>::INSTALL d1(&device_dispatcher,"N|net",&p1);
+DISPATCHER<CARD>::INSTALL d1(&device_dispatcher,"net",&p1);
 /*--------------------------------------------------------------------------*/
 }
 /*--------------------------------------------------------------------------*/
