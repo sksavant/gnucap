@@ -79,56 +79,23 @@ DISPATCHER<LANGUAGE>::INSTALL
     d(&language_dispatcher, lang_gschem.name(), &lang_gschem);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-//functions to be defined
-
-  //Finds type from find_type_in_string
-  //If component, then assign type as device=.. ?
+//Finds type from find_type_in_string
 static void parse_type(CS& cmd, CARD* x)
 {
-  assert(x);
-  std::string new_type;
-  new_type=lang_gschem.find_type_in_string(cmd);
-  x->set_dev_type(new_type);
-  std::cout<<"type is "<<new_type;
-}
-/*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
-DEV_COMMENT* LANG_GSCHEM::parse_comment(CS& cmd, DEV_COMMENT* x)
-{
-  assert(x);
-  x->set(cmd.fullstring());
-  return x;
-}
-/*--------------------------------------------------------------------------*/
-DEV_DOT* LANG_GSCHEM::parse_command(CS& cmd, DEV_DOT* x)
-{
-  std::cout<<"Command parsed\n";
-  assert(x);
-  x->set(cmd.fullstring());
-  CARD_LIST* scope = (x->owner()) ? x->owner()->subckt() : &CARD_LIST::card_list;
-
-  cmd.reset();
-  CMD::cmdproc(cmd, scope);
-  delete x;
-  return NULL;
-}
-/*--------------------------------------------------------------------------*/
-MODEL_CARD* LANG_GSCHEM::parse_paramset(CS& cmd, MODEL_CARD* x)
-{
-  assert(x);
-  return NULL;
+      assert(x);
+      std::string new_type;
+      new_type=lang_gschem.find_type_in_string(cmd);
+      x->set_dev_type(new_type);
 }
 /*--------------------------------------------------------------------------*/
 static std::string* parse_pin(CS& cmd, COMPONENT* x, int index, bool ismodel)
 {
-    std::cout<<"Got into parse_pin";
     assert(x);
     std::string type=OPT::language->find_type_in_string(cmd),dump;
     assert(type=="pin");
     cmd>>"P";
     std::string* coord = new std::string[3];
     if (!ismodel){
-        std::cout<<"Is NOT a model\n";
         std::string pinattributes[7];
         for(int i=0;i<7;i++){
             cmd>>" ">>pinattributes[i];
@@ -168,7 +135,6 @@ static std::string* parse_pin(CS& cmd, COMPONENT* x, int index, bool ismodel)
     }
     if(ismodel){
         x->set_port_by_index(index,_portvalue);
-        std::cout<<"Is a model, returning NULL \n";
         return NULL;
     }else{
         return coord;
@@ -209,13 +175,7 @@ static std::vector<std::string*> parse_symbol_file(COMPONENT* x, std::string bas
         try{
             sym_cmd.get_line("");
         }catch (Exception_End_Of_Input&){
-            std::cout<<"Breaking";
             break;
-        }
-        std::cout<<"Got the line";
-        std::cout<<sym_cmd.fullstring();
-        if(sym_cmd.fullstring()!=""){
-            std::cout<<sym_cmd.fullstring()<<"Came here"<<std::endl;
         }
         std::string linetype=OPT::language->find_type_in_string(sym_cmd);
         bool ismodel=false;
@@ -224,7 +184,6 @@ static std::vector<std::string*> parse_symbol_file(COMPONENT* x, std::string bas
         }
         if (linetype=="pin"){
             coord.push_back(parse_pin(sym_cmd,x,index++,ismodel));
-            std::cout<<"Pin number "+to_string(index)<<std::endl;
         }else{
             sym_cmd>>dump;
         }
@@ -233,55 +192,14 @@ static std::vector<std::string*> parse_symbol_file(COMPONENT* x, std::string bas
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-MODEL_SUBCKT* LANG_GSCHEM::parse_module(CS& cmd, MODEL_SUBCKT* x)
-{
-  std::cout<<"Got into parse_module\n";
-  //To parse heirarchical schematics
-  return NULL;
-}
-
-MODEL_SUBCKT* LANG_GSCHEM::parse_componmod(CS& cmd, MODEL_SUBCKT* x)
-{
-  std::cout<<"Going into parse_componmod ";
-  assert(x);
-  cmd.reset();
-  std::string type = find_type_in_string(cmd);
-  assert(type=="C");
-  std::string component_x, component_y, mirror, angle, dump,basename;
-  bool isgraphical=false;
-  cmd>>"C";
-  unsigned here=cmd.cursor();
-  cmd>>component_x>>" ">>component_y>>" ">>dump>>" ">>angle>>" ">>mirror>>" ">>basename;
-  //open the basename to get the ports and their placements
-  //parse_ports(newcmd,x);
-  x->set_label("!_"+basename);
-  parse_symbol_file(x,basename);
-
-  if (isgraphical==true) {
-    return NULL;
-  }
-  else{
-    cmd.reset(here);
-  }
-  std::cout<<"Going out of parse_componmod\n";
-  /*type = "graphical";
-  x->set_dev_type(type);
-  std::cout<<x->dev_type()<<" is the dev type\n";
-  */
-  return x;
-
-}
-/*--------------------------------------------------------------------------*/
 //place <nodename> x y
 static void parse_place(CS& cmd, COMPONENT* x)
 {
-    std::cout<<"Got into parse_place";
     assert(x);
     assert(OPT::language->find_type_in_string(cmd)=="place");
     cmd>>"place";
     std::string _portname,_x,_y;
     cmd>>" ">>_portname>>" ">>_x>>" ">>_y;
-    std::cout<<"got name,x and y"<<_portname<<" "<<_x<<" "<<_y;
     x->set_param_by_name("x",_x);
     x->set_param_by_name("y",_y);
     x->set_port_by_index(0,_portname);
@@ -315,7 +233,6 @@ static std::string* findnodeonthisnet(CARD *x, std::string x0, std::string y0, s
                     std::string* coord=new std::string[2];
                     coord[0]=_x;
                     coord[1]=_y;
-                    std::cout<<"Returning coordinates!\n";
                     return coord;
                 }
                 else{
@@ -385,14 +302,9 @@ static void parse_net(CS& cmd, COMPONENT* x)
         std::string* nodeonthisnet=findnodeonthisnet(x,parsedvalue[0],parsedvalue[1],parsedvalue[2],parsedvalue[3]);
         if (!nodeonthisnet)
         {
-            std::cout<<"Null, not found";
         }else{
             //create new net from nodeonthisnet to one of edges of net.
-            std::cout<<"Got here! yay\n";
-            std::cout<<"OK 0\n";
-            //nodeonthisnet[0]<<" "<<nodeonthisnet[1]<<std::endl;
-            std::string netcmdstr="N "+parsedvalue[0]+" "+parsedvalue[1]+" "+nodeonthisnet[0]+" "+nodeonthisnet[1]+" "+"5";
-            std::cout<<"OK 1\n";
+            std::string netcmdstr="N "+parsedvalue[0]+" "+parsedvalue[1]+" "+nodeonthisnet[0]+" "+nodeonthisnet[1]+" 5";
             CS net_cmd(CS::_STRING,netcmdstr);
             OPT::language->new__instance(net_cmd,NULL,x->scope());
         }
@@ -400,23 +312,18 @@ static void parse_net(CS& cmd, COMPONENT* x)
 }
 /*--------------------------------------------------------------------------*/
 static void parse_component(CS& cmd,COMPONENT* x){
-    std::cout<<"Got into parse_componet-1\n";
     assert(x);
     std::string component_x, component_y, mirror, angle, dump,basename;
     std::string type=lang_gschem.find_type_in_string(cmd);
-    std::cout<<type;
     cmd>>type;
     std::vector<std::string> paramname;
     std::vector<std::string> paramvalue;
-    std::cout<<"Got into parse_componet0\n";
     cmd>>component_x>>" ">>component_y>>" ">>dump>>" ">>angle>>" ">>mirror>>" ">>basename;
-    std::cout<<component_x<<" "<<component_y<<" "<<dump<<" "<<angle<<" "<<mirror<<" "<<basename;
     //To get port names and values from symbol?
     //Then set params below
     //Search for the file name
     std::vector<std::string*> coordinates=parse_symbol_file(x,basename);
     char    newx[10],newy[10];
-    std::cout<<"Going to iterate on the coordinates\n";
     int index=0;
     for (std::vector<std::string*>::const_iterator i=coordinates.begin();i<coordinates.end();++i){
         //to do integer casting, addition and then reconverting to string
@@ -462,7 +369,6 @@ static void parse_component(CS& cmd,COMPONENT* x){
         //not correct mirror!
         }
         //delete (*i);
-        std::cout<<"newx, newy = "<<newx<<" "<<newy<<std::endl;
         //setting new place devices for each node searching for .
         //new__instance(cmd,NULL,Scope); //cmd : can create. Scope? how to get Scope? Yes!
         std::string _portvalue=findplacewithsameposition(x,newx,newy);
@@ -473,22 +379,16 @@ static void parse_component(CS& cmd,COMPONENT* x){
         x->set_port_by_index(index,_portvalue);
         ++index;
     }
-    std::cout<<"Got into parse_componet1\n";
     x->set_param_by_name("basename",basename);
-    std::cout<<"Got into parse_componet2\n";
-    std::cout<<x->param_count()<<std::endl;
     CS new_cmd(CS::_STDIN);
     new_cmd.get_line("gnucap-gschem- "+basename+">");
     std::string temp=new_cmd.fullstring();
-    std::cout<<temp<<std::endl;
     if(temp!="{"){
-        std::cout<<"No params\n";
         return;
     }
     cmd>>"{";
     for (;;) {
         new_cmd.get_line("gnucap-gschem- "+basename+">");
-        std::cout<<"Got into parse_componet3\n";
         if (new_cmd >> "}") {
             break;
         }else{
@@ -496,14 +396,10 @@ static void parse_component(CS& cmd,COMPONENT* x){
                 new_cmd>>dump;
             }
             else {
-                std::cout<<new_cmd.fullstring()<<std::endl;
                 std::string _paramname=new_cmd.ctos("=","",""),_paramvalue;
                 new_cmd>>"=">>_paramvalue;
                 paramname.push_back (_paramname);
-                std::cout<<"fine0\n";
                 paramvalue.push_back(_paramvalue);
-                std::cout<<"fine1\n";
-                std::cout<<_paramname<<" "<<_paramvalue<<std::endl;
                 if(_paramname=="device"){
                     x->set_dev_type(_paramvalue);
                 }else if (_paramname=="refdes" && _paramvalue!="?"){
@@ -517,26 +413,82 @@ static void parse_component(CS& cmd,COMPONENT* x){
     if(x->short_label()==""){
         x->set_label(type+to_string(rand()));
     }
-    std::cout<<"Going out of parse_component"<<std::endl;
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+DEV_COMMENT* LANG_GSCHEM::parse_comment(CS& cmd, DEV_COMMENT* x)
+{
+    assert(x);
+    x->set(cmd.fullstring());
+    return x;
+}
+/*--------------------------------------------------------------------------*/
+DEV_DOT* LANG_GSCHEM::parse_command(CS& cmd, DEV_DOT* x)
+{
+    assert(x);
+    x->set(cmd.fullstring());
+    CARD_LIST* scope = (x->owner()) ? x->owner()->subckt() : &CARD_LIST::card_list;
+
+    cmd.reset();
+    CMD::cmdproc(cmd, scope);
+    delete x;
+    return NULL;
+}
+/*--------------------------------------------------------------------------*/
+MODEL_CARD* LANG_GSCHEM::parse_paramset(CS& cmd, MODEL_CARD* x)
+{
+    assert(x);
+    return NULL;
+}
+/*--------------------------------------------------------------------------*/
+MODEL_SUBCKT* LANG_GSCHEM::parse_module(CS& cmd, MODEL_SUBCKT* x)
+{
+  //To parse heirarchical schematics
+  return NULL;
+}
+
+MODEL_SUBCKT* LANG_GSCHEM::parse_componmod(CS& cmd, MODEL_SUBCKT* x)
+{
+    assert(x);
+    cmd.reset();
+    std::string type = find_type_in_string(cmd);
+    assert(type=="C");
+    std::string component_x, component_y, mirror, angle, dump,basename;
+    bool isgraphical=false;
+    cmd>>"C";
+    unsigned here=cmd.cursor();
+    cmd>>component_x>>" ">>component_y>>" ">>dump>>" ">>angle>>" ">>mirror>>" ">>basename;
+    //open the basename to get the ports and their placements
+    //parse_ports(newcmd,x);
+    x->set_label("!_"+basename);
+    parse_symbol_file(x,basename);
+
+    if (isgraphical==true) {
+        return NULL;
+    }
+    else{
+        cmd.reset(here);
+    }
+    /*type = "graphical";
+    x->set_dev_type(type);
+    std::cout<<x->dev_type()<<" is the dev type\n";
+    */
+    return x;
+}
+/*--------------------------------------------------------------------------*/
 COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
 {
-  cmd.reset();
-  std::cout<<"Got into parse_instance";
-  parse_type(cmd, x); //parse type will parse the component type and set_dev_type
-  std::cout<<x->dev_type()<<std::endl;
-  if (x->dev_type()=="net") {
+    cmd.reset();
+    parse_type(cmd, x); //parse type will parse the component type and set_dev_type
+    if (x->dev_type()=="net") {
     parse_net(cmd,x);
-  }else if(x->dev_type()=="place"){
-    std::cout<<"here?";
+    }else if(x->dev_type()=="place"){
     parse_place(cmd,x);
-  }else {
+    }else {
     parse_component(cmd,x);
-  }
-  cmd.check(bWARNING, "what's ins this?");
-  return x;
+    }
+    cmd.check(bWARNING, "what's ins this?");
+    return x;
 
 }
 /*----------------------------------------------------------------------*/
@@ -564,8 +516,8 @@ std::string LANG_GSCHEM::find_type_in_string(CS& cmd)
     unsigned here = cmd.cursor(); //store cursor position to reset back later
     std::string type;   //stores type : should check device attribute..
     //graphical=["v","L","G","B","V","A","H","T"]
-    if (cmd >> "v " || cmd >> "L " || cmd >> "G " || cmd >> "B " || cmd >>"V " ||
-        cmd >> "A " || cmd >> "H " || cmd >> "T "){ type="dev_comment";}
+    if (cmd >> "v " || cmd >> "L " || cmd >> "G " || cmd >> "B " || cmd >>"V " 
+        || cmd >> "A " || cmd >> "H " || cmd >> "T "){ type="dev_comment";}
     else if (cmd >> "N "){ type="net";}
     else if (cmd >> "U "){ type="bus";}
     else if (cmd >> "P "){ type="pin";}
@@ -583,13 +535,8 @@ std::string LANG_GSCHEM::find_type_in_string(CS& cmd)
  */
 void LANG_GSCHEM::parse_top_item(CS& cmd, CARD_LIST* Scope)
 {
-  cmd.get_line("gnucap-gschem>");
-  std::cout<<"Got the line\n";
-  new__instance(cmd, NULL, Scope);
-  //Can iterate over all the CARD_LIST
-  /*for(CARD_LIST::const_iterator ci=Scope->begin();ci!= Scope->end();++ci) {
-    std::cout<<(*ci)->dev_type()<<" "<<(*ci)->param_value(4)<<std::endl;
-  }*/
+    cmd.get_line("gnucap-gschem>");
+    new__instance(cmd, NULL, Scope);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -751,7 +698,6 @@ DISPATCHER<CMD>::INSTALL
 class CMD_C : public CMD {
     void do_it(CS& cmd, CARD_LIST* Scope)
     {
-      std::cout<<"Command Dispatched\n";
       MODEL_SUBCKT* new_compon = new MODEL_SUBCKT;
       assert(new_compon);
       assert(!new_compon->owner());
@@ -761,9 +707,7 @@ class CMD_C : public CMD {
       if(new_compon){
         Scope->push_back(new_compon);
         std::string s=new_compon->short_label()+" "+cmd.tail();
-        std::cout<<"s :"<<s<<std::endl;
         CS cmd(CS::_STRING,s);
-        std::cout<<"cmd :"<<cmd.fullstring()<<std::endl;
         lang_gschem.new__instance(cmd,NULL,Scope);
       }
     }
