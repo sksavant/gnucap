@@ -311,17 +311,18 @@ static std::string* findnodeonthisnet(CARD *x, std::string x0, std::string y0, s
         if((*ci)->dev_type()=="place"){
             std::string _x=(*ci)->param_value(1),_y=(*ci)->param_value(0);
             if (y0==y1){
-                if((atoi(x1.c_str())<=atoi(_x.c_str())<=atoi(x0.c_str()) or atoi(x0.c_str())<=atoi(_x.c_str())<=atoi(x1.c_str())) and _y==y0){
+                if((atoi(x1.c_str())<atoi(_x.c_str())<atoi(x0.c_str()) or atoi(x0.c_str())<atoi(_x.c_str())<atoi(x1.c_str())) and _y==y0 and (_x!=x0 and _x!=x1 )){
                     std::string* coord=new std::string[2];
                     coord[0]=_x;
                     coord[1]=_y;
+                    std::cout<<"Returning coordinates!\n";
                     return coord;
                 }
                 else{
                     return NULL;
                 }
             }else if (x0==x1){
-                if((atoi(y1.c_str())<=atoi(_y.c_str())<=atoi(y0.c_str()) or atoi(y0.c_str())<=atoi(_y.c_str())<=atoi(y1.c_str())) and _x==x0){
+                if((atoi(y1.c_str())<atoi(_y.c_str())<atoi(y0.c_str()) or atoi(y0.c_str())<atoi(_y.c_str())<atoi(y1.c_str())) and _x==x0 and (_y!=y0 and  _y!=y1 )){
                     std::string* coord=new std::string[2];
                     coord[0]=_x;
                     coord[1]=_y;
@@ -381,13 +382,16 @@ static void parse_net(CS& cmd, COMPONENT* x)
         }
         x->set_port_by_index(1,_portvalue);
 
-        if (!findnodeonthisnet(x,parsedvalue[0],parsedvalue[1],parsedvalue[2],parsedvalue[3])){
+        std::string* nodeonthisnet=findnodeonthisnet(x,parsedvalue[0],parsedvalue[1],parsedvalue[2],parsedvalue[3]);
+        if (!nodeonthisnet)
+        {
+            std::cout<<"Null, not found";
+        }else{
             //create new net from nodeonthisnet to one of edges of net.
             std::cout<<"Got here! yay\n";
-            std::string* nodeonthisnet=findnodeonthisnet(x,parsedvalue[0],parsedvalue[1],parsedvalue[2],parsedvalue[3]);
             std::cout<<"OK 0\n";
-            std::cout<<nodeonthisnet[0]<<" "<<nodeonthisnet[1]<<std::endl;
-            std::string netcmdstr="N "+parsedvalue[0]+" "+parsedvalue[1]+" ";//+nodeonthisnet[0]+" "+nodeonthisnet[1]+" "+"5";
+            //nodeonthisnet[0]<<" "<<nodeonthisnet[1]<<std::endl;
+            std::string netcmdstr="N "+parsedvalue[0]+" "+parsedvalue[1]+" "+nodeonthisnet[0]+" "+nodeonthisnet[1]+" "+"5";
             std::cout<<"OK 1\n";
             CS net_cmd(CS::_STRING,netcmdstr);
             OPT::language->new__instance(net_cmd,NULL,x->scope());
