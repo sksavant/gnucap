@@ -197,6 +197,13 @@ static std::vector<std::string*> parse_symbol_file(COMPONENT* x, std::string bas
         }
         if (linetype=="pin"){
             coord.push_back(parse_pin(sym_cmd,x,index++,ismodel));
+        }else if(linetype=="graphical"){
+            sym_cmd>>"graphical=";
+            std::string value;
+            sym_cmd>>value;
+            if(value=="1"){
+                return coord;
+            }
         }else{
             sym_cmd>>dump;
         }
@@ -715,12 +722,13 @@ class CMD_C : public CMD {
     void do_it(CS& cmd, CARD_LIST* Scope)
     {
       MODEL_SUBCKT* new_compon = new MODEL_SUBCKT;
+      MODEL_SUBCKT* temp= new MODEL_SUBCKT;
       assert(new_compon);
       assert(!new_compon->owner());
       assert(new_compon->subckt());
       assert(new_compon->subckt()->is_empty());
-      lang_gschem.parse_componmod(cmd, new_compon);
-      if(new_compon){
+      temp=lang_gschem.parse_componmod(cmd, new_compon);
+      if(temp){
         Scope->push_back(new_compon);
         std::string s=new_compon->short_label()+" "+cmd.tail();
         CS cmd(CS::_STRING,s);
