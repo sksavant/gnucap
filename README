@@ -1,7 +1,15 @@
 README modified by 'Savant Krishna' "savant.2020@gmail.com"
 This  branch 'lang_gschem' is off the 2009.12.07 dev snapshot.
-Aims to add the functionality of parsing a schematic into a verilog netlist
-and building a schematic given a netlist in verilog.
+Aims to add the functionality of parsing a schematic into a verilog netlist and building a schematic given a (augmented)netlist in verilog.
+
+In order to load lang_geda as a plugin
+compile as follows:
+    g++ -shared -fPIC -o d_place.so d_place.cc
+    g++ -shared -fPIC -o d_net.so d_net.cc
+    g++ -DHAVE_GEDA -shared -fPIC -o lang_geda.so lang_geda.cc $(pkg-config --cflags gtk+-2.0)
+
+load as follows
+gnucap>load ./lang_geda.so
 
 ###############################################
 Original README file
