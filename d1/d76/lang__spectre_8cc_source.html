@@ -144,7 +144,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00062"></a>00062         d(&amp;<a class="code" href="../../d5/d68/globals_8cc.html#ad60e5f6d21eae20ab215dd193dcd5e1e">language_dispatcher</a>, <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a651aeb479179ea29758660c33d824f31">lang_spectre</a>.<a class="code" href="../../da/d9f/classanonymous__namespace_02lang__spectre_8cc_03_1_1_l_a_n_g___s_p_e_c_t_r_e.html#a41015d23f3ec4d4c3981cc3475776acc">name</a>(), &amp;<a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a651aeb479179ea29758660c33d824f31">lang_spectre</a>);
 <a name="l00063"></a>00063 <span class="comment">/*--------------------------------------------------------------------------*/</span>
 <a name="l00064"></a>00064 <span class="comment">/*--------------------------------------------------------------------------*/</span>
-<a name="l00065"></a><a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a44e20fcf44eb699c402eb0e5e3ecb93e">00065</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a20274fdcc150f3de123e3372f0607565">parse_type</a>(<a class="code" href="../../db/d85/class_c_s.html">CS</a>&amp; cmd, <a class="code" href="../../dc/df7/class_c_a_r_d.html">CARD</a>* x)
+<a name="l00065"></a><a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a44e20fcf44eb699c402eb0e5e3ecb93e">00065</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a97455c2347820f2b807c803d50c1dea2">parse_type</a>(<a class="code" href="../../db/d85/class_c_s.html">CS</a>&amp; cmd, <a class="code" href="../../dc/df7/class_c_a_r_d.html">CARD</a>* x)
 <a name="l00066"></a>00066 {
 <a name="l00067"></a>00067   assert(x);
 <a name="l00068"></a>00068   std::string new_type;
@@ -169,7 +169,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00087"></a>00087   }
 <a name="l00088"></a>00088 }
 <a name="l00089"></a>00089 <span class="comment">/*--------------------------------------------------------------------------*/</span>
-<a name="l00090"></a><a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a68b54b0feb0a19b79c607a28e17ba50b">00090</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a2e0ade8e071d8b323cdc08265a2ae2c8">parse_label</a>(<a class="code" href="../../db/d85/class_c_s.html">CS</a>&amp; cmd, <a class="code" href="../../dc/df7/class_c_a_r_d.html">CARD</a>* x)
+<a name="l00090"></a><a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a68b54b0feb0a19b79c607a28e17ba50b">00090</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a68b54b0feb0a19b79c607a28e17ba50b">parse_label</a>(<a class="code" href="../../db/d85/class_c_s.html">CS</a>&amp; cmd, <a class="code" href="../../dc/df7/class_c_a_r_d.html">CARD</a>* x)
 <a name="l00091"></a>00091 {
 <a name="l00092"></a>00092   assert(x);
 <a name="l00093"></a>00093   std::string my_name;
@@ -258,8 +258,8 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00176"></a>00176   assert(x);
 <a name="l00177"></a>00177   cmd.<a class="code" href="../../db/d85/class_c_s.html#aaea6a1e13e3ab2f756db42ca8dd121cb">reset</a>().<a class="code" href="../../db/d85/class_c_s.html#a19ccbc64484e30fde4c9207323d4cfaf">skipbl</a>();
 <a name="l00178"></a>00178   cmd &gt;&gt; <span class="stringliteral">&quot;model &quot;</span>;
-<a name="l00179"></a>00179   <a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a2e0ade8e071d8b323cdc08265a2ae2c8">parse_label</a>(cmd, x);
-<a name="l00180"></a>00180   <a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a20274fdcc150f3de123e3372f0607565">parse_type</a>(cmd, x);
+<a name="l00179"></a>00179   <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a68b54b0feb0a19b79c607a28e17ba50b">parse_label</a>(cmd, x);
+<a name="l00180"></a>00180   <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a97455c2347820f2b807c803d50c1dea2">parse_type</a>(cmd, x);
 <a name="l00181"></a>00181   <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#ad268f835937439947ee67581159b5048">parse_args</a>(cmd, x);
 <a name="l00182"></a>00182   cmd.<a class="code" href="../../db/d85/class_c_s.html#ac8b7441f7e4149cecb782e949ee8598a">check</a>(bWARNING, <span class="stringliteral">&quot;what&#39;s this?&quot;</span>);
 <a name="l00183"></a>00183   <span class="keywordflow">return</span> x;
@@ -272,7 +272,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00190"></a>00190   <span class="comment">// header</span>
 <a name="l00191"></a>00191   cmd.<a class="code" href="../../db/d85/class_c_s.html#aaea6a1e13e3ab2f756db42ca8dd121cb">reset</a>().<a class="code" href="../../db/d85/class_c_s.html#a19ccbc64484e30fde4c9207323d4cfaf">skipbl</a>();
 <a name="l00192"></a>00192   cmd &gt;&gt; <span class="stringliteral">&quot;subckt &quot;</span>;
-<a name="l00193"></a>00193   <a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a2e0ade8e071d8b323cdc08265a2ae2c8">parse_label</a>(cmd, x);
+<a name="l00193"></a>00193   <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a68b54b0feb0a19b79c607a28e17ba50b">parse_label</a>(cmd, x);
 <a name="l00194"></a>00194   <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a4d871f090c5c146f742cd14ff65bc959">parse_ports</a>(cmd, x);
 <a name="l00195"></a>00195 
 <a name="l00196"></a>00196   <span class="comment">// body</span>
@@ -291,9 +291,9 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00209"></a><a class="code" href="../../da/d9f/classanonymous__namespace_02lang__spectre_8cc_03_1_1_l_a_n_g___s_p_e_c_t_r_e.html#ae935d89431d2a2013075e649a17c347e">00209</a> <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* LANG_SPECTRE::parse_instance(<a class="code" href="../../db/d85/class_c_s.html">CS</a>&amp; cmd, <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* x)
 <a name="l00210"></a>00210 {
 <a name="l00211"></a>00211   cmd.<a class="code" href="../../db/d85/class_c_s.html#aaea6a1e13e3ab2f756db42ca8dd121cb">reset</a>();
-<a name="l00212"></a>00212   <a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a2e0ade8e071d8b323cdc08265a2ae2c8">parse_label</a>(cmd, x);
+<a name="l00212"></a>00212   <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a68b54b0feb0a19b79c607a28e17ba50b">parse_label</a>(cmd, x);
 <a name="l00213"></a>00213   <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a4d871f090c5c146f742cd14ff65bc959">parse_ports</a>(cmd, x);
-<a name="l00214"></a>00214   <a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a20274fdcc150f3de123e3372f0607565">parse_type</a>(cmd, x);
+<a name="l00214"></a>00214   <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a97455c2347820f2b807c803d50c1dea2">parse_type</a>(cmd, x);
 <a name="l00215"></a>00215   <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#ad268f835937439947ee67581159b5048">parse_args</a>(cmd, x);
 <a name="l00216"></a>00216   cmd.<a class="code" href="../../db/d85/class_c_s.html#ac8b7441f7e4149cecb782e949ee8598a">check</a>(bWARNING, <span class="stringliteral">&quot;what&#39;s this?&quot;</span>);
 <a name="l00217"></a>00217   <span class="keywordflow">return</span> x;
@@ -370,13 +370,13 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00288"></a>00288   }
 <a name="l00289"></a>00289 }
 <a name="l00290"></a>00290 <span class="comment">/*--------------------------------------------------------------------------*/</span>
-<a name="l00291"></a><a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a1321b62084bdc5eb6a7820fa48f674c8">00291</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a1321b62084bdc5eb6a7820fa48f674c8">print_type</a>(<a class="code" href="../../dc/d18/class_o_m_s_t_r_e_a_m.html">OMSTREAM</a>&amp; o, <span class="keyword">const</span> <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* x)
+<a name="l00291"></a><a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a1321b62084bdc5eb6a7820fa48f674c8">00291</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a9887be62fced11d1a88b0a6f62fc5e6d">print_type</a>(<a class="code" href="../../dc/d18/class_o_m_s_t_r_e_a_m.html">OMSTREAM</a>&amp; o, <span class="keyword">const</span> <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* x)
 <a name="l00292"></a>00292 {
 <a name="l00293"></a>00293   assert(x);
 <a name="l00294"></a>00294   o &lt;&lt; <span class="charliteral">&#39; &#39;</span> &lt;&lt; x-&gt;<a class="code" href="../../dc/df7/class_c_a_r_d.html#a5604e0c14c4bcc8ff9fbf418b4c8d40d">dev_type</a>();
 <a name="l00295"></a>00295 }
 <a name="l00296"></a>00296 <span class="comment">/*--------------------------------------------------------------------------*/</span>
-<a name="l00297"></a><a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a10861994ff215d77f85745623143a075">00297</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a10861994ff215d77f85745623143a075">print_label</a>(<a class="code" href="../../dc/d18/class_o_m_s_t_r_e_a_m.html">OMSTREAM</a>&amp; o, <span class="keyword">const</span> <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* x)
+<a name="l00297"></a><a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a10861994ff215d77f85745623143a075">00297</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a4155adf053c7955b99557bb0ed337482">print_label</a>(<a class="code" href="../../dc/d18/class_o_m_s_t_r_e_a_m.html">OMSTREAM</a>&amp; o, <span class="keyword">const</span> <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* x)
 <a name="l00298"></a>00298 {
 <a name="l00299"></a>00299   assert(x);
 <a name="l00300"></a>00300   o &lt;&lt; x-&gt;<a class="code" href="../../d3/d22/class_c_k_t___b_a_s_e.html#a11b80145b3c19cfeb79f21dc35f90450">short_label</a>();
@@ -427,9 +427,9 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00345"></a>00345 <span class="comment">/*--------------------------------------------------------------------------*/</span>
 <a name="l00346"></a><a class="code" href="../../da/d9f/classanonymous__namespace_02lang__spectre_8cc_03_1_1_l_a_n_g___s_p_e_c_t_r_e.html#a40e25f6ca22bcf243327d88265ab3275">00346</a> <span class="keywordtype">void</span> LANG_SPECTRE::print_instance(<a class="code" href="../../dc/d18/class_o_m_s_t_r_e_a_m.html">OMSTREAM</a>&amp; o, <span class="keyword">const</span> <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* x)
 <a name="l00347"></a>00347 {
-<a name="l00348"></a>00348   <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a10861994ff215d77f85745623143a075">print_label</a>(o, x);
+<a name="l00348"></a>00348   <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a4155adf053c7955b99557bb0ed337482">print_label</a>(o, x);
 <a name="l00349"></a>00349   <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#ab9f3519168a859ef1020a1dfc9242d49">print_ports</a>(o, x);
-<a name="l00350"></a>00350   <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a1321b62084bdc5eb6a7820fa48f674c8">print_type</a>(o, x);
+<a name="l00350"></a>00350   <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a9887be62fced11d1a88b0a6f62fc5e6d">print_type</a>(o, x);
 <a name="l00351"></a>00351   print_args(o, x);
 <a name="l00352"></a>00352   o &lt;&lt; <span class="stringliteral">&quot;\n&quot;</span>;
 <a name="l00353"></a>00353 }
@@ -502,8 +502,8 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00420"></a>00420   {
 <a name="l00421"></a>00421     command(<span class="stringliteral">&quot;options lang=spectre&quot;</span>, Scope);
 <a name="l00422"></a>00422   }
-<a name="l00423"></a>00423 } <a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a3bc5262884a0aa7bf7c7118c94192caf">p8</a>;
-<a name="l00424"></a>00424 <a class="code" href="../../da/dc7/class_d_i_s_p_a_t_c_h_e_r_1_1_i_n_s_t_a_l_l.html">DISPATCHER&lt;CMD&gt;::INSTALL</a> d8(&amp;<a class="code" href="../../d1/d6e/namespaceanonymous__namespace_02c__attach_8cc_03.html#a2a87baa1b67f589819d37db5faca6f1b">command_dispatcher</a>, <span class="stringliteral">&quot;spectre&quot;</span>, &amp;<a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a3bc5262884a0aa7bf7c7118c94192caf">p8</a>);
+<a name="l00423"></a>00423 } <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a8cafa2b1bd6896c0dffe7b8945c817fa">p8</a>;
+<a name="l00424"></a>00424 <a class="code" href="../../da/dc7/class_d_i_s_p_a_t_c_h_e_r_1_1_i_n_s_t_a_l_l.html">DISPATCHER&lt;CMD&gt;::INSTALL</a> d8(&amp;<a class="code" href="../../d1/d6e/namespaceanonymous__namespace_02c__attach_8cc_03.html#a2a87baa1b67f589819d37db5faca6f1b">command_dispatcher</a>, <span class="stringliteral">&quot;spectre&quot;</span>, &amp;<a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a8cafa2b1bd6896c0dffe7b8945c817fa">p8</a>);
 <a name="l00425"></a>00425 <span class="comment">/*--------------------------------------------------------------------------*/</span>
 <a name="l00426"></a>00426 }
 <a name="l00427"></a>00427 <span class="comment">/*--------------------------------------------------------------------------*/</span>
@@ -526,7 +526,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 13 2012 05:03:54 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Aug 7 2012 17:59:30 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

@@ -130,8 +130,8 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00048"></a>00048   }
 <a name="l00049"></a>00049 <span class="preprocessor">#if 0</span>
 <a name="l00050"></a>00050 <span class="preprocessor"></span>  <span class="keywordflow">if</span> (Whence) {
-<a name="l00051"></a>00051     <span class="keywordtype">char</span> buf[<a class="code" href="../../d8/dbf/md_8h.html#a385c44f6fb256e5716a2302a5b940388a70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>];
-<a name="l00052"></a>00052     <span class="keywordflow">if</span> (!fgets(buf, <a class="code" href="../../d8/dbf/md_8h.html#a385c44f6fb256e5716a2302a5b940388a70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>, Whence))    <span class="comment">/* if the first line deciphers to   */</span>
+<a name="l00051"></a>00051     <span class="keywordtype">char</span> buf[<a class="code" href="../../d8/dbf/md_8h.html#a16af7b253440dadd46a80a4b9fddba4da70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>];
+<a name="l00052"></a>00052     <span class="keywordflow">if</span> (!fgets(buf, <a class="code" href="../../d8/dbf/md_8h.html#a16af7b253440dadd46a80a4b9fddba4da70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>, Whence))    <span class="comment">/* if the first line deciphers to   */</span>
 <a name="l00053"></a>00053       <span class="keywordflow">return</span>;                           <span class="comment">/* the cipher tag, it is encrypted  */</span>
 <a name="l00054"></a>00054     <a class="code" href="../../d8/d24/class_i_o.html#a018bf1e3c76f05e2cd950d3df492026e">IO::incipher</a> = <span class="keyword">true</span>;                <span class="comment">/* otherwise,                       */</span>
 <a name="l00055"></a>00055     decipher(buf);                      <span class="comment">/*       rewind and read normally   */</span>
@@ -187,8 +187,8 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00105"></a>00105   <span class="keywordtype">bool</span> echo = <span class="keyword">false</span>;
 <a name="l00106"></a>00106   <span class="keywordflow">for</span> (;;) {
 <a name="l00107"></a>00107     <span class="keywordflow">if</span> (cmd.<a class="code" href="../../db/d85/class_c_s.html#a9a501a8fa298d71f818f01b22e1e1157">umatch</a>(<span class="stringliteral">&quot;basic &quot;</span>)) {
-<a name="l00108"></a>00108       <a class="code" href="../../d8/d24/class_i_o.html#a64aa0f8ad1c5b038b8444a6a98287ac9">IO::formaat</a> = <a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>;
-<a name="l00109"></a>00109       (*out).setformat(<a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>);
+<a name="l00108"></a>00108       <a class="code" href="../../d8/d24/class_i_o.html#a64aa0f8ad1c5b038b8444a6a98287ac9">IO::formaat</a> = <a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>;
+<a name="l00109"></a>00109       (*out).setformat(<a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>);
 <a name="l00110"></a>00110     }<span class="keywordflow">else</span> <span class="keywordflow">if</span> (cmd.<a class="code" href="../../db/d85/class_c_s.html#a9a501a8fa298d71f818f01b22e1e1157">umatch</a>(<span class="stringliteral">&quot;cipher &quot;</span>)) {<a class="code" href="../../d6/dda/io__trace_8h.html#aa6032a13c5f0621c16055ada1b7f47ad">untested</a>();
 <a name="l00111"></a>00111       (*out).setcipher().setpack();
 <a name="l00112"></a>00112     }<span class="keywordflow">else</span> <span class="keywordflow">if</span> (cmd.<a class="code" href="../../db/d85/class_c_s.html#a9a501a8fa298d71f818f01b22e1e1157">umatch</a>(<span class="stringliteral">&quot;pack &quot;</span>)) {<a class="code" href="../../d6/dda/io__trace_8h.html#ace44a3497980f17b256317ed0d54708f">itested</a>();
@@ -212,8 +212,8 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00130"></a>00130       <a class="code" href="../../d8/d24/class_i_o.html#a9e9dab0a681bfae68b0fbcf7c766259a">IO::stream</a>[<span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(fileno(<a class="code" href="../../df/dd2/io__contr_8cc.html#a0d50444e2e89bfeb67ac08466de33a47">to_pipe</a>))] = <a class="code" href="../../df/dd2/io__contr_8cc.html#a0d50444e2e89bfeb67ac08466de33a47">to_pipe</a>;
 <a name="l00131"></a>00131       (*out).attach(<a class="code" href="../../df/dd2/io__contr_8cc.html#a0d50444e2e89bfeb67ac08466de33a47">to_pipe</a>);
 <a name="l00132"></a>00132 
-<a name="l00133"></a>00133       <a class="code" href="../../d8/d24/class_i_o.html#a64aa0f8ad1c5b038b8444a6a98287ac9">IO::formaat</a> = <a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>;
-<a name="l00134"></a>00134       (*out).setformat(<a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>);
+<a name="l00133"></a>00133       <a class="code" href="../../d8/d24/class_i_o.html#a64aa0f8ad1c5b038b8444a6a98287ac9">IO::formaat</a> = <a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>;
+<a name="l00134"></a>00134       (*out).setformat(<a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>);
 <a name="l00135"></a>00135       <span class="keywordflow">if</span> (!echo) {<a class="code" href="../../d6/dda/io__trace_8h.html#aa6032a13c5f0621c16055ada1b7f47ad">untested</a>();
 <a name="l00136"></a>00136         (*out).detach(<a class="code" href="../../d8/d24/class_i_o.html#a15b2582f76a5424e01322d52de588f25">IO::mstdout</a>);
 <a name="l00137"></a>00137       }<span class="keywordflow">else</span>{<a class="code" href="../../d6/dda/io__trace_8h.html#aa6032a13c5f0621c16055ada1b7f47ad">untested</a>();
@@ -224,8 +224,8 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00142"></a>00142       rwaflag = (cmd.<a class="code" href="../../db/d85/class_c_s.html#a9a501a8fa298d71f818f01b22e1e1157">umatch</a>(<span class="stringliteral">&quot;&gt;&quot;</span>)) ? <span class="stringliteral">&quot;a&quot;</span> : <span class="stringliteral">&quot;w&quot;</span>;
 <a name="l00143"></a>00143       <a class="code" href="../../df/dd2/io__contr_8cc.html#a6d69ca6f7bb08b11f6650d55c143eccd">fn</a> = <a class="code" href="../../df/dd2/io__contr_8cc.html#a73a792e969272d9cd2a6e6e1fd977e55">file_open</a>(cmd,<span class="stringliteral">&quot;&quot;</span>,rwaflag,<a class="code" href="../../df/dd2/io__contr_8cc.html#a6d69ca6f7bb08b11f6650d55c143eccd">fn</a>);
 <a name="l00144"></a>00144       (*out).attach(<a class="code" href="../../df/dd2/io__contr_8cc.html#a6d69ca6f7bb08b11f6650d55c143eccd">fn</a>);
-<a name="l00145"></a>00145       <a class="code" href="../../d8/d24/class_i_o.html#a64aa0f8ad1c5b038b8444a6a98287ac9">IO::formaat</a> = <a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>;
-<a name="l00146"></a>00146       (*out).setformat(<a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>);
+<a name="l00145"></a>00145       <a class="code" href="../../d8/d24/class_i_o.html#a64aa0f8ad1c5b038b8444a6a98287ac9">IO::formaat</a> = <a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>;
+<a name="l00146"></a>00146       (*out).setformat(<a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>);
 <a name="l00147"></a>00147       <span class="keywordflow">if</span> (!echo) {<a class="code" href="../../d6/dda/io__trace_8h.html#ace44a3497980f17b256317ed0d54708f">itested</a>();
 <a name="l00148"></a>00148         (*out).detach(<a class="code" href="../../d8/d24/class_i_o.html#a15b2582f76a5424e01322d52de588f25">IO::mstdout</a>);
 <a name="l00149"></a>00149       }<span class="keywordflow">else</span>{<a class="code" href="../../d6/dda/io__trace_8h.html#aa6032a13c5f0621c16055ada1b7f47ad">untested</a>();
@@ -273,7 +273,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 13 2012 05:03:54 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Aug 7 2012 17:59:29 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

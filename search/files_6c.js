@@ -11,7 +11,7 @@ var searchData=
   ['l_5ftimer_2eh',['l_timer.h',['../d3/df9/l__timer_8h.html',1,'']]],
   ['l_5ftrim_2ecc',['l_trim.cc',['../d9/dfc/l__trim_8cc.html',1,'']]],
   ['l_5fwmatch_2ecc',['l_wmatch.cc',['../d3/d75/l__wmatch_8cc.html',1,'']]],
-  ['lang_5fgschem_2ecc',['lang_gschem.cc',['../d2/d1d/lang__gschem_8cc.html',1,'']]],
+  ['lang_5fgeda_2ecc',['lang_geda.cc',['../d5/d72/lang__geda_8cc.html',1,'']]],
   ['lang_5fspectre_2ecc',['lang_spectre.cc',['../d1/d76/lang__spectre_8cc.html',1,'']]],
   ['lang_5fspice_2ecc',['lang_spice.cc',['../d5/d3e/lang__spice_8cc.html',1,'']]],
   ['lang_5fverilog_2ecc',['lang_verilog.cc',['../df/dd5/lang__verilog_8cc.html',1,'']]]

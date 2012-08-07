@@ -246,7 +246,7 @@ Static Private Attributes</h2></td></tr>
     assert(<a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a415f6404676457be8ea542a16f452a7f">_matrix</a>[ii]);
   }
 
-  assert(<a class="code" href="../../de/d5e/class_o_p_t.html#a82b127c34339cc2dd6791e70110bbcc5aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a> &lt;= 8);
+  assert(<a class="code" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a> &lt;= 8);
   <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii=0; ii&lt;8; ++ii) {
     <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a0f07f8c8846696ab3c3ba5c6ce7931c8">_states</a>[ii] = NULL;
   }
@@ -311,7 +311,7 @@ Static Private Attributes</h2></td></tr>
     assert(<a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a415f6404676457be8ea542a16f452a7f">_matrix</a>[ii]);
   }
 
-  assert(<a class="code" href="../../de/d5e/class_o_p_t.html#a82b127c34339cc2dd6791e70110bbcc5aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a> &lt;= 8);
+  assert(<a class="code" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a> &lt;= 8);
   <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii=0; ii&lt;8; ++ii) {
     <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a0f07f8c8846696ab3c3ba5c6ce7931c8">_states</a>[ii] = NULL;
   }
@@ -346,7 +346,7 @@ Static Private Attributes</h2></td></tr>
   
   <span class="keywordflow">if</span> (<a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a0f07f8c8846696ab3c3ba5c6ce7931c8">_states</a>[0]) {
     <span class="comment">// regular instances</span>
-    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii=0; ii&lt;<a class="code" href="../../de/d5e/class_o_p_t.html#a82b127c34339cc2dd6791e70110bbcc5aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>; ++ii) {
+    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii=0; ii&lt;<a class="code" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>; ++ii) {
       assert(<a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a0f07f8c8846696ab3c3ba5c6ce7931c8">_states</a>[ii]);
       <span class="keyword">delete</span> [] <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a0f07f8c8846696ab3c3ba5c6ce7931c8">_states</a>[ii];
     }
@@ -354,7 +354,7 @@ Static Private Attributes</h2></td></tr>
     <span class="keyword">delete</span> [] <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a867fef473cf53076796c3dc0b766b47d">_states_1</a>;
   }<span class="keywordflow">else</span>{
     <span class="comment">// prototype</span>
-    assert(<a class="code" href="../../de/d5e/class_o_p_t.html#a82b127c34339cc2dd6791e70110bbcc5aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a> &lt;= 8);
+    assert(<a class="code" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a> &lt;= 8);
     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii=0; ii&lt;8; ++ii) {
       assert(!<a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a0f07f8c8846696ab3c3ba5c6ce7931c8">_states</a>[ii]);
     }
@@ -866,16 +866,16 @@ Static Private Attributes</h2></td></tr>
     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii = 0; ii &lt; <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a9c8c48c2e4cfb6580757eee69dabc422">net_nodes</a>(); ++ii) {
       node[ii] = ii+<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a1f804530cefd1803e6311ccb9261bbe5">OFFSET</a>;
     }
-    <span class="keywordflow">if</span> (<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a16af7b253440dadd46a80a4b9fddba4da911df6a1cedf79e0fa96911c9fd8e75d">uGROUND</a>) {
+    <span class="keywordflow">if</span> (<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a6b7b47dd702d9e331586d485013fd1eaa911df6a1cedf79e0fa96911c9fd8e75d">uGROUND</a>) {
       <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii = <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a9c8c48c2e4cfb6580757eee69dabc422">net_nodes</a>(); ii &lt; <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a67b243ef9beb0337acb303c0a8077e37">max_nodes</a>(); ++ii) {<a class="code" href="../../d6/dda/io__trace_8h.html#ace44a3497980f17b256317ed0d54708f">itested</a>();
         node[ii] = ii+<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a1f804530cefd1803e6311ccb9261bbe5">OFFSET</a>;
       }
-    }<span class="keywordflow">else</span> <span class="keywordflow">if</span> (<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a16af7b253440dadd46a80a4b9fddba4dadb976d10f2b666319cb96848945d7236">uFLOAT</a>) {
+    }<span class="keywordflow">else</span> <span class="keywordflow">if</span> (<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a6b7b47dd702d9e331586d485013fd1eaadb976d10f2b666319cb96848945d7236">uFLOAT</a>) {
       <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii = <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a9c8c48c2e4cfb6580757eee69dabc422">net_nodes</a>(); ii &lt; <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a67b243ef9beb0337acb303c0a8077e37">max_nodes</a>(); ++ii) {<a class="code" href="../../d6/dda/io__trace_8h.html#aa6032a13c5f0621c16055ada1b7f47ad">untested</a>();
         node[ii] = <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a5230e57a06d56d07a4104a24ad10d81e">SPICE_UNCONNECTED_NODE</a>;
       }
     }<span class="keywordflow">else</span>{
-      assert(<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a16af7b253440dadd46a80a4b9fddba4da7d4b3686bee8bcb8d618ee656a1b4218">uDISALLOW</a>);
+      assert(<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a6b7b47dd702d9e331586d485013fd1eaa7d4b3686bee8bcb8d618ee656a1b4218">uDISALLOW</a>);
       assert(<a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a9c68675e6ea99236e4ab68a34bb2aa38">min_nodes</a>() == <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a67b243ef9beb0337acb303c0a8077e37">max_nodes</a>());
       assert(<a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a9c8c48c2e4cfb6580757eee69dabc422">net_nodes</a>() == <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a67b243ef9beb0337acb303c0a8077e37">max_nodes</a>());
     }
@@ -912,14 +912,14 @@ Static Private Attributes</h2></td></tr>
 
   <span class="comment">//-------- allocate state vectors</span>
   <span class="keywordflow">if</span> (!<a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a0f07f8c8846696ab3c3ba5c6ce7931c8">_states</a>[0]) {
-    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii=0; ii&lt;<a class="code" href="../../de/d5e/class_o_p_t.html#a82b127c34339cc2dd6791e70110bbcc5aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>; ++ii) {
+    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii=0; ii&lt;<a class="code" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>; ++ii) {
       assert(!<a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a0f07f8c8846696ab3c3ba5c6ce7931c8">_states</a>[ii]);
       <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a0f07f8c8846696ab3c3ba5c6ce7931c8">_states</a>[ii] = <span class="keyword">new</span> <span class="keywordtype">double</span>[<a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#aa9f1eb043d3c46d9d3b98dc98e01fea0">_num_states</a>];
     }
     <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a867fef473cf53076796c3dc0b766b47d">_states_1</a> = <span class="keyword">new</span> <span class="keywordtype">double</span>[<a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#aa9f1eb043d3c46d9d3b98dc98e01fea0">_num_states</a>];
   }<span class="keywordflow">else</span>{
   }
-  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii=0; ii&lt;<a class="code" href="../../de/d5e/class_o_p_t.html#a82b127c34339cc2dd6791e70110bbcc5aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>; ++ii) {
+  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii=0; ii&lt;<a class="code" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>; ++ii) {
     assert(<a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a0f07f8c8846696ab3c3ba5c6ce7931c8">_states</a>[ii]);
     std::fill_n(<a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a0f07f8c8846696ab3c3ba5c6ce7931c8">_states</a>[ii], <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#aa9f1eb043d3c46d9d3b98dc98e01fea0">_num_states</a>, 0);
   }
@@ -932,13 +932,13 @@ Static Private Attributes</h2></td></tr>
   <span class="comment">//-------- fix up internal nodes</span>
   <span class="keywordflow">if</span> (<a class="code" href="../../d3/d22/class_c_k_t___b_a_s_e.html#aee1030ed5a99aecd285c8af3aa2b37ef">_sim</a>-&gt;<a class="code" href="../../d7/db5/struct_s_i_m___d_a_t_a.html#ac003d9d38204e021acf219751163675a">is_first_expand</a>()) {
     <span class="keywordtype">int</span> start_internal = 0;
-    <span class="keywordflow">if</span> (<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a16af7b253440dadd46a80a4b9fddba4da911df6a1cedf79e0fa96911c9fd8e75d">uGROUND</a>) {
+    <span class="keywordflow">if</span> (<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a6b7b47dd702d9e331586d485013fd1eaa911df6a1cedf79e0fa96911c9fd8e75d">uGROUND</a>) {
       <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii = <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a9c8c48c2e4cfb6580757eee69dabc422">net_nodes</a>(); ii &lt; <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a67b243ef9beb0337acb303c0a8077e37">max_nodes</a>(); ++ii) {<a class="code" href="../../d6/dda/io__trace_8h.html#ace44a3497980f17b256317ed0d54708f">itested</a>();
         <a class="code" href="../../dc/df7/class_c_a_r_d.html#ac72d62d7197e7aa9e9554e05d422cb56">_n</a>[ii].<a class="code" href="../../d7/ded/classnode__t.html#a84bb233a40232d370fedcd3f0fd7e001">set_to_ground</a>(<span class="keyword">this</span>);
       }
       start_internal = <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a67b243ef9beb0337acb303c0a8077e37">max_nodes</a>();
     }<span class="keywordflow">else</span>{
-      assert(<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a16af7b253440dadd46a80a4b9fddba4da7d4b3686bee8bcb8d618ee656a1b4218">uDISALLOW</a> || <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a16af7b253440dadd46a80a4b9fddba4dadb976d10f2b666319cb96848945d7236">uFLOAT</a>);
+      assert(<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a6b7b47dd702d9e331586d485013fd1eaa7d4b3686bee8bcb8d618ee656a1b4218">uDISALLOW</a> || <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a6b7b47dd702d9e331586d485013fd1eaadb976d10f2b666319cb96848945d7236">uFLOAT</a>);
       start_internal = <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a9c8c48c2e4cfb6580757eee69dabc422">net_nodes</a>();
     }
     assert(start_internal != 0);
@@ -1122,13 +1122,13 @@ Static Private Attributes</h2></td></tr>
 <div class="fragment"><pre class="fragment">{
   <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a1032f687bcc8af861ad21e720e0bd53a">assert_ckt_up_to_date</a>(<a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#aff3015004be40b68f6a008f740202384">ckt</a>());
   <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#aff3015004be40b68f6a008f740202384">ckt</a>()-&gt;CKTstat = <span class="keyword">reinterpret_cast&lt;</span>STATistics*<span class="keyword">&gt;</span>(<span class="keyword">const_cast&lt;</span><a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html">DEV_SPICE</a>*<span class="keyword">&gt;</span>(<span class="keyword">this</span>));
-  assert(<a class="code" href="../../de/d5e/class_o_p_t.html#a82b127c34339cc2dd6791e70110bbcc5aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a> &lt;= 8);
+  assert(<a class="code" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a> &lt;= 8);
   <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii=0; ii&lt;8; ++ii) {
     <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#aff3015004be40b68f6a008f740202384">ckt</a>()-&gt;CKTstates[ii] = <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a0f07f8c8846696ab3c3ba5c6ce7931c8">_states</a>[ii];
   }
   <span class="comment">//assert(ckt()-&gt;CKTtime == _time[0]); //BUG// can fail in ac</span>
   <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#aff3015004be40b68f6a008f740202384">ckt</a>()-&gt;CKTdelta = <a class="code" href="../../da/da7/class_e_l_e_m_e_n_t.html#a3df0b29bb151b2e13bd31b228bb2763b">_dt</a>;
-  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii=0; ii&lt;<a class="code" href="../../de/d5e/class_o_p_t.html#a82b127c34339cc2dd6791e70110bbcc5aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>-1; ++ii) {
+  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii=0; ii&lt;<a class="code" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>-1; ++ii) {
     <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#aff3015004be40b68f6a008f740202384">ckt</a>()-&gt;CKTdeltaOld[ii] = <a class="code" href="../../da/da7/class_e_l_e_m_e_n_t.html#a0509c6ec6bf384fbbeec3e0486158367">_time</a>[ii] - <a class="code" href="../../da/da7/class_e_l_e_m_e_n_t.html#a0509c6ec6bf384fbbeec3e0486158367">_time</a>[ii+1];
   }
   assert(<a class="code" href="../../da/da7/class_e_l_e_m_e_n_t.html#a3df0b29bb151b2e13bd31b228bb2763b">_dt</a> == <a class="code" href="../../dd/d17/constant_8h.html#a35c964936a92f1fbb6e91ccd7da5c4ae">NOT_VALID</a> || <a class="code" href="../../d0/db8/e__compon_8h.html#a8c7f7104f5d0721101495fa5e293ec73">conchk</a>(<a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#aff3015004be40b68f6a008f740202384">ckt</a>()-&gt;CKTdelta, <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#aff3015004be40b68f6a008f740202384">ckt</a>()-&gt;CKTdeltaOld[0]));
@@ -1380,16 +1380,16 @@ Static Private Attributes</h2></td></tr>
     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii = 0; ii &lt; <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a9c8c48c2e4cfb6580757eee69dabc422">net_nodes</a>(); ++ii) {
       node[ii] = ii+<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a1f804530cefd1803e6311ccb9261bbe5">OFFSET</a>;
     }
-    <span class="keywordflow">if</span> (<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a16af7b253440dadd46a80a4b9fddba4da911df6a1cedf79e0fa96911c9fd8e75d">uGROUND</a>) {
+    <span class="keywordflow">if</span> (<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a6b7b47dd702d9e331586d485013fd1eaa911df6a1cedf79e0fa96911c9fd8e75d">uGROUND</a>) {
       <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii = <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a9c8c48c2e4cfb6580757eee69dabc422">net_nodes</a>(); ii &lt; <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a67b243ef9beb0337acb303c0a8077e37">max_nodes</a>(); ++ii) {<a class="code" href="../../d6/dda/io__trace_8h.html#ace44a3497980f17b256317ed0d54708f">itested</a>();
         node[ii] = ii+<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a1f804530cefd1803e6311ccb9261bbe5">OFFSET</a>;
       }
-    }<span class="keywordflow">else</span> <span class="keywordflow">if</span> (<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a16af7b253440dadd46a80a4b9fddba4dadb976d10f2b666319cb96848945d7236">uFLOAT</a>) {
+    }<span class="keywordflow">else</span> <span class="keywordflow">if</span> (<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a6b7b47dd702d9e331586d485013fd1eaadb976d10f2b666319cb96848945d7236">uFLOAT</a>) {
       <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii = <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a9c8c48c2e4cfb6580757eee69dabc422">net_nodes</a>(); ii &lt; <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a67b243ef9beb0337acb303c0a8077e37">max_nodes</a>(); ++ii) {<a class="code" href="../../d6/dda/io__trace_8h.html#aa6032a13c5f0621c16055ada1b7f47ad">untested</a>();
         node[ii] = <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a5230e57a06d56d07a4104a24ad10d81e">SPICE_UNCONNECTED_NODE</a>;
       }
     }<span class="keywordflow">else</span>{
-      assert(<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a16af7b253440dadd46a80a4b9fddba4da7d4b3686bee8bcb8d618ee656a1b4218">uDISALLOW</a>);
+      assert(<a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a7b14decfa4233a7eeacc7730167e4645">UNCONNECTED_NODES</a> == <a class="code" href="../../d5/da7/spice-wrapper_8cc.html#a6b7b47dd702d9e331586d485013fd1eaa7d4b3686bee8bcb8d618ee656a1b4218">uDISALLOW</a>);
       assert(<a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a9c68675e6ea99236e4ab68a34bb2aa38">min_nodes</a>() == <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a67b243ef9beb0337acb303c0a8077e37">max_nodes</a>());
       assert(<a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a9c8c48c2e4cfb6580757eee69dabc422">net_nodes</a>() == <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a67b243ef9beb0337acb303c0a8077e37">max_nodes</a>());
     }
@@ -1742,8 +1742,8 @@ Static Private Attributes</h2></td></tr>
   <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a4da10cbbf1d7c1c5bb6bfe4ae1066d88">STORAGE::tr_advance</a>();
   <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a569b2f48a9ee7af7a078cde3a4eacfb7">update_ckt</a>();
   
-  <span class="keywordtype">double</span>* t = <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a0f07f8c8846696ab3c3ba5c6ce7931c8">_states</a>[<a class="code" href="../../de/d5e/class_o_p_t.html#a82b127c34339cc2dd6791e70110bbcc5aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>-1];
-  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii = <a class="code" href="../../de/d5e/class_o_p_t.html#a82b127c34339cc2dd6791e70110bbcc5aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>-1;  ii &gt; 0;  --ii) {
+  <span class="keywordtype">double</span>* t = <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a0f07f8c8846696ab3c3ba5c6ce7931c8">_states</a>[<a class="code" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>-1];
+  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ii = <a class="code" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>-1;  ii &gt; 0;  --ii) {
     <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a0f07f8c8846696ab3c3ba5c6ce7931c8">_states</a>[ii] = <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a0f07f8c8846696ab3c3ba5c6ce7931c8">_states</a>[ii-1];
   }
   <a class="code" href="../../d6/d36/class_d_e_v___s_p_i_c_e.html#a0f07f8c8846696ab3c3ba5c6ce7931c8">_states</a>[0] = t;
@@ -2255,7 +2255,7 @@ Static Private Attributes</h2></td></tr>
 </div>
 </div>
 <hr/><h2>Member Data Documentation</h2>
-<a class="anchor" id="a7468fbf7e25514539105b508f3b5067d"></a><!-- doxytag: member="DEV_SPICE::@16" ref="a7468fbf7e25514539105b508f3b5067d" args="" -->
+<a class="anchor" id="a2a42c12483c84fe3caaa27096f36c4c6"></a><!-- doxytag: member="DEV_SPICE::@20" ref="a2a42c12483c84fe3caaa27096f36c4c6" args="" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -2578,7 +2578,7 @@ Static Private Attributes</h2></td></tr>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 13 2012 05:04:58 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Aug 7 2012 18:00:31 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

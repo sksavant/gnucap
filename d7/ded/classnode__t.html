@@ -150,8 +150,8 @@ Private Attributes</h2></td></tr>
 
 <p>Definition at line <a class="el" href="../../d6/d60/e__node_8cc_source.html#l00132">132</a> of file <a class="el" href="../../d6/d60/e__node_8cc_source.html">e_node.cc</a>.</p>
 <div class="fragment"><pre class="fragment">  :<a class="code" href="../../d7/ded/classnode__t.html#acfd1dd51fd0ee54f457eff2f0c66feb2">_nnn</a>(0),
-   <a class="code" href="../../d7/ded/classnode__t.html#aa74f0b22a978040497af1f6650e832f2">_ttt</a>(<a class="code" href="../../dc/db5/e__node_8h.html#a61dadd085c1777f559549e05962b2c9ead64622f3076488654cd2253010c76c5c">INVALID_NODE</a>),
-   <a class="code" href="../../d7/ded/classnode__t.html#a119290df7267630d8aca483c37201a07">_m</a>(<a class="code" href="../../dc/db5/e__node_8h.html#a61dadd085c1777f559549e05962b2c9ead64622f3076488654cd2253010c76c5c">INVALID_NODE</a>)
+   <a class="code" href="../../d7/ded/classnode__t.html#aa74f0b22a978040497af1f6650e832f2">_ttt</a>(<a class="code" href="../../dc/db5/e__node_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57ad64622f3076488654cd2253010c76c5c">INVALID_NODE</a>),
+   <a class="code" href="../../d7/ded/classnode__t.html#a119290df7267630d8aca483c37201a07">_m</a>(<a class="code" href="../../dc/db5/e__node_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57ad64622f3076488654cd2253010c76c5c">INVALID_NODE</a>)
 {
 }
 </pre></div>
@@ -272,7 +272,7 @@ Private Attributes</h2></td></tr>
 <p>Referenced by <a class="el" href="../../d6/d60/e__node_8cc_source.html#l00533">map_subckt_node()</a>, and <a class="el" href="../../d9/deb/e__cardlist_8cc_source.html#l00457">CARD_LIST::map_subckt_nodes()</a>.</p>
 <div class="fragment"><pre class="fragment">                        {
     assert(<a class="code" href="../../d7/ded/classnode__t.html#acfd1dd51fd0ee54f457eff2f0c66feb2">_nnn</a>);
-    <span class="keywordflow">return</span> ((<a class="code" href="../../d7/ded/classnode__t.html#acfd1dd51fd0ee54f457eff2f0c66feb2">_nnn</a>) ? <a class="code" href="../../d7/ded/classnode__t.html#acfd1dd51fd0ee54f457eff2f0c66feb2">_nnn</a>-&gt;<a class="code" href="../../de/d91/class_n_o_d_e.html#ae8f7463ada032a944b95d1e450acce38">user_number</a>() : <a class="code" href="../../dc/db5/e__node_8h.html#a61dadd085c1777f559549e05962b2c9ead64622f3076488654cd2253010c76c5c">INVALID_NODE</a>);
+    <span class="keywordflow">return</span> ((<a class="code" href="../../d7/ded/classnode__t.html#acfd1dd51fd0ee54f457eff2f0c66feb2">_nnn</a>) ? <a class="code" href="../../d7/ded/classnode__t.html#acfd1dd51fd0ee54f457eff2f0c66feb2">_nnn</a>-&gt;<a class="code" href="../../de/d91/class_n_o_d_e.html#ae8f7463ada032a944b95d1e450acce38">user_number</a>() : <a class="code" href="../../dc/db5/e__node_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57ad64622f3076488654cd2253010c76c5c">INVALID_NODE</a>);
   }
 </pre></div>
 </div>
@@ -323,7 +323,7 @@ Private Attributes</h2></td></tr>
 <p>References <a class="el" href="../../dc/db5/e__node_8h_source.html#l00038">INVALID_NODE</a>.</p>
 
 <p>Referenced by <a class="el" href="../../df/d7b/e__compon_8cc_source.html#l00412">COMPONENT::node_is_connected()</a>.</p>
-<div class="fragment"><pre class="fragment">{<span class="keywordflow">return</span> (<a class="code" href="../../d7/ded/classnode__t.html#a9222f049edf8ff41c35419f751ef8fd1">e_</a>() != <a class="code" href="../../dc/db5/e__node_8h.html#a61dadd085c1777f559549e05962b2c9ead64622f3076488654cd2253010c76c5c">INVALID_NODE</a>);}
+<div class="fragment"><pre class="fragment">{<span class="keywordflow">return</span> (<a class="code" href="../../d7/ded/classnode__t.html#a9222f049edf8ff41c35419f751ef8fd1">e_</a>() != <a class="code" href="../../dc/db5/e__node_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57ad64622f3076488654cd2253010c76c5c">INVALID_NODE</a>);}
 </pre></div>
 </div>
 </div>
@@ -389,11 +389,11 @@ Private Attributes</h2></td></tr>
 
 <p>Referenced by <a class="el" href="../../df/d7b/e__compon_8cc_source.html#l00549">COMPONENT::map_nodes()</a>.</p>
 <div class="fragment"><pre class="fragment">                    {
-    <span class="keywordflow">if</span> (<a class="code" href="../../d7/ded/classnode__t.html#a39dfae4575fb5aa0d2ff5720a6ea5c22">t_</a>() != <a class="code" href="../../dc/db5/e__node_8h.html#a61dadd085c1777f559549e05962b2c9ead64622f3076488654cd2253010c76c5c">INVALID_NODE</a>) {
+    <span class="keywordflow">if</span> (<a class="code" href="../../d7/ded/classnode__t.html#a39dfae4575fb5aa0d2ff5720a6ea5c22">t_</a>() != <a class="code" href="../../dc/db5/e__node_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57ad64622f3076488654cd2253010c76c5c">INVALID_NODE</a>) {
       assert(<a class="code" href="../../d7/ded/classnode__t.html#acfd1dd51fd0ee54f457eff2f0c66feb2">_nnn</a>);
       <a class="code" href="../../d7/ded/classnode__t.html#a119290df7267630d8aca483c37201a07">_m</a>=<a class="code" href="../../d7/ded/classnode__t.html#a48c2eebde595c99fa5a9ce844787dbca">to_internal</a>(<a class="code" href="../../d7/ded/classnode__t.html#a39dfae4575fb5aa0d2ff5720a6ea5c22">t_</a>());
     }<span class="keywordflow">else</span>{
-      assert(<a class="code" href="../../d7/ded/classnode__t.html#a119290df7267630d8aca483c37201a07">_m</a> == <a class="code" href="../../dc/db5/e__node_8h.html#a61dadd085c1777f559549e05962b2c9ead64622f3076488654cd2253010c76c5c">INVALID_NODE</a>);
+      assert(<a class="code" href="../../d7/ded/classnode__t.html#a119290df7267630d8aca483c37201a07">_m</a> == <a class="code" href="../../dc/db5/e__node_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57ad64622f3076488654cd2253010c76c5c">INVALID_NODE</a>);
     }
     <span class="keywordflow">return</span> *<span class="keyword">this</span>;
   } <span class="comment">// e_compon.cc:COMPONENT::map_nodes:522</span>
@@ -458,7 +458,7 @@ Private Attributes</h2></td></tr>
 
 <p>Definition at line <a class="el" href="../../dc/db5/e__node_8h_source.html#l00268">268</a> of file <a class="el" href="../../dc/db5/e__node_8h_source.html">e_node.h</a>.</p>
 
-<p>Referenced by <a class="el" href="../../df/d19/e__card_8cc_source.html#l00073">CARD::connects_to()</a>.</p>
+<p>Referenced by <a class="el" href="../../df/d19/e__card_8cc_source.html#l00073">CARD::connects_to()</a>, and <a class="el" href="../../d1/d94/d__mos_8cc_source.html#l00652">DEV_BUILT_IN_MOS::expand()</a>.</p>
 <div class="fragment"><pre class="fragment">{<span class="keywordflow">return</span> <a class="code" href="../../d7/ded/classnode__t.html#acfd1dd51fd0ee54f457eff2f0c66feb2">_nnn</a>;}
 </pre></div>
 </div>
@@ -511,7 +511,7 @@ Private Attributes</h2></td></tr>
 
 <p>References <a class="el" href="../../dd/d4d/e__base_8h_source.html#l00040">CKT_BASE::_sim</a>, <a class="el" href="../../dc/db5/e__node_8h_source.html#l00251">_ttt</a>, <a class="el" href="../../d6/d60/e__node_8cc_source.html#l00508">new_node()</a>, and <a class="el" href="../../db/d08/u__sim__data_8h_source.html#l00107">SIM_DATA::newnode_model()</a>.</p>
 
-<p>Referenced by <a class="el" href="../../d5/df6/d__coil_8cc_source.html#l00216">anonymous_namespace{d_coil.cc}::DEV_INDUCTANCE::expand()</a>, and <a class="el" href="../../d5/da7/spice-wrapper_8cc_source.html#l00871">DEV_SPICE::expand()</a>.</p>
+<p>Referenced by <a class="el" href="../../d5/df6/d__coil_8cc_source.html#l00216">anonymous_namespace{d_coil.cc}::DEV_INDUCTANCE::expand()</a>, <a class="el" href="../../d1/d94/d__mos_8cc_source.html#l00652">DEV_BUILT_IN_MOS::expand()</a>, <a class="el" href="../../d8/d0e/d__diode_8cc_source.html#l00910">DEV_BUILT_IN_DIODE::expand()</a>, <a class="el" href="../../d6/d71/d__bjt_8cc_source.html#l01305">DEV_BUILT_IN_BJT::expand()</a>, and <a class="el" href="../../d5/da7/spice-wrapper_8cc_source.html#l00871">DEV_SPICE::expand()</a>.</p>
 <div class="fragment"><pre class="fragment">{
   <a class="code" href="../../d7/ded/classnode__t.html#a71ea92c93d9bb2ad7f44a15d59255e2b">new_node</a>(node_name, d);
   <a class="code" href="../../d7/ded/classnode__t.html#aa74f0b22a978040497af1f6650e832f2">_ttt</a> = <a class="code" href="../../d3/d22/class_c_k_t___b_a_s_e.html#aee1030ed5a99aecd285c8af3aa2b37ef">CKT_BASE::_sim</a>-&gt;<a class="code" href="../../d7/db5/struct_s_i_m___d_a_t_a.html#af68eeda38eb3d7ff420e0c7b8e3f1d3a">newnode_model</a>();
@@ -584,7 +584,7 @@ Private Attributes</h2></td></tr>
 
 <p>Referenced by <a class="el" href="../../d6/d60/e__node_8cc_source.html#l00533">map_subckt_node()</a>.</p>
 <div class="fragment"><pre class="fragment">                                   {
-    <span class="keywordflow">if</span> (<a class="code" href="../../d7/ded/classnode__t.html#aefb35724e71f506057b4528bf38ce48f">i</a> == <a class="code" href="../../dc/db5/e__node_8h.html#a61dadd085c1777f559549e05962b2c9ead64622f3076488654cd2253010c76c5c">INVALID_NODE</a>) {<a class="code" href="../../d6/dda/io__trace_8h.html#aa6032a13c5f0621c16055ada1b7f47ad">untested</a>();
+    <span class="keywordflow">if</span> (<a class="code" href="../../d7/ded/classnode__t.html#aefb35724e71f506057b4528bf38ce48f">i</a> == <a class="code" href="../../dc/db5/e__node_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57ad64622f3076488654cd2253010c76c5c">INVALID_NODE</a>) {<a class="code" href="../../d6/dda/io__trace_8h.html#aa6032a13c5f0621c16055ada1b7f47ad">untested</a>();
       <a class="code" href="../../d6/dda/io__trace_8h.html#ace44a3497980f17b256317ed0d54708f">itested</a>();
     }<span class="keywordflow">else</span> <span class="keywordflow">if</span> (<a class="code" href="../../d7/ded/classnode__t.html#aefb35724e71f506057b4528bf38ce48f">i</a> &lt; 0) {
       <a class="code" href="../../d6/dda/io__trace_8h.html#a86d08c1b23d67eca942da0ac012d89f3">unreachable</a>();
@@ -657,8 +657,8 @@ Private Attributes</h2></td></tr>
   <span class="keywordflow">if</span> (p.<a class="code" href="../../d7/ded/classnode__t.html#acfd1dd51fd0ee54f457eff2f0c66feb2">_nnn</a>) {
     <span class="comment">//assert(p._ttt == p._nnn-&gt;flat_number());</span>
   }<span class="keywordflow">else</span>{
-    assert(p.<a class="code" href="../../d7/ded/classnode__t.html#aa74f0b22a978040497af1f6650e832f2">_ttt</a> == <a class="code" href="../../dc/db5/e__node_8h.html#a61dadd085c1777f559549e05962b2c9ead64622f3076488654cd2253010c76c5c">INVALID_NODE</a>);
-    assert(p.<a class="code" href="../../d7/ded/classnode__t.html#a119290df7267630d8aca483c37201a07">_m</a>   == <a class="code" href="../../dc/db5/e__node_8h.html#a61dadd085c1777f559549e05962b2c9ead64622f3076488654cd2253010c76c5c">INVALID_NODE</a>);
+    assert(p.<a class="code" href="../../d7/ded/classnode__t.html#aa74f0b22a978040497af1f6650e832f2">_ttt</a> == <a class="code" href="../../dc/db5/e__node_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57ad64622f3076488654cd2253010c76c5c">INVALID_NODE</a>);
+    assert(p.<a class="code" href="../../d7/ded/classnode__t.html#a119290df7267630d8aca483c37201a07">_m</a>   == <a class="code" href="../../dc/db5/e__node_8h.html#ab04a0655cd1e3bcac5e8f48c18df1a57ad64622f3076488654cd2253010c76c5c">INVALID_NODE</a>);
   }
   <a class="code" href="../../d7/ded/classnode__t.html#acfd1dd51fd0ee54f457eff2f0c66feb2">_nnn</a>   = p.<a class="code" href="../../d7/ded/classnode__t.html#acfd1dd51fd0ee54f457eff2f0c66feb2">_nnn</a>;
   <a class="code" href="../../d7/ded/classnode__t.html#aa74f0b22a978040497af1f6650e832f2">_ttt</a> = p.<a class="code" href="../../d7/ded/classnode__t.html#aa74f0b22a978040497af1f6650e832f2">_ttt</a>;
@@ -815,7 +815,7 @@ Private Attributes</h2></td></tr>
 
 <p>References <a class="el" href="../../dd/d4d/e__base_8h_source.html#l00040">CKT_BASE::_sim</a>, and <a class="el" href="../../db/d08/u__sim__data_8h_source.html#l00065">SIM_DATA::_v0</a>.</p>
 
-<p>Referenced by <a class="el" href="../../d7/d58/d__switch_8cc_source.html#l00514">anonymous_namespace{d_switch.cc}::SWITCH_BASE::do_tr()</a>, <a class="el" href="../../d5/da7/spice-wrapper_8cc_source.html#l01175">DEV_SPICE::do_tr()</a>, <a class="el" href="../../d5/df6/d__coil_8cc_source.html#l00376">anonymous_namespace{d_coil.cc}::DEV_MUTUAL_L::do_tr_last()</a>, <a class="el" href="../../d5/df6/d__coil_8cc_source.html#l00467">anonymous_namespace{d_coil.cc}::DEV_INDUCTANCE::tr_amps()</a>, <a class="el" href="../../d5/df6/d__coil_8cc_source.html#l00449">anonymous_namespace{d_coil.cc}::DEV_INDUCTANCE::tr_input()</a>, <a class="el" href="../../d5/df6/d__coil_8cc_source.html#l00458">anonymous_namespace{d_coil.cc}::DEV_INDUCTANCE::tr_input_limited()</a>, <a class="el" href="../../d5/da7/spice-wrapper_8cc_source.html#l01131">DEV_SPICE::tr_needs_eval()</a>, <a class="el" href="../../df/d7b/e__compon_8cc_source.html#l00725">COMPONENT::tr_probe_num()</a>, <a class="el" href="../../d7/d58/d__switch_8cc_source.html#l00566">anonymous_namespace{d_switch.cc}::SWITCH_BASE::tr_review()</a>, and <a class="el" href="../../df/d7b/e__compon_8cc_source.html#l00871">COMPONENT::volts_limited()</a>.</p>
+<p>Referenced by <a class="el" href="../../d7/d58/d__switch_8cc_source.html#l00514">anonymous_namespace{d_switch.cc}::SWITCH_BASE::do_tr()</a>, <a class="el" href="../../d5/da7/spice-wrapper_8cc_source.html#l01175">DEV_SPICE::do_tr()</a>, <a class="el" href="../../d5/df6/d__coil_8cc_source.html#l00376">anonymous_namespace{d_coil.cc}::DEV_MUTUAL_L::do_tr_last()</a>, <a class="el" href="../../d5/df6/d__coil_8cc_source.html#l00467">anonymous_namespace{d_coil.cc}::DEV_INDUCTANCE::tr_amps()</a>, <a class="el" href="../../d5/df6/d__coil_8cc_source.html#l00449">anonymous_namespace{d_coil.cc}::DEV_INDUCTANCE::tr_input()</a>, <a class="el" href="../../d5/df6/d__coil_8cc_source.html#l00458">anonymous_namespace{d_coil.cc}::DEV_INDUCTANCE::tr_input_limited()</a>, <a class="el" href="../../d1/d94/d__mos_8cc_source.html#l01224">DEV_BUILT_IN_MOS::tr_needs_eval()</a>, <a class="el" href="../../d5/da7/spice-wrapper_8cc_source.html#l01131">DEV_SPICE::tr_needs_eval()</a>, <a class="el" href="../../d1/d94/d__mos_8cc_source.html#l00918">DEV_BUILT_IN_MOS::tr_probe_num()</a>, <a class="el" href="../../df/d7b/e__compon_8cc_source.html#l00725">COMPONENT::tr_probe_num()</a>, <a class="el" href="../../d8/d0e/d__diode_8cc_source.html#l01013">DEV_BUILT_IN_DIODE::tr_probe_num()</a>, <a class="el" href="../../d6/d71/d__bjt_8cc_source.html#l01611">DEV_BUILT_IN_BJT::tr_probe_num()</a>, <a class="el" href="../../d7/d58/d__switch_8cc_source.html#l00566">anonymous_namespace{d_switch.cc}::SWITCH_BASE::tr_review()</a>, and <a class="el" href="../../df/d7b/e__compon_8cc_source.html#l00871">COMPONENT::volts_limited()</a>.</p>
 <div class="fragment"><pre class="fragment">                        {
     <span class="comment">//assert(m_() &gt;= 0);</span>
     <span class="keywordflow">if</span> (<a class="code" href="../../d7/ded/classnode__t.html#a2716700dcc53bf344d69e3518b7427ea">m_</a>() &gt;= 0) {
@@ -941,7 +941,7 @@ Private Attributes</h2></td></tr>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 13 2012 05:05:08 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Aug 7 2012 18:00:48 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

@@ -599,7 +599,7 @@ Private Member Functions</h2></td></tr>
 
   <span class="keywordflow">if</span> (!<a class="code" href="../../de/d5d/declare_8h.html#a2473e96b9293d8f4ad2f6140b122021d">plopen</a>(start, stop, <a class="code" href="../../d6/d55/class_s_i_m.html#ae9f09a75d75332e92932a6f025efdeef">plotlist</a>())) {
     <span class="comment">// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span>
-    <span class="keywordtype">int</span> <a class="code" href="../../dd/d35/c__genrat_8cc.html#a9df23e056f5d1a0388cd8190431c0e03">width</a> = <a class="code" href="../../d9/ddd/u__time__pair_8h.html#ae35f52336fd20eb5a30a210946b2baee">std::min</a>(<a class="code" href="../../de/d5e/class_o_p_t.html#a6774aae92c3ebe4a141cbef5d2468ecf">OPT::numdgt</a>+5, <a class="code" href="../../d8/dbf/md_8h.html#a385c44f6fb256e5716a2302a5b940388aa272afffe66ab2f2d9bfee73382357d1">BIGBUFLEN</a>-10);
+    <span class="keywordtype">int</span> <a class="code" href="../../dd/d35/c__genrat_8cc.html#a9df23e056f5d1a0388cd8190431c0e03">width</a> = <a class="code" href="../../d9/ddd/u__time__pair_8h.html#ae35f52336fd20eb5a30a210946b2baee">std::min</a>(<a class="code" href="../../de/d5e/class_o_p_t.html#a6774aae92c3ebe4a141cbef5d2468ecf">OPT::numdgt</a>+5, <a class="code" href="../../d8/dbf/md_8h.html#a16af7b253440dadd46a80a4b9fddba4daa272afffe66ab2f2d9bfee73382357d1">BIGBUFLEN</a>-10);
     <span class="keywordtype">char</span> format[20];
     <span class="comment">//sprintf(format, &quot;%%c%%-%u.%us&quot;, width, width);</span>
     sprintf(format, <span class="stringliteral">&quot;%%c%%-%us&quot;</span>, width);
@@ -875,7 +875,7 @@ Private Member Functions</h2></td></tr>
 
 <p>Referenced by <a class="el" href="../../d9/d24/s____solve_8cc_source.html#l00042">solve()</a>.</p>
 <div class="fragment"><pre class="fragment">{
-  <span class="keywordflow">if</span> (<a class="code" href="../../d3/d22/class_c_k_t___b_a_s_e.html#aee1030ed5a99aecd285c8af3aa2b37ef">_sim</a>-&gt;<a class="code" href="../../d7/db5/struct_s_i_m___d_a_t_a.html#a58705e9b27c28f00dbc6ea4068cf46af">is_second_iteration</a>() &amp;&amp; !<a class="code" href="../../d9/d24/s____solve_8cc.html#afcd780f72325f856f84ec1de84464211">converged</a> &amp;&amp; <a class="code" href="../../de/d5e/class_o_p_t.html#adabb743e6c88fc3c4b9903d2c0d69074">OPT::dampstrategy</a>&amp;<a class="code" href="../../d7/d7b/u__opt_8h.html#a80155586fa275b28773c9b203f52cabaa0a116dcb950a199097c40669ea8e4b29">dsINIT</a>) {
+  <span class="keywordflow">if</span> (<a class="code" href="../../d3/d22/class_c_k_t___b_a_s_e.html#aee1030ed5a99aecd285c8af3aa2b37ef">_sim</a>-&gt;<a class="code" href="../../d7/db5/struct_s_i_m___d_a_t_a.html#a58705e9b27c28f00dbc6ea4068cf46af">is_second_iteration</a>() &amp;&amp; !<a class="code" href="../../d9/d24/s____solve_8cc.html#afcd780f72325f856f84ec1de84464211">converged</a> &amp;&amp; <a class="code" href="../../de/d5e/class_o_p_t.html#adabb743e6c88fc3c4b9903d2c0d69074">OPT::dampstrategy</a>&amp;<a class="code" href="../../d7/d7b/u__opt_8h.html#aae05225933a42f81e7c4a9fb286596f9a0a116dcb950a199097c40669ea8e4b29">dsINIT</a>) {
     <a class="code" href="../../d3/d22/class_c_k_t___b_a_s_e.html#aee1030ed5a99aecd285c8af3aa2b37ef">_sim</a>-&gt;<a class="code" href="../../d7/db5/struct_s_i_m___d_a_t_a.html#a5ee0b47390d943e93fd8689185e60ed6">_damp</a> = <a class="code" href="../../de/d5e/class_o_p_t.html#aefbd61917e50177549e83ae2320a70c2">OPT::dampmin</a>;
   }<span class="keywordflow">else</span> <span class="keywordflow">if</span> (<a class="code" href="../../d3/d22/class_c_k_t___b_a_s_e.html#aee1030ed5a99aecd285c8af3aa2b37ef">_sim</a>-&gt;<a class="code" href="../../d7/db5/struct_s_i_m___d_a_t_a.html#a8e063e98ed25088f4f1c4364c4f469d5">is_first_iteration</a>()  ||  <a class="code" href="../../d9/d24/s____solve_8cc.html#afcd780f72325f856f84ec1de84464211">converged</a>) {
     <a class="code" href="../../d3/d22/class_c_k_t___b_a_s_e.html#aee1030ed5a99aecd285c8af3aa2b37ef">_sim</a>-&gt;<a class="code" href="../../d7/db5/struct_s_i_m___d_a_t_a.html#a5ee0b47390d943e93fd8689185e60ed6">_damp</a> = <a class="code" href="../../de/d5e/class_o_p_t.html#a04f7146b7f432b9b3703e3a58d9671dc">OPT::dampmax</a>;
@@ -1276,7 +1276,7 @@ Private Member Functions</h2></td></tr>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 13 2012 05:05:09 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Aug 7 2012 18:00:52 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

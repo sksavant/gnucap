@@ -113,7 +113,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00031"></a><a class="code" href="../../df/d7b/classanonymous__namespace_02lang__verilog_8cc_03_1_1_l_a_n_g___v_e_r_i_l_o_g.html">00031</a> <span class="keyword">class </span><a class="code" href="../../df/d7b/classanonymous__namespace_02lang__verilog_8cc_03_1_1_l_a_n_g___v_e_r_i_l_o_g.html">LANG_VERILOG</a> : <span class="keyword">public</span> <a class="code" href="../../d8/d92/class_l_a_n_g_u_a_g_e.html">LANGUAGE</a> {
 <a name="l00032"></a><a class="code" href="../../df/d7b/classanonymous__namespace_02lang__verilog_8cc_03_1_1_l_a_n_g___v_e_r_i_l_o_g.html#a19e0a1ee89045e34c0b5287a57eb2edaab94c7981774b76f4bffa1d8e79919cf9">00032</a>   <span class="keyword">enum</span> <a class="code" href="../../df/d7b/classanonymous__namespace_02lang__verilog_8cc_03_1_1_l_a_n_g___v_e_r_i_l_o_g.html#a19e0a1ee89045e34c0b5287a57eb2eda">MODE</a> {mDEFAULT, mPARAMSET} _mode;
 <a name="l00033"></a><a class="code" href="../../df/d7b/classanonymous__namespace_02lang__verilog_8cc_03_1_1_l_a_n_g___v_e_r_i_l_o_g.html#ad3cca5f5befc0c498e0abe7bdad99075">00033</a>   <span class="keyword">mutable</span> <span class="keywordtype">int</span> <a class="code" href="../../df/d7b/classanonymous__namespace_02lang__verilog_8cc_03_1_1_l_a_n_g___v_e_r_i_l_o_g.html#ad3cca5f5befc0c498e0abe7bdad99075">arg_count</a>;
-<a name="l00034"></a><a class="code" href="../../df/d7b/classanonymous__namespace_02lang__verilog_8cc_03_1_1_l_a_n_g___v_e_r_i_l_o_g.html#a552949fb3ac7a75ca009fcfa48bc49a5a4daabeca82a0be9102175f2fd8fc2da5">00034</a>   <span class="keyword">enum</span> {INACTIVE = -1};
+<a name="l00034"></a><a class="code" href="../../df/d7b/classanonymous__namespace_02lang__verilog_8cc_03_1_1_l_a_n_g___v_e_r_i_l_o_g.html#a451693c3685f0a1ed7e625d0c409d407a4daabeca82a0be9102175f2fd8fc2da5">00034</a>   <span class="keyword">enum</span> {INACTIVE = -1};
 <a name="l00035"></a>00035 <span class="keyword">public</span>:
 <a name="l00036"></a><a class="code" href="../../df/d7b/classanonymous__namespace_02lang__verilog_8cc_03_1_1_l_a_n_g___v_e_r_i_l_o_g.html#a1cf66f6fc0aaeb714bafb9d7ed731d4f">00036</a>   <a class="code" href="../../df/d7b/classanonymous__namespace_02lang__verilog_8cc_03_1_1_l_a_n_g___v_e_r_i_l_o_g.html#a1cf66f6fc0aaeb714bafb9d7ed731d4f">LANG_VERILOG</a>() : arg_count(INACTIVE) {}
 <a name="l00037"></a><a class="code" href="../../df/d7b/classanonymous__namespace_02lang__verilog_8cc_03_1_1_l_a_n_g___v_e_r_i_l_o_g.html#ac5a92bd6ed4405fe445544b396f49a24">00037</a>   std::string <a class="code" href="../../df/d7b/classanonymous__namespace_02lang__verilog_8cc_03_1_1_l_a_n_g___v_e_r_i_l_o_g.html#ac5a92bd6ed4405fe445544b396f49a24">name</a>()<span class="keyword">const </span>{<span class="keywordflow">return</span> <span class="stringliteral">&quot;verilog&quot;</span>;}
@@ -170,7 +170,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00088"></a>00088         d(&amp;<a class="code" href="../../d5/d68/globals_8cc.html#ad60e5f6d21eae20ab215dd193dcd5e1e">language_dispatcher</a>, <a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#aa0906113c610ef62d60f5b97d205ce77">lang_verilog</a>.<a class="code" href="../../df/d7b/classanonymous__namespace_02lang__verilog_8cc_03_1_1_l_a_n_g___v_e_r_i_l_o_g.html#ac5a92bd6ed4405fe445544b396f49a24">name</a>(), &amp;<a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#aa0906113c610ef62d60f5b97d205ce77">lang_verilog</a>);
 <a name="l00089"></a>00089 <span class="comment">/*--------------------------------------------------------------------------*/</span>
 <a name="l00090"></a>00090 <span class="comment">/*--------------------------------------------------------------------------*/</span>
-<a name="l00091"></a><a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#ace08007c1634f2f9145ab631b2408d28">00091</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a20274fdcc150f3de123e3372f0607565">parse_type</a>(<a class="code" href="../../db/d85/class_c_s.html">CS</a>&amp; cmd, <a class="code" href="../../dc/df7/class_c_a_r_d.html">CARD</a>* x)
+<a name="l00091"></a><a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#ace08007c1634f2f9145ab631b2408d28">00091</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a97455c2347820f2b807c803d50c1dea2">parse_type</a>(<a class="code" href="../../db/d85/class_c_s.html">CS</a>&amp; cmd, <a class="code" href="../../dc/df7/class_c_a_r_d.html">CARD</a>* x)
 <a name="l00092"></a>00092 {
 <a name="l00093"></a>00093   assert(x);
 <a name="l00094"></a>00094   std::string new_type;
@@ -231,7 +231,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00149"></a>00149   }
 <a name="l00150"></a>00150 }
 <a name="l00151"></a>00151 <span class="comment">/*--------------------------------------------------------------------------*/</span>
-<a name="l00152"></a><a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#a795e1343b1da135b9a80fa5af03cd770">00152</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a2e0ade8e071d8b323cdc08265a2ae2c8">parse_label</a>(<a class="code" href="../../db/d85/class_c_s.html">CS</a>&amp; cmd, <a class="code" href="../../dc/df7/class_c_a_r_d.html">CARD</a>* x)
+<a name="l00152"></a><a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#a795e1343b1da135b9a80fa5af03cd770">00152</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a68b54b0feb0a19b79c607a28e17ba50b">parse_label</a>(<a class="code" href="../../db/d85/class_c_s.html">CS</a>&amp; cmd, <a class="code" href="../../dc/df7/class_c_a_r_d.html">CARD</a>* x)
 <a name="l00153"></a>00153 {
 <a name="l00154"></a>00154   assert(x);
 <a name="l00155"></a>00155   std::string my_name;
@@ -309,8 +309,8 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00227"></a>00227   assert(x);
 <a name="l00228"></a>00228   cmd.<a class="code" href="../../db/d85/class_c_s.html#aaea6a1e13e3ab2f756db42ca8dd121cb">reset</a>();
 <a name="l00229"></a>00229   cmd &gt;&gt; <span class="stringliteral">&quot;paramset &quot;</span>;
-<a name="l00230"></a>00230   <a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a2e0ade8e071d8b323cdc08265a2ae2c8">parse_label</a>(cmd, x);
-<a name="l00231"></a>00231   <a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a20274fdcc150f3de123e3372f0607565">parse_type</a>(cmd, x);
+<a name="l00230"></a>00230   <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a68b54b0feb0a19b79c607a28e17ba50b">parse_label</a>(cmd, x);
+<a name="l00231"></a>00231   <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a97455c2347820f2b807c803d50c1dea2">parse_type</a>(cmd, x);
 <a name="l00232"></a>00232   cmd &gt;&gt; <span class="charliteral">&#39;;&#39;</span>;
 <a name="l00233"></a>00233   <a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#af74a4e80f512007d05c86b7f0570ea54">parse_args_paramset</a>(cmd, x);
 <a name="l00234"></a>00234   cmd &gt;&gt; <span class="stringliteral">&quot;endparamset &quot;</span>;
@@ -332,7 +332,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00250"></a>00250   <span class="comment">// header</span>
 <a name="l00251"></a>00251   cmd.<a class="code" href="../../db/d85/class_c_s.html#aaea6a1e13e3ab2f756db42ca8dd121cb">reset</a>();
 <a name="l00252"></a>00252   (cmd &gt;&gt; <span class="stringliteral">&quot;module |macromodule &quot;</span>);
-<a name="l00253"></a>00253   <a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a2e0ade8e071d8b323cdc08265a2ae2c8">parse_label</a>(cmd, x);
+<a name="l00253"></a>00253   <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a68b54b0feb0a19b79c607a28e17ba50b">parse_label</a>(cmd, x);
 <a name="l00254"></a>00254   <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a4d871f090c5c146f742cd14ff65bc959">parse_ports</a>(cmd, x);
 <a name="l00255"></a>00255   cmd &gt;&gt; <span class="charliteral">&#39;;&#39;</span>;
 <a name="l00256"></a>00256 
@@ -352,9 +352,9 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00270"></a><a class="code" href="../../df/d7b/classanonymous__namespace_02lang__verilog_8cc_03_1_1_l_a_n_g___v_e_r_i_l_o_g.html#a2c9ba8c66577dc7527b726a05d95d0ea">00270</a> <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* LANG_VERILOG::parse_instance(<a class="code" href="../../db/d85/class_c_s.html">CS</a>&amp; cmd, <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* x)
 <a name="l00271"></a>00271 {
 <a name="l00272"></a>00272   cmd.<a class="code" href="../../db/d85/class_c_s.html#aaea6a1e13e3ab2f756db42ca8dd121cb">reset</a>();
-<a name="l00273"></a>00273   <a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a20274fdcc150f3de123e3372f0607565">parse_type</a>(cmd, x);
+<a name="l00273"></a>00273   <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a97455c2347820f2b807c803d50c1dea2">parse_type</a>(cmd, x);
 <a name="l00274"></a>00274   <a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#a56510fa6e0b6ddfb345fe809dba0e1c9">parse_args_instance</a>(cmd, x);
-<a name="l00275"></a>00275   <a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a2e0ade8e071d8b323cdc08265a2ae2c8">parse_label</a>(cmd, x);
+<a name="l00275"></a>00275   <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a68b54b0feb0a19b79c607a28e17ba50b">parse_label</a>(cmd, x);
 <a name="l00276"></a>00276   <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a4d871f090c5c146f742cd14ff65bc959">parse_ports</a>(cmd, x);
 <a name="l00277"></a>00277   cmd &gt;&gt; <span class="charliteral">&#39;;&#39;</span>;
 <a name="l00278"></a>00278   cmd.<a class="code" href="../../db/d85/class_c_s.html#ac8b7441f7e4149cecb782e949ee8598a">check</a>(bWARNING, <span class="stringliteral">&quot;what&#39;s this?&quot;</span>);
@@ -419,19 +419,19 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00337"></a>00337   o &lt;&lt; <span class="stringliteral">&quot;) &quot;</span>;
 <a name="l00338"></a>00338 }
 <a name="l00339"></a>00339 <span class="comment">/*--------------------------------------------------------------------------*/</span>
-<a name="l00340"></a><a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#afc9b3f2c9e71c0f4b8c24a83c666bb4e">00340</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a1321b62084bdc5eb6a7820fa48f674c8">print_type</a>(<a class="code" href="../../dc/d18/class_o_m_s_t_r_e_a_m.html">OMSTREAM</a>&amp; o, <span class="keyword">const</span> <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* x)
+<a name="l00340"></a><a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#afc9b3f2c9e71c0f4b8c24a83c666bb4e">00340</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a9887be62fced11d1a88b0a6f62fc5e6d">print_type</a>(<a class="code" href="../../dc/d18/class_o_m_s_t_r_e_a_m.html">OMSTREAM</a>&amp; o, <span class="keyword">const</span> <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* x)
 <a name="l00341"></a>00341 {
 <a name="l00342"></a>00342   assert(x);
 <a name="l00343"></a>00343   o &lt;&lt; x-&gt;<a class="code" href="../../dc/df7/class_c_a_r_d.html#a5604e0c14c4bcc8ff9fbf418b4c8d40d">dev_type</a>();
 <a name="l00344"></a>00344 }
 <a name="l00345"></a>00345 <span class="comment">/*--------------------------------------------------------------------------*/</span>
-<a name="l00346"></a><a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#a67e7f3dd0d9ce77ca6567e85a9a2f908">00346</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a10861994ff215d77f85745623143a075">print_label</a>(<a class="code" href="../../dc/d18/class_o_m_s_t_r_e_a_m.html">OMSTREAM</a>&amp; o, <span class="keyword">const</span> <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* x)
+<a name="l00346"></a><a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#a67e7f3dd0d9ce77ca6567e85a9a2f908">00346</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a4155adf053c7955b99557bb0ed337482">print_label</a>(<a class="code" href="../../dc/d18/class_o_m_s_t_r_e_a_m.html">OMSTREAM</a>&amp; o, <span class="keyword">const</span> <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* x)
 <a name="l00347"></a>00347 {
 <a name="l00348"></a>00348   assert(x);
 <a name="l00349"></a>00349   o &lt;&lt; x-&gt;<a class="code" href="../../d3/d22/class_c_k_t___b_a_s_e.html#a11b80145b3c19cfeb79f21dc35f90450">short_label</a>();
 <a name="l00350"></a>00350 }
 <a name="l00351"></a>00351 <span class="comment">/*--------------------------------------------------------------------------*/</span>
-<a name="l00352"></a><a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#ac94831a2ef6ad584d1ac5da8907b9bac">00352</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#ac94831a2ef6ad584d1ac5da8907b9bac">print_ports_long</a>(<a class="code" href="../../dc/d18/class_o_m_s_t_r_e_a_m.html">OMSTREAM</a>&amp; o, <span class="keyword">const</span> <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* x)
+<a name="l00352"></a><a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#ac94831a2ef6ad584d1ac5da8907b9bac">00352</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#aabc6fabaa9a81471011a81e6207ca4bb">print_ports_long</a>(<a class="code" href="../../dc/d18/class_o_m_s_t_r_e_a_m.html">OMSTREAM</a>&amp; o, <span class="keyword">const</span> <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* x)
 <a name="l00353"></a>00353 {
 <a name="l00354"></a>00354   <span class="comment">// print in long form ...    .name(value)</span>
 <a name="l00355"></a>00355   assert(x);
@@ -449,7 +449,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00367"></a>00367   o &lt;&lt; <span class="stringliteral">&quot;)&quot;</span>;
 <a name="l00368"></a>00368 }
 <a name="l00369"></a>00369 <span class="comment">/*--------------------------------------------------------------------------*/</span>
-<a name="l00370"></a><a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#ad86d53041401cce14b6dc03b7e5f0b13">00370</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#ad86d53041401cce14b6dc03b7e5f0b13">print_ports_short</a>(<a class="code" href="../../dc/d18/class_o_m_s_t_r_e_a_m.html">OMSTREAM</a>&amp; o, <span class="keyword">const</span> <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* x)
+<a name="l00370"></a><a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#ad86d53041401cce14b6dc03b7e5f0b13">00370</a> <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#ad2093be99ebbbf209679a98a390feb9f">print_ports_short</a>(<a class="code" href="../../dc/d18/class_o_m_s_t_r_e_a_m.html">OMSTREAM</a>&amp; o, <span class="keyword">const</span> <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* x)
 <a name="l00371"></a>00371 {
 <a name="l00372"></a>00372   <span class="comment">// print in short form ...   value only</span>
 <a name="l00373"></a>00373   assert(x);
@@ -485,7 +485,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00403"></a>00403   assert(x-&gt;<a class="code" href="../../dc/df7/class_c_a_r_d.html#ab97144cf661970fe592fb73c0b104967">subckt</a>());
 <a name="l00404"></a>00404 
 <a name="l00405"></a>00405   o &lt;&lt; <span class="stringliteral">&quot;module &quot;</span> &lt;&lt;  x-&gt;<a class="code" href="../../d3/d22/class_c_k_t___b_a_s_e.html#a11b80145b3c19cfeb79f21dc35f90450">short_label</a>();
-<a name="l00406"></a>00406   <a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#ad86d53041401cce14b6dc03b7e5f0b13">print_ports_short</a>(o, x);
+<a name="l00406"></a>00406   <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#ad2093be99ebbbf209679a98a390feb9f">print_ports_short</a>(o, x);
 <a name="l00407"></a>00407   o &lt;&lt; <span class="stringliteral">&quot;;\n&quot;</span>;
 <a name="l00408"></a>00408   
 <a name="l00409"></a>00409   <span class="keywordflow">for</span> (<a class="code" href="../../d4/df4/class_c_a_r_d___l_i_s_t.html#a09cb5fe86d7450c3afe61d31558516eb">CARD_LIST::const_iterator</a> 
@@ -498,10 +498,10 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00416"></a>00416 <span class="comment">/*--------------------------------------------------------------------------*/</span>
 <a name="l00417"></a><a class="code" href="../../df/d7b/classanonymous__namespace_02lang__verilog_8cc_03_1_1_l_a_n_g___v_e_r_i_l_o_g.html#aacdf54bc781c0756b6a719bb8c4833a8">00417</a> <span class="keywordtype">void</span> LANG_VERILOG::print_instance(<a class="code" href="../../dc/d18/class_o_m_s_t_r_e_a_m.html">OMSTREAM</a>&amp; o, <span class="keyword">const</span> <a class="code" href="../../d5/dce/class_c_o_m_p_o_n_e_n_t.html">COMPONENT</a>* x)
 <a name="l00418"></a>00418 {
-<a name="l00419"></a>00419   <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a1321b62084bdc5eb6a7820fa48f674c8">print_type</a>(o, x);
+<a name="l00419"></a>00419   <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a9887be62fced11d1a88b0a6f62fc5e6d">print_type</a>(o, x);
 <a name="l00420"></a>00420   print_args(o, x);
-<a name="l00421"></a>00421   <a class="code" href="../../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a10861994ff215d77f85745623143a075">print_label</a>(o, x);
-<a name="l00422"></a>00422   <a class="code" href="../../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#ac94831a2ef6ad584d1ac5da8907b9bac">print_ports_long</a>(o, x);
+<a name="l00421"></a>00421   <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a4155adf053c7955b99557bb0ed337482">print_label</a>(o, x);
+<a name="l00422"></a>00422   <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#aabc6fabaa9a81471011a81e6207ca4bb">print_ports_long</a>(o, x);
 <a name="l00423"></a>00423   o &lt;&lt; <span class="stringliteral">&quot;;\n&quot;</span>;
 <a name="l00424"></a>00424 }
 <a name="l00425"></a>00425 <span class="comment">/*--------------------------------------------------------------------------*/</span>
@@ -566,8 +566,8 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00484"></a>00484   {
 <a name="l00485"></a>00485     command(<span class="stringliteral">&quot;options lang=verilog&quot;</span>, Scope);
 <a name="l00486"></a>00486   }
-<a name="l00487"></a>00487 } <a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a3bc5262884a0aa7bf7c7118c94192caf">p8</a>;
-<a name="l00488"></a>00488 <a class="code" href="../../da/dc7/class_d_i_s_p_a_t_c_h_e_r_1_1_i_n_s_t_a_l_l.html">DISPATCHER&lt;CMD&gt;::INSTALL</a> d8(&amp;<a class="code" href="../../d1/d6e/namespaceanonymous__namespace_02c__attach_8cc_03.html#a2a87baa1b67f589819d37db5faca6f1b">command_dispatcher</a>, <span class="stringliteral">&quot;verilog&quot;</span>, &amp;<a class="code" href="../../d9/dc6/namespaceanonymous__namespace_02lang__gschem_8cc_03.html#a3bc5262884a0aa7bf7c7118c94192caf">p8</a>);
+<a name="l00487"></a>00487 } <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a8cafa2b1bd6896c0dffe7b8945c817fa">p8</a>;
+<a name="l00488"></a>00488 <a class="code" href="../../da/dc7/class_d_i_s_p_a_t_c_h_e_r_1_1_i_n_s_t_a_l_l.html">DISPATCHER&lt;CMD&gt;::INSTALL</a> d8(&amp;<a class="code" href="../../d1/d6e/namespaceanonymous__namespace_02c__attach_8cc_03.html#a2a87baa1b67f589819d37db5faca6f1b">command_dispatcher</a>, <span class="stringliteral">&quot;verilog&quot;</span>, &amp;<a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a8cafa2b1bd6896c0dffe7b8945c817fa">p8</a>);
 <a name="l00489"></a>00489 <span class="comment">/*--------------------------------------------------------------------------*/</span>
 <a name="l00490"></a>00490 }
 <a name="l00491"></a>00491 <span class="comment">/*--------------------------------------------------------------------------*/</span>
@@ -590,7 +590,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 13 2012 05:03:54 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Aug 7 2012 17:59:30 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

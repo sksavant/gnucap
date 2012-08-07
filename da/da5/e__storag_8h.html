@@ -201,7 +201,7 @@ Functions</h2></td></tr>
     <span class="keywordflow">case</span> <a class="code" href="../../da/da5/e__storag_8h.html#a980085812d120b3761817608d332fecdabb497b45fce77eda6d54251df34c0e5f">mTRAPGEAR</a>:
       <a class="code" href="../../d6/dda/io__trace_8h.html#ab49bb949daee5ad3cf1bb81863d056d6">incomplete</a>();
     <span class="keywordflow">case</span> <a class="code" href="../../da/da5/e__storag_8h.html#a980085812d120b3761817608d332fecda512a1e198cec4a25298dd83d15ad88bb">mGEAR</a>:
-      assert(<a class="code" href="../../de/d5e/class_o_p_t.html#a82b127c34339cc2dd6791e70110bbcc5aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a> &gt;= 3);
+      assert(<a class="code" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a> &gt;= 3);
       <span class="keywordflow">return</span> <a class="code" href="../../db/d1c/struct_f_p_o_l_y1.html">FPOLY1</a>(q[0].x,
                     (3./2.) * (q[0].f0 - q[1].f0) / dt 
                     - (1./2.) * (q[1].f0 - q[2].f0) / (time[1] - time[2]),
@@ -209,12 +209,12 @@ Functions</h2></td></tr>
     <span class="keywordflow">case</span> <a class="code" href="../../da/da5/e__storag_8h.html#a980085812d120b3761817608d332fecda9ca799d7ea2d005ff4c39c1583ca48d9">mTRAPEULER</a>:
       <a class="code" href="../../d6/dda/io__trace_8h.html#ab49bb949daee5ad3cf1bb81863d056d6">incomplete</a>();
     <span class="keywordflow">case</span> <a class="code" href="../../da/da5/e__storag_8h.html#a980085812d120b3761817608d332fecda9628c6bd7dfb7009b17202e20d55fa63">mEULER</a>:
-      assert(<a class="code" href="../../de/d5e/class_o_p_t.html#a82b127c34339cc2dd6791e70110bbcc5aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a> &gt;= 2);
+      assert(<a class="code" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a> &gt;= 2);
       <span class="keywordflow">return</span> <a class="code" href="../../db/d1c/struct_f_p_o_l_y1.html">FPOLY1</a>(q[0].x,
                     (q[0].f0 - q[1].f0) / dt,
                     q[0].f1 / dt);
     <span class="keywordflow">case</span> <a class="code" href="../../da/da5/e__storag_8h.html#a980085812d120b3761817608d332fecda55a72af7633360b5ebc111c9053b675f">mTRAP</a>:
-      assert(<a class="code" href="../../de/d5e/class_o_p_t.html#a82b127c34339cc2dd6791e70110bbcc5aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a> &gt;= 2);
+      assert(<a class="code" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a> &gt;= 2);
       <span class="keywordflow">return</span> <a class="code" href="../../db/d1c/struct_f_p_o_l_y1.html">FPOLY1</a>(q[0].x,
                     2 * (q[0].f0 - q[1].f0) / dt - i[1].f0,
                     q[0].f1 * 2 / dt);
@@ -245,7 +245,7 @@ Functions</h2></td></tr>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 13 2012 05:03:56 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Aug 7 2012 17:59:34 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

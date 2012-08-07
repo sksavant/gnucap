@@ -18,6 +18,7 @@ var searchData=
   ['restore',['restore',['../d0/d1f/class_c_a_r_d_s_t_a_s_h.html#ac0e4ffb8ad12065f12263d73889ec220',1,'CARDSTASH']]],
   ['restore_5flv',['restore_lv',['../de/d5c/class_l_o_g_i_c___n_o_d_e.html#a5e8073b6160f4c7c698bfdbe060b5a36',1,'LOGIC_NODE']]],
   ['restore_5fvoltages',['restore_voltages',['../d7/db5/struct_s_i_m___d_a_t_a.html#a6447d38b17f35cce7e035cc7aed267d2',1,'SIM_DATA']]],
+  ['reverse_5fif_5fneeded',['reverse_if_needed',['../d3/d95/class_d_e_v___b_u_i_l_t___i_n___m_o_s.html#a748420cf6c6ad77340bbf857c4f51c0c',1,'DEV_BUILT_IN_MOS']]],
   ['review',['review',['../dc/dbb/class_t_r_a_n_s_i_e_n_t.html#ab5900dae72903caeb787530ebd68b1ea',1,'TRANSIENT']]],
   ['round_5fto_5fint',['round_to_int',['../dc/d2e/plot_8cc.html#a3ac7dc5af6c5a3cb31dc50d5a00b126a',1,'plot.cc']]],
   ['run_5ftime',['run_time',['../d2/d09/l__timer_8cc.html#a20ec4c891b51535deacfee3f86f9be18',1,'l_timer.cc']]]

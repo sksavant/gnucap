@@ -206,8 +206,8 @@ Variables</h2></td></tr>
   }
 <span class="preprocessor">#if 0</span>
 <span class="preprocessor"></span>  <span class="keywordflow">if</span> (Whence) {
-    <span class="keywordtype">char</span> buf[<a class="code" href="../../d8/dbf/md_8h.html#a385c44f6fb256e5716a2302a5b940388a70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>];
-    <span class="keywordflow">if</span> (!fgets(buf, <a class="code" href="../../d8/dbf/md_8h.html#a385c44f6fb256e5716a2302a5b940388a70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>, Whence))    <span class="comment">/* if the first line deciphers to   */</span>
+    <span class="keywordtype">char</span> buf[<a class="code" href="../../d8/dbf/md_8h.html#a16af7b253440dadd46a80a4b9fddba4da70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>];
+    <span class="keywordflow">if</span> (!fgets(buf, <a class="code" href="../../d8/dbf/md_8h.html#a16af7b253440dadd46a80a4b9fddba4da70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>, Whence))    <span class="comment">/* if the first line deciphers to   */</span>
       <span class="keywordflow">return</span>;                           <span class="comment">/* the cipher tag, it is encrypted  */</span>
     <a class="code" href="../../d8/d24/class_i_o.html#a018bf1e3c76f05e2cd950d3df492026e">IO::incipher</a> = <span class="keyword">true</span>;                <span class="comment">/* otherwise,                       */</span>
     decipher(buf);                      <span class="comment">/*       rewind and read normally   */</span>
@@ -316,8 +316,8 @@ Variables</h2></td></tr>
   <span class="keywordtype">bool</span> echo = <span class="keyword">false</span>;
   <span class="keywordflow">for</span> (;;) {
     <span class="keywordflow">if</span> (cmd.<a class="code" href="../../db/d85/class_c_s.html#a9a501a8fa298d71f818f01b22e1e1157">umatch</a>(<span class="stringliteral">&quot;basic &quot;</span>)) {
-      <a class="code" href="../../d8/d24/class_i_o.html#a64aa0f8ad1c5b038b8444a6a98287ac9">IO::formaat</a> = <a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>;
-      (*out).setformat(<a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>);
+      <a class="code" href="../../d8/d24/class_i_o.html#a64aa0f8ad1c5b038b8444a6a98287ac9">IO::formaat</a> = <a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>;
+      (*out).setformat(<a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>);
     }<span class="keywordflow">else</span> <span class="keywordflow">if</span> (cmd.<a class="code" href="../../db/d85/class_c_s.html#a9a501a8fa298d71f818f01b22e1e1157">umatch</a>(<span class="stringliteral">&quot;cipher &quot;</span>)) {<a class="code" href="../../d6/dda/io__trace_8h.html#aa6032a13c5f0621c16055ada1b7f47ad">untested</a>();
       (*out).setcipher().setpack();
     }<span class="keywordflow">else</span> <span class="keywordflow">if</span> (cmd.<a class="code" href="../../db/d85/class_c_s.html#a9a501a8fa298d71f818f01b22e1e1157">umatch</a>(<span class="stringliteral">&quot;pack &quot;</span>)) {<a class="code" href="../../d6/dda/io__trace_8h.html#ace44a3497980f17b256317ed0d54708f">itested</a>();
@@ -341,8 +341,8 @@ Variables</h2></td></tr>
       <a class="code" href="../../d8/d24/class_i_o.html#a9e9dab0a681bfae68b0fbcf7c766259a">IO::stream</a>[<span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(fileno(<a class="code" href="../../df/dd2/io__contr_8cc.html#a0d50444e2e89bfeb67ac08466de33a47">to_pipe</a>))] = <a class="code" href="../../df/dd2/io__contr_8cc.html#a0d50444e2e89bfeb67ac08466de33a47">to_pipe</a>;
       (*out).attach(<a class="code" href="../../df/dd2/io__contr_8cc.html#a0d50444e2e89bfeb67ac08466de33a47">to_pipe</a>);
 
-      <a class="code" href="../../d8/d24/class_i_o.html#a64aa0f8ad1c5b038b8444a6a98287ac9">IO::formaat</a> = <a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>;
-      (*out).setformat(<a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>);
+      <a class="code" href="../../d8/d24/class_i_o.html#a64aa0f8ad1c5b038b8444a6a98287ac9">IO::formaat</a> = <a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>;
+      (*out).setformat(<a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>);
       <span class="keywordflow">if</span> (!echo) {<a class="code" href="../../d6/dda/io__trace_8h.html#aa6032a13c5f0621c16055ada1b7f47ad">untested</a>();
         (*out).detach(<a class="code" href="../../d8/d24/class_i_o.html#a15b2582f76a5424e01322d52de588f25">IO::mstdout</a>);
       }<span class="keywordflow">else</span>{<a class="code" href="../../d6/dda/io__trace_8h.html#aa6032a13c5f0621c16055ada1b7f47ad">untested</a>();
@@ -353,8 +353,8 @@ Variables</h2></td></tr>
       rwaflag = (cmd.<a class="code" href="../../db/d85/class_c_s.html#a9a501a8fa298d71f818f01b22e1e1157">umatch</a>(<span class="stringliteral">&quot;&gt;&quot;</span>)) ? <span class="stringliteral">&quot;a&quot;</span> : <span class="stringliteral">&quot;w&quot;</span>;
       <a class="code" href="../../df/dd2/io__contr_8cc.html#a6d69ca6f7bb08b11f6650d55c143eccd">fn</a> = <a class="code" href="../../df/dd2/io__contr_8cc.html#a73a792e969272d9cd2a6e6e1fd977e55">file_open</a>(cmd,<span class="stringliteral">&quot;&quot;</span>,rwaflag,<a class="code" href="../../df/dd2/io__contr_8cc.html#a6d69ca6f7bb08b11f6650d55c143eccd">fn</a>);
       (*out).attach(<a class="code" href="../../df/dd2/io__contr_8cc.html#a6d69ca6f7bb08b11f6650d55c143eccd">fn</a>);
-      <a class="code" href="../../d8/d24/class_i_o.html#a64aa0f8ad1c5b038b8444a6a98287ac9">IO::formaat</a> = <a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>;
-      (*out).setformat(<a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>);
+      <a class="code" href="../../d8/d24/class_i_o.html#a64aa0f8ad1c5b038b8444a6a98287ac9">IO::formaat</a> = <a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>;
+      (*out).setformat(<a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035dacf347fe1050e45974d8af7747856af60">ftos_EXP</a>);
       <span class="keywordflow">if</span> (!echo) {<a class="code" href="../../d6/dda/io__trace_8h.html#ace44a3497980f17b256317ed0d54708f">itested</a>();
         (*out).detach(<a class="code" href="../../d8/d24/class_i_o.html#a15b2582f76a5424e01322d52de588f25">IO::mstdout</a>);
       }<span class="keywordflow">else</span>{<a class="code" href="../../d6/dda/io__trace_8h.html#aa6032a13c5f0621c16055ada1b7f47ad">untested</a>();
@@ -432,18 +432,18 @@ Variables</h2></td></tr>
 
 <p>Referenced by <a class="el" href="../../de/dee/c__file_8cc_source.html#l00067">anonymous_namespace{c_file.cc}::CMD_LOG::do_it()</a>, <a class="el" href="../../de/dee/c__file_8cc_source.html#l00107">anonymous_namespace{c_file.cc}::CMD_FILE::do_it()</a>, and <a class="el" href="../../df/dd2/io__contr_8cc_source.html#l00160">file_open()</a>.</p>
 <div class="fragment"><pre class="fragment">{
-  <span class="keywordtype">char</span> fname[<a class="code" href="../../d8/dbf/md_8h.html#a385c44f6fb256e5716a2302a5b940388aa272afffe66ab2f2d9bfee73382357d1">BIGBUFLEN</a>];
+  <span class="keywordtype">char</span> fname[<a class="code" href="../../d8/dbf/md_8h.html#a16af7b253440dadd46a80a4b9fddba4daa272afffe66ab2f2d9bfee73382357d1">BIGBUFLEN</a>];
   
   cmd.<a class="code" href="../../db/d85/class_c_s.html#a19ccbc64484e30fde4c9207323d4cfaf">skipbl</a>();
   <span class="keywordflow">if</span> (cmd.<a class="code" href="../../db/d85/class_c_s.html#aa327c2429bf05a2d3f14949075daab4b">is_end</a>()) {<a class="code" href="../../d6/dda/io__trace_8h.html#aa6032a13c5f0621c16055ada1b7f47ad">untested</a>();
-    cmd = <a class="code" href="../../db/dfc/ap_8h.html#a6a99978ec04eaa0a4232b1349775c74c">getcmd</a>(<span class="stringliteral">&quot;file name?  &quot;</span>,fname, <a class="code" href="../../d8/dbf/md_8h.html#a385c44f6fb256e5716a2302a5b940388aa272afffe66ab2f2d9bfee73382357d1">BIGBUFLEN</a>);
+    cmd = <a class="code" href="../../db/dfc/ap_8h.html#a6a99978ec04eaa0a4232b1349775c74c">getcmd</a>(<span class="stringliteral">&quot;file name?  &quot;</span>,fname, <a class="code" href="../../d8/dbf/md_8h.html#a16af7b253440dadd46a80a4b9fddba4daa272afffe66ab2f2d9bfee73382357d1">BIGBUFLEN</a>);
   }
                                         <span class="comment">/* copy the name                    */</span>
   cmd.<a class="code" href="../../db/d85/class_c_s.html#a19ccbc64484e30fde4c9207323d4cfaf">skipbl</a>();                         <span class="comment">/* and while we&#39;re at it ...        */</span>
   {                                     <span class="comment">/* find out if we want to add the   */</span>
     <span class="keywordtype">bool</span> defalt = <span class="keyword">true</span>;                 <span class="comment">/* default extension                */</span>
     <span class="keywordtype">size_t</span> i;
-    <span class="keywordflow">for</span> (i = 0;   i &lt; <a class="code" href="../../d8/dbf/md_8h.html#a385c44f6fb256e5716a2302a5b940388aa272afffe66ab2f2d9bfee73382357d1">BIGBUFLEN</a>;   ) {
+    <span class="keywordflow">for</span> (i = 0;   i &lt; <a class="code" href="../../d8/dbf/md_8h.html#a16af7b253440dadd46a80a4b9fddba4daa272afffe66ab2f2d9bfee73382357d1">BIGBUFLEN</a>;   ) {
       <span class="keywordtype">char</span> c = cmd.<a class="code" href="../../db/d85/class_c_s.html#ad465c3535d1be98dd1fc6725023c75ef">ctoc</a>();
       <span class="keywordflow">if</span> (!c || isspace(c)) {
         <span class="keywordflow">break</span>;
@@ -479,9 +479,9 @@ Variables</h2></td></tr>
   
   FILE *code = NULL;    <span class="comment">/* a file pointer for the file we found */</span>
   <span class="keywordflow">if</span> (!<a class="code" href="../../de/d5e/class_o_p_t.html#a73304d4357fb622795b30bf38c560716">OPT::clobber</a> &amp;&amp; (*how == <span class="charliteral">&#39;w&#39;</span>) &amp;&amp; (access(fname,F_OK) == <a class="code" href="../../dd/d17/constant_8h.html#a06fc87d81c62e9abb8790b6e5713c55bacc5440fbbcea7fbd0094369d27686b16">FILE_OK</a>)) {<a class="code" href="../../d6/dda/io__trace_8h.html#aa6032a13c5f0621c16055ada1b7f47ad">untested</a>();
-    <span class="keywordtype">char</span> buffer[<a class="code" href="../../d8/dbf/md_8h.html#a385c44f6fb256e5716a2302a5b940388a70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>];
+    <span class="keywordtype">char</span> buffer[<a class="code" href="../../d8/dbf/md_8h.html#a16af7b253440dadd46a80a4b9fddba4da70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>];
     std::string msg = std::string(fname) + <span class="stringliteral">&quot; exists.  replace? &quot;</span>;
-    <a class="code" href="../../db/dfc/ap_8h.html#a6a99978ec04eaa0a4232b1349775c74c">getcmd</a>(msg.c_str(), buffer, <a class="code" href="../../d8/dbf/md_8h.html#a385c44f6fb256e5716a2302a5b940388a70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>);
+    <a class="code" href="../../db/dfc/ap_8h.html#a6a99978ec04eaa0a4232b1349775c74c">getcmd</a>(msg.c_str(), buffer, <a class="code" href="../../d8/dbf/md_8h.html#a16af7b253440dadd46a80a4b9fddba4da70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>);
     <span class="keywordflow">if</span> (<a class="code" href="../../dd/dfe/l__lib_8h.html#a8e8977e5f176127f0217507d3b196fe3">Umatch</a>(buffer,<span class="stringliteral">&quot;y{es} &quot;</span>)) {<a class="code" href="../../d6/dda/io__trace_8h.html#aa6032a13c5f0621c16055ada1b7f47ad">untested</a>();   <span class="comment">/* should be new file, but          */</span>
       code = fopen(fname,how);          <span class="comment">/* file already exists,  ask        */</span>
     }<span class="keywordflow">else</span>{<a class="code" href="../../d6/dda/io__trace_8h.html#aa6032a13c5f0621c16055ada1b7f47ad">untested</a>();
@@ -542,7 +542,7 @@ Variables</h2></td></tr>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 13 2012 05:03:56 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Aug 7 2012 17:59:34 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

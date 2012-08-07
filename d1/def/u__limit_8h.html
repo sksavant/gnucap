@@ -121,6 +121,8 @@ Functions</h2></td></tr>
 <p>Definition at line <a class="el" href="../../d1/def/u__limit_8h_source.html#l00050">50</a> of file <a class="el" href="../../d1/def/u__limit_8h_source.html">u_limit.h</a>.</p>
 
 <p>References <a class="el" href="../../d6/dda/io__trace_8h_source.html#l00079">itested</a>.</p>
+
+<p>Referenced by <a class="el" href="../../d1/d94/d__mos_8cc_source.html#l01247">DEV_BUILT_IN_MOS::do_tr()</a>.</p>
 <div class="fragment"><pre class="fragment">{
   <span class="keywordflow">if</span> (vold &gt;= 3.5) {
     <span class="keywordflow">if</span> (vnew &gt; (3*vold + 2)) {<a class="code" href="../../d6/dda/io__trace_8h.html#ace44a3497980f17b256317ed0d54708f">itested</a>();
@@ -177,6 +179,8 @@ Functions</h2></td></tr>
 <p>Definition at line <a class="el" href="../../d1/def/u__limit_8h_source.html#l00071">71</a> of file <a class="el" href="../../d1/def/u__limit_8h_source.html">u_limit.h</a>.</p>
 
 <p>References <a class="el" href="../../d6/dda/io__trace_8h_source.html#l00079">itested</a>, <a class="el" href="../../d6/dda/io__trace_8h_source.html#l00057">trace3</a>, and <a class="el" href="../../d6/dda/io__trace_8h_source.html#l00062">unreachable</a>.</p>
+
+<p>Referenced by <a class="el" href="../../d1/d94/d__mos_8cc_source.html#l01247">DEV_BUILT_IN_MOS::do_tr()</a>.</p>
 <div class="fragment"><pre class="fragment">{
   assert(vnew == vnew);
   assert(vold == vold);
@@ -264,6 +268,8 @@ Functions</h2></td></tr>
 <p>Definition at line <a class="el" href="../../d1/def/u__limit_8h_source.html#l00030">30</a> of file <a class="el" href="../../d1/def/u__limit_8h_source.html">u_limit.h</a>.</p>
 
 <p>References <a class="el" href="../../d6/dda/io__trace_8h_source.html#l00055">trace1</a>, <a class="el" href="../../d6/dda/io__trace_8h_source.html#l00057">trace3</a>, and <a class="el" href="../../d6/dda/io__trace_8h_source.html#l00058">trace4</a>.</p>
+
+<p>Referenced by <a class="el" href="../../d6/d71/d__bjt_8cc_source.html#l01807">DEV_BUILT_IN_BJT::do_tr()</a>.</p>
 <div class="fragment"><pre class="fragment">{
   <a class="code" href="../../d6/dda/io__trace_8h.html#ac33f87216db5feeb1dea8b1e4a69ada9">trace4</a>(<span class="stringliteral">&quot;limit-in&quot;</span>, vnew, vold, vt, vcrit);
   <span class="keywordflow">if</span> ((vnew &gt; vcrit) &amp;&amp; (std::abs(vnew - vold) &gt; (2 * vt))) {
@@ -303,7 +309,7 @@ Functions</h2></td></tr>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 13 2012 05:03:57 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Aug 7 2012 17:59:35 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

@@ -116,10 +116,10 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00034"></a>00034 <span class="comment">/*--------------------------------------------------------------------------*/</span>
 <a name="l00035"></a>00035 <span class="comment">//ftos stuff</span>
 <a name="l00036"></a>00036 <span class="keyword">enum</span> {                  <span class="comment">/* formatting bit-fields */</span>
-<a name="l00037"></a><a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2da39f960ddf38a6a99a4eff681b7a22197">00037</a>   <a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2da39f960ddf38a6a99a4eff681b7a22197">ftos_DEFAULT</a> = 0,     <span class="comment">/* default formatting, with letters */</span>
-<a name="l00038"></a><a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2dacf347fe1050e45974d8af7747856af60">00038</a>   <a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2dacf347fe1050e45974d8af7747856af60">ftos_EXP</a> = 1,         <span class="comment">/* use &#39;e&#39; notation, almost like printf */</span>
-<a name="l00039"></a><a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2da34d0b83a527c423d4342bdaf2e4536fa">00039</a>   <a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2da34d0b83a527c423d4342bdaf2e4536fa">ftos_SIGN</a> = 2,        <span class="comment">/* always include sign */</span>
-<a name="l00040"></a><a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2da85c4098a2402d9b29b28b344b8bc2437">00040</a>   <a class="code" href="../../dd/dfe/l__lib_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2da85c4098a2402d9b29b28b344b8bc2437">ftos_FILL</a> = 4         <span class="comment">/* fill in trailing zeros */</span>
+<a name="l00037"></a><a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035da39f960ddf38a6a99a4eff681b7a22197">00037</a>   <a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035da39f960ddf38a6a99a4eff681b7a22197">ftos_DEFAULT</a> = 0,     <span class="comment">/* default formatting, with letters */</span>
+<a name="l00038"></a><a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035dacf347fe1050e45974d8af7747856af60">00038</a>   <a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035dacf347fe1050e45974d8af7747856af60">ftos_EXP</a> = 1,         <span class="comment">/* use &#39;e&#39; notation, almost like printf */</span>
+<a name="l00039"></a><a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035da34d0b83a527c423d4342bdaf2e4536fa">00039</a>   <a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035da34d0b83a527c423d4342bdaf2e4536fa">ftos_SIGN</a> = 2,        <span class="comment">/* always include sign */</span>
+<a name="l00040"></a><a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035da85c4098a2402d9b29b28b344b8bc2437">00040</a>   <a class="code" href="../../dd/dfe/l__lib_8h.html#abc5c98fcc1211af2b80116dd6e0a035da85c4098a2402d9b29b28b344b8bc2437">ftos_FILL</a> = 4         <span class="comment">/* fill in trailing zeros */</span>
 <a name="l00041"></a>00041 };
 <a name="l00042"></a>00042 <span class="comment">/*--------------------------------------------------------------------------*/</span>
 <a name="l00043"></a>00043 <span class="comment">// wrappers for old standard C lpbrary</span>
@@ -141,8 +141,8 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00059"></a>00059   }
 <a name="l00060"></a>00060 
 <a name="l00061"></a><a class="code" href="../../d9/d1c/namespace_o_s.html#a3cd3450deab39a95689129b0f3ccd521">00061</a>   <span class="keyword">inline</span> std::string <a class="code" href="../../d9/d1c/namespace_o_s.html#a3cd3450deab39a95689129b0f3ccd521">getcwd</a>() {<a class="code" href="../../d6/dda/io__trace_8h.html#ace44a3497980f17b256317ed0d54708f">itested</a>();
-<a name="l00062"></a>00062     <span class="keywordtype">char</span> buf[<a class="code" href="../../d8/dbf/md_8h.html#a385c44f6fb256e5716a2302a5b940388a70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>+1];
-<a name="l00063"></a>00063     <span class="keywordtype">char</span>* cwd = <a class="code" href="../../d9/d1c/namespace_o_s.html#a3cd3450deab39a95689129b0f3ccd521">::getcwd</a>(buf,<a class="code" href="../../d8/dbf/md_8h.html#a385c44f6fb256e5716a2302a5b940388a70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>);
+<a name="l00062"></a>00062     <span class="keywordtype">char</span> buf[<a class="code" href="../../d8/dbf/md_8h.html#a16af7b253440dadd46a80a4b9fddba4da70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>+1];
+<a name="l00063"></a>00063     <span class="keywordtype">char</span>* cwd = <a class="code" href="../../d9/d1c/namespace_o_s.html#a3cd3450deab39a95689129b0f3ccd521">::getcwd</a>(buf,<a class="code" href="../../d8/dbf/md_8h.html#a16af7b253440dadd46a80a4b9fddba4da70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>);
 <a name="l00064"></a>00064     <span class="keywordflow">if</span> (cwd) {<a class="code" href="../../d6/dda/io__trace_8h.html#ace44a3497980f17b256317ed0d54708f">itested</a>();
 <a name="l00065"></a>00065       <span class="keywordflow">return</span> cwd;
 <a name="l00066"></a>00066     }<span class="keywordflow">else</span>{<a class="code" href="../../d6/dda/io__trace_8h.html#aa6032a13c5f0621c16055ada1b7f47ad">untested</a>();
@@ -180,7 +180,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 13 2012 05:03:54 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Aug 7 2012 17:59:29 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>
