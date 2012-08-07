@@ -488,8 +488,10 @@ MODEL_SUBCKT* LANG_GSCHEM::parse_componmod(CS& cmd, MODEL_SUBCKT* x)
     //open the basename to get the ports and their placements
     //parse_ports(newcmd,x);
     x->set_label("!_"+basename);
-    parse_symbol_file(x,basename);
-
+    std::vector<std::string*> coord=parse_symbol_file(x,basename);
+    if(coord.size()==0){
+        isgraphical=true;
+    }
     if (isgraphical==true) {
         return NULL;
     }
