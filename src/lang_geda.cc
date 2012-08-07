@@ -172,7 +172,7 @@ static std::string find_file_given_name(std::string basename)
         }
     }
     if(dirname==""){
-        std::cout<<"No symbol file for"+basename<<std::endl;
+        std::cout<<"No symbol file for "+basename<<std::endl;
     }
     return dirname;
 }
