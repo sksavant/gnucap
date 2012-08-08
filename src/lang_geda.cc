@@ -706,6 +706,7 @@ class CMD_GSCHEM : public CMD {
 public:
     void do_it(CS& cmd, CARD_LIST* Scope)
     {
+      srand(time(NULL));
       command("options lang=gschem", Scope);
     }
 } p8;
