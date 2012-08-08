@@ -400,9 +400,10 @@ static void parse_component(CS& cmd,COMPONENT* x){
     }
     x->set_param_by_name("basename",basename);
     CS new_cmd(CS::_STDIN);
-    new_cmd.get_line("gnucap-gschem- "+basename+">");
+    new_cmd.get_line("gnucap-gschem>");
     std::string temp=new_cmd.fullstring();
     if(temp!="{"){
+        OPT::language->new__instance(new_cmd,NULL,x->scope());
         return;
     }
     cmd>>"{";
