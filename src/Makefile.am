@@ -148,6 +148,7 @@ MODELGEN= @MODELGEN@
 #------------------------------------------------------------------------
 plugindir = ${datarootdir}/gnucap
 plugin_LTLIBRARIES =
+gnucap_LDFLAGS = -rpath ${datarootdir}/gnucap
 #------------------------------------------------------------------------
 plugin_LTLIBRARIES += lang_geda.la
 lang_geda_la_SOURCES = lang_geda.cc d_net.cc d_place.cc
