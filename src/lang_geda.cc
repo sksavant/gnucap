@@ -561,21 +561,6 @@ void LANG_GSCHEM::parse_top_item(CS& cmd, CARD_LIST* Scope)
 /*----------------------------------------------------------------------*/
 // Code for Printing schematic follows
 /*----------------------------------------------------------------------*/
-void LANG_GSCHEM::print_args(OMSTREAM& o, const MODEL_CARD* x)
-{
-  assert(x);
-  if (x->use_obsolete_callback_print()) {
-    x->print_args_obsolete_callback(o, this);  //BUG//callback//
-  }else{
-    for (int ii = x->param_count() - 1;  ii >= 0;  --ii) {
-      if (x->param_is_printable(ii)) {
-	std::string arg = " ." + x->param_name(ii) + "=" + x->param_value(ii) + ";";
-	o << arg;
-      }else{
-      }
-    }
-  }
-}
 /*--------------------------------------------------------------------------*/
 static void print_type(OMSTREAM& o, const COMPONENT* x)
 {
