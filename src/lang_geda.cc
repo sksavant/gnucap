@@ -588,6 +588,17 @@ static void print_node_xy(OMSTREAM& o,const COMPONENT* x,int _portindex)
     }
 }
 /*--------------------------------------------------------------------------*/
+static void findcomponentposition(std::string x, std::string y, COMPONENT* x)
+{
+
+}
+/*--------------------------------------------------------------------------*/
+static COMPONENT* find_place(const COMPONENT* x, std::string _portvalue)
+{
+    return NULL;
+    //To return place after searching for it.
+}
+/*--------------------------------------------------------------------------*/
 static void print_net(OMSTREAM& o, const COMPONENT* x)
 {
     assert(x);
@@ -616,16 +627,23 @@ static void print_component(OMSTREAM& o, const COMPONENT* x)
     trace0("Got into print_component");
     std::cout<<x->dev_type()<<"\n";
     o <<  "C ";
+    std::string _basename=x->param_value(5);
     //go through the symbol file and get the relative pin positions
+    std::vector<std::string*> coordinates=parse_symbol_file(NULL, _basename);
+    std::vector<int> placementcoord(8,-1);
+    int index=0;
+    for(std::vector<std::string*>::const_iterator i=coordinates.begin(); i<coordinates.end(); ++i){
+        findcomponentposition((*i)[0],(*i)[1],find_place(x,x->port_value(index))->param_value(index));
+        ++index;
+    }
     //map those with the absolute positions of nodes and place the device
     //such that it is in between the nodes.
-    std::string _basename;
     //std::vector<std::string*> coord = parse_symbol_file(static_cast<COMPONENT*>(x) , _basename);
-    std::string _x,_y,_selectable,_angle,_mirror;
+    std::string _x,_y,_angle,_mirror;
 
     //Got the x and y
     //To print angle mirror etc, to get from the intelligent positioning
-    o << _x << " " << _y << " " << _selectable << " " << _angle << " " << _mirror << " " << _basename;
+    o << _x << " " << _y << " " << "0" << " " << _angle << " " << _mirror << " " << _basename;
 
 }
 /*--------------------------------------------------------------------------*/
@@ -655,13 +673,15 @@ void LANG_GEDA::print_instance(OMSTREAM& o, const COMPONENT* x)
  // print_label(o, x);
   if(x->dev_type()=="net"){
     print_net(o, x);
-  }else if(x->dev_type()=="place"){
-  }else{
+    o << "\n";
+  }
+  else if(x->dev_type()=="place"){
+ }else{
     //Component
     print_component(o ,x);
+    o << "\n";
   }
-  o << ";\n";
-}
+  }
 /*--------------------------------------------------------------------------*/
 void LANG_GEDA::print_comment(OMSTREAM& o, const DEV_COMMENT* x)
 {
