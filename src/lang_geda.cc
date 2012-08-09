@@ -78,9 +78,6 @@ private:
     void print_comment(OMSTREAM&, const DEV_COMMENT*);
     void print_command(OMSTREAM& o, const DEV_DOT* c);
 
-private:
-    void print_args(OMSTREAM&, const MODEL_CARD*);
-    void print_args(OMSTREAM&, const COMPONENT*);
 }lang_gschem;
 
 DISPATCHER<LANGUAGE>::INSTALL
@@ -562,6 +559,7 @@ void LANG_GSCHEM::parse_top_item(CS& cmd, CARD_LIST* Scope)
     new__instance(cmd, NULL, Scope);
 }
 /*----------------------------------------------------------------------*/
+// Code for Printing schematic follows
 /*----------------------------------------------------------------------*/
 void LANG_GSCHEM::print_args(OMSTREAM& o, const MODEL_CARD* x)
 {
@@ -579,27 +577,6 @@ void LANG_GSCHEM::print_args(OMSTREAM& o, const MODEL_CARD* x)
   }
 }
 /*--------------------------------------------------------------------------*/
-void LANG_GSCHEM::print_args(OMSTREAM& o, const COMPONENT* x)
-{
-  assert(x);
-  o << " #(";
-  if (x->use_obsolete_callback_print()) {
-    arg_count = 0;
-    x->print_args_obsolete_callback(o, this);  //BUG//callback//
-    arg_count = INACTIVE;
-  }else{
-    std::string sep = ".";
-    for (int ii = x->param_count() - 1;  ii >= 0;  --ii) {
-      if (x->param_is_printable(ii)) {
-	o << sep << x->param_name(ii) << "(" << x->param_value(ii) << ")";
-	sep = ",.";
-      }else{
-      }
-    }
-  }
-  o << ") ";
-}
-/*--------------------------------------------------------------------------*/
 static void print_type(OMSTREAM& o, const COMPONENT* x)
 {
   assert(x);
@@ -612,52 +589,11 @@ static void print_label(OMSTREAM& o, const COMPONENT* x)
   o << x->short_label();
 }
 /*--------------------------------------------------------------------------*/
-static void print_ports_long(OMSTREAM& o, const COMPONENT* x)
-{
-  // print in long form ...    .name(value)
-  assert(x);
-
-  o << " (";
-  std::string sep = ".";
-  for (int ii = 0;  x->port_exists(ii);  ++ii) {
-    o << sep << x->port_name(ii) << '(' << x->port_value(ii) << ')';
-    sep = ",.";
-  }
-  for (int ii = 0;  x->current_port_exists(ii);  ++ii) {
-    o << sep << x->current_port_name(ii) << '(' << x->current_port_value(ii) << ')';
-    sep = ",.";
-  }
-  o << ")";
-}
-/*--------------------------------------------------------------------------*/
-static void print_ports_short(OMSTREAM& o, const COMPONENT* x)
-{
-  // print in short form ...   value only
-  assert(x);
-
-  o << " (";
-  std::string sep = "";
-  for (int ii = 0;  x->port_exists(ii);  ++ii) {
-    o << sep << x->port_value(ii);
-    sep = ",";
-  }
-  for (int ii = 0;  x->current_port_exists(ii);  ++ii) {
-    o << sep << x->current_port_value(ii);
-    sep = ",";
-  }
-  o << ")";
-}
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 void LANG_GSCHEM::print_paramset(OMSTREAM& o, const MODEL_CARD* x)
 {
-  assert(x);
-  _mode = mPARAMSET;
-  o << "paramset " << x->short_label() << ' ' << x->dev_type() << ";\\\n";
-  print_args(o, x);
-  o << "\\\n"
-    "endparmset\n\n";
-  _mode = mDEFAULT;
+    trace0("Got into print paramset");
+    return;
 }
 /*--------------------------------------------------------------------------*/
 void LANG_GSCHEM::print_module(OMSTREAM& o, const MODEL_SUBCKT* x)
@@ -667,27 +603,17 @@ void LANG_GSCHEM::print_module(OMSTREAM& o, const MODEL_SUBCKT* x)
   //o<<"\n";
   assert(x->subckt());
   if(x->short_label().find("!_")!=std::string::npos){
+    trace0("Got a placeholding model");
     return;
   }
-  o << "module " <<  x->short_label();
-  print_ports_short(o, x);
-  o << ";\n";
-
-  for (CARD_LIST::const_iterator
-	 ci = x->subckt()->begin(); ci != x->subckt()->end(); ++ci) {
-    print_item(o, *ci);
-  }
-
-  o << "endmodule // " << x->short_label() << "\n\n";
 }
 /*--------------------------------------------------------------------------*/
 void LANG_GSCHEM::print_instance(OMSTREAM& o, const COMPONENT* x)
 {
   trace0("Got here in gschem!");
+
   print_type(o, x);
-  print_args(o, x);
   print_label(o, x);
-  print_ports_long(o, x);
   o << ";\n";
 }
 /*--------------------------------------------------------------------------*/
