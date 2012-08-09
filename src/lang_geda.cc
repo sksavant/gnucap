@@ -575,6 +575,36 @@ static void print_label(OMSTREAM& o, const COMPONENT* x)
   o << x->short_label();
 }
 /*--------------------------------------------------------------------------*/
+static void print_node_xy(OMSTREAM& o,const COMPONENT* x,int _portindex)
+{
+    std::string _nodename=x->port_value(_portindex);
+    for(CARD_LIST::const_iterator ci=x->scope()->begin(); ci!=x->scope()->end(); ++ci) {
+        if((*ci)->dev_type()=="place"){
+            if(static_cast<COMPONENT*>(*ci)->port_value(0)==_nodename){
+                trace0("Got some place!");
+                o << (*ci)->param_value(1) << " " << (*ci)->param_value(0) << " ";
+            }
+        }
+    }
+}
+/*--------------------------------------------------------------------------*/
+static void print_net(OMSTREAM& o, const COMPONENT* x)
+{
+    assert(x);
+    assert(x->dev_type()=="net");
+    o << "N ";
+    //print_coordinates(node); //Will search through the CARD_LIST to find the node
+    //o<< node0x << node1x
+    //o<< node1x << node2x
+    print_node_xy(o,x,0);
+    print_node_xy(o,x,1);
+    if(x->value().string()!=""){
+        o  << x->value().string()<<"\n"; //The color
+    }else{
+        o << "4\n";
+    }
+}
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 void LANG_GEDA::print_paramset(OMSTREAM& o, const MODEL_CARD* x)
 {
