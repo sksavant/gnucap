@@ -402,6 +402,10 @@ void LANG_VERILOG::print_module(OMSTREAM& o, const MODEL_SUBCKT* x)
   assert(x);
   assert(x->subckt());
 
+  if(x->short_label().find("!_")!=std::string::npos){
+    return; //If placeholder MODEL_SUBCKT* , donot print out
+  }
+
   o << "module " <<  x->short_label();
   print_ports_short(o, x);
   o << ";\n";
