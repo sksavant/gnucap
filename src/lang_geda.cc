@@ -38,7 +38,7 @@ extern "C"{
 /*--------------------------------------------------------------------------*/
 namespace {
 /*--------------------------------------------------------------------------*/
-class LANG_GSCHEM : public LANGUAGE {
+class LANG_GEDA : public LANGUAGE {
 
 public:
     //
@@ -78,10 +78,10 @@ private:
     void print_comment(OMSTREAM&, const DEV_COMMENT*);
     void print_command(OMSTREAM& o, const DEV_DOT* c);
 
-}lang_gschem;
+}lang_geda;
 
 DISPATCHER<LANGUAGE>::INSTALL
-    d(&language_dispatcher, lang_gschem.name(), &lang_gschem);
+    d(&language_dispatcher, lang_geda.name(), &lang_geda);
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 //Finds type from find_type_in_string
@@ -89,7 +89,7 @@ static void parse_type(CS& cmd, CARD* x)
 {
       assert(x);
       std::string new_type;
-      new_type=lang_gschem.find_type_in_string(cmd);
+      new_type=lang_geda.find_type_in_string(cmd);
       x->set_dev_type(new_type);
 }
 /*--------------------------------------------------------------------------*/
@@ -280,7 +280,7 @@ static std::string* findnodeonthisnet(CARD *x, std::string x0, std::string y0, s
 static void parse_net(CS& cmd, COMPONENT* x)
 {
     assert(x);
-    assert(lang_gschem.find_type_in_string(cmd)=="net");
+    assert(lang_geda.find_type_in_string(cmd)=="net");
     cmd>>"N";     //Got N
     unsigned here=cmd.cursor();
     // x0 y0 x1 y1 color
@@ -298,7 +298,7 @@ static void parse_net(CS& cmd, COMPONENT* x)
         ++i;
     }
     if (gotthenet){
-        //lang_gschem.nets.push_back(x);
+        //lang_geda.nets.push_back(x);
         //To check if any of the previous nodes have same placement.
         x->set_label("net"+to_string(rand()%10000)); //BUG : names may coincide!. Doesn't matter? Or try some initialisation method. (latch like digital)
 
@@ -331,7 +331,7 @@ static void parse_net(CS& cmd, COMPONENT* x)
 static void parse_component(CS& cmd,COMPONENT* x){
     assert(x);
     std::string component_x, component_y, mirror, angle, dump,basename;
-    std::string type=lang_gschem.find_type_in_string(cmd);
+    std::string type=lang_geda.find_type_in_string(cmd);
     cmd>>type;
     std::vector<std::string> paramname;
     std::vector<std::string> paramvalue;
@@ -398,7 +398,7 @@ static void parse_component(CS& cmd,COMPONENT* x){
     }
     x->set_param_by_name("basename",basename);
     CS new_cmd(CS::_STDIN);
-    new_cmd.get_line("gnucap-gschem>");
+    new_cmd.get_line("gnucap-geda>");
     std::string temp=new_cmd.fullstring();
     if(temp!="{"){
         OPT::language->new__instance(new_cmd,NULL,x->scope());
@@ -406,7 +406,7 @@ static void parse_component(CS& cmd,COMPONENT* x){
     }
     cmd>>"{";
     for (;;) {
-        new_cmd.get_line("gnucap-gschem- "+basename+">");
+        new_cmd.get_line("gnucap-geda- "+basename+">");
         if (new_cmd >> "}") {
             break;
         }else{
@@ -434,14 +434,14 @@ static void parse_component(CS& cmd,COMPONENT* x){
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-DEV_COMMENT* LANG_GSCHEM::parse_comment(CS& cmd, DEV_COMMENT* x)
+DEV_COMMENT* LANG_GEDA::parse_comment(CS& cmd, DEV_COMMENT* x)
 {
     assert(x);
     x->set(cmd.fullstring());
     return x;
 }
 /*--------------------------------------------------------------------------*/
-DEV_DOT* LANG_GSCHEM::parse_command(CS& cmd, DEV_DOT* x)
+DEV_DOT* LANG_GEDA::parse_command(CS& cmd, DEV_DOT* x)
 {
     assert(x);
     x->set(cmd.fullstring());
@@ -453,19 +453,19 @@ DEV_DOT* LANG_GSCHEM::parse_command(CS& cmd, DEV_DOT* x)
     return NULL;
 }
 /*--------------------------------------------------------------------------*/
-MODEL_CARD* LANG_GSCHEM::parse_paramset(CS& cmd, MODEL_CARD* x)
+MODEL_CARD* LANG_GEDA::parse_paramset(CS& cmd, MODEL_CARD* x)
 {
     assert(x);
     return NULL;
 }
 /*--------------------------------------------------------------------------*/
-MODEL_SUBCKT* LANG_GSCHEM::parse_module(CS& cmd, MODEL_SUBCKT* x)
+MODEL_SUBCKT* LANG_GEDA::parse_module(CS& cmd, MODEL_SUBCKT* x)
 {
   //To parse heirarchical schematics
   return NULL;
 }
 
-MODEL_SUBCKT* LANG_GSCHEM::parse_componmod(CS& cmd, MODEL_SUBCKT* x)
+MODEL_SUBCKT* LANG_GEDA::parse_componmod(CS& cmd, MODEL_SUBCKT* x)
 {
     assert(x);
     cmd.reset();
@@ -496,7 +496,7 @@ MODEL_SUBCKT* LANG_GSCHEM::parse_componmod(CS& cmd, MODEL_SUBCKT* x)
     return x;
 }
 /*--------------------------------------------------------------------------*/
-COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
+COMPONENT* LANG_GEDA::parse_instance(CS& cmd, COMPONENT* x)
 {
     cmd.reset();
     parse_type(cmd, x); //parse type will parse the component type and set_dev_type
@@ -531,7 +531,7 @@ COMPONENT* LANG_GSCHEM::parse_instance(CS& cmd, COMPONENT* x)
  * Will check for type graphical (type=dev_comment) else type will be
  * net or bus or pin or component\
  */
-std::string LANG_GSCHEM::find_type_in_string(CS& cmd)
+std::string LANG_GEDA::find_type_in_string(CS& cmd)
 {
     unsigned here = cmd.cursor(); //store cursor position to reset back later
     std::string type;   //stores type : should check device attribute..
@@ -553,9 +553,9 @@ std::string LANG_GSCHEM::find_type_in_string(CS& cmd)
  * The top default thing that is parsed. Here new__instances are
  * created and (TODO)post processing of nets is done
  */
-void LANG_GSCHEM::parse_top_item(CS& cmd, CARD_LIST* Scope)
+void LANG_GEDA::parse_top_item(CS& cmd, CARD_LIST* Scope)
 {
-    cmd.get_line("gnucap-gschem>");
+    cmd.get_line("gnucap-geda>");
     new__instance(cmd, NULL, Scope);
 }
 /*----------------------------------------------------------------------*/
@@ -575,13 +575,13 @@ static void print_label(OMSTREAM& o, const COMPONENT* x)
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-void LANG_GSCHEM::print_paramset(OMSTREAM& o, const MODEL_CARD* x)
+void LANG_GEDA::print_paramset(OMSTREAM& o, const MODEL_CARD* x)
 {
     trace0("Got into print paramset");
     return;
 }
 /*--------------------------------------------------------------------------*/
-void LANG_GSCHEM::print_module(OMSTREAM& o, const MODEL_SUBCKT* x)
+void LANG_GEDA::print_module(OMSTREAM& o, const MODEL_SUBCKT* x)
 {
   assert(x);
   //o<<x->short_label();
@@ -593,22 +593,22 @@ void LANG_GSCHEM::print_module(OMSTREAM& o, const MODEL_SUBCKT* x)
   }
 }
 /*--------------------------------------------------------------------------*/
-void LANG_GSCHEM::print_instance(OMSTREAM& o, const COMPONENT* x)
+void LANG_GEDA::print_instance(OMSTREAM& o, const COMPONENT* x)
 {
-  trace0("Got here in gschem!");
+  trace0("Got into print_instance in geda!");
 
   print_type(o, x);
   print_label(o, x);
   o << ";\n";
 }
 /*--------------------------------------------------------------------------*/
-void LANG_GSCHEM::print_comment(OMSTREAM& o, const DEV_COMMENT* x)
+void LANG_GEDA::print_comment(OMSTREAM& o, const DEV_COMMENT* x)
 {
   assert(x);
   o << x->comment() << '\n';
 }
 /*--------------------------------------------------------------------------*/
-void LANG_GSCHEM::print_command(OMSTREAM& o, const DEV_DOT* x)
+void LANG_GEDA::print_command(OMSTREAM& o, const DEV_DOT* x)
 {
   assert(x);
   o << x->s() << '\n';
@@ -636,12 +636,12 @@ class CMD_C : public CMD {
       assert(!new_compon->owner());
       assert(new_compon->subckt());
       assert(new_compon->subckt()->is_empty());
-      temp=lang_gschem.parse_componmod(cmd, new_compon);
+      temp=lang_geda.parse_componmod(cmd, new_compon);
       if(temp){
         Scope->push_back(new_compon);
         std::string s=new_compon->short_label()+" "+cmd.tail();
         CS cmd(CS::_STRING,s);
-        lang_gschem.new__instance(cmd,NULL,Scope);
+        lang_geda.new__instance(cmd,NULL,Scope);
       }
     }
 } p2;
