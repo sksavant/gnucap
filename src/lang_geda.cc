@@ -300,6 +300,7 @@ static void parse_net(CS& cmd, COMPONENT* x)
     if (gotthenet){
         //lang_geda.nets.push_back(x);
         //To check if any of the previous nodes have same placement.
+        x->set_param_by_name("color",parsedvalue[4]);
         x->set_label("net"+to_string(rand()%10000)); //BUG : names may coincide!. Doesn't matter? Or try some initialisation method. (latch like digital)
 
         std::string _portvalue=findplacewithsameposition(x,parsedvalue[0],parsedvalue[1]);
