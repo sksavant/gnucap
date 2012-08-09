@@ -605,6 +605,30 @@ static void print_net(OMSTREAM& o, const COMPONENT* x)
     }
 }
 /*--------------------------------------------------------------------------*/
+/* C x y selectable angle mirror basename
+ * {
+ *  <params>
+ * }
+ */
+static void print_component(OMSTREAM& o, const COMPONENT* x)
+{
+    assert(x);
+    trace0("Got into print_component");
+    std::cout<<x->dev_type()<<"\n";
+    o <<  "C ";
+    //go through the symbol file and get the relative pin positions
+    //map those with the absolute positions of nodes and place the device
+    //such that it is in between the nodes.
+    std::string _basename;
+    //std::vector<std::string*> coord = parse_symbol_file(static_cast<COMPONENT*>(x) , _basename);
+    std::string _x,_y,_selectable,_angle,_mirror;
+
+    //Got the x and y
+    //To print angle mirror etc, to get from the intelligent positioning
+    o << _x << " " << _y << " " << _selectable << " " << _angle << " " << _mirror << " " << _basename;
+
+}
+/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 void LANG_GEDA::print_paramset(OMSTREAM& o, const MODEL_CARD* x)
 {
@@ -627,9 +651,15 @@ void LANG_GEDA::print_module(OMSTREAM& o, const MODEL_SUBCKT* x)
 void LANG_GEDA::print_instance(OMSTREAM& o, const COMPONENT* x)
 {
   trace0("Got into print_instance in geda!");
-
-  print_type(o, x);
-  print_label(o, x);
+ // print_type(o, x);
+ // print_label(o, x);
+  if(x->dev_type()=="net"){
+    print_net(o, x);
+  }else if(x->dev_type()=="place"){
+  }else{
+    //Component
+    print_component(o ,x);
+  }
   o << ";\n";
 }
 /*--------------------------------------------------------------------------*/
