@@ -13,7 +13,7 @@ gnucap>load ./lang_geda.so
 gnucap>load ./d_net.so
 gnucap>load ./d_place.so
 -------------
-Or else, it can be directly loaded into gnucap core:
+Or else, it can be directly compiled into gnucap core:
 (assuming you already have a gnucap version installed and just want to install the lang_geda plugin)
 run the following in <gnucap>/src:
 -------------
