@@ -26,6 +26,7 @@
 #include "e_model.h"
 #include "u_lang.h"
 #include <fts.h>
+#include "io_trace.h"
 #ifdef HAVE_GEDA
 #include <gmpxx.h> // to workaround bug in gmp header about __cplusplus
 #define COMPLEX NOCOMPLEX // COMPLEX already came from md.h
@@ -682,6 +683,7 @@ void LANG_GSCHEM::print_module(OMSTREAM& o, const MODEL_SUBCKT* x)
 /*--------------------------------------------------------------------------*/
 void LANG_GSCHEM::print_instance(OMSTREAM& o, const COMPONENT* x)
 {
+  trace0("Got here in gschem!");
   print_type(o, x);
   print_args(o, x);
   print_label(o, x);
