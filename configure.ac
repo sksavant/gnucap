@@ -79,6 +79,9 @@ fi
 # this is a c++ program so use c++ for the tests
 AC_LANG([C++])
 
+# to build dynamic modules, we need libtool.
+LT_INIT()
+
 #AC_CHECK_LIB([termcap], [main])	
 #AC_CHECK_LIB([readline], [main])
 AC_ARG_WITH([readline],
