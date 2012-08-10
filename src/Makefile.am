@@ -61,9 +61,7 @@ s_tr.cc s_tr_set.cc s_tr_swp.cc
 
 # netlist languages
 LANG_SRCS = \
-lang_spice.cc lang_spectre.cc lang_verilog.cc lang_geda.cc
-
-lang_geda.o: CPPFLAGS+=@GEDA_CFLAGS@
+lang_spice.cc lang_spectre.cc lang_verilog.cc
 
 # parameter functions
 FUNC_SRCS = \
@@ -86,7 +84,7 @@ io.cc io_contr.cc io_error.cc io_findf.cc io_out.cc io_xopen.cc \
 u_function.cc u_lang.cc u_nodemap.cc u_opt1.cc u_opt2.cc u_parameter.cc \
 u_prblst.cc u_probe.cc u_sim_data.cc u_xprobe.cc \
 s__init.cc s__out.cc s__solve.cc \
-d_subckt.cc d_logic.cc d_logicmod.cc d_net.cc d_place.cc\
+d_subckt.cc d_logic.cc d_logicmod.cc \
 e_base.cc e_card.cc e_node.cc e_model.cc e_compon.cc \
 e_elemnt.cc e_ccsrc.cc e_storag.cc e_cardlist.cc \
 bm_value.cc bm.cc \

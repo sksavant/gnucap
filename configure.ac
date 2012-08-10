@@ -94,42 +94,7 @@ fi
 
 AC_CHECK_LIB([dl], [dlopen])
 
-dnl ----- geda sym -----
-AC_ARG_WITH(
-	[geda],
-	[AS_HELP_STRING([--with-geda],
-	                [hardwire path to geda])],
-	[ AC_DEFINE_UNQUOTED([GEDA_PATH], ["${with_geda}"], [path to geda data])
-	  geda=$with_geda
-	  AC_MSG_NOTICE([using geda: $geda])
-	],
-	[ # find out automatically
-		PKG_CHECK_MODULES(GEDA, [libgeda >= 20110115],
-		[
-			AC_CHECK_LIB(
-				[geda], [s_path_sys_data],
-				[
-				 geda=yes
-				 LIBS+=-lgeda
-				],
-				[ AC_MSG_ERROR([gEDA package found but header broken]) ],
-				[-lgeda])
-		],[
-			# there is no geda. use dummy path
-			geda=.
-		])
-	])
-
 # Checks for header files.
-
-if test "x$geda" = xyes ; then
-	old_CPPFLAGS=${CPPFLAGS}
-	CPPFLAGS+=${GEDA_CFLAGS}
-	AC_CHECK_HEADERS([libgeda/libgeda.h],
-	                 [ AC_DEFINE([HAVE_GEDA], [1], [geda present]) ], , )
-	CPPFLAGS=${old_CPPFLAGS}
-fi    
-
 #AC_CHECK_HEADERS([fcntl.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -201,7 +166,6 @@ AC_MSG_RESULT([
    CXXFLAGS:                 $CXXFLAGS
    LDFLAGS:                  $LDFLAGS
    LIBS:                     $LIBS
-   GEDA:                     $geda
 
 ])
 
