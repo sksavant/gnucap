@@ -625,25 +625,42 @@ static void print_component(OMSTREAM& o, const COMPONENT* x)
 {
     assert(x);
     trace0("Got into print_component");
-    std::cout<<x->dev_type()<<"\n";
+    std::string _x,_y,_angle,_mirror;
     o <<  "C ";
-    std::string _basename=x->param_value(5);
+    std::string _basename=x->param_value(x->param_count()-1);
     //go through the symbol file and get the relative pin positions
     std::vector<std::string*> coordinates=parse_symbol_file(NULL, _basename);
-    std::vector<int> placementcoord(8,-1);
-    int index=0;
-    for(std::vector<std::string*>::const_iterator i=coordinates.begin(); i<coordinates.end(); ++i){
-        findcomponentposition((*i)[0],(*i)[1],find_place(x,x->port_value(index))->param_value(index));
-        ++index;
+    std::vector<std::string*> abscoord;
+    for(int ii=0; ii<coordinates.size(); ++ii){
+        abscoord.push_back(find_place(x,x->port_value(ii)));
+    }
+    std::string angle[4]={"0","90","180","270"};
+    int index=0; 
+    std::string xy="";
+    for(int ii=0; ii<4 ; ++ii){
+        _mirror="0";
+        _angle=angle[ii];
+        xy="";
+        bool gottheanglemirror=true;
+        for(int pinind=0; pinind<coordinates.size(); ++pinind){
+            if (xy==""){
+                xy=findcomponentposition(abscoord[pinind],coordinates[pinind],_angle,_mirror);
+            }else if(xy!=findcomponentposition(abscoord[pinind],coordinates[pinind],_angle,_mirror)){
+                    gottheanglemirror=false;
+                    break;
+            }
+        }
+        if (gottheanglemirror) {
+            o << xy << " " << "0" << " " << _angle << " " << _mirror << " " << _basename; 
+        }
     }
     //map those with the absolute positions of nodes and place the device
     //such that it is in between the nodes.
     //std::vector<std::string*> coord = parse_symbol_file(static_cast<COMPONENT*>(x) , _basename);
-    std::string _x,_y,_angle,_mirror;
 
     //Got the x and y
     //To print angle mirror etc, to get from the intelligent positioning
-    o << _x << " " << _y << " " << "0" << " " << _angle << " " << _mirror << " " << _basename;
+    
 
 }
 /*--------------------------------------------------------------------------*/
