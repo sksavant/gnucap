@@ -369,7 +369,7 @@ static void parse_component(CS& cmd,COMPONENT* x){
         }else if(mirror=="1"){
             switch(atoi(angle.c_str())){
             case 0:
-                sprintf(newx,"%d",atoi(component_y.c_str())-atoi((*i)[0].c_str()));
+                sprintf(newx,"%d",atoi(component_x.c_str())-atoi((*i)[0].c_str()));
                 sprintf(newy,"%d",atoi(component_y.c_str())+atoi((*i)[1].c_str()));
                 break;
             case 90:
@@ -382,7 +382,7 @@ static void parse_component(CS& cmd,COMPONENT* x){
                 break;
             case 270:
                 sprintf(newx,"%d",atoi(component_x.c_str())+atoi((*i)[1].c_str()));
-                sprintf(newy,"%d",atoi(component_x.c_str())+atoi((*i)[0].c_str()));
+                sprintf(newy,"%d",atoi(component_y.c_str())+atoi((*i)[0].c_str()));
                 break;
             }
         }else{
