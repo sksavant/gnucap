@@ -2,9 +2,12 @@ For lang_gschem (gEDA plugin)
 
 **TODO (In the order of preference)
 -Print component (highly imp)
+    :take care of single pin
+    :when got a cx,cy donot go further
+    :why is it printing getting parameter <basename> has no value
 -Parse and print heirarchical schematic (using parse_module and print_module)
 -Create augmented verilog netlist from a verilog netlist
--Hack a button/option into gschem to get a netlist from verilog
+-Hack a button/option into gschem to get a netlist in verilog from gnucap
 
 **Completed
 -Parsing a net
