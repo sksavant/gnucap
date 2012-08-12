@@ -595,10 +595,22 @@ static void findcomponentposition(std::string x, std::string y, COMPONENT* x)
 
 }
 /*--------------------------------------------------------------------------*/
-static COMPONENT* find_place(const COMPONENT* x, std::string _portvalue)
+static std::string* find_place(const COMPONENT* x, std::string _portvalue)
 {
+    for(CARD_LIST::const_iterator ci=x->scope()->begin(); ci!=x->scope()->end(); ++ci) {
+        if((*ci)->dev_type()=="place"){
+            if(static_cast<COMPONENT*>(*ci)->port_value(0)==_portvalue){
+                trace0("Got the coord");
+                std::string*  a= new std::string[2];
+                a[0]=(*ci)->param_value(1);     
+                a[1]=(*ci)->param_value(0);
+                trace0("Got out of find_place");
+                return a;
+            }
+        }
+    }
     return NULL;
-    //To return place after searching for it.
+    //To return place coordinates after searching for it.
 }
 /*--------------------------------------------------------------------------*/
 static void print_net(OMSTREAM& o, const COMPONENT* x)
