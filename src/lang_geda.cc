@@ -590,9 +590,54 @@ static void print_node_xy(OMSTREAM& o,const COMPONENT* x,int _portindex)
     }
 }
 /*--------------------------------------------------------------------------*/
-static void findcomponentposition(std::string x, std::string y, COMPONENT* x)
+static std::string findcomponentposition(std::string* absxy, std::string* pinxy, std::string angle, std::string mirror)
 {
-
+    char newx[10];
+    char newy[10];
+    if(mirror=="0"){
+        switch(atoi(angle.c_str())){
+        case 0:
+            sprintf(newx,"%d",atoi(absxy[0].c_str())-atoi(pinxy[0].c_str()));
+            sprintf(newy,"%d",atoi(absxy[1].c_str())-atoi(pinxy[1].c_str()));
+            break;
+        case 90:
+            sprintf(newx,"%d",atoi(absxy[0].c_str())+atoi(pinxy[1].c_str()));
+            sprintf(newy,"%d",atoi(absxy[1].c_str())-atoi(pinxy[0].c_str()));
+            break;
+        case 180:
+            sprintf(newx,"%d",atoi(absxy[0].c_str())+atoi(pinxy[0].c_str()));
+            sprintf(newy,"%d",atoi(absxy[1].c_str())+atoi(pinxy[1].c_str()));
+            break;
+        case 270:
+            sprintf(newx,"%d",atoi(absxy[0].c_str())-atoi(pinxy[1].c_str()));
+            sprintf(newy,"%d",atoi(absxy[1].c_str())+atoi(pinxy[0].c_str()));
+            break;
+        }
+    }else if(mirror=="1"){
+        switch(atoi(angle.c_str())){
+        case 0:
+            sprintf(newx,"%d",atoi(absxy[0].c_str())+atoi(pinxy[0].c_str()));
+            sprintf(newy,"%d",atoi(absxy[1].c_str())-atoi(pinxy[1].c_str()));
+            break;
+        case 90:
+            sprintf(newx,"%d",atoi(absxy[0].c_str())+atoi(pinxy[1].c_str()));
+            sprintf(newy,"%d",atoi(absxy[1].c_str())+atoi(pinxy[0].c_str()));
+            break;
+        case 180:
+            sprintf(newx,"%d",atoi(absxy[0].c_str())-atoi(pinxy[0].c_str()));
+            sprintf(newy,"%d",atoi(absxy[1].c_str())+atoi(pinxy[1].c_str()));
+            break;
+        case 270:
+            sprintf(newx,"%d",atoi(absxy[0].c_str())-atoi(pinxy[1].c_str()));
+            sprintf(newy,"%d",atoi(absxy[1].c_str())-atoi(pinxy[0].c_str()));
+            break;
+        }
+    }else{
+    //not correct mirror!
+    }
+    std::string sx=newx;
+    std::string sy=newy;
+    return sx+" "+sy;
 }
 /*--------------------------------------------------------------------------*/
 static std::string* find_place(const COMPONENT* x, std::string _portvalue)
