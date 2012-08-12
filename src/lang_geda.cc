@@ -95,7 +95,7 @@ static void parse_type(CS& cmd, CARD* x)
 /*--------------------------------------------------------------------------*/
 static std::string* parse_pin(CS& cmd, COMPONENT* x, int index, bool ismodel)
 {
-    assert(x);
+    //assert(x); can parse NULL also
     std::string type=OPT::language->find_type_in_string(cmd),dump;
     assert(type=="pin");
     cmd>>"P";
@@ -138,7 +138,7 @@ static std::string* parse_pin(CS& cmd, COMPONENT* x, int index, bool ismodel)
             }
         }
     }
-    if(ismodel){
+    if(ismodel and x){
         x->set_port_by_index(index,_portvalue);
         return NULL;
     }else{
@@ -190,8 +190,10 @@ static std::vector<std::string*> parse_symbol_file(COMPONENT* x, std::string bas
         }
         std::string linetype=OPT::language->find_type_in_string(sym_cmd);
         bool ismodel=false;
-        if(x->short_label()=="!_"+basename){
-            ismodel=true;
+        if (x){
+            if(x->short_label()=="!_"+basename){
+                ismodel=true;
+            }
         }
         if (linetype=="pin"){
             coord.push_back(parse_pin(sym_cmd,x,index++,ismodel));
