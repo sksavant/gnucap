@@ -710,7 +710,7 @@ static void print_component(OMSTREAM& o, const COMPONENT* x)
             }
         }
         if (gottheanglemirror) {
-            o << xy << " " << "0" << " " << _angle << " " << _mirror << " " << _basename; 
+            o << xy << " " << "0" << " " << _angle << " " << _mirror << " " << _basename<< "\n";
         }
     }
     //map those with the absolute positions of nodes and place the device
@@ -719,7 +719,12 @@ static void print_component(OMSTREAM& o, const COMPONENT* x)
 
     //Got the x and y
     //To print angle mirror etc, to get from the intelligent positioning
-    
+
+    //*To check if there are any attributes at all first
+    //    If not return;
+    o << "{\n" ;
+    //To print the component attributes
+    o << "}\n" ;
 
 }
 /*--------------------------------------------------------------------------*/
