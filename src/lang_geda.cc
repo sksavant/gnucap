@@ -696,21 +696,40 @@ static void print_component(OMSTREAM& o, const COMPONENT* x)
     std::string angle[4]={"0","90","180","270"};
     int index=0; 
     std::string xy="";
+    bool gottheanglemirror=false;
     for(int ii=0; ii<4 ; ++ii){
-        _mirror="0";
-        _angle=angle[ii];
-        xy="";
-        bool gottheanglemirror=true;
-        for(int pinind=0; pinind<coordinates.size(); ++pinind){
-            if (xy==""){
-                xy=findcomponentposition(abscoord[pinind],coordinates[pinind],_angle,_mirror);
-            }else if(xy!=findcomponentposition(abscoord[pinind],coordinates[pinind],_angle,_mirror)){
-                    gottheanglemirror=false;
-                    break;
+        if(not gottheanglemirror){
+            _mirror="0";
+            _angle=angle[ii];
+            xy="";
+            gottheanglemirror=true;
+            for(int pinind=0; pinind<coordinates.size(); ++pinind){
+                if (xy==""){
+                    xy=findcomponentposition(abscoord[pinind],coordinates[pinind],_angle,_mirror);
+                }else if(xy!=findcomponentposition(abscoord[pinind],coordinates[pinind],_angle,_mirror)){
+                        gottheanglemirror=false;
+                        break;
+                }
             }
-        }
-        if (gottheanglemirror) {
-            o << xy << " " << "0" << " " << _angle << " " << _mirror << " " << _basename<< "\n";
+            if (gottheanglemirror) {
+                o << xy << " " << "0" << " " << _angle << " " << _mirror << " " << _basename<< "\n";
+            }
+            else{
+                _mirror="1";
+                xy="";
+                gottheanglemirror=true;
+                for(int pinind=0; pinind<coordinates.size(); ++pinind){
+                    if (xy==""){
+                        xy=findcomponentposition(abscoord[pinind],coordinates[pinind],_angle,_mirror);
+                    }else if(xy!=findcomponentposition(abscoord[pinind],coordinates[pinind],_angle,_mirror)){
+                            gottheanglemirror=false;
+                            break;
+                    }
+                }
+                if (gottheanglemirror) {
+                    o << xy << " " << "0" << " " << _angle << " " << _mirror << " " << _basename<< "\n";
+                }
+            }
         }
     }
     //map those with the absolute positions of nodes and place the device
@@ -722,12 +741,16 @@ static void print_component(OMSTREAM& o, const COMPONENT* x)
 
     //*To check if there are any attributes at all first
     //    If not return;
-    o << "{\n" ;
-    o << "refdes=" << x->short_label() << "\n";
-    for(int i=x->param_count()-3; i>3 ; --i){
-        o << x->param_name(i) << "=" << x->param_value(i) << "\n";
+    if(x->param_count()>6){
+        o << "{\n" ;
+        if(x->short_label()!=""){
+            o << "refdes=" << x->short_label() << "\n";
+        }
+        for(int i=x->param_count()-3; i>3 ; --i){
+            o << x->param_name(i) << "=" << x->param_value(i) << "\n";
+        }
+        o << "}\n";
     }
-    o << "}";
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -756,13 +779,11 @@ void LANG_GEDA::print_instance(OMSTREAM& o, const COMPONENT* x)
  // print_label(o, x);
   if(x->dev_type()=="net"){
     print_net(o, x);
-    o << "\n";
   }
   else if(x->dev_type()=="place"){
  }else{
     //Component
     print_component(o ,x);
-    o << "\n";
   }
   }
 /*--------------------------------------------------------------------------*/
