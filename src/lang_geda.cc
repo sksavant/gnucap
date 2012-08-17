@@ -723,9 +723,11 @@ static void print_component(OMSTREAM& o, const COMPONENT* x)
     //*To check if there are any attributes at all first
     //    If not return;
     o << "{\n" ;
-    //To print the component attributes
-    o << "}\n" ;
-
+    o << "refdes=" << x->short_label() << "\n";
+    for(int i=x->param_count()-3; i>3 ; --i){
+        o << x->param_name(i) << "=" << x->param_value(i) << "\n";
+    }
+    o << "}";
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
