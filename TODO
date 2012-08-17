@@ -1,15 +1,13 @@
 For lang_gschem (gEDA plugin)
 
 **TODO (In the order of preference)
--Print component (highly imp)
-    :take care of single pin
-    :when got a cx,cy donot go further
-    :why is it printing getting parameter <basename> has no value
+-(BUG) precalc_first is 'printing parameter <basename> has no value' : To Fix!
 -Parse and print heirarchical schematic (using parse_module and print_module)
 -Create augmented verilog netlist from a verilog netlist
 -Hack a button/option into gschem to get a netlist in verilog from gnucap
 
 **Completed
+-Print component
 -Parsing a net
 -Parsing a component
 -Reading a symbol file to get ports
