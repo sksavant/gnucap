@@ -712,7 +712,7 @@ static void print_component(OMSTREAM& o, const COMPONENT* x)
                 }
             }
             if (gottheanglemirror) {
-                o << xy << " " << "0" << " " << _angle << " " << _mirror << " " << _basename<< "\n";
+                o << xy << " " << "1" << " " << _angle << " " << _mirror << " " << _basename<< "\n";
             }
             else{
                 _mirror="1";
@@ -727,7 +727,7 @@ static void print_component(OMSTREAM& o, const COMPONENT* x)
                     }
                 }
                 if (gottheanglemirror) {
-                    o << xy << " " << "0" << " " << _angle << " " << _mirror << " " << _basename<< "\n";
+                    o << xy << " " << "1" << " " << _angle << " " << _mirror << " " << _basename<< "\n";
                 }
             }
         }
@@ -744,9 +744,11 @@ static void print_component(OMSTREAM& o, const COMPONENT* x)
     if(x->param_count()>6){
         o << "{\n" ;
         if(x->short_label()!=""){
+            o << "T "<< xy << " 5 10 0 1 0 0 1\n";
             o << "refdes=" << x->short_label() << "\n";
         }
         for(int i=x->param_count()-3; i>3 ; --i){
+            o << "T "<< xy << " 5 10 0 1 0 0 1\n";
             o << x->param_name(i) << "=" << x->param_value(i) << "\n";
         }
         o << "}\n";
