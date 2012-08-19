@@ -248,7 +248,8 @@ static std::string* findnodeonthisnet(CARD *x, std::string x0, std::string y0, s
         if((*ci)->dev_type()=="place"){
             std::string _x=(*ci)->param_value(1),_y=(*ci)->param_value(0);
             if (y0==y1){
-                if((atoi(x1.c_str())<atoi(_x.c_str())<atoi(x0.c_str()) or atoi(x0.c_str())<atoi(_x.c_str())<atoi(x1.c_str())) and _y==y0 and (_x!=x0 and _x!=x1 )){
+                if(  ( ( (atoi(x1.c_str()) < atoi(_x.c_str())) and (atoi(_x.c_str())<atoi(x0.c_str())) ) || ( (atoi(x0.c_str()) < atoi(_x.c_str())) and (atoi(_x.c_str())<atoi(x1.c_str())) ) ) and _y==y0 and _x!=x0 and _x!=x1){
+                    trace0("true0");
                     std::string* coord=new std::string[2];
                     coord[0]=_x;
                     coord[1]=_y;
@@ -258,7 +259,8 @@ static std::string* findnodeonthisnet(CARD *x, std::string x0, std::string y0, s
                     return NULL;
                 }
             }else if (x0==x1){
-                if((atoi(y1.c_str())<atoi(_y.c_str())<atoi(y0.c_str()) or atoi(y0.c_str())<atoi(_y.c_str())<atoi(y1.c_str())) and _x==x0 and (_y!=y0 and  _y!=y1 )){
+                if(  ( ( (atoi(y1.c_str()) < atoi(_y.c_str())) and (atoi(_y.c_str())<atoi(y0.c_str())) ) || ( (atoi(y0.c_str()) < atoi(_y.c_str())) and (atoi(_y.c_str())<atoi(y1.c_str())) ) ) and _x==x0 and _y!=y0 and _y!=y1){
+                    trace0("true1");
                     std::string* coord=new std::string[2];
                     coord[0]=_x;
                     coord[1]=_y;
