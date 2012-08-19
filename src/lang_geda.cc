@@ -747,9 +747,11 @@ static void print_component(OMSTREAM& o, const COMPONENT* x)
             o << "T "<< xy << " 5 10 0 1 0 0 1\n";
             o << "refdes=" << x->short_label() << "\n";
         }
-        for(int i=x->param_count()-3; i>3 ; --i){
-            o << "T "<< xy << " 5 10 0 1 0 0 1\n";
-            o << x->param_name(i) << "=" << x->param_value(i) << "\n";
+        for(int i=x->param_count()-1; i>=0 ; --i){
+            if (!(x->param_value(i)=="NA( 0.)" or x->param_value(i)=="NA( NA)" or x->param_value(i)=="NA( 27.)" or x->param_name(i)=="basename")){
+                o << "T "<< xy << " 5 10 0 1 0 0 1\n";
+                o << x->param_name(i) << "=" << x->param_value(i) << "\n";
+            }
         }
         o << "}\n";
     }
