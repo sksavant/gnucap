@@ -23,8 +23,8 @@ src/d_bjt.h
 doxygen/
 Doxyfile
 gh-pages/
-geda-sym/symbols/documentation/
-geda-sym/building/
+geda/symbols/documentation/
+geda/building/
 list
 resistor
 gnucap/src/gnucap
