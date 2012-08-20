@@ -479,14 +479,18 @@ DEV_COMMENT* LANG_GEDA::parse_comment(CS& cmd, DEV_COMMENT* x)
 {
     assert(x);
     x->set(cmd.fullstring());
-    std::string dump,no_of_lines;
+    std::string dump,no_of_lines="";
     if (cmd >> "T "){
         _mode=mCOMMENT;
         for(int i=0; i<8; ++i){
             cmd >> dump >> " ";
         }
         cmd>>no_of_lines;
-        _no_of_lines=atoi(no_of_lines.c_str());
+        if(no_of_lines==""){
+            _no_of_lines=1;
+        }else{
+            _no_of_lines=atoi(no_of_lines.c_str());
+        }   
     }else{
         if(_no_of_lines!=0){
             --_no_of_lines;
