@@ -791,19 +791,37 @@ static void print_component(OMSTREAM& o, const COMPONENT* x)
 
     //*To check if there are any attributes at all first
     //    If not return;
+    bool _parameters=false;
+    bool _label=false;
+    bool _devtype=false;
+    if(x->short_label()!=""){
+        _label=true;
+    }
     if(x->param_count()>6){
-        o << "{\n" ;
-        if(x->short_label()!=""){
+            _parameters=true;
+    }
+    if(x->dev_type()!=""){
+        _devtype=true;
+    }
+    if (_label or _parameters or _devtype){
+        o << "{\n";
+        if(_devtype){
+            o << "T "<< xy << " 5 10 0 1 0 0 1\n";
+            o << "device=" << x->dev_type() << "\n";
+        }
+        if(_label){
             o << "T "<< xy << " 5 10 0 1 0 0 1\n";
             o << "refdes=" << x->short_label() << "\n";
         }
-        for(int i=x->param_count()-1; i>=0 ; --i){
-            if (!(x->param_value(i)=="NA( 0.)" or x->param_value(i)=="NA( NA)" or x->param_value(i)=="NA( 27.)" or x->param_name(i)=="basename")){
-                o << "T "<< xy << " 5 10 0 1 0 0 1\n";
-                o << x->param_name(i) << "=" << x->param_value(i) << "\n";
+        if(_parameters){
+            for(int i=x->param_count()-1; i>=0 ; --i){
+                if (!(x->param_value(i)=="NA( 0.)" or x->param_value(i)=="NA( NA)" or x->param_value(i)=="NA( 27.)" or x->param_name(i)=="basename")){
+                    o << "T "<< xy << " 5 10 0 1 0 0 1\n";
+                    o << x->param_name(i) << "=" << x->param_value(i) << "\n";
+                }
             }
         }
-        o << "}\n";
+    o << "}\n";
     }
 }
 /*--------------------------------------------------------------------------*/
