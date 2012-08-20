@@ -430,7 +430,12 @@ void LANG_VERILOG::print_instance(OMSTREAM& o, const COMPONENT* x)
 void LANG_VERILOG::print_comment(OMSTREAM& o, const DEV_COMMENT* x)
 {
   assert(x);
-  o << x->comment() << '\n';
+  if ((x->comment()).substr(0,2)!="//"){
+    o << "//" << x->comment() << '\n';
+  }
+  else{
+    o << x->comment() << '\n';
+  }
 }
 /*--------------------------------------------------------------------------*/
 void LANG_VERILOG::print_command(OMSTREAM& o, const DEV_DOT* x)
