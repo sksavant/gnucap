@@ -1,0 +1,110 @@
+v 20081231 1
+C 40000 40000 0 0 0 title-B.sym
+N 47500 45600 47500 46900 4
+N 48200 46900 48400 46900 4
+N 48100 47500 48100 47400 4
+T 51800 40900 9 16 1 0 0 0 1
+Inverter Gate
+T 50100 40400 9 10 1 0 0 0 1
+inverter.sch
+T 50500 40100 9 10 1 0 0 0 1
+1
+T 52200 40100 9 10 1 0 0 0 1
+1
+T 54200 40400 9 10 1 0 0 0 1
+1
+T 54300 40100 9 10 1 0 0 0 1
+Facundo J Ferrer
+C 43200 48100 1 0 0 spice-subcircuit-LL-1.sym
+{
+T 43300 48400 5 10 0 1 0 0 1
+device=spice-subcircuit-LL
+T 43300 48500 5 10 1 1 0 0 1
+refdes=A1
+T 43300 48200 5 10 1 1 0 0 1
+model-name=cmos_inverter
+}
+C 48900 45900 1 0 0 spice-subcircuit-IO-1.sym
+{
+T 49800 46300 5 10 0 1 0 0 1
+device=spice-IO
+T 49750 46150 5 10 1 1 0 0 1
+refdes=P1
+}
+C 47700 46600 1 180 0 spice-subcircuit-IO-1.sym
+{
+T 46800 46200 5 10 0 1 180 0 1
+device=spice-IO
+T 46850 46350 5 10 1 1 180 0 1
+refdes=P4
+}
+C 48400 47300 1 90 0 spice-subcircuit-IO-1.sym
+{
+T 48000 48200 5 10 0 1 90 0 1
+device=spice-IO
+T 48150 48150 5 10 1 1 90 0 1
+refdes=P2
+}
+C 47800 44900 1 270 0 spice-subcircuit-IO-1.sym
+{
+T 48200 44000 5 10 0 1 270 0 1
+device=spice-IO
+T 48050 44050 5 10 1 1 270 0 1
+refdes=P3
+}
+C 43300 46900 1 0 0 spice-model-1.sym
+{
+T 43400 47600 5 10 0 1 0 0 1
+device=model
+T 43400 47500 5 10 1 1 0 0 1
+refdes=A2
+T 44600 47200 5 10 1 1 0 0 1
+model-name=nmos4
+T 43800 47000 5 10 1 1 0 0 1
+file=../model/nmos4.model
+}
+C 43300 45700 1 0 0 spice-model-1.sym
+{
+T 43400 46400 5 10 0 1 0 0 1
+device=model
+T 43400 46300 5 10 1 1 0 0 1
+refdes=A3
+T 44600 46000 5 10 1 1 0 0 1
+model-name=pmos4
+T 43800 45800 5 10 1 1 0 0 1
+file=../model/pmos4.model
+}
+N 48400 46900 48400 47400 4
+N 48400 47400 48100 47400 4
+N 48400 44700 48100 44700 4
+N 48100 46200 49100 46200 4
+C 47500 45100 1 0 0 asic-nmos-1.sym
+{
+T 48900 45900 5 8 0 0 0 0 1
+device=NMOS_TRANSISTOR
+T 47700 45100 5 10 1 1 0 0 1
+refdes=M2
+T 48300 45700 5 8 1 1 0 0 1
+model-name=nmos4
+T 48300 45400 5 8 1 0 0 0 1
+w=1u
+T 48300 45200 5 8 1 0 0 0 1
+l=3u
+}
+C 47500 46400 1 0 0 asic-pmos-1.sym
+{
+T 48900 47200 5 8 0 0 0 0 1
+device=PMOS_TRANSISTOR
+T 47800 47200 5 10 1 1 0 0 1
+refdes=M1
+T 48500 47000 5 8 1 1 0 0 1
+model-name=pmos4
+T 48300 46700 5 8 1 0 0 0 1
+w=10u
+T 48300 46500 5 8 1 0 0 0 1
+l=1u
+}
+N 48100 46100 48100 46400 4
+N 48400 44700 48400 45600 4
+N 48400 45600 48200 45600 4
+N 48100 44700 48100 45100 4
