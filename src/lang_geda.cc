@@ -443,6 +443,21 @@ DEV_COMMENT* LANG_GEDA::parse_comment(CS& cmd, DEV_COMMENT* x)
 {
     assert(x);
     x->set(cmd.fullstring());
+    std::string dump,no_of_lines;
+    if (cmd >> "T "){
+        for (int i=0; i<8 ; ++i){
+            cmd >> dump >> " ";
+        }
+        cmd >> no_of_lines;
+        for (int i=0; i<(atoi(no_of_lines.c_str())); ++i){
+            cmd.get_line("");
+            std::string comment_string="# "+cmd.fullstring();
+            CS comment_cmd(CS::_STRING,comment_string);
+            new__instance(comment_cmd,NULL,x->scope());
+        }
+    }
+    else if (cmd >> "# ")
+        x->set(cmd.substr(2));
     return x;
 }
 /*--------------------------------------------------------------------------*/
@@ -542,7 +557,7 @@ std::string LANG_GEDA::find_type_in_string(CS& cmd)
     std::string type;   //stores type : should check device attribute..
     //graphical=["v","L","G","B","V","A","H","T"]
     if (cmd >> "v " || cmd >> "L " || cmd >> "G " || cmd >> "B " || cmd >>"V "
-        || cmd >> "A " || cmd >> "H " || cmd >> "T "){ type="dev_comment";}
+        || cmd >> "A " || cmd >> "H " || cmd >> "T " || cmd >> "# "){ type="dev_comment";}
     else if (cmd >> "N "){ type="net";}
     else if (cmd >> "U "){ type="bus";}
     else if (cmd >> "P "){ type="pin";}
