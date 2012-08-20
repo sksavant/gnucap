@@ -46,6 +46,7 @@ public:
     mutable int _no_of_lines;
     mutable bool _componentmod;
     mutable std::string _componentname;
+    mutable bool _gotaline;
     //
     std::string name()const {return "gschem";}
     bool case_insensitive()const {return false;}
@@ -349,11 +350,17 @@ static void parse_net(CS& cmd, COMPONENT* x)
             OPT::language->new__instance(net_cmd,NULL,x->scope());
         }
         //To check if there are any attributes
-        cmd.get_line("gnucap-geda>");
-        std::string temp=cmd.fullstring();
+        try {
+            cmd.get_line("gnucap-geda>");
+        }catch(Exception_End_Of_Input&){
+            return;
+        }
+        std::string temp=(cmd.fullstring()).substr(0,1);
         std::string _paramvalue,_paramname,dump;
         if(temp!="{"){
-            OPT::language->new__instance(cmd,NULL,x->scope());
+            cmd.reset();
+            lang_geda._gotaline=true;
+            //OPT::language->new__instance(cmd,NULL,x->scope());
             return;
         }
         cmd>>"{";
@@ -448,13 +455,19 @@ static void parse_component(CS& cmd,COMPONENT* x){
     }
     x->set_param_by_name("basename",basename);
     trace0("getting line");
-    cmd.get_line("gnucap-geda>");
+    try{
+        cmd.get_line("gnucap-geda>");
+    }catch(Exception_End_Of_Input&){
+        return;
+    }
     trace0("got line");
     std::string temp=(cmd.fullstring()).substr(0,1);
     if(temp!="{"){
         trace0("no {");
+        cmd.reset();
         lang_geda._componentmod=true;
-        OPT::language->new__instance(cmd,NULL,x->scope());
+        lang_geda._gotaline=true;
+        //OPT::language->new__instance(cmd,NULL,x->scope());
         return;
     }
     cmd>>"{";
@@ -547,15 +560,19 @@ MODEL_SUBCKT* LANG_GEDA::parse_componmod(CS& cmd, MODEL_SUBCKT* x)
     assert(x);
     cmd.reset();
     std::string type = find_type_in_string(cmd);
+    trace0("found string type");
     assert(type=="C");
     std::string component_x, component_y, mirror, angle, dump,basename;
     bool isgraphical=false;
     cmd>>"C";
     cmd>>component_x>>" ">>component_y>>" ">>dump>>" ">>angle>>" ">>mirror>>" ">>basename;
+    trace0("got params");
     //open the basename to get the ports and their placements
     //parse_ports(newcmd,x);
     x->set_label("!_"+basename);
+    trace0("set labels");
     std::vector<std::string*> coord=parse_symbol_file(x,basename);
+    trace0("parsed symbol file");
     if(coord.size()==0){
         isgraphical=true;
     }
@@ -646,7 +663,13 @@ std::string LANG_GEDA::find_type_in_string(CS& cmd)
 void LANG_GEDA::parse_top_item(CS& cmd, CARD_LIST* Scope)
 {
     trace0("got into parse_top_item");
-    cmd.get_line("gnucap-geda>");
+    if(!_gotaline){
+        cmd.get_line("gnucap-geda>");
+        trace0("false _gotaline");
+    }else{
+        _gotaline=false;
+        trace0("true _gotaline");
+    }
     new__instance(cmd, NULL, Scope);
 }
 /*----------------------------------------------------------------------*/
@@ -917,6 +940,7 @@ public:
       lang_geda._mode=lang_geda.mATTRIBUTE;
       lang_geda._no_of_lines=0;
       lang_geda._componentmod=true;
+      lang_geda._gotaline=false;
       srand(time(NULL));
       command("options lang=gschem", Scope);
     }
