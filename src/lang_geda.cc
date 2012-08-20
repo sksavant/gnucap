@@ -97,6 +97,7 @@ static void parse_type(CS& cmd, CARD* x)
 static std::string* parse_pin(CS& cmd, COMPONENT* x, int index, bool ismodel)
 {
     //assert(x); can parse NULL also
+    trace0("Got into parse_pin");
     std::string type=OPT::language->find_type_in_string(cmd),dump;
     assert(type=="pin");
     cmd>>"P";
@@ -215,6 +216,7 @@ static std::vector<std::string*> parse_symbol_file(COMPONENT* x, std::string bas
 //place <nodename> x y
 static void parse_place(CS& cmd, COMPONENT* x)
 {
+    trace0("Got into parse_place");
     assert(x);
     assert(OPT::language->find_type_in_string(cmd)=="place");
     cmd>>"place";
@@ -565,7 +567,8 @@ COMPONENT* LANG_GEDA::parse_instance(CS& cmd, COMPONENT* x)
     }else {
     parse_component(cmd,x);
     }
-    cmd.check(bWARNING, "what's ins this?");
+    //No warnings needed.
+    //cmd.check(bWARNING, "what's ins this?");
     return x;
 
 }
