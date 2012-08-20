@@ -329,6 +329,34 @@ static void parse_net(CS& cmd, COMPONENT* x)
             CS net_cmd(CS::_STRING,netcmdstr);
             OPT::language->new__instance(net_cmd,NULL,x->scope());
         }
+        //To check if there are any attributes
+        cmd.get_line("gnucap-geda>");
+        std::string temp=cmd.fullstring();
+        std::string _paramvalue,_paramname,dump;
+        if(temp!="{"){
+            OPT::language->new__instance(cmd,NULL,x->scope());
+            return;
+        }
+        cmd>>"{";
+        for (;;) {
+            cmd.get_line("gnucap-geda-net>");
+            if (cmd >> "}") {
+                break;
+            }else{
+                if(cmd>>"T"){
+                    cmd>>dump;
+                }
+                else {
+                    std::string _paramname=cmd.ctos("=","",""),_paramvalue;
+                    cmd>>"=">>_paramvalue;
+                    if (_paramname=="netname" && _paramvalue!="?"){
+                        x->set_label(_paramvalue);
+                    }else{
+                        x->set_param_by_name(_paramname,_paramvalue);
+                    }
+                }
+            }
+        } 
     }
 }
 /*--------------------------------------------------------------------------*/
