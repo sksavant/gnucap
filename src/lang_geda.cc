@@ -42,9 +42,8 @@ class LANG_GEDA : public LANGUAGE {
 
 public:
     //
-    enum MODE {mDEFAULT, mPARAMSET} _mode;
-    mutable int arg_count;
-    enum {INACTIVE = -1};
+    enum MODE {mATTRIBUTE, mCOMMENT} _mode;
+    mutable int _no_of_lines;
     //
     std::string name()const {return "gschem";}
     bool case_insensitive()const {return false;}
@@ -445,19 +444,20 @@ DEV_COMMENT* LANG_GEDA::parse_comment(CS& cmd, DEV_COMMENT* x)
     x->set(cmd.fullstring());
     std::string dump,no_of_lines;
     if (cmd >> "T "){
-        for (int i=0; i<8 ; ++i){
+        _mode=mCOMMENT;
+        for(int i=0; i<8; ++i){
             cmd >> dump >> " ";
         }
-        cmd >> no_of_lines;
-        for (int i=0; i<(atoi(no_of_lines.c_str())); ++i){
-            cmd.get_line("");
-            std::string comment_string="# "+cmd.fullstring();
-            CS comment_cmd(CS::_STRING,comment_string);
-            new__instance(comment_cmd,NULL,x->scope());
+        cmd>>no_of_lines;
+        _no_of_lines=atoi(no_of_lines.c_str());
+    }else{
+        if(_no_of_lines!=0){
+            --_no_of_lines;
+            if(_no_of_lines==0){
+                _mode=mATTRIBUTE;
+            }
         }
     }
-    else if (cmd >> "# ")
-        x->set(cmd.substr(2));
     return x;
 }
 /*--------------------------------------------------------------------------*/
@@ -557,13 +557,18 @@ std::string LANG_GEDA::find_type_in_string(CS& cmd)
     std::string type;   //stores type : should check device attribute..
     //graphical=["v","L","G","B","V","A","H","T"]
     if (cmd >> "v " || cmd >> "L " || cmd >> "G " || cmd >> "B " || cmd >>"V "
-        || cmd >> "A " || cmd >> "H " || cmd >> "T " || cmd >> "# "){ type="dev_comment";}
+        || cmd >> "A " || cmd >> "H " || cmd >> "T " ){ type="dev_comment";}
     else if (cmd >> "N "){ type="net";}
     else if (cmd >> "U "){ type="bus";}
     else if (cmd >> "P "){ type="pin";}
     else if (cmd >> "C "){ type="C";}
     else if (cmd >> "place "){ type="place";}
-    else {  cmd >> type; } //Not matched with the type. What now?
+    else {  
+        switch(_mode){
+            case mCOMMENT: return "dev_comment";
+            default : cmd >> type;
+        } 
+    } //Not matched with the type. What now?
     cmd.reset(here);//Reset cursor back to the position that
                     //has been started with at beginning
     return type;    // returns the type of the string
@@ -825,6 +830,8 @@ class CMD_GSCHEM : public CMD {
 public:
     void do_it(CS& cmd, CARD_LIST* Scope)
     {
+      lang_geda._mode=lang_geda.mATTRIBUTE;
+      lang_geda._no_of_lines=0;
       srand(time(NULL));
       command("options lang=gschem", Scope);
     }
