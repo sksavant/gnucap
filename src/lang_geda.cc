@@ -44,6 +44,8 @@ public:
     //
     enum MODE {mATTRIBUTE, mCOMMENT} _mode;
     mutable int _no_of_lines;
+    mutable bool _componentmod;
+    mutable std::string _componentname;
     //
     std::string name()const {return "gschem";}
     bool case_insensitive()const {return false;}
@@ -282,6 +284,7 @@ static std::string* findnodeonthisnet(CARD *x, std::string x0, std::string y0, s
 // Need to specify a name for a card?
 static void parse_net(CS& cmd, COMPONENT* x)
 {
+    trace0("got into parse_net");
     assert(x);
     assert(lang_geda.find_type_in_string(cmd)=="net");
     cmd>>"N";     //Got N
@@ -361,12 +364,11 @@ static void parse_net(CS& cmd, COMPONENT* x)
 }
 /*--------------------------------------------------------------------------*/
 static void parse_component(CS& cmd,COMPONENT* x){
+    trace0("got into parse_component");
     assert(x);
     std::string component_x, component_y, mirror, angle, dump,basename;
     std::string type=lang_geda.find_type_in_string(cmd);
-    cmd>>type;
-    std::vector<std::string> paramname;
-    std::vector<std::string> paramvalue;
+    cmd >> type;
     cmd>>component_x>>" ">>component_y>>" ">>dump>>" ">>angle>>" ">>mirror>>" ">>basename;
     //To get port names and values from symbol?
     //Then set params below
@@ -429,27 +431,30 @@ static void parse_component(CS& cmd,COMPONENT* x){
         ++index;
     }
     x->set_param_by_name("basename",basename);
-    CS new_cmd(CS::_STDIN);
-    new_cmd.get_line("gnucap-geda>");
-    std::string temp=new_cmd.fullstring();
+    trace0("getting line");
+    cmd.get_line("gnucap-geda>");
+    trace0("got line");
+    std::string temp=(cmd.fullstring()).substr(0,1);
     if(temp!="{"){
-        OPT::language->new__instance(new_cmd,NULL,x->scope());
+        trace0("no {");
+        lang_geda._componentmod=true;
+        OPT::language->new__instance(cmd,NULL,x->scope());
         return;
     }
     cmd>>"{";
+    trace0("got {");
     for (;;) {
-        new_cmd.get_line("gnucap-geda- "+basename+">");
-        if (new_cmd >> "}") {
+        cmd.get_line("gnucap-geda-"+basename+">");
+        if (cmd >> "}") {
             break;
         }else{
-            if(new_cmd>>"T"){
-                new_cmd>>dump;
+            if(cmd>>"T"){
+                cmd>>dump;
             }
             else {
-                std::string _paramname=new_cmd.ctos("=","",""),_paramvalue;
-                new_cmd>>"=">>_paramvalue;
-                paramname.push_back (_paramname);
-                paramvalue.push_back(_paramvalue);
+                std::string _paramname=cmd.ctos("=","",""),_paramvalue;
+                cmd>>"=">>_paramvalue;
+                trace0("got the parameter");
                 if(_paramname=="device"){
                     x->set_dev_type(_paramvalue);
                 }else if (_paramname=="refdes" && _paramvalue!="?"){
@@ -461,8 +466,10 @@ static void parse_component(CS& cmd,COMPONENT* x){
         }
     }
     if(x->short_label()==""){
-        x->set_label(type+to_string(rand()));
+        x->set_label(basename+to_string(rand()));
     }
+    lang_geda._componentmod=true;
+    trace0("got out of parse_component");
 }
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -491,6 +498,7 @@ DEV_COMMENT* LANG_GEDA::parse_comment(CS& cmd, DEV_COMMENT* x)
 /*--------------------------------------------------------------------------*/
 DEV_DOT* LANG_GEDA::parse_command(CS& cmd, DEV_DOT* x)
 {
+    trace0("got into parse_command");
     assert(x);
     x->set(cmd.fullstring());
     CARD_LIST* scope = (x->owner()) ? x->owner()->subckt() : &CARD_LIST::card_list;
@@ -515,6 +523,7 @@ MODEL_SUBCKT* LANG_GEDA::parse_module(CS& cmd, MODEL_SUBCKT* x)
 
 MODEL_SUBCKT* LANG_GEDA::parse_componmod(CS& cmd, MODEL_SUBCKT* x)
 {
+    trace0("got into parse_componmod");
     assert(x);
     cmd.reset();
     std::string type = find_type_in_string(cmd);
@@ -522,7 +531,6 @@ MODEL_SUBCKT* LANG_GEDA::parse_componmod(CS& cmd, MODEL_SUBCKT* x)
     std::string component_x, component_y, mirror, angle, dump,basename;
     bool isgraphical=false;
     cmd>>"C";
-    unsigned here=cmd.cursor();
     cmd>>component_x>>" ">>component_y>>" ">>dump>>" ">>angle>>" ">>mirror>>" ">>basename;
     //open the basename to get the ports and their placements
     //parse_ports(newcmd,x);
@@ -535,8 +543,9 @@ MODEL_SUBCKT* LANG_GEDA::parse_componmod(CS& cmd, MODEL_SUBCKT* x)
         return NULL;
     }
     else{
-        cmd.reset(here);
+        cmd.reset();
     }
+    trace0("got out");
     /*type = "graphical";
     x->set_dev_type(type);
     std::cout<<x->dev_type()<<" is the dev type\n";
@@ -546,6 +555,7 @@ MODEL_SUBCKT* LANG_GEDA::parse_componmod(CS& cmd, MODEL_SUBCKT* x)
 /*--------------------------------------------------------------------------*/
 COMPONENT* LANG_GEDA::parse_instance(CS& cmd, COMPONENT* x)
 {
+    trace0("got into parse_instance");
     cmd.reset();
     parse_type(cmd, x); //parse type will parse the component type and set_dev_type
     if (x->dev_type()=="net") {
@@ -589,7 +599,13 @@ std::string LANG_GEDA::find_type_in_string(CS& cmd)
     else if (cmd >> "N "){ type="net";}
     else if (cmd >> "U "){ type="bus";}
     else if (cmd >> "P "){ type="pin";}
-    else if (cmd >> "C "){ type="C";}
+    else if (cmd >> "C "){ 
+        if(_componentmod){
+            type="C";
+        }else{
+            type=_componentname;
+        }
+    }
     else if (cmd >> "place "){ type="place";}
     else {  
         switch(_mode){
@@ -608,6 +624,7 @@ std::string LANG_GEDA::find_type_in_string(CS& cmd)
  */
 void LANG_GEDA::parse_top_item(CS& cmd, CARD_LIST* Scope)
 {
+    trace0("got into parse_top_item");
     cmd.get_line("gnucap-geda>");
     new__instance(cmd, NULL, Scope);
 }
@@ -800,7 +817,7 @@ static void print_component(OMSTREAM& o, const COMPONENT* x)
     if(x->param_count()>6){
             _parameters=true;
     }
-    if(x->dev_type()!=""){
+    if(x->dev_type()!="" and (x->dev_type()).substr(0,2)!="!_"){
         _devtype=true;
     }
     if (_label or _parameters or _devtype){
@@ -878,6 +895,7 @@ public:
     {
       lang_geda._mode=lang_geda.mATTRIBUTE;
       lang_geda._no_of_lines=0;
+      lang_geda._componentmod=true;
       srand(time(NULL));
       command("options lang=gschem", Scope);
     }
@@ -898,8 +916,8 @@ class CMD_C : public CMD {
       temp=lang_geda.parse_componmod(cmd, new_compon);
       if(temp){
         Scope->push_back(new_compon);
-        std::string s=new_compon->short_label()+" "+cmd.tail();
-        CS cmd(CS::_STRING,s);
+        lang_geda._componentname=new_compon->short_label();
+        lang_geda._componentmod=false;
         lang_geda.new__instance(cmd,NULL,Scope);
       }
     }
