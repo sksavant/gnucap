@@ -119,7 +119,21 @@ static std::string* parse_pin(CS& cmd, COMPONENT* x, int index, bool ismodel)
         cmd>>dump;
     }
     std::string    _portvalue="_";
-    cmd.get_line("");
+    try{
+        cmd.get_line("");
+    }catch(Exception_End_Of_Input&){
+        return NULL;
+    }
+    std::string temp=(cmd.fullstring()).substr(0,1);
+    if(temp!="{"){
+        if(ismodel and x){
+            _portvalue="port"+_portvalue+to_string(rand()%10000);
+            x->set_port_by_index(index,_portvalue);
+            return NULL;
+        }else{
+            return coord;
+        }
+    }
     cmd>>"{";
     for(;;){
         cmd.get_line("");
