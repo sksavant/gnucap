@@ -7,7 +7,7 @@ var searchData=
   ['lambda0',['lambda0',['../db/d6e/class_m_o_d_e_l___b_u_i_l_t___i_n___m_o_s6.html#aff8edc8ff1e29e7b3332f88b8d97130f',1,'MODEL_BUILT_IN_MOS6']]],
   ['lambda1',['lambda1',['../db/d6e/class_m_o_d_e_l___b_u_i_l_t___i_n___m_o_s6.html#a3b1e7a74628a1b68f53f1670be6ee04f',1,'MODEL_BUILT_IN_MOS6']]],
   ['lang_5facs',['lang_acs',['../db/d6e/namespaceanonymous__namespace_02lang__spice_8cc_03.html#a106a0e5184a40b87c3ae58a29e980fa7',1,'anonymous_namespace{lang_spice.cc}']]],
-  ['lang_5fgschem',['lang_gschem',['../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#ad2a8db98e0433b42e74d1681792ff328',1,'anonymous_namespace{lang_geda.cc}']]],
+  ['lang_5fgeda',['lang_geda',['../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a279807787aea2c1c3c2c35acf7ce093c',1,'anonymous_namespace{lang_geda.cc}']]],
   ['lang_5fspectre',['lang_spectre',['../dc/ded/namespaceanonymous__namespace_02lang__spectre_8cc_03.html#a651aeb479179ea29758660c33d824f31',1,'anonymous_namespace{lang_spectre.cc}']]],
   ['lang_5fspice',['lang_spice',['../db/d6e/namespaceanonymous__namespace_02lang__spice_8cc_03.html#a6e2bd6412eafbbcf2bb0dfe770e89083',1,'anonymous_namespace{lang_spice.cc}']]],
   ['lang_5fverilog',['lang_verilog',['../da/df8/namespaceanonymous__namespace_02lang__verilog_8cc_03.html#aa0906113c610ef62d60f5b97d205ce77',1,'anonymous_namespace{lang_verilog.cc}']]],

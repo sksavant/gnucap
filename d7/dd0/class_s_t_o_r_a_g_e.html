@@ -135,7 +135,7 @@ Protected Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#a04811b3cb414a9bd37123f78b96223ce">~STORAGE</a> ()</td></tr>
 <tr><td colspan="2"><h2><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d1c/struct_f_p_o_l_y1.html">FPOLY1</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#a3df0f01a63c6262cdfcc9b99654c9a43">_i</a> [<a class="el" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>]</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/d1c/struct_f_p_o_l_y1.html">FPOLY1</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#a3df0f01a63c6262cdfcc9b99654c9a43">_i</a> [<a class="el" href="../../de/d5e/class_o_p_t.html#af7bba1bd81e5e5b658fd216eb912ebd9aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>]</td></tr>
 <tr><td colspan="2"><h2><a name="pro-static-attribs"></a>
 Static Protected Attributes</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../da/da5/e__storag_8h.html#a980085812d120b3761817608d332fecd">METHOD</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#a927a3e5d3748e30aec7aa13f1953e518">method_select</a> [<a class="el" href="../../d7/d7b/u__opt_8h.html#af897f0107831a72ad5209a63fff3da89a63e27cddc8aa72763577dacfd69d880e">meNUM_METHODS</a>][<a class="el" href="../../d7/d7b/u__opt_8h.html#af897f0107831a72ad5209a63fff3da89a63e27cddc8aa72763577dacfd69d880e">meNUM_METHODS</a>]</td></tr>
@@ -231,7 +231,7 @@ Private Member Functions</h2></td></tr>
 <div class="fragment"><pre class="fragment">{
   <a class="code" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#a7c818d021092db7444221b4661b403ee">ELEMENT::dc_advance</a>();
 
-  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 1;  i &lt; <a class="code" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>;  ++i) {
+  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 1;  i &lt; <a class="code" href="../../de/d5e/class_o_p_t.html#af7bba1bd81e5e5b658fd216eb912ebd9aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>;  ++i) {
     <a class="code" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#a3df0f01a63c6262cdfcc9b99654c9a43">_i</a>[i] = <a class="code" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#a3df0f01a63c6262cdfcc9b99654c9a43">_i</a>[0];
   }
 }
@@ -284,7 +284,7 @@ Private Member Functions</h2></td></tr>
 <div class="fragment"><pre class="fragment">                        {
     <span class="keyword">const</span> <span class="keywordtype">int</span> o[] = {1, 1, 2, 1, 1};
     <span class="keywordtype">int</span> ord = o[<a class="code" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#ac5daaa521e6df93d51f54ade8744e61f">_method_a</a>];
-    assert(ord &lt; <a class="code" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>);
+    assert(ord &lt; <a class="code" href="../../de/d5e/class_o_p_t.html#af7bba1bd81e5e5b658fd216eb912ebd9aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>);
     <span class="keywordflow">return</span> ord;
   }
 </pre></div>
@@ -355,7 +355,7 @@ Private Member Functions</h2></td></tr>
 <div class="fragment"><pre class="fragment">{
   <a class="code" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#a2f6da05b430a31e02444500c24278b6d">ELEMENT::tr_advance</a>();
   
-  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=<a class="code" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>-1; i&gt;0; --i) {
+  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=<a class="code" href="../../de/d5e/class_o_p_t.html#af7bba1bd81e5e5b658fd216eb912ebd9aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>-1; i&gt;0; --i) {
     <a class="code" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#a3df0f01a63c6262cdfcc9b99654c9a43">_i</a>[i] = <a class="code" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#a3df0f01a63c6262cdfcc9b99654c9a43">_i</a>[i-1];
   }
 }
@@ -386,7 +386,7 @@ Private Member Functions</h2></td></tr>
 <div class="fragment"><pre class="fragment">{
   <a class="code" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#aa86c43ab908b590e477fdba9e5a624d1">ELEMENT::tr_begin</a>();
   <a class="code" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#ac5daaa521e6df93d51f54ade8744e61f">_method_a</a> = <a class="code" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#a927a3e5d3748e30aec7aa13f1953e518">method_select</a>[<a class="code" href="../../de/d5e/class_o_p_t.html#a5adbfc43c12eb4d9a04616741b35c978">OPT::method</a>][<a class="code" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#ac0b32296f749be052113fddec9065450">_method_u</a>];
-  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0;  i &lt; <a class="code" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>;  ++i) {
+  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0;  i &lt; <a class="code" href="../../de/d5e/class_o_p_t.html#af7bba1bd81e5e5b658fd216eb912ebd9aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>;  ++i) {
     <a class="code" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#a3df0f01a63c6262cdfcc9b99654c9a43">_i</a>[i] = <a class="code" href="../../db/d1c/struct_f_p_o_l_y1.html">FPOLY1</a>(0., 0., 0.);
   }
   <a class="code" href="../../da/da7/class_e_l_e_m_e_n_t.html#a8d4e9d758cd2fbe12228caba628ab9e8">_m1</a> = <a class="code" href="../../da/da7/class_e_l_e_m_e_n_t.html#a99fee23b26db9b6689aecd1f8a92a536">_m0</a> = <a class="code" href="../../d8/d92/struct_c_p_o_l_y1.html">CPOLY1</a>(0., 0., 0.);
@@ -588,7 +588,7 @@ Private Member Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../db/d1c/struct_f_p_o_l_y1.html">FPOLY1</a> <a class="el" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#a3df0f01a63c6262cdfcc9b99654c9a43">STORAGE::_i</a>[<a class="el" href="../../de/d5e/class_o_p_t.html#ae48dea8cfa5e152a75dd3d062e1dedb6aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>]<code> [protected]</code></td>
+          <td class="memname"><a class="el" href="../../db/d1c/struct_f_p_o_l_y1.html">FPOLY1</a> <a class="el" href="../../d7/dd0/class_s_t_o_r_a_g_e.html#a3df0f01a63c6262cdfcc9b99654c9a43">STORAGE::_i</a>[<a class="el" href="../../de/d5e/class_o_p_t.html#af7bba1bd81e5e5b658fd216eb912ebd9aa35927b332a024d8e0667592044528d3">OPT::_keep_time_steps</a>]<code> [protected]</code></td>
         </tr>
       </table>
 </div>
@@ -695,7 +695,7 @@ Private Member Functions</h2></td></tr>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Aug 7 2012 18:00:53 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Aug 22 2012 16:54:35 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

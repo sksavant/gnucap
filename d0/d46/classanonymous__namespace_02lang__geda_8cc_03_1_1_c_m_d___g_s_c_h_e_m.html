@@ -123,7 +123,7 @@ Public Member Functions</h2></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock">
-<p>Definition at line <a class="el" href="../../d5/d72/lang__geda_8cc_source.html#l00695">695</a> of file <a class="el" href="../../d5/d72/lang__geda_8cc_source.html">lang_geda.cc</a>.</p>
+<p>Definition at line <a class="el" href="../../d5/d72/lang__geda_8cc_source.html#l00936">936</a> of file <a class="el" href="../../d5/d72/lang__geda_8cc_source.html">lang_geda.cc</a>.</p>
 </div><hr/><h2>Member Function Documentation</h2>
 <a class="anchor" id="a3a2cad7bedd3a820604937467e020369"></a><!-- doxytag: member="anonymous_namespace{lang_geda.cc}::CMD_GSCHEM::do_it" ref="a3a2cad7bedd3a820604937467e020369" args="(CS &amp;cmd, CARD_LIST *Scope)" -->
 <div class="memitem">
@@ -152,8 +152,15 @@ Public Member Functions</h2></td></tr>
 
 <p>Implements <a class="el" href="../../da/d8a/class_c_m_d.html#addc1a6b1cab8e549d2cc1408e99ce07a">CMD</a>.</p>
 
-<p>Definition at line <a class="el" href="../../d5/d72/lang__geda_8cc_source.html#l00697">697</a> of file <a class="el" href="../../d5/d72/lang__geda_8cc_source.html">lang_geda.cc</a>.</p>
+<p>Definition at line <a class="el" href="../../d5/d72/lang__geda_8cc_source.html#l00938">938</a> of file <a class="el" href="../../d5/d72/lang__geda_8cc_source.html">lang_geda.cc</a>.</p>
+
+<p>References <a class="el" href="../../d5/d72/lang__geda_8cc_source.html#l00047">anonymous_namespace{lang_geda.cc}::LANG_GEDA::_componentmod</a>, <a class="el" href="../../d5/d72/lang__geda_8cc_source.html#l00049">anonymous_namespace{lang_geda.cc}::LANG_GEDA::_gotaline</a>, <a class="el" href="../../d8/df9/classanonymous__namespace_02lang__geda_8cc_03_1_1_l_a_n_g___g_e_d_a.html#a456997b61f98ee9d12a4e3f9c02e3a43">anonymous_namespace{lang_geda.cc}::LANG_GEDA::_mode</a>, <a class="el" href="../../d5/d72/lang__geda_8cc_source.html#l00046">anonymous_namespace{lang_geda.cc}::LANG_GEDA::_no_of_lines</a>, <a class="el" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a279807787aea2c1c3c2c35acf7ce093c">anonymous_namespace{lang_geda.cc}::lang_geda</a>, and <a class="el" href="../../d5/d72/lang__geda_8cc_source.html#l00045">anonymous_namespace{lang_geda.cc}::LANG_GEDA::mATTRIBUTE</a>.</p>
 <div class="fragment"><pre class="fragment">    {
+      <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a279807787aea2c1c3c2c35acf7ce093c">lang_geda</a>.<a class="code" href="../../d8/df9/classanonymous__namespace_02lang__geda_8cc_03_1_1_l_a_n_g___g_e_d_a.html#a456997b61f98ee9d12a4e3f9c02e3a43">_mode</a>=<a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a279807787aea2c1c3c2c35acf7ce093c">lang_geda</a>.<a class="code" href="../../d8/df9/classanonymous__namespace_02lang__geda_8cc_03_1_1_l_a_n_g___g_e_d_a.html#a2f30bfb70f53173dd76270f8ab1009f5ae02eee589592639ddf1c205475d6acc3">mATTRIBUTE</a>;
+      <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a279807787aea2c1c3c2c35acf7ce093c">lang_geda</a>.<a class="code" href="../../d8/df9/classanonymous__namespace_02lang__geda_8cc_03_1_1_l_a_n_g___g_e_d_a.html#ad1832751d896782b3eba7a5c5b39dfa7">_no_of_lines</a>=0;
+      <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a279807787aea2c1c3c2c35acf7ce093c">lang_geda</a>.<a class="code" href="../../d8/df9/classanonymous__namespace_02lang__geda_8cc_03_1_1_l_a_n_g___g_e_d_a.html#a9e4c79dc0c75881f74484811289537f2">_componentmod</a>=<span class="keyword">true</span>;
+      <a class="code" href="../../da/d20/namespaceanonymous__namespace_02lang__geda_8cc_03.html#a279807787aea2c1c3c2c35acf7ce093c">lang_geda</a>.<a class="code" href="../../d8/df9/classanonymous__namespace_02lang__geda_8cc_03_1_1_l_a_n_g___g_e_d_a.html#ad2ed42185d640bdb2417f8026fbf7b75">_gotaline</a>=<span class="keyword">false</span>;
+      srand(time(NULL));
       <a class="code" href="../../da/d8a/class_c_m_d.html#aff5f928b07e06056f3cdf667102a394e">command</a>(<span class="stringliteral">&quot;options lang=gschem&quot;</span>, Scope);
     }
 </pre></div>
@@ -180,7 +187,7 @@ Public Member Functions</h2></td></tr>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Aug 7 2012 18:01:14 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Aug 22 2012 16:54:50 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

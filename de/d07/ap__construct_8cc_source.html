@@ -236,8 +236,8 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00154"></a>00154     <a class="code" href="../../db/d85/class_c_s.html#ae8e48fd1b62970e153b17e25f8d081a5">_ok</a> = <span class="keyword">true</span>;
 <a name="l00155"></a>00155   }<span class="keywordflow">else</span>{<a class="code" href="../../d6/dda/io__trace_8h.html#ace44a3497980f17b256317ed0d54708f">itested</a>();
 <a name="l00156"></a>00156     assert(<a class="code" href="../../db/d85/class_c_s.html#a8b42b4a04af6354d88be205c779d6eda">_file</a> == stdin);
-<a name="l00157"></a>00157     <span class="keywordtype">char</span> cmdbuf[<a class="code" href="../../d8/dbf/md_8h.html#a16af7b253440dadd46a80a4b9fddba4da70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>];
-<a name="l00158"></a>00158     <a class="code" href="../../db/dfc/ap_8h.html#a6a99978ec04eaa0a4232b1349775c74c">getcmd</a>(prompt.c_str(), cmdbuf, <a class="code" href="../../d8/dbf/md_8h.html#a16af7b253440dadd46a80a4b9fddba4da70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>);
+<a name="l00157"></a>00157     <span class="keywordtype">char</span> cmdbuf[<a class="code" href="../../d8/dbf/md_8h.html#a05589fbab0657f08285ebdfe93f5ec9ea70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>];
+<a name="l00158"></a>00158     <a class="code" href="../../db/dfc/ap_8h.html#a6a99978ec04eaa0a4232b1349775c74c">getcmd</a>(prompt.c_str(), cmdbuf, <a class="code" href="../../d8/dbf/md_8h.html#a05589fbab0657f08285ebdfe93f5ec9ea70dbdf0b9e23895650c3d94272a5e092">BUFLEN</a>);
 <a name="l00159"></a>00159     <a class="code" href="../../db/d85/class_c_s.html#a2c6ad3f6d07e8110ff339a4d45d7cc67">_cmd</a> = cmdbuf;
 <a name="l00160"></a>00160     <a class="code" href="../../db/d85/class_c_s.html#abf654af420ba8173d961729788b1476f">_cnt</a> = 0;
 <a name="l00161"></a>00161     <a class="code" href="../../db/d85/class_c_s.html#a8621ad4792ebcedf145e20dbddd02e38">_length</a> = <span class="keyword">static_cast&lt;</span><span class="keywordtype">unsigned</span><span class="keyword">&gt;</span>(_cmd.length());
@@ -309,7 +309,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <a name="l00227"></a><a class="code" href="../../de/d07/ap__construct_8cc.html#a0ef99bc3053d0995a5a53ede3a8836ef">00227</a> <span class="keyword">static</span> std::string <a class="code" href="../../de/d07/ap__construct_8cc.html#a0ef99bc3053d0995a5a53ede3a8836ef">getlines</a>(FILE *fileptr)
 <a name="l00228"></a>00228 {
 <a name="l00229"></a>00229   assert(fileptr);
-<a name="l00230"></a>00230   <span class="keyword">const</span> <span class="keywordtype">int</span> buffer_size = <a class="code" href="../../d8/dbf/md_8h.html#a16af7b253440dadd46a80a4b9fddba4daa272afffe66ab2f2d9bfee73382357d1">BIGBUFLEN</a>;
+<a name="l00230"></a>00230   <span class="keyword">const</span> <span class="keywordtype">int</span> buffer_size = <a class="code" href="../../d8/dbf/md_8h.html#a05589fbab0657f08285ebdfe93f5ec9eaa272afffe66ab2f2d9bfee73382357d1">BIGBUFLEN</a>;
 <a name="l00231"></a>00231   std::string s;
 <a name="l00232"></a>00232 
 <a name="l00233"></a>00233   <span class="keywordtype">bool</span> need_to_get_more = <span class="keyword">true</span>;  <span class="comment">// get another line (extend)</span>
@@ -370,7 +370,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Aug 7 2012 17:59:22 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Aug 22 2012 16:53:11 for gnucap by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>
